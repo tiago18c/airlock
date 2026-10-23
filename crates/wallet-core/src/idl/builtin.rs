@@ -17,6 +17,10 @@
 //! its program-metadata account, converted and given display nodes the same
 //! way, with its amounts in base units too. `updateAmmConfig` also declares
 //! the new owner it reads as a remaining account.
+//! `raydium-router.json` is written by hand: the devnet Raydium routing
+//! program publishes no IDL. Its data layouts and account orders are the ones
+//! of transactions the program executed, and the route's hops are one
+//! remaining-accounts group, since their accounts depend on each pool program.
 //! A newer file imported
 //! by the user replaces the embedded one for that program. Removing the
 //! import brings the embedded one back.
@@ -49,6 +53,10 @@ pub const RAYDIUM_CLMM_PROGRAM_ID: Pubkey =
 pub const RAYDIUM_CP_SWAP_PROGRAM_ID: Pubkey =
     Pubkey::from_str_const("DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb");
 
+/// Raydium's AMM routing program on devnet.
+pub const RAYDIUM_ROUTER_PROGRAM_ID: Pubkey =
+    Pubkey::from_str_const("DRaybByLpbUL57LJARs3j8BitTxVfzBg351EaMr5UTCd");
+
 /// One IDL compiled into the binary.
 #[derive(Clone, Copy, Debug)]
 pub struct BuiltinIdl {
@@ -60,7 +68,7 @@ pub struct BuiltinIdl {
 
 /// In this order on a tie between two files carrying the same additional
 /// program: the earlier file's entry is read.
-pub const BUILTIN_IDLS: [BuiltinIdl; 11] = [
+pub const BUILTIN_IDLS: [BuiltinIdl; 12] = [
     BuiltinIdl {
         program_id: SYSTEM_PROGRAM_ID,
         name: "system",
@@ -115,6 +123,11 @@ pub const BUILTIN_IDLS: [BuiltinIdl; 11] = [
         program_id: RAYDIUM_CP_SWAP_PROGRAM_ID,
         name: "raydiumCpSwap",
         json: include_str!("../../idls/raydium-cp-swap.json"),
+    },
+    BuiltinIdl {
+        program_id: RAYDIUM_ROUTER_PROGRAM_ID,
+        name: "raydiumRouter",
+        json: include_str!("../../idls/raydium-router.json"),
     },
 ];
 
