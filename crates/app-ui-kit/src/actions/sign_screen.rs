@@ -425,10 +425,15 @@ pub fn attach_context(session: Session, context: TxContext) {
 /// transaction is on screen by the time it arrives. A failure of a
 /// transaction a key made here signs in place of a site's one-time key says
 /// that reshaping it is not supported.
+///
+/// The probe runs at the highest compute limit so a rebuild's earlier
+/// estimate cannot cut it short, then both limits are written back from what
+/// the node used. Authorization signatures stay on the wire.
 pub fn start_simulation(session: Session, tx: DecodedTx) {
     let form = session.forms.sign;
     let mut state = form.simulation;
     let mut error = form.error;
+    let mut wire_signal = form.wire;
     let replaced = form.made_here_in(&tx);
     let mut marked = form.simulated_for;
     let digest = sha256_bytes(&tx.message);
@@ -454,12 +459,31 @@ pub fn start_simulation(session: Session, tx: DecodedTx) {
     }
     state.set(SimState::Running);
     let rpc = session.rpc();
+    let current_wire = wire_signal.peek().clone();
     spawn(async move {
-        let result = match rpc {
-            Ok(rpc) => wallet_flows::simulate::simulate(rpc.as_ref(), &tx).await,
-            Err(err) => Err(err),
+        let mut answer_for = digest;
+        let result = match (rpc, current_wire) {
+            (Ok(rpc), Some(wire)) => {
+                match wallet_flows::adapt::simulate_fitting(rpc.as_ref(), &wire).await {
+                    Ok((fitted, simulation)) => {
+                        if fitted != wire {
+                            if let Ok(fitted_tx) = decode_v1_transaction(&fitted) {
+                                answer_for = sha256_bytes(&fitted_tx.message);
+                                marked.set(Some(answer_for));
+                            }
+                            wire_signal.set(Some(fitted));
+                        }
+                        Ok(simulation)
+                    }
+                    Err(err) => Err(err.to_string()),
+                }
+            }
+            (Ok(rpc), None) => wallet_flows::simulate::simulate(rpc.as_ref(), &tx)
+                .await
+                .map_err(|err| err.to_string()),
+            (Err(err), _) => Err(err.to_string()),
         };
-        if *marked.peek() != Some(digest) {
+        if *marked.peek() != Some(answer_for) {
             return;
         }
         if let (Ok(simulation), false) = (&result, replaced.is_empty()) {
@@ -469,7 +493,7 @@ pub fn start_simulation(session: Session, tx: DecodedTx) {
         }
         state.set(match result {
             Ok(simulation) => SimState::Done(simulation),
-            Err(err) => SimState::Failed(err.to_string()),
+            Err(err) => SimState::Failed(err),
         });
     });
 }

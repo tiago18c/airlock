@@ -236,6 +236,25 @@ pub fn fit_loaded_accounts(wire: &[u8], loaded: u32) -> Result<Vec<u8>, SignErro
     Ok(wire)
 }
 
+/// The same transaction with its compute unit limit set to `units` plus the
+/// margin Build adds. `units` is what a simulation of this transaction
+/// reported. Signatures over the transaction are removed. Authorization
+/// signatures are untouched: they do not cover the limit.
+///
+/// A rebuild that keeps the inner transaction's compute limit (plus a fixed
+/// overhead) can still be too low once programs are loaded through a
+/// `Submit`. Probe at [`MAX_CU_LIMIT`] first, then call this with what the
+/// node used.
+pub fn fit_compute_units(wire: &[u8], units: u64) -> Result<Vec<u8>, SignError> {
+    let tx = decode(wire)?;
+    let limit = with_margin(units, MAX_CU_LIMIT);
+    let (wire, _) = rebuild(&tx, |message| {
+        message.config.compute_unit_limit = Some(limit);
+        Ok(())
+    })?;
+    Ok(wire)
+}
+
 /// The same transaction with its compute unit limit set to `limit`.
 /// Signatures over the transaction are removed. Authorization signatures are
 /// untouched: they do not cover the limit.
