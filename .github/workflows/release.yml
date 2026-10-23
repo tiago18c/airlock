@@ -151,7 +151,7 @@ jobs:
           cat SHA256SUMS.txt
       # Signed statement that these exact files were built by this workflow
       # from this commit. Verify with `gh attestation verify <file> --repo <repo>`.
-      - uses: actions/attest-build-provenance@v2
+      - uses: actions/attest-build-provenance@v4
         with:
           subject-path: release/*
       - name: Create the draft
