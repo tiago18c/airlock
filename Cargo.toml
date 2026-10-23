@@ -78,7 +78,7 @@ solana-signature = { version = "3.4", default-features = false, features = ["std
 # `bincode` for the instruction builders. Accounts are read with wincode.
 solana-stake-interface = { version = "5.0", default-features = false, features = ["bincode", "wincode"] }
 solana-system-interface = { version = "3.3", default-features = false, features = ["bincode"] }
-solana-transaction = { version = "4.3", default-features = false, features = ["wincode"] }
+solana-transaction = { version = "5.0", default-features = false, features = ["wincode"] }
 tempfile = "3"
 thiserror = "2"
 tokio = "1"

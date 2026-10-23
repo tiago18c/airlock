@@ -42,7 +42,7 @@ solana-nonce = { version = "3.0", features = ["serde"] }
 solana-pubkey = { version = "4.2", default-features = false, features = ["std", "serde"] }
 solana-signature = { version = "3.4", default-features = false, features = ["std", "serde"] }
 solana-signer = "3.0"
-solana-transaction = { version = "4.1.4", features = ["serde"] }
+solana-transaction = { version = "5.0.0", features = ["serde"] }
 solana-transaction-error = { version = "3.3", features = ["serde"] }
 solana-transaction-status-client-types = { version = "4.2.0", features = ["agave-unstable-api"] }
 
