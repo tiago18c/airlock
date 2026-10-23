@@ -118,10 +118,12 @@ pub async fn route(
     Ok(Route::Converted(converted, OneTimeKeys(keys)))
 }
 
-/// Rewrite `tx` as v1. With a node, the limits the site left unset are what
-/// a simulation of the rewrite used, plus a margin. Without one, or when the
-/// simulation does not succeed, they are what the runtime would have given
-/// the original. The site's price per unit is kept either way.
+/// Rewrite `tx` as v1. With a node, the compute and loaded-accounts limits are
+/// what a simulation of the rewrite used, plus a margin, even when the site
+/// filled them in. The probe asks for the highest of each so the simulation
+/// is not cut short. Without a node, or when the simulation does not succeed,
+/// the site's limits are kept when it set them, otherwise what the runtime
+/// would have given the original. The site's price per unit is kept either way.
 pub async fn convert(
     rpc: Option<&dyn SolanaRpc>,
     tx: &DecodedTx,
@@ -163,9 +165,9 @@ async fn fit_limits(
 ) -> Result<Converted, FlowError> {
     let rewrite = |limits| to_v1_swapping(tx, known, limits, swaps);
     let estimated = rewrite(Limits::Runtime).map_err(FlowError::refused)?;
-    let unset = tx.budget.compute_unit_limit.is_none()
-        || tx.budget.loaded_accounts_data_size_limit.is_none();
-    let Some(rpc) = rpc.filter(|_| unset) else {
+    // Always probe when online: a site's compute and loaded-accounts limits
+    // are discarded for the rewrite and replaced from the same run.
+    let Some(rpc) = rpc else {
         return Ok(estimated);
     };
     let probe = rewrite(Limits::Probe)
@@ -296,8 +298,59 @@ mod tests {
             pollster::block_on(convert(Some(&rpc), &priced_legacy(), &[pk(1)])).unwrap();
         assert_eq!(converted.limit_from, LimitFrom::Simulated);
         let budget = budget(&converted);
-        assert_eq!(budget.compute_unit_limit, Some(158));
-        assert_eq!(budget.loaded_accounts_data_size_limit, Some(1_050));
+        assert_eq!(budget.compute_unit_limit, Some(165));
+        assert_eq!(budget.loaded_accounts_data_size_limit, Some(1_100));
+        assert_eq!(budget.priority_fee, Some(1));
+        assert_eq!(rpc.asked(), 1);
+    }
+
+    /// A legacy transfer that already sets compute and loaded-accounts limits
+    /// the site chose, plus a price per unit.
+    fn limited_legacy() -> DecodedTx {
+        let mut wire = vec![1u8];
+        wire.extend_from_slice(&[0u8; 64]);
+        wire.extend_from_slice(&[1, 0, 2, 4]);
+        for key in [pk(1), pk(2), SYSTEM_PROGRAM_ID, COMPUTE_BUDGET_PROGRAM_ID] {
+            wire.extend_from_slice(key.as_ref());
+        }
+        wire.extend_from_slice(&[1; 32]);
+        // SetComputeUnitLimit 200_000, SetComputeUnitPrice 1_000,
+        // SetLoadedAccountsDataSizeLimit 4_096, then a transfer.
+        wire.extend_from_slice(&[4, 3, 0, 5, 2]);
+        wire.extend_from_slice(&200_000u32.to_le_bytes());
+        wire.extend_from_slice(&[3, 0, 9, 3]);
+        wire.extend_from_slice(&1_000u64.to_le_bytes());
+        wire.extend_from_slice(&[3, 0, 5, 4]);
+        wire.extend_from_slice(&4_096u32.to_le_bytes());
+        wire.extend_from_slice(&[2, 2, 0, 1, 12]);
+        wire.extend_from_slice(&2u32.to_le_bytes());
+        wire.extend_from_slice(&5u64.to_le_bytes());
+        decode_transaction(&wire, &LookupTables::new()).unwrap()
+    }
+
+    #[test]
+    fn a_sites_filled_limits_are_discarded_for_what_the_rewrite_used() {
+        let tx = limited_legacy();
+        assert_eq!(tx.budget.compute_unit_limit, Some(200_000));
+        assert_eq!(tx.budget.loaded_accounts_data_size_limit, Some(4_096));
+        let offline = pollster::block_on(convert(None, &tx, &[pk(1)])).unwrap();
+        assert_eq!(offline.limit_from, LimitFrom::Site);
+        assert_eq!(budget(&offline).compute_unit_limit, Some(200_000));
+        assert_eq!(budget(&offline).loaded_accounts_data_size_limit, Some(4_096));
+
+        let rpc = FakeRpc {
+            simulation: Some(SimulationReply {
+                units_consumed: Some(150),
+                loaded_accounts_data_size: Some(1_000),
+                ..SimulationReply::default()
+            }),
+            ..FakeRpc::default()
+        };
+        let converted = pollster::block_on(convert(Some(&rpc), &tx, &[pk(1)])).unwrap();
+        assert_eq!(converted.limit_from, LimitFrom::Simulated);
+        let budget = budget(&converted);
+        assert_eq!(budget.compute_unit_limit, Some(165));
+        assert_eq!(budget.loaded_accounts_data_size_limit, Some(1_100));
         assert_eq!(budget.priority_fee, Some(1));
         assert_eq!(rpc.asked(), 1);
     }

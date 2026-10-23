@@ -33,8 +33,12 @@ pub struct Converted {
     pub replaced: Vec<(Pubkey, Pubkey)>,
 }
 
-/// Where the limits of a rewrite come from, for those the site left unset.
-/// A limit the site set is kept.
+/// Where the limits of a rewrite come from.
+///
+/// A compute or loaded-accounts limit the site set is kept only when there is
+/// no simulation measurement; a measured rewrite discards both and uses what
+/// the probe used, plus a margin. A probe always asks for the highest limits
+/// so the simulation is not cut short.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Limits {
     /// What the runtime would have given the transaction as the site sent it.
@@ -43,8 +47,9 @@ pub enum Limits {
     /// The highest limits and no priority fee, to simulate the rewrite and
     /// measure what it uses.
     Probe,
-    /// What a simulation of the probe measured, plus a margin. A value the
-    /// node did not report falls back to [`Limits::Runtime`].
+    /// What a simulation of the probe measured, plus a margin. Replaces the
+    /// site's compute units and loaded-accounts size. A value the node did
+    /// not report falls back to the site's, or to [`Limits::Runtime`].
     Measured {
         units: Option<u64>,
         loaded_accounts: Option<u32>,
@@ -76,7 +81,7 @@ impl LimitFrom {
                 "The transaction set no compute limit, so it is {cu_limit} units, what the network would have given it."
             ),
             Self::Simulated => format!(
-                "The transaction set no compute limit, so it is {cu_limit} units: what a simulation used, plus 5%."
+                "The compute limit is {cu_limit} units: what a simulation used, plus 10%."
             ),
             Self::Probe => format!("The compute limit is {cu_limit} units, to measure it."),
         }
@@ -98,14 +103,15 @@ pub enum ConvertError {
 /// Rewrite `tx` as v1 with every account listed inline. Keeps the site's
 /// blockhash or durable nonce. `known` is every wallet pubkey this device
 /// holds: a filled signature for any other key stops the conversion. Limits
-/// the site left unset are what the runtime would have given it.
+/// the site left unset, and a compute limit a measured rewrite replaces, are
+/// taken from [`Limits`].
 pub fn to_v1(tx: &DecodedTx, known: &[Pubkey]) -> Result<Converted, ConvertError> {
     to_v1_with(tx, known, Limits::Runtime)
 }
 
-/// [`to_v1`], with the unset limits taken from `limits`. The priority fee is
-/// the site's price per unit times the compute limit, so a tighter limit
-/// keeps the site's priority and costs less.
+/// [`to_v1`], with limits taken from `limits`. The priority fee is the site's
+/// price per unit times the compute limit, so a tighter limit keeps the
+/// site's priority and costs less.
 pub fn to_v1_with(
     tx: &DecodedTx,
     known: &[Pubkey],
@@ -233,27 +239,31 @@ pub fn to_v1_swapping(
     let site = compute_budget_values(&tx.instructions);
     let runtime_cu_limit =
         || runtime_default_cu_limit(body_instructions.iter().map(|ix| &ix.program_id));
-    let (cu_limit, limit_from) = match (site.unit_limit, limits) {
-        (Some(limit), _) => (limit.min(MAX_CU_LIMIT), LimitFrom::Site),
-        (None, Limits::Probe) => (MAX_CU_LIMIT, LimitFrom::Probe),
+    // A measured rewrite discards the site's limits: the probe already ran at
+    // the highest of each, so its consumption is what the rewrite needs.
+    let (cu_limit, limit_from) = match (&limits, site.unit_limit) {
+        (Limits::Probe, _) => (MAX_CU_LIMIT, LimitFrom::Probe),
         (
-            None,
             Limits::Measured {
-                units: Some(units), ..
+                units: Some(units),
+                ..
             },
-        ) => (with_margin(units, MAX_CU_LIMIT), LimitFrom::Simulated),
-        (None, _) => (runtime_cu_limit(), LimitFrom::Runtime),
+            _,
+        ) => (with_margin(*units, MAX_CU_LIMIT), LimitFrom::Simulated),
+        (_, Some(limit)) => (limit.min(MAX_CU_LIMIT), LimitFrom::Site),
+        (_, None) => (runtime_cu_limit(), LimitFrom::Runtime),
     };
-    let loaded_accounts = match (site.loaded_accounts_data_size, limits) {
-        (Some(size), _) => size.min(DEFAULT_LOADED_ACCOUNTS_DATA_SIZE),
+    let loaded_accounts = match (&limits, site.loaded_accounts_data_size) {
+        (Limits::Probe, _) => DEFAULT_LOADED_ACCOUNTS_DATA_SIZE,
         (
-            None,
             Limits::Measured {
                 loaded_accounts: Some(size),
                 ..
             },
-        ) => with_margin(u64::from(size), DEFAULT_LOADED_ACCOUNTS_DATA_SIZE),
-        (None, _) => DEFAULT_LOADED_ACCOUNTS_DATA_SIZE,
+            _,
+        ) => with_margin(u64::from(*size), DEFAULT_LOADED_ACCOUNTS_DATA_SIZE),
+        (_, Some(size)) => size.min(DEFAULT_LOADED_ACCOUNTS_DATA_SIZE),
+        (_, None) => DEFAULT_LOADED_ACCOUNTS_DATA_SIZE,
     };
     let mut config = ComputeBudgetSpec {
         cu_limit: Some(cu_limit),
@@ -410,6 +420,10 @@ mod tests {
         let probe = to_v1_with(&tx, &[from.pubkey()], Limits::Probe).unwrap();
         let budget = decode_v1_transaction(&probe.wire).unwrap().budget;
         assert_eq!(budget.compute_unit_limit, Some(MAX_CU_LIMIT));
+        assert_eq!(
+            budget.loaded_accounts_data_size_limit,
+            Some(DEFAULT_LOADED_ACCOUNTS_DATA_SIZE)
+        );
         assert_eq!(budget.priority_fee, None);
 
         let measured = Limits::Measured {
@@ -419,9 +433,9 @@ mod tests {
         let fitted = to_v1_with(&tx, &[from.pubkey()], measured).unwrap();
         assert_eq!(fitted.limit_from, LimitFrom::Simulated);
         let budget = decode_v1_transaction(&fitted.wire).unwrap().budget;
-        assert_eq!(budget.compute_unit_limit, Some(158));
-        assert_eq!(budget.loaded_accounts_data_size_limit, Some(1_050));
-        // 158 units at the site's 1,000 micro-lamports, rounded up.
+        assert_eq!(budget.compute_unit_limit, Some(165));
+        assert_eq!(budget.loaded_accounts_data_size_limit, Some(1_100));
+        // 165 units at the site's 1,000 micro-lamports, rounded up.
         assert_eq!(budget.priority_fee, Some(1));
 
         // A node that measured nothing leaves the runtime's limits.
@@ -435,7 +449,7 @@ mod tests {
     }
 
     #[test]
-    fn the_sites_limits_are_kept_within_the_most_allowed_and_the_heap_is_carried() {
+    fn a_measured_rewrite_discards_the_sites_limits_and_keeps_its_heap() {
         let from = KeypairSigner::new_random();
         let wire = legacy_wire(
             &[
@@ -447,16 +461,39 @@ mod tests {
             &from.pubkey(),
         );
         let tx = decode_transaction(&wire, &LookupTables::new()).unwrap();
+
+        // A probe always asks for the highest limits, so the simulation is
+        // not cut short by the site's filled-in values.
+        let probe = to_v1_with(&tx, &[from.pubkey()], Limits::Probe).unwrap();
+        let probe_budget = decode_v1_transaction(&probe.wire).unwrap().budget;
+        assert_eq!(probe_budget.compute_unit_limit, Some(MAX_CU_LIMIT));
+        assert_eq!(
+            probe_budget.loaded_accounts_data_size_limit,
+            Some(DEFAULT_LOADED_ACCOUNTS_DATA_SIZE)
+        );
+
         let measured = Limits::Measured {
             units: Some(150),
             loaded_accounts: Some(1_000),
         };
         let converted = to_v1_with(&tx, &[from.pubkey()], measured).unwrap();
-        assert_eq!(converted.limit_from, LimitFrom::Site);
+        assert_eq!(converted.limit_from, LimitFrom::Simulated);
         let budget = decode_v1_transaction(&converted.wire).unwrap().budget;
-        assert_eq!(budget.compute_unit_limit, Some(MAX_CU_LIMIT));
-        assert_eq!(budget.loaded_accounts_data_size_limit, Some(4_096));
+        assert_eq!(budget.compute_unit_limit, Some(165));
+        assert_eq!(budget.loaded_accounts_data_size_limit, Some(1_100));
         assert_eq!(budget.heap_size, Some(64 * 1024));
+
+        // Without a measurement the site's limits stay, capped.
+        let offline = to_v1_with(&tx, &[from.pubkey()], Limits::Runtime).unwrap();
+        assert_eq!(offline.limit_from, LimitFrom::Site);
+        assert_eq!(offline.cu_limit, MAX_CU_LIMIT);
+        assert_eq!(
+            decode_v1_transaction(&offline.wire)
+                .unwrap()
+                .budget
+                .loaded_accounts_data_size_limit,
+            Some(4_096)
+        );
     }
 
     #[test]

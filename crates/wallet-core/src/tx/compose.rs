@@ -140,7 +140,7 @@ pub fn compile_probe(
 }
 
 /// How much is added to a measured limit, in percent.
-const LIMIT_MARGIN_PERCENT: u64 = 5;
+const LIMIT_MARGIN_PERCENT: u64 = 10;
 
 /// `measured` plus the margin, rounded up, and no more than `max`.
 pub(crate) fn with_margin(measured: u64, max: u32) -> u32 {
@@ -247,9 +247,9 @@ mod tests {
     fn measured_limits_fill_blank_fields_with_a_margin() {
         let mut settings = TxSettings::default();
         assert!(settings.fill_limits(Some(150), Some(1_000)));
-        // 5% of 150 is 7.5, rounded up.
-        assert_eq!(settings.cu_limit, "158");
-        assert_eq!(settings.loaded_accounts, "1050");
+        // 10% of 150 is 15.
+        assert_eq!(settings.cu_limit, "165");
+        assert_eq!(settings.loaded_accounts, "1100");
 
         // A typed limit is kept, and a node that measured nothing fills nothing.
         let mut typed = TxSettings {
@@ -258,7 +258,7 @@ mod tests {
         };
         assert!(typed.fill_limits(Some(150), Some(1_000)));
         assert_eq!(typed.cu_limit, "999");
-        assert_eq!(typed.loaded_accounts, "1050");
+        assert_eq!(typed.loaded_accounts, "1100");
         assert!(!TxSettings::default().fill_limits(None, None));
 
         let mut capped = TxSettings::default();
