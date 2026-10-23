@@ -428,7 +428,8 @@ pub fn attach_context(session: Session, context: TxContext) {
 ///
 /// The probe runs at the highest compute limit so a rebuild's earlier
 /// estimate cannot cut it short, then both limits are written back from what
-/// the node used. Authorization signatures stay on the wire.
+/// the node used. Authorization signatures stay on the wire. A signature over
+/// the transaction itself is left alone: fitting would void it.
 pub fn start_simulation(session: Session, tx: DecodedTx) {
     let form = session.forms.sign;
     let mut state = form.simulation;
