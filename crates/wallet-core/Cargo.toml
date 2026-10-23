@@ -37,7 +37,7 @@ sha2.workspace = true
 solana-account.workspace = true
 solana-hash.workspace = true
 solana-derivation-path = "3"
-solana-keypair = { version = "3.1", features = ["seed-derivable"] }
+solana-keypair = { version = "4.0", features = ["seed-derivable"] }
 solana-seed-derivable = "3"
 solana-message.workspace = true
 solana-nonce.workspace = true
