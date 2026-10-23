@@ -1011,3 +1011,139 @@ fn a_routed_swap_names_its_input_and_first_hop() {
     assert_eq!(field(&idl, "First Hop Output Mint"), intermediate_mint);
     assert_eq!(idl.unnamed_accounts, 0);
 }
+
+/// An instruction of the Whirlpool program: its data and its accounts as
+/// `(address, signer, writable)`.
+fn whirlpool_ix(data: &str, accounts: &[(&str, bool, bool)]) -> Instruction {
+    use crate::idl::builtin::ORCA_WHIRLPOOL_PROGRAM_ID;
+
+    Instruction {
+        program_id: ORCA_WHIRLPOOL_PROGRAM_ID,
+        accounts: accounts
+            .iter()
+            .map(|&(address, signer, writable)| AccountMeta {
+                pubkey: Pubkey::from_str_const(address),
+                is_signer: signer,
+                is_writable: writable,
+            })
+            .collect(),
+        data: hex::decode(data).unwrap(),
+    }
+}
+
+/// A devnet `swap_v2` (transaction `22pTxZ77…`) whose `remainingAccountsInfo`
+/// passes two supplemental tick arrays after the named accounts.
+#[test]
+fn a_whirlpool_swap_names_its_mints_and_reads_its_extra_tick_arrays() {
+    let owner = "8cMnAcFSSVrfYCsCshyHE2dZ5ZKUS8MnTNPKSWJU7xuQ";
+    let pool = "3KBZiL2g8C7tiJ32hTv5v3KM7aK9htpqTw4cTXz1HvPt";
+    let mint_b = "BRjpCHtyQLNCo8gqRUr8jtdAj5AjPYQaoqbvcZiHok1k";
+    let account_a = "5L5SwrK3jPZwq6yhoCSnneHLdzVQNFX63Fo4W3dJeqxK";
+    let account_b = "5AgrPE66YREecQsiYvyUNfuCneEyeYWZ5Nq4UtwETA36";
+    let mut accounts = vec![
+        (ROUTER_TOKEN, false, false),
+        (ROUTER_TOKEN, false, false),
+        ("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr", false, false),
+        (owner, true, true),
+        (pool, false, true),
+        (ROUTER_WSOL, false, false),
+        (mint_b, false, false),
+        (account_a, true, true),
+        ("C9zLV5zWF66j3rZj3uuhDqvfuA8esJyWnruGzDW9qEj2", false, true),
+        (account_b, false, true),
+    ];
+    accounts.extend(
+        [
+            "7DM3RMz2yzUB8yPRQM3FMZgdFrwZGMsabsfsKopWktoX",
+            "7knZZ461yySGbSEHeBUwEpg3VtAkQy8B9tp78RGgyUHE",
+            "CpoSFo3ajrizueggtJr2ZjvYgdtkgugXtvhqcwkyCkKP",
+            "9iGzy4mQtJadZDuH8seBFQGiqcb6wyp2KW4M6NKHvsAW",
+            "2KEWNc3b6EfqoWQpfKQMHh4mhRyKXYRdPbtGRTJX3Cip",
+            "3aBJJLAR3QxGcGsesNXeW3f64Rv3TckF7EQ6sXtAuvGM",
+            "A1vrG379E5ttoaWmyQBiunsMdyrpoUp7mSQwu8DgLcip",
+        ]
+        .map(|address| (address, false, true)),
+    );
+    let swap = whirlpool_ix(
+        "2b04ed0b1ac91e62a086010000000000ce27440000000000000000000000000000000000000000000100\
+         01010000000602",
+        &accounts,
+    );
+
+    let idl = explain_one_ix(&builtins(), Pubkey::from_str_const(owner), swap);
+    assert_eq!(idl.intent, "Swap tokens");
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "{owner} swaps between {ROUTER_WSOL} and {mint_b} in pool {pool}, with \
+                 {account_a} and {account_b}"
+            )
+            .as_str()
+        )
+    );
+    assert_eq!(field(&idl, "Amount"), "100000 base units");
+    assert_eq!(
+        field(&idl, "Minimum Out or Maximum In"),
+        "4466638 base units"
+    );
+    assert_eq!(field(&idl, "Exact Input"), "true");
+    assert_eq!(field(&idl, "Token A For Token B"), "false");
+    // The supplemental tick arrays are read by the program, so they are not
+    // unnamed, and neither they nor the programs are listed.
+    assert_eq!(idl.unnamed_accounts, 0);
+    assert!(idl.fields.iter().all(|field| field.value
+        != "A1vrG379E5ttoaWmyQBiunsMdyrpoUp7mSQwu8DgLcip"
+        && field.value != ROUTER_TOKEN));
+}
+
+/// A devnet `initialize_pool_v2` (transaction `5DgksRSW…`) of a splash pool.
+/// Both vaults are new keypairs that sign. The client appended the program
+/// id after the named accounts; the program does not read it, so review
+/// counts it as unnamed.
+#[test]
+fn a_whirlpool_pool_creation_names_its_mints_and_vaults() {
+    let funder = "2Ggmdr2qpuMsd7sGiCwPRBzoA3uXn6Tf6oTycg3fxAPB";
+    let pool = "AqNYrACHNgPdpWwCS1GtAJPDWWTjvAVUTJj9MNYdMaZK";
+    let mint_a = "46PWVv2z2FAT5q4PSMCvDSiuEF9CNncXZ1DhzHfA8i3U";
+    let mint_b = "8Q2UVRq3aHagoowWUraEdBhbPy8kJivo43LhYHTtBpi3";
+    let config = "FcrweFY1G9HJAHG5inkGB6pKg1HZ6x9UC2WioAfWrGkR";
+    let vault_a = "GUdGdGqBFG1PESeRLaEBbnA3G8343b3LfB9sNt9MV9BS";
+    let vault_b = "H9qVTMWRWjwfNW1feHgduZmfKngsyHoEqFEsVfANxXAL";
+    let create = whirlpool_ix(
+        "cf2d57f21b3fcc438080008046c945970b000a00000000000000",
+        &[
+            (config, false, false),
+            (mint_a, false, false),
+            (mint_b, false, false),
+            ("EPpeSV8bS5CqnL9bJ4YR4BaUScmovVHD2hYNMCVyN8eP", false, false),
+            ("GWehUaYqR61ZcGkVp64i154hSm6qmV313VC8fmpiFTGf", false, false),
+            (funder, true, true),
+            (pool, false, true),
+            (vault_a, true, true),
+            (vault_b, true, true),
+            ("8EHtyN3DBseSZzHYkxXuT2GDoPmqmKEtbbaNrabFZhdL", false, false),
+            (ROUTER_TOKEN, false, false),
+            (ROUTER_TOKEN_2022, false, false),
+            (ROUTER_SYSTEM, false, false),
+            ("SysvarRent111111111111111111111111111111111", false, false),
+            ("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc", false, false),
+        ],
+    );
+
+    let idl = explain_one_ix(&builtins(), Pubkey::from_str_const(funder), create);
+    assert_eq!(idl.intent, "Create pool");
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "{funder} creates pool {pool} for {mint_a} and {mint_b} with tick spacing \
+                 32896 in config {config}"
+            )
+            .as_str()
+        )
+    );
+    assert_eq!(field(&idl, "Pool Vault A"), vault_a);
+    assert_eq!(field(&idl, "Pool Vault B"), vault_b);
+    assert_eq!(idl.unnamed_accounts, 1);
+}
