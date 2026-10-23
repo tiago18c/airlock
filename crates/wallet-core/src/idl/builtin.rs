@@ -13,6 +13,10 @@
 //! remaining accounts its swap and liquidity instructions read (tick arrays,
 //! the bitmap extension, a swap route), which Anchor IDLs cannot declare. Its
 //! token amounts are in base units: the IDL cannot read a mint's decimals.
+//! `raydium-cp-swap.json` is the devnet Raydium CP swap program's IDL from
+//! its program-metadata account, converted and given display nodes the same
+//! way, with its amounts in base units too. `updateAmmConfig` also declares
+//! the new owner it reads as a remaining account.
 //! A newer file imported
 //! by the user replaces the embedded one for that program. Removing the
 //! import brings the embedded one back.
@@ -41,6 +45,10 @@ pub const ED25519_SIGNER_PROGRAM_ID: Pubkey =
 pub const RAYDIUM_CLMM_PROGRAM_ID: Pubkey =
     Pubkey::from_str_const("DRayAUgENGQBKVaX8owNhgzkEDyoHTGVEGHVJT1E9pfH");
 
+/// Raydium's constant-product AMM on devnet.
+pub const RAYDIUM_CP_SWAP_PROGRAM_ID: Pubkey =
+    Pubkey::from_str_const("DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb");
+
 /// One IDL compiled into the binary.
 #[derive(Clone, Copy, Debug)]
 pub struct BuiltinIdl {
@@ -52,7 +60,7 @@ pub struct BuiltinIdl {
 
 /// In this order on a tie between two files carrying the same additional
 /// program: the earlier file's entry is read.
-pub const BUILTIN_IDLS: [BuiltinIdl; 10] = [
+pub const BUILTIN_IDLS: [BuiltinIdl; 11] = [
     BuiltinIdl {
         program_id: SYSTEM_PROGRAM_ID,
         name: "system",
@@ -102,6 +110,11 @@ pub const BUILTIN_IDLS: [BuiltinIdl; 10] = [
         program_id: RAYDIUM_CLMM_PROGRAM_ID,
         name: "raydiumClmm",
         json: include_str!("../../idls/raydium-clmm.json"),
+    },
+    BuiltinIdl {
+        program_id: RAYDIUM_CP_SWAP_PROGRAM_ID,
+        name: "raydiumCpSwap",
+        json: include_str!("../../idls/raydium-cp-swap.json"),
     },
 ];
 

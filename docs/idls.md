@@ -26,7 +26,7 @@ Every review row and every Build form comes from an IDL. The hand-written decode
 
 ## Embedded IDLs
 
-`crates/wallet-core/idls/` holds the IDL of each program the app needs without an import (System, Stake, Token, Token-2022, compute budget, the Ed25519 programmatic signer, the two Squads programs, Vector, the devnet Raydium CLMM), unchanged from upstream apart from display nodes. The Squads and Raydium files are Anchor IDLs converted to Codama; the Raydium one also declares the remaining accounts its swap and liquidity instructions read, which an Anchor IDL cannot, and shows its token amounts in base units because it cannot read a mint's decimals. To update one, replace the file; the `builtin.rs` tests check its program id, its name and the pinned default instruction.
+`crates/wallet-core/idls/` holds the IDL of each program the app needs without an import (System, Stake, Token, Token-2022, compute budget, the Ed25519 programmatic signer, the two Squads programs, Vector, the devnet Raydium CLMM and CP swap), unchanged from upstream apart from display nodes. The Squads and Raydium files are Anchor IDLs converted to Codama; the Raydium ones also declare the remaining accounts their instructions read (the CLMM's tick arrays and swap route, the CP swap config's new owner), which an Anchor IDL cannot, and show their token amounts in base units because they cannot read a mint's decimals. To update one, replace the file; the `builtin.rs` tests check its program id, its name and the pinned default instruction.
 
 They are compiled into the binary and never written to the index. Importing a file for the same program replaces the embedded one, and removing that import brings it back. An embedded IDL cannot be removed and is left out of an export.
 

@@ -696,3 +696,82 @@ fn a_raydium_swap_names_its_mints_pool_and_limits() {
         .all(|field| field.value != pk(11).to_string()
             && field.value != TOKEN_PROGRAM_ID.to_string()));
 }
+
+/// A `swap_base_input` on the CP swap program, with the accounts in the
+/// order its IDL lists them.
+#[test]
+fn a_raydium_cp_swap_names_its_mints_pool_and_limits() {
+    use crate::idl::builtin::RAYDIUM_CP_SWAP_PROGRAM_ID;
+
+    let mut data = hex::decode("8fbe5adac41e33de").unwrap();
+    data.extend(2_500_000u64.to_le_bytes());
+    data.extend(1_900_000u64.to_le_bytes());
+    let mut accounts = vec![
+        AccountMeta::new_readonly(pk(1), true),
+        AccountMeta::new_readonly(pk(2), false),
+        AccountMeta::new_readonly(pk(3), false),
+    ];
+    accounts.extend((4..=8).map(|byte| AccountMeta::new(pk(byte), false)));
+    accounts.extend([
+        AccountMeta::new_readonly(TOKEN_PROGRAM_ID, false),
+        AccountMeta::new_readonly(TOKEN_2022_PROGRAM_ID, false),
+        AccountMeta::new_readonly(pk(9), false),
+        AccountMeta::new_readonly(pk(10), false),
+        AccountMeta::new(pk(11), false),
+    ]);
+    let swap = Instruction {
+        program_id: RAYDIUM_CP_SWAP_PROGRAM_ID,
+        accounts,
+        data,
+    };
+
+    let idl = explain_one_ix(&builtins(), pk(1), swap);
+    assert_eq!(idl.intent, "Swap tokens");
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "{} swaps 2500000 base units of {} for at least 1900000 base units of {} in pool {}",
+                pk(1),
+                pk(9),
+                pk(10),
+                pk(4)
+            )
+            .as_str()
+        )
+    );
+    assert_eq!(field(&idl, "From"), pk(5).to_string());
+    assert_eq!(field(&idl, "To"), pk(6).to_string());
+    assert_eq!(idl.unnamed_accounts, 0);
+    assert!(idl
+        .fields
+        .iter()
+        .all(|field| field.value != TOKEN_PROGRAM_ID.to_string()
+            && field.value != TOKEN_2022_PROGRAM_ID.to_string()));
+}
+
+/// Setting a CP swap config's owner (`param` 3) reads the new owner from the
+/// account after the named ones, so review shows it rather than flagging it.
+#[test]
+fn a_raydium_cp_config_owner_change_shows_the_new_owner() {
+    use crate::idl::builtin::RAYDIUM_CP_SWAP_PROGRAM_ID;
+
+    let admin = Pubkey::from_str_const("DRayqG9RXYi8WHgWEmRQGrUWRWbhjYWYkCRJDd6JBBak");
+    let mut data = hex::decode("313cae889a1c74c8").unwrap();
+    data.push(3);
+    data.extend(0u64.to_le_bytes());
+    let update = Instruction {
+        program_id: RAYDIUM_CP_SWAP_PROGRAM_ID,
+        accounts: vec![
+            AccountMeta::new_readonly(admin, true),
+            AccountMeta::new(pk(2), false),
+            AccountMeta::new_readonly(pk(3), false),
+        ],
+        data,
+    };
+
+    let idl = explain_one_ix(&builtins(), admin, update);
+    assert_eq!(idl.intent, "Update AMM config");
+    assert_eq!(field(&idl, "New Owner"), pk(3).to_string());
+    assert_eq!(idl.unnamed_accounts, 0);
+}
