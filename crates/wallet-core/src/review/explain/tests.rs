@@ -775,3 +775,239 @@ fn a_raydium_cp_config_owner_change_shows_the_new_owner() {
     assert_eq!(field(&idl, "New Owner"), pk(3).to_string());
     assert_eq!(idl.unnamed_accounts, 0);
 }
+
+/// An instruction of a devnet router transaction: its data and its
+/// accounts as `(address, signer, writable)`.
+fn router_ix(data: &str, accounts: &[(&str, bool, bool)]) -> Instruction {
+    use crate::idl::builtin::RAYDIUM_ROUTER_PROGRAM_ID;
+
+    Instruction {
+        program_id: RAYDIUM_ROUTER_PROGRAM_ID,
+        accounts: accounts
+            .iter()
+            .map(|&(address, signer, writable)| AccountMeta {
+                pubkey: Pubkey::from_str_const(address),
+                is_signer: signer,
+                is_writable: writable,
+            })
+            .collect(),
+        data: hex::decode(data).unwrap(),
+    }
+}
+
+const ROUTER_TOKEN: &str = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+const ROUTER_TOKEN_2022: &str = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
+const ROUTER_ATA: &str = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
+const ROUTER_SYSTEM: &str = "11111111111111111111111111111111";
+const ROUTER_WSOL: &str = "So11111111111111111111111111111111111111112";
+const ROUTER_CPMM: &str = "DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb";
+
+/// Devnet `CreateSyncNative` and `CloseTokenAccount` around a routed swap
+/// (transaction `2PxY15kC…`).
+#[test]
+fn router_wsol_utilities_name_the_owner_and_accounts() {
+    let owner = "98hqb3kvXZVv4KY3DgAD1o5Ve1McqCafqzNjrWveYnkQ";
+    let wsol_account = "C9GBvKnJ3mtYdbmwW3ZXayyNibZTYYyCvKYU2ufHpHGR";
+    let wrap = router_ix(
+        "058096980000000000",
+        &[
+            (owner, true, true),
+            (wsol_account, false, true),
+            (ROUTER_WSOL, false, true),
+            (ROUTER_TOKEN, false, false),
+            (ROUTER_ATA, false, false),
+            (ROUTER_SYSTEM, false, false),
+        ],
+    );
+    let idl = explain_one_ix(&builtins(), Pubkey::from_str_const(owner), wrap);
+    assert_eq!(idl.intent, "Wrap SOL");
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(format!("{owner} wraps 0.01 SOL into {wsol_account}").as_str())
+    );
+    assert_eq!(idl.unnamed_accounts, 0);
+
+    let close = router_ix(
+        "06",
+        &[
+            (owner, true, true),
+            (wsol_account, false, true),
+            (owner, true, true),
+            (ROUTER_TOKEN, false, false),
+            (ROUTER_ATA, false, false),
+            (ROUTER_SYSTEM, false, false),
+        ],
+    );
+    let idl = explain_one_ix(&builtins(), Pubkey::from_str_const(owner), close);
+    assert_eq!(idl.intent, "Close token account");
+    assert_eq!(field(&idl, "Token Account"), wsol_account);
+    assert_eq!(field(&idl, "Rent To"), owner);
+}
+
+/// A devnet one-hop `SwapBaseInWithUserAccount` (tag 0) through a CP swap
+/// pool, with no CLMM price limits after the amounts.
+#[test]
+fn a_legacy_routed_swap_names_its_source_and_destination() {
+    let owner = "98hqb3kvXZVv4KY3DgAD1o5Ve1McqCafqzNjrWveYnkQ";
+    let source = "C9GBvKnJ3mtYdbmwW3ZXayyNibZTYYyCvKYU2ufHpHGR";
+    let destination = "79MJFSDL9GyNRyh4MoY9Wzbq7oqXwwTZjH39qNRo4pHj";
+    let mut accounts = vec![
+        (ROUTER_TOKEN, false, false),
+        (ROUTER_TOKEN_2022, false, false),
+        (ROUTER_ATA, false, false),
+        (ROUTER_SYSTEM, false, false),
+        (owner, true, true),
+        (source, false, true),
+        (destination, false, true),
+        (ROUTER_CPMM, false, false),
+        (destination, false, true),
+        (ROUTER_WSOL, false, true),
+    ];
+    accounts.extend(
+        [
+            "81DsRSjULjx3KyKkNorbZSAFqvZQNBqi6AoYLtfPXK3y",
+            "CXniRufdq5xL8t8jZAPxsPZDpuudwuJSPWnbcD5Y5Nxq",
+            "5MxLgy9oPdTC3YgkiePHqr3EoCRD9uLVYRQS2ANAs7wy",
+            "4YoEuDXc2323brXqCGu9GnycvaoR7uX3374dJUkqPUJ3",
+            "8HrFFuasANF3aeuj2wynDF6FNXL5aZV7kEDesdUnKNTe",
+            "9PfKT4v79wMUZnnaBKjP6tPfWTozZ5ArMj9QzJCugBy4",
+            "8qWPcBYXpaXUAEQUtd6NgpAdEWcYrQApfsnYgTPxF155",
+        ]
+        .map(|address| (address, false, true)),
+    );
+    let swap = router_ix("0080969800000000002555b70515000000", &accounts);
+
+    let idl = explain_one_ix(&builtins(), Pubkey::from_str_const(owner), swap);
+    assert_eq!(idl.intent, "Swap tokens");
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "{owner} swaps 10000000 base units from {source} for at least \
+                 90290214181 base units into {destination} through a route of pools"
+            )
+            .as_str()
+        )
+    );
+    // The hop's accounts are read by the program, so none is unnamed, and
+    // neither they nor the programs are listed.
+    assert_eq!(idl.unnamed_accounts, 0);
+    assert!(idl
+        .fields
+        .iter()
+        .all(|field| field.value != ROUTER_CPMM && field.value != ROUTER_TOKEN));
+}
+
+/// A devnet one-hop `SwapBaseOutWithUserAccount` (tag 1): its hops come right
+/// after the owner.
+#[test]
+fn a_legacy_routed_exact_output_swap_reads_its_limits() {
+    let owner = "CvmHcd7BXZ2st5Lpz8RYRMkmEhg1UDHqS4ozkMLEks11";
+    let mut accounts = vec![
+        (ROUTER_TOKEN, false, false),
+        (ROUTER_TOKEN_2022, false, false),
+        (ROUTER_ATA, false, false),
+        (ROUTER_SYSTEM, false, false),
+        (owner, true, true),
+        (ROUTER_CPMM, false, false),
+    ];
+    accounts.extend(
+        [
+            "YEbUSJVtBzzJFYfR7psrmvs5eTYkxvnV8qZrxfD2PuC",
+            "yMYVydeK55KvP2i3xtL88jMGPmxJCoPV8gvt8krw1zD",
+            ROUTER_WSOL,
+            "5h67oDwpdfMTgZNJxYMaKyX3eN8Kev9PZ5E999KyncMM",
+            "CXniRufdq5xL8t8jZAPxsPZDpuudwuJSPWnbcD5Y5Nxq",
+            "5MxLgy9oPdTC3YgkiePHqr3EoCRD9uLVYRQS2ANAs7wy",
+            "E6XavFGuKZxqSfvjF6zPt9mGxgRbPd9oyJUvou93QBKz",
+            "7JwyHCeEuMGXipEWwcXTTavhBc6kZnKdCLUwVkdCHy9A",
+            "9vpKw36RYDGmfXqiGmFrPLgDAhrgpE7F7M3aRacjJwPX",
+            "D2vfTg1ufpdrGYouEyF9yg7ZSDmZ6ybWQ8kZx5G8do9E",
+        ]
+        .map(|address| (address, false, true)),
+    );
+    let swap = router_ix("015f3909000000000000c029f73d540500", &accounts);
+
+    let idl = explain_one_ix(&builtins(), Pubkey::from_str_const(owner), swap);
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "{owner} receives 1500000000000000 base units for at most 604511 base units \
+                 through a route of pools"
+            )
+            .as_str()
+        )
+    );
+    assert_eq!(idl.unnamed_accounts, 0);
+}
+
+/// A devnet two-hop `SwapBaseIn` (tag 8, transaction `29YXEce3…`): SOL to an
+/// intermediate token to a third, both through CP swap pools.
+#[test]
+fn a_routed_swap_names_its_input_and_first_hop() {
+    let owner = "538RWC8Z25WenqyHw73hffdHm4ADbvMzdH7ikYoGgmrL";
+    let source = "n5XKKgR8YhYztzFwLMANC9R8vZaBnnWptSJWdzB6f8C";
+    let intermediate = "17bizZywyucCoaR2So5yPnWM3wkYXERDzG9ptviPVFK";
+    let intermediate_mint = "8uve3VTzdfzjfgHz3MeK6g1z1KTVAVp5QoQtHDLP3kHD";
+    let pool_accounts = |accounts: &mut Vec<(&'static str, bool, bool)>,
+                         pool: [&'static str; 6]| {
+        accounts.extend(pool.map(|address| (address, false, true)));
+        accounts.extend([(ROUTER_TOKEN, false, false), (ROUTER_TOKEN, false, false)]);
+    };
+    let mut accounts = vec![
+        (owner, true, true),
+        (ROUTER_TOKEN, false, false),
+        (ROUTER_CPMM, false, false),
+        (source, false, true),
+        (intermediate, false, true),
+        (ROUTER_WSOL, false, false),
+        (intermediate_mint, false, false),
+    ];
+    pool_accounts(
+        &mut accounts,
+        [
+            "CXniRufdq5xL8t8jZAPxsPZDpuudwuJSPWnbcD5Y5Nxq",
+            "5MxLgy9oPdTC3YgkiePHqr3EoCRD9uLVYRQS2ANAs7wy",
+            "3QCKmmcVYggAwmf1WbZVjcPCrkoJJmT2Eti9J1KyERap",
+            "J6vKZ2upAA1B1dmvzqQT5n7CrDR8eBM9gjiJX7RvfTni",
+            "4VcWR8u4Xwm9Fe5oyNqosPFnJE84ZkGJGqkrDsAxJqGo",
+            "Cewcj8fYGK1UQUAt8N5UJZBcNt5231n7mXREpbvCbob6",
+        ],
+    );
+    accounts.extend([
+        (ROUTER_CPMM, false, false),
+        (intermediate, false, true),
+        ("EpxUZ8s3ixsz461MDj8ZaXbncN68oLWR1nCiPJSWqGJX", false, true),
+        (intermediate_mint, false, false),
+        ("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU", false, false),
+    ]);
+    pool_accounts(
+        &mut accounts,
+        [
+            "CXniRufdq5xL8t8jZAPxsPZDpuudwuJSPWnbcD5Y5Nxq",
+            "5MxLgy9oPdTC3YgkiePHqr3EoCRD9uLVYRQS2ANAs7wy",
+            "3TgF7Y5kMSMyWokpZk6kKWymvCpF8CW11T3imooQd5Tm",
+            "CnBC7M18ZNhnvyvtq8dXmowzPvqM88bvVc2jojmLQoAc",
+            "AnidHeNrevJEMCwG9Fhtzv4dJFL5hGQTbkzqhgdRNADk",
+            "885LwCgbCo1Lx62BauVEYbatRiimwP2nnmQPsE1vKSzX",
+        ],
+    );
+    let swap = router_ix("08964ac8dc000000005df1950000000000", &accounts);
+
+    let idl = explain_one_ix(&builtins(), Pubkey::from_str_const(owner), swap);
+    assert_eq!(idl.intent, "Swap tokens");
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "{owner} swaps 3704113814 base units of {ROUTER_WSOL} from {source} through a \
+                 route of pools, for at least 9826653 base units of its last token"
+            )
+            .as_str()
+        )
+    );
+    assert_eq!(field(&idl, "First Hop To"), intermediate);
+    assert_eq!(field(&idl, "First Hop Output Mint"), intermediate_mint);
+    assert_eq!(idl.unnamed_accounts, 0);
+}
