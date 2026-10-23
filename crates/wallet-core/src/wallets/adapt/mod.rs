@@ -31,7 +31,7 @@
 use crate::chain::RawAccount;
 use crate::error::BuildError;
 use crate::ids::WalletId;
-use crate::tx::builder::{compile_message, MAX_CU_LIMIT};
+use crate::tx::builder::compile_message;
 use crate::tx::decode::{decode_v1_transaction, DecodedTx};
 use crate::wallets::programmatic::{ExecutorNonce, EXECUTOR_NONCE_PROGRAM_ID};
 use crate::wallets::proposals::MemberKind;

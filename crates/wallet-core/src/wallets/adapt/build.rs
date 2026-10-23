@@ -4,14 +4,12 @@ use super::*;
 use crate::wallets::proposals::{
     executor_for, keyless_together, proposal_shapes, usable_voters, ChosenMember, ProposalShape,
 };
-use crate::wallets::relay::{PASSTHROUGH_CU, RELAY_OVERHEAD_CU};
 use crate::wallets::squads::PERMISSION_EXECUTE;
 use crate::wallets::vector::{must_rotate, SchemeId};
 
 /// Why a shape did not fit, when the next one should be tried.
 enum ShapeSkip {
     Size(usize),
-    Compute(u32),
     /// No order of its instructions keeps a programmatic member's together.
     Order,
 }
@@ -207,7 +205,6 @@ impl AdaptPlan {
                     Err(Err(skip)) => {
                         previous_failure = Some(match skip {
                             ShapeSkip::Size(bytes) => HeldBack::Size { bytes },
-                            ShapeSkip::Compute(units) => HeldBack::Compute { units },
                             ShapeSkip::Order => HeldBack::Order,
                         });
                     }
@@ -288,9 +285,11 @@ fn structural_held_back(
     }
 }
 
-/// Compile the Squads instructions for `shape`, wrap the signers it needs,
-/// and refuse when the result is too large or its compute estimate exceeds
-/// the limit.
+/// Compile the Squads instructions for `shape` and wrap the signers it needs.
+/// Refuse when the result is too large. Compute is not estimated here: the
+/// wrap caps at the network maximum, and [`wallet_flows::adapt::rebuild`]
+/// measures what it uses. Stacking the site's limit with wrap overhead used
+/// to refuse shapes that would have fit once simulated (e.g. 1.4M + 100k).
 #[allow(clippy::too_many_arguments)]
 fn try_squads_shape<'a>(
     plan: &AdaptPlan,
@@ -395,10 +394,6 @@ fn try_squads_shape<'a>(
                     .unwrap_or_default(),
             ))
         })?;
-        let estimate = current.stated_cu_limit().saturating_add(RELAY_OVERHEAD_CU);
-        if estimate > MAX_CU_LIMIT {
-            return Err(Err(ShapeSkip::Compute(estimate)));
-        }
         let (wire, steps) =
             wrap_programmatic_plans(plan, &plans, &planned, &current, &read, blockhash)
                 .map_err(shape_error)?;
@@ -408,10 +403,6 @@ fn try_squads_shape<'a>(
     }
     if !vector_plans.is_empty() {
         let plans: Vec<VectorPlan> = vector_plans.into_iter().cloned().collect();
-        let estimate = estimate_vector_cu(&current, &plans);
-        if estimate > MAX_CU_LIMIT {
-            return Err(Err(ShapeSkip::Compute(estimate)));
-        }
         let (wire, steps) =
             wrap_vector_plans(plan, &plans, &current, read, blockhash, &mut context_local)
                 .map_err(shape_error)?;
@@ -492,44 +483,6 @@ fn shape_error(error: AdaptError) -> Result<AdaptError, ShapeSkip> {
         Some(bytes) => Err(ShapeSkip::Size(bytes)),
         None => Ok(error),
     }
-}
-
-/// Compute units the Vector wrap would ask for, before the cap.
-fn estimate_vector_cu(tx: &DecodedTx, plans: &[VectorPlan]) -> u32 {
-    let accounts: Vec<Pubkey> = plans.iter().map(|plan| plan.account).collect();
-    let mut used = Vec::new();
-    // One `Passthrough` per run of instructions Vector accounts sign.
-    let mut passthroughs = 0u32;
-    let mut in_run = false;
-    for instruction in tx.native_instructions() {
-        let signing: Vec<Pubkey> = accounts
-            .iter()
-            .copied()
-            .filter(|account| {
-                instruction
-                    .accounts
-                    .iter()
-                    .any(|meta| meta.is_signer && meta.pubkey == *account)
-            })
-            .collect();
-        for account in &signing {
-            if !used.contains(account) {
-                used.push(*account);
-            }
-        }
-        if !signing.is_empty() && !in_run {
-            passthroughs += 1;
-        }
-        in_run = !signing.is_empty();
-    }
-    let signatures: u32 = plans
-        .iter()
-        .filter(|plan| used.contains(&plan.account))
-        .map(|plan| plan.scheme.advance_cu())
-        .sum();
-    tx.stated_cu_limit()
-        .saturating_add(signatures)
-        .saturating_add(passthroughs.saturating_mul(PASSTHROUGH_CU))
 }
 
 fn wrap_vector_plans<'a>(
