@@ -16,7 +16,7 @@ pubsub = ["dep:js-sys", "dep:web-sys", "dep:wasm-bindgen", "dep:wasm-bindgen-fut
 [dependencies]
 async-trait = "0.1"
 base64 = "0.22"
-bincode = "1.3"
+bincode = "3.0"
 bs58 = { version = "0.5", default-features = false, features = ["std"] }
 futures = "0.3"
 js-sys = { version = "0.3", optional = true }
