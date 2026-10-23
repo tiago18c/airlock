@@ -1,0 +1,992 @@
+{
+  "kind": "rootNode",
+  "program": {
+    "kind": "programNode",
+    "pdas": [],
+    "accounts": [],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "swapBaseInWithUserAccount",
+        "docs": [
+          "Exact-input swap across a route of pools (legacy entry point)."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "token2022Program",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "associatedTokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "owner",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Owner of the user token accounts."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "source",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "User token account of the input token."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destination",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "User token account of the last token."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 0
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amountIn",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "Exact amount of the input token."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount In"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "minimumAmountOut",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "Least amount of the last token the route must deliver."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Minimum Out"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "limitPrices",
+            "type": {
+              "kind": "arrayTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              },
+              "count": {
+                "kind": "remainderCountNode"
+              }
+            },
+            "docs": [
+              "Optional sqrt price limit (Q64.64) for each CLMM hop, in route order.",
+              "Written without a length prefix: the rest of the data."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "CLMM Price Limits"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Swap tokens",
+          "interpolatedIntent": "${accounts.owner} swaps ${data.amountIn} from ${accounts.source} for at least ${data.minimumAmountOut} into ${accounts.destination} through a route of pools"
+        },
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "route"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The hops, first to last. Each hop is the pool program, the user's token account(s) for the hop, the hop's input and output mints, then the accounts that pool program's swap reads. A hop's token account is the account it swaps into."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "name": "swapBaseOutWithUserAccount",
+        "docs": [
+          "Exact-output swap across a route of pools (legacy entry point)."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "token2022Program",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "associatedTokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "owner",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Owner of the user token accounts."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 1
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "maxAmountIn",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "Most of the input token the route may take."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Maximum In"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amountOut",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "Exact amount of the last token the route delivers."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount Out"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "limitPrices",
+            "type": {
+              "kind": "arrayTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              },
+              "count": {
+                "kind": "remainderCountNode"
+              }
+            },
+            "docs": [
+              "Optional sqrt price limit (Q64.64) for each CLMM hop, in route order.",
+              "Written without a length prefix: the rest of the data."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "CLMM Price Limits"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Swap tokens",
+          "interpolatedIntent": "${accounts.owner} receives ${data.amountOut} for at most ${data.maxAmountIn} through a route of pools"
+        },
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "route"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The hops. Each hop is the pool program, the user's token account(s) for the hop, the hop's input and output mints, then the accounts that pool program's swap reads. A hop's token accounts are the ones it swaps from and into."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "name": "createSyncNative",
+        "docs": [
+          "Create the owner's wrapped SOL account if missing, move lamports into it and sync it."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "owner",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Pays the lamports and owns the account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "wsolAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The owner's wrapped SOL token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Wrapped SOL Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "wsolMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "So11111111111111111111111111111111111111112"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "associatedTokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 5
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 9
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "SOL"
+                }
+              }
+            },
+            "docs": [
+              "Lamports to wrap."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Wrap SOL",
+          "interpolatedIntent": "${accounts.owner} wraps ${data.amount} into ${accounts.wsolAccount}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "closeTokenAccount",
+        "docs": [
+          "Close an empty token account of the owner."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "owner",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Owner of the token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The token account to close."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destination",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Receives the account's lamports."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rent To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "associatedTokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 6
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Close token account",
+          "interpolatedIntent": "${accounts.owner} closes ${accounts.tokenAccount}, sending its lamports to ${accounts.destination}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "swapBaseIn",
+        "docs": [
+          "Exact-input swap across a route of pools."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "owner",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Owner of the user token accounts."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "firstPoolProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Program of the first pool on the route."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "First Pool Program"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "source",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "User token account of the input token."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "firstHopDestination",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "User token account the first hop swaps into: the last one on a one-hop route."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "First Hop To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "inputMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Mint of the input token."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Input Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "firstHopOutputMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Mint the first hop swaps into: the output mint on a one-hop route."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "First Hop Output Mint"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 8
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amountIn",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "Exact amount of the input token."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount In"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "minimumAmountOut",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "Least amount of the last token the route must deliver."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Minimum Out"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "limitPrices",
+            "type": {
+              "kind": "arrayTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              },
+              "count": {
+                "kind": "remainderCountNode"
+              }
+            },
+            "docs": [
+              "Optional sqrt price limit (Q64.64) for each CLMM hop, in route order.",
+              "Written without a length prefix: the rest of the data."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "CLMM Price Limits"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Swap tokens",
+          "interpolatedIntent": "${accounts.owner} swaps ${data.amountIn} of ${accounts.inputMint} from ${accounts.source} through a route of pools, for at least ${data.minimumAmountOut} of its last token"
+        },
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "route"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The rest of the first hop (the accounts its pool program's swap reads), then the other hops. Each hop is the pool program, the user's token account(s) for the hop, the hop's input and output mints, then the accounts that pool program's swap reads."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ]
+      }
+    ],
+    "definedTypes": [],
+    "errors": [],
+    "name": "raydiumRouter",
+    "prefix": "",
+    "publicKey": "DRaybByLpbUL57LJARs3j8BitTxVfzBg351EaMr5UTCd",
+    "version": "0.0.0",
+    "docs": [
+      "Raydium AMM routing program on devnet. It publishes no IDL: this one is written by hand",
+      "from the transactions the program executes."
+    ]
+  },
+  "additionalPrograms": [],
+  "standard": "codama",
+  "version": "1.0.0"
+}
