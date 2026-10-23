@@ -166,7 +166,7 @@ fn limits_note(typed: &TxSettings, filled: &TxSettings) -> String {
     if parts.is_empty() {
         return String::new();
     }
-    format!(" · {} (simulated, plus 5%)", parts.join(" · "))
+    format!(" · {} (simulated, plus 10%)", parts.join(" · "))
 }
 
 #[cfg(test)]
@@ -263,7 +263,7 @@ mod tests {
         assert!(!compiled.uses_durable_nonce);
         assert_eq!(
             note,
-            " · CU limit 158 · loaded accounts 1050 bytes (simulated, plus 5%)"
+            " · CU limit 165 · loaded accounts 1100 bytes (simulated, plus 10%)"
         );
         assert_eq!(height, Some(150));
         assert_eq!(rpc.asked(), 2);

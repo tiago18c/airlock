@@ -135,13 +135,13 @@ fn the_compute_limit_and_priority_fee_carry_over_and_the_loaded_limit_starts_ove
         Some(DEFAULT_LOADED_ACCOUNTS_DATA_SIZE)
     );
 
-    // Once a simulation has said what it loads, the limit is that plus 5%.
+    // Once a simulation has said what it loads, the limit is that plus 10%.
     let signed = sign_authorizations(&wrapped.wire, &[&s.authority])
         .unwrap()
         .wire;
     let signed = apply_local_signatures(&signed, &[&s.hot]).unwrap();
     let fitted = decode_v1_transaction(&fit_loaded_accounts(&signed, 497_297).unwrap()).unwrap();
-    assert_eq!(fitted.budget.loaded_accounts_data_size_limit, Some(522_162));
+    assert_eq!(fitted.budget.loaded_accounts_data_size_limit, Some(547_027));
     // The authorization is still signed. The transaction has to be again.
     assert!(authority_slots(&fitted).iter().all(|slot| slot.signed));
     assert!(!fitted.signers.iter().any(|slot| slot.filled));

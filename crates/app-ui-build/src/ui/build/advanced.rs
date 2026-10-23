@@ -31,7 +31,7 @@ pub(in crate::ui) fn AdvancedOptions() -> Element {
                     label { "Compute unit limit"
                         input {
                             r#type: "text",
-                            placeholder: if online { "blank: simulated on compile, plus 5%" } else { "omit to use the runtime default" },
+                            placeholder: if online { "blank: simulated on compile, plus 10%" } else { "omit to use the runtime default" },
                             value: "{cu_limit}",
                             oninput: move |e| cu_limit.set(e.value()),
                         }
@@ -47,7 +47,7 @@ pub(in crate::ui) fn AdvancedOptions() -> Element {
                     label { "Loaded accounts data size (bytes)"
                         input {
                             r#type: "text",
-                            placeholder: if online { "blank: simulated on compile, plus 5%" } else { "omit to use the runtime default" },
+                            placeholder: if online { "blank: simulated on compile, plus 10%" } else { "omit to use the runtime default" },
                             value: "{loaded_accounts}",
                             oninput: move |e| loaded_accounts.set(e.value()),
                         }
