@@ -1,0 +1,61 @@
+[package]
+name = "solana-client-wasm"
+version = "4.2.0"
+description = "Vendored Solana non-blocking WASM RPC client (playground), updated for Agave 4.2 / tx v1."
+authors = ["Acheron <acheroncrypto@gmail.com>"]
+repository = "https://github.com/regolith-labs/solana-playground"
+license = "Apache-2.0"
+edition = "2021"
+readme = "README.md"
+publish = false
+
+[features]
+default = []
+pubsub = ["dep:js-sys", "dep:web-sys", "dep:wasm-bindgen", "dep:wasm-bindgen-futures"]
+
+[dependencies]
+async-trait = "0.1"
+base64 = "0.22"
+bincode = "1.3"
+bs58 = { version = "0.5", default-features = false, features = ["std"] }
+futures = "0.3"
+js-sys = { version = "0.3", optional = true }
+serde = { version = "1", features = ["derive"] }
+serde_derive = "1"
+serde_json = "1"
+thiserror = "2"
+wasm-bindgen = { version = "0.2", optional = true }
+wasm-bindgen-futures = { version = "0.4", optional = true }
+web-sys = { version = "0.3", features = ["MessageEvent", "WebSocket"], optional = true }
+
+solana-account = "4.3"
+solana-account-decoder-client-types = { version = "4.2.0", features = ["agave-unstable-api"] }
+solana-clock = "3.0"
+solana-commitment-config = { version = "3.1", features = ["serde"] }
+solana-epoch-info = { version = "3.1", features = ["serde"] }
+solana-epoch-schedule = { version = "3.0", features = ["serde"] }
+solana-hash = { version = "4.4", features = ["serde"] }
+solana-inflation = { version = "3.0", features = ["serde"] }
+solana-keypair = "3.1"
+solana-message = { version = "4.2.3", features = ["serde"] }
+solana-nonce = { version = "3.0", features = ["serde"] }
+solana-pubkey = { version = "4.2", default-features = false, features = ["std", "serde"] }
+solana-signature = { version = "3.4", default-features = false, features = ["std", "serde"] }
+solana-signer = "3.0"
+solana-transaction = { version = "4.1.4", features = ["serde"] }
+solana-transaction-error = { version = "3.3", features = ["serde"] }
+solana-transaction-status-client-types = { version = "4.2.0", features = ["agave-unstable-api"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+tokio = { version = "1", features = ["time"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+gloo-timers = { version = "0.2", features = ["futures"] }
+reqwest = { version = "0.12", default-features = false, features = ["json"] }
+getrandom = { version = "0.2", features = ["js"] }
+getrandom_03 = { package = "getrandom", version = "0.3", features = ["wasm_js"] }
+getrandom_04 = { package = "getrandom", version = "0.4", features = ["wasm_js"] }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"

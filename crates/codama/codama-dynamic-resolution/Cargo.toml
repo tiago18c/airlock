@@ -1,0 +1,19 @@
+[package]
+name = "codama-dynamic-resolution"
+description = "Runtime PDA and account address resolution from Codama nodes"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+
+[dependencies]
+codama-errors = "0.13.2"
+codama-nodes = "0.13.2"
+codama-dynamic-codecs = { path = "../codama-dynamic-codecs" }
+codama-visitors-core = { path = "../codama-visitors-core" }
+indexmap = "2"
+bs58 = "0.5"
+solana-pubkey = { version = "4", default-features = false, features = ["std", "sha2", "curve25519"] }
+
+[dev-dependencies]
+pretty_assertions = "1.4.1"

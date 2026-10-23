@@ -1,0 +1,51 @@
+# Fuzz targets for qr-codec. Outside the workspace: they need nightly and
+# libFuzzer. Run from crates/qr-codec:
+#
+#   cargo +nightly fuzz run scan
+#
+# CI runs each target on pull requests that touch the crate, and longer
+# once a week (.github/workflows/fuzz.yml).
+
+[package]
+name = "qr-codec-fuzz"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+qr-codec = { path = ".." }
+
+[workspace]
+members = ["."]
+
+[[bin]]
+name = "scan"
+path = "fuzz_targets/scan.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "decode_matrix"
+path = "fuzz_targets/decode_matrix.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "damaged"
+path = "fuzz_targets/damaged.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "round_trip"
+path = "fuzz_targets/round_trip.rs"
+test = false
+doc = false
+bench = false

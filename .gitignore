@@ -1,0 +1,13 @@
+/target/
+/extension/node_modules/
+/extension/dist/
+/dist/
+/static/
+.dioxus/
+/apps/*/ssl/
+**/*.rs.bk
+.DS_Store
+Thumbs.db
+/extension/dist-test/
+/crates/flow-tests/programs/
+/.claude/

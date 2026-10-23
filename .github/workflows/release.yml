@@ -1,0 +1,168 @@
+name: Release
+
+# Pushing a tag like v0.2.0 builds the release and opens it as a draft.
+# A person reads the draft, checks the files, and publishes it. See docs/releasing.md.
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  # Must match the dioxus version in Cargo.lock.
+  DX_VERSION: 0.7.10
+
+jobs:
+  verify:
+    name: Version and changelog
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+      - name: Versions agree and the changelog has this release
+        run: node scripts/release-check.mjs "${{ steps.version.outputs.version }}" notes.md
+      - uses: actions/upload-artifact@v7
+        with:
+          name: notes
+          path: notes.md
+
+  checks:
+    name: Checks
+    uses: ./.github/workflows/ci.yml
+
+  desktop:
+    name: Windows app and native host
+    needs: [verify, checks]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: rustup show
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: cargo-bins/cargo-binstall@8a2045612414e945291083f820cd50b4d8fc2218 # v1.26.0
+      - name: Install the Dioxus CLI
+        run: cargo binstall -y dioxus-cli@${{ env.DX_VERSION }}
+      - name: Bundle the installer
+        run: dx bundle -p airlock --release --desktop --features bundle --package-types nsis
+      - name: Build the native messaging host
+        run: cargo build --locked --release -p bridge-host
+      - name: Collect files
+        shell: bash
+        run: |
+          mkdir out
+          version="${{ needs.verify.outputs.version }}"
+          # dx writes target/dx/airlock/bundle/windows/bundle/nsis/Airlock_<version>_x64-setup.exe
+          installer="$(find target/dx -path '*nsis*' -name '*-setup.exe' 2>/dev/null | head -n 1 || true)"
+          if [ -z "$installer" ]; then
+            echo "::error::No installer was produced."
+            find target/dx -name '*.exe' 2>/dev/null || true
+            exit 1
+          fi
+          cp "$installer" "out/airlock-${version}-windows-x64-setup.exe"
+          cp target/release/bridge-host.exe "out/bridge-host-${version}-windows-x64.exe"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: desktop
+          path: out/
+          if-no-files-found: error
+
+  airgap:
+    name: Windows airgap app
+    needs: [verify, checks]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: rustup show
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: cargo-bins/cargo-binstall@8a2045612414e945291083f820cd50b4d8fc2218 # v1.26.0
+      - name: Install the Dioxus CLI
+        run: cargo binstall -y dioxus-cli@${{ env.DX_VERSION }}
+      - name: Bundle the airgap installer
+        run: dx bundle -p airlock-offline --release --desktop --features bundle --package-types nsis
+      - name: Collect files
+        shell: bash
+        run: |
+          mkdir out
+          version="${{ needs.verify.outputs.version }}"
+          installer="$(find target/dx/airlock-offline -path '*nsis*' -name '*-setup.exe' 2>/dev/null | head -n 1 || true)"
+          if [ -z "$installer" ]; then
+            echo "::error::No airgap installer was produced."
+            find target/dx -name '*.exe' 2>/dev/null || true
+            exit 1
+          fi
+          cp "$installer" "out/airlock-offline-${version}-windows-x64-setup.exe"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: airgap
+          path: out/
+          if-no-files-found: error
+
+  extension:
+    name: Browser extension
+    needs: [verify, checks]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+      - run: npm ci
+        working-directory: extension
+      - run: npm run build
+        working-directory: extension
+      - name: Zip
+        run: |
+          mkdir out
+          cd extension/dist
+          zip -r "../../out/airlock-extension-${{ needs.verify.outputs.version }}.zip" . -x '*.map'
+      - uses: actions/upload-artifact@v7
+        with:
+          name: extension
+          path: out/
+          if-no-files-found: error
+
+  publish:
+    name: Draft release
+    needs: [verify, desktop, airgap, extension]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+      - name: Checksums
+        run: |
+          mkdir release
+          cp artifacts/desktop/* artifacts/airgap/* artifacts/extension/* release/
+          cd release
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      # Signed statement that these exact files were built by this workflow
+      # from this commit. Verify with `gh attestation verify <file> --repo <repo>`.
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: release/*
+      - name: Create the draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          prerelease=""
+          case "$VERSION" in *-*) prerelease="--prerelease" ;; esac
+          gh release create "$GITHUB_REF_NAME" release/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Airlock $VERSION" \
+            --notes-file artifacts/notes/notes.md \
+            --draft $prerelease

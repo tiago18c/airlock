@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Airlock design system</title>
+    <!-- The gallery renders the app's real stylesheets, so it cannot drift from them. -->
+    <link rel="stylesheet" href="../crates/app-ui-kit/assets/tokens.css" />
+    <link rel="stylesheet" href="../crates/app-ui-kit/assets/main.css" />
+    <style>
+      /* Gallery scaffolding only. Nothing here ships in the app. */
+      .ds { max-width: 1080px; margin: 0 auto; padding: var(--space-8) var(--space-5) var(--space-12); display: grid; gap: var(--space-10); }
+      .ds-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: var(--space-4); }
+      .ds-section { display: grid; gap: var(--space-4); }
+      .ds-section > h2 { padding-bottom: var(--space-2); border-bottom: 1px solid var(--border); }
+      .ds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-3); }
+      .ds-swatch { overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); }
+      .ds-swatch i { display: block; height: 56px; border-bottom: 1px solid var(--border); }
+      .ds-swatch div { display: grid; padding: var(--space-2) var(--space-3); }
+      .ds-swatch b { font-size: var(--text-md); font-weight: var(--weight-semibold); }
+      .ds-swatch span { font-size: var(--text-sm); color: var(--text-3); }
+      .ds-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+      .ds-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-5); align-items: start; }
+      .ds-scale { display: grid; gap: var(--space-2); }
+      .ds-scale > div { display: grid; grid-template-columns: 88px 1fr; align-items: center; gap: var(--space-3); }
+      .ds-bar { height: 12px; border-radius: var(--radius-sm); background: var(--brand); }
+      .ds-shape { width: 72px; height: 56px; display: grid; place-items: center; border: 1px solid var(--border); background: var(--surface); font-size: var(--text-sm); color: var(--text-2); }
+      .ds-frame { overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-lg); }
+      .ds-frame .app { min-height: 360px; }
+      .ds-frame .sidebar { height: 360px; position: static; }
+      .ds-static { position: static; animation: none; padding: 0; background: transparent; display: block; }
+      .ds-static .modal { animation: none; max-height: none; }
+    </style>
+  </head>
+  <body>
+    <div class="ds">
+      <header class="ds-head">
+        <div class="stack">
+          <div class="brand">
+            <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+            <div class="brand-text">
+              <span class="brand-name">Airlock</span>
+              <span class="brand-sub">Design system</span>
+            </div>
+          </div>
+          <p class="lede">Tokens and components as the desktop app, the web app and the extension popup render them. Switch the theme to check both palettes.</p>
+        </div>
+        <div class="segmented" role="group" aria-label="Theme">
+          <button class="tab on" data-theme-set="system">System</button>
+          <button class="tab" data-theme-set="light">Light</button>
+          <button class="tab" data-theme-set="dark">Dark</button>
+        </div>
+      </header>
+
+      <section class="ds-section">
+        <h2>Color</h2>
+        <h3>Surfaces and lines</h3>
+        <div class="ds-grid" data-swatches="bg surface surface-2 surface-3 border border-control border-strong"></div>
+        <h3>Text</h3>
+        <div class="ds-grid" data-swatches="text text-2 text-3"></div>
+        <h3>Brand</h3>
+        <div class="ds-grid" data-swatches="brand brand-hover brand-active brand-text brand-soft brand-line"></div>
+        <h3>Status</h3>
+        <div class="ds-grid" data-swatches="ok-solid ok-text ok-soft ok-line warn-solid warn-text warn-soft warn-line danger-solid danger-text danger-soft danger-line info-solid info-text info-soft info-line"></div>
+      </section>
+
+      <section class="ds-section">
+        <h2>Type</h2>
+        <div class="ds-two">
+          <div class="stack">
+            <h1>Heading 1 · 28</h1>
+            <h2>Heading 2 · 22</h2>
+            <h3>Heading 3 · 16</h3>
+            <h4>Heading 4 · 13</h4>
+            <p>Body text is 14px with a 1.5 line height.</p>
+            <p class="lede">The lede introduces a page in the secondary text color.</p>
+            <p class="hint">A hint explains a field or a state in the tertiary color.</p>
+            <span class="eyebrow">Eyebrow label</span>
+          </div>
+          <div class="stack">
+            <p class="mono">7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU</p>
+            <p>Inline <code>x of n</code> code uses the mono stack.</p>
+            <p class="muted">Addresses, hashes and encoded payloads are always mono, so characters cannot be mistaken for each other.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section">
+        <h2>Space, shape, elevation</h2>
+        <div class="ds-two">
+          <div class="ds-scale" data-spaces="1 2 3 4 5 6 8 10 12"></div>
+          <div class="stack">
+            <div class="ds-row">
+              <div class="ds-shape" style="border-radius: var(--radius-sm)">sm 6</div>
+              <div class="ds-shape" style="border-radius: var(--radius-md)">md 8</div>
+              <div class="ds-shape" style="border-radius: var(--radius-lg)">lg 12</div>
+              <div class="ds-shape" style="border-radius: var(--radius-xl)">xl 16</div>
+            </div>
+            <div class="ds-row">
+              <div class="ds-shape" style="border-radius: var(--radius-lg); box-shadow: var(--shadow-xs)">xs</div>
+              <div class="ds-shape" style="border-radius: var(--radius-lg); box-shadow: var(--shadow-sm)">sm</div>
+              <div class="ds-shape" style="border-radius: var(--radius-lg); box-shadow: var(--shadow-md)">md</div>
+              <div class="ds-shape" style="border-radius: var(--radius-lg); box-shadow: var(--shadow-lg)">lg</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section">
+        <h2>Buttons</h2>
+        <div class="ds-row">
+          <button class="primary">Primary</button>
+          <button>Secondary</button>
+          <button class="ghost">Ghost</button>
+          <button class="danger">Danger</button>
+          <button class="danger solid">Confirm removal</button>
+        </div>
+        <div class="ds-row">
+          <button class="primary" disabled>Primary</button>
+          <button disabled>Secondary</button>
+          <button class="ghost" disabled>Ghost</button>
+          <button class="danger" disabled>Danger</button>
+        </div>
+        <div class="ds-row">
+          <button class="primary">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+            Add wallet
+          </button>
+          <button class="sm">Small</button>
+          <button class="danger sm">Remove</button>
+          <button class="icon-btn" aria-label="Previous"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg></button>
+          <button class="ghost icon-btn sm" aria-label="Edit"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z" /><path d="M13 7l4 4" /></svg></button>
+          <button class="ghost danger icon-btn sm" aria-label="Delete"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16" /><path d="M9 7V5h6v2" /><path d="M7 7l1 13h8l1-13" /><path d="M10 11v6M14 11v6" /></svg></button>
+        </div>
+      </section>
+
+      <section class="ds-section">
+        <h2>Forms</h2>
+        <div class="ds-two">
+          <div class="card">
+            <label>Label<input type="text" placeholder="Treasury" /></label>
+            <label>Password<input type="password" value="correct horse" /></label>
+            <label>Cluster<select><option>Devnet</option><option>Testnet</option><option>Mainnet Beta</option></select></label>
+            <label>Disabled<input type="text" value="Cannot be edited" disabled /></label>
+            <label class="check"><input type="checkbox" checked /> Advance nonce (ix 0)</label>
+          </div>
+          <div class="card">
+            <label>Transaction (base64 or base58)<textarea placeholder="Paste a transaction…"></textarea></label>
+            <label>Base64 (read-only)<textarea readonly>AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAEDBsS3</textarea></label>
+          </div>
+        </div>
+        <h3>Address picker</h3>
+        <div class="ds-two">
+          <div class="picker"><label>Known address
+            <div class="picker-field valid"><input type="text" class="picker-input masked" value="" />
+              <div class="picker-display"><span class="picker-name"><span class="picker-display-main">Treasury</span></span><span class="picker-display-short"> - 7xKX…gAsU</span></div>
+            </div></label></div>
+          <div class="picker"><label>Imported from another device
+            <div class="picker-field imported"><input type="text" class="picker-input masked" value="" />
+              <div class="picker-display"><span class="picker-name"><span class="path-tag">Ops laptop</span><span class="path-sep">&gt;</span><span class="path-tag">Payroll</span></span><span class="picker-display-short"> - 9aB2…Qm1c</span></div>
+            </div></label></div>
+          <div class="picker"><label>Red-flagged
+            <div class="picker-field flagged"><input type="text" class="picker-input masked" value="" />
+              <div class="picker-display"><span class="picker-name"><span class="path-flag flag red"><svg class="icon" viewBox="0 0 24 24"><path d="M5 21V4" /><path d="M5 4h12l-2 4 2 4H5" /></svg></span><span class="picker-display-main">Token 4k3D…x9Yz</span></span><span class="picker-display-short"> - Fh2P…77wa</span></div>
+            </div></label></div>
+          <div class="picker open" style="margin-bottom: 150px"><label>Open menu
+            <div class="picker-field"><input type="text" class="picker-input" value="tre" /></div></label>
+            <div class="picker-menu">
+              <button class="picker-item active"><span class="picker-label">Treasury</span><span class="muted">owner · 7xKX…gAsU</span></button>
+              <button class="picker-item imported"><span class="picker-label"><span class="picker-name"><span class="path-tag">Ops laptop</span><span class="path-sep">&gt;</span><span class="path-tag">Treasury cold</span></span></span><span class="muted">owner · 9aB2…Qm1c</span></button>
+              <button class="picker-item flagged"><span class="picker-label">Treasure airdrop</span><span class="muted">token · Fh2P…77wa</span></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section">
+        <h2>Tabs</h2>
+        <div class="ds-two">
+          <div class="stack">
+            <span class="eyebrow">Underline tabs: views of one area</span>
+            <nav class="tabs"><button class="tab on">Review and sign</button><button class="tab">Assemble</button></nav>
+            <span class="eyebrow">Segmented: two or three exclusive options</span>
+            <div><div class="segmented"><button class="tab">Offline</button><button class="tab on">Online</button></div></div>
+          </div>
+          <div class="stack">
+            <span class="eyebrow">Filter pills: narrow a list</span>
+            <div class="chip-row"><button class="tab on">All</button><button class="tab">Owners</button><button class="tab">Contacts</button><button class="tab">Tokens</button><button class="tab">Nonces</button><button class="tab">Programs</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section">
+        <h2>Chips and status</h2>
+        <div class="ds-row">
+          <span class="chip">devnet</span>
+          <span class="chip kind">owner</span>
+          <span class="chip ok">signed</span>
+          <span class="chip warn">missing</span>
+          <span class="chip danger">invalid</span>
+          <span class="chip info">info</span>
+          <span class="chip"><span class="chip-kind">owner</span><span>Treasury</span><code class="mono">7xKX…gAsU</code></span>
+          <span class="chip warn"><span>4k3D…x9Yz</span><code class="mono">4k3D…x9Yz</code></span>
+        </div>
+        <div class="ds-row">
+          <span class="status online"><span class="status-dot"></span>Online</span>
+          <span class="status offline"><span class="status-dot"></span>Offline</span>
+          <span class="status probing"><span class="status-dot"></span>Detecting</span>
+        </div>
+        <p class="hint">Green means verified or local. Amber means check it: imported, unknown or still missing. Red means wrong or flagged. Brand color never carries a status.</p>
+      </section>
+
+      <section class="ds-section">
+        <h2>Messages</h2>
+        <div class="ds-two">
+          <div class="stack">
+            <p class="note">Loaded the compiled transaction from Build.</p>
+            <p class="warn">Unknown program</p>
+            <p class="error">This is not a v1 transaction.</p>
+            <div class="save-error"><p class="error">Could not save: disk is full</p><button class="ghost sm">Dismiss</button></div>
+          </div>
+          <div class="stack">
+            <div class="bridge-banner">
+              <div class="chip-row"><span class="eyebrow">Browser request</span><span class="chip kind"><code>A7F2</code></span></div>
+              <h3>signTransaction</h3>
+              <p class="bridge-origin">https://app.example.org</p>
+              <p class="muted">Sign one transaction on devnet.</p>
+              <div class="btn-row"><button class="primary">Review</button><button>Reject</button></div>
+            </div>
+            <div class="empty">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M19 8V6a1 1 0 0 0-1-1H5.5a2.5 2.5 0 0 0 0 5" /><path d="M3 7.5v9A2.5 2.5 0 0 0 5.5 19H19a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2H5.5" /><path d="M16.5 13.5h.01" /></svg>
+              <p>No signer wallets yet. Import a private key or a seed phrase.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section">
+        <h2>Lists and cards</h2>
+        <div class="ds-two">
+          <ul class="tree">
+            <li class="wallet-row">
+              <div class="wallet-head">
+                <div class="wallet-id"><span class="avatar">T</span>
+                  <div><h3>Treasury</h3><p class="muted">Seed phrase · m/44'/501'/0'/0' · can sign</p><p class="mono">7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU</p><p class="balance">12.5 SOL</p></div>
+                </div>
+                <button class="danger sm">Remove</button>
+              </div>
+              <div class="chip-row"><span class="chip">ops</span><span class="chip">cold</span></div>
+            </li>
+          </ul>
+          <div class="stack">
+            <ul class="book-list">
+              <li class="book-row">
+                <div class="book-head">
+                  <div><div class="book-main"><span class="chip kind">contact</span><span class="book-label">Alice</span><code>9aB2…Qm1c</code></div><p class="muted mono">9aB2nQ7mK1pXz4RtV8sLw3YcD6fGhJ5uE2oPiTaQm1c</p></div>
+                  <div class="book-actions" style="opacity: 1"><button class="sm">Edit</button><button class="danger sm">Remove</button></div>
+                </div>
+                <div class="chip-row"><span class="muted">imported</span><span class="chip">personal</span></div>
+              </li>
+            </ul>
+            <div class="stats">
+              <div class="stat"><span class="stat-label">Signatures</span><span class="stat-value">1 / 2</span></div>
+              <div class="stat"><span class="stat-label">Size</span><span class="stat-value">412 bytes</span></div>
+              <div class="stat"><span class="stat-label">Durable nonce</span><span class="stat-value">yes</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="ds-two">
+          <ul class="group-list">
+            <li class="group-item on"><button class="group-pick"><span class="group-name">Local</span><span class="muted">14</span></button></li>
+            <li class="group-item"><button class="group-pick"><span class="group-name">Ops laptop</span><span class="muted">6</span></button></li>
+          </ul>
+          <details class="accordion" open>
+            <summary class="accordion-header"><span class="accordion-title">Advanced options</span><span class="accordion-chevron" aria-hidden="true"></span></summary>
+            <div class="accordion-body"><label>Compute unit limit<input type="text" placeholder="omit to use the runtime default" /></label></div>
+          </details>
+        </div>
+      </section>
+
+      <section class="ds-section">
+        <h2>Build</h2>
+        <div class="ix-rail">
+          <div class="ix-block"><span class="ix-block-program">System</span><span class="ix-block-name">Transfer</span></div>
+          <div class="ix-block on"><span class="ix-block-program">Token</span><span class="ix-block-name">Transfer checked</span></div>
+          <button class="ix-block ix-block-new" aria-label="Add a new instruction"><span class="ix-plus"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14" /><path d="M5 12h14" /></svg></span></button>
+        </div>
+      </section>
+
+      <section class="ds-section">
+        <h2>QR and camera</h2>
+        <div class="ds-two">
+          <div class="stack">
+            <div class="qr-wrap"><div class="qr-svg"><svg viewBox="0 0 7 7" shape-rendering="crispEdges"><rect width="7" height="7" fill="#ffffff" /><path fill="#0c0f15" d="M0 0h3v3H0zM4 0h3v3H4zM0 4h3v3H0zM4 4h1v1H4zM6 6h1v1H6zM5 5h1v1H5z" /></svg></div></div>
+            <div class="frame-status"><strong>QR 2 of 6</strong><span class="muted">v18 · 89×89 · 793 bytes</span></div>
+            <p class="hint">The QR tile stays dark on white in both themes so a camera can read it.</p>
+          </div>
+          <div class="stack">
+            <div class="video-wrap"><div class="video-mask"><p>Camera preview appears here while scanning.</p></div></div>
+            <div class="dots"><span class="dot on"></span><span class="dot on"></span><span class="dot"></span><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section">
+        <h2>Dialog</h2>
+        <div class="modal-backdrop ds-static">
+          <div class="modal">
+            <div class="stack">
+              <h3>Remove Treasury</h3>
+              <p class="lede">This deletes the signer key from this device. The app does not keep a copy, so the key cannot be recovered after removal.</p>
+              <label>Type Treasury to confirm<input type="text" /></label>
+              <div class="btn-row"><button class="danger solid">Remove wallet</button><button class="ghost">Cancel</button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      for (const grid of document.querySelectorAll("[data-swatches]")) {
+        for (const name of grid.dataset.swatches.split(" ")) {
+          const tile = document.createElement("div");
+          tile.className = "ds-swatch";
+          tile.innerHTML = `<i style="background: var(--${name})"></i><div><b>--${name}</b><span data-token="--${name}"></span></div>`;
+          grid.append(tile);
+        }
+      }
+      for (const scale of document.querySelectorAll("[data-spaces]")) {
+        for (const step of scale.dataset.spaces.split(" ")) {
+          const row = document.createElement("div");
+          row.innerHTML = `<code>--space-${step}</code><div class="ds-bar" style="width: var(--space-${step})"></div>`;
+          scale.append(row);
+        }
+      }
+      const readTokens = () => {
+        const styles = getComputedStyle(root);
+        for (const cell of document.querySelectorAll("[data-token]")) {
+          cell.textContent = styles.getPropertyValue(cell.dataset.token).trim();
+        }
+      };
+      for (const button of document.querySelectorAll("[data-theme-set]")) {
+        button.addEventListener("click", () => {
+          const value = button.dataset.themeSet;
+          if (value === "system") delete root.dataset.theme;
+          else root.dataset.theme = value;
+          for (const other of document.querySelectorAll("[data-theme-set]")) {
+            other.classList.toggle("on", other === button);
+          }
+          readTokens();
+        });
+      }
+      matchMedia("(prefers-color-scheme: dark)").addEventListener("change", readTokens);
+      // design-system.html#dark or #light opens with that theme pinned.
+      const pinned = location.hash.slice(1);
+      document.querySelector(`[data-theme-set="${pinned}"]`)?.click();
+      readTokens();
+    </script>
+  </body>
+</html>

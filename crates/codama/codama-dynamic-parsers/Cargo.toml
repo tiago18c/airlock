@@ -1,0 +1,18 @@
+[package]
+name = "codama-dynamic-parsers"
+description = "Runtime identification and parsing of Solana account, event and instruction data from Codama nodes"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+
+[dependencies]
+codama-errors = "0.13.2"
+codama-nodes = "0.13.2"
+codama-dynamic-codecs = { path = "../codama-dynamic-codecs" }
+codama-visitors-core = { path = "../codama-visitors-core" }
+solana-instruction = { version = "3", default-features = false, features = ["std"] }
+
+[dev-dependencies]
+pretty_assertions = "1.4.1"
+solana-pubkey = { version = "4", default-features = false, features = ["std"] }
