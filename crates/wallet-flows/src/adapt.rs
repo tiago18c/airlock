@@ -5,12 +5,14 @@ use crate::error::FlowError;
 use crate::simulate::{measure, simulate};
 use solana_pubkey::Pubkey;
 use wallet_core::adapt::{swap_fee_payer, AdaptPlan, Adapted, AdaptedStep, HeldBack, PayerSwap};
-use wallet_core::relay::fit_loaded_accounts;
+use wallet_core::relay::{
+    fit_compute_units, fit_loaded_accounts, with_compute_unit_limit,
+};
 use wallet_core::{decode_v1_transaction, DecodedTx, Phrase, SolanaRpc, MAX_TRANSACTION_SIZE};
 
 /// Carry `plan` out for `tx`, the transaction it was made for: read the
-/// accounts it needs, rebuild on a fresh blockhash, and bring the loaded
-/// account data limit down to what the node says the result loads.
+/// accounts it needs, rebuild on a fresh blockhash, and bring the compute
+/// and loaded-accounts limits down to what the node says the result uses.
 pub async fn rebuild(
     rpc: &dyn SolanaRpc,
     tx: &DecodedTx,
@@ -26,20 +28,58 @@ pub async fn rebuild(
     let mut adapted = plan
         .build(tx, &accounts, blockhash)
         .map_err(FlowError::refused)?;
-    // The rebuilt transaction allows the most account data there is. Bring
-    // that down to what the node says it loads. A node that cannot say
-    // leaves it as it is.
-    if let Ok(rebuilt) = decode_v1_transaction(&adapted.wire) {
-        let loaded = measure(rpc, &rebuilt)
-            .await
-            .ok()
-            .and_then(|simulation| simulation.loaded_accounts_data_size);
-        if let Some(fitted) = loaded.and_then(|size| fit_loaded_accounts(&adapted.wire, size).ok())
-        {
+    // The wrap starts loaded accounts at the maximum, but keeps the inner
+    // compute limit plus a fixed overhead. Raise compute to the maximum too,
+    // measure, then fit both. A node that cannot say leaves the wire as it
+    // is. An authorization that is not signed yet may still under-count
+    // compute; Sign fits again once the authorization is signed.
+    if decode_v1_transaction(&adapted.wire).is_ok() {
+        if let Ok(fitted) = fit_limits_from_measure(rpc, &adapted.wire).await {
             adapted.wire = fitted;
         }
     }
     Ok((adapted, last_valid_height))
+}
+
+/// Probe `wire` at the highest compute limit, measure what it uses, and write
+/// both limits back with the usual margin. Authorization signatures stay.
+pub async fn fit_limits_from_measure(
+    rpc: &dyn SolanaRpc,
+    wire: &[u8],
+) -> Result<Vec<u8>, FlowError> {
+    // `with_compute_unit_limit` caps at the network maximum.
+    let probe = with_compute_unit_limit(wire, u32::MAX).map_err(FlowError::refused)?;
+    let probed = decode_v1_transaction(&probe).map_err(FlowError::refused)?;
+    let simulation = measure(rpc, &probed).await?;
+    apply_measured_limits(&probe, &simulation)
+}
+
+/// Simulate `wire` at the highest compute limit (for balance changes), then
+/// write both limits back with the usual margin. Authorization signatures
+/// stay. Returns the fitted wire and the simulation of the probe.
+pub async fn simulate_fitting(
+    rpc: &dyn SolanaRpc,
+    wire: &[u8],
+) -> Result<(Vec<u8>, wallet_core::simulate::Simulation), FlowError> {
+    let probe = with_compute_unit_limit(wire, u32::MAX).map_err(FlowError::refused)?;
+    let probed = decode_v1_transaction(&probe).map_err(FlowError::refused)?;
+    let simulation = simulate(rpc, &probed).await?;
+    let fitted = apply_measured_limits(&probe, &simulation)?;
+    Ok((fitted, simulation))
+}
+
+fn apply_measured_limits(
+    wire: &[u8],
+    simulation: &wallet_core::simulate::Simulation,
+) -> Result<Vec<u8>, FlowError> {
+    let mut fitted = wire.to_vec();
+    if let Some(units) = simulation.units_consumed {
+        fitted = fit_compute_units(&fitted, units).map_err(FlowError::refused)?;
+    }
+    if let Some(size) = simulation.loaded_accounts_data_size {
+        fitted = fit_loaded_accounts(&fitted, size).map_err(FlowError::refused)?;
+    }
+    Ok(fitted)
 }
 
 /// `tx` with the fee payer of `swap`, when the node says that would succeed.
