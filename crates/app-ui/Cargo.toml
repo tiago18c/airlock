@@ -1,0 +1,40 @@
+[package]
+name = "app-ui"
+version.workspace = true
+edition.workspace = true
+description = "The shared Dioxus shell over app-ui-kit and the screen crates, with no network crates"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+app-core.workspace = true
+app-ui-book = { path = "../app-ui-book", default-features = false }
+app-ui-build = { path = "../app-ui-build", default-features = false }
+app-ui-kit.workspace = true
+app-ui-sign = { path = "../app-ui-sign", default-features = false }
+app-ui-wallets = { path = "../app-ui-wallets", default-features = false }
+bridge-protocol.workspace = true
+dioxus.workspace = true
+wallet-core.workspace = true
+
+[features]
+default = ["desktop"]
+web = [
+    "dioxus/web",
+    "app-ui-kit/web",
+    "app-ui-book/web",
+    "app-ui-build/web",
+    "app-ui-sign/web",
+    "app-ui-wallets/web",
+]
+desktop = [
+    "dioxus/desktop",
+    "app-ui-kit/desktop",
+    "app-ui-book/desktop",
+    "app-ui-build/desktop",
+    "app-ui-sign/desktop",
+    "app-ui-wallets/desktop",
+]

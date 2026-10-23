@@ -1,0 +1,4 @@
+# Built artifacts compared byte for byte in CI.
+*.wasm binary
+# Run by bash on every OS.
+*.sh text eol=lf

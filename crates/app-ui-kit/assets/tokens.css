@@ -1,0 +1,300 @@
+/*
+ * Airlock design tokens.
+ *
+ * Shared by the Dioxus app (desktop + web) and the browser extension popup.
+ * Components read the semantic tokens below and never a raw color, so a theme
+ * is only this file. See docs/design-system.md.
+ *
+ * Theme selection: the OS preference applies unless <html data-theme="light">
+ * or <html data-theme="dark"> pins one. The dark values are therefore written
+ * twice, once per selector. Keep the two blocks identical.
+ *
+ * No webfonts: the app runs air-gapped, so type comes from the system stack.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces, back to front */
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --surface-3: #e6e9ee;
+  --overlay: rgba(16, 22, 35, 0.48);
+
+  /* Lines */
+  --border: #dde1e8;
+  --border-control: #8b95a5;
+  --border-strong: #7d8797;
+
+  /* Text */
+  --text: #101623;
+  --text-2: #4a5364;
+  --text-3: #5f6878;
+
+  /* Brand: primary actions, selection, focus */
+  --brand: #4f46e5;
+  --brand-hover: #4338ca;
+  --brand-active: #3730a3;
+  --on-brand: #ffffff;
+  --brand-text: #4338ca;
+  --brand-soft: #eef0fe;
+  --brand-line: #c7ccfa;
+
+  /* Status. -text sits on -soft or on a surface, -solid is for dots and fills */
+  --ok-text: #156c36;
+  --ok-soft: #e7f6ec;
+  --ok-line: #b4dfc3;
+  --ok-solid: #1a8a45;
+
+  --warn-text: #8a4b00;
+  --warn-soft: #fff3da;
+  --warn-line: #f0d48f;
+  --warn-solid: #b26a00;
+
+  --danger-text: #b42318;
+  --danger-soft: #feecea;
+  --danger-line: #f5c0bb;
+  --danger-solid: #d3281c;
+  --danger-solid-hover: #b42318;
+  --on-danger: #ffffff;
+
+  --info-text: #0b5cab;
+  --info-soft: #e6f1fd;
+  --info-line: #b5d5f6;
+  --info-solid: #1570cd;
+
+  /* Address categories. The icon's shape carries the meaning; colour helps. */
+  --cat-hot: #d43f12;
+  --cat-wallet: #2b63d0;
+  --cat-nonce: #7c3aed;
+  --cat-program: #0b7f73;
+  --cat-validator: #3f7d0a;
+  --cat-token: #c0306b;
+  --cat-contact: #5b6678;
+
+  /* A QR is always dark on white, in both themes, so a camera can read it */
+  --qr-bg: #ffffff;
+  --qr-frame: #dde1e8;
+
+  /* Behind the camera preview. Fixed, like the picture it frames */
+  --media-bg: #05070a;
+  --media-text: #c9d0dc;
+
+  /* Elevation */
+  --shadow-xs: 0 1px 2px rgba(16, 22, 35, 0.06);
+  --shadow-sm: 0 1px 3px rgba(16, 22, 35, 0.08), 0 1px 2px rgba(16, 22, 35, 0.04);
+  --shadow-md: 0 6px 16px rgba(16, 22, 35, 0.1), 0 2px 4px rgba(16, 22, 35, 0.05);
+  --shadow-lg: 0 20px 48px rgba(16, 22, 35, 0.18), 0 4px 12px rgba(16, 22, 35, 0.08);
+  --focus-ring: 0 0 0 3px rgba(79, 70, 229, 0.28);
+
+  /* Type */
+  --font-sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system,
+    "Helvetica Neue", Roboto, "Noto Sans", Arial, sans-serif;
+  --font-mono: "Cascadia Mono", "Cascadia Code", ui-monospace, "SF Mono", Menlo,
+    Consolas, "Liberation Mono", monospace;
+
+  --text-xs: 0.6875rem; /* 11 */
+  --text-sm: 0.75rem; /* 12 */
+  --text-md: 0.8125rem; /* 13 */
+  --text-base: 0.875rem; /* 14 */
+  --text-lg: 1rem; /* 16 */
+  --text-xl: 1.125rem; /* 18 */
+  --text-2xl: 1.375rem; /* 22 */
+  --text-3xl: 1.75rem; /* 28 */
+
+  --leading-tight: 1.25;
+  --leading: 1.5;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* Space, on a 4px grid */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Shape */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 999px;
+
+  /* Controls */
+  --control-sm: 28px;
+  --control-md: 36px;
+  --control-lg: 44px;
+
+  /* Layout */
+  --sidebar-w: 232px;
+  --rail-w: 76px;
+  --topbar-h: 38px;
+  /* Where the brand mark sits in every layout but the phone's: centred in
+     the sidebar rail, --brand-top from the top of the window. */
+  --brand-inset: calc((var(--rail-w) - 32px) / 2);
+  --brand-top: var(--space-4);
+  --tabbar-h: 60px;
+  --content-w: 1080px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --fast: 120ms;
+  --slow: 200ms;
+
+  /* Layers */
+  --z-sticky: 10;
+  --z-nav: 20;
+  --z-popover: 30;
+  --z-modal: 40;
+  --z-toast: 50;
+  --z-window: 60;
+
+  /* Window close button, as Windows draws it in every theme */
+  --window-close: #c42b1c;
+  --window-close-text: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg: #0c0f15;
+    --surface: #141922;
+    --surface-2: #1a202b;
+    --surface-3: #232b38;
+    --overlay: rgba(3, 5, 9, 0.68);
+
+    --border: #283040;
+    --border-control: #5a6578;
+    --border-strong: #657085;
+
+    --text: #e7ebf2;
+    --text-2: #a7b0c0;
+    --text-3: #8791a3;
+
+    --brand: #5d5fef;
+    --brand-hover: #4e50e0;
+    --brand-active: #4244cc;
+    --on-brand: #ffffff;
+    --brand-text: #a9aefd;
+    --brand-soft: #1c1f45;
+    --brand-line: #353a80;
+
+    --ok-text: #5dd38c;
+    --ok-soft: #11281b;
+    --ok-line: #1e4a30;
+    --ok-solid: #2fa860;
+
+    --warn-text: #f2bc57;
+    --warn-soft: #2b2110;
+    --warn-line: #55411a;
+    --warn-solid: #d9962b;
+
+    --cat-hot: #ff7447;
+    --cat-wallet: #7ea6ff;
+    --cat-nonce: #b896ff;
+    --cat-program: #4fd1c1;
+    --cat-validator: #9fd45a;
+    --cat-token: #f47aa8;
+    --cat-contact: #a9b4c6;
+
+    --danger-text: #ff8e84;
+    --danger-soft: #2f1615;
+    --danger-line: #5e2724;
+    --danger-solid: #d8392c;
+    --danger-solid-hover: #c22f23;
+    --on-danger: #ffffff;
+
+    --info-text: #7dbbff;
+    --info-soft: #10233a;
+    --info-line: #1f4470;
+    --info-solid: #3b8fe8;
+
+    --qr-frame: #283040;
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 24px 56px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.35);
+    --focus-ring: 0 0 0 3px rgba(125, 130, 250, 0.4);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0c0f15;
+  --surface: #141922;
+  --surface-2: #1a202b;
+  --surface-3: #232b38;
+  --overlay: rgba(3, 5, 9, 0.68);
+
+  --border: #283040;
+  --border-control: #5a6578;
+  --border-strong: #657085;
+
+  --text: #e7ebf2;
+  --text-2: #a7b0c0;
+  --text-3: #8791a3;
+
+  --brand: #5d5fef;
+  --brand-hover: #4e50e0;
+  --brand-active: #4244cc;
+  --on-brand: #ffffff;
+  --brand-text: #a9aefd;
+  --brand-soft: #1c1f45;
+  --brand-line: #353a80;
+
+  --ok-text: #5dd38c;
+  --ok-soft: #11281b;
+  --ok-line: #1e4a30;
+  --ok-solid: #2fa860;
+
+  --warn-text: #f2bc57;
+  --warn-soft: #2b2110;
+  --warn-line: #55411a;
+  --warn-solid: #d9962b;
+
+  --cat-hot: #ff7447;
+  --cat-wallet: #7ea6ff;
+  --cat-nonce: #b896ff;
+  --cat-program: #4fd1c1;
+  --cat-validator: #9fd45a;
+  --cat-token: #f47aa8;
+  --cat-contact: #a9b4c6;
+
+  --danger-text: #ff8e84;
+  --danger-soft: #2f1615;
+  --danger-line: #5e2724;
+  --danger-solid: #d8392c;
+  --danger-solid-hover: #c22f23;
+  --on-danger: #ffffff;
+
+  --info-text: #7dbbff;
+  --info-soft: #10233a;
+  --info-line: #1f4470;
+  --info-solid: #3b8fe8;
+
+  --qr-frame: #283040;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 24px 56px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --focus-ring: 0 0 0 3px rgba(125, 130, 250, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --fast: 0ms;
+    --slow: 0ms;
+  }
+}

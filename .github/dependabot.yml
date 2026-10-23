@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels: [dependencies, no-changelog]
+    groups:
+      solana:
+        patterns: ["solana-*", "agave-*"]
+      dioxus:
+        patterns: ["dioxus*"]
+      patch:
+        update-types: [patch]
+
+  - package-ecosystem: npm
+    directory: /extension
+    schedule:
+      interval: weekly
+    labels: [dependencies, no-changelog]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels: [dependencies, no-changelog]

@@ -1,0 +1,774 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.3.0",
+  "program": {
+    "kind": "programNode",
+    "name": "vector",
+    "publicKey": "74mXFW7BSAAwc6zQC2uYKuDcWnz17HHXMWqLnEeg9BJv",
+    "version": "0.1.0",
+    "docs": [
+      "Vector — one program for every signing scheme."
+    ],
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "name": "vectorAccount",
+        "docs": [
+          "68-byte header, then the scheme's stored identity."
+        ],
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "nonce",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 32,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "docs": [
+                "What the next signature must be made over."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "seed",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 32,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "docs": [
+                "sha256 of the key the account was created with."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "scheme",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "scheme"
+              },
+              "docs": [
+                "The scheme of the identity that follows."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "docs": [
+                "PDA bump seed."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "systemBump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "docs": [
+                "Bump of the account's system PDA, [vector address, system_bump]."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "padding",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 1,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "docs": [
+                "Keeps the identity at a multiple of 4."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "identity",
+              "type": {
+                "kind": "bytesTypeNode"
+              },
+              "docs": [
+                "The scheme's stored identity: its key in whatever form the scheme verifies against, and for XMSS the next leaf."
+              ]
+            }
+          ]
+        },
+        "pda": {
+          "kind": "pdaLinkNode",
+          "name": "vector"
+        },
+        "discriminators": []
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "advance",
+        "docs": [
+          "Verify that every listed vector signed this transaction, and move each to its next nonce.",
+          "Every signer signs the same message, the transaction with this instruction's data left out; each verifies over SHA256(message || nonce || address || next_key), which becomes its next nonce.",
+          "Accounts are one writable vector per signer, then the instructions sysvar; for more than one signer, insert the extra vectors before the sysvar. A vector listed twice needs a signature for each."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "vector",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": []
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "instructionsSysvar",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "Sysvar1nstructions1111111111111111111111111",
+              "identifier": "sysvarInstructions"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 0
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "signers",
+            "type": {
+              "kind": "bytesTypeNode"
+            },
+            "docs": [
+              "For each vector, in order: its next key, then its signature, each as long as its scheme says.",
+              "Next key: Winternitz — a 41-byte key, which must differ from the current one; XMSS — a 41-byte key, the current one to keep it; other schemes — none."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Authorize vector",
+          "interpolatedIntent": "Vector ${accounts.vector} signs and authorizes the nonce advance"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "passthrough",
+        "docs": [
+          "Invoke instructions as one or more vectors, each signing as itself or as its system PDA. Requires the transaction's first Advance to come earlier and list every signer.",
+          "Remaining accounts: one vector per signer, then for each instruction its program and its accounts."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "instructionsSysvar",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "Sysvar1nstructions1111111111111111111111111",
+              "identifier": "sysvarInstructions"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 1
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "data",
+            "type": {
+              "kind": "bytesTypeNode"
+            },
+            "docs": [
+              "num_signers: u8, then for each signer what it signs as (0 the vector, 1 its system PDA), then num_instructions: u8, then for each instruction num_accounts: u8, data_len: u16 LE, data."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "signerAccounts"
+            },
+            "isOptional": false,
+            "isSigner": false,
+            "isWritable": false,
+            "docs": [
+              "One vector per signer, in the order of the signer flags."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "instructionAccounts"
+            },
+            "isOptional": false,
+            "isSigner": false,
+            "isWritable": false,
+            "docs": [
+              "For each instruction: its program, then its accounts."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Run instructions as vector"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initialize",
+        "docs": [
+          "Create the vector account for a key at [\"vector\", [scheme], sha256(key)].",
+          "An instruction can allocate 10,240 bytes, so a bigger account (ML-DSA-44) takes more calls: each later call carries no scheme or key, grows the account and fills in the rest from the stored key."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": []
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vector",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "PDA [\"vector\", [scheme], sha256(key)]."
+            ]
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111",
+              "identifier": "splSystem"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 2
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "scheme",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "scheme"
+            },
+            "docs": [
+              "First call only."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Scheme"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "key",
+            "type": {
+              "kind": "bytesTypeNode"
+            },
+            "docs": [
+              "First call only. The public key or address, as the scheme takes it."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create vector",
+          "interpolatedIntent": "Create vector ${accounts.vector} paid by ${accounts.payer}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdraw",
+        "docs": [
+          "Send lamports to the receiver. The runtime refuses to leave the vector with less than rent-exemption but more than nothing. Only runs inside a Passthrough, which makes the vector a signer."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "vector",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": []
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "receiver",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Recipient"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 3
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "lamports",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 9
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "SOL"
+                }
+              }
+            },
+            "docs": [],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw from vector",
+          "interpolatedIntent": "Withdraw ${data.lamports} from vector ${accounts.vector} to ${accounts.receiver}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "close",
+        "docs": [
+          "Send all lamports to the receiver. Only runs inside a Passthrough, which makes the vector a signer."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "vector",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": []
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "receiver",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Recipient"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 4
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Close vector",
+          "interpolatedIntent": "Close vector ${accounts.vector} and send its balance to ${accounts.receiver}"
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "scheme",
+        "docs": [
+          "0 — none: not a scheme; accounts never use it.",
+          "1 — Ed25519: 32-byte public key, 64-byte signature.",
+          "2 — EIP-191: 20-byte Ethereum address, 65-byte signature (r, s, v).",
+          "3 — Secp256k1 ECDSA: 33-byte compressed public key, 64-byte signature.",
+          "4 — Falcon-512: 897-byte public key (1,024 bytes stored), 666-byte signature.",
+          "5 — ML-DSA-44: 1,312-byte public key (21,856 bytes stored), 2,420-byte signature. Needs two more Initialize calls after the first.",
+          "6 — Winternitz: 41-byte public key, 849-byte signature, 41-byte next key. One signature per key, so every Advance replaces it.",
+          "7 — XMSS: 41-byte public key (45 bytes stored, with the next leaf), 1,037-byte signature, 41-byte next key. One signature per leaf; the key must be replaced after the last leaf."
+        ],
+        "type": {
+          "kind": "enumTypeNode",
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          },
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "none",
+              "discriminator": 0,
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "None"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "ed25519",
+              "discriminator": 1,
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Ed25519"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "eip191",
+              "discriminator": 2,
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "EIP-191"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "secp256k1",
+              "discriminator": 3,
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "secp256k1"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "falcon512",
+              "discriminator": 4,
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Falcon-512"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "mldsa44",
+              "discriminator": 5,
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "ML-DSA-44"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "winternitz",
+              "discriminator": 6,
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Winternitz"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "xmss",
+              "discriminator": 7,
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "XMSS"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "pdas": [
+      {
+        "kind": "pdaNode",
+        "name": "vector",
+        "docs": [
+          "The vector account."
+        ],
+        "seeds": [
+          {
+            "kind": "constantPdaSeedNode",
+            "type": {
+              "kind": "bytesTypeNode"
+            },
+            "value": {
+              "kind": "bytesValueNode",
+              "data": "vector",
+              "encoding": "utf8"
+            }
+          },
+          {
+            "kind": "variablePdaSeedNode",
+            "name": "scheme",
+            "docs": [],
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "scheme"
+            }
+          },
+          {
+            "kind": "variablePdaSeedNode",
+            "name": "seed",
+            "docs": [
+              "sha256(key), the header's seed."
+            ],
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 32,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "pdaNode",
+        "name": "system",
+        "docs": [
+          "The vector's system PDA, owned by the System program. Passthrough can sign as it."
+        ],
+        "seeds": [
+          {
+            "kind": "variablePdaSeedNode",
+            "name": "vector",
+            "docs": [],
+            "type": {
+              "kind": "publicKeyTypeNode"
+            }
+          }
+        ]
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "notTopLevel",
+        "code": 0,
+        "message": "Advance or Passthrough ran inside another instruction.",
+        "docs": []
+      },
+      {
+        "kind": "errorNode",
+        "name": "notAdvanced",
+        "code": 1,
+        "message": "Passthrough: no Advance comes earlier, or the first one does not list a signer.",
+        "docs": []
+      },
+      {
+        "kind": "errorNode",
+        "name": "keyReused",
+        "code": 2,
+        "message": "Winternitz: the next key is the key that just signed.",
+        "docs": []
+      },
+      {
+        "kind": "errorNode",
+        "name": "leafUsed",
+        "code": 3,
+        "message": "XMSS: the signature's leaf has signed before.",
+        "docs": []
+      },
+      {
+        "kind": "errorNode",
+        "name": "treeExhausted",
+        "code": 4,
+        "message": "XMSS: the tree's last leaf signed, and the key was not replaced.",
+        "docs": []
+      }
+    ]
+  },
+  "additionalPrograms": []
+}

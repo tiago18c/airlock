@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Airlock bridge demo</title>
+    <style>
+      body { font: 16px/1.4 system-ui, sans-serif; max-width: 40rem; margin: 2rem auto; padding: 0 1rem; }
+      button { margin-right: 0.5rem; }
+      pre { white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <h1>Airlock bridge demo</h1>
+    <p>Connect and disconnect talk to the desktop app. Ask to sign opens Review in the desktop app. The wire is incomplete, so Sign there will not return it. Reject on the banner declines the request.</p>
+    <p id="log">Looking for the wallet…</p>
+    <p>
+      <button id="connect" disabled>Connect</button>
+      <button id="disconnect" disabled>Disconnect</button>
+      <button id="sign" disabled>Ask to sign</button>
+    </p>
+    <pre id="accounts"></pre>
+    <script>
+      let wallet = null;
+
+      window.addEventListener("wallet-standard:register-wallet", (event) => {
+        event.detail({ register: take });
+      });
+      window.dispatchEvent(
+        new CustomEvent("wallet-standard:app-ready", { detail: { register: take } }),
+      );
+
+      function take(next) {
+        if (next?.name !== "Airlock") return;
+        wallet = next;
+        document.getElementById("log").textContent = "Airlock is on this page.";
+        document.getElementById("connect").disabled = false;
+      }
+
+      document.getElementById("connect").onclick = async () => {
+        const log = document.getElementById("log");
+        log.textContent = "Waiting for the desktop app…";
+        try {
+          const { accounts } = await wallet.features["standard:connect"].connect();
+          document.getElementById("accounts").textContent = accounts
+            .map((account) => `${account.label || "account"} ${account.address}`)
+            .join("\n");
+          log.textContent = accounts.length ? "Connected." : "Connected, with no accounts.";
+          document.getElementById("disconnect").disabled = accounts.length === 0;
+          document.getElementById("sign").disabled = accounts.length === 0;
+        } catch (error) {
+          log.textContent = error?.message || String(error);
+        }
+      };
+
+      document.getElementById("disconnect").onclick = async () => {
+        await wallet.features["standard:disconnect"].disconnect();
+        document.getElementById("accounts").textContent = "";
+        document.getElementById("log").textContent = "Disconnected.";
+        document.getElementById("disconnect").disabled = true;
+        document.getElementById("sign").disabled = true;
+      };
+
+      document.getElementById("sign").onclick = async () => {
+        const log = document.getElementById("log");
+        const account = wallet.accounts[0];
+        if (!account) return;
+        log.textContent = "Waiting for the desktop app…";
+        try {
+          await wallet.features["solana:signTransaction"].signTransaction({
+            account,
+            transaction: new Uint8Array([0x81, 0, 0]),
+            chain: "solana:devnet",
+          });
+          log.textContent = "Signed.";
+        } catch (error) {
+          log.textContent = error?.message || String(error);
+        }
+      };
+    </script>
+  </body>
+</html>

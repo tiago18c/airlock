@@ -1,0 +1,76 @@
+# cargo-deny configuration. Run `cargo deny check` locally; CI runs the same.
+
+[graph]
+# The app ships for Windows desktop and for the browser. Linux and macOS are
+# built in CI so the code stays portable.
+targets = [
+    "x86_64-pc-windows-msvc",
+    "wasm32-unknown-unknown",
+    "x86_64-unknown-linux-gnu",
+    "aarch64-apple-darwin",
+]
+all-features = false
+
+[advisories]
+# Known vulnerabilities fail the check. So do yanked crates.
+yanked = "deny"
+# An unmaintained crate deep in someone else's tree is their call to make.
+# One we depend on directly is ours.
+unmaintained = "workspace"
+ignore = [
+    # bincode 1 is unmaintained. Solana's nonce and stake account layouts are
+    # bincode, and the Solana crates depend on it themselves. Revisit when
+    # they move to wincode.
+    { id = "RUSTSEC-2025-0141", reason = "Solana account layouts are bincode 1; upstream still depends on it" },
+    # quick-xml is reached only through wayland-scanner, a Linux build-time
+    # macro that parses protocol files shipped inside its own crate. It never
+    # reads outside input and is not in any shipped binary.
+    { id = "RUSTSEC-2026-0194", reason = "build-time only, via wayland-scanner; input is the crate's own files" },
+    { id = "RUSTSEC-2026-0195", reason = "build-time only, via wayland-scanner; input is the crate's own files" },
+]
+
+[licenses]
+confidence-threshold = 0.9
+# Permissive licenses only. A new copyleft dependency has to be a decision.
+allow = [
+    "0BSD",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "BSL-1.0",
+    "CC0-1.0",
+    "CDLA-Permissive-2.0",
+    "ISC",
+    "MIT",
+    "MIT-0",
+    "Unicode-3.0",
+    "Unlicense",
+    "Zlib",
+]
+# File-level copyleft: using the crate unchanged places no terms on this code.
+exceptions = [{ allow = ["MPL-2.0"], crate = "option-ext" }]
+
+[bans]
+# Duplicate versions are common in the Solana tree. Reported, not fatal.
+multiple-versions = "warn"
+wildcards = "deny"
+allow-wildcard-paths = true
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+# A git dependency is pinned to a commit, never a branch or a tag.
+required-git-spec = "rev"
+allow-git = [
+    # vector-core, the Vector program's client crate. Our fork of
+    # blueshift-gg/vector pull request 17, with our program ID compiled in.
+    # It is not on crates.io: the crate there of that name is unrelated.
+    "https://github.com/tiago18c/vector",
+    # Verifiers that vector-core links, pinned by the fork's own manifest.
+    # Not published on crates.io.
+    "https://github.com/blueshift-gg/solana-ml-dsa",
+    "https://github.com/blueshift-gg/solana-winternitz",
+    "https://github.com/blueshift-gg/solana-shake",
+]

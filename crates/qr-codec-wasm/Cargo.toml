@@ -1,0 +1,16 @@
+[package]
+name = "qr-codec-wasm"
+version.workspace = true
+edition.workspace = true
+description = "qr-codec's scanner as a raw WebAssembly module for the camera loop"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+qr-codec.workspace = true

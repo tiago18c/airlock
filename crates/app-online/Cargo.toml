@@ -1,0 +1,38 @@
+[package]
+name = "app-online"
+version.workspace = true
+edition.workspace = true
+description = "Online shell pieces: wallet-rpc monitor, submitter/tracker, Stake and Proposals"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+app-core.workspace = true
+app-ui-kit.workspace = true
+dioxus.workspace = true
+futures.workspace = true
+solana-pubkey = { workspace = true, features = ["serde"] }
+solana-signature.workspace = true
+tokio = { workspace = true, features = ["sync", "macros"] }
+tracing.workspace = true
+wallet-core.workspace = true
+wallet-flows.workspace = true
+wallet-rpc = { path = "../wallet-rpc" }
+tokens-api = { path = "../tokens-api" }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { workspace = true, features = ["sync", "rt", "time", "macros"] }
+
+[dev-dependencies]
+async-trait.workspace = true
+solana-hash.workspace = true
+solana-signature.workspace = true
+tokio = { workspace = true, features = ["sync", "rt", "time", "macros"] }
+
+[features]
+default = ["desktop"]
+web = ["dioxus/web", "app-ui-kit/web"]
+desktop = ["dioxus/desktop", "app-ui-kit/desktop"]

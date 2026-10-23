@@ -1,0 +1,21 @@
+{
+  "name": "airlock-extension",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "tsc --noEmit",
+    "test": "node test/run.mjs"
+  },
+  "dependencies": {
+    "@solana/wallet-standard-features": "1.5.0",
+    "@wallet-standard/base": "1.1.1",
+    "@wallet-standard/features": "1.1.1",
+    "@wallet-standard/wallet": "1.1.1"
+  },
+  "devDependencies": {
+    "@types/chrome": "0.3.5",
+    "esbuild": "0.28.2",
+    "typescript": "7.0.2"
+  }
+}

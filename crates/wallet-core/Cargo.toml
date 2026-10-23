@@ -1,0 +1,74 @@
+[package]
+name = "wallet-core"
+version.workspace = true
+edition.workspace = true
+description = "UI-agnostic Solana wallet domain: address book, wallets, transactions, IDLs, and the RPC and signer ports"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+async-trait.workspace = true
+bip39 = "3.0"
+hmac = "0.12"
+base64.workspace = true
+bs58.workspace = true
+hex.workspace = true
+# Vector Secp256k1 / EIP-191 authorities (also brought by vector-core).
+k256 = { version = "0.13", default-features = false, features = ["ecdsa", "std"] }
+# Vector ML-DSA-44 and Falcon-512 authorities (D3: falcon-rust, desktop/airgap).
+fips204 = { version = "0.4.6", default-features = false, features = ["ml-dsa-44", "default-rng"] }
+falcon-rust = "0.3.1"
+# Vector XMSS: same revision vector-core pins; `sign` is host-only.
+solana-winternitz = { git = "https://github.com/blueshift-gg/solana-winternitz", rev = "d6c381a46929d2f8973619f38b66d79058c39b5a", features = ["sign"] }
+# Stream that expands the 32-byte XMSS seed into chain starts (see sign.rs).
+chacha20 = "0.9"
+rand.workspace = true
+sha3 = "0.10"
+codama-dynamic-client = { path = "../codama/codama-dynamic-client" }
+codama-nodes = "0.13.2"
+codama-nodes-from-anchor = { path = "../codama/codama-nodes-from-anchor" }
+serde.workspace = true
+serde_json.workspace = true
+flate2 = "1"
+sha2.workspace = true
+solana-account.workspace = true
+solana-hash.workspace = true
+solana-derivation-path = "3"
+solana-keypair = { version = "3.1", features = ["seed-derivable"] }
+solana-seed-derivable = "3"
+solana-message.workspace = true
+solana-nonce.workspace = true
+solana-pubkey = { workspace = true, features = ["serde", "curve25519"] }
+solana-signature = { workspace = true, features = ["serde", "verify"] }
+solana-signer = "3.0"
+solana-transaction.workspace = true
+solana-stake-interface.workspace = true
+solana-system-interface.workspace = true
+solana-instruction.workspace = true
+solana-sdk-ids = "3.1"
+# The instructions sysvar's layout, for the message a Vector account signs.
+# The program's client crate lays it out with the same version.
+solana-instructions-sysvar = "3.0"
+thiserror.workspace = true
+# The Vector program's client crate, from our fork, which compiles our program
+# ID in. Pinned by commit. See docs/vector-fork.md.
+vector-core = { git = "https://github.com/tiago18c/vector", rev = "e0566fc4f15686b5f49c419d7eb08bb4496bf9cc" }
+wincode = { workspace = true, features = ["derive"] }
+zeroize = { workspace = true, features = ["zeroize_derive"] }
+qr-protocol = { path = "../qr-protocol" }
+wallet-vault.workspace = true
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom.workspace = true
+getrandom_03 = { package = "getrandom", version = "0.3", features = ["wasm_js"] }
+getrandom_04 = { package = "getrandom", version = "0.4", features = ["wasm_js"] }
+
+[dev-dependencies]
+# The runtime's reserved keys, to check the list wallets/vector refuses
+# writes to against it. Already in the tree through litesvm.
+agave-reserved-account-keys = { version = "4.3", features = ["agave-unstable-api"] }
+pollster.workspace = true
+tempfile.workspace = true
