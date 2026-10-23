@@ -12,7 +12,9 @@ use wallet_core::{
     TxFormat,
 };
 use wallet_flows::lookup::resolve_lookup_tables;
-use wallet_flows::request::{replaceable_signers, route, OneTimeKeys, Route};
+use wallet_flows::request::{
+    accounts_created, replaceable_signers, route_created, OneTimeKeys, Route,
+};
 
 /// Who to name on the `received` line when preparing starts.
 pub struct ReceivedMeta<'a> {
@@ -87,19 +89,23 @@ pub async fn prepare_request(
     let tables = lookup_tables_for(session, &wire).await?;
     let tx = decode_transaction(&wire, &tables).map_err(sentence)?;
     let known = session.known_wallet_pubkeys();
+    let rpc = session.rpc().ok();
+    // Found once, and kept for the screens that show the transaction.
+    let created = accounts_created(rpc.as_deref(), &tx, &known).await;
+    session.forms.sign.keep_created(&tx, created.clone());
     // A vault may be asked along with keys the rewrite would replace.
     let keyless = session
-        .plan_adaptation_allowing(&tx, &replaceable_signers(&tx, &known))
+        .plan_adaptation_allowing(&tx, &replaceable_signers(&tx, &known, &created))
         .map_err(sentence)?
         .is_some();
-    let rpc = session.rpc().ok();
-    let route = route(
+    let route = route_created(
         rpc.as_deref(),
         &tx,
         &session.local_signer_pubkeys(),
         &known,
         keyless,
         site_signs,
+        &created,
     )
     .await
     .map_err(sentence)?;

@@ -30,7 +30,7 @@ use wallet_core::{
     KeypairSigner, LimitFrom, LookupTables, MemoryBodies, MemoryStore, QuickSign, TxFormat,
     WalletId, WalletKind, WalletRecord, WalletSigner,
 };
-use wallet_flows::request::{replaceable_signers, route, Route};
+use wallet_flows::request::{created_accounts, replaceable_signers, route, Route};
 use wallet_flows::FlowError;
 
 const BOTH: [SquadsProgram; 2] = [SquadsProgram::V4, SquadsProgram::SmartAccount];
@@ -1067,10 +1067,14 @@ impl App {
             .iter()
             .filter_map(WalletRecord::address)
             .collect();
-        let keyless =
-            plan_adaptation_with(&tx, &self.wallets, None, &replaceable_signers(&tx, &known))
-                .unwrap()
-                .is_some();
+        let keyless = plan_adaptation_with(
+            &tx,
+            &self.wallets,
+            None,
+            &replaceable_signers(&tx, &known, &created_accounts(&tx, None)),
+        )
+        .unwrap()
+        .is_some();
         assert!(keyless);
         let hot_keys = [self.hot.pubkey(), self.authority.pubkey()];
         let node = Node(Mutex::new(std::mem::replace(&mut self.chain, Chain::new())));
