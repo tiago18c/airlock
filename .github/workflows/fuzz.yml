@@ -1,0 +1,51 @@
+name: Fuzz
+
+# The QR decoder reads whatever is held up to the camera. Each target runs
+# for a minute on pull requests that touch the crate, and for half an hour
+# once a week. A crash keeps its input as an artifact; add it to the
+# crate's tests when fixing it.
+on:
+  pull_request:
+    paths:
+      - "crates/qr-codec/**"
+      - ".github/workflows/fuzz.yml"
+  schedule:
+    - cron: "41 4 * * 3"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fuzz-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fuzz:
+    name: qr-codec (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [scan, decode_matrix, damaged, round_trip]
+    defaults:
+      run:
+        working-directory: crates/qr-codec
+    steps:
+      - uses: actions/checkout@v7
+      # libFuzzer needs nightly; the pinned toolchain still builds cargo-fuzz.
+      - run: rustup toolchain install nightly --profile minimal
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: crates/qr-codec/fuzz
+      - run: cargo install cargo-fuzz --locked
+      - name: Fuzz
+        env:
+          FUZZ_SECONDS: ${{ github.event_name == 'schedule' && 1800 || 60 }}
+        run: cargo +nightly fuzz run ${{ matrix.target }} -- -max_total_time=$FUZZ_SECONDS -max_len=1048576
+      - name: Keep the crashing input
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: fuzz-${{ matrix.target }}
+          path: crates/qr-codec/fuzz/artifacts

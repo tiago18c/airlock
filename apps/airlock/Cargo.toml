@@ -1,0 +1,46 @@
+[package]
+name = "airlock"
+version.workspace = true
+edition.workspace = true
+description = "Online/offline QR payload transfer prototype for a signing app"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+app-core.workspace = true
+app-desktop = { workspace = true, features = ["bridge"] }
+app-online = { path = "../../crates/app-online", default-features = false }
+app-ui.workspace = true
+dioxus.workspace = true
+tracing.workspace = true
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+web-sys = { workspace = true, features = [
+    "Window", "Storage", "Document", "Element", "Node", "console",
+] }
+
+[dev-dependencies]
+solana-hash.workspace = true
+solana-message.workspace = true
+solana-pubkey = { workspace = true, features = ["serde"] }
+solana-signature.workspace = true
+solana-system-interface.workspace = true
+solana-transaction.workspace = true
+wallet-core.workspace = true
+wincode.workspace = true
+
+[features]
+default = ["desktop"]
+web = ["dioxus/web", "app-ui/web", "app-online/web", "app-desktop/web"]
+desktop = [
+  "dioxus/desktop",
+  "app-ui/desktop",
+  "app-online/desktop",
+  "app-desktop/desktop",
+  "app-desktop/bridge",
+]
+bundle = []
+

@@ -1,0 +1,696 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.9.2",
+  "program": {
+    "kind": "programNode",
+    "name": "ed25519Signer",
+    "publicKey": "EdSigVfK1DkeMrjFNDMjwfQaJPhPTtX7jW8uPv3oKEgN",
+    "version": "0.1.0",
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "submit",
+        "optionalAccountStrategy": "programId",
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "signatures",
+            "type": {
+              "kind": "arrayTypeNode",
+              "item": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "fixedSizeTypeNode",
+                  "size": 64,
+                  "type": {
+                    "kind": "bytesTypeNode"
+                  }
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "count": {
+                "kind": "prefixedCountNode",
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Authority signatures"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "message",
+            "type": {
+              "kind": "bytesTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Authorization message"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Verify authorization message and invoke its executor"
+        },
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "isOptional": false,
+            "isSigner": false,
+            "docs": [
+              "One account for each key in the authorization message's static account-key list, in the same order."
+            ],
+            "value": {
+              "kind": "resolverValueNode",
+              "name": "resolveAuthorizationMessageAccounts",
+              "docs": [
+                "Preserves each authorization message account's writable role without marking it as a relay transaction signer."
+              ],
+              "dependsOn": [
+                {
+                  "kind": "argumentValueNode",
+                  "name": "message"
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Authorization message accounts"
+            }
+          }
+        ]
+      }
+    ],
+    "pdas": [
+      {
+        "kind": "pdaNode",
+        "name": "programmaticSigner",
+        "seeds": [
+          {
+            "kind": "constantPdaSeedNode",
+            "type": {
+              "kind": "stringTypeNode",
+              "encoding": "utf8"
+            },
+            "value": {
+              "kind": "stringValueNode",
+              "string": "programmatic-signer"
+            }
+          },
+          {
+            "kind": "variablePdaSeedNode",
+            "name": "authority",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            }
+          }
+        ]
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "invalidMessage",
+        "code": 0,
+        "message": "The authorization message failed sanitization"
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidExecutorInstructionCount",
+        "code": 1,
+        "message": "The authorization message must contain exactly one executor instruction"
+      },
+      {
+        "kind": "errorNode",
+        "name": "accountKeyMismatch",
+        "code": 2,
+        "message": "A Submit account differs from the authorization message key at the same index"
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidSignature",
+        "code": 3,
+        "message": "An authority signature failed verification against the authorization message"
+      },
+      {
+        "kind": "errorNode",
+        "name": "disallowedExecutorInstruction",
+        "code": 4,
+        "message": "The executor program and instruction pair is not permitted by this signer program"
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidSignatureCount",
+        "code": 5,
+        "message": "The authority signature count does not match the authorization message."
+      },
+      {
+        "kind": "errorNode",
+        "name": "unsupportedMessageVersion",
+        "code": 6,
+        "message": "The authorization message is not a v1 message"
+      },
+      {
+        "kind": "errorNode",
+        "name": "unsupportedTransactionConfig",
+        "code": 7,
+        "message": "The authorization message sets transaction config fields"
+      },
+      {
+        "kind": "errorNode",
+        "name": "missingSignature",
+        "code": 8,
+        "message": "A signer required by the authorization message has no signature and does not sign the relay transaction"
+      }
+    ]
+  },
+  "additionalPrograms": [
+    {
+      "kind": "programNode",
+      "name": "messageExecutor",
+      "publicKey": "ExecxgyHYsAXB4c5dZodV1zJZ9hqfsDCYkRDRATrpkFR",
+      "version": "0.1.0",
+      "instructions": [
+        {
+          "kind": "instructionNode",
+          "name": "execute",
+          "optionalAccountStrategy": "programId",
+          "accounts": [
+            {
+              "kind": "instructionAccountNode",
+              "name": "nonceAuthority",
+              "isWritable": false,
+              "isSigner": true,
+              "isOptional": false,
+              "docs": [
+                "Authority signer for the nonce account"
+              ],
+              "display": {
+                "kind": "instructionAccountDisplayNode",
+                "label": "Nonce authority"
+              }
+            },
+            {
+              "kind": "instructionAccountNode",
+              "name": "nonceAccount",
+              "isWritable": true,
+              "isSigner": false,
+              "isOptional": false,
+              "docs": [
+                "Nonce account consumed for replay protection"
+              ],
+              "display": {
+                "kind": "instructionAccountDisplayNode",
+                "label": "Nonce account to advance"
+              }
+            },
+            {
+              "kind": "instructionAccountNode",
+              "name": "nonceProgram",
+              "isWritable": false,
+              "isSigner": false,
+              "isOptional": false,
+              "docs": [
+                "SPL Nonce program"
+              ],
+              "defaultValue": {
+                "kind": "publicKeyValueNode",
+                "publicKey": "Noncediea1fH12usShuQAz28UhgAeuE5Maf32LsMUQB"
+              },
+              "display": {
+                "kind": "instructionAccountDisplayNode",
+                "skip": "always"
+              }
+            }
+          ],
+          "arguments": [
+            {
+              "kind": "instructionArgumentNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "numberValueNode",
+                "number": 0
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
+            },
+            {
+              "kind": "instructionArgumentNode",
+              "name": "message",
+              "type": {
+                "kind": "bytesTypeNode"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Execution message"
+              }
+            }
+          ],
+          "discriminators": [
+            {
+              "kind": "fieldDiscriminatorNode",
+              "name": "discriminator",
+              "offset": 0
+            }
+          ],
+          "display": {
+            "kind": "instructionDisplayNode",
+            "intent": "Execute all instructions in an execution message"
+          },
+          "remainingAccounts": [
+            {
+              "kind": "instructionRemainingAccountsNode",
+              "isOptional": false,
+              "isSigner": "either",
+              "docs": [
+                "One account for each key in the execution message's static account-key list, in the same order."
+              ],
+              "value": {
+                "kind": "resolverValueNode",
+                "name": "resolveExecutionMessageAccounts",
+                "docs": [
+                  "Preserves each execution message account's signer and writable role."
+                ],
+                "dependsOn": [
+                  {
+                    "kind": "argumentValueNode",
+                    "name": "message"
+                  }
+                ]
+              },
+              "display": {
+                "kind": "instructionAccountDisplayNode",
+                "label": "Execution message accounts"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "kind": "errorNode",
+          "name": "invalidNonceAccount",
+          "code": 0,
+          "message": "The nonce account data could not be decoded as nonce state"
+        },
+        {
+          "kind": "errorNode",
+          "name": "invalidMessage",
+          "code": 1,
+          "message": "The v1 message fails sanitization or contains duplicate keys"
+        },
+        {
+          "kind": "errorNode",
+          "name": "messageAccountsMismatch",
+          "code": 2,
+          "message": "The passed accounts do not match the execution message's account keys"
+        },
+        {
+          "kind": "errorNode",
+          "name": "nonceMismatch",
+          "code": 3,
+          "message": "The message's recent blockhash does not match the stored nonce"
+        },
+        {
+          "kind": "errorNode",
+          "name": "unsupportedMessageVersion",
+          "code": 4,
+          "message": "The execution message is not a v1 message"
+        },
+        {
+          "kind": "errorNode",
+          "name": "unsupportedTransactionConfig",
+          "code": 5,
+          "message": "The execution message sets transaction config fields"
+        }
+      ]
+    },
+    {
+      "kind": "programNode",
+      "name": "nonce",
+      "publicKey": "Noncediea1fH12usShuQAz28UhgAeuE5Maf32LsMUQB",
+      "version": "0.1.0",
+      "accounts": [
+        {
+          "kind": "accountNode",
+          "name": "nonce",
+          "data": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "nonce",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "authority",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "initializeSlot",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              }
+            ]
+          },
+          "discriminators": [
+            {
+              "kind": "sizeDiscriminatorNode",
+              "size": 72
+            }
+          ]
+        }
+      ],
+      "instructions": [
+        {
+          "kind": "instructionNode",
+          "name": "initialize",
+          "optionalAccountStrategy": "programId",
+          "accounts": [
+            {
+              "kind": "instructionAccountNode",
+              "name": "nonceAccount",
+              "isWritable": true,
+              "isSigner": false,
+              "isOptional": false,
+              "docs": [
+                "Nonce account to initialize"
+              ]
+            },
+            {
+              "kind": "instructionAccountNode",
+              "name": "authority",
+              "isWritable": false,
+              "isSigner": false,
+              "isOptional": false,
+              "docs": [
+                "Authority stored in the nonce account"
+              ],
+              "display": {
+                "kind": "instructionAccountDisplayNode",
+                "label": "Nonce authority"
+              }
+            },
+            {
+              "kind": "instructionAccountNode",
+              "name": "slotHashes",
+              "isWritable": false,
+              "isSigner": false,
+              "isOptional": false,
+              "docs": [
+                "Slot Hashes sysvar"
+              ],
+              "defaultValue": {
+                "kind": "publicKeyValueNode",
+                "publicKey": "SysvarS1otHashes111111111111111111111111111"
+              },
+              "display": {
+                "kind": "instructionAccountDisplayNode",
+                "skip": "always"
+              }
+            }
+          ],
+          "arguments": [
+            {
+              "kind": "instructionArgumentNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "numberValueNode",
+                "number": 0
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
+            }
+          ],
+          "discriminators": [
+            {
+              "kind": "fieldDiscriminatorNode",
+              "name": "discriminator",
+              "offset": 0
+            }
+          ],
+          "display": {
+            "kind": "instructionDisplayNode",
+            "intent": "Initialize nonce account",
+            "interpolatedIntent": "Initialize nonce account ${accounts.nonceAccount} with authority ${accounts.authority}"
+          }
+        },
+        {
+          "kind": "instructionNode",
+          "name": "advance",
+          "optionalAccountStrategy": "programId",
+          "accounts": [
+            {
+              "kind": "instructionAccountNode",
+              "name": "authority",
+              "isWritable": false,
+              "isSigner": true,
+              "isOptional": false,
+              "docs": [
+                "Authority stored in the nonce account"
+              ],
+              "display": {
+                "kind": "instructionAccountDisplayNode",
+                "label": "Nonce authority"
+              }
+            },
+            {
+              "kind": "instructionAccountNode",
+              "name": "nonceAccount",
+              "isWritable": true,
+              "isSigner": false,
+              "isOptional": false,
+              "docs": [
+                "Nonce account to advance"
+              ]
+            }
+          ],
+          "arguments": [
+            {
+              "kind": "instructionArgumentNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "numberValueNode",
+                "number": 1
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
+            },
+            {
+              "kind": "instructionArgumentNode",
+              "name": "currentNonce",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "instructionArgumentNode",
+              "name": "transitionCommitment",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ],
+          "discriminators": [
+            {
+              "kind": "fieldDiscriminatorNode",
+              "name": "discriminator",
+              "offset": 0
+            }
+          ],
+          "display": {
+            "kind": "instructionDisplayNode",
+            "intent": "Advance nonce",
+            "interpolatedIntent": "Advance nonce account ${accounts.nonceAccount} by consuming current nonce ${data.currentNonce} and committing to transition ${data.transitionCommitment}."
+          }
+        },
+        {
+          "kind": "instructionNode",
+          "name": "withdraw",
+          "optionalAccountStrategy": "programId",
+          "accounts": [
+            {
+              "kind": "instructionAccountNode",
+              "name": "authority",
+              "isWritable": false,
+              "isSigner": true,
+              "isOptional": false,
+              "docs": [
+                "Authority stored in the nonce account"
+              ],
+              "display": {
+                "kind": "instructionAccountDisplayNode",
+                "label": "Nonce authority"
+              }
+            },
+            {
+              "kind": "instructionAccountNode",
+              "name": "nonceAccount",
+              "isWritable": true,
+              "isSigner": false,
+              "isOptional": false,
+              "docs": [
+                "Nonce account to withdraw from"
+              ],
+              "display": {
+                "kind": "instructionAccountDisplayNode",
+                "label": "Nonce account to withdraw from"
+              }
+            },
+            {
+              "kind": "instructionAccountNode",
+              "name": "destination",
+              "isWritable": true,
+              "isSigner": false,
+              "isOptional": false,
+              "docs": [
+                "Account receiving the lamports"
+              ],
+              "display": {
+                "kind": "instructionAccountDisplayNode",
+                "label": "Withdrawal destination"
+              }
+            }
+          ],
+          "arguments": [
+            {
+              "kind": "instructionArgumentNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "numberValueNode",
+                "number": 2
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
+            },
+            {
+              "kind": "instructionArgumentNode",
+              "name": "lamports",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ],
+          "discriminators": [
+            {
+              "kind": "fieldDiscriminatorNode",
+              "name": "discriminator",
+              "offset": 0
+            }
+          ],
+          "display": {
+            "kind": "instructionDisplayNode",
+            "intent": "Withdraw from nonce account",
+            "interpolatedIntent": "Withdraw ${data.lamports} lamports from nonce account ${accounts.nonceAccount} to ${accounts.destination}"
+          }
+        }
+      ],
+      "errors": [
+        {
+          "kind": "errorNode",
+          "name": "invalidNonceAccount",
+          "code": 0,
+          "message": "The nonce account is malformed or not writable"
+        },
+        {
+          "kind": "errorNode",
+          "name": "authorityMismatch",
+          "code": 1,
+          "message": "The stored authority does not match the passed authority account"
+        },
+        {
+          "kind": "errorNode",
+          "name": "nonceMismatch",
+          "code": 2,
+          "message": "The stored nonce does not match the nonce supplied by the caller"
+        },
+        {
+          "kind": "errorNode",
+          "name": "closeSameSlot",
+          "code": 3,
+          "message": "A nonce account cannot be closed during the same slot it was initialized in"
+        }
+      ]
+    }
+  ]
+}

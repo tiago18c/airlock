@@ -1,0 +1,29 @@
+[application]
+name = "airlock"
+
+[web.app]
+title = "Airlock"
+
+# HTTP is the default so localhost (and the Cursor browser) can load the app.
+# Localhost is a secure context, so the camera still works on 127.0.0.1.
+# For a phone on the LAN, set enabled = true, run scripts/gen-dev-cert.ps1, and restart.
+[web.https]
+enabled = false
+mkcert = false
+cert_path = "ssl/cert.pem"
+key_path = "ssl/key.pem"
+
+[bundle]
+identifier = "dev.airlock.app"
+publisher = "Airlock"
+short_description = "QR payload transfer for online/offline signing"
+icon = ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.png", "icons/icon.ico"]
+
+[permissions]
+# macOS: dx writes this into Info.plist as NSCameraUsageDescription. Without
+# it WKWebView hides navigator.mediaDevices and the scanner cannot start.
+camera = { description = "Airlock uses the camera to scan QR codes." }
+
+[bundle.windows]
+# Options: "DownloadBootstrapper", "OfflineInstaller", or "Embed"
+webview_install_mode = { OfflineInstaller = { silent = false } }

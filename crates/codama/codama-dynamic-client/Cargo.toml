@@ -1,0 +1,26 @@
+[package]
+name = "codama-dynamic-client"
+description = "Runtime dynamic Solana program client generated from a Codama IDL"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+
+[dependencies]
+codama-errors = "0.13.2"
+codama-nodes = "0.13.2"
+codama-dynamic-codecs = { path = "../codama-dynamic-codecs" }
+codama-dynamic-resolution = { path = "../codama-dynamic-resolution" }
+codama-dynamic-instructions = { path = "../codama-dynamic-instructions" }
+codama-dynamic-parsers = { path = "../codama-dynamic-parsers" }
+codama-visitors-core = { path = "../codama-visitors-core" }
+indexmap = "2"
+serde_json = "1"
+solana-pubkey = { version = "4", default-features = false, features = ["std", "sha2", "curve25519"] }
+
+[dev-dependencies]
+pretty_assertions = "1.4.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+hex = "0.4"
+codama-nodes = "0.13.2"

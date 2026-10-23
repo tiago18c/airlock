@@ -1,0 +1,7 @@
+# One compiler for every developer and for CI, so a new lint in a newer
+# release cannot fail a pull request that did not touch the code it flags.
+# Raise this deliberately, in its own change.
+[toolchain]
+channel = "1.98.1"
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown"]

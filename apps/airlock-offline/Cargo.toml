@@ -1,0 +1,26 @@
+[package]
+name = "airlock-offline"
+version.workspace = true
+edition.workspace = true
+description = "Airgap desktop shell: app-core + app-ui, no network crates"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "airlock-offline"
+path = "src/main.rs"
+
+[dependencies]
+app-core.workspace = true
+app-desktop.workspace = true
+app-ui.workspace = true
+dioxus.workspace = true
+
+[features]
+default = ["desktop"]
+web = ["dioxus/web", "app-ui/web", "app-desktop/web"]
+desktop = ["dioxus/desktop", "app-ui/desktop", "app-desktop/desktop"]
+bundle = []

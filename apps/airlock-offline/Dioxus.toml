@@ -1,0 +1,25 @@
+[application]
+name = "airlock-offline"
+
+[web.app]
+title = "Airlock Offline"
+
+[web.https]
+enabled = false
+mkcert = false
+cert_path = "ssl/cert.pem"
+key_path = "ssl/key.pem"
+
+[bundle]
+identifier = "dev.airlock.offline"
+publisher = "Airlock"
+short_description = "Airgap QR signing without network stacks"
+icon = ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.png", "icons/icon.ico"]
+
+[permissions]
+# macOS: dx writes this into Info.plist as NSCameraUsageDescription. Without
+# it WKWebView hides navigator.mediaDevices and the scanner cannot start.
+camera = { description = "Airlock uses the camera to scan QR codes." }
+
+[bundle.windows]
+webview_install_mode = { OfflineInstaller = { silent = false } }

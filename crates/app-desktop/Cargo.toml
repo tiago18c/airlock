@@ -1,0 +1,54 @@
+[package]
+name = "app-desktop"
+version.workspace = true
+edition.workspace = true
+description = "Native desktop services: tray, window, OS toasts, browser bridge"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+app-core.workspace = true
+app-ui-kit.workspace = true
+base64.workspace = true
+dioxus.workspace = true
+serde.workspace = true
+serde_json = "1"
+solana-pubkey = { workspace = true, features = ["serde"] }
+solana-signature.workspace = true
+tracing.workspace = true
+wallet-core.workspace = true
+wallet-flows.workspace = true
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+bridge-host = { path = "../bridge-host", optional = true }
+bridge-protocol = { workspace = true, optional = true }
+# OS toasts: online desktop only (`bridge` + `desktop`). Airgap skips this.
+notify-rust = { version = "4", optional = true }
+tokio = { workspace = true, features = ["sync", "rt", "time", "macros"] }
+
+[target.'cfg(windows)'.dependencies]
+webview2-com = "0.38"
+# The COM casts and strings webview2-com's own API takes.
+windows-core = "0.61"
+# The title bar's close and system menu: WM_CLOSE, WM_SYSCOMMAND.
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
+
+[dev-dependencies]
+solana-hash.workspace = true
+solana-message.workspace = true
+solana-signature.workspace = true
+solana-system-interface.workspace = true
+solana-transaction.workspace = true
+tokio = { workspace = true, features = ["sync", "rt", "time", "macros"] }
+wallet-core.workspace = true
+wincode.workspace = true
+
+[features]
+default = ["desktop", "bridge"]
+web = ["dioxus/web", "app-ui-kit/web"]
+desktop = ["dioxus/desktop", "app-ui-kit/desktop"]
+# Bridge socket, request modal, OS toasts and the online window hooks.
+bridge = ["dep:bridge-host", "dep:bridge-protocol", "dep:notify-rust"]

@@ -1,0 +1,29 @@
+[package]
+name = "flow-tests"
+version.workspace = true
+edition.workspace = true
+description = "Runs transactions built by wallet-core and wallet-flows against the real on-chain programs, in an in-process Solana VM"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+async-trait.workspace = true
+base64.workspace = true
+litesvm = "0.18"
+pollster.workspace = true
+serde_json.workspace = true
+solana-account.workspace = true
+solana-hash = { workspace = true, features = ["default"] }
+solana-instruction = { workspace = true, features = ["default"] }
+solana-message.workspace = true
+solana-pubkey = { workspace = true, features = ["default"] }
+solana-signature = { workspace = true, features = ["default"] }
+solana-system-interface.workspace = true
+solana-vote-interface = { version = "7.0", features = ["bincode"] }
+solana-transaction = { workspace = true, features = ["default"] }
+wallet-core.workspace = true
+wallet-flows.workspace = true
+wincode.workspace = true

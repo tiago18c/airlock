@@ -1,0 +1,20 @@
+[package]
+name = "qr-codec"
+version.workspace = true
+edition.workspace = true
+description = "QR code encoder and camera-frame decoder with no dependencies, written to be audited"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+
+[dev-dependencies]
+# The reference implementation the tests compare against. Never a normal
+# dependency: the encoder and decoder must not be checked only against
+# each other.
+qrcode = { version = "0.14", default-features = false }
+# Reads the real-camera corpus and the `scan` example's input.
+png = "0.18"

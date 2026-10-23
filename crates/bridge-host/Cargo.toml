@@ -1,0 +1,26 @@
+[package]
+name = "bridge-host"
+version.workspace = true
+edition.workspace = true
+description = "Native messaging host between Airlock Extension and the Airlock desktop app"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "bridge-host"
+path = "src/main.rs"
+
+[dependencies]
+bridge-protocol.workspace = true
+interprocess = "2.4"
+serde_json.workspace = true
+tracing.workspace = true
+tracing-appender.workspace = true
+tracing-subscriber.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+widestring = "1"
+winreg = "0.56"
