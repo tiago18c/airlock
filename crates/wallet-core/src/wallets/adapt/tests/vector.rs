@@ -203,7 +203,7 @@ fn an_mldsa_member_refuses_when_even_create_and_propose_do_not_fit() {
 }
 
 #[test]
-fn an_mldsa_member_leaves_execute_out_when_the_wrap_is_too_large() {
+fn an_mldsa_member_still_executes_when_a_stacked_cu_estimate_would_have_exceeded() {
     let mut d = desk();
     let (public, _) = crate::wallets::vector::new_mldsa44_authority();
     let mut wallet = WalletRecord::vector(
@@ -219,8 +219,9 @@ fn an_mldsa_member_leaves_execute_out_when_the_wrap_is_too_large() {
     d.wallets.push(wallet);
     let squad = d.add_squad(SquadsProgram::V4, vector_id);
     let vault = squad.vault(0);
-    // Enough recipients that create/propose/approve fit after the ML-DSA
-    // wrap, but naming them again for execute does not.
+    // Eight transfers used to trip a static "site CU + wrap overhead" check
+    // above 1.4M and drop execute. The wrap caps at the maximum; simulation
+    // sizes the limit afterwards, so execute stays when the bytes fit.
     let payments: Vec<Instruction> = (0..8u8).map(|n| transfer(vault, pk(100 + n), 1)).collect();
     let wire = compile_v1(vault, payments, None, Some(blockhash(1)))
         .unwrap()
@@ -237,10 +238,10 @@ fn an_mldsa_member_leaves_execute_out_when_the_wrap_is_too_large() {
             &adapted.steps[0],
             AdaptedStep::Squads {
                 voters,
-                executor: None,
-                held_back: Some(HeldBack::Size { .. } | HeldBack::Compute { .. }),
+                executor: Some(exec),
+                held_back: None,
                 ..
-            } if voters == &[account]
+            } if voters == &[account] && exec == &account
         ),
         "{:?}",
         adapted.steps[0]
