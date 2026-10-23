@@ -1,0 +1,147 @@
+name: CI
+
+# Runs on every pull request and on every push to the default branch.
+# The release workflow calls it too, so a tag is built only from code that passes.
+on:
+  pull_request:
+  push:
+    branches: [master, main]
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CARGO_TERM_COLOR: always
+  # The crates this repository owns. The Codama port under crates/codama
+  # and the vendored RPC client are built as dependencies, not linted here.
+  OWN_CRATES: -p airlock -p airlock-offline -p wallet-core -p wallet-flows -p wallet-rpc -p tokens-api -p wallet-vault -p qr-protocol -p qr-codec -p qr-codec-wasm -p bridge-host -p bridge-protocol -p app-core -p app-ui-kit -p app-ui -p app-ui-book -p app-ui-build -p app-ui-sign -p app-ui-wallets -p app-online -p app-desktop
+  # The same without the desktop window, for Linux.
+  CORE_CRATES: -p wallet-core -p wallet-flows -p wallet-rpc -p tokens-api -p wallet-vault -p qr-protocol -p qr-codec -p qr-codec-wasm -p bridge-host -p bridge-protocol -p app-core -p app-ui-kit -p app-ui -p app-ui-book -p app-ui-build -p app-ui-sign -p app-ui-wallets -p app-online
+
+jobs:
+  rust:
+    name: Rust (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      # rust-toolchain.toml selects the compiler, components and targets.
+      - run: rustup show
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all --check
+      - name: QR decoder module matches its source
+        shell: bash
+        run: bash scripts/build-qr-wasm.sh --check
+      - name: Clippy (desktop)
+        run: cargo clippy --locked --no-deps ${{ env.OWN_CRATES }} --all-targets -- -D warnings
+      - name: Clippy (web)
+        run: cargo clippy --locked --no-deps -p airlock -p wallet-rpc -p tokens-api -p app-ui-kit -p app-ui -p app-ui-book -p app-ui-build -p app-ui-sign -p app-ui-wallets -p app-online --target wasm32-unknown-unknown --no-default-features --features web -- -D warnings
+      - name: Test
+        run: cargo test --locked ${{ env.OWN_CRATES }}
+      - name: Build airgap desktop shell
+        run: cargo build --locked -p airlock-offline
+      - name: app-core has no UI or network crates
+        shell: bash
+        run: |
+          if cargo tree --locked -p app-core -e normal | grep -E 'dioxus|wallet-rpc|bridge-host|interprocess|reqwest|hyper|tokio-tungstenite'; then
+            echo "::error::app-core depends on a UI or network crate"
+            exit 1
+          fi
+      - name: Airgap has no network or bridge crates
+        shell: bash
+        run: bash scripts/check-airgap-deps.sh
+      - name: app-core builds for the web
+        run: cargo check --locked -p app-core --target wasm32-unknown-unknown
+
+  portable:
+    name: Rust (Linux, core crates)
+    # The desktop window is Windows-first, but the wallet logic and the native
+    # messaging host also run on Linux and macOS. Keep their Unix paths building.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: rustup show
+      - uses: Swatinem/rust-cache@v2
+      # app-ui-kit / the screens / app-ui / app-online default to dioxus desktop on this job.
+      - name: Desktop build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev libxdo-dev
+      - name: Clippy
+        run: cargo clippy --locked --no-deps ${{ env.CORE_CRATES }} --all-targets -- -D warnings
+      - name: Test
+        run: cargo test --locked ${{ env.CORE_CRATES }}
+
+  flows:
+    name: On-chain flows
+    # Runs what wallet-core builds, and the use cases of wallet-flows, against
+    # the real signer, Squads and stake programs in an in-process VM. The binaries come from devnet, pinned by hash, and
+    # are cached so a devnet outage does not fail an unrelated pull request.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: rustup show
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - uses: actions/cache@v6
+        with:
+          path: crates/flow-tests/programs
+          key: flow-programs-${{ hashFiles('scripts/fetch-programs.mjs') }}
+      - name: Fetch programs
+        run: node scripts/fetch-programs.mjs
+      - name: Clippy
+        run: cargo clippy --locked --no-deps -p flow-tests --all-targets -- -D warnings
+      - name: Test
+        run: cargo test --locked -p flow-tests
+
+  extension:
+    name: Browser extension
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: extension
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+      - run: npm ci
+      - name: Type check
+        run: npm run check
+      - name: Test
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Release script tests
+        working-directory: .
+        run: node --test scripts/release-check.test.mjs
+
+  changelog:
+    name: Changelog entry
+    # A pull request says what it changes for users, in CHANGELOG.md.
+    # Label it `no-changelog` when there is nothing to say.
+    if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'no-changelog')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: CHANGELOG.md was updated
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if git diff --name-only "$BASE"...HEAD | grep -qx 'CHANGELOG.md'; then
+            echo "CHANGELOG.md updated."
+          else
+            echo "::error::Add a line under 'Unreleased' in CHANGELOG.md, or label the pull request 'no-changelog'."
+            exit 1
+          fi

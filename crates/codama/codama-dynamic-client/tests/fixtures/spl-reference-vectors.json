@@ -1,0 +1,335 @@
+[
+  {
+    "program": "token",
+    "label": "transfer",
+    "method": "transfer",
+    "dataHex": "03801a060000000000",
+    "accounts": [
+      {
+        "address": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "GgBaCs3NCBuZN12kCJgAW63ydqohFkHEdfdEXBPzLHq",
+        "isSigner": true,
+        "isWritable": false
+      }
+    ]
+  },
+  {
+    "program": "token",
+    "label": "approve",
+    "method": "approve",
+    "dataHex": "04e803000000000000",
+    "accounts": [
+      {
+        "address": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "LbUiWL3xVV8hTFYBVdbTNrpDo41NKS6o3LHHuDzjfcY",
+        "isSigner": false,
+        "isWritable": false
+      },
+      {
+        "address": "GgBaCs3NCBuZN12kCJgAW63ydqohFkHEdfdEXBPzLHq",
+        "isSigner": true,
+        "isWritable": false
+      }
+    ]
+  },
+  {
+    "program": "token",
+    "label": "revoke",
+    "method": "revoke",
+    "dataHex": "05",
+    "accounts": [
+      {
+        "address": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "GgBaCs3NCBuZN12kCJgAW63ydqohFkHEdfdEXBPzLHq",
+        "isSigner": true,
+        "isWritable": false
+      }
+    ]
+  },
+  {
+    "program": "token",
+    "label": "mintTo",
+    "method": "mintTo",
+    "dataHex": "0740420f0000000000",
+    "accounts": [
+      {
+        "address": "QWmroo4YnnMqYW3cnxWkFdaTxGD3P7vMSzwMHGbUzwF",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "GgBaCs3NCBuZN12kCJgAW63ydqohFkHEdfdEXBPzLHq",
+        "isSigner": true,
+        "isWritable": false
+      }
+    ]
+  },
+  {
+    "program": "token",
+    "label": "burn",
+    "method": "burn",
+    "dataHex": "08f401000000000000",
+    "accounts": [
+      {
+        "address": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "QWmroo4YnnMqYW3cnxWkFdaTxGD3P7vMSzwMHGbUzwF",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "GgBaCs3NCBuZN12kCJgAW63ydqohFkHEdfdEXBPzLHq",
+        "isSigner": true,
+        "isWritable": false
+      }
+    ]
+  },
+  {
+    "program": "token",
+    "label": "closeAccount",
+    "method": "closeAccount",
+    "dataHex": "09",
+    "accounts": [
+      {
+        "address": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "GgBaCs3NCBuZN12kCJgAW63ydqohFkHEdfdEXBPzLHq",
+        "isSigner": true,
+        "isWritable": false
+      }
+    ]
+  },
+  {
+    "program": "token",
+    "label": "transferChecked",
+    "method": "transferChecked",
+    "dataHex": "0c801a06000000000009",
+    "accounts": [
+      {
+        "address": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "QWmroo4YnnMqYW3cnxWkFdaTxGD3P7vMSzwMHGbUzwF",
+        "isSigner": false,
+        "isWritable": false
+      },
+      {
+        "address": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "GgBaCs3NCBuZN12kCJgAW63ydqohFkHEdfdEXBPzLHq",
+        "isSigner": true,
+        "isWritable": false
+      }
+    ]
+  },
+  {
+    "program": "token",
+    "label": "amountToUiAmount",
+    "method": "amountToUiAmount",
+    "dataHex": "1740e2010000000000",
+    "accounts": [
+      {
+        "address": "QWmroo4YnnMqYW3cnxWkFdaTxGD3P7vMSzwMHGbUzwF",
+        "isSigner": false,
+        "isWritable": false
+      }
+    ]
+  },
+  {
+    "program": "token",
+    "label": "initializeMint:none",
+    "method": "initializeMint",
+    "dataHex": "0009040404040404040404040404040404040404040404040404040404040404040400",
+    "accounts": [
+      {
+        "address": "QWmroo4YnnMqYW3cnxWkFdaTxGD3P7vMSzwMHGbUzwF",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "SysvarRent111111111111111111111111111111111",
+        "isSigner": false,
+        "isWritable": false
+      }
+    ]
+  },
+  {
+    "program": "token",
+    "label": "initializeMint:some",
+    "method": "initializeMint",
+    "dataHex": "00060404040404040404040404040404040404040404040404040404040404040404010707070707070707070707070707070707070707070707070707070707070707",
+    "accounts": [
+      {
+        "address": "QWmroo4YnnMqYW3cnxWkFdaTxGD3P7vMSzwMHGbUzwF",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "SysvarRent111111111111111111111111111111111",
+        "isSigner": false,
+        "isWritable": false
+      }
+    ]
+  },
+  {
+    "program": "token",
+    "label": "setAuthority:some",
+    "method": "setAuthority",
+    "dataHex": "0600010808080808080808080808080808080808080808080808080808080808080808",
+    "accounts": [
+      {
+        "address": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "GgBaCs3NCBuZN12kCJgAW63ydqohFkHEdfdEXBPzLHq",
+        "isSigner": true,
+        "isWritable": false
+      }
+    ]
+  },
+  {
+    "program": "token",
+    "label": "setAuthority:none",
+    "method": "setAuthority",
+    "dataHex": "060300",
+    "accounts": [
+      {
+        "address": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "GgBaCs3NCBuZN12kCJgAW63ydqohFkHEdfdEXBPzLHq",
+        "isSigner": true,
+        "isWritable": false
+      }
+    ]
+  },
+  {
+    "program": "token-2022",
+    "label": "transferChecked",
+    "method": "transferChecked",
+    "dataHex": "0c801a06000000000009",
+    "accounts": [
+      {
+        "address": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "QWmroo4YnnMqYW3cnxWkFdaTxGD3P7vMSzwMHGbUzwF",
+        "isSigner": false,
+        "isWritable": false
+      },
+      {
+        "address": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "GgBaCs3NCBuZN12kCJgAW63ydqohFkHEdfdEXBPzLHq",
+        "isSigner": true,
+        "isWritable": false
+      }
+    ]
+  },
+  {
+    "program": "token-2022",
+    "label": "mintTo",
+    "method": "mintTo",
+    "dataHex": "0740420f0000000000",
+    "accounts": [
+      {
+        "address": "QWmroo4YnnMqYW3cnxWkFdaTxGD3P7vMSzwMHGbUzwF",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "GgBaCs3NCBuZN12kCJgAW63ydqohFkHEdfdEXBPzLHq",
+        "isSigner": true,
+        "isWritable": false
+      }
+    ]
+  },
+  {
+    "program": "token-2022",
+    "label": "burn",
+    "method": "burn",
+    "dataHex": "08f401000000000000",
+    "accounts": [
+      {
+        "address": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "QWmroo4YnnMqYW3cnxWkFdaTxGD3P7vMSzwMHGbUzwF",
+        "isSigner": false,
+        "isWritable": true
+      },
+      {
+        "address": "GgBaCs3NCBuZN12kCJgAW63ydqohFkHEdfdEXBPzLHq",
+        "isSigner": true,
+        "isWritable": false
+      }
+    ]
+  },
+  {
+    "program": "token-2022",
+    "label": "amountToUiAmount",
+    "method": "amountToUiAmount",
+    "dataHex": "1740e2010000000000",
+    "accounts": [
+      {
+        "address": "QWmroo4YnnMqYW3cnxWkFdaTxGD3P7vMSzwMHGbUzwF",
+        "isSigner": false,
+        "isWritable": false
+      }
+    ]
+  }
+]

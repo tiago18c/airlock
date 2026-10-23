@@ -1,0 +1,18 @@
+{
+  "owners": {
+    "3Cy3YNTFywCmxoxt8n7UH6hg6dLo5uACowX3CFceaSnx": [
+      {
+        "pubkey": "cGfHiC6Kgg3FpFZvgwGcswsCRtp4aBP2fzuXRQPizuN",
+        "mint": "YMN9Qj5jPNp7j14VPcML1B6xGgcPWVZUGLFU3Mnyfaf",
+        "amount": 1000000,
+        "decimals": 6
+      },
+      {
+        "pubkey": "US517G5965aydkZ46HS38QLi7UQiSojurfbQfKCELFx",
+        "mint": "QWmroo4YnnMqYW3cnxWkFdaTxGD3P7vMSzwMHGbUzwF",
+        "amount": 42,
+        "decimals": 0
+      }
+    ]
+  }
+}

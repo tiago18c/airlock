@@ -1,0 +1,26 @@
+[package]
+name = "wallet-flows"
+version.workspace = true
+edition.workspace = true
+description = "What the app does with a node and a set of wallets, as plain functions with no user interface"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+async-trait.workspace = true
+solana-hash.workspace = true
+solana-instruction.workspace = true
+solana-nonce.workspace = true
+solana-pubkey.workspace = true
+solana-signature.workspace = true
+solana-stake-interface.workspace = true
+wincode.workspace = true
+thiserror.workspace = true
+wallet-core.workspace = true
+
+[dev-dependencies]
+pollster.workspace = true
+serde_json.workspace = true

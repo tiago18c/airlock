@@ -1,0 +1,15 @@
+[package]
+name = "bridge-protocol"
+version.workspace = true
+edition.workspace = true
+description = "Shared framing and message shapes for the Airlock browser bridge"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+base64.workspace = true
+serde_json.workspace = true
+sha2.workspace = true

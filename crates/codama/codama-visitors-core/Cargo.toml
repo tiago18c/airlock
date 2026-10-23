@@ -1,0 +1,15 @@
+[package]
+name = "codama-visitors-core"
+description = "Core node-tree visitor framework for the Codama standard"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+
+[dependencies]
+codama-errors = "0.13.2"
+codama-nodes = "0.13.2"
+thiserror = "2"
+
+[dev-dependencies]
+pretty_assertions = "1.4.1"

@@ -1,0 +1,58 @@
+[package]
+name = "app-ui-kit"
+version.workspace = true
+edition.workspace = true
+description = "App state, actions, platform glue, CSS and the shared widgets, with no network crates"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+app-core.workspace = true
+base64.workspace = true
+bridge-protocol.workspace = true
+dioxus.workspace = true
+hex.workspace = true
+qr-codec.workspace = true
+serde.workspace = true
+serde_json = "1"
+solana-hash.workspace = true
+solana-pubkey = { workspace = true, features = ["serde"] }
+solana-signature.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = ["sync"] }
+time = { version = "0.3", features = ["local-offset"] }
+tracing.workspace = true
+wallet-core.workspace = true
+wallet-flows.workspace = true
+zeroize.workspace = true
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+rfd = "0.17"
+tokio = { workspace = true, features = ["sync", "rt", "time", "macros"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+# The browser's own time zone, through `Date`.
+time = { version = "0.3", features = ["local-offset", "wasm-bindgen"] }
+gloo-timers.workspace = true
+js-sys.workspace = true
+web-sys = { workspace = true, features = [
+    "Window", "Storage", "Document", "Element", "Node", "console",
+] }
+
+[dev-dependencies]
+solana-message.workspace = true
+solana-signature.workspace = true
+solana-system-interface.workspace = true
+solana-transaction.workspace = true
+tempfile.workspace = true
+tokio = { workspace = true, features = ["sync", "rt", "time", "macros"] }
+wincode.workspace = true
+wallet-vault = { workspace = true, features = ["test-hook"] }
+
+[features]
+default = ["desktop"]
+web = ["dioxus/web"]
+desktop = ["dioxus/desktop"]

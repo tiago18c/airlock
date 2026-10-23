@@ -1,0 +1,22 @@
+[package]
+name = "app-ui-build"
+version.workspace = true
+edition.workspace = true
+description = "The build screen of the app, over app-ui-kit"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+app-ui-kit.workspace = true
+dioxus.workspace = true
+hex.workspace = true
+solana-pubkey = { workspace = true, features = ["serde"] }
+wallet-core.workspace = true
+
+[features]
+default = ["desktop"]
+web = ["dioxus/web", "app-ui-kit/web"]
+desktop = ["dioxus/desktop", "app-ui-kit/desktop"]

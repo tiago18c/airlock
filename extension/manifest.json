@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "Airlock Extension",
+  "version": "0.1.0",
+  "description": "Bridge Solana dApps to the Airlock desktop wallet.",
+  "minimum_chrome_version": "111",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0lZ4Bj6MQbHILdqfeStW4JYT9g3+3JYGmD8fFeFz9qYRQEEb0+NbG9UcU6/yH8w+Sv4XHhk9uR5fM6XOPsFvK4UDcgRI/HpskYdOBfyBMUskEwoFWR3phmHx9qBk/70ZoP/Dm7BBllZIkkBjrHdEpAAGVsJXAmRZdjnkfi5M8fRaKFNAvehbxzTZecEVyWgodmDUU9WvVW5Gqtz2Tig6H8FHqt/pQmYNLD6I2M+k5KSKBg6lZBPKpY3DjvRuLAJdPLZqnAMFRAaTkYqOGoE9nsdVfh1ce/8WdROO4j1nMU3wIwV7En8iHyvcM76APmYPJTtiPhL0itDT7gpYt6AhmwIDAQAB",
+  "permissions": ["nativeMessaging"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Airlock Extension",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png",
+      "48": "icons/48.png"
+    }
+  },
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content-bridge.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content-main.js"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "MAIN"
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "bridge@airlock.dev",
+      "strict_min_version": "128.0"
+    }
+  }
+}

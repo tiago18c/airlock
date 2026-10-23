@@ -1,0 +1,19 @@
+[package]
+name = "codama-nodes-from-anchor"
+description = "Convert Anchor IDLs (legacy and 0.30+ specs) into Codama node trees"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+
+[dependencies]
+codama-nodes = "0.13.2"
+serde_json = "1.0"
+sha2 = "0.10"
+bs58 = "0.5"
+hex = "0.4"
+thiserror = "2.0"
+
+[dev-dependencies]
+codama-dynamic-client = { path = "../codama-dynamic-client" }
+solana-pubkey = { version = "4.1.0", features = ["std"] }

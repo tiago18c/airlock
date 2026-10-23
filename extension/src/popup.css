@@ -1,0 +1,104 @@
+/* The popup uses the app's tokens (copied to dist/tokens.css by build.mjs), so
+   it follows the same palette and the browser's light or dark setting. */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+body {
+  width: 340px;
+  margin: 0;
+  padding: var(--space-4);
+  background: var(--bg);
+  color: var(--text);
+  font: var(--text-base) / var(--leading) var(--font-sans);
+}
+
+h1, h2, p, ul { margin: 0; padding: 0; }
+
+header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+h1 {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.eyebrow {
+  color: var(--text-3);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h2 { margin: var(--space-5) 0 var(--space-2); }
+
+#status {
+  position: relative;
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-8);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: var(--text-md);
+}
+#status::before {
+  content: "";
+  position: absolute;
+  left: var(--space-3);
+  top: 18px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+#status.ok { background: var(--ok-soft); border-color: var(--ok-line); color: var(--ok-text); }
+#status.ok::before { background: var(--ok-solid); }
+#status.warn { background: var(--warn-soft); border-color: var(--warn-line); color: var(--warn-text); }
+#status.warn::before { background: var(--warn-solid); }
+#status.bad { background: var(--danger-soft); border-color: var(--danger-line); color: var(--danger-text); }
+#status.bad::before { background: var(--danger-solid); }
+
+ul {
+  list-style: none;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}
+li + li { border-top: 1px solid var(--border); }
+li.muted { display: block; color: var(--text-3); text-align: center; }
+
+code {
+  padding: 2px var(--space-2);
+  border: 1px solid var(--brand-line);
+  border-radius: var(--radius-full);
+  background: var(--brand-soft);
+  color: var(--brand-text);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}

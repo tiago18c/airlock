@@ -1,0 +1,122 @@
+[workspace]
+members = [
+  "apps/airlock",
+  "apps/airlock-offline",
+  "crates/bridge-host",
+  "crates/bridge-protocol",
+  "crates/app-core",
+  "crates/app-ui-kit",
+  "crates/app-ui",
+  "crates/app-ui-book",
+  "crates/app-ui-build",
+  "crates/app-ui-sign",
+  "crates/app-ui-wallets",
+  "crates/app-online",
+  "crates/app-desktop",
+  "crates/wallet-core",
+  "crates/wallet-rpc",
+  "crates/qr-protocol",
+  "crates/qr-codec",
+  "crates/qr-codec-wasm",
+  "crates/wallet-vault",
+  "crates/wallet-flows",
+  "crates/tokens-api",
+  "crates/flow-tests",
+  "crates/codama/codama-visitors-core",
+  "crates/codama/codama-dynamic-codecs",
+  "crates/codama/codama-dynamic-resolution",
+  "crates/codama/codama-dynamic-instructions",
+  "crates/codama/codama-dynamic-parsers",
+  "crates/codama/codama-dynamic-client",
+  "crates/codama/codama-nodes-from-anchor",
+  "vendor/solana-client-wasm",
+]
+# Nightly-only, with its own lock file.
+exclude = ["crates/qr-codec/fuzz"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+publish = false
+
+[workspace.dependencies]
+# Our own crates.
+app-core = { path = "crates/app-core" }
+app-desktop = { path = "crates/app-desktop", default-features = false }
+app-ui = { path = "crates/app-ui", default-features = false }
+app-ui-kit = { path = "crates/app-ui-kit", default-features = false }
+bridge-protocol = { path = "crates/bridge-protocol" }
+qr-codec = { path = "crates/qr-codec" }
+wallet-core = { path = "crates/wallet-core" }
+wallet-flows = { path = "crates/wallet-flows" }
+wallet-vault = { path = "crates/wallet-vault" }
+
+# Shared by two or more of our crates. Each crate adds the features it uses.
+async-trait = "0.1"
+base64 = "0.22"
+bs58 = "0.5"
+dioxus = { version = "0.7.1", features = ["launch"] }
+futures = "0.3"
+getrandom = { version = "0.2", features = ["js"] }
+gloo-timers = { version = "0.2", features = ["futures"] }
+hex = "0.4"
+js-sys = "0.3"
+pollster = "0.4"
+rand = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+solana-account = "4.3"
+solana-hash = { version = "4.4", default-features = false, features = ["std"] }
+solana-instruction = { version = "4", default-features = false }
+solana-message = { version = "4.2.3", default-features = false, features = ["std", "wincode"] }
+solana-nonce = { version = "3.3", default-features = false, features = ["serde", "wincode"] }
+solana-pubkey = { version = "4.2", default-features = false, features = ["std"] }
+solana-signature = { version = "3.4", default-features = false, features = ["std"] }
+# `bincode` for the instruction builders. Accounts are read with wincode.
+solana-stake-interface = { version = "5.0", default-features = false, features = ["bincode", "wincode"] }
+solana-system-interface = { version = "3.3", default-features = false, features = ["bincode"] }
+solana-transaction = { version = "4.3", default-features = false, features = ["wincode"] }
+tempfile = "3"
+thiserror = "2"
+tokio = "1"
+tracing = "0.1"
+tracing-appender = "0.2"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+wasm-bindgen-futures = "0.4"
+web-sys = "0.3"
+wincode = "0.6"
+zeroize = "1"
+
+# The vendored codama crates and solana-client-wasm keep their own settings.
+[workspace.lints.rust]
+# Each crate that needs unsafe code allows it where it is, with the reason.
+unsafe_code = "deny"
+
+[workspace.lints.clippy]
+dbg_macro = "deny"
+todo = "deny"
+unimplemented = "deny"
+
+# The QR decoder runs on every camera frame, and its tests render and scan
+# thousands of synthetic frames.
+[profile.dev.package.qr-codec]
+opt-level = 3
+
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 1
+
+[profile.server-dev]
+inherits = "dev"
+
+[profile.android-dev]
+inherits = "dev"
+
+# Dependencies keep line numbers for backtraces but no variable info, which
+# would make the linker read and write it on every rebuild. Workspace crates
+# keep full debug info.
+[profile.dev.package."*"]
+debug = "line-tables-only"
