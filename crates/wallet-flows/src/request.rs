@@ -3,7 +3,7 @@
 use crate::error::FlowError;
 use crate::simulate::measure;
 use solana_pubkey::Pubkey;
-use wallet_core::simulate::SimulationError;
+use wallet_core::simulate::{Simulation, SimulationError};
 use wallet_core::{
     decode_v1_transaction, to_v1_swapping, Converted, DecodedTx, KeypairSigner, Limits, SolanaRpc,
     WalletSigner, SYSTEM_PROGRAM_ID,
@@ -85,8 +85,23 @@ pub async fn route(
     keyless: bool,
     site_signs: bool,
 ) -> Result<Route, FlowError> {
+    let created = accounts_created(rpc, tx, known).await;
+    route_created(rpc, tx, hot, known, keyless, site_signs, &created).await
+}
+
+/// [`route`], with the accounts `tx` creates already found by
+/// [`accounts_created`].
+pub async fn route_created(
+    rpc: Option<&dyn SolanaRpc>,
+    tx: &DecodedTx,
+    hot: &[Pubkey],
+    known: &[Pubkey],
+    keyless: bool,
+    site_signs: bool,
+    created: &[Pubkey],
+) -> Result<Route, FlowError> {
     let left = if site_signs {
-        left_for_site(tx, known)
+        left_for_site(tx, known, created)
     } else {
         Vec::new()
     };
@@ -100,7 +115,7 @@ pub async fn route(
     }
     // A node that cannot tell leaves the signature to stop the rewrite.
     let one_time = match rpc {
-        Some(rpc) => one_time_signers(rpc, &replaceable_signers(tx, known))
+        Some(rpc) => one_time_signers(rpc, &replaceable_signers(tx, known, created))
             .await
             .unwrap_or_default(),
         None => Vec::new(),
@@ -190,35 +205,92 @@ async fn fit_limits(
 
 /// Signers of `tx` that are not among `here`, the keys of this device, and
 /// could be one-time keys: one with a valid signature already on it, or an
-/// unsigned one whose account `tx` creates, as a site's new mint.
-pub fn replaceable_signers(tx: &DecodedTx, here: &[Pubkey]) -> Vec<Pubkey> {
+/// unsigned one among `created`, the accounts `tx` creates (see
+/// [`accounts_created`]), as a site's new mint.
+pub fn replaceable_signers(tx: &DecodedTx, here: &[Pubkey], created: &[Pubkey]) -> Vec<Pubkey> {
     tx.signers
         .iter()
         .filter(|slot| !here.contains(&slot.pubkey))
-        .filter(|slot| slot.valid || (!slot.filled && creates_account(tx, &slot.pubkey)))
+        .filter(|slot| slot.valid || (!slot.filled && created.contains(&slot.pubkey)))
         .map(|slot| slot.pubkey)
         .collect()
 }
 
 /// Unsigned signers of `tx` that are not among `known`, the wallets of this
-/// device, and whose account `tx` creates, as a site's new mint. A site that
-/// sent `tx` as it is signs for them after this device does.
-pub fn left_for_site(tx: &DecodedTx, known: &[Pubkey]) -> Vec<Pubkey> {
+/// device, and are among `created`, the accounts `tx` creates (see
+/// [`accounts_created`]), as a site's new mint. A site that sent `tx` as it
+/// is signs for them after this device does.
+pub fn left_for_site(tx: &DecodedTx, known: &[Pubkey], created: &[Pubkey]) -> Vec<Pubkey> {
     tx.signers
         .iter()
         .filter(|slot| !slot.filled && !known.contains(&slot.pubkey))
-        .filter(|slot| creates_account(tx, &slot.pubkey))
+        .filter(|slot| created.contains(&slot.pubkey))
         .map(|slot| slot.pubkey)
         .collect()
 }
 
-/// Whether a System Program `CreateAccount` in `tx` makes the account `key`.
-fn creates_account(tx: &DecodedTx, key: &Pubkey) -> bool {
-    tx.instructions.iter().any(|ix| {
-        ix.program_id == SYSTEM_PROGRAM_ID
-            && ix.data.get(..4) == Some(&0u32.to_le_bytes()[..])
-            && ix.accounts.get(1) == Some(key)
-    })
+/// The accounts `tx` creates for a signer's key: each one a System
+/// `CreateAccount` makes, or an `Allocate` gives its first data (Anchor's
+/// `init` on an account that already holds lamports). Read from `tx`'s own
+/// instructions and, given a `simulation` of `tx`, from the calls its
+/// programs make: the Whirlpool program creates a new pool's vaults itself.
+pub fn created_accounts(tx: &DecodedTx, simulation: Option<&Simulation>) -> Vec<Pubkey> {
+    let own = tx
+        .instructions
+        .iter()
+        .filter_map(|ix| created_by(&ix.program_id, &ix.data, &ix.accounts));
+    let inner = simulation
+        .into_iter()
+        .flat_map(|simulation| &simulation.inner)
+        .flat_map(|group| &group.calls)
+        .filter_map(|call| {
+            let ix = &call.instruction;
+            let accounts: Vec<Pubkey> = ix.accounts.iter().map(|meta| meta.pubkey).collect();
+            created_by(&ix.program_id, &ix.data, &accounts)
+        });
+    let mut created = Vec::new();
+    for key in own.chain(inner) {
+        if !created.contains(&key) {
+            created.push(key);
+        }
+    }
+    created
+}
+
+/// The account a System instruction creates: the new account of a
+/// `CreateAccount`, the account of an `Allocate`.
+fn created_by(program: &Pubkey, data: &[u8], accounts: &[Pubkey]) -> Option<Pubkey> {
+    if *program != SYSTEM_PROGRAM_ID {
+        return None;
+    }
+    match data.get(..4)? {
+        tag if tag == 0u32.to_le_bytes() => accounts.get(1).copied(),
+        tag if tag == 8u32.to_le_bytes() => accounts.first().copied(),
+        _ => None,
+    }
+}
+
+/// [`created_accounts`] of `tx`, simulating it when that can say more: when
+/// an unsigned signer outside `known`, the wallets of this device, is not
+/// created by `tx`'s own instructions. Without a node, or when the
+/// simulation does not succeed, only those instructions are read.
+pub async fn accounts_created(
+    rpc: Option<&dyn SolanaRpc>,
+    tx: &DecodedTx,
+    known: &[Pubkey],
+) -> Vec<Pubkey> {
+    let own = created_accounts(tx, None);
+    let unexplained = tx
+        .signers
+        .iter()
+        .any(|slot| !slot.filled && !known.contains(&slot.pubkey) && !own.contains(&slot.pubkey));
+    let Some(rpc) = rpc.filter(|_| unexplained) else {
+        return own;
+    };
+    match measure(rpc, tx).await {
+        Ok(simulation) if simulation.error.is_none() => created_accounts(tx, Some(&simulation)),
+        _ => own,
+    }
 }
 
 /// Which of `signers`, keys that signed on another device, the node has never
@@ -258,7 +330,7 @@ pub fn reshape_unsupported(swaps: &[(Pubkey, Pubkey)], failure: &SimulationError
 mod tests {
     use super::*;
     use crate::testing::{pk, FakeRpc};
-    use wallet_core::simulate::SimulationReply;
+    use wallet_core::simulate::{read_simulation, CompiledCall, InnerReply, SimulationReply};
     use wallet_core::{decode_transaction, LimitFrom, LookupTables, COMPUTE_BUDGET_PROGRAM_ID};
 
     /// A legacy transfer from `pk(1)` at 1,000 micro-lamports per unit and
@@ -419,10 +491,130 @@ mod tests {
         decode_transaction(&wire, &LookupTables::new()).unwrap()
     }
 
+    /// A legacy transaction paid by `pk(1)` in which the program `pk(9)`
+    /// creates the accounts `pk(2)` and `pk(3)` itself, as the Whirlpool
+    /// program creates a new pool's vaults: both sign, and both slots are
+    /// left empty. No instruction of the transaction's own creates them.
+    fn created_inside_legacy() -> DecodedTx {
+        let mut wire = vec![3u8];
+        wire.extend_from_slice(&[0u8; 192]);
+        wire.extend_from_slice(&[3, 0, 2, 5]);
+        for key in [pk(1), pk(2), pk(3), SYSTEM_PROGRAM_ID, pk(9)] {
+            wire.extend_from_slice(key.as_ref());
+        }
+        wire.extend_from_slice(&[1; 32]);
+        wire.extend_from_slice(&[1, 4, 4, 0, 1, 2, 3, 1, 7]);
+        decode_transaction(&wire, &LookupTables::new()).unwrap()
+    }
+
+    /// A node whose simulation of [`created_inside_legacy`] shows the
+    /// program's `CreateAccount` of each vault, then an `Allocate` of the
+    /// second (an account that already held lamports).
+    fn creating_inside() -> FakeRpc {
+        let create = |new: u8| CompiledCall {
+            program_id_index: 3,
+            accounts: vec![0, new],
+            data: [0u32.to_le_bytes().as_slice(), &[0; 48]].concat(),
+            stack_height: Some(2),
+        };
+        FakeRpc {
+            simulation: Some(SimulationReply {
+                units_consumed: Some(150),
+                loaded_accounts_data_size: Some(1_000),
+                inner: vec![InnerReply {
+                    instruction: 0,
+                    calls: vec![create(1), create(2)],
+                }],
+                ..SimulationReply::default()
+            }),
+            ..FakeRpc::default()
+        }
+    }
+
+    #[test]
+    fn accounts_a_program_creates_are_read_from_its_calls() {
+        let tx = created_inside_legacy();
+        assert!(created_accounts(&tx, None).is_empty());
+        let rpc = creating_inside();
+        let created = pollster::block_on(accounts_created(Some(&rpc), &tx, &[pk(1)]));
+        assert_eq!(created, vec![pk(2), pk(3)]);
+        assert_eq!(left_for_site(&tx, &[pk(1)], &created), vec![pk(2), pk(3)]);
+        assert_eq!(
+            replaceable_signers(&tx, &[pk(1)], &created),
+            vec![pk(2), pk(3)]
+        );
+
+        // Allocate makes an account too.
+        let allocate = SimulationReply {
+            inner: vec![InnerReply {
+                instruction: 0,
+                calls: vec![CompiledCall {
+                    program_id_index: 3,
+                    accounts: vec![2],
+                    data: [8u32.to_le_bytes().as_slice(), &[0; 8]].concat(),
+                    stack_height: Some(2),
+                }],
+            }],
+            ..SimulationReply::default()
+        };
+        let simulation = read_simulation(allocate, &tx, &[], &[]);
+        assert_eq!(created_accounts(&tx, Some(&simulation)), vec![pk(3)]);
+    }
+
+    #[test]
+    fn a_failed_simulation_or_no_node_reads_only_the_transactions_own_instructions() {
+        let tx = created_inside_legacy();
+        let mut failing = creating_inside();
+        if let Some(reply) = failing.simulation.as_mut() {
+            reply.err = Some(serde_json::json!("AccountNotFound"));
+        }
+        assert!(pollster::block_on(accounts_created(Some(&failing), &tx, &[pk(1)])).is_empty());
+        assert!(pollster::block_on(accounts_created(None, &tx, &[pk(1)])).is_empty());
+    }
+
+    /// Nothing is simulated when the transaction's own instructions already
+    /// account for every unsigned outside signer.
+    #[test]
+    fn a_transaction_that_creates_its_accounts_itself_is_not_simulated() {
+        let tx = new_account_legacy();
+        let rpc = succeeding();
+        let created = pollster::block_on(accounts_created(Some(&rpc), &tx, &[pk(1)]));
+        assert_eq!(created, vec![pk(2)]);
+        assert_eq!(rpc.asked(), 0);
+    }
+
+    #[test]
+    fn vaults_a_program_creates_are_left_to_the_site_or_replaced_by_keys_made_here() {
+        let tx = created_inside_legacy();
+        let rpc = creating_inside();
+        let to_site = pollster::block_on(route(Some(&rpc), &tx, &[pk(1)], &[pk(1)], false, true));
+        assert_eq!(to_site.unwrap(), Route::AsIs);
+
+        let pasted = pollster::block_on(route(Some(&rpc), &tx, &[pk(1)], &[pk(1)], false, false));
+        let Route::Converted(converted, keys) = pasted.unwrap() else {
+            panic!("a pasted request is converted");
+        };
+        let made = keys.pubkeys();
+        assert_eq!(made.len(), 2);
+        assert_eq!(converted.replaced, vec![(pk(2), made[0]), (pk(3), made[1])]);
+        let rewritten = decode_v1_transaction(&converted.wire).unwrap();
+        // The new keys sign in place of the vaults, in whatever order the
+        // rewrite puts them, after the payer.
+        let mut signers: Vec<Pubkey> = rewritten.signers.iter().map(|slot| slot.pubkey).collect();
+        assert_eq!(signers.remove(0), pk(1));
+        signers.sort();
+        let mut expected = made.clone();
+        expected.sort();
+        assert_eq!(signers, expected);
+    }
+
     #[test]
     fn a_hot_payer_signs_a_sites_new_account_request_as_it_is_and_leaves_the_account_to_the_site() {
         let tx = new_account_legacy();
-        assert_eq!(left_for_site(&tx, &[pk(1)]), vec![pk(2)]);
+        assert_eq!(
+            left_for_site(&tx, &[pk(1)], &created_accounts(&tx, None)),
+            vec![pk(2)]
+        );
         let to_site = pollster::block_on(route(None, &tx, &[pk(1)], &[pk(1)], false, true));
         assert_eq!(to_site.unwrap(), Route::AsIs);
         // Pasted, nobody signs after this device, so it is rewritten with a

@@ -19,7 +19,9 @@ use wallet_core::{
     DecodeError, DecodedTx, KeypairSigner, LookupTables, Phrase, TxFormat, WalletSigner,
 };
 use wallet_flows::adapt::rebuilt_note;
-use wallet_flows::request::{one_time_signers, replaceable_signers, reshape_unsupported};
+use wallet_flows::request::{
+    accounts_created, one_time_signers, replaceable_signers, reshape_unsupported,
+};
 use wallet_flows::sign::VectorSigning;
 
 /// Rebuild the transaction on Sign for the keyless wallet it asks to sign:
@@ -80,7 +82,8 @@ pub async fn refresh_blockhash(session: Session, wire: &[u8]) -> Result<Refreshe
     let local = session.local_signer_pubkeys();
     let tables = session.forms.sign.tables.peek().clone();
     let tx = decode_on_sign(wire, &tables).map_err(sentence)?;
-    let candidates = replaceable_signers(&tx, &local);
+    let created = accounts_created(Some(rpc.as_ref()), &tx, &local).await;
+    let candidates = replaceable_signers(&tx, &local, &created);
     let one_time = one_time_signers(rpc.as_ref(), &candidates)
         .await
         .map_err(sentence)?;

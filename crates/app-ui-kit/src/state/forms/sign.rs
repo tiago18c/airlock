@@ -94,6 +94,11 @@ pub struct SignForm {
     /// device: a transaction can wait for an authorization, or come back
     /// from a request modal, long after it was prepared.
     pub made_here: Signal<Vec<MadeHere>>,
+    /// The accounts each site transaction creates for its signers, by the
+    /// checksum of its message, as preparing it found them: a program can
+    /// create an account by keypair inside its own calls, which only a
+    /// simulation shows. Kept in memory, like `made_here`.
+    pub created: Signal<Vec<([u8; 32], Vec<Pubkey>)>>,
 }
 
 /// A key made here, and the site's one-time key it takes the place of.
@@ -183,6 +188,30 @@ impl SignForm {
             .filter(|made| tx.signers.iter().any(|slot| slot.pubkey == made.key.pubkey))
             .map(|made| (made.replaces, made.key.pubkey))
             .collect()
+    }
+
+    /// Remember `created`, the accounts the site's `tx` creates (see
+    /// [`wallet_flows::request::accounts_created`]), for the screens that
+    /// show it later.
+    pub fn keep_created(&self, tx: &wallet_core::DecodedTx, created: Vec<Pubkey>) {
+        let message = wallet_core::sha256_bytes(&tx.message);
+        let mut kept = self.created;
+        kept.with_mut(|kept| {
+            kept.retain(|(other, _)| *other != message);
+            kept.push((message, created));
+        });
+    }
+
+    /// The accounts `tx` creates for its signers: what preparing it found,
+    /// or else what its own instructions create.
+    pub fn created_in(&self, tx: &wallet_core::DecodedTx) -> Vec<Pubkey> {
+        let message = wallet_core::sha256_bytes(&tx.message);
+        self.created
+            .peek()
+            .iter()
+            .find(|(other, _)| *other == message)
+            .map(|(_, created)| created.clone())
+            .unwrap_or_else(|| wallet_flows::request::created_accounts(tx, None))
     }
 
     /// Put `wire` on the screen in place of whatever was there.
