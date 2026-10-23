@@ -12,7 +12,7 @@ workspace = true
 [dependencies]
 async-trait.workspace = true
 bip39 = "3.0"
-hmac = "0.12"
+hmac = "0.13"
 base64.workspace = true
 bs58.workspace = true
 hex.workspace = true
