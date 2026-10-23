@@ -277,7 +277,7 @@ pub(in crate::ui) fn use_prepared_request(
         .map(|tx| {
             let mut here = session.known_wallet_pubkeys();
             here.extend(local_keys.iter().copied());
-            wallet_flows::request::left_for_site(tx, &here)
+            wallet_flows::request::left_for_site(tx, &here, &session.forms.sign.created_in(tx))
         })
         .unwrap_or_default();
     let verdict = match (&shown, &explained) {
