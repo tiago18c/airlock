@@ -57,10 +57,19 @@ pub async fn fit_limits_from_measure(
 /// Simulate `wire` at the highest compute limit (for balance changes), then
 /// write both limits back with the usual margin. Authorization signatures
 /// stay. Returns the fitted wire and the simulation of the probe.
+///
+/// When a signature over the transaction is already in place, limits are left
+/// alone: rewriting them would void that signature. The simulation then runs
+/// on `wire` as it is, which is what would be submitted.
 pub async fn simulate_fitting(
     rpc: &dyn SolanaRpc,
     wire: &[u8],
 ) -> Result<(Vec<u8>, wallet_core::simulate::Simulation), FlowError> {
+    let original = decode_v1_transaction(wire).map_err(FlowError::refused)?;
+    if original.signers.iter().any(|slot| slot.filled) {
+        let simulation = simulate(rpc, &original).await?;
+        return Ok((wire.to_vec(), simulation));
+    }
     let probe = with_compute_unit_limit(wire, u32::MAX).map_err(FlowError::refused)?;
     let probed = decode_v1_transaction(&probe).map_err(FlowError::refused)?;
     let simulation = simulate(rpc, &probed).await?;
@@ -233,7 +242,9 @@ fn listed(addresses: &[Pubkey]) -> Phrase {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::testing::pk;
+    use crate::testing::{pk, transfer, FakeRpc};
+    use wallet_core::simulate::SimulationReply;
+    use wallet_core::{apply_local_signatures, compile_v1, KeypairSigner, WalletSigner};
 
     fn rebuilt_for(wallets: &[&str]) -> Adapted {
         Adapted {
@@ -276,5 +287,52 @@ mod tests {
             held_back_note(&HeldBack::Size { bytes: 4412 }),
             "Going further would make it 4412 of 4096 bytes, so this transaction stops here. Finish it from Proposals."
         );
+    }
+
+    #[test]
+    fn simulate_fitting_leaves_a_signed_transaction_alone() {
+        let payer = KeypairSigner::new_random();
+        let wire = compile_v1(
+            payer.pubkey(),
+            vec![crate::testing::transfer_instruction(payer.pubkey(), pk(2))],
+            None,
+            Some(solana_hash::Hash::default()),
+        )
+        .unwrap()
+        .wire;
+        let signed = apply_local_signatures(&wire, &[&payer as &dyn WalletSigner]).unwrap();
+        assert!(decode_v1_transaction(&signed).unwrap().signers[0].filled);
+
+        let rpc = FakeRpc {
+            simulation: Some(SimulationReply {
+                units_consumed: Some(150),
+                loaded_accounts_data_size: Some(1_000),
+                ..SimulationReply::default()
+            }),
+            ..FakeRpc::default()
+        };
+        let (fitted, _) =
+            pollster::block_on(simulate_fitting(&rpc, &signed)).unwrap();
+        assert_eq!(fitted, signed);
+        assert!(decode_v1_transaction(&fitted).unwrap().signers[0].filled);
+    }
+
+    #[test]
+    fn simulate_fitting_rewrites_limits_while_unsigned() {
+        let tx = transfer(pk(1), pk(2));
+        let rpc = FakeRpc {
+            simulation: Some(SimulationReply {
+                units_consumed: Some(150),
+                loaded_accounts_data_size: Some(1_000),
+                ..SimulationReply::default()
+            }),
+            ..FakeRpc::default()
+        };
+        let (fitted, _) =
+            pollster::block_on(simulate_fitting(&rpc, &tx.wire)).unwrap();
+        let budget = decode_v1_transaction(&fitted).unwrap().budget;
+        assert_eq!(budget.compute_unit_limit, Some(165));
+        assert_eq!(budget.loaded_accounts_data_size_limit, Some(1_100));
+        assert!(!decode_v1_transaction(&fitted).unwrap().signers[0].filled);
     }
 }
