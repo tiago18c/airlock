@@ -17,7 +17,7 @@ base64.workspace = true
 bs58.workspace = true
 hex.workspace = true
 # Vector Secp256k1 / EIP-191 authorities (also brought by vector-core).
-k256 = { version = "0.13", default-features = false, features = ["ecdsa", "std"] }
+k256 = { version = "0.14", default-features = false, features = ["ecdsa", "std"] }
 # Vector ML-DSA-44 and Falcon-512 authorities (D3: falcon-rust, desktop/airgap).
 fips204 = { version = "0.4.6", default-features = false, features = ["ml-dsa-44", "default-rng"] }
 falcon-rust = "0.3.1"

@@ -54,8 +54,8 @@ impl VectorSigner {
     pub fn key(&self) -> Vec<u8> {
         match self {
             Self::Ed25519(signer) => signer.pubkey().to_bytes().to_vec(),
-            Self::Secp256k1(key) => vector_core::secp256k1_compressed_pubkey(key).to_vec(),
-            Self::Eip191(key) => vector_core::secp256k1_eip191_eth_address(key).to_vec(),
+            Self::Secp256k1(key) => super::secp256k1_identity(key),
+            Self::Eip191(key) => super::eip191_identity(key),
             Self::MlDsa44(key) => key.get_public_key().into_bytes().to_vec(),
             Self::Falcon512(key) => falcon512::PublicKey::from_secret_key(key).to_bytes(),
             Self::Winternitz(key) => key.verifying_key().to_bytes().to_vec(),

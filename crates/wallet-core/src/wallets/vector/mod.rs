@@ -55,6 +55,7 @@ pub use instructions::{
     advance, close, initialize, multi_passthrough, passthrough, passthrough_fits, rotation,
     rotation_message, withdraw, AdvanceEntry, MAX_INSTRUCTION_ACCOUNTS, MAX_PASSTHROUGH_SIGNERS,
 };
+pub(crate) use keys::{eip191_identity, secp256k1_identity};
 pub use keys::{
     new_eip191_authority, new_falcon512_authority, new_held_key, new_mldsa44_authority,
     new_rotating_key, new_secp256k1_authority, new_winternitz_authority, new_xmss_authority,
