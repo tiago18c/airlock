@@ -21,6 +21,11 @@
 //! program publishes no IDL. Its data layouts and account orders are the ones
 //! of transactions the program executed, and the route's hops are one
 //! remaining-accounts group, since their accounts depend on each pool program.
+//! `orca-whirlpool.json` is the Anchor IDL Orca's Whirlpool program publishes
+//! in its program-metadata account on mainnet, converted the same way. The
+//! program has the same address on devnet, where it runs the same version,
+//! but its devnet IDL accounts are missing or years old. Its V2 instructions
+//! declare the transfer hook and supplemental tick array accounts they read.
 //! A newer file imported
 //! by the user replaces the embedded one for that program. Removing the
 //! import brings the embedded one back.
@@ -57,6 +62,10 @@ pub const RAYDIUM_CP_SWAP_PROGRAM_ID: Pubkey =
 pub const RAYDIUM_ROUTER_PROGRAM_ID: Pubkey =
     Pubkey::from_str_const("DRaybByLpbUL57LJARs3j8BitTxVfzBg351EaMr5UTCd");
 
+/// Orca's Whirlpool concentrated-liquidity AMM, on devnet and mainnet.
+pub const ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey =
+    Pubkey::from_str_const("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
+
 /// One IDL compiled into the binary.
 #[derive(Clone, Copy, Debug)]
 pub struct BuiltinIdl {
@@ -68,7 +77,7 @@ pub struct BuiltinIdl {
 
 /// In this order on a tie between two files carrying the same additional
 /// program: the earlier file's entry is read.
-pub const BUILTIN_IDLS: [BuiltinIdl; 12] = [
+pub const BUILTIN_IDLS: [BuiltinIdl; 13] = [
     BuiltinIdl {
         program_id: SYSTEM_PROGRAM_ID,
         name: "system",
@@ -128,6 +137,11 @@ pub const BUILTIN_IDLS: [BuiltinIdl; 12] = [
         program_id: RAYDIUM_ROUTER_PROGRAM_ID,
         name: "raydiumRouter",
         json: include_str!("../../idls/raydium-router.json"),
+    },
+    BuiltinIdl {
+        program_id: ORCA_WHIRLPOOL_PROGRAM_ID,
+        name: "whirlpool",
+        json: include_str!("../../idls/orca-whirlpool.json"),
     },
 ];
 
