@@ -20,6 +20,43 @@ use wallet_core::{
 pub mod node;
 pub mod vector;
 
+/// Sign as a user on the Sign screen does: one press, then, when that press
+/// signed an authorization and a key here signs the transaction, the
+/// screen's simulation of the authorized transaction (which fits its limits
+/// when `node` is there) and a second press. The counts add up both presses.
+pub fn sign_through(
+    node: Option<&dyn wallet_core::SolanaRpc>,
+    wire: &[u8],
+    signers: &[&dyn WalletSigner],
+    vector: &mut wallet_flows::sign::VectorSigning<'_>,
+) -> Result<wallet_flows::sign::Signed, wallet_core::SignError> {
+    let first = pollster::block_on(wallet_flows::sign::sign_with(node, wire, signers, vector))?;
+    if !first.transaction_next {
+        return Ok(first);
+    }
+    let fitted = match node {
+        Some(node) => pollster::block_on(wallet_flows::adapt::simulate_fitting(node, &first.wire))
+            .map(|(fitted, _)| fitted)
+            .unwrap_or_else(|_| first.wire.clone()),
+        None => first.wire.clone(),
+    };
+    // Every authorization is in: the second press signs the transaction only.
+    let mut again = wallet_flows::sign::VectorSigning {
+        keys: &[],
+        known: vector.known,
+        cache: None,
+        known_is_current: false,
+    };
+    let second = pollster::block_on(wallet_flows::sign::sign_with(
+        node, &fitted, signers, &mut again,
+    ))?;
+    Ok(wallet_flows::sign::Signed {
+        authorizations: first.authorizations,
+        dropped: first.dropped + second.dropped,
+        ..second
+    })
+}
+
 /// What the other device reads from the code of `signed`: the object, sent
 /// as one payload and decoded there.
 pub fn carried(signed: &wallet_core::protocol::Signed) -> wallet_core::protocol::QrObject {

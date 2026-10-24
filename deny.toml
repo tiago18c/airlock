@@ -27,6 +27,11 @@ ignore = [
     # reads outside input and is not in any shipped binary.
     { id = "RUSTSEC-2026-0194", reason = "build-time only, via wayland-scanner; input is the crate's own files" },
     { id = "RUSTSEC-2026-0195", reason = "build-time only, via wayland-scanner; input is the crate's own files" },
+    # crypto-bigint 0.5 has no fixed release. It comes in through k256 0.13,
+    # which vector-core and solana-nostd-secp256k1-recover still use; the
+    # wallet's own secp256k1 keys sign with k256 0.14 (crypto-bigint 0.7.6+).
+    # Drop this once neither pins k256 0.13.
+    { id = "RUSTSEC-2026-0387", reason = "crypto-bigint 0.5 via k256 0.13 in vector-core and solana-nostd-secp256k1-recover; wallet signing is on k256 0.14" },
 ]
 
 [licenses]

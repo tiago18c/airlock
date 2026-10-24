@@ -5,9 +5,7 @@ use crate::error::FlowError;
 use crate::simulate::{measure, simulate};
 use solana_pubkey::Pubkey;
 use wallet_core::adapt::{swap_fee_payer, AdaptPlan, Adapted, AdaptedStep, HeldBack, PayerSwap};
-use wallet_core::relay::{
-    fit_compute_units, fit_loaded_accounts, with_compute_unit_limit,
-};
+use wallet_core::relay::{fit_compute_units, fit_loaded_accounts, with_compute_unit_limit};
 use wallet_core::{decode_v1_transaction, DecodedTx, Phrase, SolanaRpc, MAX_TRANSACTION_SIZE};
 
 /// Carry `plan` out for `tx`, the transaction it was made for: read the
@@ -82,7 +80,10 @@ fn apply_measured_limits(
     simulation: &wallet_core::simulate::Simulation,
 ) -> Result<Vec<u8>, FlowError> {
     let mut fitted = wire.to_vec();
-    if let Some(units) = simulation.units_consumed {
+    // A run that failed stopped early, often on an authorization not signed
+    // yet, so what it used says nothing of what the full run needs. Compute
+    // stays at the probe's maximum until a run succeeds.
+    if let (Some(units), None) = (simulation.units_consumed, &simulation.error) {
         fitted = fit_compute_units(&fitted, units).map_err(FlowError::refused)?;
     }
     if let Some(size) = simulation.loaded_accounts_data_size {
@@ -311,8 +312,7 @@ mod tests {
             }),
             ..FakeRpc::default()
         };
-        let (fitted, _) =
-            pollster::block_on(simulate_fitting(&rpc, &signed)).unwrap();
+        let (fitted, _) = pollster::block_on(simulate_fitting(&rpc, &signed)).unwrap();
         assert_eq!(fitted, signed);
         assert!(decode_v1_transaction(&fitted).unwrap().signers[0].filled);
     }
@@ -328,11 +328,31 @@ mod tests {
             }),
             ..FakeRpc::default()
         };
-        let (fitted, _) =
-            pollster::block_on(simulate_fitting(&rpc, &tx.wire)).unwrap();
+        let (fitted, _) = pollster::block_on(simulate_fitting(&rpc, &tx.wire)).unwrap();
         let budget = decode_v1_transaction(&fitted).unwrap().budget;
         assert_eq!(budget.compute_unit_limit, Some(165));
         assert_eq!(budget.loaded_accounts_data_size_limit, Some(1_100));
         assert!(!decode_v1_transaction(&fitted).unwrap().signers[0].filled);
+    }
+
+    #[test]
+    fn a_failed_simulation_leaves_compute_at_the_maximum() {
+        let tx = transfer(pk(1), pk(2));
+        let rpc = FakeRpc {
+            simulation: Some(SimulationReply {
+                err: Some(
+                    serde_json::json!({ "InstructionError": [0, "MissingRequiredSignature"] }),
+                ),
+                units_consumed: Some(150),
+                loaded_accounts_data_size: Some(1_000),
+                ..SimulationReply::default()
+            }),
+            ..FakeRpc::default()
+        };
+        let (fitted, _) = pollster::block_on(simulate_fitting(&rpc, &tx.wire)).unwrap();
+        let budget = decode_v1_transaction(&fitted).unwrap().budget;
+        // The network maximum.
+        assert_eq!(budget.compute_unit_limit, Some(1_400_000));
+        assert_eq!(budget.loaded_accounts_data_size_limit, Some(1_100));
     }
 }

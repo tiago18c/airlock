@@ -223,7 +223,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
             button {
                 class: if prep.can_sign { "primary" } else { "" },
                 disabled: !prep.can_sign || busy(),
-                title: if prep.can_sign { "" } else { "Sign is offered when the whole transaction reads in words and this device holds every missing signature." },
+                title: if prep.can_sign { "" } else { "Sign is offered when the whole transaction reads in words, this device holds every missing signature, and none of them is an authorization. Review signs an authorization first, then the transaction." },
                 onclick: move |_| {
                     let Some((wire, tables, known, flow)) = prep.for_sign.clone() else {
                         return;

@@ -134,7 +134,7 @@ fn a_sites_new_mint_for_a_vector_wallet_gets_a_key_made_here_that_signs_after_th
     let rebuilt = decode_v1_transaction(&adapted.wire).unwrap();
     assert!(rebuilt.signers.iter().any(|slot| slot.pubkey == fresh[0]));
 
-    // The authorization and the payer first, as one press of Sign does, then
+    // The authorization and the payer first, as Sign does over two presses, then
     // the key kept for the mint.
     let signed = desk.sign(&adapted.wire, &adapted.context).unwrap();
     assert_eq!(signed.authorizations, 1);
@@ -297,15 +297,18 @@ fn a_new_blockhash_and_new_limits_after_signing_still_land() {
         with_blockhash(&wire, chain.latest_blockhash()).unwrap()
     };
     let before = decode_v1_transaction(&wire).unwrap();
-    let raised = before
-        .budget
-        .compute_unit_limit
-        .unwrap_or(200_000)
-        .saturating_add(50_000);
-    let wire = with_compute_unit_limit(&wire, raised).unwrap();
+    // A rebuild measured before the authorization was signed leaves compute
+    // at the network maximum, so the limit moves down from there.
+    let limit = before.budget.compute_unit_limit.unwrap_or(200_000);
+    let changed = if limit > 1_350_000 {
+        limit - 50_000
+    } else {
+        limit + 50_000
+    };
+    let wire = with_compute_unit_limit(&wire, changed).unwrap();
     let wire = fit_loaded_accounts(&wire, 800_000).unwrap();
     let after = decode_v1_transaction(&wire).unwrap();
-    assert_eq!(after.budget.compute_unit_limit, Some(raised));
+    assert_eq!(after.budget.compute_unit_limit, Some(changed));
     assert!(authority_slots(&after).iter().all(|slot| slot.signed));
     let signed = desk.sign(&wire, &adapted.context).unwrap();
     desk.land(&signed.wire);

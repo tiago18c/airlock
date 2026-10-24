@@ -48,11 +48,11 @@ fn a_programmatic_signer_that_was_made_to_pay_gets_its_hot_wallet() {
     assert_eq!(execution.instructions(), tx.native_instructions());
     assert_eq!(execution.nonce_value, blockhash(7));
 
-    // This device holds both keys, so one press signs all of it.
+    // This device holds both keys, so it signs all of it: the authorization,
+    // then the transaction.
     let local = [d.payer.pubkey(), d.authority.pubkey()];
     assert_eq!(signing_status(&rebuilt, &local).missing_elsewhere(), 0);
-    let signed = sign_locally(&adapted.wire, &d.keys()).unwrap();
-    assert_eq!((signed.authorizations, signed.signatures), (1, 1));
+    let signed = d.sign_both(&adapted.wire);
     let signed = decode_v1_transaction(&signed.wire).unwrap();
     assert!(signing_status(&signed, &local).complete());
 }

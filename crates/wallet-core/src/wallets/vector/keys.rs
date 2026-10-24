@@ -14,6 +14,7 @@ use falcon_rust::falcon512;
 use fips204::ml_dsa_44;
 use fips204::traits::SerDes;
 use k256::ecdsa::SigningKey;
+use k256::elliptic_curve::Generate;
 use rand::RngCore;
 use solana_pubkey::Pubkey;
 use solana_winternitz::hazmat::winternitz::SecretKey as WinternitzSecret;
@@ -23,21 +24,29 @@ use std::str::FromStr;
 /// A new secp256k1 key for a Held Vector authority: public identity, then
 /// the 32-byte secret kept in the record.
 pub fn new_secp256k1_authority() -> (Vec<u8>, Vec<u8>) {
-    let key = SigningKey::random(&mut rand::thread_rng());
-    (
-        vector_core::secp256k1_compressed_pubkey(&key).to_vec(),
-        key.to_bytes().to_vec(),
-    )
+    let key = SigningKey::generate();
+    (secp256k1_identity(&key), key.to_bytes().to_vec())
+}
+
+/// The 33-byte compressed public key a secp256k1 account is known by.
+///
+/// Derived here rather than through `vector_core`, whose helpers take an older
+/// k256's key type.
+pub(crate) fn secp256k1_identity(key: &SigningKey) -> Vec<u8> {
+    key.verifying_key().to_sec1_point(true).as_bytes().to_vec()
+}
+
+/// The 20-byte Ethereum address an EIP-191 account is known by.
+pub(crate) fn eip191_identity(key: &SigningKey) -> Vec<u8> {
+    let uncompressed = key.verifying_key().to_sec1_point(false);
+    vector_core::eth_address_from_pubkey(uncompressed.as_bytes()).to_vec()
 }
 
 /// A new EIP-191 key for a Held Vector authority: Ethereum address, then the
 /// 32-byte secret kept in the record.
 pub fn new_eip191_authority() -> (Vec<u8>, Vec<u8>) {
-    let key = SigningKey::random(&mut rand::thread_rng());
-    (
-        vector_core::secp256k1_eip191_eth_address(&key).to_vec(),
-        key.to_bytes().to_vec(),
-    )
+    let key = SigningKey::generate();
+    (eip191_identity(&key), key.to_bytes().to_vec())
 }
 
 /// A new ML-DSA-44 key for a Held Vector authority: public key, then the

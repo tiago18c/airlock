@@ -245,8 +245,7 @@ pub fn to_v1_swapping(
         (Limits::Probe, _) => (MAX_CU_LIMIT, LimitFrom::Probe),
         (
             Limits::Measured {
-                units: Some(units),
-                ..
+                units: Some(units), ..
             },
             _,
         ) => (with_margin(*units, MAX_CU_LIMIT), LimitFrom::Simulated),

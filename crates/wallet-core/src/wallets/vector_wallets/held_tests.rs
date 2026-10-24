@@ -88,7 +88,7 @@ fn the_key_kept_in_the_record_or_a_hot_wallet_signs_and_nothing_else_does() {
 #[test]
 fn a_secp256k1_key_in_the_record_signs_its_digest() {
     let secret = secp_key();
-    let public = vector_core::secp256k1_compressed_pubkey(&secret);
+    let public = secp256k1_identity(&secret);
     let kept = vector(&public, SchemeId::Secp256k1, held_secp(&secret.to_bytes()));
     let id = kept.id;
     let wallets = [kept];
@@ -104,7 +104,7 @@ fn a_secp256k1_key_in_the_record_signs_its_digest() {
 #[test]
 fn an_eip191_key_in_the_record_signs_through_the_envelope() {
     let secret = secp_key();
-    let address = vector_core::secp256k1_eip191_eth_address(&secret);
+    let address = eip191_identity(&secret);
     let kept = vector(&address, SchemeId::Eip191, held_secp(&secret.to_bytes()));
     let id = kept.id;
     let wallets = [kept];
@@ -243,33 +243,32 @@ fn a_signature_verifies_only_over_its_digest_and_with_its_key() {
 #[test]
 fn a_high_s_secp256k1_signature_still_verifies() {
     let secret = secp_key();
-    let public = vector_core::secp256k1_compressed_pubkey(&secret);
+    let public = secp256k1_identity(&secret);
     let digest = [5u8; 32];
     let (raw, _) = secret.sign_prehash(&digest).unwrap();
     let bytes: [u8; 64] = raw.to_bytes().into();
+    let is_high = |bytes: &[u8; 64]| {
+        let sig = SecpSignature::from_slice(bytes).unwrap();
+        sig.normalize_s() != sig
+    };
     let sig = SecpSignature::from_slice(&bytes).unwrap();
     // Low-s becomes high-s by negating s; an already-high signature is kept.
-    let high: [u8; 64] = match sig.normalize_s() {
-        Some(_) => bytes,
-        None => SecpSignature::from_scalars(sig.r(), -(*sig.s()))
+    let high: [u8; 64] = if is_high(&bytes) {
+        bytes
+    } else {
+        SecpSignature::from_scalars(sig.r(), -(*sig.s()))
             .unwrap()
             .to_bytes()
-            .into(),
+            .into()
     };
-    assert!(
-        SecpSignature::from_slice(&high)
-            .unwrap()
-            .normalize_s()
-            .is_some(),
-        "the crafted signature must be high-s"
-    );
+    assert!(is_high(&high), "the crafted signature must be high-s");
     verify(SchemeId::Secp256k1, &public, &digest, &high).unwrap();
 }
 
 #[test]
 fn parse_personal_sign_normalizes_v_and_refuses_a_text_signature() {
     let secret = secp_key();
-    let address = vector_core::secp256k1_eip191_eth_address(&secret);
+    let address = eip191_identity(&secret);
     let digest = [11u8; 32];
     let signer = VectorSigner::Eip191(secret.clone());
     let mut signature = signer.sign(&digest).unwrap();

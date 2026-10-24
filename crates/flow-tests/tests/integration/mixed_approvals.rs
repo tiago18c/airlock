@@ -3,7 +3,7 @@
 //! is signing order (programmatic before Vector).
 
 use crate::support::vector::{run, Desk};
-use crate::support::{Chain, SOL};
+use crate::support::{sign_through, Chain, SOL};
 use wallet_core::adapt::{plan_adaptation, AdaptedStep, HeldBack};
 use wallet_core::programmatic::create_executor_nonce;
 use wallet_core::squads::{Squad, SquadsMember, SquadsProgram, SquadsSetup, PERMISSION_ALL};
@@ -137,7 +137,7 @@ fn sign_mixed_by(
         cache: Some(&mut desk.xmss_retries),
         known_is_current: false,
     };
-    run(sign_with(Some(&desk.node), wire, &local, &mut vector))
+    sign_through(Some(&desk.node), wire, &local, &mut vector)
         .unwrap()
         .wire
 }
@@ -477,14 +477,14 @@ fn sign_offline(
         cache: Some(&mut desk.xmss_retries),
         known_is_current: false,
     };
-    run(sign_with(None, wire, &local, &mut vector))
+    sign_through(None, wire, &local, &mut vector)
         .map(|signed| signed.wire)
         .map_err(|err| err.to_string())
 }
 
 /// The online device signs the programmatic `Submit`, and an offline device
 /// with only the note signs for a Falcon and an XMSS member; or that device
-/// holds the authority too, and signs all three in one press. Filling the
+/// holds the authority too, and signs all three authorizations in one press. Filling the
 /// `Submit` clears Vector signatures, and has to keep the next key the XMSS
 /// account names to keep its key: before and after a transfer and a
 /// rotation.
@@ -577,7 +577,7 @@ fn an_xmss_and_a_falcon_member_sign_after_the_programmatic_authority_offline() {
         );
         if same_press {
             // The authority is on the device that holds both Vector keys,
-            // and all three sign in one press.
+            // and all three authorizations sign in one press.
             let wire = sign_offline(&mut desk, &adapted.wire, &adapted.context, &[&authority])
                 .unwrap_or_else(|err| panic!("{before}, one press: {err}"));
             desk.land(&wire);

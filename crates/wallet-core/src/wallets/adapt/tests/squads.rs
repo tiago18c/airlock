@@ -374,8 +374,7 @@ fn a_multisig_whose_member_is_a_programmatic_signer_takes_both_steps() {
             .iter()
             .any(|meta| meta.pubkey == d.address && meta.is_signer));
 
-        let signed = sign_locally(&adapted.wire, &d.keys()).unwrap();
-        assert_eq!((signed.authorizations, signed.signatures), (1, 1));
+        let signed = d.sign_both(&adapted.wire);
         assert!(decode_v1_transaction(&signed.wire).unwrap().fully_signed());
     }
 }

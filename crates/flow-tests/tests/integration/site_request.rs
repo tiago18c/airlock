@@ -186,13 +186,23 @@ impl App {
         quick_sign(&tx, &local, &explain_transaction(&catalog, &tx))
     }
 
-    /// One press of Sign with the keys in the vault, then the bytes go out.
+    /// Sign with the keys in the vault, then the bytes go out. A press that
+    /// signs an authorization signs nothing else, so the transaction takes
+    /// a second press.
     fn sign_and_send(&mut self, wire: &[u8], keys: &[&KeypairSigner]) -> crate::support::Landed {
         let signers: Vec<&dyn WalletSigner> =
             keys.iter().map(|key| *key as &dyn WalletSigner).collect();
-        let signed = sign_locally(wire, &signers).unwrap();
+        let mut signed = sign_locally(wire, &signers).unwrap();
+        if signed.authorizations > 0 {
+            assert_eq!(
+                signed.signatures, 0,
+                "an authorization is a press of its own"
+            );
+            assert!(signed.transaction_next);
+            signed = sign_locally(&signed.wire, &signers).unwrap();
+        }
         let tx = decode_v1_transaction(&signed.wire).unwrap();
-        assert!(tx.fully_signed(), "one press should finish it");
+        assert!(tx.fully_signed(), "the presses should finish it");
         self.chain
             .send_wire(&signed.wire)
             .unwrap_or_else(|failure| panic!("{}", logs(&failure)))
@@ -226,7 +236,7 @@ fn signer_keys(wire: &[u8]) -> Vec<Pubkey> {
 }
 
 #[test]
-fn a_request_for_a_programmatic_signer_is_rebuilt_signed_in_one_press_and_lands() {
+fn a_request_for_a_programmatic_signer_is_rebuilt_authorized_signed_and_lands() {
     let mut app = App::new();
     app.chain.fund(&app.address, SOL);
     let request = app.site_request(

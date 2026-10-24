@@ -473,9 +473,11 @@ fn SignActions(
     let elsewhere = status.missing_elsewhere();
     let authorizations = status.authorizations_elsewhere();
     let sign_label = match step {
+        // The authorizations go on a press of their own.
         NextSignature::Authorization => {
-            if status.signable > 1 {
-                format!("Sign authorization ({})", status.signable)
+            let here = status.authorizations_here();
+            if here > 1 {
+                format!("Sign authorization ({here})")
             } else {
                 "Sign authorization".into()
             }

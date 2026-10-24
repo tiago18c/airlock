@@ -52,6 +52,17 @@ impl Desk {
         [&self.payer, &self.authority]
     }
 
+    /// Sign `wire` with both keys: the authorization on one press, the
+    /// transaction on the next. Returns the second press.
+    fn sign_both(&self, wire: &[u8]) -> crate::review::signing::LocalSigning {
+        let first = sign_locally(wire, &self.keys()).unwrap();
+        assert_eq!((first.authorizations, first.signatures), (1, 0));
+        assert!(first.transaction_next);
+        let second = sign_locally(&first.wire, &self.keys()).unwrap();
+        assert_eq!((second.authorizations, second.signatures), (0, 1));
+        second
+    }
+
     fn nonce_account(&self) -> (Pubkey, RawAccount) {
         let mut data = vec![0u8; EXECUTOR_NONCE_LEN];
         data[..32].copy_from_slice(blockhash(7).as_ref());

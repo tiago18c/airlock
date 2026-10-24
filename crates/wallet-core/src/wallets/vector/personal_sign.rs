@@ -71,7 +71,7 @@ fn recovers_eth_address(address: &[u8], prehash: &[u8; 32], signature: &[u8]) ->
     let Ok(recovered) = SecpVerifyingKey::recover_from_prehash(prehash, &sig, recid) else {
         return false;
     };
-    let uncompressed = recovered.to_encoded_point(false);
+    let uncompressed = recovered.to_sec1_point(false);
     let hash: [u8; 32] = Keccak256::digest(&uncompressed.as_bytes()[1..]).into();
     hash[12..32] == *address
 }

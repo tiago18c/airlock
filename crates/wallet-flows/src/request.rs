@@ -336,7 +336,10 @@ mod tests {
         let offline = pollster::block_on(convert(None, &tx, &[pk(1)])).unwrap();
         assert_eq!(offline.limit_from, LimitFrom::Site);
         assert_eq!(budget(&offline).compute_unit_limit, Some(200_000));
-        assert_eq!(budget(&offline).loaded_accounts_data_size_limit, Some(4_096));
+        assert_eq!(
+            budget(&offline).loaded_accounts_data_size_limit,
+            Some(4_096)
+        );
 
         let rpc = FakeRpc {
             simulation: Some(SimulationReply {
