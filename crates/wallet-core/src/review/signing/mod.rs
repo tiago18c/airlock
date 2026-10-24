@@ -189,6 +189,18 @@ impl SigningStatus {
             .count()
     }
 
+    /// Authorizations a key of this device signs. A press that signs any
+    /// of them signs nothing else.
+    pub fn authorizations_here(&self) -> usize {
+        self.lines
+            .iter()
+            .filter(|line| {
+                matches!(line.role, SignerRole::Authority { .. })
+                    && line.state == SignerState::Local
+            })
+            .count()
+    }
+
     fn count(&self, wanted: impl Fn(SignerState) -> bool) -> usize {
         self.lines.iter().filter(|line| wanted(line.state)).count()
     }
@@ -342,10 +354,16 @@ pub struct LocalSigning {
     pub signatures: usize,
     /// Earlier transaction signatures that an authorization made void.
     pub dropped: usize,
+    /// Every authorization is signed and a key here signs the transaction,
+    /// on a press of its own.
+    pub transaction_next: bool,
 }
 
-/// Sign everything `signers` can sign, in order: authorizations, then, once
-/// none is outstanding, the transaction itself. Authorizations exist only in
+/// Sign everything `signers` can sign, in order: authorizations, then, on a
+/// later press once none is outstanding, the transaction itself. A press
+/// that signs an authorization stops there: the authorization changes what
+/// the transaction runs, so it is simulated again and its limits fitted
+/// before anything signs over them. Authorizations exist only in
 /// v1 transactions this app built; legacy and v0 get transaction signatures only.
 /// Signing reads only the message bytes, so a v0 wire needs no lookup tables.
 pub fn sign_locally(wire: &[u8], signers: &[&dyn WalletSigner]) -> Result<LocalSigning, SignError> {
@@ -391,20 +409,22 @@ pub fn sign_locally_in_with(
         .map_err(unreadable)?
         .valid_signatures();
 
-    let (wire, signatures) = if outstanding {
+    // An authorization signed now holds the transaction for the next press.
+    let transaction_next = authorizations > 0 && !outstanding && {
+        let tx = decode_v1_transaction(&authorized_wire).map_err(unreadable)?;
+        let keys: Vec<_> = signers.iter().map(|signer| signer.pubkey()).collect();
+        tx.signers
+            .iter()
+            .any(|slot| !slot.filled && keys.contains(&slot.pubkey))
+    };
+    let (wire, signatures) = if outstanding || authorizations > 0 {
         (authorized_wire, 0)
     } else {
-        match apply_local_signatures(&authorized_wire, signers) {
-            Ok(wire) => {
-                let after = parse_wire(&wire)
-                    .map(|view| view.valid_signatures())
-                    .unwrap_or(before);
-                (wire, after.saturating_sub(before))
-            }
-            // The authorization was this device's whole part.
-            Err(SignError::NoLocalSigner) if authorizations > 0 => (authorized_wire, 0),
-            Err(err) => return Err(err),
-        }
+        let wire = apply_local_signatures(&authorized_wire, signers)?;
+        let after = parse_wire(&wire)
+            .map(|view| view.valid_signatures())
+            .unwrap_or(before);
+        (wire, after.saturating_sub(before))
     };
     if authorizations == 0 && signatures == 0 {
         return Err(SignError::NoLocalSigner);
@@ -414,6 +434,7 @@ pub fn sign_locally_in_with(
         authorizations,
         signatures,
         dropped,
+        transaction_next,
     })
 }
 

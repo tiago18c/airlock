@@ -179,20 +179,44 @@ fn the_payer_waits_for_an_authority_that_is_elsewhere() {
 }
 
 #[test]
-fn a_device_with_both_keys_signs_both_in_one_go() {
+fn a_device_with_both_keys_signs_the_authorization_then_the_transaction() {
     let hot = KeypairSigner::new_random();
     let authority = KeypairSigner::new_random();
     let wire = wrapped(&hot, &authority);
     let keys = [hot.pubkey(), authority.pubkey()];
     let status = signing_status(&decode_v1_transaction(&wire).unwrap(), &keys);
     assert_eq!(status.signable, 2);
+    let signers = [&hot as &dyn WalletSigner, &authority];
 
-    let done = sign_locally(&wire, &[&hot as &dyn WalletSigner, &authority]).unwrap();
+    // The authorization changes what runs, so the transaction is simulated
+    // again before anything signs over its limits: a press of its own.
+    let first = sign_locally(&wire, &signers).unwrap();
     assert_eq!(
-        (done.authorizations, done.signatures, done.dropped),
-        (1, 1, 0)
+        (first.authorizations, first.signatures, first.dropped),
+        (1, 0, 0)
     );
-    assert!(signing_status(&decode_v1_transaction(&done.wire).unwrap(), &keys).complete());
+    assert!(first.transaction_next);
+    let status = signing_status(&decode_v1_transaction(&first.wire).unwrap(), &keys);
+    assert!(!status.complete());
+    assert_eq!(next_step(&status), NextSignature::Transaction);
+
+    let second = sign_locally(&first.wire, &signers).unwrap();
+    assert_eq!(
+        (second.authorizations, second.signatures, second.dropped),
+        (0, 1, 0)
+    );
+    assert!(!second.transaction_next);
+    assert!(signing_status(&decode_v1_transaction(&second.wire).unwrap(), &keys).complete());
+}
+
+#[test]
+fn an_authorization_alone_is_not_followed_by_a_transaction_this_device_cannot_sign() {
+    let hot = KeypairSigner::new_random();
+    let authority = KeypairSigner::new_random();
+    let wire = wrapped(&hot, &authority);
+    let done = sign_locally(&wire, &[&authority as &dyn WalletSigner]).unwrap();
+    assert_eq!((done.authorizations, done.signatures), (1, 0));
+    assert!(!done.transaction_next);
 }
 
 #[test]

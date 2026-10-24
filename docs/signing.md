@@ -48,7 +48,7 @@ flowchart LR
 - A **transaction signature** covers the whole message. It sits in the transaction's signature slots. The first slot is the fee payer's.
 - An **authorization signature** covers either a programmatic signer's `Submit` message (Ed25519, 64 bytes in instruction data) or a Vector account's digest in an `Advance` (length and place depend on the account's scheme). Both change the message, so every transaction signature made before them is removed.
 
-`wallet_core::review::signing::sign_locally` signs in one order: every authorization this device can make (Ed25519 `Submit` slots, then Vector `Advance` slots), with a stateful Vector key (XMSS or Winternitz) last among them, then, once none is outstanding, the transaction itself.
+`wallet_core::review::signing::sign_locally` signs in one order: every authorization this device can make (Ed25519 `Submit` slots, then Vector `Advance` slots), with a stateful Vector key (XMSS or Winternitz) last among them. A press that signs any authorization stops there. The transaction itself is signed on a later press, once none is outstanding. An authorization changes what runs: an unsigned one makes simulation fail early, so the compute it reports is far too low. Between the two presses the Sign screen simulates the authorized transaction at the highest compute limit and fits both limits to what it used. A simulation that fails leaves compute at the maximum. The browser's quick Sign is not offered when this device signs an authorization; Review does it in two presses.
 
 ### Signer states
 
@@ -111,7 +111,7 @@ flowchart TD
   R -->|"yes, from another screen"| RB["Rebuild on arrival<br/>(needs connection)"] --> D
   R -->|"yes, from the browser, paste or scan"| RU["Rebuild when the user asks<br/>(needs connection)"] --> D
   R -->|no| Sim["Simulate<br/>(online only)"]
-  Sim --> Sig["Sign: authorizations first,<br/>then the transaction"]
+  Sim --> Sig["Sign: authorizations on one press,<br/>simulate again, then the transaction"]
   Sig --> C{"Every signer<br/>Signed?"}
   C -->|no| Sh["Share the transaction by QR or text,<br/>add returned signatures in the inbox"]
   Sh --> C
@@ -231,7 +231,9 @@ sequenceDiagram
   A->>N: executor nonce, blockhash
   A->>A: wrap into Submit, fee payer = hot wallet
   alt Authority is a hot wallet here
-    U->>A: Sign (2): authorization, then transaction
+    U->>A: Sign authorization
+    A->>N: simulate, fit compute and loaded accounts
+    U->>A: Sign transaction
   else Authority is on another device
     A-->>O: Transaction QR
     U->>O: Sign (authorization only)
@@ -322,7 +324,9 @@ sequenceDiagram
   A->>N: account data, blockhash
   A->>A: wrap into Advance and Passthrough, fee payer = hot wallet
   alt Authority is Held or a hot wallet here
-    U->>A: Sign (2): authorization, then transaction
+    U->>A: Sign authorization
+    A->>N: simulate, fit compute and loaded accounts
+    U->>A: Sign transaction
   else Authority is outside
     A-->>O: Transaction QR and context note
     U->>O: Sign (authorization only)

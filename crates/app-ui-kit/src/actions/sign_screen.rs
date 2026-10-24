@@ -629,7 +629,12 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>) {
                 }
                 .log_signed(by);
                 let mut text = done.note();
-                if done.authorized && return_to_browser(&session, &done.wire) {
+                // The site gets it back once this device has nothing left
+                // to sign: not between the authorization and the transaction.
+                if done.authorized
+                    && !done.transaction_next
+                    && return_to_browser(&session, &done.wire)
+                {
                     if !text.is_empty() {
                         text.push(' ');
                     }

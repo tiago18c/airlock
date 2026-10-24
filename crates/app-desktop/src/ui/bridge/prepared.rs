@@ -313,8 +313,15 @@ pub(in crate::ui) fn use_prepared_request(
         && converted
             .as_ref()
             .is_some_and(|converted| !converted.replaced.is_empty());
+    // An authorization signed here changes what runs, so Review signs it,
+    // simulates the transaction again and fits its limits, then signs the
+    // transaction on a later press.
+    let authorizes_here = status
+        .as_ref()
+        .is_some_and(|status| status.authorizations_here() > 0);
     let can_sign = can_review
         && !unsimulated
+        && !authorizes_here
         && verdict.is_some_and(|verdict| verdict.allowed_leaving(site_signs.len()))
         && !fetching()
         && !modal_expired;

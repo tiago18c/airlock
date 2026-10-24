@@ -11,7 +11,7 @@ use wallet_core::vector::keys_to_sign_with;
 use wallet_core::{
     decode_v1_transaction, KeypairSigner, MemoryStore, Vault, WalletId, WalletRecord, WalletSigner,
 };
-use wallet_flows::sign::{sign_with, Signed, VectorSigning};
+use wallet_flows::sign::{Signed, VectorSigning};
 
 const BOTH: [SquadsProgram; 2] = [SquadsProgram::V4, SquadsProgram::SmartAccount];
 
@@ -109,7 +109,8 @@ fn sign_with_keys(
         cache: Some(&mut desk.xmss_retries),
         known_is_current: false,
     };
-    run(sign_with(Some(&desk.node), wire, &local, &mut vector)).map_err(|err| err.to_string())
+    crate::support::sign_through(Some(&desk.node), wire, &local, &mut vector)
+        .map_err(|err| err.to_string())
 }
 
 #[test]

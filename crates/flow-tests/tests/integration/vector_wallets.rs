@@ -134,7 +134,7 @@ fn a_sites_new_mint_for_a_vector_wallet_gets_a_key_made_here_that_signs_after_th
     let rebuilt = decode_v1_transaction(&adapted.wire).unwrap();
     assert!(rebuilt.signers.iter().any(|slot| slot.pubkey == fresh[0]));
 
-    // The authorization and the payer first, as one press of Sign does, then
+    // The authorization and the payer first, as Sign does over two presses, then
     // the key kept for the mint.
     let signed = desk.sign(&adapted.wire, &adapted.context).unwrap();
     assert_eq!(signed.authorizations, 1);

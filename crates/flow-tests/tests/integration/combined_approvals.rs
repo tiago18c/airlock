@@ -32,7 +32,7 @@ use wallet_core::{
     KeypairSigner, WalletId, WalletKind, WalletRecord, WalletSigner,
 };
 use wallet_flows::compile::{compile_fresh, compile_on_nonce};
-use wallet_flows::sign::{sign, Signed};
+use wallet_flows::sign::Signed;
 
 const BOTH: [SquadsProgram; 2] = [SquadsProgram::V4, SquadsProgram::SmartAccount];
 
@@ -92,16 +92,18 @@ fn add(wire: &[u8], object: QrObject) -> (Vec<u8>, SignatureUse) {
     accept_signature(wire, &signed).unwrap()
 }
 
-/// One press of Sign on a device that holds `keys`. `node` is there when the
-/// device is online.
+/// Sign on a device that holds `keys`, pressing again for the transaction
+/// when a press signed an authorization. `node` is there when the device is
+/// online.
 fn press_sign(node: Option<&Node>, wire: &[u8], keys: &[&KeypairSigner]) -> Signed {
     let signers: Vec<&dyn WalletSigner> =
         keys.iter().map(|key| *key as &dyn WalletSigner).collect();
-    run(sign(
+    crate::support::sign_through(
         node.map(|node| node as &dyn wallet_core::SolanaRpc),
         wire,
         &signers,
-    ))
+        &mut wallet_flows::sign::VectorSigning::default(),
+    )
     .unwrap_or_else(|err| panic!("{err}"))
 }
 

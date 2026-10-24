@@ -317,9 +317,10 @@ impl Desk {
         adapted
     }
 
-    /// One press of Sign here, online, as the Sign screen does it: the
-    /// accounts are read, what each hash-based key signs with is recorded
-    /// (leaf marks, then the vault), then the Vector keys sign and the payer.
+    /// Sign here, online, as the Sign screen does it: the accounts are read,
+    /// what each hash-based key signs with is recorded (leaf marks, then the
+    /// vault), then the Vector keys sign; after the screen's simulation, a
+    /// second press signs as the payer.
     pub fn sign(&mut self, wire: &[u8], known: &[VectorContext]) -> Result<Signed, String> {
         let known = match decode_v1_transaction(wire) {
             Ok(tx) => run(wallet_flows::vector::read_context(&self.node, &tx, known))
@@ -348,12 +349,12 @@ impl Desk {
             cache: Some(&mut self.xmss_retries),
             known_is_current: false,
         };
-        run(sign_with(
+        super::sign_through(
             Some(&self.node),
             wire,
             &[&self.payer as &dyn WalletSigner],
             &mut vector,
-        ))
+        )
         .map_err(|err| err.to_string())
     }
 

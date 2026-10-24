@@ -26,6 +26,9 @@ pub struct Signed {
     /// No authorization inside the transaction is still waiting for a
     /// signature, so whoever asked for it can have it back.
     pub authorized: bool,
+    /// A key here signs the transaction on the next press, once it has been
+    /// simulated with the authorization in place.
+    pub transaction_next: bool,
 }
 
 impl Signed {
@@ -49,6 +52,9 @@ impl Signed {
                 "{} signature(s) made over the transaction before the authorization were removed.",
                 self.dropped
             ));
+        }
+        if self.transaction_next {
+            parts.push("Press Sign again to sign the transaction.".to_string());
         }
         parts.join(" ")
     }
@@ -84,7 +90,9 @@ pub fn wants_fresh_blockhash(tx: &DecodedTx, local: &[Pubkey]) -> bool {
 
 fn fresh_blockhash_for(tx: &DecodedTx, local: &LocalKeys, ctx: &AuthContext) -> bool {
     let status = signing_status_in(tx, local, ctx);
+    // A press that signs an authorization signs nothing else.
     let signs_transaction = !status.waiting_for_authority
+        && status.authorizations_here() == 0
         && status.lines.iter().any(|line| {
             !matches!(line.role, SignerRole::Authority { .. }) && line.state == SignerState::Local
         });
@@ -180,6 +188,7 @@ pub async fn sign_with(
         refreshed,
         last_valid_height,
         authorized,
+        transaction_next: done.transaction_next,
     })
 }
 
@@ -336,31 +345,43 @@ mod tests {
     }
 
     #[test]
-    fn one_device_holding_both_keys_signs_both_and_moves_the_blockhash() {
+    fn one_device_holding_both_keys_authorizes_then_moves_the_blockhash_and_signs() {
         let (hot, authority) = (KeypairSigner::new_random(), KeypairSigner::new_random());
         let rpc = FakeRpc::default();
-        let done = run(Some(&rpc), &relayed(&hot, &authority), &[&hot, &authority]);
-        assert_eq!((done.authorizations, done.signatures), (1, 1));
-        assert!(done.authorized);
+        let first = run(Some(&rpc), &relayed(&hot, &authority), &[&hot, &authority]);
+        assert_eq!((first.authorizations, first.signatures), (1, 0));
+        assert!(first.authorized && first.transaction_next && !first.refreshed);
+        assert_eq!(blockhash_of(&first.wire), STALE);
+        assert_eq!(
+            first.note(),
+            "Signed the authorization. Press Sign again to sign the transaction."
+        );
+
+        let done = run(Some(&rpc), &first.wire, &[&hot, &authority]);
+        assert_eq!((done.authorizations, done.signatures), (0, 1));
+        assert!(done.authorized && done.refreshed && !done.transaction_next);
         assert_eq!(blockhash_of(&done.wire), FRESH);
     }
 
     #[test]
-    fn one_device_holding_two_authorities_and_the_payer_signs_everything_in_one_press() {
+    fn one_device_holding_two_authorities_and_the_payer_signs_everything_in_two_presses() {
         let hot = KeypairSigner::new_random();
         let (first, second) = (KeypairSigner::new_random(), KeypairSigner::new_random());
         let rpc = FakeRpc::default();
-        let done = run(
-            Some(&rpc),
-            &relayed_for(&hot, &[&first, &second]),
-            &[&hot, &first, &second],
+        let keys = [&hot, &first, &second];
+        let authorized = run(Some(&rpc), &relayed_for(&hot, &[&first, &second]), &keys);
+        assert_eq!((authorized.authorizations, authorized.signatures), (2, 0));
+        assert_eq!(
+            authorized.note(),
+            "Signed the authorization as 2 authorities. Press Sign again to sign the transaction."
         );
-        assert_eq!((done.authorizations, done.signatures), (2, 1));
+        let done = run(Some(&rpc), &authorized.wire, &keys);
+        assert_eq!((done.authorizations, done.signatures), (0, 1));
         assert!(done.authorized && done.refreshed);
         assert_eq!(blockhash_of(&done.wire), FRESH);
         assert_eq!(
             done.note(),
-            "Signed the authorization as 2 authorities. Moved the transaction to a fresh blockhash and signed it."
+            "Moved the transaction to a fresh blockhash and signed it."
         );
         let tx = decode_v1_transaction(&done.wire).unwrap();
         assert!(signing_status(&tx, &[]).complete());

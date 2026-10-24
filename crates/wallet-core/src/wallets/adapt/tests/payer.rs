@@ -138,7 +138,7 @@ fn a_sponsored_request_for_a_programmatic_signer_can_be_paid_by_its_hot_wallet()
     let rebuilt = plan
         .build(&swapped, &[d.nonce_account()], blockhash(4))
         .unwrap();
-    let signed = sign_locally(&rebuilt.wire, &d.keys()).unwrap();
+    let signed = d.sign_both(&rebuilt.wire);
     let signed = decode_v1_transaction(&signed.wire).unwrap();
     assert_eq!(signer_keys(&signed), vec![d.payer.pubkey()]);
     assert!(signing_status(&signed, &local).complete());
