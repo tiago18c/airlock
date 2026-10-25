@@ -101,6 +101,7 @@ pub fn use_forms() -> Forms {
             rebuilding: use_signal(|| false),
             auto_rebuilt_for: use_signal(|| None::<[u8; 32]>),
             made_here: use_signal(Vec::<MadeHere>::new),
+            created: use_signal(Vec::new),
         },
         stake: StakeForm {
             snapshot: use_signal(|| None),

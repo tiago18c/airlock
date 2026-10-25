@@ -15,6 +15,9 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - A Squads rebuild no longer drops execute because a static compute estimate (the site's limit plus wrap overhead) was above 1,400,000. The wrap caps at the network maximum and the real use is taken from simulation, so a stacked estimate like 1,500,000 no longer stops a proposal that would fit.
 - Signing an authorization (a programmatic signer's or a Vector account's) is a press of its own. Sign then simulates the authorized transaction and fits its limits before the next press signs the transaction, so an authorization made on this device no longer lands out of compute. The browser's quick Sign is not offered when this device signs an authorization: Review does it. A simulation that fails, as it does before an authorization is signed, keeps compute at the highest limit instead of the little the failed run used.
 
+### Fixed
+- A browser or paste request whose programs create accounts from new keypairs in their own calls, like Orca's pool creation creating its two vaults, no longer converts into signer slots nobody can sign. When the transaction's own instructions do not explain an unsigned outside signer, it is simulated and the accounts its programs create count as one-time keys, left for the site to sign or replaced by keys made here. Without a node, or when the simulation fails, only the transaction's own instructions count, as before.
+
 ### Security
 - Secp256k1 and EIP-191 Vector keys sign with k256 0.14, off crypto-bigint 0.5 and its timing advisory (RUSTSEC-2026-0387). crypto-bigint 0.7 is at 0.7.7.
 

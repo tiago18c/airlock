@@ -304,7 +304,8 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     let site_signs = if from_browser && tx.format != TxFormat::V1 {
         let mut here = session.known_wallet_pubkeys();
         here.extend(local.keys.iter().copied());
-        wallet_flows::request::left_for_site(tx.as_ref(), &here).len()
+        let created = session.forms.sign.created_in(tx.as_ref());
+        wallet_flows::request::left_for_site(tx.as_ref(), &here, &created).len()
     } else {
         0
     };
