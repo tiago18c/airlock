@@ -66,6 +66,7 @@ Contrast, checked for both themes: body and secondary text at least 7:1, hint te
 | Segmented | `.segmented > .tab` | Two or three exclusive options |
 | Filter pill | `.tab` in a `.chip-row` | Narrows a list |
 | Chip | `.chip` with `.kind`, `.ok`, `.warn`, `.danger`, `.info` | Read-only label |
+| Steps | `.sign-steps > .sign-step` with `.done`, `.current`, `.running`, `.blocked`, `.failed`, `.unanswered`, `.skipped` | Review and Sign. A mark, a name and a word for its state; on a phone only the current step keeps its name |
 | Network status | `.status` with `.online` (answered), `.offline` (unreachable), `.probing` | Top bar, online build |
 | Message | `p.note`, `p.warn`, `p.error` | Result, caution, failure |
 | Empty state | `.empty` | When a list has nothing to show |

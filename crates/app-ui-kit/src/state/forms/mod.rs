@@ -100,6 +100,8 @@ pub fn use_forms() -> Forms {
             last_signature: use_signal(|| None::<String>),
             rebuilding: use_signal(|| false),
             auto_rebuilt_for: use_signal(|| None::<[u8; 32]>),
+            rebuilt: use_signal(|| false),
+            returned: use_signal(|| false),
             made_here: use_signal(Vec::<MadeHere>::new),
             created: use_signal(Vec::new),
         },

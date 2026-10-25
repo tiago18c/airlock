@@ -46,6 +46,7 @@
   --ok-soft: #e7f6ec;
   --ok-line: #b4dfc3;
   --ok-solid: #1a8a45;
+  --on-ok: #ffffff;
 
   --warn-text: #8a4b00;
   --warn-soft: #fff3da;
@@ -192,6 +193,7 @@
     --ok-soft: #11281b;
     --ok-line: #1e4a30;
     --ok-solid: #2fa860;
+    --on-ok: #ffffff;
 
     --warn-text: #f2bc57;
     --warn-soft: #2b2110;
@@ -257,6 +259,7 @@
   --ok-soft: #11281b;
   --ok-line: #1e4a30;
   --ok-solid: #2fa860;
+  --on-ok: #ffffff;
 
   --warn-text: #f2bc57;
   --warn-soft: #2b2110;

@@ -88,6 +88,11 @@ pub struct SignForm {
     /// Checksum of the message last rebuilt without being asked, so a
     /// failed attempt is not repeated. See `SignPanel`.
     pub auto_rebuilt_for: Signal<Option<[u8; 32]>>,
+    /// The transaction on screen is one this screen rebuilt for a keyless
+    /// wallet, so the steps keep the rebuild behind it.
+    pub rebuilt: Signal<bool>,
+    /// The transaction on screen went back to the site that asked for it.
+    pub returned: Signal<bool>,
     /// Keys made here in place of one-time keys a site signed with or left
     /// for itself, such as a new mint. Like Build's generated keys, they
     /// live in memory only, until the app closes, and sign as keys of this
@@ -290,6 +295,8 @@ impl SignForm {
         this.simulated_for.set(None);
         this.tables.set(tables);
         this.clock.reset(expiry);
+        this.rebuilt.set(false);
+        this.returned.set(false);
     }
 
     /// Keep what a rebuild or a context note said of the Vector accounts,
@@ -320,5 +327,7 @@ impl SignForm {
         this.share.set(ShareTab::Transaction);
         this.tables.set(wallet_core::LookupTables::new());
         this.clock.reset(None);
+        this.rebuilt.set(false);
+        this.returned.set(false);
     }
 }

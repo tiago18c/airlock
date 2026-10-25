@@ -21,6 +21,11 @@ use crate::wallets::vector::{VectorKey, XmssRetryCache};
 use solana_hash::Hash;
 use solana_pubkey::Pubkey;
 
+mod steps;
+pub use steps::{
+    sign_steps, SignFinish, SignStep, SignStepInputs, SignStepKind, SignStepState, SimulationStage,
+};
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SignerRole {
     /// Signs the transaction and pays its fee.
@@ -131,6 +136,8 @@ pub struct SignerLine {
     pub signing_as: Option<Pubkey>,
     pub role: SignerRole,
     pub state: SignerState,
+    /// This device holds the key, whether or not it has signed yet.
+    pub held_here: bool,
 }
 
 impl SignerLine {
@@ -280,6 +287,7 @@ pub fn signing_status_in(tx: &DecodedTx, local: &LocalKeys, ctx: &AuthContext) -
                 } else {
                     open(slot.signed, false, here)
                 },
+                held_here: here,
             }
         })
         .collect();
@@ -330,6 +338,7 @@ pub fn signing_status_in(tx: &DecodedTx, local: &LocalKeys, ctx: &AuthContext) -
                     SignerRole::Signer
                 },
                 state: open(slot.valid, slot.filled, keys.contains(&slot.pubkey)),
+                held_here: keys.contains(&slot.pubkey),
             }),
     );
     let outer_local = lines[authorities..]
