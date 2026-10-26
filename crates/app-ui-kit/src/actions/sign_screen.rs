@@ -48,6 +48,8 @@ pub fn rebuild_loaded(session: Session) {
         match result {
             Ok((rebuilt, Some(adapted), height)) => {
                 wire.set(Some(rebuilt));
+                let mut marked = form.rebuilt;
+                marked.set(true);
                 form.set_vector_context(adapted.context.clone());
                 form.set_exact_blockhash_height(height);
                 note.set(Some(rebuilt_note(&adapted)));
@@ -520,7 +522,12 @@ pub fn return_to_browser(session: &Session, wire: &[u8]) -> bool {
         cluster: Some(&cluster),
     }
     .log_returned(&origin, &code);
-    session.bridge_answer(&id, BridgeAnswer::Signed(wire.to_vec()))
+    let returned = session.bridge_answer(&id, BridgeAnswer::Signed(wire.to_vec()));
+    if returned {
+        let mut marked = session.forms.sign.returned;
+        marked.set(true);
+    }
+    returned
 }
 
 /// Paste an EIP-191 `personal_sign` result for `account` into the Advance.

@@ -2034,6 +2034,103 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 
 .sign-status { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 
+/* The steps a transaction goes through. Behind is green, the one the user is
+   on carries the brand ring, the rest wait in grey. */
+.sign-steps {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sign-step {
+  --mark: 24px;
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  color: var(--text-3);
+  font-size: var(--text-xs);
+}
+/* The line to the next step, from mark to mark. */
+.sign-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--mark) / 2 - 1px);
+  left: calc(50% + var(--mark) / 2 + var(--space-1));
+  right: calc(-50% + var(--mark) / 2 + var(--space-1));
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: var(--border);
+}
+.sign-step-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--mark);
+  height: var(--mark);
+  margin-bottom: 2px;
+  border: 2px solid var(--border-control);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  color: var(--text-3);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+.sign-step-mark .icon { width: 14px; height: 14px; stroke-width: 2.5; }
+.sign-step-label { color: var(--text-2); font-weight: var(--weight-medium); overflow-wrap: anywhere; }
+.sign-step-detail { color: var(--text-3); }
+
+.sign-step.done .sign-step-mark { border-color: var(--ok-solid); background: var(--ok-solid); color: var(--on-ok); }
+.sign-step.done:not(:last-child)::after { background: var(--ok-solid); }
+.sign-step.done .sign-step-detail { color: var(--ok-text); }
+
+.sign-step.current .sign-step-mark {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand-text);
+  animation: step-pulse 1.6s var(--ease) infinite;
+}
+.sign-step.current .sign-step-label,
+.sign-step.blocked .sign-step-label { color: var(--text); font-weight: var(--weight-semibold); }
+.sign-step.current .sign-step-detail { color: var(--brand-text); }
+
+.sign-step.running .sign-step-mark {
+  border-color: var(--info-solid);
+  color: var(--info-text);
+  animation: sim-pulse 1.2s var(--ease) infinite;
+}
+.sign-step.running .sign-step-detail { color: var(--info-text); }
+
+.sign-step.blocked .sign-step-mark,
+.sign-step.unanswered .sign-step-mark { border-color: var(--warn-solid); background: var(--warn-soft); color: var(--warn-text); }
+.sign-step.blocked .sign-step-detail,
+.sign-step.unanswered .sign-step-detail { color: var(--warn-text); }
+
+.sign-step.failed .sign-step-mark { border-color: var(--danger-solid); background: var(--danger-solid); color: var(--on-danger); }
+.sign-step.failed .sign-step-detail { color: var(--danger-text); }
+/* A failed simulation does not stop signing: the way on stays green. */
+.sign-step.failed:not(:last-child)::after,
+.sign-step.unanswered:not(:last-child)::after,
+.sign-step.skipped:not(:last-child)::after { background: var(--ok-solid); }
+
+.sign-step.skipped .sign-step-mark { border-style: dashed; }
+
+@keyframes step-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--brand-line); }
+  50% { box-shadow: 0 0 0 5px transparent; }
+}
+
+/* On a phone only the step the user is on keeps its name. */
+@media (max-width: 639px) {
+  .sign-step:not([aria-current]) .sign-step-label,
+  .sign-step:not([aria-current]) .sign-step-detail { display: none; }
+}
+
 /* One quiet line. Colour only once there is an answer. */
 .sim {
   display: flex;

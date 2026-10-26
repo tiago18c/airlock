@@ -22,7 +22,8 @@ pub use explain::{
 };
 pub use quick_sign::{quick_sign, quick_sign_in, QuickSign};
 pub use signing::{
-    next_step, sign_locally, sign_locally_in, sign_locally_in_with, signing_status,
-    signing_status_in, tx_lifetime, LocalKeys, LocalSigning, NextSignature, SignerKey, SignerLine,
-    SignerRole, SignerState, SigningStatus, TxLifetime,
+    next_step, sign_locally, sign_locally_in, sign_locally_in_with, sign_steps, signing_status,
+    signing_status_in, tx_lifetime, LocalKeys, LocalSigning, NextSignature, SignFinish, SignStep,
+    SignStepInputs, SignStepKind, SignStepState, SignerKey, SignerLine, SignerRole, SignerState,
+    SigningStatus, SimulationStage, TxLifetime,
 };

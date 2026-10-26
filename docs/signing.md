@@ -67,6 +67,20 @@ A multisig's wallet holds three settings: the wallet that acts as its member, th
 
 `next_step` says what Sign is about to do: an *authorization* (intent) while any authority line is open, then the *outer transaction*, then nothing (Submit). The Sign button reads **Sign authorization** or **Sign transaction**. Signers with an authorization are grouped under "Authorization (intent)" and "Transaction".
 
+`sign_steps` lays the same status out as the row of steps above the transaction, in the order signing has to happen:
+
+| Step | Shown when | Behind once |
+| --- | --- | --- |
+| Rebuild | the transaction asks a keyless wallet to sign, or this screen rebuilt it | it is rebuilt |
+| Sign authorization | an authority line's key is on this device | each of those is signed |
+| Collect authorizations | an authority line's key is elsewhere | each of those is in |
+| Simulate | always | the node answers; offline it is skipped |
+| Sign transaction | a fee payer or signer key is on this device | each of those is signed |
+| Collect signatures | a signer's key is elsewhere, other than a site's new account | each of those is in |
+| Submit, Return to site, or Share to submit | always: a site's request goes back to it, and an offline device shares | the transaction went back to the site |
+
+The first step not behind is the current one. A simulation runs once there is no rebuild left and every authorization is in, so Simulate sits after those steps; it runs by itself and is never the current step, and a failed one does not hold signing back. When a Vector key here signs after authorizations from elsewhere, Collect authorizations comes first. An expired blockhash holds the current step back when the transaction signature covers it.
+
 ### Rebuilding for a wallet without a key
 
 A transaction that names a programmatic signer's address, a Vector account or a Squads vault as an ordinary signer cannot be completed: no key signs as those addresses. `wallet_core::wallets::adapt` rebuilds it. The plan (`plan_adaptation`) is made offline. Carrying it out (`wallet_flows::adapt::rebuild`) reads the chain for the multisig's next transaction number, the signer's executor nonce or each Vector account's data, and a fresh blockhash, so it needs a connection. The rebuild probes at the highest compute limit, then sets both the compute and loaded-accounts limits from what that simulation used plus 10%. Sign does the same again once every authorization is signed, so the inner instructions are included in the measure.

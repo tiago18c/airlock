@@ -9,6 +9,9 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 ## [Unreleased]
 
+### Added
+- Review and Sign shows the steps the transaction on screen goes through, in a row above it: Rebuild, Sign authorization, Collect authorizations, Simulate, Sign transaction, Collect signatures, then Submit, Return to site, or Share to submit when offline. Only the steps this transaction needs appear. Those behind it are green, the one it is on is marked, and an expired blockhash marks it amber. Simulate sits where the simulation can first run, after the rebuild and every authorization. A failed simulation shows red there and does not hold signing back.
+
 ### Changed
 - A converted browser or paste request discards the site's compute unit and loaded-accounts limits when online. The rewrite is simulated at the highest of each (1,400,000 units and 64 MiB), and both limits are what it used plus 10%. The site's price per compute unit is still kept. Offline, or when the simulation fails, limits the site set are kept. Build and rebuilds that fill blank limits from a simulation use the same 10% headroom.
 - A transaction rebuilt for a programmatic signer, Vector wallet or Squads vault is probed at the highest compute limit, then both the compute and loaded-accounts limits are set from that simulation plus 10%. Sign does the same again once an authorization is signed, so the inner instructions are measured and the limits on screen (and on the wire that is signed) match what the node used. Once a signature over the transaction itself is in place, those limits are left alone so fitting cannot void it.

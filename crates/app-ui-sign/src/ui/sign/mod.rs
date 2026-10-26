@@ -37,8 +37,9 @@ use wallet_core::relay::{
 use wallet_core::simulate::Simulation;
 use wallet_core::{
     context_note_for, explain_instructions, missing_catalog_programs, next_step, sha256_bytes,
-    signature_objects, signing_status_in, tx_lifetime, DecodedTx, LocalKeys, NextSignature,
-    SignerRole, SignerState, SigningStatus, TxFormat,
+    sign_steps, signature_objects, signing_status_in, tx_lifetime, DecodedTx, LocalKeys,
+    NextSignature, SignFinish, SignStepInputs, SignerRole, SignerState, SigningStatus,
+    SimulationStage, TxFormat,
 };
 use wallet_flows::sign::wants_fresh_blockhash;
 
@@ -46,11 +47,13 @@ mod banners;
 mod inbox;
 mod share;
 mod simulation;
+mod steps;
 
 pub(in crate::ui) use banners::*;
 pub(in crate::ui) use inbox::*;
 pub(in crate::ui) use share::*;
 pub(in crate::ui) use simulation::*;
+pub(in crate::ui) use steps::*;
 
 #[component]
 pub fn SignPanel() -> Element {
@@ -327,8 +330,34 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             _ => vec![line.authority_chip()],
         })
         .collect();
+    let site_waiting = match &source {
+        Some(TxSource::Browser { id, .. }) => session.bridge.read().get(id).is_some(),
+        _ => false,
+    };
+    let returned = (form.returned)();
+    let steps = sign_steps(
+        &status,
+        &SignStepInputs {
+            needs_rebuild,
+            rebuilt: (form.rebuilt)(),
+            simulation: simulation_stage(&(form.simulation)(), online),
+            finish: if site_waiting || (from_browser && returned) {
+                SignFinish::ReturnToSite
+            } else if online {
+                SignFinish::Submit
+            } else {
+                SignFinish::ShareToSubmit
+            },
+            finished: returned,
+            expired: clock_expired(),
+            refreshes_on_sign,
+            left_for_site: site_signs,
+        },
+    );
 
     rsx! {
+        SignSteps { steps }
+
         BlockhashCountdown {
             clock: form.clock,
             lifetime,
@@ -421,6 +450,19 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
                 Share { tx: tx.clone() }
             }
         }
+    }
+}
+
+/// Where the simulation stands, for the steps.
+fn simulation_stage(state: &SimState, online: bool) -> SimulationStage {
+    match state {
+        SimState::Idle if online => SimulationStage::Waiting,
+        SimState::Idle => SimulationStage::Offline,
+        SimState::Waiting(_) => SimulationStage::Waiting,
+        SimState::Running => SimulationStage::Running,
+        SimState::Done(simulation) if simulation.error.is_some() => SimulationStage::Failed,
+        SimState::Done(_) => SimulationStage::Succeeded,
+        SimState::Failed(_) => SimulationStage::Unanswered,
     }
 }
 
