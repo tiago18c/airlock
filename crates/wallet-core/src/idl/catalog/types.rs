@@ -9,7 +9,7 @@ pub enum IdlSpec {
     Codama,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum IdlOrigin {
     /// Shipped inside the app. Never written to the index.
@@ -30,7 +30,31 @@ pub struct IdlCheck {
         with = "option_hex32"
     )]
     pub remote_sha256: Option<[u8; 32]>,
+    /// The chain publishes the stored bytes.
     pub same: bool,
+    /// The chain publishes the document the stored file was made from
+    /// ([`IdlRecord::source`]). The file is current, though its bytes differ.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub source: bool,
+}
+
+impl IdlCheck {
+    /// The chain publishes this file, or what it was made from.
+    pub fn current(&self) -> bool {
+        self.same || self.source
+    }
+}
+
+/// The on-chain document an IDL file was made from.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct IdlChainSource {
+    /// Where it was read.
+    pub network: IdlNetwork,
+    /// The account it was read from: [`IdlOrigin::ProgramMetadata`] or
+    /// [`IdlOrigin::Anchor`].
+    pub account: IdlOrigin,
+    /// Of the bytes read.
+    pub sha256: [u8; 32],
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -51,12 +75,39 @@ pub struct IdlRecord {
     /// the stored files.
     #[serde(skip)]
     pub host: Option<Pubkey>,
+    /// Set on an embedded file made from what a program publishes on chain.
+    /// Never written to the index: it comes with the app.
+    #[serde(skip)]
+    pub source: Option<IdlChainSource>,
+}
+
+impl IdlRecord {
+    /// The on-chain account a check compares this file with: the one it was
+    /// made from, the one it was taken from, or the Anchor IDL account.
+    pub fn compared_account(&self) -> IdlOrigin {
+        match (self.source, self.origin) {
+            (Some(source), _) => source.account,
+            (None, IdlOrigin::ProgramMetadata) => IdlOrigin::ProgramMetadata,
+            (None, _) => IdlOrigin::Anchor,
+        }
+    }
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(super) struct IdlIndex {
-    pub(super) records: Vec<IdlRecord>,
+    pub(super) records: Vec<IndexedRecord>,
+}
+
+/// One stored file and the network it is kept for.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct IndexedRecord {
+    /// Missing in an index written before IDLs were kept per network.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(super) network: Option<IdlNetwork>,
+    #[serde(flatten)]
+    pub(super) record: IdlRecord,
 }
 
 #[derive(Debug, Error)]

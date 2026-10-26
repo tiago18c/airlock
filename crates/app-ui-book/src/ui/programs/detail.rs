@@ -41,6 +41,10 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
             .find(|row| row.program_id == host)
             .map_or_else(|| host.to_string(), |row| row.name)
     });
+    let network = session.idl_network();
+    let embedded = (record.origin == IdlOrigin::Builtin)
+        .then(|| builtin_idl(network, &record.host.unwrap_or(record.program_id)))
+        .flatten();
 
     rsx! {
         div { class: "card",
@@ -60,6 +64,11 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                         " "
                         span { class: "chip info", "from the {host} IDL" }
                     }
+                    " "
+                    span { class: "chip", title: "IDLs are kept per network: the cluster in use", "{network}" }
+                }
+                if let Some(embedded) = embedded {
+                    p { class: "hint", "{source_sentence(embedded.source)} {embedded.changes}" }
                 }
                 if let Some(host) = host_name {
                     p { class: "hint",
@@ -140,17 +149,32 @@ fn program_view(session: Session, id: Option<Pubkey>) -> ProgramView {
     }
 }
 
-pub(in crate::ui) fn pin_status(record: &IdlRecord) -> IdlPinStatus {
-    match record.check.as_ref() {
-        Some(check) if check.same => IdlPinStatus::Matches,
-        Some(_) => IdlPinStatus::Differs,
-        None => IdlPinStatus::NotChecked,
+/// Where an embedded file was taken from.
+fn source_sentence(source: IdlSource) -> String {
+    match source {
+        IdlSource::Chain(source) => {
+            let account = match source.account {
+                IdlOrigin::ProgramMetadata => "program-metadata",
+                _ => "Anchor",
+            };
+            format!(
+                "Made from the {account} IDL the program publishes on {} (SHA-256 {}…).",
+                source.network,
+                short_checksum(&source.sha256)
+            )
+        }
+        IdlSource::Repository { url } => format!("Taken from {url}."),
+        IdlSource::Hand => "Written by hand: the program publishes no IDL.".into(),
     }
+}
+
+pub(in crate::ui) fn pin_status(record: &IdlRecord) -> IdlPinStatus {
+    IdlPinStatus::of(record.check.as_ref())
 }
 
 pub(in crate::ui) fn status_class(status: IdlPinStatus) -> &'static str {
     match status {
-        IdlPinStatus::Matches => "chip ok",
+        IdlPinStatus::Matches | IdlPinStatus::MatchesSource => "chip ok",
         IdlPinStatus::Differs => "chip danger",
         _ => "chip",
     }

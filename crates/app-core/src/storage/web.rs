@@ -1,7 +1,7 @@
 //! `localStorage` in a browser.
 
 use solana_pubkey::Pubkey;
-use wallet_core::{IdlBodies, VaultError, VaultStore};
+use wallet_core::{IdlBodies, IdlNetwork, VaultError, VaultStore};
 
 use super::Storage;
 
@@ -59,18 +59,47 @@ impl VaultStore for LocalStorageStore {
     }
 }
 
+/// `airlock.idl.<network>.<program id>`. Files from before IDLs were kept
+/// per network are `airlock.idl.<program id>`.
 pub struct WebIdlBodies;
 
+impl WebIdlBodies {
+    fn store(network: IdlNetwork, program_id: &Pubkey) -> LocalStorageStore {
+        LocalStorageStore::new(format!("airlock.idl.{network}.{program_id}"))
+    }
+
+    fn unscoped(program_id: &Pubkey) -> LocalStorageStore {
+        LocalStorageStore::new(format!("airlock.idl.{program_id}"))
+    }
+}
+
 impl IdlBodies for WebIdlBodies {
-    fn load(&self, program_id: &Pubkey) -> Result<Option<Vec<u8>>, VaultError> {
-        LocalStorageStore::new(format!("airlock.idl.{program_id}")).load()
+    fn load(
+        &self,
+        network: IdlNetwork,
+        program_id: &Pubkey,
+    ) -> Result<Option<Vec<u8>>, VaultError> {
+        Self::store(network, program_id).load()
     }
 
-    fn save(&self, program_id: &Pubkey, bytes: &[u8]) -> Result<(), VaultError> {
-        LocalStorageStore::new(format!("airlock.idl.{program_id}")).save(bytes)
+    fn save(
+        &self,
+        network: IdlNetwork,
+        program_id: &Pubkey,
+        bytes: &[u8],
+    ) -> Result<(), VaultError> {
+        Self::store(network, program_id).save(bytes)
     }
 
-    fn remove(&self, program_id: &Pubkey) -> Result<(), VaultError> {
-        LocalStorageStore::new(format!("airlock.idl.{program_id}")).remove()
+    fn remove(&self, network: IdlNetwork, program_id: &Pubkey) -> Result<(), VaultError> {
+        Self::store(network, program_id).remove()
+    }
+
+    fn load_unscoped(&self, program_id: &Pubkey) -> Result<Option<Vec<u8>>, VaultError> {
+        Self::unscoped(program_id).load()
+    }
+
+    fn remove_unscoped(&self, program_id: &Pubkey) -> Result<(), VaultError> {
+        Self::unscoped(program_id).remove()
     }
 }

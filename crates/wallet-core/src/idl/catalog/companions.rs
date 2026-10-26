@@ -65,9 +65,10 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
                     name: companion.name.clone(),
                     sha256: host.sha256,
                     spec: IdlSpec::Codama,
-                    origin: host.origin.clone(),
+                    origin: host.origin,
                     check: host.check.clone(),
                     host: Some(host.program_id),
+                    source: host.source,
                 };
                 chosen.insert(companion.program_id, (rank, record));
             }

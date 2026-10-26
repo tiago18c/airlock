@@ -10,15 +10,29 @@ pub enum IdlPinStatus {
     NoIdl,
     NotChecked,
     Matches,
+    /// The chain publishes the document the stored file was made from, such
+    /// as the Anchor IDL an embedded Codama file was converted from.
+    MatchesSource,
     Differs,
 }
 
 impl IdlPinStatus {
+    /// The status of a stored IDL, from its last online check.
+    pub fn of(check: Option<&IdlCheck>) -> Self {
+        match check {
+            Some(check) if check.same => Self::Matches,
+            Some(check) if check.source => Self::MatchesSource,
+            Some(_) => Self::Differs,
+            None => Self::NotChecked,
+        }
+    }
+
     pub fn label(self) -> &'static str {
         match self {
             Self::NoIdl => "no IDL",
             Self::NotChecked => "not checked",
             Self::Matches => "matches",
+            Self::MatchesSource => "matches its source",
             Self::Differs => "differs",
         }
     }

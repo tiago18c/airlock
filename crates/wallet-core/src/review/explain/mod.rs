@@ -9,7 +9,7 @@
 //! `Advance` does to a hash-based key is read with the accounts' schemes,
 //! when they are known.
 
-use crate::idl::catalog::{IdlCatalog, IdlOrigin};
+use crate::idl::catalog::{IdlCatalog, IdlCheck, IdlOrigin};
 use crate::tx::decode::DecodedTx;
 use crate::wallets::programmatic::{
     message_instructions, programmatic_signer_address, Execution, Submission, SubmitRole,
@@ -258,12 +258,8 @@ fn program_line(store: &dyn IdlCatalog, program_id: Pubkey, note: &DisplayNote) 
             program_id,
             name: Some(record.name.clone()),
             sha256: Some(record.sha256),
-            origin: Some(record.origin.clone()),
-            status: match record.check.as_ref() {
-                Some(check) if check.same => IdlPinStatus::Matches,
-                Some(_) => IdlPinStatus::Differs,
-                None => IdlPinStatus::NotChecked,
-            },
+            origin: Some(record.origin),
+            status: IdlPinStatus::of(record.check.as_ref()),
             context_pin: context_pin(program_id, Some(record.sha256), note),
         },
         None => ProgramLine {

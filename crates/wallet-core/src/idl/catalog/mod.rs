@@ -1,9 +1,15 @@
-//! Plaintext IDL catalog. One record per program, body stored as the exact
-//! imported bytes. The checksum is SHA-256 of those bytes, not of a
+//! Plaintext IDL catalog. One record per program and network, body stored as
+//! the exact imported bytes. The checksum is SHA-256 of those bytes, not of a
 //! re-serialized Codama tree.
+//!
+//! The catalog shows one network at a time: the files kept for it, and the
+//! embedded IDLs of the programs that run there. Files kept for the other
+//! networks stay listed in the index, and their bodies are read when their
+//! network is picked.
 
 use crate::error::VaultError;
 use crate::idl::builtin::{builtin_idl, BUILTIN_IDLS};
+use crate::idl::network::IdlNetwork;
 use crate::ids::pubkey_string;
 use base64::Engine;
 use codama_dynamic_client::ProgramClient;
@@ -35,7 +41,12 @@ pub use types::*;
 pub struct IdlStore<S: VaultStore, B: IdlBodies> {
     index_store: S,
     bodies: B,
+    /// The network `records` are for.
+    network: IdlNetwork,
     records: Vec<IdlRecord>,
+    /// Stored files of the other networks, as the index lists them, and any
+    /// file of an older index that could not be moved under a network yet.
+    elsewhere: Vec<IndexedRecord>,
     loaded: BTreeMap<Pubkey, Vec<u8>>,
     /// Parsed clients, kept until that program's IDL changes. Parsing a large
     /// IDL on every keystroke of a form is far too slow.
@@ -67,13 +78,22 @@ impl<S: VaultStore, B: IdlBodies> IdlCatalog for IdlStore<S, B> {
 }
 
 impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
+    /// The catalog, showing devnet, the cluster a new install starts on.
     pub fn open(index_store: S, bodies: B) -> Self {
+        Self::open_on(index_store, bodies, IdlNetwork::Devnet)
+    }
+
+    /// The catalog, showing `network`. The files of an index written before
+    /// IDLs were kept per network are moved under `network`: the cluster in
+    /// use is the one they were most likely read from.
+    pub fn open_on(index_store: S, bodies: B, network: IdlNetwork) -> Self {
         let (index, problem): (IdlIndex, _) = load_json(&index_store, "program list");
-        let listed = index.records;
         let mut store = Self {
             index_store,
             bodies,
+            network,
             records: Vec::new(),
+            elsewhere: Vec::new(),
             loaded: BTreeMap::new(),
             clients: Mutex::new(BTreeMap::new()),
             peeked: BTreeMap::new(),
@@ -81,23 +101,13 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
             problem,
         };
         let mut changed = false;
-        for mut record in listed {
-            match store.bodies.load(&record.program_id) {
+        for entry in index.records {
+            match entry.network {
                 // An index written by another build may list an embedded IDL.
-                _ if record.origin == IdlOrigin::Builtin => changed = true,
-                Ok(Some(body)) => {
-                    let actual = sha256(&body);
-                    if record.sha256 != actual {
-                        // The file changed outside the app. The last online
-                        // comparison was about different bytes, so drop it.
-                        record.sha256 = actual;
-                        record.check = None;
-                        changed = true;
-                    }
-                    store.loaded.insert(record.program_id, body);
-                    store.records.push(record);
-                }
-                _ => changed = true,
+                _ if entry.record.origin == IdlOrigin::Builtin => changed = true,
+                Some(listed) if listed == network => store.adopt(entry.record, &mut changed),
+                Some(_) => store.elsewhere.push(entry),
+                None => store.adopt_unscoped(entry.record, &mut changed),
             }
         }
         store.records.sort_by_key(|a| a.program_id);
@@ -108,15 +118,109 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
         store
     }
 
+    /// Show `network`: its stored files, and the embedded IDLs of the
+    /// programs that run there. The other networks' files stay stored.
+    pub fn set_network(&mut self, network: IdlNetwork) {
+        if network == self.network {
+            return;
+        }
+        let leaving: Vec<IndexedRecord> = self
+            .stored_records()
+            .into_iter()
+            .map(|record| IndexedRecord {
+                network: Some(self.network),
+                record,
+            })
+            .collect();
+        let (arriving, staying): (Vec<_>, Vec<_>) = std::mem::take(&mut self.elsewhere)
+            .into_iter()
+            .partition(|entry| entry.network == Some(network));
+        self.elsewhere = staying.into_iter().chain(leaving).collect();
+        self.network = network;
+        self.records.clear();
+        self.loaded.clear();
+        self.peeked.clear();
+        if let Ok(mut clients) = self.clients.lock() {
+            clients.clear();
+        }
+        let mut changed = false;
+        for entry in arriving {
+            self.adopt(entry.record, &mut changed);
+        }
+        self.records.sort_by_key(|a| a.program_id);
+        self.restore_builtins();
+        self.refresh_companions();
+        if changed {
+            let _ = self.save_index();
+        }
+    }
+
+    /// The network the catalog shows.
+    pub fn network(&self) -> IdlNetwork {
+        self.network
+    }
+
+    /// Read the body of a stored file of the network shown. One that cannot
+    /// be read is dropped from the index.
+    fn adopt(&mut self, mut record: IdlRecord, changed: &mut bool) {
+        let Ok(Some(body)) = self.bodies.load(self.network, &record.program_id) else {
+            *changed = true;
+            return;
+        };
+        let actual = sha256(&body);
+        if record.sha256 != actual {
+            // The file changed outside the app. The last online comparison
+            // was about different bytes, so drop it.
+            record.sha256 = actual;
+            record.check = None;
+            *changed = true;
+        }
+        self.loaded.insert(record.program_id, body);
+        self.records.push(record);
+    }
+
+    /// Move a file stored before IDLs were kept per network under the
+    /// network shown. One that cannot be moved stays where it is, listed
+    /// with no network, and is tried again next time.
+    fn adopt_unscoped(&mut self, record: IdlRecord, changed: &mut bool) {
+        let program_id = record.program_id;
+        let moved = match self.bodies.load_unscoped(&program_id) {
+            Ok(None) => {
+                *changed = true;
+                return;
+            }
+            Ok(Some(body)) => self.bodies.save(self.network, &program_id, &body).is_ok(),
+            Err(_) => false,
+        };
+        if !moved {
+            self.elsewhere.push(IndexedRecord {
+                network: None,
+                record,
+            });
+            return;
+        }
+        let _ = self.bodies.remove_unscoped(&program_id);
+        *changed = true;
+        self.adopt(record, changed);
+    }
+
     /// Add the IDLs that ship inside the app. An import for the same program
     /// takes its place, and removing that import brings the embedded one back.
     pub fn with_builtins(mut self) -> Self {
         self.builtins = true;
-        for builtin in &BUILTIN_IDLS {
-            self.restore_builtin(&builtin.program_id);
-        }
+        self.restore_builtins();
         self.refresh_companions();
         self
+    }
+
+    /// Put each embedded IDL of the network shown in its program's slot,
+    /// unless an import holds it.
+    fn restore_builtins(&mut self) {
+        for builtin in &BUILTIN_IDLS {
+            if builtin.runs_on(self.network) {
+                self.restore_builtin(&builtin.program_id);
+            }
+        }
     }
 
     pub fn records(&self) -> &[IdlRecord] {
@@ -164,7 +268,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
 
     /// Put the embedded IDL in a program's slot when nothing imported holds it.
     fn restore_builtin(&mut self, program_id: &Pubkey) {
-        let Some(builtin) = builtin_idl(program_id).filter(|_| self.builtins) else {
+        let Some(builtin) = builtin_idl(self.network, program_id).filter(|_| self.builtins) else {
             return;
         };
         if self
@@ -184,14 +288,28 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
             origin: IdlOrigin::Builtin,
             check: None,
             host: None,
+            source: builtin.source.chain(),
         });
         self.records.sort_by_key(|a| a.program_id);
         self.loaded.insert(builtin.program_id, body);
         self.forget_client(program_id);
     }
 
-    /// Records that live in the index. Embedded IDLs come with the app
-    /// instead, and companions are read from their host's file.
+    /// Every network's records that live in the index.
+    fn indexed_records(&self) -> Vec<IndexedRecord> {
+        self.stored_records()
+            .into_iter()
+            .map(|record| IndexedRecord {
+                network: Some(self.network),
+                record,
+            })
+            .chain(self.elsewhere.iter().cloned())
+            .collect()
+    }
+
+    /// Records of the network shown that live in the index. Embedded IDLs
+    /// come with the app instead, and companions are read from their host's
+    /// file.
     fn stored_records(&self) -> Vec<IdlRecord> {
         self.records
             .iter()
@@ -200,10 +318,10 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
             .collect()
     }
 
-    /// Record a comparison of `remote` against the stored file. The stored body
-    /// is not replaced. A missing program is an error and writes nothing. A
-    /// companion is checked as the file it is read from: `remote` is that
-    /// file's program's IDL.
+    /// Record a comparison of `remote` against the stored file, and against
+    /// the document it was made from. The stored body is not replaced. A
+    /// missing program is an error and writes nothing. A companion is checked
+    /// as the file it is read from: `remote` is that file's program's IDL.
     pub fn record_check(
         &mut self,
         program_id: &Pubkey,
@@ -224,6 +342,9 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
             let check = IdlCheck {
                 remote_sha256: Some(remote_sha256),
                 same: remote_sha256 == slot.sha256,
+                source: slot
+                    .source
+                    .is_some_and(|source| source.sha256 == remote_sha256),
             };
             slot.check = Some(check.clone());
             check
@@ -266,7 +387,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
         let previous_records = self.records.clone();
         self.records.retain(|row| row.program_id != *program_id);
         self.loaded.remove(program_id);
-        if let Err(err) = self.bodies.remove(program_id) {
+        if let Err(err) = self.bodies.remove(self.network, program_id) {
             self.records = previous_records;
             self.loaded.insert(*program_id, previous_body);
             return Err(IdlError::Store(err.to_string()));
@@ -274,7 +395,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
         if let Err(err) = self.save_index() {
             self.records = previous_records;
             self.loaded.insert(*program_id, previous_body.clone());
-            let _ = self.bodies.save(program_id, &previous_body);
+            let _ = self.bodies.save(self.network, program_id, &previous_body);
             return Err(IdlError::Store(err.to_string()));
         }
         self.forget_client(program_id);
@@ -283,9 +404,9 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
         Ok(())
     }
 
-    /// Validate `bytes` and store them under their program id. A failed
-    /// validation leaves the previous record and body untouched. Re-importing
-    /// the same program replaces that one slot.
+    /// Validate `bytes` and store them under their program id, for the
+    /// network shown. A failed validation leaves the previous record and body
+    /// untouched. Re-importing the same program replaces that one slot.
     pub fn import(
         &mut self,
         bytes: &[u8],
@@ -312,6 +433,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
             origin,
             check: None,
             host: None,
+            source: None,
         };
         self.records
             .retain(|row| row.program_id != record.program_id);
@@ -329,6 +451,50 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
         Ok(record)
     }
 
+    /// [`Self::import`] for `network`, which need not be the one shown.
+    pub fn import_for(
+        &mut self,
+        network: IdlNetwork,
+        bytes: &[u8],
+        program_id: Option<Pubkey>,
+    ) -> Result<IdlRecord, IdlError> {
+        if network == self.network {
+            return self.import(bytes, program_id);
+        }
+        let inspected = inspect_idl(bytes, program_id)?;
+        let record = IdlRecord {
+            program_id: inspected.program_id,
+            name: inspected.name,
+            sha256: inspected.sha256,
+            spec: inspected.spec,
+            origin: IdlOrigin::File,
+            check: None,
+            host: None,
+            source: None,
+        };
+        let id = record.program_id;
+        let previous_body = self.bodies.load(network, &id).ok().flatten();
+        let previous = self.elsewhere.clone();
+        self.bodies
+            .save(network, &id, bytes)
+            .map_err(|err| IdlError::Store(err.to_string()))?;
+        self.elsewhere
+            .retain(|entry| !(entry.network == Some(network) && entry.record.program_id == id));
+        self.elsewhere.push(IndexedRecord {
+            network: Some(network),
+            record: record.clone(),
+        });
+        if let Err(err) = self.save_index() {
+            self.elsewhere = previous;
+            let _ = match previous_body {
+                Some(old) => self.bodies.save(network, &id, &old),
+                None => self.bodies.remove(network, &id),
+            };
+            return Err(IdlError::Store(err.to_string()));
+        }
+        Ok(record)
+    }
+
     fn persist_program(
         &mut self,
         program_id: Pubkey,
@@ -339,7 +505,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
             .get(&program_id)
             .cloned()
             .ok_or_else(|| IdlError::Store("imported IDL body is missing".into()))?;
-        if let Err(err) = self.bodies.save(&program_id, &body) {
+        if let Err(err) = self.bodies.save(self.network, &program_id, &body) {
             self.restore_body(program_id, previous_body);
             return Err(IdlError::Store(err.to_string()));
         }
@@ -347,10 +513,10 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
             self.restore_body(program_id, previous_body.clone());
             match &previous_body {
                 Some(old) => {
-                    let _ = self.bodies.save(&program_id, old);
+                    let _ = self.bodies.save(self.network, &program_id, old);
                 }
                 None => {
-                    let _ = self.bodies.remove(&program_id);
+                    let _ = self.bodies.remove(self.network, &program_id);
                 }
             }
             return Err(IdlError::Store(err.to_string()));
@@ -372,7 +538,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
     fn save_index(&self) -> Result<(), VaultError> {
         check_saveable(&self.problem)?;
         let index = IdlIndex {
-            records: self.stored_records(),
+            records: self.indexed_records(),
         };
         let json =
             serde_json::to_vec_pretty(&index).map_err(|err| VaultError::Serde(err.to_string()))?;
