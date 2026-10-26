@@ -41,7 +41,7 @@ flowchart LR
 - The longest chain is Squads, then a programmatic signer or Vector wallet, then a key. A multisig cannot be a member of a multisig here.
 - The fee payer is the first `fee_payer` set along the chain, starting at the wallet asked. When none is set, the key at the end pays, if this vault holds it. A fee payer must be a key: a hot wallet, or an offline wallet, whose signature then comes from the device that holds it (`WalletKind::can_pay`). The online app offers hot wallets as fee payers; Airlock Offline offers offline wallets beside them, so a key kept in the online app can pay for a wallet of the airgap device, which signs first.
 - A Squads member must be in the multisig's member list, when that list was read from the chain.
-- A Vector authority that is Held lives in the Vector record (not a separate hot wallet). Falcon-512 and XMSS are desktop and airgap only. Winternitz is turned off: no wallet of it is added, exported or signs ([D6](vector-fork.md#decisions)).
+- A Vector authority that is Held lives in the Vector record (not a separate hot wallet). Falcon-512, XMSS and Winternitz are desktop and airgap only. A Winternitz key that signed a transaction which then failed on chain signs nothing else, so the account can be stuck ([D6](vector-fork.md#decisions)).
 
 ### Two kinds of signature
 
@@ -143,9 +143,9 @@ What moves between devices is a QRS1 payload (`qr-protocol`): one to 64 typed ob
 | Transaction (kind 1) | The full v1 wire, with every signature it has so far | Handing the transaction to a device that signs |
 | Signature (kind 2) | What it signs, then the signer and the signature: the transaction (a pubkey and 64 bytes), a Submit authorization (the authority and 64 bytes), or a Vector account authorization (the account, the nonce it was signed at, and a signature as long as the account's scheme makes it) | Bringing one signature back. The receiver puts it where it says it belongs, and verifies it there before writing it in |
 | Context note (kind 3) | The message hash, the checksum of each IDL used to read it, and for each Vector account that authorizes, its scheme, nonce and leaf floor | Letting the other device compare IDLs, and sign for a Vector account. It is never signed. For a Vector transaction the note is required on Share. A note that gives an account another scheme than its wallet on the receiving device, or than a rebuild read, is refused |
-| Public key (kind 4) | A scheme and a key | Handing over the next XMSS public key for a rotating wrap. Sign stores it on the matching Vector wallet. No screen makes one now: a key rotation (kind 6) replaces it |
+| Public key (kind 4) | A scheme and a key | Handing over the next Winternitz public key, which every transaction moves the account to. Show next key on the row of the device that holds the key makes it; Sign stores it on the matching Vector wallet. XMSS uses a key rotation (kind 6) instead |
 | Key rotation (kind 6) | An account, its scheme, the next public key, and a signature of the rotation at each nonce the account may be at | Sending a rotation the airgap device signed. Sign builds the transaction around the signature made at the account's nonce. See [Rotating an XMSS key](#rotating-an-xmss-key) |
-| Account state (kind 7) | An account, its scheme, its nonce, its leaf floor and the key it holds | Telling the key device what the chain says, when it has to rotate without a transaction from here: a restored wallet, or one whose nonce it has not seen. See [Recovery phrases (XMSS)](#recovery-phrases-xmss) |
+| Account state (kind 7) | An account, its scheme, its nonce, its leaf floor and the key it holds | Telling the key device what the chain says, when it has to rotate without a transaction from here: a restored wallet, or one whose nonce it has not seen. A Winternitz key device takes it to learn that a transaction it signed landed: it moves to the next key and makes the one after it. See [Recovery phrases (XMSS)](#recovery-phrases-xmss) |
 | Wallet keys (kind 5) | 1 to 32 entries, each the address of a key or a Vector account's scheme and key, with its label. More keys than fit in one object are split into several | Adding wallets whose keys stay on another device. See [Moving wallets between devices](#moving-wallets-between-devices) |
 
 A payload is at most 32 KiB, which is 43 codes. Each frame names its transfer by the first 8 bytes of the payload's SHA-256, which the receiver checks once every frame is in, beside a CRC32; a frame that claims a place already filled with other bytes starts the transfer over. That catches a code of another transfer or a misread one, not a forged payload: the device that signs decides from its own reading. Every frame carries the same 768-byte chunk, the last one padded with zeros, so every code is QR version 23 whatever it carries. As text, a payload is JSON: one object, or an array of several, each with a `"type"`. Addresses and Ed25519 signatures are base58, SHA-256 digests and nonces are hex, and other bytes (a wire, a long key or signature, account data) are base64:
@@ -567,7 +567,7 @@ Rebuilding refuses, with the reason shown, when:
 | A multisig is set as another multisig's member | Not supported. |
 | Share of a Vector transaction without a context note | The other device needs each account's scheme, nonce and leaf floor. |
 | Falcon-512 or XMSS on a mobile build | Those schemes are desktop and airgap only. |
-| A Winternitz key, made here or imported | Winternitz is turned off ([D6](vector-fork.md#decisions)). |
+| A second digest from a Winternitz key | The key signed once already, and the account has not moved on: the transaction it signed failed, or has not landed yet ([D6](vector-fork.md#decisions)). |
 | Anything but a rotation, from a wallet restored from its recovery phrase | A lost copy may have used leaves of its key. Scan the account state, then Rotate key. |
 
 ## Who decides

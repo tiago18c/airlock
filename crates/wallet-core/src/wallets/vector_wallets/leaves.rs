@@ -656,6 +656,16 @@ pub fn keys_to_sign_with<V: VaultStore, M: VaultStore>(
                 .note_signed(&key.account, &nonce, digest)
                 .map_err(LeafError::Mark)?;
         }
+        // A Winternitz signature always moves the account to its next key,
+        // and leaves it at `digest` when it lands. A device that learns of
+        // that nonce later (an account state, a note) installs the next key.
+        if key.signer.scheme() == SchemeId::Winternitz {
+            if let Some(next_key) = &key.next_key {
+                marks
+                    .note_rotation(&key.account, next_key, &[*digest])
+                    .map_err(LeafError::Mark)?;
+            }
+        }
         key.leaf = Some(reserved.leaf);
         key.salt = reserved.salt;
         key.reserved_for = Some(*digest);

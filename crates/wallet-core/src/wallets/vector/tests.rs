@@ -357,15 +357,16 @@ fn a_passthrough_that_would_not_run_is_not_read() {
 }
 
 #[test]
-fn only_falcon_and_xmss_depend_on_the_build_and_winternitz_is_off() {
+fn only_the_hash_based_schemes_and_falcon_depend_on_the_build() {
     for scheme in SchemeId::ALL {
         let expected = match scheme {
-            SchemeId::Winternitz => false,
-            SchemeId::Falcon512 | SchemeId::Xmss => !cfg!(target_arch = "wasm32"),
+            SchemeId::Falcon512 | SchemeId::Winternitz | SchemeId::Xmss => {
+                !cfg!(target_arch = "wasm32")
+            }
             _ => true,
         };
         assert_eq!(signs_here(scheme), expected, "{}", scheme.label());
-        assert_eq!(scheme_offered(scheme), scheme != SchemeId::Winternitz);
+        assert!(scheme_offered(scheme), "{}", scheme.label());
     }
 }
 

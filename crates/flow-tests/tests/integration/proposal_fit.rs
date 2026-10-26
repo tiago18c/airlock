@@ -422,6 +422,7 @@ fn scheme_by_shape_sizes_for_one_system_transfer() {
         ("mldsa44", Desk::add_mldsa),
         ("falcon512", Desk::add_falcon),
         ("xmss", Desk::add_xmss),
+        ("winternitz", Desk::add_winternitz),
     ];
     for (name, add) in schemes {
         let mut desk = Desk::new();

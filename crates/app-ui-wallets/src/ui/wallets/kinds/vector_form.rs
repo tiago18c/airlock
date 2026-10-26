@@ -244,6 +244,10 @@ pub fn VectorForm(creating: bool, on_done: EventHandler<()>) -> Element {
         };
         let mut wallet = WalletRecord::vector(name, chosen, PROGRAM_ID, key, authority);
         wallet.kind.set_fee_payer(fee_payer());
+        // Winternitz spends its key on every signature: make the next now.
+        if chosen.always_rotates() && source() == AuthoritySource::NewKey {
+            let _ = wallet.prepare_vector_next_key();
+        }
         let id = wallet.id;
         match session.add_contract_wallet(wallet) {
             Ok(()) => {
@@ -289,6 +293,8 @@ pub fn VectorForm(creating: bool, on_done: EventHandler<()>) -> Element {
                             "Falcon-512 (experimental)"
                         } else if option == SchemeId::Xmss {
                             "XMSS (one device only)"
+                        } else if option == SchemeId::Winternitz {
+                            "Winternitz (one signature per key)"
                         } else if signs_here(option) {
                             "{option.label()}"
                         } else {
