@@ -7,6 +7,11 @@ impl Session {
         self.idls.read().records().to_vec()
     }
 
+    /// The network whose IDLs the catalog shows: the cluster in use.
+    pub fn idl_network(&self) -> wallet_core::IdlNetwork {
+        self.idls.read().network()
+    }
+
     /// One program's outline, a program read from another one's file included.
     pub fn idl_outline(&self, program_id: &Pubkey) -> Result<wallet_core::IdlOutline, IdlError> {
         self.idls.read().outline(program_id)

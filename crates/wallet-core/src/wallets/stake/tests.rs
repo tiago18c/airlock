@@ -334,7 +334,7 @@ fn every_stake_instruction_names_its_accounts_as_the_idl_does() {
     ]
     .concat();
     let idl = codama_dynamic_client::ProgramClient::from_json(
-        crate::idl::builtin::builtin_idl(&STAKE_PROGRAM_ID)
+        crate::idl::builtin::builtin_idl(crate::IdlNetwork::Devnet, &STAKE_PROGRAM_ID)
             .unwrap()
             .json,
     )

@@ -114,23 +114,26 @@ pub fn open_notices() -> AppNotices {
     open_notices_in(&*platform_storage())
 }
 
-pub fn open_idls() -> AppIdls {
+/// The IDL catalog, showing the IDLs of `network`.
+pub fn open_idls(network: wallet_core::IdlNetwork) -> AppIdls {
     #[cfg(not(target_arch = "wasm32"))]
     {
         let dir = data_dir().join("idls");
-        IdlStore::open(
+        IdlStore::open_on(
             BoxedStore(Box::new(wallet_core::FileStore::new(
                 dir.join("index.json"),
             ))),
             wallet_core::DirIdlBodies::new(dir),
+            network,
         )
         .with_builtins()
     }
     #[cfg(target_arch = "wasm32")]
     {
-        IdlStore::open(
+        IdlStore::open_on(
             BoxedStore(LocalStorage.open("idls-index.json")),
             WebIdlBodies,
+            network,
         )
         .with_builtins()
     }

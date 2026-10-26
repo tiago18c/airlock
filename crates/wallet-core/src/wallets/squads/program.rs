@@ -44,7 +44,9 @@ impl SquadsProgram {
             Self::SmartAccount => &SMART_ACCOUNT,
         };
         cell.get_or_init(|| {
-            let idl = builtin_idl(&self.program_id()).expect("the Squads IDLs ship with the app");
+            // The same file is read on every network the program runs on.
+            let idl = builtin_idl(IdlNetwork::Mainnet, &self.program_id())
+                .expect("the Squads IDLs ship with the app");
             ProgramClient::from_json(idl.json).expect("an embedded IDL is well-formed")
         })
     }

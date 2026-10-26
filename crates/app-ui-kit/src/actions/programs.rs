@@ -242,7 +242,7 @@ pub fn check_many(
             else {
                 continue;
             };
-            tally.count(check_idl(&session, &record).await.map(|check| check.same));
+            tally.count(check_idl(&session, &record).await);
         }
         note.set(Some(tally.sentence()));
         checking.set(false);
@@ -253,6 +253,8 @@ pub fn check_many(
 #[derive(Default, Debug, PartialEq, Eq)]
 pub struct CheckTally {
     pub matched: usize,
+    /// The chain publishes what the stored file was made from.
+    pub sourced: usize,
     pub differed: usize,
     pub failed: usize,
     /// Why the last one that failed did.
@@ -260,12 +262,13 @@ pub struct CheckTally {
 }
 
 impl CheckTally {
-    /// Add one check: whether the copies were the same, or why they could
-    /// not be compared.
-    pub fn count(&mut self, same: Result<bool, impl ToString>) {
-        match same {
-            Ok(true) => self.matched += 1,
-            Ok(false) => self.differed += 1,
+    /// Add one check: how the copies compared, or why they could not be
+    /// compared.
+    pub fn count(&mut self, check: Result<IdlCheck, impl ToString>) {
+        match check {
+            Ok(check) if check.same => self.matched += 1,
+            Ok(check) if check.source => self.sourced += 1,
+            Ok(_) => self.differed += 1,
             Err(err) => {
                 self.failed += 1;
                 self.last_error = Some(err.to_string());
@@ -274,7 +277,11 @@ impl CheckTally {
     }
 
     pub fn sentence(&self) -> String {
-        let mut text = format!("{} match, {} differ", self.matched, self.differed);
+        let mut text = format!("{} match", self.matched);
+        if self.sourced > 0 {
+            text.push_str(&format!(", {} match their source", self.sourced));
+        }
+        text.push_str(&format!(", {} differ", self.differed));
         if self.failed > 0 {
             text.push_str(&format!(", {} failed", self.failed));
             if let Some(err) = &self.last_error {
@@ -287,6 +294,11 @@ impl CheckTally {
 }
 
 pub fn check_sentence(name: &str, check: &IdlCheck) -> String {
+    if !check.same && check.source {
+        return format!(
+            "The remote copy is the IDL {name} was made from, so the stored file is current. It was not replaced."
+        );
+    }
     let word = if check.same {
         "matches"
     } else {
@@ -350,22 +362,44 @@ try {
 mod tests {
     use super::*;
 
+    fn checked(same: bool, source: bool) -> Result<IdlCheck, String> {
+        Ok(IdlCheck {
+            remote_sha256: None,
+            same,
+            source,
+        })
+    }
+
     #[test]
     fn a_run_of_checks_says_how_many_matched_and_why_the_last_failure_failed() {
         let mut tally = CheckTally::default();
-        tally.count(Ok::<_, String>(true));
-        tally.count(Ok::<_, String>(true));
-        tally.count(Ok::<_, String>(false));
+        tally.count(checked(true, false));
+        tally.count(checked(true, false));
+        tally.count(checked(false, false));
         assert_eq!(
             tally.sentence(),
             "2 match, 1 differ. Stored files were not replaced."
         );
 
-        tally.count(Err::<bool, _>("first"));
-        tally.count(Err::<bool, _>("Offline"));
+        tally.count(Err::<IdlCheck, _>("first"));
+        tally.count(Err::<IdlCheck, _>("Offline"));
         assert_eq!(
             tally.sentence(),
             "2 match, 1 differ, 2 failed (Offline). Stored files were not replaced."
         );
+    }
+
+    /// A file made from what the chain publishes is current, not different.
+    #[test]
+    fn a_file_whose_source_the_chain_publishes_is_counted_apart() {
+        let mut tally = CheckTally::default();
+        tally.count(checked(true, false));
+        tally.count(checked(false, true));
+        assert_eq!(
+            tally.sentence(),
+            "1 match, 1 match their source, 0 differ. Stored files were not replaced."
+        );
+        let check = checked(false, true).unwrap();
+        assert!(check_sentence("raydiumClmm", &check).contains("made from"));
     }
 }

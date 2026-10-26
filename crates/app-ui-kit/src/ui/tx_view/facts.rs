@@ -156,7 +156,7 @@ pub fn context_pin_label(pin: ContextPinMatch) -> &'static str {
 
 pub fn pin_class(status: IdlPinStatus) -> &'static str {
     match status {
-        IdlPinStatus::Matches => "chip ok",
+        IdlPinStatus::Matches | IdlPinStatus::MatchesSource => "chip ok",
         IdlPinStatus::Differs => "chip danger",
         _ => "chip",
     }

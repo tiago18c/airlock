@@ -49,6 +49,20 @@ pub fn open_core_with(notifier: Arc<dyn Notifier>) -> Core {
     Core::open(ports)
 }
 
+/// Keep the IDL catalog on the network of the cluster in use. A custom RPC
+/// reads the IDLs of the public cluster its genesis matched.
+fn use_idl_network(
+    network: ReadSignal<Arc<app_core::NetworkStatus>>,
+    mut idls: Signal<crate::platform::storage::AppIdls>,
+) {
+    use_effect(move || {
+        let wanted = wallet_core::IdlNetwork::of(&network().cluster);
+        if idls.peek().network() != wanted {
+            idls.write().set_network(wanted);
+        }
+    });
+}
+
 /// Show a deferred save that failed in the `save_error` banner. The core
 /// keeps the change and tries again on the next change; the notification
 /// center records it too, but not every build has one.
@@ -79,7 +93,12 @@ fn use_save_failures(core: CopyValue<Core>, mut save_error: Signal<Option<String
 /// [`SubmitHandle::none`](crate::SubmitHandle::none). Call once, from the root.
 pub fn use_session(core: CopyValue<Core>, online: OnlineHooks, submitter: SubmitHandle) -> Session {
     let pump = pump::use_core(core.peek().clone());
-    let idls = use_signal(crate::platform::storage::open_idls);
+    let idls = use_signal(|| {
+        crate::platform::storage::open_idls(wallet_core::IdlNetwork::of(
+            &pump.network.peek().cluster,
+        ))
+    });
+    use_idl_network(pump.network, idls);
     let idl_misses = use_hook(|| CopyValue::new(std::collections::HashSet::new()));
     let leaf_marks = use_signal(crate::platform::storage::open_leaf_marks);
     let xmss_retries = use_signal(wallet_core::vector::XmssRetryCache::default);

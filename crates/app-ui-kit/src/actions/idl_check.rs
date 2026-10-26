@@ -22,16 +22,18 @@ pub enum IdlCheckError {
 }
 
 /// Read the on-chain bytes to compare with `record` and store the checksum
-/// result. An IDL taken from program metadata is compared with that account,
-/// any other with the Anchor IDL account. A program read from another
-/// program's file is compared as that file, with that program's account.
+/// result. An embedded file made from an on-chain IDL is compared with the
+/// account it was made from, an IDL taken from program metadata with that
+/// account, any other with the Anchor IDL account
+/// ([`IdlRecord::compared_account`]). A program read from another program's
+/// file is compared as that file, with that program's account.
 /// A shell with no network returns before any socket is opened.
 pub async fn check_idl(session: &Session, record: &IdlRecord) -> Result<IdlCheck, IdlCheckError> {
     let Ok(rpc) = session.rpc() else {
         return Err(IdlCheckError::Offline);
     };
     let file = record.host.unwrap_or(record.program_id);
-    let remote = counterpart(rpc.as_ref(), &file, &record.origin).await?;
+    let remote = counterpart(rpc.as_ref(), &file, &record.compared_account()).await?;
     session
         .record_idl_check(&file, &remote)
         .map_err(IdlCheckError::from)

@@ -3,7 +3,8 @@ use crate::state::session::Session;
 use crate::ui::{short_checksum, AddressHeader, AddressRow, Glyph, Icon};
 use dioxus::prelude::*;
 use wallet_core::{
-    pretty_idl, IdlAccountUse, IdlOrigin, IdlOutline, IdlPinStatus, IdlRecord, IdlSpec,
+    builtin_idl, pretty_idl, IdlAccountUse, IdlOrigin, IdlOutline, IdlPinStatus, IdlRecord,
+    IdlSource, IdlSpec,
 };
 
 mod detail;

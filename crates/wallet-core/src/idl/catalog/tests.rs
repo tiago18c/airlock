@@ -191,7 +191,7 @@ fn an_import_replaces_an_embedded_idl_and_removing_it_brings_it_back() {
     let system = crate::ids::SYSTEM_PROGRAM_ID;
     let index = MemoryStore::new();
     let mut store = IdlStore::open(index, MemoryBodies::new()).with_builtins();
-    assert_eq!(files(&store), BUILTIN_IDLS.len());
+    assert_eq!(files(&store), builtins_on(IdlNetwork::Devnet));
     let embedded = store
         .records()
         .iter()
@@ -209,12 +209,12 @@ fn an_import_replaces_an_embedded_idl_and_removing_it_brings_it_back() {
     let newer = format!(
         "{}
 ",
-        builtin_idl(&system).unwrap().json
+        builtin_idl(IdlNetwork::Devnet, &system).unwrap().json
     );
     let imported = store.import(newer.as_bytes(), None).unwrap();
     assert_eq!(imported.origin, IdlOrigin::File);
     assert_ne!(imported.sha256, embedded.sha256);
-    assert_eq!(files(&store), BUILTIN_IDLS.len());
+    assert_eq!(files(&store), builtins_on(IdlNetwork::Devnet));
     assert_eq!(store.export_files().unwrap().len(), 2);
 
     store.remove(&system).unwrap();
@@ -226,7 +226,10 @@ fn an_import_replaces_an_embedded_idl_and_removing_it_brings_it_back() {
     assert_eq!(back, &embedded);
     assert_eq!(
         store.body(&system).unwrap(),
-        builtin_idl(&system).unwrap().json.as_bytes()
+        builtin_idl(IdlNetwork::Devnet, &system)
+            .unwrap()
+            .json
+            .as_bytes()
     );
 }
 
@@ -462,8 +465,8 @@ fn checking_an_additional_program_checks_its_host() {
 #[test]
 fn the_associated_token_program_is_read_from_the_token_idl() {
     let entry = |program_id: &Pubkey| {
-        let value: serde_json::Value =
-            serde_json::from_str(builtin_idl(program_id).unwrap().json).unwrap();
+        let json = builtin_idl(IdlNetwork::Devnet, program_id).unwrap().json;
+        let value: serde_json::Value = serde_json::from_str(json).unwrap();
         value["additionalPrograms"][0].clone()
     };
     let token = entry(&crate::ids::TOKEN_PROGRAM_ID);
@@ -500,11 +503,227 @@ fn the_associated_token_program_is_read_from_the_token_idl() {
     assert_eq!(store.export_files().unwrap().len(), 1);
 }
 
+#[test]
+fn each_network_reads_the_embedded_files_of_the_programs_that_run_there() {
+    use crate::idl::builtin::{
+        ORCA_WHIRLPOOL_PROGRAM_ID, RAYDIUM_CLMM_MAINNET_PROGRAM_ID, RAYDIUM_CLMM_PROGRAM_ID,
+    };
+    let mut store = open().with_builtins();
+    let has = |store: &IdlStore<MemoryStore, MemoryBodies>, id| record(store, id).is_some();
+    assert!(has(&store, RAYDIUM_CLMM_PROGRAM_ID));
+    assert!(!has(&store, RAYDIUM_CLMM_MAINNET_PROGRAM_ID));
+    assert!(has(&store, ORCA_WHIRLPOOL_PROGRAM_ID));
+    assert!(has(&store, crate::idl::builtin::ED25519_SIGNER_PROGRAM_ID));
+    assert!(has(
+        &store,
+        crate::wallets::programmatic::EXECUTOR_NONCE_PROGRAM_ID
+    ));
+
+    store.set_network(IdlNetwork::Mainnet);
+    assert_eq!(store.network(), IdlNetwork::Mainnet);
+    assert_eq!(files(&store), builtins_on(IdlNetwork::Mainnet));
+    assert!(!has(&store, RAYDIUM_CLMM_PROGRAM_ID));
+    assert!(has(&store, RAYDIUM_CLMM_MAINNET_PROGRAM_ID));
+    assert!(has(&store, ORCA_WHIRLPOOL_PROGRAM_ID));
+    assert!(!has(&store, crate::idl::builtin::ED25519_SIGNER_PROGRAM_ID));
+    // Its companions go with it.
+    assert!(!has(
+        &store,
+        crate::wallets::programmatic::EXECUTOR_NONCE_PROGRAM_ID
+    ));
+    assert!(has(&store, crate::ids::ASSOCIATED_TOKEN_PROGRAM_ID));
+    assert!(store
+        .program_client(&RAYDIUM_CLMM_MAINNET_PROGRAM_ID)
+        .is_some());
+
+    store.set_network(IdlNetwork::Localnet);
+    assert!(has(&store, crate::ids::SYSTEM_PROGRAM_ID));
+    assert!(!has(&store, ORCA_WHIRLPOOL_PROGRAM_ID));
+}
+
+#[test]
+fn an_import_is_kept_for_the_network_it_was_made_on() {
+    let program = pk(4);
+    let on_devnet = codama(program, "0.1.0");
+    let on_mainnet = codama(program, "0.2.0");
+    let mut store = open();
+    store.import(&on_devnet, None).unwrap();
+
+    store.set_network(IdlNetwork::Mainnet);
+    assert!(record(&store, program).is_none());
+    assert!(store.program_client(&program).is_none());
+    store.import(&on_mainnet, None).unwrap();
+    assert_eq!(store.body(&program), Some(on_mainnet.as_slice()));
+
+    // Each network keeps its own file across a restart.
+    let mut store = IdlStore::open_on(store.index_store, store.bodies, IdlNetwork::Mainnet);
+    assert_eq!(store.body(&program), Some(on_mainnet.as_slice()));
+    store.set_network(IdlNetwork::Devnet);
+    assert_eq!(store.body(&program), Some(on_devnet.as_slice()));
+
+    // Removing one leaves the other.
+    store.remove(&program).unwrap();
+    store.set_network(IdlNetwork::Mainnet);
+    assert_eq!(store.body(&program), Some(on_mainnet.as_slice()));
+}
+
+#[test]
+fn an_import_for_another_network_is_stored_without_showing() {
+    let mut store = open();
+    let bytes = codama(pk(4), "0.1.0");
+    let saved = store.import_for(IdlNetwork::Mainnet, &bytes, None).unwrap();
+    assert_eq!(saved.program_id, pk(4));
+    assert!(record(&store, pk(4)).is_none());
+    store.set_network(IdlNetwork::Mainnet);
+    assert_eq!(store.body(&pk(4)), Some(bytes.as_slice()));
+}
+
+#[test]
+fn an_index_from_before_networks_moves_under_the_network_in_use() {
+    let program = pk(4);
+    let bytes = codama(program, "0.1.0");
+    let legacy = format!(
+        r#"{{"records":[{{"programId":"{program}","name":"myProgram","sha256":"{}","spec":"codama","origin":"programMetadata"}}]}}"#,
+        hex::encode(sha256(&bytes))
+    );
+    let index = MemoryStore::new();
+    index.save(legacy.as_bytes()).unwrap();
+    let bodies = MemoryBodies::new();
+    bodies
+        .inner
+        .lock()
+        .unwrap()
+        .insert(program.to_string(), bytes.clone());
+
+    let store = IdlStore::open_on(index, bodies, IdlNetwork::Mainnet);
+    assert_eq!(store.body(&program), Some(bytes.as_slice()));
+    assert_eq!(
+        record(&store, program).unwrap().origin,
+        IdlOrigin::ProgramMetadata
+    );
+    assert_eq!(
+        store.bodies.load(IdlNetwork::Mainnet, &program).unwrap(),
+        Some(bytes.clone())
+    );
+    assert_eq!(store.bodies.load_unscoped(&program).unwrap(), None);
+    let written: serde_json::Value =
+        serde_json::from_slice(&store.index_store.load().unwrap().unwrap()).unwrap();
+    assert_eq!(written["records"][0]["network"], "mainnet");
+
+    let mut store = IdlStore::open(store.index_store, store.bodies);
+    assert!(record(&store, program).is_none());
+    store.set_network(IdlNetwork::Mainnet);
+    assert_eq!(store.body(&program), Some(bytes.as_slice()));
+}
+
+/// The chain publishes C2, the file was made from C2 and is C1: the file is
+/// current, and says so, though the bytes differ.
+#[test]
+fn a_check_that_finds_what_the_file_was_made_from_says_it_is_current() {
+    let mut store = open();
+    let ours = codama(pk(1), "0.1.0");
+    let theirs = br#"{"name":"theirs","instructions":[]}"#;
+    store.import(&ours, None).unwrap();
+    store.records[0].source = Some(IdlChainSource {
+        network: IdlNetwork::Devnet,
+        account: IdlOrigin::ProgramMetadata,
+        sha256: sha256(theirs),
+    });
+    assert_eq!(
+        store.records[0].compared_account(),
+        IdlOrigin::ProgramMetadata
+    );
+
+    let check = store.record_check(&pk(1), theirs).unwrap();
+    assert!(!check.same && check.source && check.current());
+    assert_eq!(store.body(&pk(1)), Some(ours.as_slice()));
+
+    let check = store.record_check(&pk(1), b"{}").unwrap();
+    assert!(!check.same && !check.source && !check.current());
+    let check = store.record_check(&pk(1), &ours).unwrap();
+    assert!(check.same && !check.source && check.current());
+}
+
+#[test]
+fn embedded_files_made_from_the_chain_carry_their_source() {
+    let store = open().with_builtins();
+    let clmm = record(&store, crate::idl::builtin::RAYDIUM_CLMM_PROGRAM_ID).unwrap();
+    let source = clmm.source.unwrap();
+    assert_eq!(source.account, IdlOrigin::ProgramMetadata);
+    assert_ne!(source.sha256, clmm.sha256);
+    assert_eq!(clmm.compared_account(), IdlOrigin::ProgramMetadata);
+    // A file taken from a repository has no on-chain source.
+    let system = record(&store, crate::ids::SYSTEM_PROGRAM_ID).unwrap();
+    assert_eq!(system.source, None);
+    assert_eq!(system.compared_account(), IdlOrigin::Anchor);
+    // The companions of a file share its source, as they share its checks.
+    let nonce = record(
+        &store,
+        crate::wallets::programmatic::EXECUTOR_NONCE_PROGRAM_ID,
+    )
+    .unwrap();
+    let signer = record(&store, crate::idl::builtin::ED25519_SIGNER_PROGRAM_ID).unwrap();
+    assert_eq!(nonce.source, signer.source);
+    assert!(signer.source.is_some());
+}
+
+#[test]
+fn a_bundle_carries_every_network() {
+    let mut store = open();
+    let on_devnet = codama(pk(4), "0.1.0");
+    let on_mainnet = codama(pk(4), "0.2.0");
+    store.import(&on_devnet, None).unwrap();
+    store
+        .import_for(IdlNetwork::Mainnet, &on_mainnet, None)
+        .unwrap();
+    let files = store.export_files().unwrap();
+    let names: Vec<&str> = files.iter().map(|(name, _)| name.as_str()).collect();
+    assert_eq!(names[0], "index.json");
+    assert!(names.contains(&format!("devnet.{}.json", pk(4)).as_str()));
+    assert!(names.contains(&format!("mainnet.{}.json", pk(4)).as_str()));
+
+    let borrowed: Vec<(&str, &[u8])> = files
+        .iter()
+        .map(|(name, bytes)| (name.as_str(), bytes.as_slice()))
+        .collect();
+    let mut other = open();
+    let report = other.import_bundle(&borrowed).unwrap();
+    assert_eq!(report.imported.len(), 2, "{:?}", report.skipped);
+    assert_eq!(other.body(&pk(4)), Some(on_devnet.as_slice()));
+    other.set_network(IdlNetwork::Mainnet);
+    assert_eq!(other.body(&pk(4)), Some(on_mainnet.as_slice()));
+}
+
+#[test]
+fn a_bundle_from_before_networks_is_imported_for_the_network_shown() {
+    let bytes = codama(pk(4), "0.1.0");
+    let index = format!(
+        r#"{{"records":[{{"programId":"{}","name":"myProgram","sha256":"{}","spec":"codama","origin":"file"}}]}}"#,
+        pk(4),
+        hex::encode(sha256(&bytes))
+    );
+    let name = format!("{}.json", pk(4));
+    let mut store = open();
+    store.set_network(IdlNetwork::Mainnet);
+    let report = store
+        .import_bundle(&[("index.json", index.as_bytes()), (&name, &bytes)])
+        .unwrap();
+    assert_eq!(report.imported.len(), 1, "{:?}", report.skipped);
+    assert_eq!(store.body(&pk(4)), Some(bytes.as_slice()));
+}
+
 /// Records with a file of their own.
 fn files(store: &IdlStore<MemoryStore, MemoryBodies>) -> usize {
     store
         .records()
         .iter()
         .filter(|record| record.host.is_none())
+        .count()
+}
+
+fn builtins_on(network: IdlNetwork) -> usize {
+    BUILTIN_IDLS
+        .iter()
+        .filter(|idl| idl.runs_on(network))
         .count()
 }

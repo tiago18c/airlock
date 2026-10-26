@@ -32,6 +32,7 @@ use solana_message::legacy::Message as LegacyMessage;
 use solana_pubkey::Pubkey;
 
 use crate::idl::builtin::builtin_idl;
+use crate::idl::network::IdlNetwork;
 use crate::ids::SYSTEM_PROGRAM_ID;
 
 pub use crate::ids::{SQUADS_SMART_ACCOUNT_PROGRAM_ID, SQUADS_V4_PROGRAM_ID};
