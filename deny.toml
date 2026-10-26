@@ -32,6 +32,14 @@ ignore = [
     # wallet's own secp256k1 keys sign with k256 0.14 (crypto-bigint 0.7.6+).
     # Drop this once neither pins k256 0.13.
     { id = "RUSTSEC-2026-0387", reason = "crypto-bigint 0.5 via k256 0.13 in vector-core and solana-nostd-secp256k1-recover; wallet signing is on k256 0.14" },
+    # zstd 0.13 and zstd-safe 7 are fixed only in zstd 0.14 and zstd-safe 8.2,
+    # and solana-account-decoder 4.3.2 (the latest) requires zstd ^0.13. The
+    # decoder decompresses only Base64Zstd accounts, and the app asks every
+    # node for Base64, Base58 or JsonParsed; nothing uses the seekable API.
+    # The offline signer does not link zstd. Drop these when Solana moves.
+    { id = "RUSTSEC-2026-0391", reason = "zstd 0.13 via solana-account-decoder; the app never requests Base64Zstd, so nothing is decompressed" },
+    { id = "RUSTSEC-2026-0398", reason = "zstd-safe 7 via solana-account-decoder; the seekable API is not used" },
+    { id = "RUSTSEC-2026-0403", reason = "zstd-safe 7 via solana-account-decoder; the app never requests Base64Zstd, so nothing is decompressed" },
 ]
 
 [licenses]
