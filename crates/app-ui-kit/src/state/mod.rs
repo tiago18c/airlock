@@ -49,6 +49,36 @@ pub fn open_core_with(notifier: Arc<dyn Notifier>) -> Core {
     Core::open(ports)
 }
 
+/// The IDL catalog, on the network of the cluster in use, with the IDL pack
+/// in it: read while it opens on desktop, fetched once in a browser.
+fn use_idls(
+    network: ReadSignal<Arc<app_core::NetworkStatus>>,
+) -> (
+    Signal<crate::platform::storage::AppIdls>,
+    Signal<crate::platform::idl_pack::IdlPackState>,
+) {
+    use crate::platform::idl_pack::{open_catalog, IdlPackState};
+    // Both signals start in this render: the catalog says how the pack went.
+    let opened = std::cell::Cell::new(None);
+    let idls = use_signal(|| {
+        let (store, state) = open_catalog(wallet_core::IdlNetwork::of(&network.peek().cluster));
+        opened.set(Some(state));
+        store
+    });
+    let idl_pack = use_signal(|| opened.take().unwrap_or(IdlPackState::Loading));
+    #[cfg(target_arch = "wasm32")]
+    use_hook(move || {
+        let (mut idls, mut idl_pack) = (idls, idl_pack);
+        spawn(async move {
+            let fetched = crate::platform::idl_pack::fetch_pack().await;
+            let state = crate::platform::idl_pack::add_pack(&mut idls.write(), fetched);
+            idl_pack.set(state);
+        });
+    });
+    use_idl_network(network, idls);
+    (idls, idl_pack)
+}
+
 /// Keep the IDL catalog on the network of the cluster in use. A custom RPC
 /// reads the IDLs of the public cluster its genesis matched.
 fn use_idl_network(
@@ -93,12 +123,7 @@ fn use_save_failures(core: CopyValue<Core>, mut save_error: Signal<Option<String
 /// [`SubmitHandle::none`](crate::SubmitHandle::none). Call once, from the root.
 pub fn use_session(core: CopyValue<Core>, online: OnlineHooks, submitter: SubmitHandle) -> Session {
     let pump = pump::use_core(core.peek().clone());
-    let idls = use_signal(|| {
-        crate::platform::storage::open_idls(wallet_core::IdlNetwork::of(
-            &pump.network.peek().cluster,
-        ))
-    });
-    use_idl_network(pump.network, idls);
+    let (idls, idl_pack) = use_idls(pump.network);
     let idl_misses = use_hook(|| CopyValue::new(std::collections::HashSet::new()));
     let leaf_marks = use_signal(crate::platform::storage::open_leaf_marks);
     let xmss_retries = use_signal(wallet_core::vector::XmssRetryCache::default);
@@ -133,6 +158,7 @@ pub fn use_session(core: CopyValue<Core>, online: OnlineHooks, submitter: Submit
             core,
             pump,
             idls,
+            idl_pack,
             idl_misses,
             leaf_marks,
             xmss_retries,

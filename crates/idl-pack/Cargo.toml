@@ -1,0 +1,21 @@
+[package]
+name = "idl-pack"
+version.workspace = true
+edition.workspace = true
+description = "The compressed file of IDLs the app ships beside its binary"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+flate2 = "1"
+serde_json = { workspace = true, optional = true }
+sha2 = { workspace = true, optional = true }
+thiserror.workspace = true
+toml = { version = "0.8", optional = true }
+
+[features]
+# Packing a folder: for build scripts and tests, not the app.
+build = ["dep:serde_json", "dep:sha2", "dep:toml"]

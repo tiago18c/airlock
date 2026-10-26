@@ -17,7 +17,8 @@ How Airlock uses IDLs to read and build instructions, and the rules that keep wh
 | Piece | Where |
 | --- | --- |
 | Catalog: imported files, checksums, the index | `crates/wallet-core/src/idl/catalog` |
-| Embedded IDLs, their networks and sources | `crates/wallet-core/idls/`, listed in `BUILTIN_IDLS` (`idl/builtin.rs`) |
+| Core IDLs, compiled in | `crates/wallet-core/idls/`, listed in `BUILTIN_IDLS` (`idl/builtin.rs`) |
+| Third-party IDLs, the IDL pack | `resources/idls/`, listed in `resources/idls/manifest.toml`; packed by `crates/app-ui-kit/build.rs` with the `idl-pack` crate, read by `wallet_core::idls_from_pack` and `app-ui-kit/src/platform/idl_pack.rs` |
 | Networks | `crates/wallet-core/src/idl/network.rs` |
 | Building an instruction from an IDL | `crates/wallet-core/src/idl/build`, `idl/draft.rs`, the Build screen's tabs |
 | Explaining an instruction | `crates/wallet-core/src/review/explain` |
@@ -28,13 +29,28 @@ Every review row and every Build form comes from an IDL. The hand-written decode
 
 ## Embedded IDLs
 
-`crates/wallet-core/idls/` holds the IDL of each program the app needs without an import (System, Stake, Token, Token-2022, compute budget, the Ed25519 programmatic signer, the two Squads programs, Vector, the Raydium CLMM and CP swap on devnet and mainnet, the devnet Raydium router, Orca Whirlpool), unchanged from upstream apart from display nodes. The Squads and Raydium files are Anchor IDLs converted to Codama; the Raydium ones also declare the remaining accounts their instructions read (the CLMM's tick arrays and swap route, the CP swap config's new owner), which an Anchor IDL cannot, and show their token amounts in base units because they cannot read a mint's decimals. The Raydium router publishes no IDL, so `raydium-router.json` is written by hand from transactions the program executed (its docs page lists account orders the chain does not use). Its swaps name the owner and the accounts at fixed positions; the hops, whose accounts depend on each pool program, are one hidden remaining-accounts group. `SwapBaseOut` (tag 9) is left out until a transaction shows its layout. The Orca Whirlpool file is the IDL its program-metadata account publishes on mainnet: the program has the same address and version on devnet, where its IDL accounts are missing or stale. Its V2 instructions declare the transfer hook and supplemental tick array accounts that `remainingAccountsInfo` slices out. To update one, replace the file and its source checksum; the `builtin.rs` tests check its program id, its name, that no two files claim a program on the same network, and the pinned default instruction on every network.
+The app ships the IDL of each program it needs without an import, in two sets that read the same once in the catalog (`EmbeddedIdl`, origin `Builtin`):
 
-They are compiled into the binary and never written to the index. Importing a file for the same program on the same network replaces the embedded one, and removing that import brings it back. An embedded IDL cannot be removed and is left out of an export. `.gitattributes` keeps the files LF on every checkout: `include_str!` embeds the checked-out bytes, and their checksum is compared across devices.
+- **The core**, compiled into the binary: `crates/wallet-core/idls/`, listed in `BUILTIN_IDLS`. These are the programs the wallet's own code builds instructions for, so they cannot fail to load: System, Stake, Token, Token-2022, compute budget, the Ed25519 programmatic signer, the two Squads programs, Vector.
+- **The IDL pack**, for third-party programs: `resources/idls/`, listed in `manifest.toml` (the Raydium CLMM and CP swap on devnet and mainnet, the devnet Raydium router, Orca Whirlpool). This is where new programs go.
+
+Both are unchanged from upstream apart from what each entry's `changes` says. The Squads and Raydium files are Anchor IDLs converted to Codama; the Raydium ones also declare the remaining accounts their instructions read (the CLMM's tick arrays and swap route, the CP swap config's new owner), which an Anchor IDL cannot, and show their token amounts in base units because they cannot read a mint's decimals. The Raydium router publishes no IDL, so `raydium-router.json` is written by hand from transactions the program executed (its docs page lists account orders the chain does not use). Its swaps name the owner and the accounts at fixed positions; the hops, whose accounts depend on each pool program, are one hidden remaining-accounts group. `SwapBaseOut` (tag 9) is left out until a transaction shows its layout. The Orca Whirlpool file is the IDL its program-metadata account publishes on mainnet: the program has the same address and version on devnet, where its IDL accounts are missing or stale. Its V2 instructions declare the transfer hook and supplemental tick array accounts that `remainingAccountsInfo` slices out. To add or update one of the pack's, put the file in `resources/idls/` and its entry in `manifest.toml` with its source checksum; a JSON file the manifest does not list fails the build. The tests in `idl/pack.rs` and `idl/builtin.rs` check each file's program id and name, that no two files (core or pack) claim a program on the same network, every instruction's form on every network, and the pinned default instructions.
+
+Embedded IDLs are never written to the index. Importing a file for the same program on the same network replaces the embedded one, and removing that import brings it back. An embedded IDL cannot be removed and is left out of an export. `.gitattributes` keeps both folders LF on every checkout: the bytes shipped are the checked-out bytes, and their checksum is compared across devices.
+
+### The IDL pack
+
+`crates/app-ui-kit/build.rs` packs `resources/idls` into `crates/app-ui-kit/assets/idls.pack` (ignored by git) and pins the pack's SHA-256 in the build (`AIRLOCK_IDL_PACK_SHA256`). The pack is zlib over the manifest, as JSON, and each listed file (format in the `idl-pack` crate); it is about a twentieth of the JSON it holds. `asset!` ships it beside the app: in the bundle's assets on desktop, as one hashed, cacheable file of the page on the web.
+
+- **Desktop** reads it while the catalog opens, so the catalog is whole from the first frame. Run without a bundle (`cargo run`, tests), the asset resolves to the file in the source tree.
+- **Web** fetches it once after the page loads. Until it arrives, the catalog holds the core only, and Review and Programs say "Loading the IDLs that ship with the app…".
+- **A pack that does not match the pin is refused whole**, before anything in it is read: a file changed after install, or a server sent something else. So is one that claims a program on a network the core already covers. Its programs then read raw, and Review and Programs say why.
+
+The pin makes the pack as trusted as the binary that carries it: an IDL decides what the signer shows before signing.
 
 ### Networks and sources
 
-Each `BUILTIN_IDLS` entry lists the networks it is read on, its source (`IdlSource`) and what was changed in it:
+Each embedded IDL, core or pack, lists the networks it is read on, its source (`IdlSource`) and what was changed in it:
 
 | File | Networks | Source |
 | --- | --- | --- |
@@ -60,7 +76,7 @@ The index lists each imported file with its network. Bodies are `idls/<network>/
 A Codama file can carry other programs in `additionalPrograms`. The catalog gives each one a record of its own (`IdlRecord::host` names the file it is read from), so build and review use it like any other program. Its checksum, origin and online check are the host file's. Such a record is never stored or exported, cannot be removed on its own, and goes when its host file goes.
 
 - A file of the program's own, embedded or imported, wins over an entry carried by another file.
-- When several files carry the same program, the fullest entry wins: Codama nodes plus non-empty docs lines (`companions::completeness`). On a tie, the host listed first in `BUILTIN_IDLS` wins, then the lower host address.
+- When several files carry the same program, the fullest entry wins: Codama nodes plus non-empty docs lines (`companions::completeness`). On a tie, the host embedded first wins (the core in the order of `BUILTIN_IDLS`, then the pack in the order of its manifest), then the lower host address.
 
 The embedded files carry three: the associated-token program in `token` and `token-2022`, and the message executor and its nonce program in `ed25519-programmatic-signer`. The associated-token entries are fuller than that program's own `idl.json` (the payer, the associated account and the token program have defaults, so the form derives the address), so that file is no longer embedded. On the ATA tab, "Change" on the token program row switches it to Token-2022, and the address follows. The program's own file also has `createWithArgs`, which neither entry has; a transaction using it reads raw until that file is imported.
 

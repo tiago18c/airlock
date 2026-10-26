@@ -163,8 +163,9 @@ fn bytes_the_idl_cannot_parse_stay_raw() {
     assert_eq!(raw.data, data);
 }
 
+/// Every IDL the app ships, on devnet.
 fn builtins() -> IdlStore<MemoryStore, MemoryBodies> {
-    IdlStore::open(MemoryStore::new(), MemoryBodies::new()).with_builtins()
+    crate::fixtures::shipped_catalog(crate::IdlNetwork::Devnet)
 }
 
 fn explain_one_ix(
@@ -638,7 +639,7 @@ fn the_key_an_advance_hands_a_hash_based_account_to_is_shown_on_its_passthrough(
 /// tick arrays after the named accounts.
 #[test]
 fn a_raydium_swap_names_its_mints_pool_and_limits() {
-    use crate::idl::builtin::RAYDIUM_CLMM_PROGRAM_ID;
+    use crate::fixtures::RAYDIUM_CLMM_PROGRAM_ID;
 
     let mut data = hex::decode("2b04ed0b1ac91e62").unwrap();
     data.extend(6_708_044_446_768u64.to_le_bytes());
@@ -701,7 +702,7 @@ fn a_raydium_swap_names_its_mints_pool_and_limits() {
 /// order its IDL lists them.
 #[test]
 fn a_raydium_cp_swap_names_its_mints_pool_and_limits() {
-    use crate::idl::builtin::RAYDIUM_CP_SWAP_PROGRAM_ID;
+    use crate::fixtures::RAYDIUM_CP_SWAP_PROGRAM_ID;
 
     let mut data = hex::decode("8fbe5adac41e33de").unwrap();
     data.extend(2_500_000u64.to_le_bytes());
@@ -754,7 +755,7 @@ fn a_raydium_cp_swap_names_its_mints_pool_and_limits() {
 /// account after the named ones, so review shows it rather than flagging it.
 #[test]
 fn a_raydium_cp_config_owner_change_shows_the_new_owner() {
-    use crate::idl::builtin::RAYDIUM_CP_SWAP_PROGRAM_ID;
+    use crate::fixtures::RAYDIUM_CP_SWAP_PROGRAM_ID;
 
     let admin = Pubkey::from_str_const("DRayqG9RXYi8WHgWEmRQGrUWRWbhjYWYkCRJDd6JBBak");
     let mut data = hex::decode("313cae889a1c74c8").unwrap();
@@ -779,7 +780,7 @@ fn a_raydium_cp_config_owner_change_shows_the_new_owner() {
 /// An instruction of a devnet router transaction: its data and its
 /// accounts as `(address, signer, writable)`.
 fn router_ix(data: &str, accounts: &[(&str, bool, bool)]) -> Instruction {
-    use crate::idl::builtin::RAYDIUM_ROUTER_PROGRAM_ID;
+    use crate::fixtures::RAYDIUM_ROUTER_PROGRAM_ID;
 
     Instruction {
         program_id: RAYDIUM_ROUTER_PROGRAM_ID,
@@ -1015,7 +1016,7 @@ fn a_routed_swap_names_its_input_and_first_hop() {
 /// An instruction of the Whirlpool program: its data and its accounts as
 /// `(address, signer, writable)`.
 fn whirlpool_ix(data: &str, accounts: &[(&str, bool, bool)]) -> Instruction {
-    use crate::idl::builtin::ORCA_WHIRLPOOL_PROGRAM_ID;
+    use crate::fixtures::ORCA_WHIRLPOOL_PROGRAM_ID;
 
     Instruction {
         program_id: ORCA_WHIRLPOOL_PROGRAM_ID,

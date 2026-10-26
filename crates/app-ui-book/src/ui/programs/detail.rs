@@ -43,7 +43,7 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
     });
     let network = session.idl_network();
     let embedded = (record.origin == IdlOrigin::Builtin)
-        .then(|| builtin_idl(network, &record.host.unwrap_or(record.program_id)))
+        .then(|| session.embedded_idl(&record.program_id))
         .flatten();
 
     rsx! {
@@ -68,7 +68,7 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                     span { class: "chip", title: "IDLs are kept per network: the cluster in use", "{network}" }
                 }
                 if let Some(embedded) = embedded {
-                    p { class: "hint", "{source_sentence(embedded.source)} {embedded.changes}" }
+                    p { class: "hint", "{source_sentence(&embedded.source)} {embedded.changes}" }
                 }
                 if let Some(host) = host_name {
                     p { class: "hint",
@@ -150,7 +150,7 @@ fn program_view(session: Session, id: Option<Pubkey>) -> ProgramView {
 }
 
 /// Where an embedded file was taken from.
-fn source_sentence(source: IdlSource) -> String {
+fn source_sentence(source: &IdlSource) -> String {
     match source {
         IdlSource::Chain(source) => {
             let account = match source.account {

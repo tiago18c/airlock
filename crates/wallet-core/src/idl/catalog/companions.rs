@@ -5,7 +5,8 @@
 use super::*;
 use std::cmp::Reverse;
 
-/// Lower is better: fuller first, then the host's place in [`BUILTIN_IDLS`],
+/// Lower is better: fuller first, then the host's place among the embedded
+/// IDLs (the core in the order of [`BUILTIN_IDLS`], then the IDL pack's),
 /// then its address so the choice never depends on load order.
 type Rank = (Reverse<usize>, usize, Pubkey);
 
@@ -22,7 +23,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
     /// Work out the companion records again from the files now stored. A
     /// program with a file of its own keeps that file. When several files
     /// carry the same program, the most complete entry wins, and on a tie the
-    /// file of the program listed first in [`BUILTIN_IDLS`].
+    /// file of the program embedded first.
     pub(super) fn refresh_companions(&mut self) {
         let before: Vec<Pubkey> = self.companion_ids().collect();
         self.records.retain(|record| record.host.is_none());
@@ -51,7 +52,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
                 }
                 let rank = (
                     Reverse(companion.completeness),
-                    host_rank(&host.program_id),
+                    host_rank(&self.embedded, &host.program_id),
                     host.program_id,
                 );
                 if chosen
@@ -179,9 +180,9 @@ pub(super) fn completeness(value: &serde_json::Value) -> usize {
     }
 }
 
-/// Embedded files first, in the order they are listed, then the rest.
-fn host_rank(program_id: &Pubkey) -> usize {
-    BUILTIN_IDLS
+/// Embedded files first, in the order they were added, then the rest.
+fn host_rank(embedded: &[EmbeddedIdl], program_id: &Pubkey) -> usize {
+    embedded
         .iter()
         .position(|idl| idl.program_id == *program_id)
         .unwrap_or(usize::MAX)

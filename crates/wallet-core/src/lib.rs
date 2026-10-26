@@ -46,13 +46,13 @@ pub use idl::DirIdlBodies;
 pub use idl::{
     anchor_idl_account_data, anchor_idl_address, build_idl_instruction, builtin_idl,
     idl_bytes_from_anchor_account, idl_bytes_from_program_metadata, idl_instruction_form,
-    outline_idl, pinned_program, pretty_idl, program_metadata_account_data,
-    program_metadata_idl_address, sha256_bytes, BuiltinIdl, IdlAccountField, IdlAccountSource,
-    IdlAccountUse, IdlArgField, IdlArgKind, IdlArgOutline, IdlBodies, IdlBuildFailure,
-    IdlBuildInput, IdlBundleReport, IdlCatalog, IdlChainSource, IdlCheck, IdlDraft, IdlError,
-    IdlErrorOutline, IdlForm, IdlIxOutline, IdlNamed, IdlNetwork, IdlOrigin, IdlOutline,
-    IdlPdaOutline, IdlRecord, IdlSource, IdlSpec, IdlStore, MemoryBodies, PinnedProgram,
-    BUILTIN_IDLS, ED25519_SIGNER_PROGRAM_ID, MAX_IDL_BYTES, PINNED_PROGRAMS,
+    idls_from_pack, outline_idl, pinned_program, pretty_idl, program_metadata_account_data,
+    program_metadata_idl_address, sha256_bytes, BuiltinIdl, EmbeddedIdl, IdlAccountField,
+    IdlAccountSource, IdlAccountUse, IdlArgField, IdlArgKind, IdlArgOutline, IdlBodies,
+    IdlBuildFailure, IdlBuildInput, IdlBundleReport, IdlCatalog, IdlChainSource, IdlCheck,
+    IdlDraft, IdlError, IdlErrorOutline, IdlForm, IdlIxOutline, IdlNamed, IdlNetwork, IdlOrigin,
+    IdlOutline, IdlPackError, IdlPdaOutline, IdlRecord, IdlSource, IdlSpec, IdlStore, MemoryBodies,
+    PinnedProgram, BUILTIN_IDLS, ED25519_SIGNER_PROGRAM_ID, MAX_IDL_BYTES, PINNED_PROGRAMS,
 };
 pub use keys::{
     concrete_path, derive_batch, new_phrase, path_has_wildcard, secret_seed_from_import,

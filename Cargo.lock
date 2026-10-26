@@ -440,6 +440,7 @@ dependencies = [
  "dioxus",
  "gloo-timers 0.2.6",
  "hex",
+ "idl-pack",
  "js-sys",
  "qr-codec",
  "rfd",
@@ -4890,6 +4891,17 @@ name = "ident_case"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
+
+[[package]]
+name = "idl-pack"
+version = "0.1.0"
+dependencies = [
+ "flate2",
+ "serde_json",
+ "sha2 0.10.9",
+ "thiserror 2.0.21",
+ "toml",
+]
 
 [[package]]
 name = "idna"
@@ -11935,6 +11947,7 @@ dependencies = [
  "getrandom 0.4.3",
  "hex",
  "hmac 0.12.1",
+ "idl-pack",
  "k256 0.14.0",
  "pollster",
  "qr-protocol",

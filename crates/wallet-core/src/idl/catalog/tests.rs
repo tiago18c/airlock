@@ -1,4 +1,5 @@
 use super::*;
+use crate::idl::builtin::builtin_idl;
 use wallet_vault::store::MemoryStore;
 
 fn pk(byte: u8) -> Pubkey {
@@ -505,10 +506,11 @@ fn the_associated_token_program_is_read_from_the_token_idl() {
 
 #[test]
 fn each_network_reads_the_embedded_files_of_the_programs_that_run_there() {
-    use crate::idl::builtin::{
-        ORCA_WHIRLPOOL_PROGRAM_ID, RAYDIUM_CLMM_MAINNET_PROGRAM_ID, RAYDIUM_CLMM_PROGRAM_ID,
+    use crate::fixtures::{
+        shipped_catalog, ORCA_WHIRLPOOL_PROGRAM_ID, RAYDIUM_CLMM_MAINNET_PROGRAM_ID,
+        RAYDIUM_CLMM_PROGRAM_ID,
     };
-    let mut store = open().with_builtins();
+    let mut store = shipped_catalog(IdlNetwork::Devnet);
     let has = |store: &IdlStore<MemoryStore, MemoryBodies>, id| record(store, id).is_some();
     assert!(has(&store, RAYDIUM_CLMM_PROGRAM_ID));
     assert!(!has(&store, RAYDIUM_CLMM_MAINNET_PROGRAM_ID));
@@ -521,7 +523,6 @@ fn each_network_reads_the_embedded_files_of_the_programs_that_run_there() {
 
     store.set_network(IdlNetwork::Mainnet);
     assert_eq!(store.network(), IdlNetwork::Mainnet);
-    assert_eq!(files(&store), builtins_on(IdlNetwork::Mainnet));
     assert!(!has(&store, RAYDIUM_CLMM_PROGRAM_ID));
     assert!(has(&store, RAYDIUM_CLMM_MAINNET_PROGRAM_ID));
     assert!(has(&store, ORCA_WHIRLPOOL_PROGRAM_ID));
@@ -646,8 +647,8 @@ fn a_check_that_finds_what_the_file_was_made_from_says_it_is_current() {
 
 #[test]
 fn embedded_files_made_from_the_chain_carry_their_source() {
-    let store = open().with_builtins();
-    let clmm = record(&store, crate::idl::builtin::RAYDIUM_CLMM_PROGRAM_ID).unwrap();
+    let store = crate::fixtures::shipped_catalog(IdlNetwork::Devnet);
+    let clmm = record(&store, crate::fixtures::RAYDIUM_CLMM_PROGRAM_ID).unwrap();
     let source = clmm.source.unwrap();
     assert_eq!(source.account, IdlOrigin::ProgramMetadata);
     assert_ne!(source.sha256, clmm.sha256);
@@ -726,4 +727,37 @@ fn builtins_on(network: IdlNetwork) -> usize {
         .iter()
         .filter(|idl| idl.runs_on(network))
         .count()
+}
+
+/// The IDL pack cannot take a program's slot from the core on a network the
+/// core already covers.
+#[test]
+fn an_embedded_idl_that_claims_a_core_program_is_refused() {
+    let mut store = open().with_builtins();
+    let system = crate::ids::SYSTEM_PROGRAM_ID;
+    let impostor = crate::idl::builtin::EmbeddedIdl {
+        program_id: system,
+        name: "notSystem".into(),
+        json: std::sync::Arc::from(codama(system, "9.9.9")),
+        networks: vec![IdlNetwork::Devnet],
+        source: crate::idl::builtin::IdlSource::Hand,
+        changes: String::new(),
+    };
+    let elsewhere = crate::idl::builtin::EmbeddedIdl {
+        program_id: pk(7),
+        name: "myProgram".into(),
+        json: std::sync::Arc::from(codama(pk(7), "0.1.0")),
+        networks: vec![IdlNetwork::Devnet],
+        source: crate::idl::builtin::IdlSource::Hand,
+        changes: "made up".into(),
+    };
+    let refused = store.add_embedded(vec![impostor, elsewhere]);
+    assert_eq!(refused, vec!["notSystem".to_string()]);
+    assert_eq!(record(&store, system).unwrap().name, "system");
+    let added = record(&store, pk(7)).unwrap();
+    assert_eq!(added.origin, IdlOrigin::Builtin);
+    assert_eq!(store.embedded(&pk(7)).unwrap().changes, "made up");
+    assert!(store.remove(&pk(7)).is_err());
+    store.set_network(IdlNetwork::Mainnet);
+    assert!(record(&store, pk(7)).is_none());
 }

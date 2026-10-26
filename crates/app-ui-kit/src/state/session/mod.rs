@@ -103,6 +103,9 @@ pub struct Session {
     /// Moves what the core publishes into the signals below.
     pump: Pump,
     pub idls: Signal<AppIdls>,
+    /// Whether the IDL pack, the third-party IDLs shipped beside the app, is
+    /// in `idls` yet.
+    pub idl_pack: Signal<crate::platform::idl_pack::IdlPackState>,
     /// Programs a node said publish no IDL, by the node's URL. Not asked
     /// again while the app runs.
     pub idl_misses: CopyValue<HashSet<(String, Pubkey)>>,
@@ -160,6 +163,7 @@ impl Session {
         core: CopyValue<Core>,
         pump: Pump,
         idls: Signal<AppIdls>,
+        idl_pack: Signal<crate::platform::idl_pack::IdlPackState>,
         idl_misses: CopyValue<HashSet<(String, Pubkey)>>,
         leaf_marks: Signal<AppLeafMarks>,
         xmss_retries: Signal<wallet_core::vector::XmssRetryCache>,
@@ -179,6 +183,7 @@ impl Session {
             core,
             pump,
             idls,
+            idl_pack,
             idl_misses,
             leaf_marks,
             xmss_retries,
