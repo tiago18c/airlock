@@ -362,7 +362,9 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             },
             finished: returned,
             expired: clock_expired(),
-            refreshes_on_sign,
+            // Sign moves the transaction off an expired blockhash, so it
+            // holds nothing back.
+            refreshes_on_sign: refreshes_on_sign || moves,
             left_for_site: site_signs,
         },
     );
@@ -381,14 +383,6 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             RebuildBanner { plan, online }
         }
 
-        WhatYouAreSigning {
-            status: status.clone(),
-            tx: tx.clone(),
-            online,
-            expired: clock_expired,
-            label: countdown_label,
-            moves_on_sign: moves || refreshes_on_sign,
-        }
         PersonalSignBox { tx: tx.clone(), status: status.clone() }
 
         SimulatedDeltas {
