@@ -13,7 +13,7 @@ use std::collections::{HashMap, HashSet};
 use wallet_core::{
     display_note, explain_with_note, ContextPinMatch, DecodedTx, ExplainedIx, IdlExplanation,
     IdlOrigin, IdlPinStatus, InnerKind, InnerMessage, IntentBody, IntentSpan, IntentValue, NextKey,
-    ScaleSource, MAX_TRANSACTION_SIZE,
+    ScaleSource, COMPUTE_BUDGET_PROGRAM_ID, MAX_TRANSACTION_SIZE,
 };
 
 mod facts;
@@ -166,12 +166,19 @@ fn summary_addresses(instructions: &[ExplainedIx], named: &mut HashSet<Pubkey>) 
     }
 }
 
-/// Instructions in order, each numbered within its own level.
+/// Instructions in order, each numbered within its own level. Summary leaves
+/// out ComputeBudget instructions: what they cost is the fee line, and
+/// Inspect states the limits. The rest keep their numbers, the ones a failed
+/// simulation names.
 #[component]
 pub fn InstructionList(instructions: Vec<ExplainedIx>, inspect: bool) -> Element {
     rsx! {
         ol { class: "ix-list",
-            for (i, ix) in instructions.into_iter().enumerate() {
+            for (i, ix) in instructions
+                .into_iter()
+                .enumerate()
+                .filter(|(_, ix)| inspect || ix.program_id != COMPUTE_BUDGET_PROGRAM_ID)
+            {
                 li { class: "ix-card", key: "{i}",
                     span { class: "ix-num", "aria-hidden": "true", "{i + 1}" }
                     div { class: "ix-body",

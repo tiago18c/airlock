@@ -50,6 +50,21 @@ pub fn TxFacts(tx: DecodedTx) -> Element {
     }
 }
 
+/// The most the fee payer pays in fees: the base fee for each signature and
+/// the priority fee.
+#[component]
+pub fn FeeLine(tx: DecodedTx) -> Element {
+    rsx! {
+        p { class: "fee-line muted",
+            "Fee up to {format_sol(tx.fee_lamports())}"
+            if let Some(payer) = tx.fee_payer() {
+                " · paid by "
+                Address { pubkey: payer }
+            }
+        }
+    }
+}
+
 #[component]
 pub fn AccountList(tx: DecodedTx) -> Element {
     rsx! {

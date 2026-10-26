@@ -122,13 +122,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                             } else if verdict.cleartext() {
                                 h4 { "What it does" }
                                 InstructionList { instructions: explained.instructions.clone(), inspect: false }
-                                p { class: "fee-line muted",
-                                    "Fee up to {format_sol(tx.fee_lamports())}"
-                                    if let Some(payer) = tx.fee_payer() {
-                                        " · paid by "
-                                        Address { pubkey: payer }
-                                    }
-                                }
+                                FeeLine { tx: tx.clone() }
                                 StageLine {
                                     step: prep.step,
                                     lifetime: prep.lifetime,

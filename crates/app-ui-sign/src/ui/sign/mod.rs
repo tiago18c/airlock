@@ -22,7 +22,7 @@ use crate::state::use_network;
 use crate::ui::clock::BlockhashCountdown;
 use crate::ui::transfer::receive::QrScanner;
 use crate::ui::transfer::send::{PayloadShare, QrCarousel};
-use crate::ui::tx_view::{InstructionList, SimulatedDeltas, TxView};
+use crate::ui::tx_view::{FeeLine, InstructionList, SimulatedDeltas, TxView};
 use crate::ui::{Address, AddressRow, CopyButton};
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
@@ -384,6 +384,8 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
                     SourceChip { source }
                 }
             }
+
+            FeeLine { tx: tx.as_ref().clone() }
 
             div { class: "sign-status",
                 h3 { "Signatures" }
