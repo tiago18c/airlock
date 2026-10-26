@@ -8,7 +8,7 @@
 //! network is picked.
 
 use crate::error::VaultError;
-use crate::idl::builtin::{builtin_idl, BUILTIN_IDLS};
+use crate::idl::builtin::{EmbeddedIdl, BUILTIN_IDLS};
 use crate::idl::network::IdlNetwork;
 use crate::ids::pubkey_string;
 use base64::Engine;
@@ -47,7 +47,9 @@ pub struct IdlStore<S: VaultStore, B: IdlBodies> {
     /// Stored files of the other networks, as the index lists them, and any
     /// file of an older index that could not be moved under a network yet.
     elsewhere: Vec<IndexedRecord>,
-    loaded: BTreeMap<Pubkey, Vec<u8>>,
+    /// The bodies of `records`, shared with [`EmbeddedIdl::json`] for the
+    /// embedded ones so a large IDL is held once.
+    loaded: BTreeMap<Pubkey, Arc<[u8]>>,
     /// Parsed clients, kept until that program's IDL changes. Parsing a large
     /// IDL on every keystroke of a form is far too slow.
     clients: Mutex<BTreeMap<Pubkey, Arc<ProgramClient>>>,
@@ -55,7 +57,9 @@ pub struct IdlStore<S: VaultStore, B: IdlBodies> {
     /// read from, so a change elsewhere does not read every file again.
     peeked: BTreeMap<Pubkey, ([u8; 32], Vec<companions::Companion>)>,
     /// Whether embedded IDLs fill the slots nothing imported holds.
-    builtins: bool,
+    /// The IDLs that ship with the app, of every network: the core, then
+    /// the IDL pack's. They fill the slots nothing imported holds.
+    embedded: Vec<EmbeddedIdl>,
     problem: Option<LoadProblem>,
 }
 
@@ -97,7 +101,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
             loaded: BTreeMap::new(),
             clients: Mutex::new(BTreeMap::new()),
             peeked: BTreeMap::new(),
-            builtins: false,
+            embedded: Vec::new(),
             problem,
         };
         let mut changed = false;
@@ -175,7 +179,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
             record.check = None;
             *changed = true;
         }
-        self.loaded.insert(record.program_id, body);
+        self.loaded.insert(record.program_id, Arc::from(body));
         self.records.push(record);
     }
 
@@ -204,22 +208,55 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
         self.adopt(record, changed);
     }
 
-    /// Add the IDLs that ship inside the app. An import for the same program
-    /// takes its place, and removing that import brings the embedded one back.
+    /// Add the core IDLs compiled into the app. An import for the same
+    /// program takes its place, and removing that import brings the embedded
+    /// one back.
     pub fn with_builtins(mut self) -> Self {
-        self.builtins = true;
+        self.add_embedded(BUILTIN_IDLS.iter().map(EmbeddedIdl::from).collect());
+        self
+    }
+
+    /// Add IDLs that ship with the app, such as those of the IDL pack, after
+    /// the ones already added. One that claims a program on a network an
+    /// earlier one already claims is left out, and its name returned.
+    pub fn add_embedded(&mut self, idls: Vec<EmbeddedIdl>) -> Vec<String> {
+        let mut refused = Vec::new();
+        for idl in idls {
+            let taken = self.embedded.iter().any(|known| {
+                known.program_id == idl.program_id
+                    && known.networks.iter().any(|network| idl.runs_on(*network))
+            });
+            if taken {
+                refused.push(idl.name);
+            } else {
+                self.embedded.push(idl);
+            }
+        }
         self.restore_builtins();
         self.refresh_companions();
-        self
+        refused
+    }
+
+    /// The IDL that ships with the app for `program_id` on the network
+    /// shown, and for a program carried in another file, that file's.
+    pub fn embedded(&self, program_id: &Pubkey) -> Option<&EmbeddedIdl> {
+        let file = self.host_of(program_id).unwrap_or(*program_id);
+        self.embedded
+            .iter()
+            .find(|idl| idl.program_id == file && idl.runs_on(self.network))
     }
 
     /// Put each embedded IDL of the network shown in its program's slot,
     /// unless an import holds it.
     fn restore_builtins(&mut self) {
-        for builtin in &BUILTIN_IDLS {
-            if builtin.runs_on(self.network) {
-                self.restore_builtin(&builtin.program_id);
-            }
+        let ids: Vec<Pubkey> = self
+            .embedded
+            .iter()
+            .filter(|idl| idl.runs_on(self.network))
+            .map(|idl| idl.program_id)
+            .collect();
+        for program_id in ids {
+            self.restore_builtin(&program_id);
         }
     }
 
@@ -236,7 +273,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
     /// another file's `additionalPrograms`, that file.
     pub fn body(&self, program_id: &Pubkey) -> Option<&[u8]> {
         let file = self.host_of(program_id).unwrap_or(*program_id);
-        self.loaded.get(&file).map(Vec::as_slice)
+        self.loaded.get(&file).map(|body| &body[..])
     }
 
     /// A client for one stored IDL. Parsed once, then shared until the IDL changes.
@@ -247,7 +284,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
         let client = match self.host_of(program_id) {
             Some(host) => self.companion_client(program_id, &host)?,
             None => {
-                open_client(self.loaded.get(program_id)?, Some(*program_id))
+                open_client(&self.loaded.get(program_id)?[..], Some(*program_id))
                     .ok()?
                     .0
             }
@@ -268,7 +305,11 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
 
     /// Put the embedded IDL in a program's slot when nothing imported holds it.
     fn restore_builtin(&mut self, program_id: &Pubkey) {
-        let Some(builtin) = builtin_idl(self.network, program_id).filter(|_| self.builtins) else {
+        let Some(builtin) = self
+            .embedded
+            .iter()
+            .find(|idl| idl.program_id == *program_id && idl.runs_on(self.network))
+        else {
             return;
         };
         if self
@@ -278,20 +319,21 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
         {
             return;
         }
-        let body = builtin.json.as_bytes().to_vec();
-        self.records.retain(|row| row.program_id != *program_id);
-        self.records.push(IdlRecord {
+        let body = builtin.json.clone();
+        let record = IdlRecord {
             program_id: builtin.program_id,
-            name: builtin.name.to_string(),
+            name: builtin.name.clone(),
             sha256: sha256(&body),
             spec: IdlSpec::Codama,
             origin: IdlOrigin::Builtin,
             check: None,
             host: None,
             source: builtin.source.chain(),
-        });
+        };
+        self.records.retain(|row| row.program_id != *program_id);
+        self.records.push(record);
         self.records.sort_by_key(|a| a.program_id);
-        self.loaded.insert(builtin.program_id, body);
+        self.loaded.insert(*program_id, body);
         self.forget_client(program_id);
     }
 
@@ -439,7 +481,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
             .retain(|row| row.program_id != record.program_id);
         self.records.push(record.clone());
         self.records.sort_by_key(|a| a.program_id);
-        self.loaded.insert(record.program_id, bytes.to_vec());
+        self.loaded.insert(record.program_id, Arc::from(bytes));
         self.forget_client(&record.program_id);
         if let Err(err) = self.persist_program(record.program_id, previous_body) {
             self.records = previous_records;
@@ -498,7 +540,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
     fn persist_program(
         &mut self,
         program_id: Pubkey,
-        previous_body: Option<Vec<u8>>,
+        previous_body: Option<Arc<[u8]>>,
     ) -> Result<(), IdlError> {
         let body = self
             .loaded
@@ -524,7 +566,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
         Ok(())
     }
 
-    fn restore_body(&mut self, program_id: Pubkey, previous_body: Option<Vec<u8>>) {
+    fn restore_body(&mut self, program_id: Pubkey, previous_body: Option<Arc<[u8]>>) {
         match previous_body {
             Some(body) => {
                 self.loaded.insert(program_id, body);

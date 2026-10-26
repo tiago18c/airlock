@@ -5,3 +5,4 @@
 # Compiled into the app. Their SHA-256 is compared across devices and with
 # the chain, so the bytes must not depend on the OS that checked them out.
 crates/wallet-core/idls/*.json text eol=lf
+resources/idls/* text eol=lf

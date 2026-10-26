@@ -1,0 +1,86 @@
+# The IDLs of third-party programs that ship with the app, packed at build
+# time into `idls.pack` (crates/app-ui-kit/build.rs). The build pins the
+# pack's SHA-256, and the app refuses a pack that does not match. Every JSON
+# file in this folder must be listed here.
+#
+# Each [[idls]] entry:
+#   file        a file in this folder
+#   programId   the address the file declares
+#   name        `program.name` in the file
+#   networks    where the program runs at programId with this interface:
+#               "mainnet", "devnet", "testnet", "localnet"
+#   source      what the file was made from:
+#               { kind = "chain", network, account = "programMetadata" | "anchor", sha256 }
+#                 sha256 of the bytes that account held, so a check that finds
+#                 them on chain says the file matches its source
+#               { kind = "repository", url }
+#               { kind = "hand" }
+#   changes     what was changed after taking it from its source
+#
+# A program at different addresses on two networks has a file for each.
+
+[[idls]]
+file = "raydium-clmm.json"
+programId = "DRayAUgENGQBKVaX8owNhgzkEDyoHTGVEGHVJT1E9pfH"
+name = "raydiumClmm"
+networks = ["devnet"]
+source = { kind = "chain", network = "devnet", account = "programMetadata", sha256 = "216dbb0ddadfa73e71a8b1819a04543542bd24e2f4c1ceeae0d779c85bfb8403" }
+changes = """Converted from Anchor to Codama. The swap and liquidity instructions \
+declare the remaining accounts they read (tick arrays, the bitmap extension, a swap \
+route), which Anchor IDLs cannot. Token amounts are in base units: the IDL cannot read \
+a mint's decimals. Display nodes added by hand."""
+
+[[idls]]
+file = "raydium-clmm-mainnet.json"
+programId = "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK"
+name = "raydiumClmm"
+networks = ["mainnet"]
+# The devnet file with mainnet's program and admin addresses: they are all
+# the two networks' published IDLs differ in.
+source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "862adbd60703fac5a5b397de8130778bd127d944c909b883f831f5cbbf911c8f" }
+changes = """Converted from Anchor to Codama. The swap and liquidity instructions \
+declare the remaining accounts they read (tick arrays, the bitmap extension, a swap \
+route), which Anchor IDLs cannot. Token amounts are in base units: the IDL cannot read \
+a mint's decimals. Display nodes added by hand."""
+
+[[idls]]
+file = "raydium-cp-swap.json"
+programId = "DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb"
+name = "raydiumCpSwap"
+networks = ["devnet"]
+source = { kind = "chain", network = "devnet", account = "programMetadata", sha256 = "9fa6136d536592d90ebfea5fd16f1db8d33056d9a5a9f153f6e8468400ae781f" }
+changes = """Converted from Anchor to Codama. `updateAmmConfig` declares the new owner \
+it reads as a remaining account. Token amounts are in base units. Display nodes added \
+by hand."""
+
+[[idls]]
+file = "raydium-cp-swap-mainnet.json"
+programId = "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+name = "raydiumCpSwap"
+networks = ["mainnet"]
+# The devnet file with mainnet's program, admin and fee receiver addresses:
+# they are all the two networks' published IDLs differ in.
+source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "d86fe11ffc719fee9832f78a1c7374452ee9ebe2c63d51c0b5e5cb383a8fcfdb" }
+changes = """Converted from Anchor to Codama. `updateAmmConfig` declares the new owner \
+it reads as a remaining account. Token amounts are in base units. Display nodes added \
+by hand."""
+
+[[idls]]
+file = "raydium-router.json"
+programId = "DRaybByLpbUL57LJARs3j8BitTxVfzBg351EaMr5UTCd"
+name = "raydiumRouter"
+networks = ["devnet"]
+source = { kind = "hand" }
+changes = """Data layouts and account orders taken from transactions the program \
+executed. The route's hops are one remaining-accounts group, since their accounts \
+depend on each pool program."""
+
+[[idls]]
+file = "orca-whirlpool.json"
+programId = "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc"
+name = "whirlpool"
+# Devnet runs the same version, but its IDL accounts are missing or years old.
+networks = ["mainnet", "devnet"]
+source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "9c4ad85a942e27f571c4f33453b0b0f2fef1dde5e9c201b301668068e67ace0d" }
+changes = """Converted from Anchor to Codama. The V2 instructions declare the transfer \
+hook and supplemental tick array accounts they read. Display nodes added by hand."""

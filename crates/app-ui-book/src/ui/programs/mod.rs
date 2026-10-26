@@ -3,8 +3,7 @@ use crate::state::session::Session;
 use crate::ui::{short_checksum, AddressHeader, AddressRow, Glyph, Icon};
 use dioxus::prelude::*;
 use wallet_core::{
-    builtin_idl, pretty_idl, IdlAccountUse, IdlOrigin, IdlOutline, IdlPinStatus, IdlRecord,
-    IdlSource, IdlSpec,
+    pretty_idl, IdlAccountUse, IdlOrigin, IdlOutline, IdlPinStatus, IdlRecord, IdlSource, IdlSpec,
 };
 
 mod detail;
@@ -41,6 +40,9 @@ pub fn ProgramsPanel() -> Element {
                             "Export"
                         }
                     }
+                }
+                if let Some(text) = session.idl_pack_note() {
+                    p { class: "hint", "{text}" }
                 }
                 if let Some(err) = error() {
                     p { class: "error", "{err}" }

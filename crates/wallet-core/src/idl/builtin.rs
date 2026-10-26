@@ -1,11 +1,19 @@
-//! IDLs that ship inside the app, and the programs the build screen pins.
+//! IDLs that ship with the app, and the programs the build screen pins.
 //!
-//! Each file in `idls/` is listed once in [`BUILTIN_IDLS`] with the networks
-//! it is read on, the document it was made from ([`IdlSource`]) and what was
-//! changed in it. A program at different addresses on two networks has a file
-//! for each, since the file declares its address and, often, accounts that
-//! differ by network too. An address can be listed for one network only,
-//! when another network runs a different version.
+//! Two sets ship. The core, [`BUILTIN_IDLS`], is compiled into the binary:
+//! the programs the wallet's own code builds instructions for (System, Stake,
+//! Token, Token-2022, compute budget, the Ed25519 signer, the two Squads
+//! programs, Vector). The IDLs of third-party programs, such as Raydium and
+//! Orca, are in `resources/idls/` and ship as one compressed file beside the
+//! binary (the `idl-pack` crate, read by [`crate::idl::pack`]). Both become
+//! [`EmbeddedIdl`]s in the catalog, and read the same from there.
+//!
+//! Each one lists the networks it is read on, the document it was made from
+//! ([`IdlSource`]) and what was changed in it. A program at different
+//! addresses on two networks has a file for each, since the file declares its
+//! address and, often, accounts that differ by network too. An address can
+//! be listed for one network only, when another network runs a different
+//! version.
 //!
 //! A file made from what a program publishes on chain keeps that document's
 //! SHA-256. Checking the program online then tells "the chain still publishes
@@ -33,56 +41,34 @@ use crate::ids::{
 use crate::ids::{SQUADS_SMART_ACCOUNT_PROGRAM_ID, SQUADS_V4_PROGRAM_ID};
 use crate::wallets::vector::PROGRAM_ID as VECTOR_PROGRAM_ID;
 use solana_pubkey::Pubkey;
+use std::borrow::Cow;
+use std::sync::Arc;
 
 pub const ED25519_SIGNER_PROGRAM_ID: Pubkey =
     Pubkey::from_str_const("EdSigVfK1DkeMrjFNDMjwfQaJPhPTtX7jW8uPv3oKEgN");
 
-/// Raydium's concentrated-liquidity AMM on devnet.
-pub const RAYDIUM_CLMM_PROGRAM_ID: Pubkey =
-    Pubkey::from_str_const("DRayAUgENGQBKVaX8owNhgzkEDyoHTGVEGHVJT1E9pfH");
-
-/// Raydium's concentrated-liquidity AMM on mainnet.
-pub const RAYDIUM_CLMM_MAINNET_PROGRAM_ID: Pubkey =
-    Pubkey::from_str_const("CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK");
-
-/// Raydium's constant-product AMM on devnet.
-pub const RAYDIUM_CP_SWAP_PROGRAM_ID: Pubkey =
-    Pubkey::from_str_const("DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb");
-
-/// Raydium's constant-product AMM on mainnet.
-pub const RAYDIUM_CP_SWAP_MAINNET_PROGRAM_ID: Pubkey =
-    Pubkey::from_str_const("CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C");
-
-/// Raydium's AMM routing program on devnet.
-pub const RAYDIUM_ROUTER_PROGRAM_ID: Pubkey =
-    Pubkey::from_str_const("DRaybByLpbUL57LJARs3j8BitTxVfzBg351EaMr5UTCd");
-
-/// Orca's Whirlpool concentrated-liquidity AMM, on devnet and mainnet.
-pub const ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey =
-    Pubkey::from_str_const("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
-
 /// What an embedded file was made from.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum IdlSource {
     /// The IDL the program publishes on chain.
     Chain(IdlChainSource),
     /// A file in the program's repository. The program publishes no IDL.
-    Repository { url: &'static str },
+    Repository { url: Cow<'static, str> },
     /// Written by hand: the program publishes no IDL.
     Hand,
 }
 
 impl IdlSource {
-    pub fn chain(self) -> Option<IdlChainSource> {
+    pub fn chain(&self) -> Option<IdlChainSource> {
         match self {
-            Self::Chain(source) => Some(source),
+            Self::Chain(source) => Some(*source),
             _ => None,
         }
     }
 }
 
-/// One IDL compiled into the binary.
-#[derive(Clone, Copy, Debug)]
+/// One core IDL, compiled into the binary.
+#[derive(Clone, Debug)]
 pub struct BuiltinIdl {
     pub program_id: Pubkey,
     /// `program.name` in the file.
@@ -101,9 +87,42 @@ impl BuiltinIdl {
     }
 }
 
+/// An IDL that ships with the app, from the core or from the IDL pack, as
+/// the catalog holds it.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct EmbeddedIdl {
+    pub program_id: Pubkey,
+    /// `program.name` in the file.
+    pub name: String,
+    pub json: Arc<[u8]>,
+    /// Where the program runs at `program_id` with this interface.
+    pub networks: Vec<IdlNetwork>,
+    pub source: IdlSource,
+    /// What was changed after taking the file from its source.
+    pub changes: String,
+}
+
+impl EmbeddedIdl {
+    pub fn runs_on(&self, network: IdlNetwork) -> bool {
+        self.networks.contains(&network)
+    }
+}
+
+impl From<&BuiltinIdl> for EmbeddedIdl {
+    fn from(idl: &BuiltinIdl) -> Self {
+        Self {
+            program_id: idl.program_id,
+            name: idl.name.to_string(),
+            json: Arc::from(idl.json.as_bytes()),
+            networks: idl.networks.to_vec(),
+            source: idl.source.clone(),
+            changes: idl.changes.to_string(),
+        }
+    }
+}
+
 const EVERYWHERE: &[IdlNetwork] = &IdlNetwork::ALL;
 const MAINNET_AND_DEVNET: &[IdlNetwork] = &[IdlNetwork::Mainnet, IdlNetwork::Devnet];
-const MAINNET: &[IdlNetwork] = &[IdlNetwork::Mainnet];
 const DEVNET: &[IdlNetwork] = &[IdlNetwork::Devnet];
 
 const fn on_chain(network: IdlNetwork, account: IdlOrigin, sha256: &str) -> IdlSource {
@@ -112,6 +131,12 @@ const fn on_chain(network: IdlNetwork, account: IdlOrigin, sha256: &str) -> IdlS
         account,
         sha256: hex32(sha256),
     })
+}
+
+const fn repository(url: &'static str) -> IdlSource {
+    IdlSource::Repository {
+        url: Cow::Borrowed(url),
+    }
 }
 
 /// A SHA-256 written as 64 hex digits. A typo fails the build.
@@ -136,26 +161,16 @@ const fn hex32(text: &str) -> [u8; 32] {
 
 const DISPLAY_NODES: &str = "Display nodes added by hand.";
 
-const RAYDIUM_CLMM_CHANGES: &str = "Converted from Anchor to Codama. The swap and liquidity \
-    instructions declare the remaining accounts they read (tick arrays, the bitmap extension, \
-    a swap route), which Anchor IDLs cannot. Token amounts are in base units: the IDL cannot \
-    read a mint's decimals. Display nodes added by hand.";
-
-const RAYDIUM_CP_SWAP_CHANGES: &str = "Converted from Anchor to Codama. `updateAmmConfig` \
-    declares the new owner it reads as a remaining account. Token amounts are in base units. \
-    Display nodes added by hand.";
-
 /// In this order on a tie between two files carrying the same additional
-/// program: the earlier file's entry is read.
-pub const BUILTIN_IDLS: [BuiltinIdl; 15] = [
+/// program: the earlier file's entry is read. Files of the IDL pack come
+/// after these.
+pub static BUILTIN_IDLS: [BuiltinIdl; 9] = [
     BuiltinIdl {
         program_id: SYSTEM_PROGRAM_ID,
         name: "system",
         json: include_str!("../../idls/system.json"),
         networks: EVERYWHERE,
-        source: IdlSource::Repository {
-            url: "https://github.com/solana-program/system",
-        },
+        source: repository("https://github.com/solana-program/system"),
         changes: DISPLAY_NODES,
     },
     BuiltinIdl {
@@ -163,9 +178,7 @@ pub const BUILTIN_IDLS: [BuiltinIdl; 15] = [
         name: "stake",
         json: include_str!("../../idls/stake.json"),
         networks: EVERYWHERE,
-        source: IdlSource::Repository {
-            url: "https://github.com/solana-program/stake",
-        },
+        source: repository("https://github.com/solana-program/stake"),
         changes: DISPLAY_NODES,
     },
     BuiltinIdl {
@@ -173,9 +186,7 @@ pub const BUILTIN_IDLS: [BuiltinIdl; 15] = [
         name: "token",
         json: include_str!("../../idls/token.json"),
         networks: EVERYWHERE,
-        source: IdlSource::Repository {
-            url: "https://github.com/solana-program/token",
-        },
+        source: repository("https://github.com/solana-program/token"),
         changes: DISPLAY_NODES,
     },
     BuiltinIdl {
@@ -183,9 +194,7 @@ pub const BUILTIN_IDLS: [BuiltinIdl; 15] = [
         name: "token2022",
         json: include_str!("../../idls/token-2022.json"),
         networks: EVERYWHERE,
-        source: IdlSource::Repository {
-            url: "https://github.com/solana-program/token-2022",
-        },
+        source: repository("https://github.com/solana-program/token-2022"),
         changes: DISPLAY_NODES,
     },
     BuiltinIdl {
@@ -193,9 +202,7 @@ pub const BUILTIN_IDLS: [BuiltinIdl; 15] = [
         name: "computeBudget",
         json: include_str!("../../idls/compute-budget.json"),
         networks: EVERYWHERE,
-        source: IdlSource::Repository {
-            url: "https://github.com/solana-program/compute-budget",
-        },
+        source: repository("https://github.com/solana-program/compute-budget"),
         changes: DISPLAY_NODES,
     },
     BuiltinIdl {
@@ -231,9 +238,7 @@ pub const BUILTIN_IDLS: [BuiltinIdl; 15] = [
         json: include_str!("../../idls/squads-smart-account.json"),
         networks: MAINNET_AND_DEVNET,
         // Newer than the Anchor IDL either network publishes.
-        source: IdlSource::Repository {
-            url: "https://github.com/Squads-Protocol/smart-account-program",
-        },
+        source: repository("https://github.com/Squads-Protocol/smart-account-program"),
         changes: "Converted from Anchor to Codama (`sdk/smart-account/idl`). Display nodes \
                   added by hand.",
     },
@@ -249,86 +254,10 @@ pub const BUILTIN_IDLS: [BuiltinIdl; 15] = [
         ),
         changes: DISPLAY_NODES,
     },
-    BuiltinIdl {
-        program_id: RAYDIUM_CLMM_PROGRAM_ID,
-        name: "raydiumClmm",
-        json: include_str!("../../idls/raydium-clmm.json"),
-        networks: DEVNET,
-        source: on_chain(
-            IdlNetwork::Devnet,
-            IdlOrigin::ProgramMetadata,
-            "216dbb0ddadfa73e71a8b1819a04543542bd24e2f4c1ceeae0d779c85bfb8403",
-        ),
-        changes: RAYDIUM_CLMM_CHANGES,
-    },
-    BuiltinIdl {
-        program_id: RAYDIUM_CP_SWAP_PROGRAM_ID,
-        name: "raydiumCpSwap",
-        json: include_str!("../../idls/raydium-cp-swap.json"),
-        networks: DEVNET,
-        source: on_chain(
-            IdlNetwork::Devnet,
-            IdlOrigin::ProgramMetadata,
-            "9fa6136d536592d90ebfea5fd16f1db8d33056d9a5a9f153f6e8468400ae781f",
-        ),
-        changes: RAYDIUM_CP_SWAP_CHANGES,
-    },
-    BuiltinIdl {
-        program_id: RAYDIUM_ROUTER_PROGRAM_ID,
-        name: "raydiumRouter",
-        json: include_str!("../../idls/raydium-router.json"),
-        networks: DEVNET,
-        source: IdlSource::Hand,
-        changes: "Data layouts and account orders taken from transactions the program \
-                  executed. The route's hops are one remaining-accounts group, since their \
-                  accounts depend on each pool program.",
-    },
-    BuiltinIdl {
-        program_id: ORCA_WHIRLPOOL_PROGRAM_ID,
-        name: "whirlpool",
-        json: include_str!("../../idls/orca-whirlpool.json"),
-        // Devnet runs the same version, but its IDL accounts are missing or years old.
-        networks: MAINNET_AND_DEVNET,
-        source: on_chain(
-            IdlNetwork::Mainnet,
-            IdlOrigin::ProgramMetadata,
-            "9c4ad85a942e27f571c4f33453b0b0f2fef1dde5e9c201b301668068e67ace0d",
-        ),
-        changes: "Converted from Anchor to Codama. The V2 instructions declare the transfer \
-                  hook and supplemental tick array accounts they read. Display nodes added by \
-                  hand.",
-    },
-    BuiltinIdl {
-        program_id: RAYDIUM_CLMM_MAINNET_PROGRAM_ID,
-        name: "raydiumClmm",
-        json: include_str!("../../idls/raydium-clmm-mainnet.json"),
-        networks: MAINNET,
-        // The devnet file with the program and admin addresses of mainnet:
-        // they are all the two networks' IDLs differ in.
-        source: on_chain(
-            IdlNetwork::Mainnet,
-            IdlOrigin::ProgramMetadata,
-            "862adbd60703fac5a5b397de8130778bd127d944c909b883f831f5cbbf911c8f",
-        ),
-        changes: RAYDIUM_CLMM_CHANGES,
-    },
-    BuiltinIdl {
-        program_id: RAYDIUM_CP_SWAP_MAINNET_PROGRAM_ID,
-        name: "raydiumCpSwap",
-        json: include_str!("../../idls/raydium-cp-swap-mainnet.json"),
-        networks: MAINNET,
-        // The devnet file with the program, admin and fee receiver addresses
-        // of mainnet: they are all the two networks' IDLs differ in.
-        source: on_chain(
-            IdlNetwork::Mainnet,
-            IdlOrigin::ProgramMetadata,
-            "d86fe11ffc719fee9832f78a1c7374452ee9ebe2c63d51c0b5e5cb383a8fcfdb",
-        ),
-        changes: RAYDIUM_CP_SWAP_CHANGES,
-    },
 ];
 
-/// The embedded IDL of `program_id` on `network`.
+/// The core IDL of `program_id` on `network`. The IDL pack's are in the
+/// catalog only.
 pub fn builtin_idl(network: IdlNetwork, program_id: &Pubkey) -> Option<&'static BuiltinIdl> {
     BUILTIN_IDLS
         .iter()
@@ -404,13 +333,13 @@ mod tests {
         ProgramClient::from_root(root).unwrap_or_else(|err| panic!("{}: {err}", idl.name))
     }
 
-    /// Every embedded file of devnet, and the additional programs they carry.
+    /// Every IDL the app ships on devnet, and the additional programs they carry.
     fn catalog() -> IdlStore<MemoryStore, MemoryBodies> {
         catalog_on(IdlNetwork::Devnet)
     }
 
     fn catalog_on(network: IdlNetwork) -> IdlStore<MemoryStore, MemoryBodies> {
-        IdlStore::open_on(MemoryStore::new(), MemoryBodies::new(), network).with_builtins()
+        crate::fixtures::shipped_catalog(network)
     }
 
     #[test]
@@ -500,50 +429,6 @@ mod tests {
             }
         }
         assert!(failures.is_empty(), "{}", failures.join("\n"));
-    }
-
-    /// The mainnet Raydium files are the devnet ones with the addresses of
-    /// mainnet, which is all the two networks' IDLs differ in.
-    #[test]
-    fn the_mainnet_raydium_files_differ_from_devnet_by_addresses_alone() {
-        let pairs = [
-            (
-                RAYDIUM_CLMM_PROGRAM_ID,
-                RAYDIUM_CLMM_MAINNET_PROGRAM_ID,
-                &[(
-                    "DRayqG9RXYi8WHgWEmRQGrUWRWbhjYWYkCRJDd6JBBak",
-                    "GThUX1Atko4tqhN2NaiTazWSeFWMuiUvfFnyJyUghFMJ",
-                )][..],
-            ),
-            (
-                RAYDIUM_CP_SWAP_PROGRAM_ID,
-                RAYDIUM_CP_SWAP_MAINNET_PROGRAM_ID,
-                &[
-                    (
-                        "DRayqG9RXYi8WHgWEmRQGrUWRWbhjYWYkCRJDd6JBBak",
-                        "GThUX1Atko4tqhN2NaiTazWSeFWMuiUvfFnyJyUghFMJ",
-                    ),
-                    (
-                        "3oE58BKVt8KuYkGxx8zBojugnymWmBiyafWgMrnb6eYy",
-                        "DNXgeM9EiiaAbaWvwjHj9fQQLAX5ZsfHyvmYUNRAdNC8",
-                    ),
-                ][..],
-            ),
-        ];
-        for (devnet, mainnet, swaps) in pairs {
-            let mut expected = builtin_idl(IdlNetwork::Devnet, &devnet)
-                .unwrap()
-                .json
-                .replace(&devnet.to_string(), &mainnet.to_string());
-            for (from, to) in swaps {
-                expected = expected.replace(from, to);
-            }
-            assert_eq!(
-                builtin_idl(IdlNetwork::Mainnet, &mainnet).unwrap().json,
-                expected,
-                "{mainnet}"
-            );
-        }
     }
 
     fn draft(program_id: Pubkey, instruction: &str) -> (Arc<ProgramClient>, IdlDraft) {

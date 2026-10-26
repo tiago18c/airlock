@@ -12,6 +12,24 @@ impl Session {
         self.idls.read().network()
     }
 
+    /// The IDL that ships with the app for a program on the network shown,
+    /// core or from the IDL pack: where it came from, and what was changed.
+    pub fn embedded_idl(&self, program_id: &Pubkey) -> Option<wallet_core::EmbeddedIdl> {
+        self.idls.read().embedded(program_id).cloned()
+    }
+
+    /// Why the IDL pack is not in the catalog: still loading, or refused.
+    pub fn idl_pack_note(&self) -> Option<String> {
+        use crate::platform::idl_pack::IdlPackState;
+        match (self.idl_pack)() {
+            IdlPackState::Ready => None,
+            IdlPackState::Loading => Some("Loading the IDLs that ship with the app…".into()),
+            IdlPackState::Failed(why) => Some(format!(
+                "The IDLs that ship with the app for programs such as Raydium and Orca could not be read ({why}). Those programs read raw."
+            )),
+        }
+    }
+
     /// One program's outline, a program read from another one's file included.
     pub fn idl_outline(&self, program_id: &Pubkey) -> Result<wallet_core::IdlOutline, IdlError> {
         self.idls.read().outline(program_id)

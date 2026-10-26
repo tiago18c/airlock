@@ -16,6 +16,7 @@ hmac = "0.12"
 base64.workspace = true
 bs58.workspace = true
 hex.workspace = true
+idl-pack.workspace = true
 # Vector Secp256k1 / EIP-191 authorities (also brought by vector-core).
 k256 = { version = "0.14", default-features = false, features = ["ecdsa", "std"] }
 # Vector ML-DSA-44 and Falcon-512 authorities (D3: falcon-rust, desktop/airgap).
@@ -70,5 +71,6 @@ getrandom_04 = { package = "getrandom", version = "0.4", features = ["wasm_js"] 
 # The runtime's reserved keys, to check the list wallets/vector refuses
 # writes to against it. Already in the tree through litesvm.
 agave-reserved-account-keys = { version = "4.3", features = ["agave-unstable-api"] }
+idl-pack = { workspace = true, features = ["build"] }
 pollster.workspace = true
 tempfile.workspace = true

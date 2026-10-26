@@ -104,6 +104,9 @@ pub fn ProgramList(explained_programs: Vec<wallet_core::ProgramLine>) -> Element
     let check_note = use_signal(|| None::<String>);
     rsx! {
         h3 { "Programs" }
+        if let Some(text) = session.idl_pack_note() {
+            p { class: "hint", "{text}" }
+        }
         div { class: "btn-row",
             button {
                 disabled: checking() || no_idl_to_check,

@@ -11,3 +11,5 @@ Thumbs.db
 /extension/dist-test/
 /crates/flow-tests/programs/
 /.claude/
+# Packed from resources/idls by crates/app-ui-kit/build.rs.
+/crates/app-ui-kit/assets/idls.pack

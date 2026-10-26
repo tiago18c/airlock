@@ -42,6 +42,9 @@ web-sys = { workspace = true, features = [
     "Window", "Storage", "Document", "Element", "Node", "console",
 ] }
 
+[build-dependencies]
+idl-pack = { workspace = true, features = ["build"] }
+
 [dev-dependencies]
 solana-message.workspace = true
 solana-signature.workspace = true

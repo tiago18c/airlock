@@ -6,6 +6,7 @@ pub(crate) mod builtin;
 pub(crate) mod catalog;
 pub(crate) mod draft;
 pub(crate) mod network;
+pub(crate) mod pack;
 #[cfg(test)]
 mod system_idl;
 
@@ -14,7 +15,7 @@ pub use build::{
     IdlArgKind, IdlBuildFailure, IdlBuildInput, IdlForm,
 };
 pub use builtin::{
-    builtin_idl, pinned_program, BuiltinIdl, IdlSource, PinnedProgram, BUILTIN_IDLS,
+    builtin_idl, pinned_program, BuiltinIdl, EmbeddedIdl, IdlSource, PinnedProgram, BUILTIN_IDLS,
     ED25519_SIGNER_PROGRAM_ID, PINNED_PROGRAMS,
 };
 pub use catalog::sha256_bytes;
@@ -30,3 +31,4 @@ pub use catalog::{
 };
 pub use draft::IdlDraft;
 pub use network::IdlNetwork;
+pub use pack::{idls_from_pack, IdlPackError};

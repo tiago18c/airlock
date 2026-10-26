@@ -22,6 +22,7 @@ members = [
   "crates/wallet-flows",
   "crates/tokens-api",
   "crates/flow-tests",
+  "crates/idl-pack",
   "crates/codama/codama-visitors-core",
   "crates/codama/codama-dynamic-codecs",
   "crates/codama/codama-dynamic-resolution",
@@ -48,6 +49,7 @@ app-desktop = { path = "crates/app-desktop", default-features = false }
 app-ui = { path = "crates/app-ui", default-features = false }
 app-ui-kit = { path = "crates/app-ui-kit", default-features = false }
 bridge-protocol = { path = "crates/bridge-protocol" }
+idl-pack = { path = "crates/idl-pack" }
 qr-codec = { path = "crates/qr-codec" }
 wallet-core = { path = "crates/wallet-core" }
 wallet-flows = { path = "crates/wallet-flows" }
