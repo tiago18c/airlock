@@ -72,16 +72,17 @@ pub(in crate::ui) fn RebuildBanner(plan: Result<AdaptPlan, String>, online: bool
     }
 }
 
-/// Moves the transaction to a fresh blockhash. Once the old one has expired
-/// this is the way to rebuild it, for any transaction not on a durable nonce.
+/// Moves an expired transaction that this device has nothing left to sign
+/// to a fresh blockhash, for any transaction not on a durable nonce. Every
+/// other move happens on the Sign press.
 #[component]
-pub(in crate::ui) fn RefreshBlockhash(expired: bool) -> Element {
+pub(in crate::ui) fn RefreshBlockhash() -> Element {
     let session = use_context::<Session>();
     let form = session.forms.sign;
     let mut busy = use_signal(|| false);
     rsx! {
         button {
-            class: if expired { "primary" } else { "ghost" },
+            class: "primary",
             disabled: busy(),
             title: "A transaction is only accepted for about 30 seconds after its blockhash. An authorization inside it does not expire.",
             onclick: move |_| {
@@ -115,13 +116,7 @@ pub(in crate::ui) fn RefreshBlockhash(expired: bool) -> Element {
                     busy.set(false);
                 });
             },
-            if busy() {
-                "Rebuilding…"
-            } else if expired {
-                "Rebuild on a fresh blockhash"
-            } else {
-                "Refresh blockhash"
-            }
+            if busy() { "Rebuilding…" } else { "Rebuild on a fresh blockhash" }
         }
     }
 }
@@ -256,6 +251,8 @@ pub(in crate::ui) fn WhatYouAreSigning(
     online: bool,
     expired: Signal<bool>,
     label: Signal<String>,
+    /// The Sign press moves the transaction to a fresh blockhash first.
+    moves_on_sign: bool,
 ) -> Element {
     let session = use_context::<Session>();
     let step = wallet_core::next_step(&status);
@@ -345,7 +342,9 @@ pub(in crate::ui) fn WhatYouAreSigning(
                 div { class: "callout",
                     h4 { "What you are signing" }
                     p {
-                        if is_expired {
+                        if moves_on_sign {
+                            "The transaction. Sign moves it to a fresh blockhash first, and it is accepted for about 30 seconds from then."
+                        } else if is_expired {
                             "The transaction. Its blockhash has expired."
                         } else {
                             "The transaction. Its blockhash expires in "

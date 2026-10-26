@@ -312,13 +312,25 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     } else {
         0
     };
-    // Before expiry, only a transaction this app made (or relays) is moved:
-    // a site's or another device's is left as it came. Once expired, any
-    // transaction on a blockhash can be rebuilt on a fresh one.
+    // The press that signs the transaction moves it to a fresh blockhash
+    // first. Before expiry, only a transaction this app made (or relays) is
+    // moved: a site's or another device's is left as it came. Once expired,
+    // any transaction on a blockhash is.
     let blockhash_gone = clock_expired() && !refreshes_on_sign;
-    let show_refresh = online
+    let moves = online
         && !uses_nonce
+        && !refreshes_on_sign
+        && step == NextSignature::Transaction
+        && status.signable > 0
         && (blockhash_gone || (untouched && ((relayed && !from_browser) || app_built)));
+    let blockhash_on_sign = match (moves, blockhash_gone) {
+        (false, _) => BlockhashOnSign::Keep,
+        (true, false) => BlockhashOnSign::Fresh,
+        (true, true) => BlockhashOnSign::Required,
+    };
+    // Expired with nothing left here to sign: moving it is a press of its own.
+    let show_refresh =
+        online && !uses_nonce && blockhash_gone && !moves && step != NextSignature::Authorization;
     let site_blockhash = from_browser && !exact;
     // Every address a signature row draws. The change the simulation finds
     // for one is shown on its row.
@@ -375,6 +387,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             online,
             expired: clock_expired,
             label: countdown_label,
+            moves_on_sign: moves || refreshes_on_sign,
         }
         PersonalSignBox { tx: tx.clone(), status: status.clone() }
 
@@ -407,6 +420,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             needs_rebuild,
             expired,
             refreshes_on_sign,
+            blockhash_on_sign,
             show_refresh,
             site_blockhash,
             site_signs,
@@ -503,6 +517,7 @@ fn SignActions(
     needs_rebuild: bool,
     expired: bool,
     refreshes_on_sign: bool,
+    blockhash_on_sign: BlockhashOnSign,
     show_refresh: bool,
     site_blockhash: bool,
     site_signs: usize,
@@ -513,7 +528,10 @@ fn SignActions(
     let can_sign = status.signable > 0
         && !needs_rebuild
         && !busy()
-        && (signing_auth || !expired || refreshes_on_sign);
+        && (signing_auth
+            || !expired
+            || refreshes_on_sign
+            || blockhash_on_sign != BlockhashOnSign::Keep);
     let can_submit = online && status.complete() && !needs_rebuild && !busy() && !expired;
     let elsewhere = status.missing_elsewhere();
     let authorizations = status.authorizations_elsewhere();
@@ -542,7 +560,7 @@ fn SignActions(
             button {
                 class: "primary",
                 disabled: !can_sign,
-                onclick: move |_| sign_loaded(session, busy),
+                onclick: move |_| sign_loaded(session, busy, blockhash_on_sign),
                 "{sign_label}"
             }
             button {
@@ -552,10 +570,10 @@ fn SignActions(
                 "Submit"
             }
             if show_refresh {
-                RefreshBlockhash { expired }
+                RefreshBlockhash {}
             }
         }
-        if expired && !refreshes_on_sign {
+        if expired && !refreshes_on_sign && blockhash_on_sign == BlockhashOnSign::Keep {
             // With the rebuild button there, it says what to do.
             if !show_refresh {
                 p { class: "hint",
