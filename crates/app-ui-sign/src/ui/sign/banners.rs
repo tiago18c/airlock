@@ -72,16 +72,17 @@ pub(in crate::ui) fn RebuildBanner(plan: Result<AdaptPlan, String>, online: bool
     }
 }
 
-/// Moves the transaction to a fresh blockhash. Once the old one has expired
-/// this is the way to rebuild it, for any transaction not on a durable nonce.
+/// Moves an expired transaction that this device has nothing left to sign
+/// to a fresh blockhash, for any transaction not on a durable nonce. Every
+/// other move happens on the Sign press.
 #[component]
-pub(in crate::ui) fn RefreshBlockhash(expired: bool) -> Element {
+pub(in crate::ui) fn RefreshBlockhash() -> Element {
     let session = use_context::<Session>();
     let form = session.forms.sign;
     let mut busy = use_signal(|| false);
     rsx! {
         button {
-            class: if expired { "primary" } else { "ghost" },
+            class: "primary",
             disabled: busy(),
             title: "A transaction is only accepted for about 30 seconds after its blockhash. An authorization inside it does not expire.",
             onclick: move |_| {
@@ -115,13 +116,7 @@ pub(in crate::ui) fn RefreshBlockhash(expired: bool) -> Element {
                     busy.set(false);
                 });
             },
-            if busy() {
-                "Rebuilding…"
-            } else if expired {
-                "Rebuild on a fresh blockhash"
-            } else {
-                "Refresh blockhash"
-            }
+            if busy() { "Rebuilding…" } else { "Rebuild on a fresh blockhash" }
         }
     }
 }
@@ -246,115 +241,5 @@ pub(in crate::ui) fn PersonalSignBox(tx: std::rc::Rc<DecodedTx>, status: Signing
                 }
             }
         }
-    }
-}
-
-#[component]
-pub(in crate::ui) fn WhatYouAreSigning(
-    status: SigningStatus,
-    tx: std::rc::Rc<DecodedTx>,
-    online: bool,
-    expired: Signal<bool>,
-    label: Signal<String>,
-) -> Element {
-    let session = use_context::<Session>();
-    let step = wallet_core::next_step(&status);
-    let lifetime = wallet_core::tx_lifetime(tx.as_ref());
-    // The leaf owns the clock; this only redraws when `expired` flips. The
-    // seconds text is a smaller leaf over `label`.
-    let is_expired = expired();
-
-    match step {
-        wallet_core::NextSignature::Nothing => rsx! {},
-        wallet_core::NextSignature::Authorization => {
-            let authority = status.lines.iter().find(|line| {
-                matches!(line.role, SignerRole::Authority { .. })
-                    && line.state != SignerState::Signed
-            });
-            let address = match authority.map(|line| line.role) {
-                Some(SignerRole::Authority { address }) => Some(address),
-                _ => None,
-            };
-            let vector = matches!(
-                authority.map(|line| &line.key),
-                Some(wallet_core::SignerKey::Authority(
-                    wallet_core::relay::AuthorityId::Vector(_)
-                ))
-            );
-            let who = authority
-                .filter(|_| !vector)
-                .map(|line| line.key.shown_as());
-            let nonce = address.filter(|_| vector).and_then(|account| {
-                session
-                    .forms
-                    .sign
-                    .vector
-                    .peek()
-                    .iter()
-                    .find(|known| known.account == account)
-                    .and_then(|known| known.nonce)
-                    .map(|nonce| wallet_core::vector::SchemeId::show_nonce(&nonce))
-            });
-            rsx! {
-                div { class: "callout",
-                    h4 { "What you are signing" }
-                    p {
-                        "The authorization"
-                        if let Some(address) = address {
-                            " for "
-                            Address { pubkey: address }
-                        }
-                        if let Some(who) = who {
-                            ", signed by "
-                            Address { pubkey: who }
-                        }
-                        if let Some(nonce) = nonce {
-                            ". It has no expiry. Its nonce is "
-                            code { class: "mono", "{nonce}…" }
-                            ". A hot wallet relays it on a fresh blockhash before the fee payer signs."
-                        } else if vector {
-                            ". It has no expiry. A hot wallet relays it on a fresh blockhash before the fee payer signs."
-                        } else {
-                            ". It has no expiry and runs once, in the order of its executor nonce. The transaction around it moves to a fresh blockhash before the fee payer signs."
-                        }
-                    }
-                }
-            }
-        }
-        wallet_core::NextSignature::Transaction => match lifetime {
-            wallet_core::TxLifetime::DurableNonce { account } => rsx! {
-                div { class: "callout",
-                    h4 { "What you are signing" }
-                    p {
-                        "The transaction. It lives on durable nonce "
-                        Address { pubkey: account }
-                        " and stays valid until the nonce advances. Only one transaction lands per nonce value: once one of them does, any other made on the same nonce is void."
-                    }
-                }
-            },
-            wallet_core::TxLifetime::None => rsx! {},
-            wallet_core::TxLifetime::Blockhash(_) if !online => rsx! {
-                div { class: "callout",
-                    h4 { "What you are signing" }
-                    p {
-                        "The transaction. Its blockhash cannot be checked offline. It is accepted for about 30 to 45 seconds after it was made."
-                    }
-                }
-            },
-            wallet_core::TxLifetime::Blockhash(_) => rsx! {
-                div { class: "callout",
-                    h4 { "What you are signing" }
-                    p {
-                        if is_expired {
-                            "The transaction. Its blockhash has expired."
-                        } else {
-                            "The transaction. Its blockhash expires in "
-                            crate::ui::clock::CountdownLabel { label }
-                            "."
-                        }
-                    }
-                }
-            },
-        },
     }
 }

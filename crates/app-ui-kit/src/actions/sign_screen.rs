@@ -565,23 +565,36 @@ pub fn apply_personal_sign(session: Session, account: Pubkey, pasted: String) {
     }
 }
 
+/// Whether a Sign press first moves the transaction to a fresh blockhash
+/// with [`refresh_blockhash`]. A relayed transaction is moved inside
+/// `wallet_flows::sign` and is not one of these.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum BlockhashOnSign {
+    /// Signed on the blockhash it has.
+    Keep,
+    /// Moved when the node answers, signed as it is when it does not.
+    Fresh,
+    /// The blockhash has expired: a press that cannot move it signs nothing.
+    Required,
+}
+
 /// Sign what is loaded with this device's keys, once the vault is unlocked.
-pub fn sign_loaded(session: Session, busy: Signal<bool>) {
+pub fn sign_loaded(session: Session, busy: Signal<bool>, blockhash: BlockhashOnSign) {
     if session.is_initialized() && !session.is_unlocked() {
         session.when_unlocked("Unlock the vault to sign with its keys.", move || {
-            sign_unlocked(session, busy)
+            sign_unlocked(session, busy, blockhash)
         });
         return;
     }
-    sign_unlocked(session, busy);
+    sign_unlocked(session, busy, blockhash);
 }
 
-fn sign_unlocked(mut session: Session, mut busy: Signal<bool>) {
+fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: BlockhashOnSign) {
     let form = session.forms.sign;
     let mut error = form.error;
     let mut note = form.note;
     let mut stored = form.wire;
-    let Some(wire) = form.wire.peek().clone() else {
+    let Some(loaded) = form.wire.peek().clone() else {
         return;
     };
     error.set(None);
@@ -589,7 +602,29 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>) {
     // Without a network, the transaction is signed on the blockhash it has.
     let rpc = session.rpc().ok();
     let told = form.vector.peek().clone();
+    let tables = form.tables.peek().clone();
     spawn(async move {
+        // The move is kept only with the signatures made on it, so a
+        // simulation started in between cannot write over them.
+        let mut moved = None;
+        let wire = match blockhash {
+            BlockhashOnSign::Keep => loaded,
+            _ => match refresh_blockhash(session, &loaded).await {
+                Ok(refreshed) => {
+                    let cleared = decode_on_sign(&loaded, &tables)
+                        .map(|tx| tx.signers.iter().filter(|slot| slot.valid).count())
+                        .unwrap_or(0);
+                    moved = Some((refreshed.replaced, cleared));
+                    refreshed.wire
+                }
+                Err(err) if blockhash == BlockhashOnSign::Required => {
+                    error.set(Some(err));
+                    busy.set(false);
+                    return;
+                }
+                Err(_) => loaded,
+            },
+        };
         // Online, what a hash-based key signs is recorded against the
         // accounts as the chain has them now, not as a note said.
         let (known, known_is_current) = match (&rpc, decode_v1_transaction(&wire)) {
@@ -623,8 +658,9 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>) {
         };
         let node = rpc.as_deref();
         match wallet_flows::sign::sign_with(node, &wire, &signers, &mut vector).await {
-            Ok(done) => {
+            Ok(mut done) => {
                 session.xmss_retries.set(cache);
+                done.refreshed |= moved.is_some();
                 let flow = form.flow.peek().unwrap_or_else(next_flow_id);
                 let cluster = session.cluster();
                 let by = if done.authorizations > 0 && done.signatures == 0 {
@@ -653,8 +689,24 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>) {
                 if let Some(height) = done.last_valid_height {
                     form.set_exact_blockhash_height(Some(height));
                 }
+                let mut phrase = Phrase::text(text);
+                if let Some((replaced, cleared)) = moved {
+                    if cleared > 0 {
+                        phrase = phrase.t(format!(
+                            " {cleared} signature(s) made on the old blockhash were cleared and have to be made again."
+                        ));
+                    }
+                    for (old, new) in replaced {
+                        phrase = phrase
+                            .t(" ")
+                            .a(old)
+                            .t(" was never used on chain, so it was a one-time key: ")
+                            .a(new)
+                            .t(", made on this device, takes its place and signs with this device's keys, and the transaction still simulates. The account is created at the new address.");
+                    }
+                }
                 stored.set(Some(done.wire));
-                note.set(Some(text.into()));
+                note.set(Some(phrase));
             }
             Err(err) => error.set(Some(sentence(err))),
         }
