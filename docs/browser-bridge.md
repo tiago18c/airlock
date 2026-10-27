@@ -78,7 +78,7 @@ The [`interprocess`](https://crates.io/crates/interprocess) local socket API cov
 
 ### Desktop app
 
-The listener is `app-desktop`'s bridge, behind the `bridge` feature that only the online app turns on. It binds the socket at startup, before the window opens, and the socket doubles as the single-instance lock: a second launch sends `show` and exits.
+The listener is `app-desktop`'s bridge, behind the `bridge` feature that only the online app turns on. It binds the socket at startup, before the window opens, and a second launch that cannot bind it sends `show` and exits. The data folder's own lock is what keeps two processes off one vault ([architecture](architecture.md)).
 
 - `status` and `disconnect` are answered at once, and `connect` with `silent` gets no accounts.
 - `connect` and `signTransaction` go into the core's `BridgeQueue`. The app notifies and asks for attention, and the head of the queue opens as a modal; **Not now** folds it into a bar at the top of the page. A request nobody answers expires after ten minutes.

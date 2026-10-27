@@ -29,6 +29,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - A browser or paste request whose programs create accounts from new keypairs in their own calls, like Orca's pool creation creating its two vaults, no longer converts into signer slots nobody can sign. When the transaction's own instructions do not explain an unsigned outside signer, it is simulated and the accounts its programs create count as one-time keys, left for the site to sign or replaced by keys made here. Without a node, or when the simulation fails, only the transaction's own instructions count, as before.
 
 ### Security
+- Airlock and Airlock Offline lock their data folder while they run, and a second copy of either refuses to start with a message saying why. Before, two windows of Airlock Offline could run on one vault: each kept its own copy of the vault and of the record of used XMSS leaves and saved over the other's, so a leaf could sign twice. The online app was held to one copy only by its bridge socket, and not at all when the socket could not be named.
 - Secp256k1 and EIP-191 Vector keys sign with k256 0.14, off crypto-bigint 0.5 and its timing advisory (RUSTSEC-2026-0387). crypto-bigint 0.7 is at 0.7.9, off the yanked 0.7.7.
 
 ### Added
