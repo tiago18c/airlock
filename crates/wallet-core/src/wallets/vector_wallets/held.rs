@@ -109,6 +109,7 @@ pub fn local_vector_keys(wallets: &[WalletRecord]) -> Vec<VectorKey> {
                 signer: VectorSigner::from_record(wallets, wallet.id).ok()?,
                 leaf: None,
                 salt: None,
+                reserved_for: None,
                 next_key: wallet.vector_prepared_next_key().map(<[u8]>::to_vec),
             })
         })

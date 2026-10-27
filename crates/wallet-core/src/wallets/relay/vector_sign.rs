@@ -203,6 +203,11 @@ pub fn sign_vector_authorizations_in(
         check_key(&tx, slot, key, ctx)?;
         let signature = match key.signer.scheme() {
             SchemeId::Xmss | SchemeId::Winternitz => {
+                // What was recorded before signing is what signs, or nothing:
+                // the transaction may have changed since.
+                if key.reserved_for.is_some_and(|reserved| reserved != *digest) {
+                    return Err(VectorError::NotReserved(slot.address).into());
+                }
                 let cached = cache
                     .as_ref()
                     .and_then(|cache| cache.get(&slot.address, digest))

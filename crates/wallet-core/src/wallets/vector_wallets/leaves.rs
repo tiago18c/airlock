@@ -622,6 +622,7 @@ pub fn keys_to_sign_with<V: VaultStore, M: VaultStore>(
         if let Some(cached) = cache.get(&key.account, digest) {
             key.leaf = Some(cached.leaf);
             key.salt = Some(cached.salt);
+            key.reserved_for = Some(*digest);
             continue;
         }
         let record = vault
@@ -657,6 +658,7 @@ pub fn keys_to_sign_with<V: VaultStore, M: VaultStore>(
         }
         key.leaf = Some(reserved.leaf);
         key.salt = reserved.salt;
+        key.reserved_for = Some(*digest);
     }
     Ok(keys)
 }

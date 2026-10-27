@@ -192,6 +192,7 @@ fn a_filled_advance_refuses_a_swap_to_a_payer_an_instruction_names() {
     let keys = [VectorKey {
         leaf: None,
         salt: None,
+        reserved_for: None,
         next_key: None,
         account,
         signer: VectorSigner::Ed25519(KeypairSigner::from_seed(&key.seed_bytes()).unwrap()),
