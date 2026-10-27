@@ -55,7 +55,7 @@ pub fn derive_batch(
     if count == 0 {
         return Ok(Vec::new());
     }
-    let phrase = normalize_phrase(phrase)?;
+    let phrase = zeroize::Zeroizing::new(normalize_phrase(phrase)?);
     let seed = mnemonic_seed(&phrase, passphrase)?;
     let wildcard = path_has_wildcard(template);
     let count = if wildcard { count } else { 1 };
@@ -92,10 +92,10 @@ pub fn new_phrase(words: usize) -> String {
 }
 
 pub fn keypair_at(phrase: &str, passphrase: &str, path: &str) -> Result<Keypair, DeriveError> {
-    let phrase = normalize_phrase(phrase)?;
+    let phrase = zeroize::Zeroizing::new(normalize_phrase(phrase)?);
     let seed = mnemonic_seed(&phrase, passphrase)?;
     let derivation = parse_path(path)?;
-    Keypair::from_seed_and_derivation_path(&seed, Some(derivation))
+    Keypair::from_seed_and_derivation_path(seed.as_slice(), Some(derivation))
         .map_err(|err| DeriveError::Key(err.to_string()))
 }
 
@@ -128,10 +128,14 @@ fn normalize_phrase(phrase: &str) -> Result<String, DeriveError> {
     Ok(joined)
 }
 
-fn mnemonic_seed(phrase: &str, passphrase: &str) -> Result<[u8; 64], DeriveError> {
+/// The BIP-39 seed, wiped when dropped.
+fn mnemonic_seed(
+    phrase: &str,
+    passphrase: &str,
+) -> Result<zeroize::Zeroizing<[u8; 64]>, DeriveError> {
     let mnemonic = Mnemonic::parse_in_normalized(Language::English, phrase)
         .map_err(|_| DeriveError::PhraseInvalid)?;
-    Ok(mnemonic.to_seed(passphrase))
+    Ok(zeroize::Zeroizing::new(mnemonic.to_seed(passphrase)))
 }
 
 fn pubkey_at(seed: &[u8; 64], path: &str) -> Result<Pubkey, DeriveError> {

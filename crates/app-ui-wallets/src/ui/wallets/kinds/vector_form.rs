@@ -6,6 +6,7 @@ use wallet_core::vector::{
     scheme_offered, signs_here, SchemeId, PROGRAM_ID,
 };
 use wallet_core::{format_sol, Authority, SecretBytes};
+use zeroize::Zeroize;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum AuthoritySource {
@@ -27,7 +28,7 @@ fn from_phrase(scheme: SchemeId) -> bool {
 /// The key the account is made with, from a phrase: key number 0. Rebuilding
 /// an XMSS key takes a moment, so a form asks once per phrase.
 fn first_key(words: &str) -> Option<Vec<u8>> {
-    let words = normalize_key_phrase(words).ok()?;
+    let words = zeroize::Zeroizing::new(normalize_key_phrase(words).ok()?);
     phrase_key(&words, SchemeId::Xmss, 0)
         .ok()
         .map(|(key, _)| key)
@@ -54,15 +55,20 @@ pub fn VectorForm(creating: bool, on_done: EventHandler<()>) -> Element {
     let mut existing = use_signal(|| None::<WalletId>);
     let mut pasted = use_signal(String::new);
     // A new key made from a phrase: the words, shown once to write down.
-    let made_phrase = use_signal(new_key_phrase);
+    let mut made_phrase = use_signal(new_key_phrase);
     let mut written = use_signal(|| false);
     let mut typed_phrase = use_signal(String::new);
-    let phrase_in_use = use_memo(move || match source() {
-        AuthoritySource::NewKey if from_phrase(scheme()) => Some(made_phrase()),
-        AuthoritySource::Phrase => Some(typed_phrase()),
+    // The words are wiped when the form goes, and read in place rather than
+    // copied into a memo that would keep them.
+    use_drop(move || {
+        made_phrase.write().zeroize();
+        typed_phrase.write().zeroize();
+    });
+    let phrase_key_preview = use_memo(move || match source() {
+        AuthoritySource::NewKey if from_phrase(scheme()) => first_key(&made_phrase.read()),
+        AuthoritySource::Phrase => first_key(&typed_phrase.read()),
         AuthoritySource::NewKey | AuthoritySource::Wallet | AuthoritySource::Elsewhere => None,
     });
-    let phrase_key_preview = use_memo(move || phrase_in_use().as_deref().and_then(first_key));
     let mut fee_payer = use_signal(|| None::<WalletId>);
     let mut error = use_signal(|| None::<String>);
     let mut rent = use_signal(|| None::<u64>);
