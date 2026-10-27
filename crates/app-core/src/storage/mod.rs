@@ -47,6 +47,10 @@ impl VaultStore for BoxedStore {
     fn set_aside(&self, bytes: &[u8]) -> Result<(), VaultError> {
         self.0.set_aside(bytes)
     }
+
+    fn discard_backup(&self) -> Result<(), VaultError> {
+        self.0.discard_backup()
+    }
 }
 
 pub type AppVault = Vault<BoxedStore>;

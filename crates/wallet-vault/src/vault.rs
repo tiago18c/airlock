@@ -111,6 +111,34 @@ impl<S: VaultStore, D: Document> Vault<S, D> {
         Ok(())
     }
 
+    /// Seal the vault under `new` from now on. `current` has to open what is
+    /// stored, so an unlocked window left alone is not enough to change it.
+    /// The new key has its own salt. Once the vault is saved under it, the
+    /// backup the store kept of the save before, still sealed under
+    /// `current`, is deleted. When the save fails nothing changes.
+    pub fn change_password(&mut self, current: &str, new: &str) -> Result<(), VaultError> {
+        if self.open.is_none() {
+            return Err(VaultError::Locked);
+        }
+        let bytes = self.store.load()?.ok_or(VaultError::NotInitialized)?;
+        let (_, mut json) = unseal(current, &bytes)?;
+        json.zeroize();
+        let key = SealKey::new(new)?;
+        let open = self.open.as_mut().ok_or(VaultError::Locked)?;
+        let old = std::mem::replace(&mut open.key, key);
+        if let Err(err) = self.save() {
+            if let Some(open) = self.open.as_mut() {
+                open.key = old;
+            }
+            return Err(err);
+        }
+        self.store.discard_backup().map_err(|err| {
+            VaultError::Io(format!(
+                "The password was changed, but the copy kept from before could not be deleted, and the old password still opens it ({err})."
+            ))
+        })
+    }
+
     /// Forget the document and the key.
     pub fn lock(&mut self) {
         self.open = None;
@@ -319,6 +347,78 @@ mod tests {
         ));
         vault.unlock("pw").unwrap();
         assert_eq!(vault.data().unwrap().lines, ["Bob", "Ann"]);
+    }
+
+    #[test]
+    fn a_changed_password_opens_the_vault_and_the_old_one_does_not() {
+        let store = std::sync::Arc::new(MemoryStore::new());
+        let mut vault: Vault<_, Notes> = Vault::new(store.clone());
+        vault.create("first").unwrap();
+        vault
+            .change(|notes| notes.lines.push("Bob".into()))
+            .unwrap();
+        // The current password has to be the right one.
+        assert!(matches!(
+            vault.change_password("wrong", "second"),
+            Err(VaultError::UnlockFailed)
+        ));
+        vault.change_password("first", "second").unwrap();
+        // Saves after it are sealed under the new key too.
+        vault
+            .change(|notes| notes.lines.push("Ann".into()))
+            .unwrap();
+        vault.lock();
+        assert!(matches!(
+            vault.unlock("first"),
+            Err(VaultError::UnlockFailed)
+        ));
+        vault.unlock("second").unwrap();
+        assert_eq!(vault.data().unwrap().lines, ["Bob", "Ann"]);
+        vault.lock();
+        assert!(matches!(
+            vault.change_password("second", "third"),
+            Err(VaultError::Locked)
+        ));
+    }
+
+    #[test]
+    fn a_password_change_that_cannot_be_saved_keeps_the_old_one() {
+        let store = std::sync::Arc::new(MemoryStore::new());
+        let mut vault: Vault<_, Notes> = Vault::new(store.clone());
+        vault.create("first").unwrap();
+        store.refuse_saves(true);
+        assert!(vault.change_password("first", "second").is_err());
+        store.refuse_saves(false);
+        vault
+            .change(|notes| notes.lines.push("Bob".into()))
+            .unwrap();
+        vault.lock();
+        vault.unlock("first").unwrap();
+        assert_eq!(vault.data().unwrap().lines, ["Bob"]);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn a_password_change_deletes_the_backup_under_the_old_one() {
+        use crate::store::FileStore;
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("vault.json");
+        let mut vault: Vault<_, Notes> = Vault::new(FileStore::new(&path));
+        vault.create("first").unwrap();
+        vault
+            .change(|notes| notes.lines.push("Bob".into()))
+            .unwrap();
+        let backup = dir.path().join("vault.json.bak");
+        assert!(backup.exists());
+        vault.change_password("first", "second").unwrap();
+        assert!(!backup.exists());
+        // Only the new password opens what is left on disk.
+        let mut again: Vault<_, Notes> = Vault::new(FileStore::new(&path));
+        assert!(matches!(
+            again.unlock("first"),
+            Err(VaultError::UnlockFailed)
+        ));
+        again.unlock("second").unwrap();
     }
 
     #[cfg(not(target_arch = "wasm32"))]
