@@ -11,7 +11,7 @@ use crate::wallets::vector::{
 };
 use solana_pubkey::Pubkey;
 use std::sync::Arc;
-use wallet_vault::store::VaultStore;
+use wallet_vault::store::{LoadProblem, VaultStore};
 use wallet_vault::{MemoryStore, SecretBytes};
 
 /// The key the wallet's account signs with now.
@@ -225,14 +225,25 @@ fn a_missing_mark_skips_leaves_after_what_the_record_says() {
 }
 
 #[test]
-fn a_mark_file_that_cannot_be_read_counts_as_missing() {
+fn a_mark_file_that_cannot_be_read_stops_signing_and_is_left_as_it_is() {
     let mut device = Device::new(2);
     device.marks_file.save(b"not json").unwrap();
     device.restart();
-    assert!(device.marks.load_problem().is_some());
+    assert!(matches!(
+        device.marks.load_problem(),
+        Some(LoadProblem::Blocked(_))
+    ));
+    // Starting empty would let a used leaf sign again.
+    assert!(matches!(device.reserve(None), Err(LeafError::Mark(_))));
+    assert_eq!(device.stored_next_leaf(), 2);
+    assert_eq!(device.marks_file.load().unwrap().unwrap(), b"not json");
+
+    // Once it reads again, signing goes on from it.
+    device.marks_file.save(b"{}").unwrap();
+    device.restart();
+    assert!(device.marks.load_problem().is_none());
     let next = device.reserve(None).unwrap();
     assert_eq!(next.leaf, 2 + LEAVES_SKIPPED_WITHOUT_MARK);
-    assert!(next.skipped);
 }
 
 #[test]

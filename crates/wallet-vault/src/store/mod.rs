@@ -8,7 +8,7 @@ mod file;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub use file::FileStore;
-pub use json::{check_saveable, load_json, LoadProblem};
+pub use json::{check_saveable, load_json, load_json_or_block, LoadProblem};
 pub use memory::MemoryStore;
 
 use crate::VaultError;
