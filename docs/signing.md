@@ -136,7 +136,7 @@ flowchart TD
 
 Review and Sign also has **Edit on Build**, which reads the transaction back into Build's blocks (`wallet_core::edit`): an instruction a stored IDL reads becomes that IDL's form, filled in, any other its program, accounts and hex data, and a Squads stored transaction, a Vector `Passthrough` or a programmatic `Submit` opens to the blocks it carries. Compiling there makes a new transaction, which is signed again.
 
-What moves between devices is a QRS1 payload (`qr-protocol`): one to 64 typed objects, written with wincode. A transaction and its context note travel as one payload from Share, or each on its own. Share's Signatures tab also puts every signature in one payload, and its Everything tab sends the transaction, its note and every signature together. In a payload of several, the receiver passes over a signature the transaction on screen already holds:
+What moves between devices is a QRS1 payload (`qr-protocol`): one to 64 typed objects, written with wincode. A transaction and its context note travel as one payload from Share, or each on its own. Share opens on its Everything tab, which sends the transaction, its note and every signature together. Its Signatures tab opens on the signatures made by keys on this device, in one payload, and also offers every signature in one payload or each on its own. In a payload of several, the receiver passes over a signature the transaction on screen already holds:
 
 | Object | Carries | Used for |
 | --- | --- | --- |

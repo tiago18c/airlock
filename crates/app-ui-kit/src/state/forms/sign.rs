@@ -29,11 +29,11 @@ pub enum SignView {
 /// What the Share section shows.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum ShareTab {
+    /// The transaction, its note and every signature, in one transfer.
+    Everything,
     Transaction,
     Signatures,
     Context,
-    /// The transaction, its note and every signature, in one transfer.
-    Everything,
 }
 
 #[derive(Clone, PartialEq)]
@@ -324,7 +324,7 @@ impl SignForm {
         this.note.set(None);
         this.simulation.set(SimState::Idle);
         this.simulated_for.set(None);
-        this.share.set(ShareTab::Transaction);
+        this.share.set(ShareTab::Everything);
         this.tables.set(wallet_core::LookupTables::new());
         this.clock.reset(None);
         this.rebuilt.set(false);
