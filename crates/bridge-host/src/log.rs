@@ -11,7 +11,11 @@ use tracing_subscriber::prelude::*;
 pub fn init() {
     static ONCE: Once = Once::new();
     ONCE.call_once(|| {
-        let logs = data_dir().join("logs");
+        // No folder to keep logs in: log nothing rather than write beside
+        // whatever the browser started this in.
+        let Some(logs) = data_dir().map(|dir| dir.join("logs")) else {
+            return;
+        };
         let _ = std::fs::create_dir_all(&logs);
         let appender = match tracing_appender::rolling::Builder::new()
             .rotation(tracing_appender::rolling::Rotation::DAILY)
@@ -43,15 +47,14 @@ pub fn init() {
     });
 }
 
-fn data_dir() -> std::path::PathBuf {
+fn data_dir() -> Option<std::path::PathBuf> {
     if let Some(dir) = std::env::var_os("AIRLOCK_DATA_DIR") {
-        return std::path::PathBuf::from(dir);
+        return Some(std::path::PathBuf::from(dir));
     }
     let mut dir = std::env::var_os("LOCALAPPDATA")
         .or_else(|| std::env::var_os("XDG_DATA_HOME"))
         .or_else(|| std::env::var_os("HOME"))
-        .map(std::path::PathBuf::from)
-        .unwrap_or_else(|| std::path::PathBuf::from("."));
+        .map(std::path::PathBuf::from)?;
     dir.push("airlock");
-    dir
+    Some(dir)
 }

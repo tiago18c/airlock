@@ -82,7 +82,7 @@ fn owned_data_dir() -> std::path::PathBuf {
     if let Err(err) = claim_data_dir() {
         panic!("{err}");
     }
-    data_dir()
+    data_dir().expect("a claimed data folder is named")
 }
 
 pub fn open_vault_in(storage: &dyn Storage) -> AppVault {
