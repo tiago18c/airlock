@@ -163,7 +163,11 @@ pub fn QrScanner(on_payload: EventHandler<Vec<u8>>) -> Element {
                                                         );
                                                         on_payload.call(data);
                                                     }
-                                                    Err(e) => error.set(Some(e.to_string())),
+                                                    Err(e) => {
+                                                        // A refused transfer starts over.
+                                                        have.set(collector.read().have());
+                                                        error.set(Some(e.to_string()));
+                                                    }
                                                 }
                                             }
                                             Ok(ScanEvent::Warn { message }) => {

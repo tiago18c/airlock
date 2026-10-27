@@ -41,6 +41,8 @@ fn the_header_is_little_endian_wincode() {
     let bytes = frame.encode();
     assert_eq!(&bytes[..4], MAGIC);
     assert_eq!(bytes[4], VERSION);
+    use sha2::{Digest, Sha256};
+    assert_eq!(&bytes[5..13], &Sha256::digest(b"abc")[..8]);
     assert_eq!(&bytes[13..15], &0u16.to_le_bytes());
     assert_eq!(&bytes[15..17], &1u16.to_le_bytes());
     assert_eq!(&bytes[17..21], &3u32.to_le_bytes());
@@ -682,4 +684,40 @@ fn json_that_breaks_a_rule_is_refused() {
     assert_eq!(parse_payload_json("[]"), Err(ProtocolError::Empty));
     refused(r#"{"type":"walletKeys","keys":[]}"#);
     refused("{ not json");
+}
+
+#[test]
+fn a_code_of_another_transfer_at_a_place_already_held_starts_it_over() {
+    let payload = vec![7u8; 2000];
+    let frames = encode_frames(&payload, DEFAULT_CHUNK).unwrap();
+    let mut asm = Assembler::new();
+    assert_eq!(asm.push(frames[0].clone()), Ok(None));
+    // The same code again changes nothing.
+    assert_eq!(asm.push(frames[0].clone()), Ok(None));
+    // Another chunk claiming the same place and transfer.
+    let mut other = frames[0].clone();
+    other.chunk[0] ^= 1;
+    assert_eq!(asm.push(other), Err(ProtocolError::ConflictingFrame));
+    assert_eq!(asm.received(), 0);
+    // Scanned again, the real codes complete it.
+    let mut done = None;
+    for frame in frames {
+        done = asm.push(frame).unwrap();
+    }
+    assert_eq!(done, Some(payload));
+}
+
+#[test]
+fn a_payload_that_is_not_what_its_id_names_is_refused() {
+    let payload = vec![7u8; 100];
+    let mut frame = encode_frames(&payload, DEFAULT_CHUNK).unwrap().remove(0);
+    // Another payload with a matching CRC passes the old check: only the
+    // id, a hash of the payload, tells them apart.
+    let forged = vec![8u8; 100];
+    frame.chunk[..100].copy_from_slice(&forged);
+    frame.crc32 = crc32(&forged);
+    let mut asm = Assembler::new();
+    assert_eq!(asm.push(frame), Err(ProtocolError::CorruptPayload));
+    // Refused, the transfer can be scanned again from the start.
+    assert_eq!(asm.expected(), 0);
 }
