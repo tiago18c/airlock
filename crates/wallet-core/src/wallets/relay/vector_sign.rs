@@ -91,24 +91,50 @@ fn signing_now(
         .collect()
 }
 
-/// The digest each account of `held` signs in `wire` now, by the rules of
+/// What one account signs in a transaction now.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ToSign {
+    pub digest: [u8; 32],
+    /// The key its place in the `Advance` hands the account to: the key it
+    /// signs with now when it keeps it. Empty for a scheme that keeps its
+    /// key without naming it.
+    pub next_key: Vec<u8>,
+}
+
+/// What each account of `held` signs in `wire` now, by the rules of
 /// [`sign_vector_authorizations`]. What a hash-based key is about to sign is
 /// recorded from this before it signs, and nothing else is.
-pub fn digests_to_sign(
+pub fn to_sign_now(
     wire: &[u8],
     held: &[Pubkey],
     known: &[VectorContext],
-) -> HashMap<Pubkey, [u8; 32]> {
+) -> HashMap<Pubkey, ToSign> {
     let Ok(tx) = decode_v1_transaction(wire) else {
         return HashMap::new();
     };
     signing_now(&tx, held, &AuthContext { vector: known })
         .map(|now| {
             now.into_iter()
-                .map(|(slot, digest)| (slot.address, digest))
+                .map(|(slot, digest)| {
+                    let next_key = next_key_of(&tx, &slot).to_vec();
+                    (slot.address, ToSign { digest, next_key })
+                })
                 .collect()
         })
         .unwrap_or_default()
+}
+
+/// The digest each account of `held` signs in `wire` now: [`to_sign_now`]
+/// without the next keys.
+pub fn digests_to_sign(
+    wire: &[u8],
+    held: &[Pubkey],
+    known: &[VectorContext],
+) -> HashMap<Pubkey, [u8; 32]> {
+    to_sign_now(wire, held, known)
+        .into_iter()
+        .map(|(account, to_sign)| (account, to_sign.digest))
+        .collect()
 }
 
 /// Refuse to sign for `key`'s account when its place in the `Advance` hands
@@ -120,21 +146,28 @@ fn check_key(
     key: &VectorKey,
     ctx: &AuthContext,
 ) -> Result<(), SignError> {
+    Ok(refuse_handover(next_key_of(tx, slot), key, ctx)?)
+}
+
+/// Refuse to sign for `key`'s account when `next`, the key its place in the
+/// `Advance` hands it to, is not one this device made, or when a hash-based
+/// key here is not the one the account holds now. Checked before anything
+/// is recorded for a hash-based key, and again when it signs.
+pub fn refuse_handover(next: &[u8], key: &VectorKey, ctx: &AuthContext) -> Result<(), VectorError> {
     let scheme = key.signer.scheme();
     if scheme.is_stateful() {
-        let next = next_key_of(tx, slot);
         // XMSS names the key that signs now to keep it. A Winternitz key
         // signs once, and the program refuses it again.
         let keeps = next == key.signer.key();
         if keeps && scheme == SchemeId::Winternitz {
-            return Err(VectorError::KeyReused(key.account).into());
+            return Err(VectorError::KeyReused(key.account));
         }
         if !keeps && key.next_key.as_deref() != Some(next) {
-            return Err(VectorError::RotatesElsewhere(key.account).into());
+            return Err(VectorError::RotatesElsewhere(key.account));
         }
         let current = ctx.of(&key.account).and_then(|known| known.key.as_deref());
         if current.is_some_and(|current| current != key.signer.key()) {
-            return Err(VectorError::NotCurrentKey(key.account).into());
+            return Err(VectorError::NotCurrentKey(key.account));
         }
     }
     Ok(())

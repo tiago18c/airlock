@@ -88,3 +88,63 @@ fn a_transaction_the_key_signs_reserves_one_leaf() {
     assert_eq!(device.keys_for(&wire, &unknown)[0].leaf, None);
     assert_eq!(device.stored_next_leaf(), 1);
 }
+
+#[test]
+fn a_floor_from_a_note_does_not_spend_the_leaves_kept_for_rotating() {
+    let mut device = Device::new(0);
+    let (wire, mut known) = device.wrapped_transfer();
+    // What a note may claim: the chain accepts only the last leaf.
+    known[0].leaf_floor = crate::wallets::vector::XMSS_LEAVES - 1;
+    let refused = keys_to_sign_with(
+        &mut device.vault,
+        &mut device.marks,
+        &XmssRetryCache::default(),
+        &wire,
+        &[],
+        &known,
+    );
+    assert!(matches!(refused, Err(super::LeafError::MustRotate(_))));
+    assert_eq!(device.stored_next_leaf(), 0);
+    assert_eq!(device.marks.next_leaf(&device.account, &device_key()), None);
+}
+
+#[test]
+fn a_hand_over_to_a_key_not_made_here_records_nothing() {
+    let mut device = Device::new(0);
+    let site = compile(pk(1), vec![transfer(device.account, pk(5), 1)]).wire;
+    let wrap = VectorWrap {
+        account: device.account,
+        scheme: SchemeId::Xmss,
+        key: vec![7; SchemeId::Xmss.key_len()],
+        // Someone else's key.
+        next_key: Some(vec![9; SchemeId::Xmss.key_len()]),
+    };
+    let wire = wrap_for_vector(
+        &decode_v1_transaction(&site).unwrap(),
+        &[wrap],
+        pk(1),
+        blockhash(2),
+    )
+    .unwrap();
+    let (_, known) = device.wrapped_transfer();
+    let refused = keys_to_sign_with(
+        &mut device.vault,
+        &mut device.marks,
+        &XmssRetryCache::default(),
+        &wire,
+        &[],
+        &known,
+    );
+    assert!(matches!(refused, Err(super::LeafError::Rotation(_))));
+    assert_eq!(device.stored_next_leaf(), 0);
+    assert!(device.marks.possible_nonces(&device.account).is_empty());
+}
+
+/// The key the device's wallet signs with: its seed is `[1; 32]`.
+fn device_key() -> Vec<u8> {
+    xmss_from_seed(&[1; 32])
+        .unwrap()
+        .verifying_key()
+        .to_bytes()
+        .to_vec()
+}

@@ -384,3 +384,49 @@ fn adjacent_vector_instructions_share_one_passthrough() {
     assert_eq!(last.signers.len(), 1);
     assert_eq!(last.signers[0].account, b.account);
 }
+
+#[test]
+fn a_note_moves_the_nonce_and_floor_but_not_the_scheme() {
+    use crate::transport::protocol::ContextAuthorization;
+    let (read, held, new) = (pk(60), pk(61), pk(62));
+    let note = |account: Pubkey, scheme: SchemeId| ContextAuthorization {
+        account: account.to_bytes(),
+        scheme: scheme.byte(),
+        nonce: [4; 32],
+        leaf_floor: 9,
+    };
+    let mut known = vec![VectorContext {
+        account: read,
+        scheme: SchemeId::Xmss,
+        nonce: Some([1; 32]),
+        key: Some(vec![2; 3]),
+        leaf_floor: 0,
+    }];
+    let recorded = |account: &Pubkey| (*account == held).then_some(SchemeId::Xmss);
+
+    overlay_note(
+        &mut known,
+        &[note(read, SchemeId::Xmss), note(new, SchemeId::MlDsa44)],
+        recorded,
+    )
+    .unwrap();
+    assert_eq!(known[0].nonce, Some([4; 32]));
+    assert_eq!(known[0].leaf_floor, 9);
+    assert_eq!(known[0].key, Some(vec![2; 3]));
+    assert_eq!(known[1].account, new);
+
+    // Another scheme than what was read, or than the wallet here, is
+    // refused, and nothing of that note is taken.
+    let before = known.clone();
+    for (account, scheme) in [(read, SchemeId::Ed25519), (held, SchemeId::Ed25519)] {
+        let mut changed = before.clone();
+        changed[0].leaf_floor = 0;
+        let refused = overlay_note(
+            &mut changed,
+            &[note(new, SchemeId::MlDsa44), note(account, scheme)],
+            recorded,
+        );
+        assert!(matches!(refused, Err(VectorError::NoteScheme(at)) if at == account));
+        assert_eq!(changed[0].leaf_floor, 0);
+    }
+}
