@@ -121,6 +121,13 @@ impl WalletRecord {
     /// leaf it still accepts. A key made from this wallet's phrase is found
     /// by its number, and signs from then on. Answers the number when the
     /// key changed.
+    ///
+    /// Only the next key this device made for the account is a move it
+    /// expects. Any other key of the phrase, before or after the one held
+    /// here, means another copy of the phrase moved the account, or this
+    /// device was told of a move that never happened, so leaves of that key
+    /// may have signed elsewhere: the wallet is marked restored, and signs
+    /// only a move to the key after it, at its last leaf.
     pub fn adopt_vector_key(
         &mut self,
         key: &[u8],
@@ -153,11 +160,17 @@ impl WalletRecord {
         let upto = phrase.index.saturating_add(PHRASE_SEARCH_AHEAD);
         let index = find_phrase_key(&phrase.words.0, *scheme, key, upto)?;
         let (_, seed) = phrase_key(&phrase.words.0, *scheme, index)?;
+        let expected = index == phrase.index.saturating_add(1)
+            && next_secret.is_some()
+            && next_pubkey.as_ref().is_some_and(|next| next.0 == key);
         *secret = SecretBytes(seed.to_vec());
         *next_leaf = floor;
         *next_pubkey = None;
         *next_secret = None;
         phrase.index = index;
+        if !expected {
+            phrase.restored = true;
+        }
         Ok(Some(index))
     }
 
