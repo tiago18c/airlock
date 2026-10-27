@@ -1,0 +1,84 @@
+name: Program watch
+
+# Once a day, check every program whose IDL ships with the app against the
+# build it was reviewed for (resources/program-builds.toml) and against the
+# on-chain IDL it was made from. While something needs action, one issue
+# labelled `program-watch` holds the latest report. It is closed when the
+# report is clean.
+on:
+  schedule:
+    - cron: "41 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: program-watch
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  watch:
+    name: Programs and IDLs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: rustup show
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - name: Check programs
+        id: watch
+        env:
+          # Optional. The public endpoints are used when these are unset.
+          MAINNET_RPC_URL: ${{ secrets.MAINNET_RPC_URL }}
+          DEVNET_RPC_URL: ${{ secrets.DEVNET_RPC_URL }}
+        run: |
+          set +e
+          cargo run --locked --release -p program-watch -- --markdown report.md --json report.json
+          status=$?
+          set -e
+          if [ -f report.json ]; then
+            cat report.md >> "$GITHUB_STEP_SUMMARY"
+            echo "needs_action=$(jq .needsAction report.json)" >> "$GITHUB_OUTPUT"
+          fi
+          # A program that could not be read fails the job and leaves the
+          # issue alone: a node outage is not a change.
+          exit $status
+      - name: Open, update or close the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEEDS_ACTION: ${{ steps.watch.outputs.needs_action }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          label=program-watch
+          gh label create "$label" --color FBCA04 \
+            --description "A shipped IDL's program or source changed" 2>/dev/null || true
+          issue=$(gh issue list --label "$label" --state open --json number --jq '.[0].number // empty')
+
+          if [ "$NEEDS_ACTION" = "0" ]; then
+            if [ -n "$issue" ]; then
+              gh issue close "$issue" --comment "Clean as of $RUN_URL."
+            fi
+            exit 0
+          fi
+
+          # The findings without the date, so an unchanged report edits nothing.
+          fingerprint=$(jq -c '[.findings[] | select(.level == "change" or .level == "todo")]' report.json | sha256sum | cut -c1-16)
+          {
+            echo "<!-- program-watch $fingerprint -->"
+            echo "Latest run: $RUN_URL"
+            echo
+            # An issue body holds 65536 characters. The run summary has all of it.
+            head -c 60000 report.md
+          } > body.md
+
+          if [ -z "$issue" ]; then
+            gh issue create --title "Program watch: shipped IDLs need review" \
+              --label "$label" --body-file body.md
+          elif ! gh issue view "$issue" --json body --jq .body | grep -q "program-watch $fingerprint"; then
+            gh issue edit "$issue" --body-file body.md
+            gh issue comment "$issue" --body "The findings changed: $RUN_URL"
+          fi

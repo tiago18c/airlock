@@ -1,0 +1,22 @@
+[package]
+name = "program-watch"
+version.workspace = true
+edition.workspace = true
+description = "Checks the programs whose IDLs ship with the app against the builds and IDLs we reviewed them for. Run on a schedule in CI, never shipped"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+hex.workspace = true
+idl-pack = { workspace = true, features = ["build"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde.workspace = true
+serde_json.workspace = true
+solana-pubkey.workspace = true
+tokio = { workspace = true, features = ["rt", "macros"] }
+toml = "0.8"
+wallet-core.workspace = true
+wallet-rpc = { path = "../wallet-rpc" }

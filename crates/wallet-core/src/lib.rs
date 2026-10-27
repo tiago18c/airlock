@@ -16,6 +16,7 @@ pub mod keys;
 mod market;
 mod phrase;
 pub mod portfolio;
+pub mod program_code;
 pub mod review;
 pub mod spl;
 pub mod transport;

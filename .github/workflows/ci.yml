@@ -19,9 +19,9 @@ env:
   CARGO_TERM_COLOR: always
   # The crates this repository owns. The Codama port under crates/codama
   # and the vendored RPC client are built as dependencies, not linted here.
-  OWN_CRATES: -p airlock -p airlock-offline -p wallet-core -p idl-pack -p wallet-flows -p wallet-rpc -p tokens-api -p wallet-vault -p qr-protocol -p qr-codec -p qr-codec-wasm -p bridge-host -p bridge-protocol -p app-core -p app-ui-kit -p app-ui -p app-ui-book -p app-ui-build -p app-ui-sign -p app-ui-wallets -p app-online -p app-desktop
+  OWN_CRATES: -p airlock -p airlock-offline -p wallet-core -p idl-pack -p program-watch -p wallet-flows -p wallet-rpc -p tokens-api -p wallet-vault -p qr-protocol -p qr-codec -p qr-codec-wasm -p bridge-host -p bridge-protocol -p app-core -p app-ui-kit -p app-ui -p app-ui-book -p app-ui-build -p app-ui-sign -p app-ui-wallets -p app-online -p app-desktop
   # The same without the desktop window, for Linux.
-  CORE_CRATES: -p wallet-core -p idl-pack -p wallet-flows -p wallet-rpc -p tokens-api -p wallet-vault -p qr-protocol -p qr-codec -p qr-codec-wasm -p bridge-host -p bridge-protocol -p app-core -p app-ui-kit -p app-ui -p app-ui-book -p app-ui-build -p app-ui-sign -p app-ui-wallets -p app-online
+  CORE_CRATES: -p wallet-core -p idl-pack -p program-watch -p wallet-flows -p wallet-rpc -p tokens-api -p wallet-vault -p qr-protocol -p qr-codec -p qr-codec-wasm -p bridge-host -p bridge-protocol -p app-core -p app-ui-kit -p app-ui -p app-ui-book -p app-ui-build -p app-ui-sign -p app-ui-wallets -p app-online
 
 jobs:
   rust:
