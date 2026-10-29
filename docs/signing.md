@@ -389,6 +389,7 @@ An XMSS key made here comes from a 24-word recovery phrase, after Blueshift's Wi
   2. Scanned or pasted on Sign on the key device, it finds that key among the phrase's keys (the number it holds and up to 64 past it, as Winterwallet's `recover` does), signs with it from then on, and takes the nonce and leaf floor.
   3. **Rotate key** then signs once, at that nonce, with the key's last leaf: leaves go out in rising order, so it is the one a lost copy cannot have used.
   4. Sent online like any rotation. When a later note shows it landed, the next key is installed and the wallet is whole again.
+- **A key it did not expect.** Taking an account state on any wallet made from a phrase, a key other than the next one this device made means another copy of the phrase moved the account, or this device was told of a move that never happened. Leaves of that key may have signed elsewhere, so the wallet is marked restored, as above: it signs only a move to the key after it, at its last leaf.
 - **What the state is worth.** It is read by the online device. A wrong key or nonce makes the key device sign what fails on chain. It cannot make a leaf sign twice, and a key made from the phrase can always be made again.
 
 #### Moving wallets between devices
