@@ -30,22 +30,24 @@ impl Storage for FileStorage {
 
 /// This app's data folder: `<prefix>_DATA_DIR` when set, else its own folder
 /// under the platform's app data folder (see [`AppDirs`](super::AppDirs)).
-pub fn data_dir() -> PathBuf {
+/// `None` when the environment names no such folder. There is no fallback
+/// to the working directory: the vault and the record of used leaves would
+/// then be wherever the app happened to be started.
+pub fn data_dir() -> Option<PathBuf> {
     let dirs = app_dirs();
     if let Some(dir) = std::env::var_os(dirs.env_var("DATA_DIR")) {
-        return PathBuf::from(dir);
+        return Some(PathBuf::from(dir));
     }
     let mut dir = std::env::var_os("LOCALAPPDATA")
         .or_else(|| std::env::var_os("XDG_DATA_HOME"))
         .or_else(|| std::env::var_os("HOME"))
-        .map(PathBuf::from)
-        .unwrap_or_else(|| PathBuf::from("."));
+        .map(PathBuf::from)?;
     dir.push(dirs.folder);
-    dir
+    Some(dir)
 }
 
-pub fn logs_dir() -> PathBuf {
-    data_dir().join("logs")
+pub fn logs_dir() -> Option<PathBuf> {
+    data_dir().map(|dir| dir.join("logs"))
 }
 
 /// The file in the data folder that a running app holds locked.
@@ -57,6 +59,8 @@ static HELD: Mutex<Option<File>> = Mutex::new(None);
 /// Why this process may not use its data folder.
 #[derive(Debug)]
 pub enum DataDirClaim {
+    /// The environment names no folder for the app's data.
+    NoFolder(String),
     /// Another process of this app has it open.
     InUse(PathBuf),
     /// The lock could not be taken at all.
@@ -66,6 +70,10 @@ pub enum DataDirClaim {
 impl std::fmt::Display for DataDirClaim {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::NoFolder(variable) => write!(
+                f,
+                "There is no folder for the app's data: none of {variable}, LOCALAPPDATA, XDG_DATA_HOME or HOME is set. Set one and start the app again."
+            ),
             Self::InUse(dir) => write!(
                 f,
                 "Another window of this app is already using its data folder ({}). Only one may run at a time: two would each keep their own copy of the vault and of the record of used signing leaves, and could sign with one leaf twice. Close the other one first.",
@@ -89,7 +97,8 @@ impl std::error::Error for DataDirClaim {}
 /// refuses to open one without it. Taking it again in the same process does
 /// nothing.
 pub fn claim_data_dir() -> Result<(), DataDirClaim> {
-    claim_dir(&data_dir())
+    let dir = data_dir().ok_or_else(|| DataDirClaim::NoFolder(app_dirs().env_var("DATA_DIR")))?;
+    claim_dir(&dir)
 }
 
 fn claim_dir(dir: &Path) -> Result<(), DataDirClaim> {
