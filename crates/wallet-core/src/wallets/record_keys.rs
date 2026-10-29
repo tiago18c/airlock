@@ -3,7 +3,7 @@
 use crate::error::SignError;
 use crate::keys::signer::{KeypairSigner, WalletSigner};
 use crate::wallets::programmatic::programmatic_signer_address;
-use crate::wallets::record::{Authority, Protocol, WalletKind, WalletRecord};
+use crate::wallets::record::{Authority, KeyPhrase, Protocol, WalletKind, WalletRecord};
 use crate::wallets::vector;
 use solana_pubkey::Pubkey;
 use wallet_vault::{SecretBytes, SecretString};
@@ -69,6 +69,8 @@ impl WalletRecord {
     pub fn without_secrets(&self) -> WalletRecord {
         let address = self.address();
         let mut copy = self.clone();
+        // Every field is named, with no `..`: a field added to any kind has
+        // to be sorted here into secret or not before this builds.
         match &mut copy.kind {
             WalletKind::Keypair {
                 secret_seed,
@@ -80,8 +82,8 @@ impl WalletRecord {
             WalletKind::Seed {
                 mnemonic,
                 passphrase,
+                path: _,
                 pubkey,
-                ..
             } => {
                 *mnemonic = SecretString(String::new());
                 *passphrase = None;
@@ -90,30 +92,65 @@ impl WalletRecord {
             WalletKind::Programmatic {
                 protocol,
                 authority,
-                ..
+                fee_payer: _,
             } => {
-                if let Protocol::Vector {
-                    next_secret,
-                    retired_secret,
-                    phrase,
-                    ..
-                } = protocol
-                {
-                    *next_secret = None;
-                    *retired_secret = None;
-                    // The number of the key and whether it was restored are no
-                    // secret; the words are.
-                    if let Some(phrase) = phrase {
-                        phrase.words = SecretString(String::new());
+                match protocol {
+                    Protocol::Ed25519Signer {
+                        authority: _,
+                        nonce: _,
+                    } => {}
+                    Protocol::Vector {
+                        scheme: _,
+                        program: _,
+                        key: _,
+                        next_pubkey: _,
+                        next_secret,
+                        retired_secret,
+                        phrase,
+                    } => {
+                        *next_secret = None;
+                        *retired_secret = None;
+                        // The number of the key and whether it was restored
+                        // are no secret; the words are.
+                        if let Some(KeyPhrase {
+                            words,
+                            index: _,
+                            restored: _,
+                        }) = phrase
+                        {
+                            *words = SecretString(String::new());
+                        }
                     }
                 }
-                if let Authority::Held { secret, .. } = authority {
-                    *secret = SecretBytes(Vec::new());
+                match authority {
+                    Authority::Held {
+                        secret,
+                        next_leaf: _,
+                    } => *secret = SecretBytes(Vec::new()),
+                    Authority::Wallet { wallet: _ } | Authority::Outside => {}
                 }
             }
-            WalletKind::Offline { .. }
-            | WalletKind::Hardware { .. }
-            | WalletKind::Squads { .. } => {}
+            WalletKind::Offline {
+                pubkey: _,
+                fee_payer: _,
+                durable_nonce: _,
+                default_path: _,
+            }
+            | WalletKind::Hardware {
+                vendor: _,
+                paths: _,
+            }
+            | WalletKind::Squads {
+                program: _,
+                multisig: _,
+                vault: _,
+                members: _,
+                threshold: _,
+                member_wallet: _,
+                approves_with: _,
+                approval_nonce: _,
+                fee_payer: _,
+            } => {}
         }
         copy
     }
