@@ -75,7 +75,12 @@ pub fn VaultUnlock(
                     done.call(());
                 }
             }
-            Err(err) => error.set(Some(err.to_string())),
+            Err(err) => {
+                // Typed again on a retry; not kept in between.
+                password.write().zeroize();
+                confirm.write().zeroize();
+                error.set(Some(err.to_string()));
+            }
         }
     };
     let on_enter = move |e: KeyboardEvent| {
