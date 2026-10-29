@@ -5,7 +5,9 @@
 //! waits and the way back to it is always in sight.
 //!
 //! A connect request is Approve or Reject. A sign request is Reject, Review
-//! or Sign:
+//! or Sign. A site may send several transactions in one request: each is
+//! prepared and explained on its own card, and the site gets them back
+//! together once every one is signed, never some of them.
 //!
 //! - A transaction that asks a programmatic signer or a Squads vault to sign
 //!   is rebuilt first (`wallet_core::adapt`). What is shown, reviewed and
@@ -103,6 +105,12 @@ pub fn BridgeRequests() -> Element {
                             current: current.clone(),
                             on_close: move |_| open.set(false),
                         }
+                    } else if current.transactions > 1 {
+                        SignBatch {
+                            key: "{current.id}",
+                            current: current.clone(),
+                            on_close: move |_| open.set(false),
+                        }
                     } else {
                         SignRequest {
                             key: "{current.id}",
@@ -143,12 +151,14 @@ fn RequestCard(current: BridgePrompt, on_open: EventHandler<()>) -> Element {
         (session.forms.sign.source)(),
         Some(TxSource::Browser { id, .. }) if id == current.id
     );
-    let what = if current.method == "connect" {
-        "wants to connect"
-    } else if reviewing {
-        "asks for a signature · open on Sign"
-    } else {
-        "asks for a signature"
+    let what = match (current.method.as_str(), current.transactions, reviewing) {
+        ("connect", _, _) => "wants to connect".to_string(),
+        (_, count, true) if count > 1 => {
+            format!("asks to sign {count} transactions · open on Sign")
+        }
+        (_, count, false) if count > 1 => format!("asks to sign {count} transactions"),
+        (_, _, true) => "asks for a signature · open on Sign".to_string(),
+        (_, _, false) => "asks for a signature".to_string(),
     };
     let id = current.id.clone();
     rsx! {

@@ -24,7 +24,9 @@ pub(in crate::ui) enum Prepared {
     Failed(String),
 }
 
-type ReadyWire = (
+/// What Review hands to the Sign screen: the wire, its rebuild, the height
+/// its blockhash expires at, its format, tables, conversion and log flow.
+pub(in crate::ui) type ReadyWire = (
     Vec<u8>,
     Option<Adapted>,
     Option<u64>,
@@ -34,7 +36,8 @@ type ReadyWire = (
     u64,
 );
 
-type SignWire = (
+/// What Sign signs: the wire, its tables, its Vector accounts and log flow.
+pub(in crate::ui) type SignWire = (
     Vec<u8>,
     wallet_core::LookupTables,
     Vec<wallet_core::relay::VectorContext>,
@@ -72,12 +75,14 @@ pub(in crate::ui) struct PreparedRequest {
     pub site_signs: Vec<Pubkey>,
 }
 
+/// Prepare transaction `index` of the sign request `current`.
 pub(in crate::ui) fn use_prepared_request(
     session: Session,
     current: BridgePrompt,
+    index: usize,
 ) -> PreparedRequest {
-    let original = crate::bridge::transaction_wire(&current.params);
-    let account = crate::bridge::requested_account(&current.params);
+    let original = crate::bridge::transaction_wire(&current.params, index);
+    let account = crate::bridge::requested_account(&current.params, index);
 
     let mut prepared = use_signal(|| Prepared::Working);
     let attempt = use_signal(|| 0u32);

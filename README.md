@@ -9,7 +9,7 @@ A Solana wallet that keeps preparing a transaction apart from signing it. An onl
 - **Solana transactions:** browser requests and Sign-screen paste accept legacy, v0 and v1. A hot-only request can be signed as is; anything else is converted to v1 (wire prefix `0x81`, SIMD-0385). The QR handoff (QRS1) stays v1 only; scanning a non-v1 QR is refused.
 - **Wallet kinds:** hot (private key or seed phrase), offline (the key is on another device), Ed25519 programmatic signer, and Squads multisig (v4 and smart account). Hardware wallets are not supported yet.
 - **Two builds:** the online app, and `airlock-offline`, which links no network code: it opens no connection, and cannot simulate or submit.
-- **Browser bridge:** desktop only. It answers `connect` and `signTransaction` with one transaction. Every other method returns `not_implemented`.
+- **Browser bridge:** desktop only. It answers `connect` and `signTransaction` with one to 16 transactions, which go back together. Every other method returns `not_implemented`.
 
 How each kind of wallet signs, from the app and from a site, is in [docs/signing.md](docs/signing.md).
 

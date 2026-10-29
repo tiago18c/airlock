@@ -102,6 +102,7 @@ pub fn use_forms() -> Forms {
             auto_rebuilt_for: use_signal(|| None::<[u8; 32]>),
             rebuilt: use_signal(|| false),
             returned: use_signal(|| false),
+            batch: use_signal(|| None),
             made_here: use_signal(Vec::<MadeHere>::new),
             created: use_signal(Vec::new),
         },

@@ -6,6 +6,10 @@ export const EXTENSION_SOURCE = "airlock-extension";
 
 export const REQUEST_TTL_MS = 10 * 60 * 1000;
 
+/** The most transactions one signTransaction may carry, as the desktop app
+ * allows (`bridge_protocol::MAX_TRANSACTIONS`). */
+export const MAX_TRANSACTIONS = 16;
+
 /** What the desktop app answers today. Add a method here only with its desktop handler. */
 export const METHODS = ["status", "connect", "disconnect", "signTransaction"] as const;
 

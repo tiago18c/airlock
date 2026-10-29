@@ -9,4 +9,4 @@ pub mod message;
 pub mod reply;
 pub mod request;
 
-pub use request::request_code;
+pub use request::{request_code, MAX_TRANSACTIONS};

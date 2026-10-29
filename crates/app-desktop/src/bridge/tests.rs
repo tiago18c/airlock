@@ -94,10 +94,14 @@ async fn the_window_answers_from_the_core_queue() {
     let params = json!({
         "transactions": [{ "account": account.to_string(), "transaction": "gQ==" }]
     });
-    assert_eq!(requested_account(&params), Some(account));
-    assert_eq!(requested_account(&json!({ "transactions": [{}] })), None);
+    assert_eq!(requested_account(&params, 0), Some(account));
+    assert_eq!(requested_account(&params, 1), None);
+    assert_eq!(requested_account(&json!({ "transactions": [{}] }), 0), None);
     assert_eq!(
-        requested_account(&json!({ "transactions": [{ "account": "not an address" }] })),
+        requested_account(
+            &json!({ "transactions": [{ "account": "not an address" }] }),
+            0
+        ),
         None
     );
 
@@ -132,22 +136,55 @@ async fn the_window_answers_from_the_core_queue() {
     assert!(BridgePrompt::head_of(&kit.core.slices().bridge.get()).is_none());
 }
 
-#[tokio::test]
-async fn a_batch_of_transactions_is_refused() {
-    let (kit, bridge) = attached_bridge();
+fn sign_request(id: &str, count: usize) -> Value {
     let v1 = base64::engine::general_purpose::STANDARD.encode([0x81, 1, 2]);
-    let value = ask(
-        &bridge,
-        json!({
-            "v": 1,
-            "id": "batch",
-            "origin": "https://example.test",
-            "method": "signTransaction",
-            "params": { "transactions": [{ "transaction": v1 }, { "transaction": v1 }] }
-        }),
-    );
+    let transactions: Vec<Value> = (0..count).map(|_| json!({ "transaction": v1 })).collect();
+    json!({
+        "v": 1,
+        "id": id,
+        "origin": "https://example.test",
+        "method": "signTransaction",
+        "params": { "transactions": transactions }
+    })
+}
+
+#[tokio::test]
+async fn an_empty_or_oversized_batch_is_refused() {
+    let (kit, bridge) = attached_bridge();
+    let value = ask(&bridge, sign_request("none", 0));
+    assert_eq!(value["error"]["code"], "bad_request");
+    let value = ask(&bridge, sign_request("many", MAX_TRANSACTIONS + 1));
     assert_eq!(value["error"]["code"], "not_implemented");
     assert!(kit.core.slices().bridge.get().is_empty());
+}
+
+#[tokio::test]
+async fn a_batch_waits_as_one_request() {
+    let (kit, bridge) = attached_bridge();
+    let waiting = std::thread::spawn(move || ask(&bridge, sign_request("batch", 3)));
+    while kit.core.slices().bridge.get().is_empty() {
+        std::thread::yield_now();
+    }
+    let shown = BridgePrompt::head_of(&kit.core.slices().bridge.get()).unwrap();
+    assert_eq!(shown.transactions, 3);
+    assert_eq!(shown.waiting, 0);
+
+    let wires = vec![vec![0x81, 1], vec![0x81, 2], vec![0x81, 3]];
+    assert!(kit
+        .core
+        .bridge_answer("batch", &BridgeAnswer::Signed(wires)));
+    let value = waiting.join().unwrap();
+    assert_eq!(
+        value["result"]["signedTransactions"]
+            .as_array()
+            .unwrap()
+            .len(),
+        3
+    );
+}
+
+fn v1_b64(wire: &[u8]) -> String {
+    base64::engine::general_purpose::STANDARD.encode(wire)
 }
 
 fn params_for_wire(wire: &[u8]) -> Value {
@@ -224,19 +261,25 @@ fn a_readable_transaction_wire_is_accepted() {
     )
     .unwrap()
     .wire;
-    assert_eq!(transaction_wire(&params_for_wire(&v1)).unwrap(), v1);
+    assert_eq!(transaction_wire(&params_for_wire(&v1), 0).unwrap(), v1);
 
     let legacy = legacy_transfer_wire(&payer.pubkey());
-    assert_eq!(transaction_wire(&params_for_wire(&legacy)).unwrap(), legacy);
-    assert!(sign_detail(&params_for_wire(&legacy)).contains("legacy"));
+    assert_eq!(
+        transaction_wire(&params_for_wire(&legacy), 0).unwrap(),
+        legacy
+    );
+    assert!(sign_detail(&params_for_wire(&legacy), 0).contains("legacy"));
 
     let v0 = v0_transfer_wire(&payer.pubkey());
-    assert_eq!(transaction_wire(&params_for_wire(&v0)).unwrap(), v0);
-    assert!(sign_detail(&params_for_wire(&v0)).contains("v0"));
+    assert_eq!(transaction_wire(&params_for_wire(&v0), 0).unwrap(), v0);
+    assert!(sign_detail(&params_for_wire(&v0), 0).contains("v0"));
 
     let garbage = base64::engine::general_purpose::STANDARD.encode([0xff, 1, 2]);
-    let params = json!({ "transactions": [{ "transaction": garbage }] });
-    assert!(transaction_wire(&params).is_none());
+    let params =
+        json!({ "transactions": [{ "transaction": v1_b64(&v1) }, { "transaction": garbage }] });
+    assert_eq!(transaction_wire(&params, 0).unwrap(), v1);
+    assert!(transaction_wire(&params, 1).is_none());
+    assert!(transaction_wire(&params, 2).is_none());
 }
 
 #[test]

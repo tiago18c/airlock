@@ -2,7 +2,7 @@
 
 How a site reaches Airlock: a browser extension that holds no keys, a native messaging host, and the online desktop app, which reviews and signs. How each kind of wallet signs a site's request is in [signing.md](signing.md#flows-that-start-in-a-browser).
 
-The bridge answers `status`, `connect`, `disconnect` and `signTransaction` with one transaction (legacy, v0 or v1). Every other method returns `not_implemented`. It is desktop only, and only in the online app: Airlock Offline does not link it.
+The bridge answers `status`, `connect`, `disconnect` and `signTransaction` with one to 16 transactions (legacy, v0 or v1), which go back together once every one is signed. Every other method returns `not_implemented`. It is desktop only, and only in the online app: Airlock Offline does not link it.
 
 ## Components
 
@@ -29,6 +29,7 @@ flowchart LR
 Manifest V3, TypeScript, in `extension/`.
 
 - A content script registers a wallet named Airlock with `@wallet-standard/wallet`, so sites using `@solana/wallet-adapter` or the Wallet Standard find it without a `window.solana` injection. It advertises `standard:connect`, `standard:disconnect`, `standard:events` and `solana:signTransaction` (versions legacy, 0 and 1): only what the desktop app can do, so a site never picks a feature that is certain to fail.
+- `signTransaction` with several inputs, which is how the wallet adapter's `signAllTransactions` reaches a Wallet Standard wallet, is one request with every transaction in it, at most 16 (`MAX_TRANSACTIONS` in `protocol.ts` and `bridge_protocol`). The outputs come back in the order of the inputs.
 - The service worker relays page requests to `chrome.runtime.connectNative("dev.airlock.bridge")`. It sets each request's `origin` from the browser's `sender`, never from page data, and its `expiresAt` ten minutes ahead.
 - The popup lists pending requests by their request code (below), and says whether the host is missing or the app is not running.
 
@@ -81,7 +82,7 @@ The [`interprocess`](https://crates.io/crates/interprocess) local socket API cov
 The listener is `app-desktop`'s bridge, behind the `bridge` feature that only the online app turns on. It binds the socket at startup, before the window opens, and a second launch that cannot bind it sends `show` and exits. The data folder's own lock is what keeps two processes off one vault ([architecture](architecture.md)).
 
 - `status` and `disconnect` are answered at once, and `connect` with `silent` gets no accounts.
-- `connect` and `signTransaction` go into the core's `BridgeQueue`. The app notifies and asks for attention, and the head of the queue opens as a modal; **Not now** folds it into a bar at the top of the page. A request nobody answers expires after ten minutes.
+- `connect` and `signTransaction` go into the core's `BridgeQueue`. A `signTransaction` with several transactions is one entry, and the core takes a signed answer for it only with one transaction for each the site sent (`BridgeAnswer::Signed`), so part of a batch can never go back. The app notifies and asks for attention, and the head of the queue opens as a modal; **Not now** folds it into a bar at the top of the page. A request nobody answers expires after ten minutes.
 - A locked vault asks for the password in the modal before the request is prepared.
 
 What the modals show, and when they offer Sign, is in [signing.md](signing.md#flows-that-start-in-a-browser).
@@ -105,7 +106,7 @@ JSON objects, one per frame. A frame is a 32-bit little-endian length, then the 
 | `status` | none | `{ "ready": true, "role": "desktop" }` (`"dev-stub"` from `listen`) |
 | `connect` | `{ "silent"?: boolean }` | `{ "accounts": [ { "publicKey": "<base64>", "label"?: string } ] }` |
 | `disconnect` | `{ "accounts": ["<base58>", …] }` | `{}` |
-| `signTransaction` | `{ "transactions": [ { "account", "transaction", "chain"? } ] }`, exactly one | `{ "signedTransactions": ["<base64>"] }` |
+| `signTransaction` | `{ "transactions": [ { "account", "transaction", "chain"? }, … ] }`, one to 16 | `{ "signedTransactions": ["<base64>", …] }`, one for each, in the same order |
 
 A reply repeats `id` and has either `result` or `error`, with `error.code` one of:
 
@@ -113,8 +114,8 @@ A reply repeats `id` and has either `result` or `error`, with `error.code` one o
 | --- | --- |
 | `rejected` | The user declined. The extension surfaces it as a Wallet Standard rejection |
 | `expired` | `expiresAt` passed, or nobody decided in time |
-| `not_implemented` | Any other method, or more than one transaction |
-| `bad_request` | Not JSON, or not version 1 |
+| `not_implemented` | Any other method, or more than 16 transactions |
+| `bad_request` | Not JSON, not version 1, or a `signTransaction` with no transaction |
 | `busy` | The app is still starting |
 | `app_not_running` | `bridge-host` found no app on the socket |
 | `host_not_found` | The browser could not start `bridge-host` (set by the extension) |

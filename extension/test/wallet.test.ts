@@ -44,7 +44,7 @@ test("a key that is not 32 bytes is refused", async () => {
   await assert.rejects(connect(wallet), /32 bytes/);
 });
 
-test("one transaction is signed per request, for a connected account only", async () => {
+test("a transaction is signed for a connected account only", async () => {
   const signed = bytesToBase64(new Uint8Array([0x81, 9, 9]));
   const { wallet, calls } = walletWith((method) =>
     method === "connect" ? { accounts: [{ publicKey: KEY }] } : { signedTransactions: [signed] },
@@ -59,9 +59,29 @@ test("one transaction is signed per request, for a connected account only", asyn
   assert.equal(sent.transactions[0].transaction, "gQEC");
   assert.equal(sent.transactions[0].account, account.address);
 
-  await assert.rejects(sign(wallet, input, input), /one transaction per request/);
   const stranger = { ...account, address: "11111111111111111111111111111111" };
   await assert.rejects(sign(wallet, { ...input, account: stranger }), /not connected/);
+});
+
+test("several transactions go in one request and come back in order", async () => {
+  const { wallet, calls } = walletWith((method, params) => {
+    if (method === "connect") return { accounts: [{ publicKey: KEY }] };
+    const sent = (params as { transactions: { transaction: string }[] }).transactions;
+    return { signedTransactions: sent.map((item) => item.transaction) };
+  });
+  await connect(wallet);
+  const account = wallet.accounts[0];
+  const inputs = [1, 2, 3].map((n) => ({ account, transaction: new Uint8Array([0x81, n]), chain: "solana:devnet" }));
+
+  const outputs = await sign(wallet, ...inputs);
+  assert.deepEqual(outputs.map((output) => output.signedTransaction[1]), [1, 2, 3]);
+  const signCalls = calls.filter((call) => call.method === "signTransaction");
+  assert.equal(signCalls.length, 1);
+  assert.equal((signCalls[0].params as { transactions: unknown[] }).transactions.length, 3);
+
+  assert.deepEqual(await sign(wallet), []);
+  const tooMany = Array.from({ length: 17 }, () => inputs[0]);
+  await assert.rejects(sign(wallet, ...tooMany), /at most 16/);
 });
 
 test("a reply with the wrong number of transactions is refused", async () => {

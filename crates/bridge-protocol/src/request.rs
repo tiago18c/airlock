@@ -1,5 +1,10 @@
 //! Fields shared by a bridge request the extension and the desktop app both see.
 
+/// The most transactions one `signTransaction` may carry. The extension
+/// refuses more before asking, and the desktop app answers more with
+/// `not_implemented`.
+pub const MAX_TRANSACTIONS: usize = 16;
+
 /// The four characters shown beside a request, so it can be matched with the
 /// one the extension lists.
 pub fn request_code(id: &str) -> String {

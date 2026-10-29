@@ -347,6 +347,23 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         _ => false,
     };
     let returned = (form.returned)();
+    // The batch this transaction is one of, when the site sent several.
+    let batch = (form.batch)()
+        .filter(|batch| matches!(&source, Some(TxSource::Browser { id, .. }) if *id == batch.id));
+    let batch_signed = batch
+        .as_ref()
+        .is_some_and(|batch| batch.items[batch.current].signed);
+    // Nothing here to sign, and nothing missing but what the site adds: the
+    // batch can take it as it is.
+    let batch_keepable = batch.is_some()
+        && !batch_signed
+        && site_waiting
+        && status.signable == 0
+        && !needs_rebuild
+        && !status.waiting_for_authority
+        && step != NextSignature::Authorization
+        && status.missing_elsewhere() == site_signs
+        && !expired;
     let steps = sign_steps(
         &status,
         &SignStepInputs {
@@ -369,8 +386,25 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         },
     );
 
+    // In a batch, the return is the batch's, not this transaction's.
+    let batch_steps = batch.as_ref().map(|batch| {
+        let mut own = steps.clone();
+        own.pop();
+        let signed: Vec<bool> = batch.items.iter().map(|item| item.signed).collect();
+        (
+            wallet_core::batch_steps(&signed, returned),
+            batch.signed(),
+            batch.current,
+            own,
+        )
+    });
+
     rsx! {
-        SignSteps { steps }
+        if let Some((states, signed, on_screen, own)) = batch_steps {
+            BatchSteps { states, signed, on_screen, steps: own }
+        } else {
+            SignSteps { steps }
+        }
 
         BlockhashCountdown {
             clock: form.clock,
@@ -418,6 +452,29 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             show_refresh,
             site_blockhash,
             site_signs,
+        }
+
+        if let Some(batch) = batch.as_ref().filter(|_| site_waiting) {
+            if batch_signed {
+                p { class: "hint",
+                    "Signed. It goes back to the site with the others, once all {batch.len()} are signed."
+                }
+            } else if batch_keepable {
+                div { class: "btn-row",
+                    button {
+                        class: "primary",
+                        onclick: move |_| keep_batch_item(session),
+                        if batch.signed() + 1 == batch.len() {
+                            "Keep as is and return all {batch.len()}"
+                        } else {
+                            "Keep as is and go to the next"
+                        }
+                    }
+                }
+                p { class: "hint",
+                    "This device has nothing to sign in this transaction. The site gets it back as it is, with the others."
+                }
+            }
         }
 
         div { class: "btn-row",
