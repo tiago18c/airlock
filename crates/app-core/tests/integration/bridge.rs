@@ -105,7 +105,7 @@ async fn an_answer_must_fit_the_request() {
     // A signed transaction does not answer a connect.
     assert!(!kit
         .core
-        .bridge_answer("s1", &BridgeAnswer::Signed(vec![0x81])));
+        .bridge_answer("s1", &BridgeAnswer::Signed(vec![vec![0x81]])));
     assert_eq!(kit.core.slices().bridge.get().len(), 1);
     assert!(answer.try_recv().is_err());
 
@@ -115,6 +115,41 @@ async fn an_answer_must_fit_the_request() {
         "rejected"
     );
     assert_eq!(outcome_of(&kit, "s1"), Some(BridgeRequestOutcome::Rejected));
+}
+
+#[tokio::test]
+async fn a_batch_goes_back_only_whole() {
+    let kit = kit();
+    let (send, answer) = reply();
+    let mut batch = request("b1", "signTransaction");
+    batch.params = serde_json::json!({
+        "transactions": [{ "transaction": "gQ==" }, { "transaction": "gQ==" }, { "transaction": "gQ==" }]
+    });
+    kit.core.public().bridge_push(batch, send);
+    assert_eq!(
+        kit.core
+            .slices()
+            .bridge
+            .get()
+            .head()
+            .unwrap()
+            .transaction_count(),
+        3
+    );
+
+    // Two of three signed is not an answer, and the request keeps waiting.
+    let two = BridgeAnswer::Signed(vec![vec![0x81, 1], vec![0x81, 2]]);
+    assert!(!kit.core.bridge_answer("b1", &two));
+    assert!(answer.try_recv().is_err());
+    assert_eq!(kit.core.slices().bridge.get().len(), 1);
+
+    let all = BridgeAnswer::Signed(vec![vec![0x81, 1], vec![0x81, 2], vec![0x81, 3]]);
+    assert!(kit.core.bridge_answer("b1", &all));
+    let reply = read(&answer.try_recv().unwrap());
+    let signed = reply["result"]["signedTransactions"].as_array().unwrap();
+    assert_eq!(signed.len(), 3);
+    assert_eq!(signed[2], "gQM=");
+    assert_eq!(outcome_of(&kit, "b1"), Some(BridgeRequestOutcome::Answered));
 }
 
 #[tokio::test]

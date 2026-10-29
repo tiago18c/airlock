@@ -18,6 +18,81 @@ pub(in crate::ui) fn SignSteps(steps: Vec<SignStep>) -> Element {
     }
 }
 
+/// The steps of a batch a site sent: a step for each transaction, which
+/// opens it, then the return of them all. Under them, the steps of the one on
+/// screen.
+#[component]
+pub(in crate::ui) fn BatchSteps(
+    states: Vec<SignStepState>,
+    signed: usize,
+    on_screen: usize,
+    steps: Vec<SignStep>,
+) -> Element {
+    let count = states.len().saturating_sub(1);
+    let returning = SignStep {
+        kind: SignStepKind::ReturnToSite,
+        state: states.last().copied().unwrap_or(SignStepState::Upcoming),
+        progress: Some((signed, count)),
+    };
+    rsx! {
+        div { class: "sign-batch",
+            ol { class: "sign-steps", aria_label: "Transactions",
+                for (index, state) in states.iter().copied().take(count).enumerate() {
+                    BatchItemStep { index, state, viewing: index == on_screen }
+                }
+                StepItem { step: returning, number: count + 1 }
+            }
+            div { class: "sign-substeps",
+                p { class: "sign-substeps-head", "Transaction {on_screen + 1} of {count}" }
+                SignSteps { steps }
+            }
+        }
+    }
+}
+
+/// One transaction of a batch, as a step that shows it.
+#[component]
+fn BatchItemStep(index: usize, state: SignStepState, viewing: bool) -> Element {
+    let session = use_context::<Session>();
+    let (class, done) = match state {
+        SignStepState::Done => ("done", true),
+        SignStepState::Current => ("current", false),
+        _ => ("", false),
+    };
+    let viewing_class = if viewing { "viewing" } else { "" };
+    let number = index + 1;
+    let detail = match (viewing, state) {
+        (true, _) => Some("on screen"),
+        (false, SignStepState::Done) => Some("signed"),
+        (false, SignStepState::Current) => Some("next"),
+        _ => None,
+    };
+    rsx! {
+        li {
+            class: "sign-step {class} {viewing_class}",
+            "aria-current": if viewing { "step" },
+            button {
+                class: "sign-step-open",
+                r#type: "button",
+                title: if viewing { "On screen" } else { "Show transaction {number}" },
+                disabled: viewing,
+                onclick: move |_| session.forms.sign.show_batch_item(index),
+                span { class: "sign-step-mark", "aria-hidden": "true",
+                    if done {
+                        Icon { glyph: Glyph::Check }
+                    } else {
+                        "{number}"
+                    }
+                }
+                span { class: "sign-step-label", "Transaction {number}" }
+                if let Some(detail) = detail {
+                    span { class: "sign-step-detail", "{detail}" }
+                }
+            }
+        }
+    }
+}
+
 #[component]
 fn StepItem(step: SignStep, number: usize) -> Element {
     let (class, glyph) = match step.state {

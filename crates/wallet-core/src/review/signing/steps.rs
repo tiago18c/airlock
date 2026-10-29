@@ -226,6 +226,28 @@ pub fn sign_steps(status: &SigningStatus, inputs: &SignStepInputs) -> Vec<SignSt
         .collect()
 }
 
+/// The steps of a batch a site sent: one for each transaction, in the order
+/// the site sent them, then one for returning them all. A transaction is
+/// behind once this device signed it; the first that is not is the one to
+/// work on. The return waits for every transaction, since the site gets them
+/// all at once or not at all.
+pub fn batch_steps(signed: &[bool], returned: bool) -> Vec<SignStepState> {
+    let mut current_found = false;
+    let mut next = |done: bool| {
+        if done {
+            SignStepState::Done
+        } else if current_found {
+            SignStepState::Upcoming
+        } else {
+            current_found = true;
+            SignStepState::Current
+        }
+    };
+    let mut states: Vec<SignStepState> = signed.iter().map(|&done| next(done)).collect();
+    states.push(next(returned));
+    states
+}
+
 /// Lines signed and lines in all, or None when there are none.
 fn tally<'a>(lines: impl Iterator<Item = &'a SignerLine>) -> Option<(usize, usize)> {
     let (signed, total) = lines.fold((0, 0), |(signed, total), line| {
@@ -477,6 +499,22 @@ mod tests {
                 (ShareToSubmit, Upcoming)
             ]
         );
+    }
+
+    #[test]
+    fn a_batch_returns_only_after_every_transaction() {
+        use SignStepState::{Current, Done, Upcoming};
+        assert_eq!(
+            batch_steps(&[false, false, false], false),
+            vec![Current, Upcoming, Upcoming, Upcoming]
+        );
+        // Signed out of order: the first left is next, the return still waits.
+        assert_eq!(
+            batch_steps(&[true, false, true], false),
+            vec![Done, Current, Done, Upcoming]
+        );
+        assert_eq!(batch_steps(&[true, true], false), vec![Done, Done, Current]);
+        assert_eq!(batch_steps(&[true, true], true), vec![Done, Done, Done]);
     }
 
     #[test]

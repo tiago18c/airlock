@@ -2120,6 +2120,45 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 
 .sign-step.skipped .sign-step-mark { border-style: dashed; }
 
+/* A batch a site sent: a step per transaction, each a button that shows it,
+   and under them the steps of the one on screen. */
+.sign-batch { display: grid; gap: var(--space-3); }
+.sign-step-open {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  white-space: normal;
+  cursor: pointer;
+}
+.sign-step-open:hover, .sign-step-open:active { background: none; }
+.sign-step-open:disabled { cursor: default; opacity: 1; }
+.sign-step-open:not(:disabled):hover .sign-step-label { color: var(--text); text-decoration: underline; }
+.sign-step.viewing .sign-step-mark { box-shadow: 0 0 0 3px var(--brand-line); }
+.sign-step.viewing .sign-step-label { color: var(--text); font-weight: var(--weight-semibold); }
+.sign-substeps {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+}
+.sign-substeps-head {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
 @keyframes step-pulse {
   0%, 100% { box-shadow: 0 0 0 0 var(--brand-line); }
   50% { box-shadow: 0 0 0 5px transparent; }

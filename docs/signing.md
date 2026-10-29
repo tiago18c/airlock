@@ -406,7 +406,7 @@ A key made on the airgap device reaches the online device by its public key alon
 
 Desktop only. The extension registers a Wallet Standard wallet in the page, the service worker stamps the origin from the browser, `bridge-host` relays over a per-user local socket, and the app queues the request. The extension holds no keys and decides nothing. The protocol and the threat model are in [browser-bridge.md](browser-bridge.md).
 
-The app answers `connect` and a `signTransaction` with exactly one v1 transaction. Anything else returns `not_implemented`. A locked vault asks for the password in the modal. A request nobody answers expires after ten minutes.
+The app answers `connect` and a `signTransaction` with one to 16 transactions, legacy, v0 or v1. Anything else returns `not_implemented`. A locked vault asks for the password in the modal. A request nobody answers expires after ten minutes.
 
 ### Connect
 
@@ -440,6 +440,14 @@ flowchart TD
 - **Review** opens the transaction on the Sign screen, with simulation, Inspect and the QR handoff (v1 only; Share is hidden for an as-is legacy or v0 load).
 - **Not now** folds the request into a bar at the top of the app. The request keeps waiting.
 - The site always gets back the transaction that was reviewed. When that differs from what it sent, the modal and the Sign screen say so.
+
+### Several transactions in one request
+
+A site that asks for several transactions at once (the adapter's `signAllTransactions`) sends one request with all of them. They go back together once every one is signed, or not at all: rejecting declines the whole request, and the core refuses a signed answer that does not hold one transaction for each the site sent.
+
+- **The modal** prepares each transaction on its own card, as it does a single one: converted, rebuilt for a keyless wallet, offered a fee payer of this device, explained, and judged by `quick_sign`. **Sign all** is offered only when every card could be signed on its own. It signs them in order, and if one does not come out complete, nothing goes back and the modal says which. Otherwise **Review** takes them all to the Sign screen.
+- **The Sign screen** works on one transaction of the batch at a time, the batch kept beside it (`SignForm::batch`). The steps have one step for each transaction, which shows it when clicked, then Return to site; under them are the steps of the transaction on screen, without its own return. A transaction this device has finished signing is kept with the batch, and the screen moves on to the next one not signed yet. Signing the last sends them all. A transaction with nothing left for this device to sign and nothing missing but the site's own signatures can be taken as it is (**Keep as is**).
+- What the Sign screen does to a transaction of the batch, a signature added or a blockhash moved, stays with it when another is shown.
 
 ### Hot wallet
 
@@ -587,7 +595,8 @@ A summary on either device is only as good as the IDLs it was read with. IDLs fe
 - **A site's blockhash outlives no QR round trip** unless the offline key has a durable nonce and is the only signer missing. A request that also waits on another outside key, or that a site already signed, stays on its blockhash.
 - **Transactions prepared on one durable nonce are not tracked.** Only the first to land is valid. Nothing warns before a second is made on the same nonce.
 - **A site can ask any hot wallet to sign, including ones it was never shown.** Connect grants are not remembered.
-- **Not implemented:** `signAndSendTransaction`, `signMessage`, `signIn`, several transactions per request, hardware wallets.
+- **Not implemented:** `signAndSendTransaction`, `signMessage`, `signIn`, hardware wallets.
+- **A batch waits on its slowest transaction.** The site's blockhash is the same clock for all of them, so a batch that needs a QR round trip for one transaction usually expires before it can go back.
 - **Vector is on devnet only.** The program binary is not yet reproducible from this tree. See [vector-fork.md](vector-fork.md).
 - **A seed replaced too early cannot be put back from the screens**, for an XMSS key not made from a phrase. It is kept in the record. No screen makes such a key now.
 - A programmatic, Vector or Squads wallet without a fee payer set, whose authority or member is offline or Outside, has no payer. The review stops.
@@ -612,4 +621,5 @@ A summary on either device is only as good as the IDLs it was read with. IDLs fe
 | Signature objects | `crates/wallet-core/src/transport/handoff.rs` |
 | Sign screen actions | `crates/app-ui-kit/src/actions/sign_screen.rs`, `crates/app-ui-kit/src/actions/sign.rs` |
 | Browser queue | `crates/app-core/src/bridge.rs` (`BridgeQueue`), `crates/app-desktop/src/bridge` (the socket) |
-| Sign request modal | `crates/app-desktop/src/ui/bridge/sign_request.rs` |
+| Sign request modal, and the batch modal | `crates/app-desktop/src/ui/bridge/sign_request.rs` |
+| A batch on the Sign screen | `crates/app-ui-kit/src/state/forms/sign.rs` (`BrowserBatch`), `return_to_browser` in `crates/app-ui-kit/src/actions/sign_screen.rs`, `wallet_core::batch_steps` |

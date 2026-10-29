@@ -39,9 +39,11 @@ pub fn connected(id: &str, accounts: &[([u8; 32], String)]) -> Vec<u8> {
     result(id, json!({ "accounts": accounts }))
 }
 
-/// A `signTransaction` answered with its one signed transaction.
-pub fn signed(id: &str, wire: &[u8]) -> Vec<u8> {
-    result(id, json!({ "signedTransactions": [base64(wire)] }))
+/// A `signTransaction` answered with its signed transactions, in the order
+/// the site sent them.
+pub fn signed(id: &str, wires: &[Vec<u8>]) -> Vec<u8> {
+    let wires: Vec<String> = wires.iter().map(|wire| base64(wire)).collect();
+    result(id, json!({ "signedTransactions": wires }))
 }
 
 fn base64(bytes: &[u8]) -> String {
@@ -79,8 +81,9 @@ mod tests {
 
     #[test]
     fn a_signed_reply_carries_the_wire_and_a_rejection_its_code() {
-        let reply = read(&signed("s1", &[0x81, 1]));
+        let reply = read(&signed("s1", &[vec![0x81, 1], vec![0x81, 2]]));
         assert_eq!(reply["result"]["signedTransactions"][0], base64(&[0x81, 1]));
+        assert_eq!(reply["result"]["signedTransactions"][1], base64(&[0x81, 2]));
         assert_eq!(read(&rejected("s1"))["error"]["code"], "rejected");
     }
 }

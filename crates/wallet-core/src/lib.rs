@@ -61,7 +61,7 @@ pub use keys::{
 };
 pub use phrase::{Part, Phrase};
 pub use review::{
-    blocks_left, blocks_left_after, context_is_for, context_note, context_note_for,
+    batch_steps, blocks_left, blocks_left_after, context_is_for, context_note, context_note_for,
     context_note_with, display_note, explain_instructions, explain_transaction, explain_with_note,
     format_countdown, missing_catalog_programs, next_step, note_supplies_accounts, quick_sign,
     quick_sign_in, read_clock, seconds_left, sign_locally, sign_locally_in, sign_locally_in_with,

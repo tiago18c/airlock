@@ -19,17 +19,24 @@ pub type BridgeReply = Box<dyn FnOnce(Vec<u8>) + Send>;
 pub enum BridgeAnswer {
     /// A `connect`, with the public keys and labels the site may see.
     Connect(Vec<([u8; 32], String)>),
-    /// A `signTransaction`, with the signed transaction.
-    Signed(Vec<u8>),
+    /// A `signTransaction`, with every transaction it asked for, signed, in
+    /// the order the site sent them.
+    Signed(Vec<Vec<u8>>),
     Rejected,
 }
 
 impl BridgeAnswer {
-    /// Whether this answers a request of `method`. Rejecting fits any.
-    fn fits(&self, method: &str) -> bool {
+    /// Whether this answers `request`. Rejecting fits any. A signed answer
+    /// fits only with one transaction for each the site sent, so part of a
+    /// batch never goes back.
+    fn fits(&self, request: &BridgeRequest) -> bool {
         match self {
-            Self::Connect(_) => method == "connect",
-            Self::Signed(_) => method == "signTransaction",
+            Self::Connect(_) => request.method == "connect",
+            Self::Signed(wires) => {
+                request.method == "signTransaction"
+                    && !wires.is_empty()
+                    && wires.len() == request.transaction_count()
+            }
             Self::Rejected => true,
         }
     }
@@ -41,8 +48,8 @@ impl BridgeAnswer {
                 bridge_protocol::reply::connected(id, accounts),
                 BridgeRequestOutcome::Answered,
             ),
-            Self::Signed(wire) => (
-                bridge_protocol::reply::signed(id, wire),
+            Self::Signed(wires) => (
+                bridge_protocol::reply::signed(id, wires),
                 BridgeRequestOutcome::Answered,
             ),
             Self::Rejected => (
@@ -66,6 +73,14 @@ impl BridgeRequest {
     /// The four characters shown beside it, to match the extension's list.
     pub fn code(&self) -> String {
         bridge_protocol::request_code(&self.id)
+    }
+
+    /// How many transactions a `signTransaction` asks to have signed.
+    pub fn transaction_count(&self) -> usize {
+        self.params
+            .get("transactions")
+            .and_then(Value::as_array)
+            .map_or(0, Vec::len)
     }
 }
 
@@ -125,8 +140,8 @@ impl BridgeState {
     /// whose method it answers.
     pub fn take(&mut self, id: &str, answer: Option<&BridgeAnswer>) -> Option<Taken> {
         let index = self.queue.pending.iter().position(|r| r.id == id)?;
-        let method = &self.queue.pending[index].method;
-        if answer.is_some_and(|answer| !answer.fits(method)) {
+        let request = &self.queue.pending[index];
+        if answer.is_some_and(|answer| !answer.fits(request)) {
             return None;
         }
         let request = self.queue.pending.remove(index);

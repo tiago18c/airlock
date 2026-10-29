@@ -474,6 +474,13 @@ impl Session {
         self.goto(Tab::Sign);
     }
 
+    /// Hand a site's batch to Sign, on its transaction `batch.current`, and
+    /// go there.
+    pub fn open_batch_in_sign(&self, batch: crate::state::forms::BrowserBatch) {
+        self.forms.sign.load_batch(batch);
+        self.goto(Tab::Sign);
+    }
+
     pub fn clear_build(&self) {
         self.forms.build.clear();
         self.default_build_fee_payer();

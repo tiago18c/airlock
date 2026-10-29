@@ -58,6 +58,68 @@ pub struct QrPreview {
     pub transfer_id: String,
 }
 
+/// One transaction of a batch a site sent, as it stood when the screen last
+/// showed it.
+#[derive(Clone, Debug, PartialEq)]
+pub struct BatchItem {
+    pub wire: Vec<u8>,
+    pub tables: wallet_core::LookupTables,
+    pub vector: Vec<wallet_core::relay::VectorContext>,
+    pub expiry: Option<BlockhashExpiry>,
+    pub flow: u64,
+    pub note: Option<wallet_core::Phrase>,
+    /// This device has signed what it can of it. It waits here for the rest
+    /// of the batch.
+    pub signed: bool,
+}
+
+/// The transactions a site asked for in one request, taken one at a time on
+/// the Sign screen. None goes back until every one is signed: the site gets
+/// them all at once.
+#[derive(Clone, Debug, PartialEq)]
+pub struct BrowserBatch {
+    pub id: String,
+    pub origin: String,
+    pub items: Vec<BatchItem>,
+    /// The one on screen.
+    pub current: usize,
+}
+
+impl BrowserBatch {
+    pub fn len(&self) -> usize {
+        self.items.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.items.is_empty()
+    }
+
+    pub fn signed(&self) -> usize {
+        self.items.iter().filter(|item| item.signed).count()
+    }
+
+    pub fn complete(&self) -> bool {
+        self.items.iter().all(|item| item.signed)
+    }
+
+    /// The first transaction still to sign after the one on screen, going
+    /// round to the start.
+    pub fn next_unsigned(&self) -> Option<usize> {
+        let count = self.items.len();
+        (1..=count)
+            .map(|step| (self.current + step) % count)
+            .find(|&index| !self.items[index].signed)
+    }
+
+    /// The source the Sign screen gives each of its transactions.
+    pub fn source(&self) -> TxSource {
+        TxSource::Browser {
+            id: self.id.clone(),
+            origin: self.origin.clone(),
+        }
+    }
+}
+
 /// The one transaction the Sign screen is working on.
 #[derive(Clone, Copy)]
 pub struct SignForm {
@@ -93,6 +155,9 @@ pub struct SignForm {
     pub rebuilt: Signal<bool>,
     /// The transaction on screen went back to the site that asked for it.
     pub returned: Signal<bool>,
+    /// The batch the transaction on screen belongs to, when a site asked for
+    /// several in one request.
+    pub batch: Signal<Option<BrowserBatch>>,
     /// Keys made here in place of one-time keys a site signed with or left
     /// for itself, such as a new mint. Like Build's generated keys, they
     /// live in memory only, until the app closes, and sign as keys of this
@@ -297,6 +362,59 @@ impl SignForm {
         this.clock.reset(expiry);
         this.rebuilt.set(false);
         this.returned.set(false);
+        this.batch.set(None);
+    }
+
+    /// Put a site's batch on the screen, on its transaction `batch.current`.
+    pub fn load_batch(&self, batch: BrowserBatch) {
+        let Some(item) = batch.items.get(batch.current).cloned() else {
+            return;
+        };
+        self.load_prepared_flow(
+            item.wire,
+            batch.source(),
+            item.note,
+            item.expiry,
+            item.tables,
+            item.vector,
+            Some(item.flow),
+        );
+        let mut this = *self;
+        this.batch.set(Some(batch));
+    }
+
+    /// Keep what the screen did to the batch transaction on it: signatures
+    /// added, a new blockhash, what is known of its Vector accounts.
+    pub fn save_batch_item(&self) {
+        let wire = self.wire.peek().clone();
+        let vector = self.vector.peek().clone();
+        let expiry = *self.clock.expiry.peek();
+        let mut batch = self.batch;
+        batch.with_mut(|batch| {
+            let Some(batch) = batch else {
+                return;
+            };
+            let current = batch.current;
+            if let (Some(item), Some(wire)) = (batch.items.get_mut(current), wire) {
+                item.wire = wire;
+                item.vector = vector;
+                item.expiry = expiry;
+            }
+        });
+    }
+
+    /// Show transaction `index` of the batch on screen, keeping the one it
+    /// replaces as it stands.
+    pub fn show_batch_item(&self, index: usize) {
+        self.save_batch_item();
+        let Some(mut batch) = self.batch.peek().clone() else {
+            return;
+        };
+        if index >= batch.len() || index == batch.current {
+            return;
+        }
+        batch.current = index;
+        self.load_batch(batch);
     }
 
     /// Keep what a rebuild or a context note said of the Vector accounts,
@@ -329,5 +447,41 @@ impl SignForm {
         this.clock.reset(None);
         this.rebuilt.set(false);
         this.returned.set(false);
+        this.batch.set(None);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn batch(signed: &[bool], current: usize) -> BrowserBatch {
+        BrowserBatch {
+            id: "b".into(),
+            origin: "https://example.test".into(),
+            items: signed
+                .iter()
+                .map(|&signed| BatchItem {
+                    wire: vec![0x81],
+                    tables: wallet_core::LookupTables::new(),
+                    vector: Vec::new(),
+                    expiry: None,
+                    flow: 0,
+                    note: None,
+                    signed,
+                })
+                .collect(),
+            current,
+        }
+    }
+
+    #[test]
+    fn the_next_transaction_is_the_first_unsigned_after_the_one_on_screen() {
+        assert_eq!(batch(&[true, false, false], 0).next_unsigned(), Some(1));
+        // Going round to the start, past those already signed.
+        assert_eq!(batch(&[false, true, true], 2).next_unsigned(), Some(0));
+        assert_eq!(batch(&[true, true, true], 1).next_unsigned(), None);
+        assert!(batch(&[true, true], 0).complete());
+        assert_eq!(batch(&[true, false, true], 0).signed(), 2);
     }
 }

@@ -24,6 +24,7 @@ import {
   bytesToBase64,
   base64ToBytes,
   encodeBase58,
+  MAX_TRANSACTIONS,
   type AccountWire,
   type BridgeMethod,
 } from "./protocol";
@@ -107,9 +108,14 @@ export class AirlockWallet implements Wallet {
   async #signTransaction(
     ...inputs: readonly SolanaSignTransactionInput[]
   ): Promise<readonly SolanaSignTransactionOutput[]> {
-    // The desktop reviews and signs one transaction per request.
-    if (inputs.length !== 1) {
-      throw new BridgeError("not_implemented", "Airlock signs one transaction per request.");
+    // Several inputs are one request: the desktop reviews them together and
+    // answers with all of them signed, or not at all.
+    if (inputs.length === 0) return [];
+    if (inputs.length > MAX_TRANSACTIONS) {
+      throw new BridgeError(
+        "not_implemented",
+        `Airlock signs at most ${MAX_TRANSACTIONS} transactions per request.`,
+      );
     }
     inputs.forEach((input) => this.#requireAccount(input.account));
     const result = await this.call("signTransaction", {

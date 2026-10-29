@@ -26,7 +26,7 @@ mod tests;
 /// How long a prompt waits for a decision in the window.
 const DECISION_TIMEOUT: Duration = Duration::from_secs(600);
 
-pub use bridge_protocol::request_code;
+pub use bridge_protocol::{request_code, MAX_TRANSACTIONS};
 
 /// The bridge of this process. `main` makes it before the window, so the
 /// socket can be claimed first, and hands it to the window as context.
@@ -186,11 +186,16 @@ impl Bridge {
             ("connect", _) if params.get("silent").and_then(Value::as_bool) == Some(true) => {
                 reply::result(&id, json!({ "accounts": [] }))
             }
-            ("signTransaction", _) if transaction_count(&params) != 1 => reply::error(
-                &id,
-                "not_implemented",
-                "Airlock signs one transaction per request.",
-            ),
+            ("signTransaction", _) if transaction_count(&params) == 0 => {
+                reply::error(&id, "bad_request", "No transaction was included.")
+            }
+            ("signTransaction", _) if transaction_count(&params) > MAX_TRANSACTIONS => {
+                reply::error(
+                    &id,
+                    "not_implemented",
+                    &format!("Airlock signs at most {MAX_TRANSACTIONS} transactions per request."),
+                )
+            }
             ("connect" | "signTransaction", Some(core)) => wait_for_user(
                 core,
                 BridgeRequest {
@@ -308,6 +313,8 @@ pub struct BridgePrompt {
     pub method: String,
     pub params: Value,
     pub detail: String,
+    /// How many transactions a `signTransaction` asks to have signed.
+    pub transactions: usize,
     /// Requests queued behind this one.
     pub waiting: usize,
 }
@@ -321,29 +328,30 @@ impl BridgePrompt {
             method: request.method.clone(),
             params: request.params.clone(),
             detail: detail(&request.method, &request.params),
+            transactions: request.transaction_count(),
             waiting: queue.len() - 1,
         })
     }
 }
 
-/// The account a `signTransaction` request says it is for. The site chose
-/// it, so it is shown and never relied on.
-pub fn requested_account(params: &Value) -> Option<Pubkey> {
-    params
-        .get("transactions")?
-        .as_array()?
-        .first()?
+/// Transaction `index` of a `signTransaction` request.
+fn transaction_item(params: &Value, index: usize) -> Option<&Value> {
+    params.get("transactions")?.as_array()?.get(index)
+}
+
+/// The account transaction `index` of a `signTransaction` request says it is
+/// for. The site chose it, so it is shown and never relied on.
+pub fn requested_account(params: &Value, index: usize) -> Option<Pubkey> {
+    transaction_item(params, index)?
         .get("account")?
         .as_str()?
         .parse()
         .ok()
 }
 
-pub fn transaction_wire(params: &Value) -> Option<Vec<u8>> {
-    let text = params
-        .get("transactions")?
-        .as_array()?
-        .first()?
+/// The bytes of transaction `index`, when they read as a Solana transaction.
+pub fn transaction_wire(params: &Value, index: usize) -> Option<Vec<u8>> {
+    let text = transaction_item(params, index)?
         .get("transaction")?
         .as_str()?;
     let bytes = base64::engine::general_purpose::STANDARD
@@ -356,19 +364,17 @@ pub fn transaction_wire(params: &Value) -> Option<Vec<u8>> {
 fn detail(method: &str, params: &Value) -> String {
     match method {
         "connect" => "Choose which accounts this site may see.".into(),
-        "signTransaction" => sign_detail(params),
+        "signTransaction" => sign_detail(params, 0),
         other => other.into(),
     }
 }
 
-fn sign_detail(params: &Value) -> String {
-    let Some(items) = params.get("transactions").and_then(Value::as_array) else {
+/// What transaction `index` of a request is, when it cannot be prepared.
+pub fn sign_detail(params: &Value, index: usize) -> String {
+    let Some(item) = transaction_item(params, index) else {
         return "No transaction was included.".into();
     };
-    let Some(first) = items.first() else {
-        return "No transaction was included.".into();
-    };
-    let Some(text) = first.get("transaction").and_then(Value::as_str) else {
+    let Some(text) = item.get("transaction").and_then(Value::as_str) else {
         return "The transaction was not base64.".into();
     };
     match base64::engine::general_purpose::STANDARD.decode(text) {

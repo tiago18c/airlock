@@ -503,30 +503,117 @@ pub fn start_simulation(session: Session, tx: DecodedTx) {
     });
 }
 
+/// What became of a transaction this device finished signing.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum HandBack {
+    /// No site is waiting for it.
+    Nothing,
+    /// It went back to the site, with the rest of its batch when it had one.
+    Returned { count: usize },
+    /// It waits with its batch for the others, and transaction `next` of it
+    /// is on screen now.
+    Kept {
+        signed: usize,
+        of: usize,
+        next: usize,
+    },
+}
+
+impl HandBack {
+    /// What to tell the user, after what signing said.
+    pub fn note(self) -> Option<String> {
+        match self {
+            Self::Nothing => None,
+            Self::Returned { count: 1 } => Some("Returned it to the browser.".into()),
+            Self::Returned { count } => Some(format!(
+                "Returned all {count} transactions to the browser."
+            )),
+            Self::Kept { signed, of, next } => Some(format!(
+                "{signed} of {of} signed. The site gets them back together once every one is, so this is transaction {} now.",
+                next + 1
+            )),
+        }
+    }
+}
+
 /// Give a signed transaction back to the site that asked for it, when its
-/// request is still waiting.
-pub fn return_to_browser(session: &Session, wire: &[u8]) -> bool {
-    let Some(TxSource::Browser { id, origin }) = session.forms.sign.source.peek().clone() else {
-        return false;
+/// request is still waiting. One of a batch is kept until every transaction
+/// of the batch is signed, and the screen moves on to the next one; the last
+/// sends them all.
+pub fn return_to_browser(session: &Session, wire: &[u8]) -> HandBack {
+    let form = session.forms.sign;
+    let Some(TxSource::Browser { id, origin }) = form.source.peek().clone() else {
+        return HandBack::Nothing;
     };
     if session.bridge.peek().get(&id).is_none() {
-        return false;
+        return HandBack::Nothing;
     }
     let code = bridge_protocol::request_code(&id);
-    let flow = session.forms.sign.flow.peek().unwrap_or_else(next_flow_id);
     let cluster = session.cluster();
-    TxLog {
-        flow,
-        wire,
-        cluster: Some(&cluster),
-    }
-    .log_returned(&origin, &code);
-    let returned = session.bridge_answer(&id, BridgeAnswer::Signed(wire.to_vec()));
-    if returned {
-        let mut marked = session.forms.sign.returned;
+    let batch = form.batch.peek().clone().filter(|batch| batch.id == id);
+    let Some(mut batch) = batch else {
+        let flow = form.flow.peek().unwrap_or_else(next_flow_id);
+        TxLog {
+            flow,
+            wire,
+            cluster: Some(&cluster),
+        }
+        .log_returned(&origin, &code);
+        if !session.bridge_answer(&id, BridgeAnswer::Signed(vec![wire.to_vec()])) {
+            return HandBack::Nothing;
+        }
+        let mut marked = form.returned;
         marked.set(true);
+        return HandBack::Returned { count: 1 };
+    };
+
+    let current = batch.current;
+    if let Some(item) = batch.items.get_mut(current) {
+        item.wire = wire.to_vec();
+        item.vector = form.vector.peek().clone();
+        item.expiry = *form.clock.expiry.peek();
+        item.signed = true;
     }
-    returned
+    if let Some(next) = batch.next_unsigned() {
+        let (signed, of) = (batch.signed(), batch.len());
+        batch.current = next;
+        form.load_batch(batch);
+        return HandBack::Kept { signed, of, next };
+    }
+    for item in &batch.items {
+        TxLog {
+            flow: item.flow,
+            wire: &item.wire,
+            cluster: Some(&cluster),
+        }
+        .log_returned(&origin, &code);
+    }
+    let wires: Vec<Vec<u8>> = batch.items.iter().map(|item| item.wire.clone()).collect();
+    let count = wires.len();
+    let mut kept = form.batch;
+    kept.set(Some(batch));
+    if !session.bridge_answer(&id, BridgeAnswer::Signed(wires)) {
+        return HandBack::Nothing;
+    }
+    let mut marked = form.returned;
+    marked.set(true);
+    HandBack::Returned { count }
+}
+
+/// Take the batch transaction on screen as it is, with nothing for this
+/// device to sign in it, and go on to the next.
+pub fn keep_batch_item(session: Session) {
+    let form = session.forms.sign;
+    let Some(wire) = form.wire.peek().clone() else {
+        return;
+    };
+    let handed = return_to_browser(&session, &wire);
+    let mut error = form.error;
+    let mut note = form.note;
+    match handed.note() {
+        Some(text) => note.set(Some(text.into())),
+        None => error.set(Some("The site stopped waiting for this request.".into())),
+    }
 }
 
 /// Paste an EIP-191 `personal_sign` result for `account` into the Advance.
@@ -673,18 +760,7 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
                     cluster: Some(&cluster),
                 }
                 .log_signed(by);
-                let mut text = done.note();
-                // The site gets it back once this device has nothing left
-                // to sign: not between the authorization and the transaction.
-                if done.authorized
-                    && !done.transaction_next
-                    && return_to_browser(&session, &done.wire)
-                {
-                    if !text.is_empty() {
-                        text.push(' ');
-                    }
-                    text.push_str("Returned it to the browser.");
-                }
+                let text = done.note();
                 if let Some(height) = done.last_valid_height {
                     form.set_exact_blockhash_height(Some(height));
                 }
@@ -704,8 +780,37 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
                             .t(", made on this device, takes its place and signs with this device's keys, and the transaction still simulates. The account is created at the new address.");
                     }
                 }
-                stored.set(Some(done.wire));
-                note.set(Some(phrase));
+                let finished = done.authorized && !done.transaction_next;
+                stored.set(Some(done.wire.clone()));
+                // The site gets it back once this device has nothing left
+                // to sign: not between the authorization and the transaction.
+                let handed = if finished {
+                    return_to_browser(&session, &done.wire)
+                } else {
+                    HandBack::Nothing
+                };
+                match handed {
+                    // The next transaction of the batch is on screen, with
+                    // its own note. What signing said is about the last one.
+                    HandBack::Kept { .. } => {
+                        let mut next = Phrase::text(handed.note().unwrap_or_default());
+                        if let Some(own) = note.peek().clone() {
+                            next = next.t(" ");
+                            next.0.extend(own.0);
+                        }
+                        note.set(Some(next));
+                    }
+                    _ => {
+                        if let Some(text) = handed.note() {
+                            phrase = if phrase.plain().is_empty() {
+                                Phrase::text(text)
+                            } else {
+                                phrase.t(format!(" {text}"))
+                            };
+                        }
+                        note.set(Some(phrase));
+                    }
+                }
             }
             Err(err) => error.set(Some(sentence(err))),
         }
