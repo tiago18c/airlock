@@ -11348,6 +11348,7 @@ dependencies = [
  "serde",
  "serde_json",
  "solana-pubkey 4.3.0",
+ "tokio",
  "wallet-core",
 ]
 
