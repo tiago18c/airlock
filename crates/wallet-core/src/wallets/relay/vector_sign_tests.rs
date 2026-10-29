@@ -71,6 +71,7 @@ impl Holder {
             signer: Self::signer_of(self.scheme, &self.seed),
             leaf: self.scheme.is_stateful().then_some(0),
             salt: None,
+            reserved_for: None,
             next_key,
         }
     }
@@ -232,6 +233,43 @@ fn a_hash_based_key_with_nothing_recorded_does_not_sign() {
         sign_vector_authorizations(&wire, &[key], &AuthContext { vector: &known }).unwrap_err(),
         SignError::from(VectorError::NotReserved(xmss.account))
     );
+}
+
+#[test]
+fn a_hash_based_key_signs_only_the_digest_it_was_recorded_for() {
+    for scheme in [SchemeId::Xmss, SchemeId::Winternitz] {
+        let holder = Holder::of(scheme, [9; 32]);
+        let next = (scheme == SchemeId::Winternitz).then(|| next_key(4));
+        let wire = wrapped(
+            &[holder.wrap(next.clone())],
+            vec![transfer(holder.account, pk(5), 1)],
+        );
+        let known = [holder.context(1)];
+        let digest = digests_to_sign(&wire, &[holder.account], &known)[&holder.account];
+        let ctx = AuthContext { vector: &known };
+
+        // Recorded for another transaction: refused.
+        let mut key = holder.signer(next.clone());
+        key.reserved_for = Some([0xee; 32]);
+        assert_eq!(
+            sign_vector_authorizations(&wire, &[key], &ctx).unwrap_err(),
+            SignError::from(VectorError::NotReserved(holder.account)),
+            "{scheme:?}"
+        );
+        // Recorded for this one: signed.
+        let mut key = holder.signer(next);
+        key.reserved_for = Some(digest);
+        if scheme == SchemeId::Winternitz {
+            key.salt = Some(key.signer.accepted_salt(0, &digest).unwrap());
+        }
+        assert_eq!(
+            sign_vector_authorizations(&wire, &[key], &ctx)
+                .unwrap()
+                .signed,
+            1,
+            "{scheme:?}"
+        );
+    }
 }
 
 #[test]

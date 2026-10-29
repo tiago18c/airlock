@@ -107,7 +107,7 @@ The native services:
 
 - **The bridge server** (online build only, the `bridge` feature). It binds the local socket through `bridge-host`'s endpoint and relay code and feeds the `BridgeQueue` slice. When a request arrives it publishes the queue, sends `RequestArrived`, and the app notifies and asks for attention. The browser request modals are here too.
 - **Tray and window.** Close hides the window when close-to-tray is on; the tray menu has Open, Lock now and Quit; the window reports when it is shown or hidden.
-- **Single instance.** The bridge's local socket doubles as the lock: a second launch that cannot bind it sends `show` to the running app and exits.
+- **Single instance.** Each app locks its data folder (`airlock.lock`, `app_core::storage::claim_data_dir`) before any store opens, and refuses to start when another process holds it: every store keeps its file in memory and writes it whole, so two processes would undo each other's saves, including the record of used XMSS leaves. The online app also binds the bridge's local socket first: a second launch that cannot bind it sends `show` to the running app and exits.
 - **The `Notifier`** (OS toasts). Clicking one shows the window on what it is about.
 
 ## Logging

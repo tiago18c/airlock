@@ -77,6 +77,48 @@ pub fn authorizations_for_note(known: &[VectorContext]) -> Vec<ContextAuthorizat
     known.iter().filter_map(VectorContext::for_note).collect()
 }
 
+/// Lay what a context note says of its Vector accounts over what `known`
+/// already holds. The note gives the nonce and leaf floor; the key, when
+/// `known` has one, stays. `recorded` answers the scheme of a Vector wallet
+/// of this device at an address.
+///
+/// The scheme decides where an account's signature sits, whether it signs
+/// last and whether it spends a leaf, so the note does not get to change
+/// it: a note that names another scheme than the wallet here, or than what
+/// was read before, is refused whole and `known` is left as it was.
+pub fn overlay_note(
+    known: &mut Vec<VectorContext>,
+    authorizations: &[ContextAuthorization],
+    recorded: impl Fn(&Pubkey) -> Option<SchemeId>,
+) -> Result<(), VectorError> {
+    let mut merged = known.clone();
+    for authorization in authorizations {
+        let Some(from_note) = VectorContext::from_note(authorization) else {
+            continue;
+        };
+        let expected = merged
+            .iter()
+            .find(|known| known.account == from_note.account)
+            .map(|known| known.scheme)
+            .or_else(|| recorded(&from_note.account));
+        if expected.is_some_and(|scheme| scheme != from_note.scheme) {
+            return Err(VectorError::NoteScheme(from_note.account));
+        }
+        match merged
+            .iter_mut()
+            .find(|known| known.account == from_note.account)
+        {
+            Some(existing) => {
+                existing.nonce = from_note.nonce;
+                existing.leaf_floor = from_note.leaf_floor;
+            }
+            None => merged.push(from_note),
+        }
+    }
+    *known = merged;
+    Ok(())
+}
+
 /// What signing or checking an authorization needs beyond the transaction.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct AuthContext<'a> {

@@ -36,6 +36,14 @@ fn main() {
         version: env!("CARGO_PKG_VERSION"),
     });
 
+    // One process per data folder: this one holds the hash-based keys and
+    // the record of their used leaves.
+    #[cfg(feature = "desktop")]
+    if let Err(err) = app_core::storage::claim_data_dir() {
+        app_desktop::refuse_to_start(BRAND.name, &err.to_string());
+        return;
+    }
+
     #[cfg(feature = "desktop")]
     dioxus::LaunchBuilder::desktop()
         .with_cfg(app_desktop::desktop_config(BRAND.name, ICON))

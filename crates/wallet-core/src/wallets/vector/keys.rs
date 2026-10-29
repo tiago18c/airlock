@@ -1,6 +1,8 @@
 //! New keys for Held Vector authorities, and the hash-based keys rebuilt
 //! from the 32-byte seeds the vault keeps.
 //!
+//! Seeds made here come from the OS (`OsRng`) on each call.
+//!
 //! An XMSS or Winternitz key is rebuilt from its seed through a ChaCha20
 //! stream (Construction 3 Gen via `hazmat`). Changing that stream changes
 //! every key: the known-answer test in `sign_tests` pins it.
@@ -60,7 +62,7 @@ pub fn new_mldsa44_authority() -> (Vec<u8>, Vec<u8>) {
 /// secret key bytes kept in the record.
 pub fn new_falcon512_authority() -> (Vec<u8>, Vec<u8>) {
     let mut seed = [0u8; 32];
-    rand::thread_rng().fill_bytes(&mut seed);
+    rand::rngs::OsRng.fill_bytes(&mut seed);
     let (secret, public) = falcon512::keygen(seed);
     (public.to_bytes(), secret.to_bytes())
 }
@@ -69,7 +71,7 @@ pub fn new_falcon512_authority() -> (Vec<u8>, Vec<u8>) {
 /// 32-byte seed the ChaCha20 stream expands into the hazmat secret.
 pub fn new_winternitz_authority() -> (Vec<u8>, Vec<u8>) {
     let mut seed = [0u8; 32];
-    rand::thread_rng().fill_bytes(&mut seed);
+    rand::rngs::OsRng.fill_bytes(&mut seed);
     let key = winternitz_from_seed(&seed).expect("OS RNG for Winternitz seed stream");
     (key.verifying_key().to_bytes().to_vec(), seed.to_vec())
 }
@@ -78,7 +80,7 @@ pub fn new_winternitz_authority() -> (Vec<u8>, Vec<u8>) {
 /// the 32-byte seed the ChaCha20 stream expands into the hazmat secret.
 pub fn new_xmss_authority() -> (Vec<u8>, Vec<u8>) {
     let mut seed = [0u8; 32];
-    rand::thread_rng().fill_bytes(&mut seed);
+    rand::rngs::OsRng.fill_bytes(&mut seed);
     let key = xmss_from_seed(&seed).expect("OS RNG for XMSS seed stream");
     (key.verifying_key().to_bytes().to_vec(), seed.to_vec())
 }

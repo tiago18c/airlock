@@ -3,8 +3,10 @@
 //! which the window reads and answers (`Core::bridge_answer`); this module
 //! only waits for that answer and writes it back.
 //!
-//! The socket also acts as the single-instance lock: a second launch that cannot
-//! bind sends `show` and exits.
+//! A second launch that cannot bind the socket sends `show` and exits. What
+//! keeps two processes off one data folder is the folder's own lock
+//! (`app_core::storage::claim_data_dir`), which holds even when the socket
+//! cannot be named.
 
 use std::sync::mpsc;
 use std::sync::{Arc, OnceLock};

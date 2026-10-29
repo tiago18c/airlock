@@ -299,6 +299,11 @@ impl Core {
         self.inner.unlock(password)
     }
 
+    /// Seal the unlocked vault under `new`, once `current` opens it.
+    pub fn change_password(&self, current: &str, new: &str) -> Result<(), VaultError> {
+        self.inner.change_password(current, new)
+    }
+
     /// Lock now, as the user asked.
     pub fn lock(&self) {
         self.inner.lock(LockReason::User);
@@ -793,6 +798,16 @@ impl Inner {
         }
         report_command(&unlocked);
         unlocked
+    }
+
+    fn change_password(&self, current: &str, new: &str) -> Result<(), VaultError> {
+        let _span = debug_span!(target: CORE, "command", name = "change_password").entered();
+        let changed = locked(&self.vault).change_password(current, new);
+        if changed.is_ok() {
+            info!(target: VAULT, "password changed");
+        }
+        report_command(&changed);
+        changed
     }
 
     /// Forget the secrets. Does nothing, and says nothing, when the vault is

@@ -112,17 +112,25 @@ fn init_native(
     use tracing_subscriber::fmt;
 
     let logs = logs_dir();
-    let _ = std::fs::create_dir_all(&logs);
+    if let Some(logs) = &logs {
+        let _ = std::fs::create_dir_all(logs);
+    }
     // Written in place rather than through `non_blocking`: its worker only
     // flushes when its guard drops, and the process exits without dropping
     // it, so the last lines (`stopped` among them) would be lost.
-    let appender = tracing_appender::rolling::Builder::new()
-        .rotation(tracing_appender::rolling::Rotation::DAILY)
-        .filename_prefix(crate::storage::app_dirs().folder)
-        .filename_suffix("log")
-        .max_log_files(7)
-        .build(&logs);
-    let file_error = appender.as_ref().err().map(|err| err.to_string());
+    let appender = logs
+        .as_ref()
+        .ok_or_else(|| "no data folder is named".to_string())
+        .and_then(|logs| {
+            tracing_appender::rolling::Builder::new()
+                .rotation(tracing_appender::rolling::Rotation::DAILY)
+                .filename_prefix(crate::storage::app_dirs().folder)
+                .filename_suffix("log")
+                .max_log_files(7)
+                .build(logs)
+                .map_err(|err| err.to_string())
+        });
+    let file_error = appender.as_ref().err().cloned();
     // A log folder that cannot be written must not stop the app.
     let file_layer = appender.ok().map(|appender| {
         fmt::layer()
@@ -148,7 +156,7 @@ fn init_native(
     if let Some(error) = file_error {
         tracing::error!(
             target: "airlock::app",
-            logs_dir = %logs.display(),
+            logs_dir = %shown(logs.as_deref()),
             error = %error,
             "could not open the log file"
         );
@@ -159,7 +167,7 @@ fn init_native(
         target: "airlock::app",
         version = config.version,
         flavour = config.flavour,
-        data_dir = %data.display(),
+        data_dir = %shown(data.as_deref()),
         "started"
     );
 }
@@ -215,13 +223,13 @@ pub fn diagnostics_bundle() -> String {
     out.push_str(&format!(
         "Airlock diagnostics\nversion: {version}\nflavour: {flavour}\nos: {}\ndata_dir: {}\nlogs_dir: {}\n\n",
         std::env::consts::OS,
-        data.display(),
-        logs.display(),
+        shown(data.as_deref()),
+        shown(logs.as_deref()),
     ));
     out.push_str(
         "WARNING: These logs include full addresses and transaction history (base64 wires and signatures). Share only with people you trust.\n\n",
     );
-    let Ok(entries) = std::fs::read_dir(&logs) else {
+    let Some(Ok(entries)) = logs.as_ref().map(std::fs::read_dir) else {
         out.push_str("(no log directory)\n");
         return out;
     };
@@ -267,9 +275,15 @@ fn shell() -> (&'static str, &'static str) {
         .map_or(("unknown", "unknown"), |c| (c.version, c.flavour))
 }
 
+/// A folder for a log line, or that there is none.
+#[cfg(not(target_arch = "wasm32"))]
+fn shown(path: Option<&std::path::Path>) -> String {
+    path.map_or_else(|| "(none)".into(), |path| path.display().to_string())
+}
+
 #[cfg(not(target_arch = "wasm32"))]
 pub fn open_log_folder() -> Result<(), String> {
-    let dir = logs_dir();
+    let dir = logs_dir().ok_or_else(|| "No data folder is named.".to_string())?;
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     open_path(&dir)
 }

@@ -12,7 +12,7 @@ use solana_pubkey::Pubkey;
 use wallet_core::protocol::{QrObject, Signed, TxContext};
 use wallet_core::relay::{
     accept_signature_in, authority_signature_objects, authority_slots_in, insert_personal_sign,
-    vector_signature_objects, AuthContext, SignatureUse, VectorContext,
+    overlay_note, vector_signature_objects, AuthContext, SignatureUse,
 };
 use wallet_core::{
     decode_transaction, decode_v1_transaction, parse_wire, renew, sha256_bytes, Converted,
@@ -393,22 +393,21 @@ pub fn attach_context(session: Session, context: TxContext) {
     let pins = context.pins.len();
     let authorizations = context.authorizations.len();
     // A note's authorizations overlay what a rebuild already knew: same
-    // account keeps its key from the rebuild when the note has none.
+    // account keeps its key from the rebuild, and its scheme, which neither
+    // the rebuild nor a wallet here lets the note change.
     let mut known = form.vector.peek().clone();
-    for authorization in &context.authorizations {
-        let Some(from_note) = VectorContext::from_note(authorization) else {
-            continue;
-        };
-        if let Some(existing) = known
-            .iter_mut()
-            .find(|known| known.account == from_note.account)
-        {
-            existing.scheme = from_note.scheme;
-            existing.nonce = from_note.nonce;
-            existing.leaf_floor = from_note.leaf_floor;
-        } else {
-            known.push(from_note);
-        }
+    let wallets = session.wallets.peek().clone();
+    let recorded = |account: &Pubkey| {
+        wallets
+            .summaries
+            .iter()
+            .filter(|wallet| wallet.address == Some(*account))
+            .find_map(|wallet| wallet.contract.as_ref()?.vector_settings())
+            .map(|settings| settings.scheme)
+    };
+    if let Err(err) = overlay_note(&mut known, &context.authorizations, recorded) {
+        error.set(Some(err.to_string()));
+        return;
     }
     form.set_vector_context(known);
     stored.set(Some(context));

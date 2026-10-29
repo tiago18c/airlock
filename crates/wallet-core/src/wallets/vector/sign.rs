@@ -142,7 +142,7 @@ impl VectorSigner {
         }
         for _ in 0..SALT_TRIALS {
             let mut salt = [0u8; XMSS_SALT_LEN];
-            rand::thread_rng().fill_bytes(&mut salt);
+            rand::rngs::OsRng.fill_bytes(&mut salt);
             if self.sign_leaf_with_salt(leaf, digest, &salt).is_ok() {
                 return Ok(salt);
             }
@@ -190,14 +190,21 @@ pub struct VectorKey {
     /// The salt to sign with: one recorded before signing (Winternitz), or
     /// from a prior attempt at the same digest (XMSS).
     pub salt: Option<[u8; XMSS_SALT_LEN]>,
+    /// The digest `leaf` and `salt` were recorded for. A hash-based key
+    /// signs no other with them: a Winternitz key's one digest, or an XMSS
+    /// leaf, over a second digest gives the key away.
+    pub reserved_for: Option<[u8; 32]>,
     /// The key this device made for the account to rotate into, and holds
     /// the secret of. An `Advance` that hands the account to any other key
     /// is not signed.
     pub next_key: Option<Vec<u8>>,
 }
 
+/// Salts straight from the OS, not a generator seeded from it once: a
+/// process forked or a VM restored from a snapshot would repeat a seeded
+/// one, and a hash-based key signing one leaf under two salts gives it away.
 fn os_fill(buf: &mut [u8]) -> Result<(), solana_winternitz::SigningError> {
-    rand::thread_rng().fill_bytes(buf);
+    rand::rngs::OsRng.fill_bytes(buf);
     Ok(())
 }
 

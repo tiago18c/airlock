@@ -51,15 +51,10 @@ impl Frame {
 }
 
 pub fn transfer_id(payload: &[u8]) -> [u8; 8] {
-    let a = crc32(payload);
-    let mut mix = Vec::with_capacity(payload.len() + 4);
-    mix.extend_from_slice(&(payload.len() as u32).to_le_bytes());
-    mix.extend_from_slice(payload);
-    mix.reverse();
-    let b = crc32(&mix);
+    use sha2::{Digest, Sha256};
+    let digest = Sha256::digest(payload);
     let mut id = [0u8; 8];
-    id[..4].copy_from_slice(&a.to_le_bytes());
-    id[4..].copy_from_slice(&b.to_le_bytes());
+    id.copy_from_slice(&digest[..8]);
     id
 }
 

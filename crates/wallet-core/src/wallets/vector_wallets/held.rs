@@ -57,9 +57,10 @@ impl VectorSigner {
                 Self::Eip191(key)
             }
             (SchemeId::MlDsa44, Authority::Held { secret, .. }) => {
-                let bytes: [u8; ml_dsa_44::SK_LEN] =
-                    secret.0.as_slice().try_into().map_err(|_| bad_held())?;
-                let key = MlDsaPrivate::try_from_bytes(bytes).map_err(|_| bad_held())?;
+                let bytes: zeroize::Zeroizing<[u8; ml_dsa_44::SK_LEN]> = zeroize::Zeroizing::new(
+                    secret.0.as_slice().try_into().map_err(|_| bad_held())?,
+                );
+                let key = MlDsaPrivate::try_from_bytes(*bytes).map_err(|_| bad_held())?;
                 Self::MlDsa44(Box::new(key))
             }
             (SchemeId::Falcon512, Authority::Held { secret, .. }) => {
@@ -67,12 +68,16 @@ impl VectorSigner {
                 Self::Falcon512(Box::new(key))
             }
             (SchemeId::Winternitz, Authority::Held { secret, .. }) => {
-                let seed: [u8; 32] = secret.0.as_slice().try_into().map_err(|_| bad_held())?;
+                let seed: zeroize::Zeroizing<[u8; 32]> = zeroize::Zeroizing::new(
+                    secret.0.as_slice().try_into().map_err(|_| bad_held())?,
+                );
                 let key = winternitz_from_seed(&seed).map_err(|_| bad_held())?;
                 Self::Winternitz(Box::new(key))
             }
             (SchemeId::Xmss, Authority::Held { secret, .. }) => {
-                let seed: [u8; 32] = secret.0.as_slice().try_into().map_err(|_| bad_held())?;
+                let seed: zeroize::Zeroizing<[u8; 32]> = zeroize::Zeroizing::new(
+                    secret.0.as_slice().try_into().map_err(|_| bad_held())?,
+                );
                 let key = xmss_from_seed(&seed).map_err(|_| bad_held())?;
                 Self::Xmss(Box::new(key))
             }
@@ -109,6 +114,7 @@ pub fn local_vector_keys(wallets: &[WalletRecord]) -> Vec<VectorKey> {
                 signer: VectorSigner::from_record(wallets, wallet.id).ok()?,
                 leaf: None,
                 salt: None,
+                reserved_for: None,
                 next_key: wallet.vector_prepared_next_key().map(<[u8]>::to_vec),
             })
         })

@@ -73,10 +73,17 @@ impl Assembler {
             }
         }
 
-        if let Some(slot) = self.chunks.get_mut(frame.index as usize) {
-            *slot = Some(frame.chunk);
-        } else {
-            return Err(ProtocolError::BadHeader);
+        match self.chunks.get_mut(frame.index as usize) {
+            // The same code seen again.
+            Some(Some(held)) if *held == frame.chunk => {}
+            // Another code at the same place: one of the two is not this
+            // transfer's. Neither is kept, and the transfer starts over.
+            Some(Some(_)) => {
+                *self = Self::new();
+                return Err(ProtocolError::ConflictingFrame);
+            }
+            Some(slot) => *slot = Some(frame.chunk),
+            None => return Err(ProtocolError::BadHeader),
         }
 
         if self.received() != self.expected() {
@@ -89,10 +96,16 @@ impl Assembler {
         }
         // The last chunk is padded. What is past `total_len` is not payload.
         if payload.len() < self.total_len as usize {
+            *self = Self::new();
             return Err(ProtocolError::CorruptPayload);
         }
         payload.truncate(self.total_len as usize);
-        if crc32(&payload) != self.crc32 {
+        // The id is a hash of the payload, so a code from another transfer
+        // that took one's place, or a misread one, is caught here. Not a
+        // defence against a forged transfer: the device that signs decides
+        // from what it reads.
+        if crc32(&payload) != self.crc32 || Some(transfer_id(&payload)) != self.transfer_id {
+            *self = Self::new();
             return Err(ProtocolError::CorruptPayload);
         }
         Ok(Some(payload))

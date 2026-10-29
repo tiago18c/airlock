@@ -8,7 +8,7 @@ mod file;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub use file::FileStore;
-pub use json::{check_saveable, load_json, LoadProblem};
+pub use json::{check_saveable, load_json, load_json_or_block, LoadProblem};
 pub use memory::MemoryStore;
 
 use crate::VaultError;
@@ -21,6 +21,12 @@ pub trait VaultStore: Send + Sync {
     /// destroy them. A store that cannot do this leaves the data unsaveable.
     fn set_aside(&self, _bytes: &[u8]) -> Result<(), VaultError> {
         Err(VaultError::Io("this store cannot keep a copy".into()))
+    }
+
+    /// Delete any copy of what was saved before the last save, such as the
+    /// backup a file keeps. A store that keeps none has nothing to do.
+    fn discard_backup(&self) -> Result<(), VaultError> {
+        Ok(())
     }
 }
 
@@ -36,5 +42,9 @@ impl<S: VaultStore + ?Sized> VaultStore for std::sync::Arc<S> {
 
     fn set_aside(&self, bytes: &[u8]) -> Result<(), VaultError> {
         (**self).set_aside(bytes)
+    }
+
+    fn discard_backup(&self) -> Result<(), VaultError> {
+        (**self).discard_backup()
     }
 }

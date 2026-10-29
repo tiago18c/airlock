@@ -63,7 +63,9 @@ pub const PUBKEY_BYTES: usize = 32;
 pub const SIGNATURE_BYTES: usize = 64;
 
 pub const MAGIC: &[u8; 4] = b"QRS1";
-pub const VERSION: u8 = 1;
+/// 2: the transfer id is the first 8 bytes of the payload's SHA-256, and
+/// the receiver checks it.
+pub const VERSION: u8 = 2;
 pub const HEADER_LEN: usize = 25;
 /// The largest payload: room for a full-size transaction, its context note
 /// and anything else sent with it. 43 codes at [`DEFAULT_CHUNK`].
@@ -90,8 +92,10 @@ pub enum ProtocolError {
     BadHeader,
     #[error("frame belongs to a different transfer")]
     TransferMismatch,
-    #[error("reassembled payload failed CRC check")]
+    #[error("reassembled payload failed its checks; scan it again")]
     CorruptPayload,
+    #[error("two codes of this transfer at one place differ; scan it again")]
+    ConflictingFrame,
     #[error(
         "payload is not a transaction, a signature, a context note, a public key, wallet keys, a key rotation or an account state"
     )]

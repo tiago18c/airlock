@@ -21,6 +21,13 @@ mod window;
 #[allow(unsafe_code)] // Win32 calls on the window's own HWND.
 mod titlebar;
 
+#[cfg(all(feature = "desktop", not(target_arch = "wasm32")))]
+#[allow(unsafe_code)] // MessageBoxW, before any window exists.
+mod refuse;
+
+#[cfg(all(feature = "desktop", not(target_arch = "wasm32")))]
+pub use refuse::refuse_to_start;
+
 // Toasts and the hidden-window notify rule are online-only: they ride with
 // `bridge`, same as [`online`], so the airgap build does not compile them.
 #[cfg(all(feature = "bridge", feature = "desktop", not(target_arch = "wasm32")))]

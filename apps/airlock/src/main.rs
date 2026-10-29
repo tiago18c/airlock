@@ -42,8 +42,8 @@ fn main() {
         version: env!("CARGO_PKG_VERSION"),
     });
 
-    // The bridge socket doubles as the single-instance lock, so it is claimed
-    // before any window opens.
+    // The bridge socket is claimed before any window opens, so a second
+    // launch only asks the running one to show.
     #[cfg(all(feature = "desktop", not(target_arch = "wasm32")))]
     {
         let bridge = match Bridge::bootstrap() {
@@ -53,6 +53,13 @@ fn main() {
             }
             Bootstrap::Primary(bridge) => bridge,
         };
+        // The bridge socket says whether this app is running, but its data
+        // folder is what has to be one process's: claim it before any store
+        // opens.
+        if let Err(err) = app_core::storage::claim_data_dir() {
+            app_desktop::refuse_to_start(BRAND.name, &err.to_string());
+            return;
+        }
         dioxus::LaunchBuilder::desktop()
             .with_cfg(app_desktop::desktop_config(BRAND.name, ICON))
             .with_context(bridge)

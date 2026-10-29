@@ -407,6 +407,7 @@ dependencies = [
  "bridge-protocol",
  "dioxus",
  "wallet-core",
+ "zeroize",
 ]
 
 [[package]]
@@ -1290,6 +1291,7 @@ dependencies = [
  "bitcoin_hashes",
  "serde",
  "unicode-normalization",
+ "zeroize",
 ]
 
 [[package]]
@@ -7063,6 +7065,7 @@ dependencies = [
  "hex",
  "serde",
  "serde_json",
+ "sha2 0.10.9",
  "thiserror 2.0.21",
  "wincode",
 ]

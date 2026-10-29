@@ -7,11 +7,11 @@ use crate::wallets::record::WalletRecord;
 use crate::wallets::record::{Authority, WalletKind};
 use crate::wallets::vault::Vault;
 use crate::wallets::vector::{
-    winternitz_from_seed, SchemeId, VectorSigner, PROGRAM_ID, XMSS_LEAVES,
+    winternitz_from_seed, SchemeId, VectorSigner, PROGRAM_ID, XMSS_FORCE_ROTATE_USED, XMSS_LEAVES,
 };
 use solana_pubkey::Pubkey;
 use std::sync::Arc;
-use wallet_vault::store::VaultStore;
+use wallet_vault::store::{LoadProblem, VaultStore};
 use wallet_vault::{MemoryStore, SecretBytes};
 
 /// The key the wallet's account signs with now.
@@ -72,6 +72,19 @@ impl Device {
             self.wallet,
             &KEY,
             chain_floor,
+            LeafFor::Other,
+        )
+    }
+
+    /// A leaf for a move to the next key, which may use the last leaves.
+    fn reserve_rotation(&mut self, chain_floor: Option<u32>) -> Result<Reserved, LeafError> {
+        reserve_leaf(
+            &mut self.vault,
+            &mut self.marks,
+            self.wallet,
+            &KEY,
+            chain_floor,
+            LeafFor::Rotation,
         )
     }
 
@@ -94,6 +107,7 @@ impl Device {
             signer,
             &digest,
             None,
+            LeafFor::Other,
         )
     }
 
@@ -225,14 +239,25 @@ fn a_missing_mark_skips_leaves_after_what_the_record_says() {
 }
 
 #[test]
-fn a_mark_file_that_cannot_be_read_counts_as_missing() {
+fn a_mark_file_that_cannot_be_read_stops_signing_and_is_left_as_it_is() {
     let mut device = Device::new(2);
     device.marks_file.save(b"not json").unwrap();
     device.restart();
-    assert!(device.marks.load_problem().is_some());
+    assert!(matches!(
+        device.marks.load_problem(),
+        Some(LoadProblem::Blocked(_))
+    ));
+    // Starting empty would let a used leaf sign again.
+    assert!(matches!(device.reserve(None), Err(LeafError::Mark(_))));
+    assert_eq!(device.stored_next_leaf(), 2);
+    assert_eq!(device.marks_file.load().unwrap().unwrap(), b"not json");
+
+    // Once it reads again, signing goes on from it.
+    device.marks_file.save(b"{}").unwrap();
+    device.restart();
+    assert!(device.marks.load_problem().is_none());
     let next = device.reserve(None).unwrap();
     assert_eq!(next.leaf, 2 + LEAVES_SKIPPED_WITHOUT_MARK);
-    assert!(next.skipped);
 }
 
 #[test]
@@ -240,10 +265,10 @@ fn the_last_leaf_signs_and_then_nothing_does() {
     let mut device = Device::new(XMSS_LEAVES - 1);
     let account = device.account;
     device.marks.raise(&account, &KEY, XMSS_LEAVES - 1).unwrap();
-    assert_eq!(device.reserve(None).unwrap().leaf, XMSS_LEAVES - 1);
+    assert_eq!(device.reserve_rotation(None).unwrap().leaf, XMSS_LEAVES - 1);
     let before = device.vault_file.load().unwrap();
     assert!(matches!(
-        device.reserve(None),
+        device.reserve_rotation(None),
         Err(LeafError::Exhausted(label)) if label == "Quantum"
     ));
     // Nothing was written by the refusal.
@@ -251,9 +276,53 @@ fn the_last_leaf_signs_and_then_nothing_does() {
     // A floor past the end is refused the same way.
     let mut fresh = Device::new(0);
     assert!(matches!(
-        fresh.reserve(Some(XMSS_LEAVES)),
+        fresh.reserve_rotation(Some(XMSS_LEAVES)),
         Err(LeafError::Exhausted(_))
     ));
+}
+
+#[test]
+fn the_last_leaves_are_kept_for_the_move_to_the_next_key() {
+    let mut device = Device::new(XMSS_FORCE_ROTATE_USED - 1);
+    let account = device.account;
+    device
+        .marks
+        .raise(&account, &KEY, XMSS_FORCE_ROTATE_USED - 1)
+        .unwrap();
+    assert_eq!(
+        device.reserve(None).unwrap().leaf,
+        XMSS_FORCE_ROTATE_USED - 1
+    );
+    let before = (
+        device.vault_file.load().unwrap(),
+        device.marks_file.load().unwrap(),
+    );
+    assert!(matches!(
+        device.reserve(None),
+        Err(LeafError::MustRotate(label)) if label == "Quantum"
+    ));
+    // The refusal recorded nothing, so the leaves are still there.
+    assert_eq!(
+        (
+            device.vault_file.load().unwrap(),
+            device.marks_file.load().unwrap()
+        ),
+        before
+    );
+    assert_eq!(
+        device.reserve_rotation(None).unwrap().leaf,
+        XMSS_FORCE_ROTATE_USED
+    );
+
+    // A floor told by another device cannot use them up either: past the
+    // kept leaves it is refused, and the rotation still has every one.
+    let mut told = Device::new(0);
+    assert!(matches!(
+        told.reserve(Some(XMSS_LEAVES - 1)),
+        Err(LeafError::MustRotate(_))
+    ));
+    assert_eq!(told.stored_next_leaf(), 0);
+    assert_eq!(told.reserve_rotation(None).unwrap().leaf, 0);
 }
 
 #[test]
@@ -283,7 +352,14 @@ fn only_a_held_xmss_key_has_leaves() {
         .unwrap();
     for id in ids {
         assert!(matches!(
-            reserve_leaf(&mut device.vault, &mut device.marks, id, &KEY, None),
+            reserve_leaf(
+                &mut device.vault,
+                &mut device.marks,
+                id,
+                &KEY,
+                None,
+                LeafFor::Other
+            ),
             Err(LeafError::NotStateful(_))
         ));
     }
@@ -293,7 +369,8 @@ fn only_a_held_xmss_key_has_leaves() {
             &mut device.marks,
             WalletId::new(),
             &KEY,
-            None
+            None,
+            LeafFor::Other
         ),
         Err(LeafError::NoWallet)
     ));
@@ -306,8 +383,11 @@ fn a_key_that_replaces_a_used_up_one_starts_at_its_first_leaf() {
     let mut device = Device::new(XMSS_LEAVES - 1);
     let account = device.account;
     device.marks.raise(&account, &KEY, XMSS_LEAVES - 1).unwrap();
-    assert_eq!(device.reserve(None).unwrap().leaf, XMSS_LEAVES - 1);
-    assert!(matches!(device.reserve(None), Err(LeafError::Exhausted(_))));
+    assert_eq!(device.reserve_rotation(None).unwrap().leaf, XMSS_LEAVES - 1);
+    assert!(matches!(
+        device.reserve_rotation(None),
+        Err(LeafError::Exhausted(_))
+    ));
 
     // The account rotated to another key, and the record was reset with it.
     device.reset_record();
@@ -318,6 +398,7 @@ fn a_key_that_replaces_a_used_up_one_starts_at_its_first_leaf() {
         device.wallet,
         &next,
         Some(0),
+        LeafFor::Other,
     )
     .unwrap();
     assert_eq!(

@@ -140,3 +140,40 @@ fn a_scanned_next_key_names_its_wallet_or_is_refused() {
         Err(RotationError::UnknownScheme)
     );
 }
+
+#[test]
+fn an_account_on_a_key_this_device_did_not_move_it_to_counts_as_restored() {
+    use crate::wallets::vector::phrase_key;
+    const PHRASE: &str =
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+    let made = || {
+        WalletRecord::vector_from_phrase("Tree", SchemeId::Xmss, PROGRAM_ID, PHRASE, false).unwrap()
+    };
+    let key = |index| phrase_key(PHRASE, SchemeId::Xmss, index).unwrap().0;
+
+    // The next key it made itself, once the account holds it: expected.
+    let mut wallet = made();
+    wallet.prepare_vector_next_key().unwrap();
+    assert_eq!(wallet.adopt_vector_key(&key(1), 3), Ok(Some(1)));
+    assert_eq!(
+        wallet.vector_phrase().map(|p| (p.index, p.restored)),
+        Some((1, false))
+    );
+
+    // A key further on, or one it moved past: another copy may have used
+    // it, so only a move at its last leaf is signed.
+    for (index, from) in [(2, 0), (0, 3)] {
+        let mut wallet = made();
+        for _ in 0..from {
+            wallet.prepare_vector_next_key().unwrap();
+            let next = wallet.vector_next_pubkey().unwrap().to_vec();
+            wallet.install_vector_next_secret(&next).unwrap();
+        }
+        assert_eq!(wallet.adopt_vector_key(&key(index), 5), Ok(Some(index)));
+        assert_eq!(
+            wallet.vector_phrase().map(|p| (p.index, p.restored)),
+            Some((index, true)),
+            "found key {index} from key {from}"
+        );
+    }
+}

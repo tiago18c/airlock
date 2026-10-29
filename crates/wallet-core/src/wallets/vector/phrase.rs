@@ -33,7 +33,7 @@ use super::VectorError;
 use bip39::{Language, Mnemonic};
 use hmac::{Hmac, Mac};
 use sha2::Sha512;
-use zeroize::Zeroize;
+use zeroize::{Zeroize, Zeroizing};
 
 /// How many keys past the one a record holds are tried when looking for
 /// the key an account holds.
@@ -79,16 +79,20 @@ pub fn normalize_key_phrase(phrase: &str) -> Result<String, VectorError> {
 }
 
 /// The 32-byte seed of key number `index` of `scheme`, made from `phrase`.
-pub fn phrase_seed(phrase: &str, scheme: SchemeId, index: u32) -> Result<[u8; 32], VectorError> {
+pub fn phrase_seed(
+    phrase: &str,
+    scheme: SchemeId,
+    index: u32,
+) -> Result<Zeroizing<[u8; 32]>, VectorError> {
     let (key, mut chain) = node(magic(scheme)?, phrase, &[WALLET, PARENT, index])?;
     chain.zeroize();
-    Ok(key)
+    Ok(Zeroizing::new(key))
 }
 
 /// The node at the hardened `path` under the master node of `magic`, as
 /// key and chain code. Winterwallet's derivation, step for step.
 fn node(magic: &[u8], phrase: &str, path: &[u32]) -> Result<([u8; 32], [u8; 32]), VectorError> {
-    let phrase = normalize_key_phrase(phrase)?;
+    let phrase = Zeroizing::new(normalize_key_phrase(phrase)?);
     let mnemonic = Mnemonic::parse_in_normalized(Language::English, &phrase)
         .map_err(|_| VectorError::BadPhrase)?;
     let mut seed = mnemonic.to_seed("");
@@ -113,12 +117,12 @@ fn hardened_child(key: &[u8; 32], chain: &[u8; 32], index: u32) -> ([u8; 32], [u
 }
 
 /// Key number `index` of `scheme` made from `phrase`: its public key, then
-/// the seed a record keeps for it.
+/// the seed a record keeps for it, wiped when dropped.
 pub fn phrase_key(
     phrase: &str,
     scheme: SchemeId,
     index: u32,
-) -> Result<(Vec<u8>, [u8; 32]), VectorError> {
+) -> Result<(Vec<u8>, Zeroizing<[u8; 32]>), VectorError> {
     let seed = phrase_seed(phrase, scheme, index)?;
     let public = xmss_from_seed(&seed)?.verifying_key().to_bytes().to_vec();
     Ok((public, seed))

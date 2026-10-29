@@ -9,7 +9,7 @@ mod web;
 
 pub use dirs::{app_dirs, set_app_dirs, AppDirs};
 #[cfg(not(target_arch = "wasm32"))]
-pub use file::{data_dir, logs_dir, FileStorage};
+pub use file::{claim_data_dir, data_dir, logs_dir, DataDirClaim, FileStorage};
 #[cfg(target_arch = "wasm32")]
 pub use web::{LocalStorage, WebIdlBodies};
 
@@ -47,6 +47,10 @@ impl VaultStore for BoxedStore {
     fn set_aside(&self, bytes: &[u8]) -> Result<(), VaultError> {
         self.0.set_aside(bytes)
     }
+
+    fn discard_backup(&self) -> Result<(), VaultError> {
+        self.0.discard_backup()
+    }
 }
 
 pub type AppVault = Vault<BoxedStore>;
@@ -61,15 +65,28 @@ pub type AppIdls = IdlStore<BoxedStore, wallet_core::DirIdlBodies>;
 pub type AppIdls = IdlStore<BoxedStore, WebIdlBodies>;
 
 /// The files of this platform: the data folder, or `localStorage`.
+///
+/// On desktop the folder has to be this process's: see [`claim_data_dir`].
+/// The shells claim it first thing, to say why when it is taken; this is the
+/// backstop, and stops the app rather than share the folder.
 pub fn platform_storage() -> Box<dyn Storage> {
     #[cfg(not(target_arch = "wasm32"))]
     {
-        Box::new(FileStorage::new(data_dir()))
+        Box::new(FileStorage::new(owned_data_dir()))
     }
     #[cfg(target_arch = "wasm32")]
     {
         Box::new(LocalStorage)
     }
+}
+
+/// The data folder, once this process holds it.
+#[cfg(not(target_arch = "wasm32"))]
+fn owned_data_dir() -> std::path::PathBuf {
+    if let Err(err) = claim_data_dir() {
+        panic!("{err}");
+    }
+    data_dir().expect("a claimed data folder is named")
 }
 
 pub fn open_vault_in(storage: &dyn Storage) -> AppVault {
@@ -118,7 +135,7 @@ pub fn open_notices() -> AppNotices {
 pub fn open_idls(network: wallet_core::IdlNetwork) -> AppIdls {
     #[cfg(not(target_arch = "wasm32"))]
     {
-        let dir = data_dir().join("idls");
+        let dir = owned_data_dir().join("idls");
         IdlStore::open_on(
             BoxedStore(Box::new(wallet_core::FileStore::new(
                 dir.join("index.json"),

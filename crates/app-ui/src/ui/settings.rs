@@ -1,8 +1,10 @@
 use crate::state::forms::AddWalletMode;
 use crate::state::session::Session;
 use crate::ui::ThemeToggle;
+use app_ui_kit::state::slices::VaultState;
 use dioxus::prelude::*;
 use wallet_core::{Cluster, LOCAL_RPC_URL};
+use zeroize::{Zeroize, Zeroizing};
 
 /// Auto-lock choices offered in Settings (seconds). Includes 1 minute for the
 /// phase 1.5 Done-when check.
@@ -56,6 +58,7 @@ pub fn SettingsPanel() -> Element {
     let settings = (session.settings)();
     let auto_lock_secs = settings.auto_lock.as_secs();
     let close_to_tray = settings.close_to_tray;
+    let unlocked = (session.vault_state)() == VaultState::Unlocked;
 
     rsx! {
         section { class: "page",
@@ -197,6 +200,9 @@ pub fn SettingsPanel() -> Element {
                 p { class: "hint",
                     "Locks the vault after this time while the window is hidden, or after the same time with no input while it is open. Default is 5 minutes."
                 }
+                if unlocked {
+                    PasswordChange {}
+                }
             }
 
             // Tray and close-to-tray are online desktop only; the airgap
@@ -227,6 +233,90 @@ pub fn SettingsPanel() -> Element {
             }
 
             DiagnosticsCard {}
+        }
+    }
+}
+
+/// Change the vault's password: the current one, then the new one twice.
+#[component]
+fn PasswordChange() -> Element {
+    let session = use_context::<Session>();
+    let mut current = use_signal(String::new);
+    let mut new = use_signal(String::new);
+    let mut confirm = use_signal(String::new);
+    let mut note = use_signal(|| None::<String>);
+    let mut error = use_signal(|| None::<String>);
+    use_drop(move || {
+        current.write().zeroize();
+        new.write().zeroize();
+        confirm.write().zeroize();
+    });
+    let mut change = move || {
+        note.set(None);
+        error.set(None);
+        let (old, next) = (Zeroizing::new(current()), Zeroizing::new(new()));
+        if next.len() < 8 {
+            error.set(Some("Use at least 8 characters.".into()));
+            return;
+        }
+        if *next != *Zeroizing::new(confirm()) {
+            error.set(Some("The new passwords do not match.".into()));
+            return;
+        }
+        let changed = session.change_password(&old, &next);
+        current.write().zeroize();
+        new.write().zeroize();
+        confirm.write().zeroize();
+        match changed {
+            Ok(()) => note.set(Some(
+                "Password changed. The vault is sealed under it, and the copy kept from before is deleted."
+                    .into(),
+            )),
+            Err(err) => error.set(Some(err.to_string())),
+        }
+    };
+
+    rsx! {
+        h4 { "Change password" }
+        label { "Current password"
+            input {
+                r#type: "password",
+                autocomplete: "current-password",
+                value: "{current}",
+                oninput: move |e| current.set(e.value()),
+            }
+        }
+        label { "New password"
+            input {
+                r#type: "password",
+                autocomplete: "new-password",
+                value: "{new}",
+                oninput: move |e| new.set(e.value()),
+            }
+        }
+        label { "Confirm new password"
+            input {
+                r#type: "password",
+                autocomplete: "new-password",
+                value: "{confirm}",
+                oninput: move |e| confirm.set(e.value()),
+            }
+        }
+        div { class: "btn-row",
+            button { class: "primary",
+                disabled: current().is_empty() || new().is_empty(),
+                onclick: move |_| change(),
+                "Change password"
+            }
+        }
+        p { class: "hint",
+            "Seals the vault under a new key and deletes the backup the old password still opens. A copy of the vault made elsewhere before, such as a backup of the data folder, still opens with the old one."
+        }
+        if let Some(text) = note() {
+            p { class: "hint", "{text}" }
+        }
+        if let Some(text) = error() {
+            p { class: "error", "{text}" }
         }
     }
 }
