@@ -6988,6 +6988,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "program-watch"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "idl-pack",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "solana-pubkey 4.3.0",
+ "tokio",
+ "toml",
+ "wallet-core",
+ "wallet-rpc",
+]
+
+[[package]]
 name = "psl-types"
 version = "2.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"

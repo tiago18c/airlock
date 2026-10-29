@@ -11,7 +11,7 @@ use std::path::Path;
 
 const LAYERS: &[&[&str]] = &[
     &["ids", "units", "cluster"],
-    &["chain", "error", "keys", "phrase"],
+    &["chain", "error", "keys", "phrase", "program_code"],
     &["tx", "market", "vector", "stake", "spl"],
     &["idl", "transport", "address_book", "holdings", "workspace"],
     &["squads", "programmatic", "offline_nonce"],

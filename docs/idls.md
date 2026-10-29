@@ -67,6 +67,20 @@ A program at different addresses on two networks has a file for each: the file d
 
 A file made from what a program publishes on chain keeps the SHA-256 of those bytes and the account they were read from (`IdlChainSource`). Our file's checksum C1 is never the chain's C2: it was converted, given display nodes, or given accounts the source cannot declare. A check reads the account the file was made from (`IdlRecord::compared_account`) and records both comparisons (`IdlCheck::same`, `IdlCheck::source`). When the chain publishes C2, the status is "matches its source": the file is current and nothing is fetched to replace it. When it publishes something else, the status is "differs", and the source is where to start an update. The app reads a program's IDL from the chain only when the network in use has none stored, so a download never replaces an embedded file.
 
+### Builds an IDL was reviewed for
+
+Nothing on chain ties an IDL to a program build. The program-metadata and Anchor IDL accounts are written by whoever controls the program, at any time, and say nothing about the code they describe. A verified build ties a program's executable to a repository commit, not to an IDL. The tie is our own: `resources/program-builds.toml` has one entry per program and network, stating that someone read the embedded IDL (its SHA-256) against the program running one executable (its hash, as `solana-verify get-program-hash` prints it). The entry also records the upgrade authority, the source commit when known, and the uploader of the verify PDA whose build OtterSec reproduced.
+
+`program-watch` (`crates/program-watch`, never shipped) reads every embedded IDL, core and pack, and for each network it runs on reports:
+
+- a program redeployed (its executable hash changed) or a changed upgrade authority,
+- an embedded file changed after its review,
+- the on-chain IDL a file was made from changed or gone,
+- OtterSec starting or stopping verifying the running build (mainnet only: OtterSec does not cover devnet),
+- a program with no entry, with an entry filled in from the chain to paste once reviewed.
+
+`.github/workflows/program-watch.yml` runs it daily and keeps one issue labelled `program-watch` open while anything needs action. The executable hash comes from the program-data account over RPC (`wallet_core::program_code`). Only the verification status comes from OtterSec's API, and only in CI.
+
 ### Stored files
 
 The index lists each imported file with its network. Bodies are `idls/<network>/<program id>.json` on desktop and `airlock.idl.<network>.<program id>` in a browser. Only the network in use is read into memory; switching cluster reads the other's files. An index from before networks has no `network` on its records: the files are moved under the network in use when the app opens. An export holds every network's files as `<network>.<program id>.json`, and an older bundle with `<program id>.json` files is imported for the network in use.

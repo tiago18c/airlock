@@ -1,0 +1,24 @@
+# Which build of each program an embedded IDL was reviewed against.
+#
+# Nothing on chain ties an IDL to a program build: the program-metadata and
+# Anchor IDL accounts are written by whoever controls the program, at any
+# time, and say nothing about the code they describe. An entry here is our
+# own statement that someone read this IDL against the program running this
+# executable. `program-watch` (crates/program-watch, run daily by
+# .github/workflows/program-watch.yml) reports when either side moves.
+#
+# One [[builds]] entry per program and network:
+#   programId    the program's address
+#   network      "mainnet", "devnet" or "testnet"
+#   programHash  SHA-256 of the executable without its trailing zero bytes,
+#                as `solana-verify get-program-hash` prints it, or "native"
+#   authority    who could redeploy it when reviewed. Left out: nobody (frozen)
+#   idlSha256    SHA-256 of the embedded IDL file that was reviewed
+#   source       { repo, commit } the build comes from, when known
+#   verified     the uploader of the verify PDA whose build OtterSec
+#                reproduced at programHash (mainnet only). Left out: not
+#                verified, or not checked
+#   reviewed     the date of the review, YYYY-MM-DD
+#
+# The watcher's report prints entries filled with what the chain holds now.
+# Paste one only after checking its IDL against that build.
