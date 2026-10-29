@@ -190,6 +190,10 @@ pub struct VectorKey {
     /// The salt to sign with: one recorded before signing (Winternitz), or
     /// from a prior attempt at the same digest (XMSS).
     pub salt: Option<[u8; XMSS_SALT_LEN]>,
+    /// The digest `leaf` and `salt` were recorded for. A hash-based key
+    /// signs no other with them: a Winternitz key's one digest, or an XMSS
+    /// leaf, over a second digest gives the key away.
+    pub reserved_for: Option<[u8; 32]>,
     /// The key this device made for the account to rotate into, and holds
     /// the secret of. An `Advance` that hands the account to any other key
     /// is not signed.

@@ -42,6 +42,7 @@ impl Owner {
             ),
             leaf: None,
             salt: None,
+            reserved_for: None,
             next_key: None,
         }
     }
