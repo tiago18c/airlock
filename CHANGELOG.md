@@ -31,6 +31,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 ### Fixed
 - The embedded IDL files have LF line endings on every checkout, so their checksums no longer depend on the OS the app was built on. A Windows build and a Linux or web build pinned different checksums for the same embedded IDL.
 - A browser or paste request whose programs create accounts from new keypairs in their own calls, like Orca's pool creation creating its two vaults, no longer converts into signer slots nobody can sign. When the transaction's own instructions do not explain an unsigned outside signer, it is simulated and the accounts its programs create count as one-time keys, left for the site to sign or replaced by keys made here. Without a node, or when the simulation fails, only the transaction's own instructions count, as before.
+- Review and Sign simulates a legacy or v0 transaction it signs as it came, instead of saying it could not simulate because the transaction is not v1.
 
 ### Security
 - More secrets are wiped from memory once used: the seeds a Vector wallet's key is rebuilt from, the seeds and normalized words of a recovery phrase (BIP-39 mnemonics now wipe themselves), the words on the add-Vector-wallet form when it closes, and the password field after a failed unlock as well as a successful one.
