@@ -327,4 +327,43 @@ mod tests {
         let parsed = parse_event_data(&root, &bytes).unwrap().unwrap();
         assert!(matches!(parsed.path.last(), Some(Node::Event(_))));
     }
+
+    /// A program whose one instruction has no discriminator, like memo v4,
+    /// reads any bytes as that instruction. With two such instructions,
+    /// nothing tells them apart.
+    #[test]
+    fn a_lone_instruction_without_discriminators_is_identified() {
+        let memo = InstructionNode {
+            name: "addMemo".into(),
+            arguments: vec![InstructionArgumentNode::new(
+                "memo",
+                NumberTypeNode::le(U32),
+            )],
+            ..Default::default()
+        };
+        let mut program = ProgramNode::new("memo", Pubkey::new_from_array([1; 32]).to_string());
+        program.instructions = vec![memo.clone()];
+        let root = root_with_program(program.clone());
+
+        let parsed = parse_instruction_data(&root, &[7, 0, 0, 0])
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            parsed.data,
+            Value::struct_from([("memo".into(), 7u32.into())])
+        );
+        assert!(parse_account_data(&root, &[7, 0, 0, 0]).unwrap().is_none());
+
+        program.instructions = vec![
+            memo.clone(),
+            InstructionNode {
+                name: "other".into(),
+                ..memo
+            },
+        ];
+        let root = root_with_program(program);
+        assert!(parse_instruction_data(&root, &[7, 0, 0, 0])
+            .unwrap()
+            .is_none());
+    }
 }

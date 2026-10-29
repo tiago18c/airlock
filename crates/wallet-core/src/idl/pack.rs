@@ -238,4 +238,29 @@ mod tests {
             assert_eq!(json(mainnet), expected, "{mainnet}");
         }
     }
+
+    /// The v3 and v1 memo files are the repository's v4 IDL with their own
+    /// address and version: the three programs read the same data.
+    #[test]
+    fn the_older_memo_files_differ_from_v4_by_address_and_version_alone() {
+        let idls = shipped_idls();
+        let json = |program: &str| {
+            let program = Pubkey::from_str(program).unwrap();
+            let idl = idls.iter().find(|idl| idl.program_id == program).unwrap();
+            String::from_utf8(idl.json.to_vec()).unwrap()
+        };
+        let v4 = json("Memo4c2pN8afCj432Lb7RMVKi9PbQnnW7ewFFaV3oAH");
+        for (program, version) in [
+            ("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr", "3.0.0"),
+            ("Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo", "1.0.0"),
+        ] {
+            let expected = v4
+                .replace("Memo4c2pN8afCj432Lb7RMVKi9PbQnnW7ewFFaV3oAH", program)
+                .replace(
+                    "\"version\": \"4.0.0\"",
+                    &format!("\"version\": \"{version}\""),
+                );
+            assert_eq!(json(program), expected, "{program}");
+        }
+    }
 }

@@ -84,3 +84,31 @@ networks = ["mainnet", "devnet"]
 source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "9c4ad85a942e27f571c4f33453b0b0f2fef1dde5e9c201b301668068e67ace0d" }
 changes = """Converted from Anchor to Codama. The V2 instructions declare the transfer \
 hook and supplemental tick array accounts they read. Display nodes added by hand."""
+
+# The three memo programs take the same data: the memo as UTF-8, and any
+# signers after it. The repository's IDL is v4's; the v3 and v1 files are it
+# with their program address and version.
+[[idls]]
+file = "memo.json"
+programId = "Memo4c2pN8afCj432Lb7RMVKi9PbQnnW7ewFFaV3oAH"
+name = "memo"
+networks = ["mainnet", "devnet", "testnet"]
+source = { kind = "repository", url = "https://github.com/solana-program/memo/blob/be804bfab190e3955bffb2a18864ad61676345c6/idl.json" }
+changes = "Unchanged."
+
+[[idls]]
+file = "memo-v3.json"
+programId = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+name = "memo"
+networks = ["mainnet", "devnet", "testnet"]
+source = { kind = "repository", url = "https://github.com/solana-program/memo/blob/be804bfab190e3955bffb2a18864ad61676345c6/idl.json" }
+changes = "The v4 IDL with v3's program address and version."
+
+[[idls]]
+file = "memo-v1.json"
+programId = "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo"
+name = "memo"
+networks = ["mainnet", "devnet", "testnet"]
+source = { kind = "repository", url = "https://github.com/solana-program/memo/blob/be804bfab190e3955bffb2a18864ad61676345c6/idl.json" }
+changes = """The v4 IDL with v1's program address and version. v1 does not check \
+the signers it is passed: they sign the transaction, not the memo."""
