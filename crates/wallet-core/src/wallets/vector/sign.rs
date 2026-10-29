@@ -142,7 +142,7 @@ impl VectorSigner {
         }
         for _ in 0..SALT_TRIALS {
             let mut salt = [0u8; XMSS_SALT_LEN];
-            rand::thread_rng().fill_bytes(&mut salt);
+            rand::rngs::OsRng.fill_bytes(&mut salt);
             if self.sign_leaf_with_salt(leaf, digest, &salt).is_ok() {
                 return Ok(salt);
             }
@@ -200,8 +200,11 @@ pub struct VectorKey {
     pub next_key: Option<Vec<u8>>,
 }
 
+/// Salts straight from the OS, not a generator seeded from it once: a
+/// process forked or a VM restored from a snapshot would repeat a seeded
+/// one, and a hash-based key signing one leaf under two salts gives it away.
 fn os_fill(buf: &mut [u8]) -> Result<(), solana_winternitz::SigningError> {
-    rand::thread_rng().fill_bytes(buf);
+    rand::rngs::OsRng.fill_bytes(buf);
     Ok(())
 }
 
