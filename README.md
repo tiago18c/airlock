@@ -116,6 +116,17 @@ cargo test -p flow-tests
 cd extension && npm test && npm run check
 ```
 
+### Secrets
+
+Keys for tests against live services come from [Doppler](https://www.doppler.com), project `airlock`, config `dev` (set in `doppler.yaml`). Log in once with `doppler login`, run `doppler setup` once in each checkout to pick up `doppler.yaml`, then run a command under `doppler run --`, which sets each secret as an environment variable:
+
+```bash
+# the Tokens API client against the real service; needs TOKENS_API_KEY
+doppler run -- cargo test -p tokens-api --test live -- --ignored
+```
+
+Never put a key in a file in the repository. The app does not read these variables: it keeps the Tokens API key in Settings.
+
 ## The code
 
 ```mermaid

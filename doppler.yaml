@@ -1,0 +1,5 @@
+# Doppler project and config for `doppler run` in this repository. Holds no
+# secrets; see "Secrets" in the README.
+setup:
+  - project: airlock
+    config: dev

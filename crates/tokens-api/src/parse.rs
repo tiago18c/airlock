@@ -66,9 +66,12 @@ pub fn parse_curated(page: &Value) -> (Vec<(Pubkey, AssetGroup)>, Option<usize>)
                 .and_then(|variant| text(variant, "mint"))
                 .or_else(|| text(row, "mint"))?;
             let mint = Pubkey::from_str(&mint).ok()?;
-            let kind = variant.and_then(|variant| text(variant, "kind"));
-            let lst =
-                kind.as_deref() == Some("lst") || text(row, "category").as_deref() == Some("lst");
+            // The service files liquid staking tokens under "solana", with
+            // kind "yield" and the tag "curated:lsts".
+            let lst = variant
+                .and_then(|variant| variant.get("tags"))
+                .and_then(Value::as_array)
+                .is_some_and(|tags| tags.iter().any(|tag| tag == "curated:lsts"));
             Some((
                 mint,
                 AssetGroup {
@@ -200,8 +203,8 @@ mod tests {
             "assets": [
                 { "assetId": "usd", "name": "US Dollar", "symbol": "USD", "category": "stablecoin",
                   "primaryVariant": { "mint": USDC, "chain": "solana", "kind": "stablecoin" } },
-                { "assetId": "jitosol", "symbol": "JitoSOL", "category": "lst",
-                  "primaryVariant": { "mint": JITO, "kind": "lst" } },
+                { "assetId": "solana", "name": "Solana", "symbol": "SOL", "category": "crypto",
+                  "primaryVariant": { "mint": JITO, "kind": "yield", "tags": ["curated:lsts", "source:sanctum"] } },
                 { "assetId": "broken" }
             ]
         });
