@@ -55,6 +55,14 @@ impl VaultStore for FileStore {
     fn set_aside(&self, bytes: &[u8]) -> Result<(), VaultError> {
         write_synced(&sibling(&self.path, ".unreadable"), bytes)
     }
+
+    fn discard_backup(&self) -> Result<(), VaultError> {
+        match std::fs::remove_file(sibling(&self.path, ".bak")) {
+            Ok(()) => sync_parent(&self.path),
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            Err(err) => Err(io(err)),
+        }
+    }
 }
 
 fn sibling(path: &Path, suffix: &str) -> PathBuf {

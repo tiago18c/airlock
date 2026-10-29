@@ -49,6 +49,11 @@ impl Session {
         Ok(())
     }
 
+    /// Seal the vault under `new`, once `current` opens it.
+    pub fn change_password(&self, current: &str, new: &str) -> Result<(), VaultError> {
+        self.command(|core| core.change_password(current, new))
+    }
+
     pub fn lock(&self) {
         self.command(|core| core.lock());
         self.forms.wallet.clear();

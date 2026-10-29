@@ -19,6 +19,7 @@ app-ui-wallets = { path = "../app-ui-wallets", default-features = false }
 bridge-protocol.workspace = true
 dioxus.workspace = true
 wallet-core.workspace = true
+zeroize.workspace = true
 
 [features]
 default = ["desktop"]

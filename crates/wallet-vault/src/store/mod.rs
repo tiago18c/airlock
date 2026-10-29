@@ -22,6 +22,12 @@ pub trait VaultStore: Send + Sync {
     fn set_aside(&self, _bytes: &[u8]) -> Result<(), VaultError> {
         Err(VaultError::Io("this store cannot keep a copy".into()))
     }
+
+    /// Delete any copy of what was saved before the last save, such as the
+    /// backup a file keeps. A store that keeps none has nothing to do.
+    fn discard_backup(&self) -> Result<(), VaultError> {
+        Ok(())
+    }
 }
 
 /// A store shared with whoever else holds the handle.
@@ -36,5 +42,9 @@ impl<S: VaultStore + ?Sized> VaultStore for std::sync::Arc<S> {
 
     fn set_aside(&self, bytes: &[u8]) -> Result<(), VaultError> {
         (**self).set_aside(bytes)
+    }
+
+    fn discard_backup(&self) -> Result<(), VaultError> {
+        (**self).discard_backup()
     }
 }

@@ -407,6 +407,7 @@ dependencies = [
  "bridge-protocol",
  "dioxus",
  "wallet-core",
+ "zeroize",
 ]
 
 [[package]]
