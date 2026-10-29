@@ -35,11 +35,15 @@ use super::held::local_vector_keys;
 use crate::error::VaultError;
 use crate::ids::WalletId;
 use crate::keys::signer::WalletSigner;
+use crate::transport::protocol::MAX_ROTATION_NONCES;
 use crate::wallets::record::{Authority, Protocol, WalletKind};
-use crate::wallets::relay::{digests_to_sign, sign_authorizations_in, AuthContext, VectorContext};
+use crate::wallets::relay::{
+    refuse_handover, sign_authorizations_in, to_sign_now, AuthContext, VectorContext,
+};
 use crate::wallets::vault::Vault;
 use crate::wallets::vector::{
-    seed, SchemeId, VectorKey, VectorSigner, XmssRetryCache, XMSS_LEAVES, XMSS_SALT_LEN,
+    seed, SchemeId, VectorKey, VectorSigner, XmssRetryCache, XMSS_FORCE_ROTATE_USED, XMSS_LEAVES,
+    XMSS_SALT_LEN,
 };
 use serde::{Deserialize, Serialize};
 use solana_pubkey::Pubkey;
@@ -51,6 +55,21 @@ use wallet_vault::store::{check_saveable, load_json_or_block, LoadProblem, Vault
 /// has signed. The record may be an older copy of the vault, so the leaves
 /// just after it may have signed already.
 pub const LEAVES_SKIPPED_WITHOUT_MARK: u32 = 16;
+
+/// What a leaf is reserved to sign.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum LeafFor {
+    /// A move of the account to the next key this device made.
+    Rotation,
+    /// Anything that keeps the key. Signed only below
+    /// [`XMSS_FORCE_ROTATE_USED`]: the leaves above it are kept for the
+    /// rotation, so a key can always move on, whatever the floor it is told.
+    Other,
+}
+
+// A rotation may sign at every nonce it may be at, one leaf each, and the
+// leaves kept for it have to cover that.
+const _: () = assert!((XMSS_LEAVES - XMSS_FORCE_ROTATE_USED) as usize >= MAX_ROTATION_NONCES);
 
 /// The marks as stored, each under its account and the hash of its key.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -377,13 +396,16 @@ pub enum LeafError {
     NoTrail(String),
     #[error("{0} was restored from its recovery phrase. A lost copy may have signed with leaves of its current key that the chain has not seen, so it signs nothing until it has moved to its next key: scan its account state from the online device, then Rotate key.")]
     RestoredMustRotate(String),
+    #[error("{0} has used all but the last few leaves of its key. Those are kept for moving to its next key, so it signs nothing else: Rotate key on its row.")]
+    MustRotate(String),
     #[error("{0}")]
     Rotation(String),
 }
 
 /// Record what `wallet`'s hash-based key `signer` signs `digest` with,
 /// before it signs. `chain_floor` is the account's `next_leaf` on chain,
-/// when known.
+/// when known, and `purpose` whether the digest moves the account to its
+/// next key.
 pub fn reserve<V: VaultStore, M: VaultStore>(
     vault: &mut Vault<V>,
     marks: &mut LeafMarks<M>,
@@ -391,6 +413,7 @@ pub fn reserve<V: VaultStore, M: VaultStore>(
     signer: &VectorSigner,
     digest: &[u8; 32],
     chain_floor: Option<u32>,
+    purpose: LeafFor,
 ) -> Result<Reserved, LeafError> {
     let key = signer.key();
     let data = vault.data().map_err(|_| LeafError::Locked)?;
@@ -404,7 +427,7 @@ pub fn reserve<V: VaultStore, M: VaultStore>(
         .vector_settings()
         .map(|settings| settings.scheme)
     {
-        Some(SchemeId::Xmss) => reserve_leaf(vault, marks, wallet, &key, chain_floor),
+        Some(SchemeId::Xmss) => reserve_leaf(vault, marks, wallet, &key, chain_floor, purpose),
         Some(SchemeId::Winternitz) => {
             let label = record.label.clone();
             let account = record.address().ok_or(LeafError::NoWallet)?;
@@ -430,13 +453,16 @@ pub fn reserve<V: VaultStore, M: VaultStore>(
 ///
 /// The leaf is the highest of the record's `next_leaf`, the key's mark, and
 /// the account's `next_leaf` on chain when it is known. Both counters are
-/// moved past it and saved before this returns it.
+/// moved past it and saved before this returns it. Past
+/// [`XMSS_FORCE_ROTATE_USED`] only a [`LeafFor::Rotation`] gets a leaf, and
+/// a refusal records nothing.
 pub fn reserve_leaf<V: VaultStore, M: VaultStore>(
     vault: &mut Vault<V>,
     marks: &mut LeafMarks<M>,
     wallet: WalletId,
     key: &[u8],
     chain_floor: Option<u32>,
+    purpose: LeafFor,
 ) -> Result<Reserved, LeafError> {
     let data = vault.data_mut().map_err(|_| LeafError::Locked)?;
     let record = data
@@ -473,6 +499,9 @@ pub fn reserve_leaf<V: VaultStore, M: VaultStore>(
         .max(chain_floor.unwrap_or(0));
     if leaf >= XMSS_LEAVES {
         return Err(LeafError::Exhausted(label));
+    }
+    if purpose == LeafFor::Other && leaf >= XMSS_FORCE_ROTATE_USED {
+        return Err(LeafError::MustRotate(label));
     }
 
     marks
@@ -516,14 +545,15 @@ pub fn keys_to_sign_with<V: VaultStore, M: VaultStore>(
     // A wire that cannot be signed records nothing here, and fails to sign.
     let submitted = sign_authorizations_in(wire, signers, &AuthContext { vector: known })
         .map_or_else(|_| wire.to_vec(), |authorized| authorized.wire);
-    let digests = digests_to_sign(&submitted, &held, known);
+    let now = to_sign_now(&submitted, &held, known);
     for key in &mut keys {
         if !key.signer.scheme().is_stateful() {
             continue;
         }
-        let Some(digest) = digests.get(&key.account) else {
+        let Some(to_sign) = now.get(&key.account) else {
             continue;
         };
+        let digest = &to_sign.digest;
         let nonce = known
             .iter()
             .find(|known| known.account == key.account)
@@ -543,12 +573,22 @@ pub fn keys_to_sign_with<V: VaultStore, M: VaultStore>(
         if record.vector_phrase().is_some_and(|phrase| phrase.restored) {
             return Err(LeafError::RestoredMustRotate(record.label.clone()));
         }
+        // What signing would refuse is refused before anything is recorded:
+        // a Winternitz digest recorded and then not signed would leave the
+        // key unable to sign any other.
+        refuse_handover(&to_sign.next_key, key, &AuthContext { vector: known })
+            .map_err(|err| LeafError::Rotation(err.to_string()))?;
+        let purpose = if to_sign.next_key == key.signer.key() {
+            LeafFor::Other
+        } else {
+            LeafFor::Rotation
+        };
         let wallet = record.id;
         let floor = known
             .iter()
             .find(|known| known.account == key.account)
             .map(|known| known.leaf_floor);
-        let reserved = reserve(vault, marks, wallet, &key.signer, digest, floor)?;
+        let reserved = reserve(vault, marks, wallet, &key.signer, digest, floor, purpose)?;
         if let Some(nonce) = nonce {
             marks
                 .note_signed(&key.account, &nonce, digest)

@@ -196,6 +196,10 @@ pub enum VectorError {
     SignedDigestAsText,
     #[error("{0} is marked writable in this transaction, and the runtime will not let it be written. Its flag would differ from what was signed, so the signature could not land. Remove the write.")]
     DemotedWritable(Pubkey),
+    #[error(
+        "The context note says {0} uses another scheme than its wallet here does. It was not used."
+    )]
+    NoteScheme(Pubkey),
     #[error("This transaction hands {0} to a key this device did not make for it. Whoever holds that key would control the account, so it is not signed.")]
     RotatesElsewhere(Pubkey),
     #[error("The key that signs for {0} here is not the one the account holds now. If a transaction that replaces its key has landed, install the next key on the Wallets screen.")]

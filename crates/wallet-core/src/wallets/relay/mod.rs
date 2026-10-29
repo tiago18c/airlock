@@ -42,12 +42,13 @@ mod vector_tests;
 
 pub use submit::*;
 pub use vector::{
-    advance_next_keys, authorizations_for_note, vector_accounts, vector_signature_objects,
-    AuthContext, VectorContext,
+    advance_next_keys, authorizations_for_note, overlay_note, vector_accounts,
+    vector_signature_objects, AuthContext, VectorContext,
 };
 pub use vector_sign::{
     digests_to_sign, insert_personal_sign, insert_vector_signature, personal_sign_digest,
-    sign_vector_authorizations, sign_vector_authorizations_in,
+    refuse_handover, sign_vector_authorizations, sign_vector_authorizations_in, to_sign_now,
+    ToSign,
 };
 pub use vector_wrap::{wrap_for_vector, VectorWrap, PASSTHROUGH_CU};
 

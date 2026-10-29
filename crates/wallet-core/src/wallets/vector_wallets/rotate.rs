@@ -9,7 +9,7 @@
 //! picks the one the account holds. Each signature spends a leaf of the key
 //! that is being retired anyway.
 
-use super::leaves::{install_landed_rotations, reserve_leaf, LeafError, LeafMarks};
+use super::leaves::{install_landed_rotations, reserve_leaf, LeafError, LeafFor, LeafMarks};
 use crate::ids::WalletId;
 use crate::transport::protocol::AccountState;
 use crate::transport::protocol::{KeyRotation, RotationSignature, MAX_ROTATION_NONCES};
@@ -106,7 +106,7 @@ pub fn sign_rotation<V: VaultStore, M: VaultStore>(
     }
     let mut signed = Vec::with_capacity(nonces.len());
     for (nonce, digest) in nonces.iter().zip(&digests) {
-        let reserved = reserve_leaf(vault, marks, wallet, &key, None)?;
+        let reserved = reserve_leaf(vault, marks, wallet, &key, None, LeafFor::Rotation)?;
         let signature = signer
             .sign_leaf(reserved.leaf, digest)
             .map_err(|err| LeafError::Rotation(err.to_string()))?;
