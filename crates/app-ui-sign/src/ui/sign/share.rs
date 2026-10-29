@@ -21,10 +21,29 @@ pub(in crate::ui) fn Share(tx: std::rc::Rc<DecodedTx>) -> Element {
         .iter()
         .map(|item| QrObject::Signature(item.signed.clone()))
         .collect();
+    // A Vector signature's address is its account; every other one's is the
+    // key that made it.
+    let mut here = session.local_signer_pubkeys();
+    here.extend(session.local_vector_accounts());
+    let signatures: Vec<ShownSignature> = signatures
+        .into_iter()
+        .enumerate()
+        .map(|(i, item)| ShownSignature {
+            local: here.contains(&item.pubkey),
+            pubkey: item.pubkey,
+            signed: item.signed,
+            authorization: i >= own,
+        })
+        .collect();
     let shown = tx.clone();
 
     rsx! {
         div { class: "segmented", role: "group", aria_label: "What to share",
+            button {
+                class: if tab() == ShareTab::Everything { "tab on" } else { "tab" },
+                onclick: move |_| tab.set(ShareTab::Everything),
+                "Everything"
+            }
             button {
                 class: if tab() == ShareTab::Transaction { "tab on" } else { "tab" },
                 onclick: move |_| tab.set(ShareTab::Transaction),
@@ -40,49 +59,130 @@ pub(in crate::ui) fn Share(tx: std::rc::Rc<DecodedTx>) -> Element {
                 onclick: move |_| tab.set(ShareTab::Context),
                 "Context note"
             }
-            button {
-                class: if tab() == ShareTab::Everything { "tab on" } else { "tab" },
-                onclick: move |_| tab.set(ShareTab::Everything),
-                "Everything"
-            }
         }
         match tab() {
+            ShareTab::Everything => rsx! {
+                EverythingShare { tx: shown.clone(), signatures: all_signed.clone() }
+            },
             ShareTab::Transaction => rsx! {
                 TransactionShare { tx: shown.clone() }
             },
             ShareTab::Signatures => rsx! {
-                if signatures.is_empty() {
-                    p { class: "hint",
-                        "Nothing is signed yet. Each signature made here gets its own code, which carries the signer's address so the other device knows where it goes."
-                    }
-                } else {
-                    p { class: "hint",
-                        "Each is one signature and its signer's address. The device that holds the transaction adds them one at a time, or all at once from the first code."
-                    }
-                }
-                if count > 1 {
-                    div { class: "card",
-                        div { class: "chip-row",
-                            strong { "All {count} signatures" }
-                            span { class: "chip", "one transfer" }
-                        }
-                        PayloadShare { objects: all_signed.clone(), short: true }
-                    }
-                }
-                for (i, item) in signatures.into_iter().enumerate() {
-                    SignatureCard {
-                        key: "{item.pubkey}-{i}",
-                        pubkey: item.pubkey,
-                        signed: item.signed,
-                        authorization: i >= own,
-                    }
-                }
+                SignaturesShare { signatures }
             },
             ShareTab::Context => rsx! {
                 ContextShare { tx: shown.clone() }
             },
-            ShareTab::Everything => rsx! {
-                EverythingShare { tx: shown.clone(), signatures: all_signed.clone() }
+        }
+    }
+}
+
+/// One signature of the transaction, as the Signatures tab lists it.
+#[derive(Clone, PartialEq)]
+struct ShownSignature {
+    pubkey: Pubkey,
+    signed: Signed,
+    authorization: bool,
+    /// Made by a key, or for a Vector account, this device holds.
+    local: bool,
+}
+
+/// Which signatures the Signatures tab shows.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum SignaturesTab {
+    /// The ones this device made, in one transfer.
+    Local,
+    /// Every one, in one transfer.
+    All,
+    /// Every one, a code each.
+    Individual,
+}
+
+/// The transaction's signatures: those made here, all of them, or each apart.
+#[component]
+fn SignaturesShare(signatures: Vec<ShownSignature>) -> Element {
+    let mut tab = use_signal(|| SignaturesTab::Local);
+    let count = signatures.len();
+    let local: Vec<&ShownSignature> = signatures.iter().filter(|item| item.local).collect();
+    let local_count = local.len();
+    let local_signed: Vec<QrObject> = local
+        .iter()
+        .map(|item| QrObject::Signature(item.signed.clone()))
+        .collect();
+    let all_signed: Vec<QrObject> = signatures
+        .iter()
+        .map(|item| QrObject::Signature(item.signed.clone()))
+        .collect();
+
+    if signatures.is_empty() {
+        return rsx! {
+            p { class: "hint",
+                "Nothing is signed yet. Each signature made here gets its own code, which carries the signer's address so the other device knows where it goes."
+            }
+        };
+    }
+    rsx! {
+        div { class: "segmented", role: "group", aria_label: "Which signatures",
+            button {
+                class: if tab() == SignaturesTab::Local { "tab on" } else { "tab" },
+                onclick: move |_| tab.set(SignaturesTab::Local),
+                "Local ({local_count})"
+            }
+            button {
+                class: if tab() == SignaturesTab::All { "tab on" } else { "tab" },
+                onclick: move |_| tab.set(SignaturesTab::All),
+                "All ({count})"
+            }
+            button {
+                class: if tab() == SignaturesTab::Individual { "tab on" } else { "tab" },
+                onclick: move |_| tab.set(SignaturesTab::Individual),
+                "Individual"
+            }
+        }
+        match tab() {
+            SignaturesTab::Local => rsx! {
+                if local.is_empty() {
+                    p { class: "hint",
+                        "None of these signatures was made by a key on this device. The All and Individual tabs share them anyway."
+                    }
+                } else {
+                    p { class: "hint",
+                        "The signatures made by keys on this device, in one transfer. Each carries its signer's address, so the device that holds the transaction knows where it goes."
+                    }
+                    div { class: "card",
+                        div { class: "chip-row",
+                            for item in local.iter() {
+                                Address { key: "{item.pubkey}", pubkey: item.pubkey }
+                            }
+                        }
+                        PayloadShare { objects: local_signed.clone(), short: true }
+                    }
+                }
+            },
+            SignaturesTab::All => rsx! {
+                p { class: "hint",
+                    "Every signature the transaction has so far, in one transfer. The device that holds the transaction adds them all at once."
+                }
+                div { class: "card",
+                    div { class: "chip-row",
+                        strong { "All {count} signatures" }
+                        span { class: "chip", "one transfer" }
+                    }
+                    PayloadShare { objects: all_signed.clone(), short: true }
+                }
+            },
+            SignaturesTab::Individual => rsx! {
+                p { class: "hint",
+                    "Each is one signature and its signer's address. The device that holds the transaction adds them one at a time."
+                }
+                for (i, item) in signatures.iter().enumerate() {
+                    SignatureCard {
+                        key: "{item.pubkey}-{i}",
+                        pubkey: item.pubkey,
+                        signed: item.signed.clone(),
+                        authorization: item.authorization,
+                    }
+                }
             },
         }
     }

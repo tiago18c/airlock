@@ -92,7 +92,7 @@ pub fn use_forms() -> Forms {
             error: use_signal(|| None::<String>),
             note: use_signal(|| None::<wallet_core::Phrase>),
             view: use_signal(|| SignView::Summary),
-            share: use_signal(|| ShareTab::Transaction),
+            share: use_signal(|| ShareTab::Everything),
             simulation: use_signal(|| SimState::Idle),
             simulated_for: use_signal(|| None::<[u8; 32]>),
             tables: use_signal(wallet_core::LookupTables::new),
