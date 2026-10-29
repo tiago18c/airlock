@@ -4,16 +4,16 @@ name: Changelog
 # `no-changelog` when there is nothing to say: tooling, CI, refactors, tests,
 # dependency updates. This runs apart from CI so that adding or removing the
 # label checks again without rebuilding everything.
+#
+# No concurrency group: opening a pull request with a label sends `opened`
+# and `labeled` together, and cancelling one leaves a cancelled check that
+# GitHub shows as failed. The job takes seconds, so both just run.
 on:
   pull_request:
     types: [opened, synchronize, reopened, labeled, unlabeled]
 
 permissions:
   contents: read
-
-concurrency:
-  group: changelog-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
 
 jobs:
   changelog:
