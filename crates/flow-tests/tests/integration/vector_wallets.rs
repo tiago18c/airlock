@@ -564,13 +564,18 @@ fn the_key_device_rotates_an_xmss_account_without_a_node_and_signs_with_the_next
     // The key device signs the rotation at both, and the QR carries it.
     let rotation = desk.sign_rotation(account.wallet);
     assert_eq!(rotation.signed.len(), 2);
-    // Pressed again, it signs at the same nonces, not at its own digests.
+    // Pressed again, it shows the same signatures, at the same nonces and
+    // not at its own digests, and spends no leaf on them.
+    let leaves = desk
+        .leaf_marks
+        .next_leaf(&account.address, &rotation_key(&desk, account.wallet));
     let again = desk.sign_rotation(account.wallet);
-    let nonces = |r: &wallet_core::protocol::KeyRotation| {
-        r.signed.iter().map(|s| s.nonce).collect::<Vec<_>>()
-    };
-    assert_eq!(nonces(&again), nonces(&rotation));
-    assert_eq!(again.next_key, rotation.next_key);
+    assert_eq!(again, rotation);
+    assert_eq!(
+        desk.leaf_marks
+            .next_leaf(&account.address, &rotation_key(&desk, account.wallet)),
+        leaves
+    );
     let carried =
         match decode_object(&encode_object(&QrObject::KeyRotation(rotation.clone())).unwrap())
             .unwrap()
@@ -772,9 +777,12 @@ fn a_wallet_restored_from_its_phrase_finds_its_key_and_rotates_at_the_last_leaf(
     let adopted = desk.adopt_state(account.wallet, &account.address);
     assert_eq!(adopted.index, Some(1));
 
-    // One signature, at the last leaf of key 1, moves it to key 2.
+    // One signature, at the last leaf of key 1, moves it to key 2. It is
+    // kept: a QR lost on the way can be shown again, though the leaf it
+    // used was the last.
     let rotation = desk.sign_rotation(account.wallet);
     assert_eq!(rotation.signed.len(), 1);
+    assert_eq!(desk.sign_rotation(account.wallet), rotation);
     assert_eq!(
         u32::from_be_bytes(rotation.signed[0].signature[..4].try_into().unwrap()),
         wallet_core::vector::XMSS_LEAVES - 1
@@ -976,4 +984,11 @@ fn token_data(mint: &Pubkey, owner: &Pubkey, amount: u64) -> Vec<u8> {
     data[64..72].copy_from_slice(&amount.to_le_bytes());
     data[108] = 1;
     data
+}
+
+/// The key `wallet` signs with now.
+fn rotation_key(desk: &Desk, wallet: wallet_core::WalletId) -> Vec<u8> {
+    wallet_core::vector::VectorSigner::from_record(&desk.wallets, wallet)
+        .unwrap()
+        .key()
 }

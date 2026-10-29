@@ -25,7 +25,8 @@ use wallet_vault::store::VaultStore;
 /// Sign the move of `wallet`'s XMSS account to its next key, making that
 /// key first when there is none. What is about to be signed is recorded
 /// before it is signed: the leaves, and the digests that say later that the
-/// rotation landed.
+/// rotation landed. Each signature is kept once made, so pressing again
+/// shows the same ones and signs only at a nonce it has not signed at.
 pub fn sign_rotation<V: VaultStore, M: VaultStore>(
     vault: &mut Vault<V>,
     marks: &mut LeafMarks<M>,
@@ -97,19 +98,31 @@ pub fn sign_rotation<V: VaultStore, M: VaultStore>(
         .note_rotation(&account, &next_key, &digests)
         .map_err(LeafError::Mark)?;
 
-    if restored {
-        // A lost copy took leaves in rising order, so the last one is the
-        // one it cannot have used.
-        marks
-            .raise(&account, &key, XMSS_LEAVES - 1)
-            .map_err(LeafError::Mark)?;
-    }
     let mut signed = Vec::with_capacity(nonces.len());
     for (nonce, digest) in nonces.iter().zip(&digests) {
+        // Signed here before: show it again. A second signature over the
+        // same digest would only spend another leaf.
+        if let Some(signature) = marks.rotation_signature(&account, &next_key, nonce) {
+            signed.push(RotationSignature {
+                nonce: *nonce,
+                signature,
+            });
+            continue;
+        }
+        if restored {
+            // A lost copy took leaves in rising order, so the last one is
+            // the one it cannot have used.
+            marks
+                .raise(&account, &key, XMSS_LEAVES - 1)
+                .map_err(LeafError::Mark)?;
+        }
         let reserved = reserve_leaf(vault, marks, wallet, &key, None, LeafFor::Rotation)?;
         let signature = signer
             .sign_leaf(reserved.leaf, digest)
             .map_err(|err| LeafError::Rotation(err.to_string()))?;
+        marks
+            .keep_rotation_signature(&account, &next_key, nonce, &signature)
+            .map_err(LeafError::Mark)?;
         signed.push(RotationSignature {
             nonce: *nonce,
             signature,

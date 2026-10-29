@@ -99,13 +99,24 @@ struct Trail {
     possible: Vec<String>,
 }
 
-/// A rotation signed here: the key it moves to, and the digest of each
-/// signature, which becomes the account's nonce when that one lands.
+/// A rotation signed here: the key it moves to, the digest of each
+/// signature, which becomes the account's nonce when that one lands, and
+/// the signatures themselves, so that showing it again spends no leaf.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Rotation {
     next_key: String,
     digests: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    signed: Vec<SignedAt>,
+}
+
+/// One signature of a rotation, at the nonce it was made at. In hex.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct SignedAt {
+    nonce: String,
+    signature: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -300,11 +311,13 @@ impl<S: VaultStore> LeafMarks<S> {
             .or_insert_with(|| Rotation {
                 next_key: next_key.clone(),
                 digests: Vec::new(),
+                signed: Vec::new(),
             });
         if rotation.next_key != next_key {
             *rotation = Rotation {
                 next_key,
                 digests: Vec::new(),
+                signed: Vec::new(),
             };
         }
         for digest in digests.iter().map(hex::encode) {
@@ -320,6 +333,54 @@ impl<S: VaultStore> LeafMarks<S> {
                 }
             }
         }
+        self.save()
+    }
+
+    /// The signature of the rotation of `account` into `next_key` made here
+    /// at `nonce`, when there is one.
+    pub fn rotation_signature(
+        &self,
+        account: &Pubkey,
+        next_key: &[u8],
+        nonce: &[u8; 32],
+    ) -> Option<Vec<u8>> {
+        let rotation = self.marks.rotations.get(&account.to_string())?;
+        if rotation.next_key != hex::encode(next_key) {
+            return None;
+        }
+        let nonce = hex::encode(nonce);
+        rotation
+            .signed
+            .iter()
+            .find(|signed| signed.nonce == nonce)
+            .and_then(|signed| hex::decode(&signed.signature).ok())
+    }
+
+    /// Keep the signature of the rotation of `account` into `next_key` made
+    /// at `nonce`, recorded first with [`Self::note_rotation`].
+    pub(super) fn keep_rotation_signature(
+        &mut self,
+        account: &Pubkey,
+        next_key: &[u8],
+        nonce: &[u8; 32],
+        signature: &[u8],
+    ) -> Result<(), VaultError> {
+        let Some(rotation) = self.marks.rotations.get_mut(&account.to_string()) else {
+            return Err(VaultError::Serde(
+                "the rotation was not recorded before it was signed".into(),
+            ));
+        };
+        if rotation.next_key != hex::encode(next_key) {
+            return Err(VaultError::Serde(
+                "the rotation recorded is to another key".into(),
+            ));
+        }
+        let nonce = hex::encode(nonce);
+        rotation.signed.retain(|signed| signed.nonce != nonce);
+        rotation.signed.push(SignedAt {
+            nonce,
+            signature: hex::encode(signature),
+        });
         self.save()
     }
 
