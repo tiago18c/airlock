@@ -124,24 +124,3 @@ jobs:
       - name: Release script tests
         working-directory: .
         run: node --test scripts/release-check.test.mjs
-
-  changelog:
-    name: Changelog entry
-    # A pull request says what it changes for users, in CHANGELOG.md.
-    # Label it `no-changelog` when there is nothing to say.
-    if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'no-changelog')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-      - name: CHANGELOG.md was updated
-        env:
-          BASE: ${{ github.event.pull_request.base.sha }}
-        run: |
-          if git diff --name-only "$BASE"...HEAD | grep -qx 'CHANGELOG.md'; then
-            echo "CHANGELOG.md updated."
-          else
-            echo "::error::Add a line under 'Unreleased' in CHANGELOG.md, or label the pull request 'no-changelog'."
-            exit 1
-          fi

@@ -31,7 +31,7 @@ Versions follow semantic versioning. While the version is below 1.0, a change th
 
 ## Changelog and release notes
 
-`CHANGELOG.md` is written by hand, for users. A pull request that changes behavior adds a line under **Unreleased**, in one of Added, Changed, Fixed, Removed, Security. CI fails a pull request that does not touch the changelog unless it carries the `no-changelog` label, which is right for refactors, tests and dependency updates.
+`CHANGELOG.md` is written by hand, for users. A pull request that changes behavior adds a line under **Unreleased**, in one of Added, Changed, Fixed, Removed, Security. The Changelog workflow fails a pull request that does not touch the changelog unless it carries the `no-changelog` label, and checks again when the label is added or removed, which is right for refactors, tests and dependency updates.
 
 The release notes are that version's section of the changelog, copied as is. There is nothing separate to write.
 

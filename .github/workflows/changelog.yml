@@ -1,0 +1,38 @@
+name: Changelog
+
+# A pull request says what it changes for users, in CHANGELOG.md. Label it
+# `no-changelog` when there is nothing to say: tooling, CI, refactors, tests,
+# dependency updates. This runs apart from CI so that adding or removing the
+# label checks again without rebuilding everything.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: changelog-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  changelog:
+    name: Changelog entry
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: CHANGELOG.md was updated
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          SKIP: ${{ contains(github.event.pull_request.labels.*.name, 'no-changelog') }}
+        run: |
+          if [ "$SKIP" = "true" ]; then
+            echo "Labelled no-changelog."
+          elif git diff --name-only "$BASE"...HEAD | grep -qx 'CHANGELOG.md'; then
+            echo "CHANGELOG.md updated."
+          else
+            echo "::error::Add a line under 'Unreleased' in CHANGELOG.md, or label the pull request 'no-changelog'."
+            exit 1
+          fi
