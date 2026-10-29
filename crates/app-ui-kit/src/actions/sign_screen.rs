@@ -433,7 +433,8 @@ pub fn attach_context(session: Session, context: TxContext) {
 /// The probe runs at the highest compute limit so a rebuild's earlier
 /// estimate cannot cut it short, then both limits are written back from what
 /// the node used. Authorization signatures stay on the wire. A signature over
-/// the transaction itself is left alone: fitting would void it.
+/// the transaction itself is left alone: fitting would void it. Legacy and v0
+/// are simulated as they are.
 pub fn start_simulation(session: Session, tx: DecodedTx) {
     let form = session.forms.sign;
     let mut state = form.simulation;
@@ -464,7 +465,13 @@ pub fn start_simulation(session: Session, tx: DecodedTx) {
     }
     state.set(SimState::Running);
     let rpc = session.rpc();
-    let current_wire = wire_signal.peek().clone();
+    // Only v1 states its limits in a header that fitting can rewrite. Legacy
+    // and v0 are signed as they came, and a v0 wire needs the tables the
+    // decoded transaction already holds, so they simulate as they are.
+    let current_wire = wire_signal
+        .peek()
+        .clone()
+        .filter(|_| tx.format == TxFormat::V1);
     spawn(async move {
         let mut answer_for = digest;
         let result = match (rpc, current_wire) {
