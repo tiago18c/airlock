@@ -809,21 +809,111 @@ fn a_wallet_restored_from_its_phrase_finds_its_key_and_rotates_at_the_last_leaf(
 }
 
 #[test]
-fn a_winternitz_vector_wallet_does_not_sign() {
-    // A Winternitz key signs once, and a transaction that fails on chain
-    // leaves the account on it: anything else would be a second signature.
-    // So the scheme is turned off, and a wallet of it never signs.
+fn a_winternitz_vector_wallet_signs_rotates_and_signs_again() {
     let mut desk = Desk::new();
     let account = desk.add_winternitz("Once");
     let receiver = KeypairSigner::new_random().pubkey();
+    let before = nonce_of(&desk, &account.address);
+
+    // Without a next key, rebuild refuses.
+    desk.wallets
+        .iter_mut()
+        .find(|w| w.id == account.wallet)
+        .unwrap()
+        .clear_vector_next_key();
+    let refused = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        desk.rebuild(
+            account.address,
+            vec![transfer(&account.address, &receiver, SOL / 8)],
+        )
+    }));
+    assert!(refused.is_err());
+
+    let _ = desk.prepare_xmss_rotation(account.wallet);
     let adapted = desk.rebuild(
         account.address,
         vec![transfer(&account.address, &receiver, SOL / 4)],
     );
-    match desk.sign(&adapted.wire, &adapted.context) {
-        Err(_) => {}
-        Ok(signed) => assert_eq!(signed.authorizations, 0),
-    }
+    let signed = desk.sign(&adapted.wire, &adapted.context).unwrap();
+    assert_eq!((signed.authorizations, signed.signatures), (1, 1));
+    let again = desk.sign(&adapted.wire, &adapted.context).unwrap();
+    assert_eq!(signed.wire, again.wire);
+
+    // The key signed once: anything else at this nonce is refused, so a
+    // transaction that fails on chain does not get a second signature.
+    let other = desk.rebuild(
+        account.address,
+        vec![transfer(&account.address, &receiver, SOL / 8)],
+    );
+    assert!(desk.sign(&other.wire, &other.context).is_err());
+
+    let landed = desk.land(&signed.wire);
+    println!(
+        "Winternitz transfer, rebuilt: {} CU, {} bytes",
+        landed.compute_units, landed.size
+    );
+    let added = SchemeId::Winternitz.advance_cu() + PASSTHROUGH_CU;
+    assert!(landed.compute_units < u64::from(added), "{landed:?}");
+    assert_eq!(desk.chain().balance(&receiver), SOL / 4);
+    assert_ne!(nonce_of(&desk, &account.address), before);
+
+    // The account moved to the next key: it is installed, and the key after
+    // it is made with it.
+    desk.install_rotation(account.wallet, &account.address);
+
+    let second = desk.rebuild(
+        account.address,
+        vec![transfer(&account.address, &receiver, SOL / 8)],
+    );
+    let signed = desk.sign(&second.wire, &second.context).unwrap();
+    desk.land(&signed.wire);
+    assert_eq!(desk.chain().balance(&receiver), SOL / 4 + SOL / 8);
+}
+
+#[test]
+fn a_winternitz_key_device_moves_on_from_the_account_state_it_is_shown() {
+    let mut desk = Desk::new();
+    let account = desk.add_winternitz("Once");
+    let receiver = KeypairSigner::new_random().pubkey();
+    let next = |desk: &Desk| {
+        desk.wallets
+            .iter()
+            .find(|w| w.id == account.wallet)
+            .unwrap()
+            .vector_prepared_next_key()
+            .unwrap()
+            .to_vec()
+    };
+    let first_next = next(&desk);
+
+    let adapted = desk.rebuild(
+        account.address,
+        vec![transfer(&account.address, &receiver, SOL / 4)],
+    );
+    let signed = desk.sign(&adapted.wire, &adapted.context).unwrap();
+    desk.land(&signed.wire);
+
+    // The key device never reads the chain: the state the online device
+    // shows tells it the transaction landed, and it moves to the next key
+    // and makes the one after it.
+    let adopted = desk.adopt_state(account.wallet, &account.address);
+    assert_eq!(adopted.index, None);
+    let read = VectorAccount::parse(
+        &PROGRAM_ID,
+        &desk.chain().account(&account.address).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(read.current_key(), Some(first_next.as_slice()));
+    let second_next = next(&desk);
+    assert_ne!(second_next, first_next);
+
+    let second = desk.rebuild(
+        account.address,
+        vec![transfer(&account.address, &receiver, SOL / 8)],
+    );
+    let signed = desk.sign(&second.wire, &second.context).unwrap();
+    desk.land(&signed.wire);
+    assert_eq!(desk.chain().balance(&receiver), SOL / 4 + SOL / 8);
 }
 
 #[test]

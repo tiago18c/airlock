@@ -130,6 +130,19 @@ pub(super) fn VectorFacts(
     let mut rotation = use_signal(|| None::<QrObject>);
     let is_xmss = scheme == SchemeId::Xmss;
     let rotates_here = is_xmss && held_here;
+    // Every Winternitz transaction names the key the account moves to.
+    let is_winternitz = scheme == SchemeId::Winternitz;
+    let next_key = session.vector_next_pubkey(id).filter(|_| is_winternitz);
+    // The account already holds the key stored as next: it moved on, and the
+    // key after it is not here yet.
+    let next_is_current = next_key.as_ref().is_some_and(|next| {
+        reads
+            .account(&address)
+            .and_then(|account| account.current_key().map(<[u8]>::to_vec))
+            .as_ref()
+            == Some(next)
+    });
+    let mut show_next = use_signal(|| false);
     let online = network.is_some();
     // Leaves this device has used, from its own record: what an airgapped
     // device knows without the chain.
@@ -194,6 +207,14 @@ pub(super) fn VectorFacts(
                 Err(err) => error.set(Some(err)),
             }
             busy.set(false);
+        });
+    };
+    let prepare_next = move |_| {
+        error.set(None);
+        session.when_unlocked("Unlock the vault to make the next key.", move || {
+            if let Err(err) = session.prepare_rotating_next_key(id) {
+                error.set(Some(err.to_string()));
+            }
         });
     };
     let rotate = move |_| {
@@ -304,10 +325,14 @@ pub(super) fn VectorFacts(
                 }
             }
         }
-        if is_xmss && !held_here && online && state_object.is_some() {
+        if scheme.is_stateful() && !held_here && online && state_object.is_some() {
             div { class: "btn-row",
                 button { class: "sm",
-                    title: "Show what the chain says of this account, for the device that holds its key: where its nonce is, its leaves, and the key it holds. A device restored from a recovery phrase needs it before it can rotate.",
+                    title: if is_xmss {
+                        "Show what the chain says of this account, for the device that holds its key: where its nonce is, its leaves, and the key it holds. A device restored from a recovery phrase needs it before it can rotate."
+                    } else {
+                        "Show what the chain says of this account, for the device that holds its key: where its nonce is, and the key it holds. Once it shows a transaction landed, that device moves to its next key and makes the one after it."
+                    },
                     onclick: move |_| show_state.set(true),
                     "Show account state"
                 }
@@ -354,11 +379,65 @@ pub(super) fn VectorFacts(
                 }
             }
         }
+        if is_winternitz {
+            p { class: "note",
+                "Each Winternitz signature spends the key, so every transaction moves the account to its next key. A transaction that fails on chain leaves the account on a key that has signed already, and that key signs nothing else: what the account holds can be stuck."
+            }
+            if held_here {
+                p { class: "note",
+                    "Keep this key on this device only, and never sign with a copy restored from a backup."
+                }
+                if next_key.is_some() {
+                    p { class: "note", "A next Winternitz public key is stored for the next transaction." }
+                    div { class: "btn-row",
+                        button { class: "sm",
+                            title: "Show the next public key, for the online device to store before it builds the next transaction.",
+                            onclick: move |_| show_next.set(true),
+                            "Show next key"
+                        }
+                    }
+                } else {
+                    div { class: "btn-row",
+                        button { class: "sm",
+                            title: "Make the next key on this device and store its public key for the next transaction.",
+                            onclick: prepare_next,
+                            "Prepare next key"
+                        }
+                    }
+                }
+            } else if next_key.is_none() || next_is_current {
+                p { class: "note",
+                    "Before the next transaction, store the next public key of the device that holds this key: scan or paste what Show next key on its row shows on Sign here. After a transaction landed, give that device this account's state first, so it moves to its next key."
+                }
+            } else {
+                p { class: "note", "A next public key from the device that holds this key is stored for the next transaction." }
+            }
+        }
         if let Some(text) = note() {
             p { class: "note", role: "status", "{text}" }
         }
         if let Some(err) = error() {
             p { class: "error", "{err}" }
+        }
+        if show_next() {
+            if let Some(key) = next_key.clone() {
+                div { class: "modal-backdrop", onclick: move |_| show_next.set(false),
+                    div { class: "modal", onclick: move |evt| evt.stop_propagation(),
+                        div { class: "stack",
+                            h3 { "Next public key" }
+                            p { class: "lede",
+                                "On the online device, scan this on Sign or paste the text there. It stores the key on this wallet, and the next transaction moves the account to it. It is a public key, never a secret."
+                            }
+                            PayloadShare { objects: vec![QrObject::PublicKey { scheme: scheme.byte(), key }],
+                                button { class: "ghost",
+                                    onclick: move |_| show_next.set(false),
+                                    "Close"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
         if let Some(object) = rotation() {
             div { class: "modal-backdrop", onclick: move |_| rotation.set(None),

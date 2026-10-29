@@ -185,7 +185,7 @@ pub fn adopt_account_state<V: VaultStore, M: VaultStore>(
         .kind
         .vector_settings()
         .map(|settings| settings.scheme)
-        .filter(|scheme| scheme.byte() == state.scheme && *scheme == SchemeId::Xmss)
+        .filter(|scheme| scheme.byte() == state.scheme && scheme.is_stateful())
         .ok_or_else(|| LeafError::NotStateful(label.clone()))?;
     install_landed_rotations(
         vault,
@@ -229,9 +229,11 @@ pub fn adopt_account_state<V: VaultStore, M: VaultStore>(
     marks
         .reset_trail(&account, &state.nonce)
         .map_err(LeafError::Mark)?;
-    marks
-        .raise(&account, &state.key, state.leaf_floor)
-        .map_err(LeafError::Mark)?;
+    if scheme == SchemeId::Xmss {
+        marks
+            .raise(&account, &state.key, state.leaf_floor)
+            .map_err(LeafError::Mark)?;
+    }
     Ok(Adopted {
         wallet,
         label,

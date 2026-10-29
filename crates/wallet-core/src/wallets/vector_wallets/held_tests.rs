@@ -170,7 +170,7 @@ fn an_xmss_seed_stream_is_pinned_and_signs_a_leaf() {
 }
 
 #[test]
-fn a_winternitz_seed_stream_is_pinned_and_a_wallet_of_it_does_not_sign() {
+fn a_winternitz_seed_stream_is_pinned_and_signs_once() {
     let seed = [9u8; 32];
     let key = winternitz_from_seed(&seed).unwrap();
     let public = key.verifying_key().to_bytes().to_vec();
@@ -188,11 +188,13 @@ fn a_winternitz_seed_stream_is_pinned_and_a_wallet_of_it_does_not_sign() {
     );
     let id = kept.id;
     let wallets = [kept];
-    // Winternitz is turned off: a key of it is never used to sign.
-    assert!(matches!(
-        VectorSigner::from_record(&wallets, id),
-        Err(VectorError::CannotSign { .. })
-    ));
+    let signer = VectorSigner::from_record(&wallets, id).unwrap();
+    assert_eq!(signer.scheme(), SchemeId::Winternitz);
+    assert_eq!(signer.key(), public);
+    let digest = [21u8; 32];
+    let signature = signer.sign_leaf(0, &digest).unwrap();
+    assert_eq!(signature.len(), SchemeId::Winternitz.signature_len());
+    verify(SchemeId::Winternitz, &public, &digest, &signature).unwrap();
 }
 
 #[test]

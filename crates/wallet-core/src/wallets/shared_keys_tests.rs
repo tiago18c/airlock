@@ -11,7 +11,12 @@ fn airgap() -> (VaultData, Pubkey) {
     let key = KeypairSigner::new_random();
     let hot = WalletRecord::from_keypair_seed("Cold", key.seed_bytes());
     data.wallets.push(hot);
-    for scheme in [SchemeId::MlDsa44, SchemeId::Falcon512, SchemeId::Xmss] {
+    for scheme in [
+        SchemeId::MlDsa44,
+        SchemeId::Falcon512,
+        SchemeId::Winternitz,
+        SchemeId::Xmss,
+    ] {
         let (public, secret) = new_held_key(scheme);
         data.wallets.push(WalletRecord::vector(
             scheme.label(),
@@ -41,7 +46,7 @@ fn every_key_and_vector_wallet_is_exported_and_lands_at_the_same_address() {
     let (airgap, cold) = airgap();
     let summaries = airgap.summaries();
     let exported = exportable(&summaries);
-    assert_eq!(exported.len(), 4);
+    assert_eq!(exported.len(), 5);
     assert_eq!(exported[0].key.role, KeyRole::Address);
     assert_eq!(exported[0].key.key, cold.to_bytes().to_vec());
 
@@ -61,7 +66,7 @@ fn every_key_and_vector_wallet_is_exported_and_lands_at_the_same_address() {
     let seen = arriving(&online.summaries(), &carried);
     assert!(seen.iter().all(|key| key.arrival == Arrival::New));
     let added = online.add_wallet_keys(&to_add(&carried), None).unwrap();
-    assert_eq!(added.len(), 4);
+    assert_eq!(added.len(), 5);
     for (here, there) in online.summaries().iter().zip(&summaries) {
         assert_eq!(here.address, there.address, "{}", there.label);
         assert_eq!(here.label, there.label);
@@ -130,39 +135,6 @@ fn an_ed25519_vector_account_signs_as_the_offline_wallet_added_with_it() {
             wallet: added[0].id
         }
     );
-}
-
-#[test]
-fn a_winternitz_wallet_is_neither_exported_nor_added() {
-    let (public, secret) = new_held_key(SchemeId::Winternitz);
-    let mut airgap = VaultData::default();
-    airgap.wallets.push(WalletRecord::vector(
-        "Once",
-        SchemeId::Winternitz,
-        PROGRAM_ID,
-        public.clone(),
-        Authority::Held {
-            secret: SecretBytes(secret),
-            next_leaf: 0,
-        },
-    ));
-    assert!(exportable(&airgap.summaries()).is_empty());
-
-    let key = WalletKey {
-        role: KeyRole::Vector {
-            scheme: SchemeId::Winternitz.byte(),
-        },
-        label: "Once".into(),
-        key: public,
-    };
-    let seen = arriving(&[], std::slice::from_ref(&key));
-    assert!(matches!(seen[0].arrival, Arrival::Refused(_)));
-    let mut online = VaultData::default();
-    assert!(matches!(
-        online.add_wallet_keys(&to_add(&[key]), None),
-        Err(RosterError::BadKey(_))
-    ));
-    assert!(online.wallets.is_empty());
 }
 
 #[test]
