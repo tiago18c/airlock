@@ -5,6 +5,7 @@ Airlock is a Solana wallet that keeps preparing a transaction apart from signing
 ## Before opening a pull request
 
 - **Changelog.** If people who use Airlock will notice the change, add a line under **Unreleased** in `CHANGELOG.md`, in Added, Changed, Fixed, Removed or Security, written for them. If they won't (tooling, CI, refactors, tests, dependency updates), open the pull request with the `no-changelog` label: `gh pr create --label no-changelog`. The Changelog check fails without one or the other. See [docs/releasing.md](docs/releasing.md#changelog-and-release-notes).
+- **Screenshots.** If the pull request changes anything people see in the app, put before and after screenshots in the description. A completely new screen or feature has no before, so the after is enough.
 - **Base.** Branch from `main` and target `main`.
 - **Format and lint as CI does.** Run `cargo fmt --all --check`, then the Clippy step of `.github/workflows/ci.yml`, with its `--no-deps` package list. Clippy over the whole workspace also lints the vendored Codama crates, which CI leaves alone.
 - **Tests.** Run `cargo test` for the crates you touched. `crates/wallet-core/src/layers.rs` fails a new module that has no layer.
