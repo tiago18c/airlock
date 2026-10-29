@@ -11949,7 +11949,7 @@ dependencies = [
  "getrandom 0.3.4",
  "getrandom 0.4.3",
  "hex",
- "hmac 0.12.1",
+ "hmac 0.13.0",
  "idl-pack",
  "k256 0.14.0",
  "pollster",
