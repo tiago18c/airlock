@@ -45,7 +45,7 @@ use serde::{Deserialize, Serialize};
 use solana_pubkey::Pubkey;
 use std::collections::BTreeMap;
 use thiserror::Error;
-use wallet_vault::store::{check_saveable, load_json, LoadProblem, VaultStore};
+use wallet_vault::store::{check_saveable, load_json_or_block, LoadProblem, VaultStore};
 
 /// Leaves passed over when a key's mark is missing but its record says it
 /// has signed. The record may be an older copy of the vault, so the leaves
@@ -109,8 +109,11 @@ pub struct LeafMarks<S: VaultStore> {
 }
 
 impl<S: VaultStore> LeafMarks<S> {
+    /// Open the marks. Marks that cannot be read are not replaced: an
+    /// empty record would let a used leaf sign again, so every save, and so
+    /// every hash-based signature, is refused until the file reads again.
     pub fn open(store: S) -> Self {
-        let (marks, problem) = load_json(&store, "record of used signing leaves");
+        let (marks, problem) = load_json_or_block(&store, "record of used signing leaves");
         Self {
             store,
             marks,
