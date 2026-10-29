@@ -1148,3 +1148,43 @@ fn a_whirlpool_pool_creation_names_its_mints_and_vaults() {
     assert_eq!(field(&idl, "Pool Vault B"), vault_b);
     assert_eq!(idl.unnamed_accounts, 1);
 }
+
+/// The three memo programs read the same data, the memo as UTF-8, and name
+/// the signers passed after it.
+#[test]
+fn a_memo_reads_its_text_on_every_memo_program() {
+    for program in [
+        "Memo4c2pN8afCj432Lb7RMVKi9PbQnnW7ewFFaV3oAH",
+        "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+        "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo",
+    ] {
+        let memo = Instruction {
+            program_id: Pubkey::from_str_const(program),
+            accounts: vec![AccountMeta::new_readonly(pk(1), true)],
+            data: b"gm, airlock".to_vec(),
+        };
+        let idl = explain_one_ix(&builtins(), pk(1), memo);
+        assert_eq!(idl.intent, "Add memo", "{program}");
+        assert_eq!(
+            idl.interpolated_intent.as_deref(),
+            Some("Add memo \"gm, airlock\""),
+            "{program}"
+        );
+        assert_eq!(idl.unnamed_accounts, 0, "{program}");
+    }
+}
+
+/// Bytes that are not UTF-8 are no memo: the program fails on them, and
+/// review shows them raw.
+#[test]
+fn a_memo_that_is_not_utf8_stays_raw() {
+    let memo = Instruction {
+        program_id: Pubkey::from_str_const("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
+        accounts: vec![],
+        data: vec![0xff, 0xfe],
+    };
+    let tx = decode_v1_transaction(&compile(pk(1), vec![memo]).wire).unwrap();
+    let explained = explain_transaction(&builtins(), &tx);
+    assert!(explained.instructions[0].idl.is_none());
+    assert_eq!(explained.instructions[0].data, vec![0xff, 0xfe]);
+}
