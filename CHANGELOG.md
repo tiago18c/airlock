@@ -16,6 +16,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - Settings → Vault has **Change password** while the vault is unlocked. It asks for the current password, seals the vault under a new key with a new salt, and deletes the backup file still sealed under the old one.
 - Review and Sign shows the steps the transaction on screen goes through, in a row above it: Rebuild, Sign authorization, Collect authorizations, Simulate, Sign transaction, Collect signatures, then Submit, Return to site, or Share to submit when offline. Only the steps this transaction needs appear. Those behind it are green, the one it is on is marked, and an expired blockhash marks it amber. Simulate sits where the simulation can first run, after the rebuild and every authorization. A failed simulation shows red there and does not hold signing back.
 - The memo program's IDL ships with the app, for its three addresses (v4 `Memo4c…`, v3 `MemoSq…` and v1 `Memo1U…`) on mainnet, devnet and testnet. Review reads a memo as its text, and Build can add one.
+- A button next to the wallet selector in the top bar copies the address of the selected wallet.
 
 ### Changed
 - Review and Sign hides its row of steps when a transaction only needs simulating and signing with keys on this device. In a batch from a site, the row of transactions stays and only the steps of the transaction on screen are hidden.
