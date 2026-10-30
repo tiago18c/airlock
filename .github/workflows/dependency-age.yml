@@ -1,0 +1,39 @@
+name: Dependency age
+
+# A version has to be a week old before a lockfile takes it, so a compromised
+# release has time to be noticed and pulled. Dependabot's cooldown holds back
+# its own version updates; this also covers updates made by hand. Label a pull
+# request `security-override` when it has to take a newer version to fix a
+# vulnerability. See docs/releasing.md#updating-dependencies.
+#
+# This runs apart from Security so that adding or removing the label checks
+# again without rescanning everything. No concurrency group, as in Changelog:
+# opening a pull request with a label sends `opened` and `labeled` together.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-age:
+    name: New versions are a week old
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - name: Lockfiles take no version under a week old
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          OVERRIDE: ${{ contains(github.event.pull_request.labels.*.name, 'security-override') }}
+        run: |
+          if [ "$OVERRIDE" = "true" ]; then
+            echo "Labelled security-override."
+          else
+            node scripts/check-dep-age.mjs "$BASE"
+          fi

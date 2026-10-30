@@ -67,3 +67,17 @@ If a build is wrong, delete the draft and the tag, fix it on the default branch,
 ## Updating the compiler
 
 `rust-toolchain.toml` pins the Rust version for everyone and for CI. Raise it in its own pull request, and fix whatever new lints it reports there.
+
+## Updating dependencies
+
+A new version waits 7 days, so a compromised release has time to be noticed and pulled before it reaches a build.
+
+- Dependabot's version updates hold back for 7 days through `cooldown` in `.github/dependabot.yml`.
+- The Dependency age workflow runs `scripts/check-dep-age.mjs` on every pull request. It fails if `Cargo.lock` or `extension/package-lock.json` takes a version published less than 7 days ago, whoever made the change. Git dependencies are not checked: `deny.toml` allows only listed repositories, pinned to a commit.
+- GitHub Actions are pinned to commit SHAs, so a moved tag changes nothing until a Dependabot pull request says so. The check does not read them; the cooldown is what holds them back. Tools installed in a workflow, such as `cargo-fuzz`, are pinned to a version and raised by hand.
+
+To take a version sooner because it fixes a vulnerability:
+
+1. Dependabot security updates ignore the cooldown and open a pull request on their own. Otherwise, make the update by hand.
+2. Check the advisory and what changed in the new version.
+3. Label the pull request `security-override`. The check passes for that pull request and the label stays on it as the record.

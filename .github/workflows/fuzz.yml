@@ -32,20 +32,20 @@ jobs:
       run:
         working-directory: crates/qr-codec
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # libFuzzer needs nightly; the pinned toolchain still builds cargo-fuzz.
       - run: rustup toolchain install nightly --profile minimal
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           workspaces: crates/qr-codec/fuzz
-      - run: cargo install cargo-fuzz --locked
+      - run: cargo install cargo-fuzz --version 0.13.2 --locked
       - name: Fuzz
         env:
           FUZZ_SECONDS: ${{ github.event_name == 'schedule' && 1800 || 60 }}
         run: cargo +nightly fuzz run ${{ matrix.target }} -- -max_total_time=$FUZZ_SECONDS -max_len=1048576
       - name: Keep the crashing input
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: fuzz-${{ matrix.target }}
           path: crates/qr-codec/fuzz/artifacts
