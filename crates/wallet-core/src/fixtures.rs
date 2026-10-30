@@ -55,6 +55,11 @@ pub const RAYDIUM_ROUTER_PROGRAM_ID: Pubkey =
 pub const ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey =
     Pubkey::from_str_const("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
 
+/// The SPL Governance program Realms runs, on devnet and mainnet, from the IDL
+/// pack.
+pub const REALMS_GOVERNANCE_PROGRAM_ID: Pubkey =
+    Pubkey::from_str_const("GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw");
+
 /// Every IDL the app ships, the core and the IDL pack's, on `network`.
 pub fn shipped_catalog(
     network: crate::IdlNetwork,

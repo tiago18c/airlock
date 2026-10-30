@@ -4,10 +4,10 @@
 //!
 //! Some instructions carry other instructions in their data: a programmatic
 //! signer's `Submit`, the executor call inside it, a transaction stored for a
-//! Squads vault, a Vector `Passthrough`. Those are opened and explained the
-//! same way, level by level. Each opens from its own bytes. What a Vector
-//! `Advance` does to a hash-based key is read with the accounts' schemes,
-//! when they are known.
+//! Squads vault, a Vector `Passthrough`, a transaction added to a Realms
+//! proposal. Those are opened and explained the same way, level by level.
+//! Each opens from its own bytes. What a Vector `Advance` does to a
+//! hash-based key is read with the accounts' schemes, when they are known.
 
 use crate::idl::catalog::{IdlCatalog, IdlCheck, IdlOrigin};
 use crate::tx::decode::DecodedTx;
@@ -27,6 +27,7 @@ use solana_pubkey::Pubkey;
 use std::collections::HashMap;
 use std::sync::Arc;
 
+mod realms;
 mod types;
 
 pub use types::*;
@@ -122,6 +123,17 @@ fn open_instruction(
                 vault_index: stored.vault_index,
             },
             stored.instructions,
+        ));
+    }
+    if let Some(added) = realms::ProposalTransaction::parse(instruction) {
+        return Some((
+            InnerKind::ProposalTransaction {
+                governance: added.governance,
+                proposal: added.proposal,
+                option_index: added.option_index,
+                transaction_index: added.transaction_index,
+            },
+            added.instructions,
         ));
     }
     if is_vector_passthrough(instruction) {

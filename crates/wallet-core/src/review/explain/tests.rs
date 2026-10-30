@@ -1188,3 +1188,232 @@ fn a_memo_that_is_not_utf8_stays_raw() {
     assert!(explained.instructions[0].idl.is_none());
     assert_eq!(explained.instructions[0].data, vec![0xff, 0xfe]);
 }
+
+/// An instruction of the SPL Governance program Realms runs: its data and its
+/// accounts as `(address, signer, writable)`.
+fn realms_ix(data: &str, accounts: &[(&str, bool, bool)]) -> Instruction {
+    use crate::fixtures::REALMS_GOVERNANCE_PROGRAM_ID;
+
+    Instruction {
+        program_id: REALMS_GOVERNANCE_PROGRAM_ID,
+        accounts: accounts
+            .iter()
+            .map(|&(address, signer, writable)| AccountMeta {
+                pubkey: Pubkey::from_str_const(address),
+                is_signer: signer,
+                is_writable: writable,
+            })
+            .collect(),
+        data: hex::decode(data).unwrap(),
+    }
+}
+
+const REALMS_REALM: &str = "By2sVGZXwfQq6rAiAM3rNPJ9iQfb5e2QhnF4YjJ4Bip";
+const REALMS_REALM_CONFIG: &str = "CH3w5UZF4TLvsvB6ARHg12SKCpkZfsDoR1Mh6HPfp5Qj";
+
+/// A mainnet deposit (transaction `35zbZeSs…`).
+#[test]
+fn a_realms_deposit_names_its_owner_and_amount() {
+    let owner = "2kHzF6eexNuefF8tnKKQ5eux2LQFUhv2iwHAjfCMPVwi";
+    let source = "3k1YS6rW1GPz8keNHC389qbURntXivcRJx8dr9uh9RPy";
+    let deposit = realms_ix(
+        "0100d0ed902e000000",
+        &[
+            (REALMS_REALM, false, false),
+            ("AuWECxm8YT89i4jvcHsy6rL4KRToUrKv7jwLmLPJPtHf", false, true),
+            (source, false, true),
+            (owner, true, true),
+            (owner, true, true),
+            ("D3xvu3EnAzAmh4Ku5bBR4CF2iw1bHnV28o6vKQgwZw6Z", false, true),
+            (owner, true, true),
+            (ROUTER_SYSTEM, false, false),
+            (ROUTER_TOKEN, false, false),
+            (REALMS_REALM_CONFIG, false, false),
+        ],
+    );
+
+    let idl = explain_one_ix(&builtins(), Pubkey::from_str_const(owner), deposit);
+    assert_eq!(idl.intent, "Deposit governing tokens");
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "{owner} deposits 200000000000 base units from {source} into realm {REALMS_REALM}"
+            )
+            .as_str()
+        )
+    );
+    assert_eq!(idl.unnamed_accounts, 0);
+}
+
+/// A mainnet proposal (transaction `NnP3bUp2…`) in a realm without a voter
+/// weight plugin: the deposit account comes where the voter weight record
+/// would, so it is read as part of the group and not named as that record.
+#[test]
+fn a_realms_proposal_does_not_name_its_deposit_as_a_voter_weight_record() {
+    let owner = "2kHzF6eexNuefF8tnKKQ5eux2LQFUhv2iwHAjfCMPVwi";
+    let proposal = "GMC8qjrirxRznFkhoWifQyAvWVpjEMXQdTtEkhpgZaPZ";
+    let governance = "oyznFCoGLEr8mWWfroGRbhtPE7wUVMMy1X9Rhv3RvqD";
+    let deposit = "93EfVQaJ2EQ71QswAzyr3fz7SXgonfvg4xHs8aS4euwH";
+    let create = realms_ix(
+        "06320000005661756c74204d616e6167656d656e742055706772616465202d204175746f6d617465\
+         64205969656c6420526f7574696e67930000004465706c6f79206175746f6d617465642074726561\
+         73757279206d616e6167656d656e7420666f72207969656c64206f7074696d697a6174696f6e2061\
+         63726f737320446546692070726f746f636f6c732e20506861736520313a20696e697469616c697a\
+         65207661756c7420636f6e66696720616e642072756e20696e697469616c20706f7274666f6c696f\
+         2073796e632e000100000007000000417070726f76650101bffb70a26823cfdf8c5125c3ef0f7b4b\
+         f8c9f0bb47f21e6478bacc535053ac",
+        &[
+            (REALMS_REALM, false, false),
+            (proposal, false, true),
+            (governance, false, true),
+            ("D3xvu3EnAzAmh4Ku5bBR4CF2iw1bHnV28o6vKQgwZw6Z", false, true),
+            ("8upjSpvjcdpuzhfR1zriwg5NXkwDruejqNE9WNbPRtyA", false, false),
+            (owner, true, true),
+            (owner, true, true),
+            (ROUTER_SYSTEM, false, false),
+            (REALMS_REALM_CONFIG, false, false),
+            (deposit, false, true),
+        ],
+    );
+
+    let idl = explain_one_ix(&builtins(), Pubkey::from_str_const(owner), create);
+    assert_eq!(idl.intent, "Create proposal");
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "{owner} creates proposal Vault Management Upgrade - Automated Yield Routing \
+                 at {proposal} in governance {governance}"
+            )
+            .as_str()
+        )
+    );
+    assert_eq!(field(&idl, "Voter Weight Record or Deposit"), deposit);
+    assert!(idl
+        .fields
+        .iter()
+        .all(|field| field.label != "Voter Weight Record"));
+    assert_eq!(field(&idl, "Vote Type"), "Single choice");
+    assert_eq!(field(&idl, "Options"), "Approve");
+    assert_eq!(idl.unnamed_accounts, 0);
+}
+
+/// A mainnet council veto (transaction `5SJ1BySf…`).
+#[test]
+fn a_realms_vote_says_how_it_votes() {
+    let voter = "9f8uuHm4VFzsHnBoCUZxF2cuQJzJteX4tzAqL1sPsqXQ";
+    let proposal = "GMC8qjrirxRznFkhoWifQyAvWVpjEMXQdTtEkhpgZaPZ";
+    let vote = realms_ix(
+        "0d03",
+        &[
+            (REALMS_REALM, false, false),
+            ("oyznFCoGLEr8mWWfroGRbhtPE7wUVMMy1X9Rhv3RvqD", false, true),
+            (proposal, false, true),
+            ("D3xvu3EnAzAmh4Ku5bBR4CF2iw1bHnV28o6vKQgwZw6Z", false, true),
+            ("HbkNdykLNJU41y41TFFpJYYgwGjRZLTQa2qaoCT5v5de", false, true),
+            (voter, true, true),
+            ("4N2AgNDTGtsMryUFvpKBfqgrdRBkBuGFnVR9V8ftcn4d", false, true),
+            ("5weUku8SQw9Yiiar7Qtv42R4fGzkgeGcGvC5Jiz15ssN", false, false),
+            (voter, true, true),
+            (ROUTER_SYSTEM, false, false),
+            (REALMS_REALM_CONFIG, false, false),
+        ],
+    );
+
+    let idl = explain_one_ix(&builtins(), Pubkey::from_str_const(voter), vote);
+    assert_eq!(idl.intent, "Vote on proposal");
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(format!("{voter} votes Veto on proposal {proposal}").as_str())
+    );
+    assert_eq!(idl.unnamed_accounts, 0);
+}
+
+/// The accounts of a devnet `InsertTransaction` (transaction `49VWdVrb…`).
+fn realms_insert(data: &str) -> Instruction {
+    let author = "At1CNUW4LaiVV8gFhcHkUAEt1a8R6VuK8gsvwnmESfUF";
+    realms_ix(
+        data,
+        &[
+            ("UUqdy9qMnfEjgzMo5xsijZ2iZhLo66fnfkMyTUYKSFz", false, false),
+            ("BYbRt5XhHoagQv7mnGdDsEGbVaC5eeM4oFQhr9P4KjYa", false, true),
+            ("BarM4bouviowiVdB71dHVLwwcknLPeJ7X6s3KtAu5myu", false, false),
+            (author, true, true),
+            ("6AFtFZvFKeBrRebJK8TRYxTaUwAaqcaMjuZSNzJ9XHz2", false, true),
+            (author, true, true),
+            (ROUTER_SYSTEM, false, false),
+            ("SysvarRent111111111111111111111111111111111", false, false),
+        ],
+    )
+}
+
+/// The second transaction of the devnet proposal `BYbRt5Xh…`: a token
+/// transfer the governance's treasury signs once the proposal passes.
+const REALMS_INSERT_TRANSFER: &str = "09000100000000000100000006ddf6e1d765a193d9cbe146ceeb79ac1cb4\
+     85ed5f5b37913a8cf5857eff00a9040000000f3b53f07edb5d8db314d5bf2b85ef0c4b638456d6c8c8b7bb273e\
+     9ce4db6f2600019323c44b18fe83e5279c6c93ef3cddc028a94b7981ce5c7c96d76d1d08d9afb2000037f663db\
+     6099732f62f62a024c412211b8e1b38f453d51d1d8aac1115a64df8900015bc23274bb4904732133affcad2376\
+     49e2ca951d63604c92ff8ceae870bda45e01000a0000000c0010a5d4e800000006";
+
+#[test]
+fn a_realms_proposal_transaction_is_opened_and_each_instruction_explained() {
+    let author = Pubkey::from_str_const("At1CNUW4LaiVV8gFhcHkUAEt1a8R6VuK8gsvwnmESfUF");
+    let insert = realms_insert(REALMS_INSERT_TRANSFER);
+    let tx = decode_v1_transaction(&compile(author, vec![insert]).wire).unwrap();
+    let explained = explain_transaction(&builtins(), &tx);
+    let added = &explained.instructions[0];
+
+    let idl = added.idl.as_ref().unwrap();
+    assert_eq!(idl.intent, "Add proposal transaction");
+    // The carried instructions are explained below, not dumped as a field.
+    assert!(idl.fields.iter().all(|field| field.label != "Instructions"));
+    let inner = added.inner.as_ref().unwrap();
+    assert_eq!(
+        inner.kind,
+        InnerKind::ProposalTransaction {
+            governance: Pubkey::from_str_const("UUqdy9qMnfEjgzMo5xsijZ2iZhLo66fnfkMyTUYKSFz"),
+            proposal: Pubkey::from_str_const("BYbRt5XhHoagQv7mnGdDsEGbVaC5eeM4oFQhr9P4KjYa"),
+            option_index: 0,
+            transaction_index: 1,
+        }
+    );
+    assert_eq!(inner.instructions.len(), 1);
+    let transfer = &inner.instructions[0];
+    assert_eq!(transfer.program_id, TOKEN_PROGRAM_ID);
+    // The treasury signs it when the governance runs it, not this transaction.
+    let treasury = Pubkey::from_str_const("7BBrGMFu5a49LqyyESQYvSL3GYwESQR2j2UVrXSuf1CH");
+    assert_eq!(transfer.accounts[3], treasury);
+    let worded = transfer.idl.as_ref().unwrap();
+    assert_eq!(worded.intent, "Transfer tokens");
+    assert_eq!(
+        worded.interpolated_intent.as_deref(),
+        Some(
+            "Transfer 1000000 AuNZhucaYASPKmjCZLhTfhigadRMq4q6qXHbkSjvy4Q1 from \
+             22Tax896iNLNZbsCRExWomRmS6uJnrMT1vF4FGzvM4JH to \
+             4mTLFrGiJCX7ACKtxnBJRH9TivTHXfQyK3VgkveijVaY"
+        )
+    );
+    assert_eq!(field(worded, "Authority"), treasury.to_string());
+    assert!(explained
+        .programs
+        .iter()
+        .any(|line| line.program_id == TOKEN_PROGRAM_ID));
+}
+
+/// An `InsertTransaction` whose bytes run past what it declares is not
+/// opened: what it carries cannot be told.
+#[test]
+fn a_realms_proposal_transaction_with_extra_bytes_is_not_opened() {
+    let author = Pubkey::from_str_const("At1CNUW4LaiVV8gFhcHkUAEt1a8R6VuK8gsvwnmESfUF");
+    for data in [
+        format!("{REALMS_INSERT_TRANSFER}00"),
+        REALMS_INSERT_TRANSFER[..REALMS_INSERT_TRANSFER.len() - 2].to_string(),
+    ] {
+        let insert = realms_insert(&data);
+        let tx = decode_v1_transaction(&compile(author, vec![insert]).wire).unwrap();
+        assert!(explain_transaction(&builtins(), &tx).instructions[0]
+            .inner
+            .is_none());
+    }
+}

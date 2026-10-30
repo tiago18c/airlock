@@ -78,13 +78,23 @@ const transferData = (lamports) => {
   return data;
 };
 
+/** A length as the wire writes it: 7 bits a byte, low first. */
+const shortVec = (n) => {
+  const bytes = [];
+  do {
+    bytes.push((n & 0x7f) | (n > 0x7f ? 0x80 : 0));
+    n >>= 7;
+  } while (n > 0);
+  return Buffer.from(bytes);
+};
+
 /** A legacy transaction paid and signed by `payer`, unsigned. `accounts`
  * follow the payer: writable ones, then `readonly` read-only ones at the end.
  * Each instruction is `[programIndex, accountIndexes, data]`. */
 const legacy = (accounts, readonly, instructions) => {
   const keys = [payer, ...accounts];
   const compiled = instructions.map(([program, indexes, data]) =>
-    Buffer.concat([Buffer.from([program, indexes.length, ...indexes, data.length]), data]));
+    Buffer.concat([Buffer.from([program, indexes.length, ...indexes]), shortVec(data.length), data]));
   const message = Buffer.concat([
     Buffer.from([1, 0, readonly, keys.length]), ...keys, blockhash,
     Buffer.from([instructions.length]), ...compiled,
@@ -103,12 +113,38 @@ const unread = (lamports) =>
     [3, [0], Buffer.from([1, 2, 3])],
   ]);
 
+/** A Realms `InsertTransaction` that adds a token transfer, which the
+ * governance's treasury signs if the proposal passes, to a devnet proposal.
+ * The payer adds it as the proposal owner. */
+const realmsInsert = () => {
+  const key = (s) => b58decode(s);
+  const data = Buffer.from(
+    "09000100000000000100000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9" +
+    "040000000f3b53f07edb5d8db314d5bf2b85ef0c4b638456d6c8c8b7bb273e9ce4db6f2600019323c44b18fe" +
+    "83e5279c6c93ef3cddc028a94b7981ce5c7c96d76d1d08d9afb2000037f663db6099732f62f62a024c412211" +
+    "b8e1b38f453d51d1d8aac1115a64df8900015bc23274bb4904732133affcad237649e2ca951d63604c92ff8c" +
+    "eae870bda45e01000a0000000c0010a5d4e800000006",
+    "hex",
+  );
+  // payer, proposal, proposal transaction | governance, owner record, System, Rent, Realms
+  return legacy([
+    key("BYbRt5XhHoagQv7mnGdDsEGbVaC5eeM4oFQhr9P4KjYa"),
+    key("6AFtFZvFKeBrRebJK8TRYxTaUwAaqcaMjuZSNzJ9XHz2"),
+    key("UUqdy9qMnfEjgzMo5xsijZ2iZhLo66fnfkMyTUYKSFz"),
+    key("BarM4bouviowiVdB71dHVLwwcknLPeJ7X6s3KtAu5myu"),
+    systemProgram,
+    key("SysvarRent111111111111111111111111111111111"),
+    key("GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw"),
+  ], 5, [[7, [3, 1, 4, 0, 2, 0, 5, 6], data]]);
+};
+
 // ---- scenarios: the transactions of one signTransaction request each ----
 
 const scenarios = {
   transfer: () => [transfer(5)],
   unread: () => [unread(9)],
   batch: () => [transfer(5), unread(9)],
+  realms: () => [realmsInsert()],
 };
 const chosen = process.argv.slice(3);
 for (const name of chosen) {
@@ -131,6 +167,9 @@ rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 const env = {
   ...process.env,
+  // Set by `cargo run`. Without it dioxus takes the exe for a bundle and
+  // looks for its assets, the IDL pack among them, beside it.
+  CARGO_MANIFEST_DIR: join(root, "apps", "airlock"),
   AIRLOCK_DATA_DIR: join(out, "data"),
   LOCALAPPDATA: join(out, "local"),
   USERNAME: `drive-${port}`,

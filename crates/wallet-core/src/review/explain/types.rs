@@ -199,6 +199,14 @@ pub enum InnerKind {
     },
     /// A transaction stored for a Squads vault to run after approval.
     SquadsTransaction { vault: Pubkey, vault_index: u8 },
+    /// A transaction added to a Realms proposal, which the governance runs,
+    /// signing as itself or its treasury, once the proposal passes.
+    ProposalTransaction {
+        governance: Pubkey,
+        proposal: Pubkey,
+        option_index: u8,
+        transaction_index: u16,
+    },
     /// A Vector `Passthrough`: what runs as its accounts after the
     /// transaction's `Advance`.
     Passthrough { signers: Vec<RunsAs> },
