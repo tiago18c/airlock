@@ -508,13 +508,14 @@ fn the_associated_token_program_is_read_from_the_token_idl() {
 fn each_network_reads_the_embedded_files_of_the_programs_that_run_there() {
     use crate::fixtures::{
         shipped_catalog, ORCA_WHIRLPOOL_PROGRAM_ID, RAYDIUM_CLMM_MAINNET_PROGRAM_ID,
-        RAYDIUM_CLMM_PROGRAM_ID,
+        RAYDIUM_CLMM_PROGRAM_ID, REALMS_GOVERNANCE_PROGRAM_ID,
     };
     let mut store = shipped_catalog(IdlNetwork::Devnet);
     let has = |store: &IdlStore<MemoryStore, MemoryBodies>, id| record(store, id).is_some();
     assert!(has(&store, RAYDIUM_CLMM_PROGRAM_ID));
     assert!(!has(&store, RAYDIUM_CLMM_MAINNET_PROGRAM_ID));
     assert!(has(&store, ORCA_WHIRLPOOL_PROGRAM_ID));
+    assert!(has(&store, REALMS_GOVERNANCE_PROGRAM_ID));
     assert!(has(&store, crate::idl::builtin::ED25519_SIGNER_PROGRAM_ID));
     assert!(has(
         &store,
@@ -526,6 +527,7 @@ fn each_network_reads_the_embedded_files_of_the_programs_that_run_there() {
     assert!(!has(&store, RAYDIUM_CLMM_PROGRAM_ID));
     assert!(has(&store, RAYDIUM_CLMM_MAINNET_PROGRAM_ID));
     assert!(has(&store, ORCA_WHIRLPOOL_PROGRAM_ID));
+    assert!(has(&store, REALMS_GOVERNANCE_PROGRAM_ID));
     assert!(!has(&store, crate::idl::builtin::ED25519_SIGNER_PROGRAM_ID));
     // Its companions go with it.
     assert!(!has(
@@ -540,6 +542,7 @@ fn each_network_reads_the_embedded_files_of_the_programs_that_run_there() {
     store.set_network(IdlNetwork::Localnet);
     assert!(has(&store, crate::ids::SYSTEM_PROGRAM_ID));
     assert!(!has(&store, ORCA_WHIRLPOOL_PROGRAM_ID));
+    assert!(!has(&store, REALMS_GOVERNANCE_PROGRAM_ID));
 }
 
 #[test]

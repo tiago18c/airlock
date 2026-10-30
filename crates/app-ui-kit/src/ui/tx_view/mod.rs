@@ -154,6 +154,14 @@ fn summary_addresses(instructions: &[ExplainedIx], named: &mut HashSet<Pubkey>) 
                 InnerKind::SquadsTransaction { vault, .. } => {
                     named.insert(*vault);
                 }
+                InnerKind::ProposalTransaction {
+                    governance,
+                    proposal,
+                    ..
+                } => {
+                    named.insert(*governance);
+                    named.insert(*proposal);
+                }
                 InnerKind::Passthrough { signers } => {
                     for signer in signers {
                         named.insert(signer.account);
@@ -270,6 +278,25 @@ fn InnerBlock(inner: InnerMessage, inspect: bool) -> Element {
                             span { class: "muted", "(number {vault_index})" }
                         }
                         span { "to run after approval" }
+                    }
+                },
+                InnerKind::ProposalTransaction {
+                    governance,
+                    proposal,
+                    option_index,
+                    transaction_index,
+                } => rsx! {
+                    div { class: "chip-row inner-head",
+                        span { "Added to proposal" }
+                        Address { pubkey: proposal }
+                        if inspect {
+                            span { class: "muted",
+                                "(option {option_index}, transaction {transaction_index})"
+                            }
+                        }
+                        span { "for governance" }
+                        Address { pubkey: governance }
+                        span { "to run if it passes" }
                     }
                 },
                 InnerKind::Passthrough { signers } => rsx! {

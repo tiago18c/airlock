@@ -112,3 +112,24 @@ networks = ["mainnet", "devnet", "testnet"]
 source = { kind = "repository", url = "https://github.com/solana-program/memo/blob/be804bfab190e3955bffb2a18864ad61676345c6/idl.json" }
 changes = """The v4 IDL with v1's program address and version. v1 does not check \
 the signers it is passed: they sign the transaction, not the memo."""
+
+[[idls]]
+file = "realms-governance.json"
+programId = "GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw"
+name = "splGovernance"
+# The program publishes no IDL on chain. The file is the Shank IDL of Mythic's
+# governance SDK, checked against spl-governance v3.1.3, which the binaries
+# running on both networks match up to instruction 28.
+networks = ["mainnet", "devnet"]
+source = { kind = "repository", url = "https://github.com/Mythic-Project/governance-sdk/blob/dd3997ae0a32d95cd1207bab3af82b32594ee88e/src/idl/gov.json" }
+changes = """Converted from Shank to Codama. Dropped the instructions the program does \
+not run as the source describes: the deprecated legacy1, createProgramGovernance, \
+createMintGovernance and createTokenGovernance, which it rejects, and \
+addRequiredSignatory and removeRequiredSignatory, whose tags 29 and 30 are its \
+transaction buffer instructions. Optional accounts are omitted rather than replaced by \
+the program id. The accounts whose presence depends on the arguments or the realm's \
+plugins (createRealm and setRealmConfig after the realm authority, createProposal's \
+voter weight record and deposit, castVote's voter weight records) and the accounts \
+executeTransaction passes on are remaining-accounts groups, so names do not land on the \
+wrong accounts. createProposal's deposit account is writable. Token amounts are in base \
+units. Display nodes added by hand."""
