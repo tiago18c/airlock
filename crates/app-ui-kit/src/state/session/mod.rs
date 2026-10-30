@@ -256,6 +256,19 @@ impl Session {
         self.command(|core| core.bridge_connect(id, accounts, remember))
     }
 
+    /// Answer a `signIn` with what `account` signed. Answers whether it was
+    /// still waiting.
+    pub fn bridge_sign_in(
+        &self,
+        id: &str,
+        account: solana_pubkey::Pubkey,
+        signed: Vec<u8>,
+        signature: [u8; 64],
+        remember: bool,
+    ) -> bool {
+        self.command(|core| core.bridge_sign_in(id, account, signed, signature, remember))
+    }
+
     /// Turn away the site that made request `id` from now on.
     pub fn bridge_block(&self, id: &str) -> bool {
         self.command(|core| core.bridge_block(id))

@@ -13,6 +13,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 use std::time::Duration;
 
+use bridge_protocol::reply::SiteAccount;
 use solana_pubkey::Pubkey;
 use solana_signature::Signature;
 use tokio::sync::{broadcast, watch};
@@ -270,6 +271,21 @@ impl Core {
         remember: bool,
     ) -> bool {
         self.inner.bridge_connect(id, accounts, remember)
+    }
+
+    /// Answer a `signIn` with what `account` signed, and let the site see it,
+    /// with what it could already: saved when `remember`, for as long as the
+    /// app is open otherwise. Answers whether it was waiting.
+    pub fn bridge_sign_in(
+        &self,
+        id: &str,
+        account: Pubkey,
+        signed: Vec<u8>,
+        signature: [u8; 64],
+        remember: bool,
+    ) -> bool {
+        self.inner
+            .bridge_sign_in(id, account, signed, signature, remember)
     }
 
     /// Turn away the site that made request `id` from now on, and reject
@@ -970,7 +986,7 @@ impl Inner {
     }
 
     /// The labels of `keys`, for the bridge to tell a site.
-    pub(crate) fn site_labels(&self, keys: Vec<Pubkey>) -> Vec<([u8; 32], String)> {
+    pub(crate) fn site_labels(&self, keys: Vec<Pubkey>) -> Vec<SiteAccount> {
         let (shareable, _) = self.site_accounts();
         labelled(keys, &shareable)
     }
@@ -1046,6 +1062,52 @@ impl Inner {
         if !origin.is_empty() {
             locked(&self.bridge).set_holding(&origin, ordered.clone());
             self.keep_site(&origin, ordered, remember);
+            self.publish_sites();
+        }
+        let (bytes, outcome) = answer.reply(id);
+        if let Some(reply) = taken.reply {
+            reply(bytes);
+        }
+        self.bridge_finished(&taken.request, outcome);
+        true
+    }
+
+    pub(crate) fn bridge_sign_in(
+        self: &Arc<Self>,
+        id: &str,
+        account: Pubkey,
+        signed: Vec<u8>,
+        signature: [u8; 64],
+        remember: bool,
+    ) -> bool {
+        let _span = debug_span!(target: CORE, "command", name = "bridge_sign_in").entered();
+        let Some(origin) = locked(&self.bridge)
+            .queue()
+            .get(id)
+            .map(|request| request.origin.clone())
+        else {
+            debug!(target: CORE, outcome = "not waiting", "command");
+            return false;
+        };
+        let (shareable, _) = self.site_accounts();
+        // The account that signed in comes first: it is who the site now sees.
+        let mut keys = vec![account];
+        if let Some(grant) = self.site_grant(&origin) {
+            keys.extend(grant.accounts.into_iter().filter(|key| *key != account));
+        }
+        let answer = BridgeAnswer::SignedIn {
+            account: account.to_bytes(),
+            accounts: labelled(keys.clone(), &shareable),
+            signed,
+            signature,
+        };
+        let Some(taken) = self.bridge_take(id, Some(&answer)) else {
+            debug!(target: CORE, outcome = "not waiting", "command");
+            return false;
+        };
+        if !origin.is_empty() {
+            locked(&self.bridge).set_holding(&origin, keys.clone());
+            self.keep_site(&origin, keys, remember);
             self.publish_sites();
         }
         let (bytes, outcome) = answer.reply(id);
@@ -1399,15 +1461,17 @@ fn sites_view(workspace: &AppWorkspace, bridge: &BridgeState) -> SitesView {
 }
 
 /// `keys` as a site is sent them, each with the label it has here.
-fn labelled(keys: Vec<Pubkey>, accounts: &[ShareableAccount]) -> Vec<([u8; 32], String)> {
+fn labelled(keys: Vec<Pubkey>, accounts: &[ShareableAccount]) -> Vec<SiteAccount> {
     keys.into_iter()
         .map(|key| {
-            let label = accounts
-                .iter()
-                .find(|account| account.pubkey == key)
-                .map(|account| account.label.clone())
-                .unwrap_or_default();
-            (key.to_bytes(), label)
+            let known = accounts.iter().find(|account| account.pubkey == key);
+            SiteAccount {
+                pubkey: key.to_bytes(),
+                label: known
+                    .map(|account| account.label.clone())
+                    .unwrap_or_default(),
+                signs_messages: known.is_some_and(|account| !account.contract),
+            }
         })
         .collect()
 }

@@ -75,6 +75,7 @@ pub use review::{
     SECONDS_PER_BLOCK,
 };
 pub use transport::{protocol, signature_objects, SignatureObject};
+pub use tx::site_message;
 pub use tx::{
     apply_local_signatures, compile_draft, compile_probe, compile_v1, compile_v1_budget,
     decode_transaction, decode_v1_transaction, insert_signature, lookup_tables_needed, onto_nonce,

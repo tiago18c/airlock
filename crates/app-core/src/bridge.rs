@@ -7,6 +7,7 @@
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
+use bridge_protocol::reply::SiteAccount;
 use serde_json::Value;
 use solana_pubkey::Pubkey;
 use wallet_core::{ConnectChoice, SiteGrant};
@@ -19,11 +20,24 @@ pub type BridgeReply = Box<dyn FnOnce(Vec<u8>) + Send>;
 /// What the user decided about a request.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum BridgeAnswer {
-    /// A `connect`, with the public keys and labels the site may see.
-    Connect(Vec<([u8; 32], String)>),
+    /// A `connect`, with the accounts the site may see.
+    Connect(Vec<SiteAccount>),
     /// A `signTransaction`, with every transaction it asked for, signed, in
     /// the order the site sent them.
     Signed(Vec<Vec<u8>>),
+    /// A `signMessage`, with the bytes signed and the signature.
+    SignedMessage {
+        signed: Vec<u8>,
+        signature: [u8; 64],
+    },
+    /// A `signIn`: `account` signed `signed`, and `accounts` are what the site
+    /// may see now.
+    SignedIn {
+        account: [u8; 32],
+        accounts: Vec<SiteAccount>,
+        signed: Vec<u8>,
+        signature: [u8; 64],
+    },
     Rejected,
 }
 
@@ -39,6 +53,8 @@ impl BridgeAnswer {
                     && !wires.is_empty()
                     && wires.len() == request.transaction_count()
             }
+            Self::SignedMessage { .. } => request.method == "signMessage",
+            Self::SignedIn { .. } => request.method == "signIn",
             Self::Rejected => true,
         }
     }
@@ -52,6 +68,19 @@ impl BridgeAnswer {
             ),
             Self::Signed(wires) => (
                 bridge_protocol::reply::signed(id, wires),
+                BridgeRequestOutcome::Answered,
+            ),
+            Self::SignedMessage { signed, signature } => (
+                bridge_protocol::reply::message_signed(id, signed, signature),
+                BridgeRequestOutcome::Answered,
+            ),
+            Self::SignedIn {
+                account,
+                accounts,
+                signed,
+                signature,
+            } => (
+                bridge_protocol::reply::signed_in(id, account, accounts, signed, signature),
                 BridgeRequestOutcome::Answered,
             ),
             Self::Rejected => (
@@ -68,7 +97,7 @@ pub enum SiteConnect {
     /// The user blocked the site.
     Blocked,
     /// The site reconnects with these accounts, the current wallet first.
-    Allowed(Vec<([u8; 32], String)>),
+    Allowed(Vec<SiteAccount>),
     /// Nothing the site was given covers this: only the user can decide.
     Undecided,
 }
