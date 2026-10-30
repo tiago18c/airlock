@@ -226,6 +226,25 @@ pub fn sign_steps(status: &SigningStatus, inputs: &SignStepInputs) -> Vec<SignSt
         .collect()
 }
 
+/// Nothing to follow in these steps: a simulation that runs by itself, keys on
+/// this device signing, and at most the submit or return that Sign leads to.
+/// Which steps there are does not change as they pass, so a screen that hides
+/// them does not jump. Sharing is kept: an offline device has to act on it.
+pub fn only_simulate_and_sign(steps: &[SignStep]) -> bool {
+    steps
+        .iter()
+        .any(|step| step.kind == SignStepKind::SignTransaction)
+        && steps.iter().all(|step| {
+            matches!(
+                step.kind,
+                SignStepKind::Simulate
+                    | SignStepKind::SignTransaction
+                    | SignStepKind::Submit
+                    | SignStepKind::ReturnToSite
+            )
+        })
+}
+
 /// The steps of a batch a site sent: one for each transaction, in the order
 /// the site sent them, then one for returning them all. A transaction is
 /// behind once this device signed it; the first that is not is the one to
@@ -499,6 +518,43 @@ mod tests {
                 (ShareToSubmit, Upcoming)
             ]
         );
+    }
+
+    #[test]
+    fn only_simulate_and_sign_holds_for_a_hot_key_alone_and_nothing_more() {
+        let hot = status(vec![payer(Local, true)]);
+        let mut plain = inputs(SimulationStage::Running);
+        assert!(only_simulate_and_sign(&sign_steps(&hot, &plain)));
+        plain.finish = SignFinish::ReturnToSite;
+        let mut own = sign_steps(&hot, &plain);
+        assert!(only_simulate_and_sign(&own));
+        // A transaction of a batch, whose return is the batch's.
+        own.pop();
+        assert!(only_simulate_and_sign(&own));
+
+        let mut offline = inputs(SimulationStage::Offline);
+        offline.finish = SignFinish::ShareToSubmit;
+        assert!(!only_simulate_and_sign(&sign_steps(&hot, &offline)));
+
+        let mut rebuilt = inputs(SimulationStage::Succeeded);
+        rebuilt.rebuilt = true;
+        assert!(!only_simulate_and_sign(&sign_steps(&hot, &rebuilt)));
+
+        let shared = status(vec![payer(Local, true), signer(2, Missing, false)]);
+        let collecting = sign_steps(&shared, &inputs(SimulationStage::Succeeded));
+        assert!(!only_simulate_and_sign(&collecting));
+
+        let authorizing = status(vec![
+            authority(AuthorityId::Ed25519(pk(7)), Local, true),
+            payer(Local, true),
+        ]);
+        let waiting = sign_steps(&authorizing, &inputs(SimulationStage::Waiting));
+        assert!(!only_simulate_and_sign(&waiting));
+
+        // Nothing for this device to sign.
+        let elsewhere = status(vec![payer(Signed, false)]);
+        let submit_only = sign_steps(&elsewhere, &inputs(SimulationStage::Succeeded));
+        assert!(!only_simulate_and_sign(&submit_only));
     }
 
     #[test]

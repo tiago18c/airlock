@@ -3,7 +3,7 @@
 
 use super::*;
 use crate::ui::{Glyph, Icon};
-use wallet_core::{SignStep, SignStepKind, SignStepState};
+use wallet_core::{only_simulate_and_sign, SignStep, SignStepKind, SignStepState};
 
 /// The row of steps above the transaction: behind ones green, the one the
 /// user is on marked, the rest still to come.
@@ -20,7 +20,7 @@ pub(in crate::ui) fn SignSteps(steps: Vec<SignStep>) -> Element {
 
 /// The steps of a batch a site sent: a step for each transaction, which
 /// opens it, then the return of them all. Under them, the steps of the one on
-/// screen.
+/// screen, unless it only simulates and signs.
 #[component]
 pub(in crate::ui) fn BatchSteps(
     states: Vec<SignStepState>,
@@ -42,9 +42,11 @@ pub(in crate::ui) fn BatchSteps(
                 }
                 StepItem { step: returning, number: count + 1 }
             }
-            div { class: "sign-substeps",
-                p { class: "sign-substeps-head", "Transaction {on_screen + 1} of {count}" }
-                SignSteps { steps }
+            if !only_simulate_and_sign(&steps) {
+                div { class: "sign-substeps",
+                    p { class: "sign-substeps-head", "Transaction {on_screen + 1} of {count}" }
+                    SignSteps { steps }
+                }
             }
         }
     }

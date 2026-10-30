@@ -63,14 +63,15 @@ pub use phrase::{Part, Phrase};
 pub use review::{
     batch_steps, blocks_left, blocks_left_after, context_is_for, context_note, context_note_for,
     context_note_with, display_note, explain_instructions, explain_transaction, explain_with_note,
-    format_countdown, missing_catalog_programs, next_step, note_supplies_accounts, quick_sign,
-    quick_sign_in, read_clock, seconds_left, sign_locally, sign_locally_in, sign_locally_in_with,
-    sign_steps, signing_status, signing_status_in, tx_lifetime, AuthorizingKey, ClockReading,
-    ContextPinMatch, DisplayNote, ExplainedIx, ExplainedTx, IdlAccountLine, IdlExplanation,
-    IdlField, IdlPinStatus, InnerKind, InnerMessage, LocalKeys, LocalSigning, NextKey,
-    NextSignature, ProgramLine, QuickSign, RunsAs, SignFinish, SignStep, SignStepInputs,
-    SignStepKind, SignStepState, SignerKey, SignerLine, SignerRole, SignerState, SigningStatus,
-    SimulationStage, TxLifetime, FRESH_BLOCKHASH_BLOCKS, SECONDS_PER_BLOCK,
+    format_countdown, missing_catalog_programs, next_step, note_supplies_accounts,
+    only_simulate_and_sign, quick_sign, quick_sign_in, read_clock, seconds_left, sign_locally,
+    sign_locally_in, sign_locally_in_with, sign_steps, signing_status, signing_status_in,
+    tx_lifetime, AuthorizingKey, ClockReading, ContextPinMatch, DisplayNote, ExplainedIx,
+    ExplainedTx, IdlAccountLine, IdlExplanation, IdlField, IdlPinStatus, InnerKind, InnerMessage,
+    LocalKeys, LocalSigning, NextKey, NextSignature, ProgramLine, QuickSign, RunsAs, SignFinish,
+    SignStep, SignStepInputs, SignStepKind, SignStepState, SignerKey, SignerLine, SignerRole,
+    SignerState, SigningStatus, SimulationStage, TxLifetime, FRESH_BLOCKHASH_BLOCKS,
+    SECONDS_PER_BLOCK,
 };
 pub use transport::{protocol, signature_objects, SignatureObject};
 pub use tx::{

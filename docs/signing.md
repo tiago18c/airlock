@@ -81,6 +81,8 @@ A multisig's wallet holds three settings: the wallet that acts as its member, th
 
 The first step not behind is the current one. A simulation runs once there is no rebuild left and every authorization is in, so Simulate sits after those steps; it runs by itself and is never the current step, and a failed one does not hold signing back. When a Vector key here signs after authorizations from elsewhere, Collect authorizations comes first. An expired blockhash holds the current step back when the transaction signature covers it.
 
+When the steps are only Simulate and Sign transaction, then Submit or Return to site, there is nothing to follow and Sign hides the row (`only_simulate_and_sign`). In a batch the row of transactions stays, and only the steps of the one on screen are hidden. Share to submit keeps the row, since an offline device has to act on it.
+
 ### Rebuilding for a wallet without a key
 
 A transaction that names a programmatic signer's address, a Vector account or a Squads vault as an ordinary signer cannot be completed: no key signs as those addresses. `wallet_core::wallets::adapt` rebuilds it. The plan (`plan_adaptation`) is made offline. Carrying it out (`wallet_flows::adapt::rebuild`) reads the chain for the multisig's next transaction number, the signer's executor nonce or each Vector account's data, and a fresh blockhash, so it needs a connection. The rebuild probes at the highest compute limit, then sets both the compute and loaded-accounts limits from what that simulation used plus 10%. Sign does the same again once every authorization is signed, so the inner instructions are included in the measure.
