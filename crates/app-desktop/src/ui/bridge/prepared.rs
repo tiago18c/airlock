@@ -60,6 +60,9 @@ pub(in crate::ui) struct PreparedRequest {
     pub locked: bool,
     pub can_review: bool,
     pub can_sign: bool,
+    /// Sign is offered, but not every instruction was put in words by an IDL
+    /// that ships with the app or that the user imported.
+    pub unread_sign: bool,
     pub verdict: Option<wallet_core::QuickSign>,
     pub step: Option<wallet_core::NextSignature>,
     pub lifetime: Option<wallet_core::TxLifetime>,
@@ -324,12 +327,16 @@ pub(in crate::ui) fn use_prepared_request(
     let authorizes_here = status
         .as_ref()
         .is_some_and(|status| status.authorizations_here() > 0);
+    // A summary missing an instruction, or worded by an IDL from the chain,
+    // still lets Sign through. The button turns amber to say so.
     let can_sign = can_review
         && !unsimulated
         && !authorizes_here
-        && verdict.is_some_and(|verdict| verdict.allowed_leaving(site_signs.len()))
+        && verdict.is_some_and(|verdict| verdict.completes_leaving(site_signs.len()))
         && !fetching()
         && !modal_expired;
+    let unread_sign =
+        can_sign && verdict.is_some_and(|verdict| !verdict.allowed_leaving(site_signs.len()));
 
     let for_review = ready.clone();
     let for_sign = ready
@@ -361,6 +368,7 @@ pub(in crate::ui) fn use_prepared_request(
         locked,
         can_review,
         can_sign,
+        unread_sign,
         verdict,
         step,
         lifetime,

@@ -96,9 +96,9 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                 "Review"
             }
             button {
-                class: if prep.can_sign { "primary" } else { "" },
+                class: sign_class(prep.can_sign, prep.unread_sign),
                 disabled: !prep.can_sign || busy(),
-                title: if prep.can_sign { "" } else { "Sign is offered when the whole transaction reads in words, this device holds every missing signature, and none of them is an authorization. Review signs an authorization first, then the transaction." },
+                title: if prep.unread_sign { UNREAD_SIGN } else if prep.can_sign { "" } else { "Sign is offered when this device holds every missing signature and none of them is an authorization. Review signs an authorization first, then the transaction." },
                 onclick: move |_| {
                     let Some(sign) = for_sign.clone() else {
                         return;
@@ -122,6 +122,18 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                 "Sign"
             }
         }
+    }
+}
+
+/// Why Sign is amber: it signs more than the modal could put in words.
+const UNREAD_SIGN: &str = "Not every instruction was put in words by an IDL that ships with the app or that you imported. Sign signs it anyway. Review shows everything in it.";
+
+/// The Sign button's look: amber when it signs without a trusted summary.
+fn sign_class(can_sign: bool, unread: bool) -> &'static str {
+    match (can_sign, unread) {
+        (true, true) => "warn solid",
+        (true, false) => "primary",
+        (false, _) => "",
     }
 }
 
@@ -293,7 +305,7 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
                     }
                 } else {
                     p { class: "warn",
-                        "{verdict.unread} instruction(s) could not be put in words with the IDLs on this device, so there is no summary to sign from. Review the transaction to see everything in it."
+                        "{verdict.unread} instruction(s) could not be put in words with the IDLs on this device, so there is no summary of what Sign signs. Review the transaction to see everything in it."
                     }
                 }
                 if !prep.site_signs.is_empty() {
@@ -320,6 +332,7 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
 struct BatchReport {
     can_review: bool,
     can_sign: bool,
+    unread_sign: bool,
     review: Option<ReadyWire>,
     sign: Option<SignWire>,
     /// The paid-here offer, when the user switched to it.
@@ -351,6 +364,10 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
         && ready
             .as_ref()
             .is_some_and(|ready| ready.iter().all(|item| item.can_sign));
+    let unread_sign = can_sign
+        && ready
+            .as_ref()
+            .is_some_and(|ready| ready.iter().any(|item| item.unread_sign));
     let to_sign = ready
         .as_ref()
         .map_or(0, |ready| ready.iter().filter(|item| item.can_sign).count());
@@ -382,7 +399,7 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
         }
         if !locked && !can_sign && to_sign < count {
             p { class: "hint",
-                "Sign is offered when every transaction can be signed here from its summary. Review takes them to the Sign screen one at a time, and returns them together after the last."
+                "Sign is offered when this device can finish every transaction. Review takes them to the Sign screen one at a time, and returns them together after the last."
             }
         }
         div { class: "btn-row",
@@ -432,8 +449,9 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                 "Review"
             }
             button {
-                class: if can_sign { "primary" } else { "" },
+                class: sign_class(can_sign, unread_sign),
                 disabled: !can_sign || busy(),
+                title: if unread_sign { UNREAD_SIGN } else { "" },
                 onclick: move |_| {
                     let Some(reports) = for_sign.clone() else {
                         return;
@@ -492,6 +510,7 @@ fn BatchCard(
     let report = BatchReport {
         can_review: prep.can_review,
         can_sign: prep.can_sign,
+        unread_sign: prep.unread_sign,
         review: prep.for_review.clone(),
         sign: prep.for_sign.clone(),
         taken: prep.offered.clone().filter(|_| prep.replaced_payer),
@@ -510,6 +529,7 @@ fn BatchCard(
         (_, false) => ("chip danger", "Unreadable"),
         (Prepared::Working, _) => ("chip", "Preparing…"),
         (Prepared::Failed(_), _) => ("chip danger", "Cannot be prepared"),
+        (Prepared::Ready { .. }, _) if prep.unread_sign => ("chip warn", "Sign without summary"),
         (Prepared::Ready { .. }, _) if prep.can_sign => ("chip ok", "Can sign here"),
         (Prepared::Ready { .. }, _) => ("chip warn", "Review"),
     };
