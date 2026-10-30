@@ -1,21 +1,26 @@
 //! A site asking which accounts it may see.
 
 use super::*;
+use wallet_core::ShareableAccount;
 
 #[component]
 pub(in crate::ui) fn ConnectRequest(current: BridgePrompt, on_close: EventHandler<()>) -> Element {
     let session = use_context::<Session>();
-    let accounts = session.shareable_accounts();
-    // One account needs no choosing. With several, nothing is shared by default.
-    let mut chosen = use_signal(|| match session.shareable_accounts().as_slice() {
-        [only] => vec![only.pubkey],
-        _ => Vec::new(),
-    });
+    let origin = current.origin.clone();
+    let start = use_hook(move || session.site_choice(&origin));
+    let order = start.choice.order.clone();
+    let accounts = in_order(session.shareable_accounts(), &order);
+    let current_key = start.choice.current;
+    let current_is_new = start.choice.current_is_new;
+    // Kept in the order they were ticked: the first goes to the site first.
+    let mut chosen = use_signal(|| start.choice.ticked.clone());
+    let mut remember = use_signal(|| start.remembered);
     let shares_contract = accounts
         .iter()
         .any(|account| account.contract && chosen.read().contains(&account.pubkey));
     let approve_id = current.id.clone();
     let reject_id = current.id.clone();
+    let block_id = current.id.clone();
 
     rsx! {
         RequestHead { current: current.clone(), title: "Connect".to_string(), on_close }
@@ -38,6 +43,14 @@ pub(in crate::ui) fn ConnectRequest(current: BridgePrompt, on_close: EventHandle
                         },
                     }
                     AddressRow { pubkey: account.pubkey, no_copy: true }
+                    if current_key == Some(account.pubkey) {
+                        span { class: "chip", "Current" }
+                    }
+                }
+            }
+            if current_is_new {
+                p { class: "hint",
+                    "This site has not seen your current wallet. Tick it to show it."
                 }
             }
             if shares_contract {
@@ -45,8 +58,24 @@ pub(in crate::ui) fn ConnectRequest(current: BridgePrompt, on_close: EventHandle
                     "No key signs as a programmatic signer or a Squads vault. A transaction this site builds for one is rebuilt here before you read it: as an authorization, or as a proposal."
                 }
             }
+            label { class: "check",
+                input {
+                    r#type: "checkbox",
+                    checked: remember(),
+                    onchange: move |evt| remember.set(evt.checked()),
+                }
+                span { "Remember this connection" }
+            }
         }
         div { class: "btn-row",
+            button {
+                class: "danger",
+                title: "Reject this request and every request this site makes from now on.",
+                onclick: move |_| {
+                    session.bridge_block(&block_id);
+                },
+                "Block site"
+            }
             button {
                 onclick: move |_| {
                     session.bridge_answer(&reject_id, BridgeAnswer::Rejected);
@@ -57,16 +86,28 @@ pub(in crate::ui) fn ConnectRequest(current: BridgePrompt, on_close: EventHandle
                 class: "primary",
                 disabled: chosen.read().is_empty(),
                 onclick: move |_| {
-                    let shared: Vec<([u8; 32], String)> = session
-                        .shareable_accounts()
-                        .into_iter()
-                        .filter(|account| chosen.read().contains(&account.pubkey))
-                        .map(|account| (account.pubkey.to_bytes(), account.label))
+                    let held = session.shareable_accounts();
+                    let shared: Vec<ShareableAccount> = chosen
+                        .read()
+                        .iter()
+                        .filter_map(|key| held.iter().find(|account| account.pubkey == *key))
+                        .cloned()
                         .collect();
-                    session.bridge_answer(&approve_id, BridgeAnswer::Connect(shared));
+                    session.bridge_connect(&approve_id, shared, remember());
                 },
                 "Approve"
             }
         }
     }
+}
+
+/// `accounts` in `order`, and any added since it was worked out after them.
+fn in_order(mut accounts: Vec<ShareableAccount>, order: &[Pubkey]) -> Vec<ShareableAccount> {
+    accounts.sort_by_key(|account| {
+        order
+            .iter()
+            .position(|key| *key == account.pubkey)
+            .unwrap_or(order.len())
+    });
+    accounts
 }

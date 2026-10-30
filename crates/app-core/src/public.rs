@@ -6,7 +6,7 @@ use solana_signature::Signature;
 use tokio::sync::broadcast;
 use wallet_core::{Holdings, Workspace};
 
-use crate::bridge::{BridgeReply, BridgeRequest};
+use crate::bridge::{BridgeReply, BridgeRequest, SiteConnect, SiteSign};
 use crate::commands::Inner;
 use crate::events::Event;
 use crate::notices::{BridgeRequestOutcome, NoticeId, NoticeKind, TxStatus};
@@ -163,6 +163,23 @@ impl PublicCore {
     /// [`Core::bridge_answer`](crate::Core::bridge_answer), never a service.
     pub fn bridge_push(&self, request: BridgeRequest, reply: BridgeReply) {
         self.inner.bridge_push(request, reply);
+    }
+
+    /// What a `connect` from `origin` gets before anyone is asked. Only
+    /// public keys the user already showed this site can come back.
+    pub fn site_connect(&self, origin: &str, silent: bool) -> SiteConnect {
+        self.inner.site_connect(origin, silent)
+    }
+
+    /// Whether `origin` may ask `accounts` for a signature. The user still
+    /// approves the signature itself.
+    pub fn site_sign(&self, origin: &str, accounts: &[solana_pubkey::Pubkey]) -> SiteSign {
+        self.inner.site_sign(origin, accounts)
+    }
+
+    /// The site disconnected. A remembered site keeps its grant.
+    pub fn site_disconnected(&self, origin: &str) {
+        self.inner.site_disconnected(origin);
     }
 
     /// Drop a request nobody answered in time. Its reply is dropped unsent.

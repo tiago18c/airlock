@@ -12,7 +12,7 @@ use std::sync::mpsc;
 use std::sync::{Arc, OnceLock};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use app_core::bridge::{BridgeQueue, BridgeRequest};
+use app_core::bridge::{BridgeQueue, BridgeRequest, SiteConnect, SiteSign};
 use app_core::PublicCore;
 use base64::Engine;
 use bridge_protocol::reply;
@@ -163,6 +163,12 @@ impl Bridge {
         let params = value.get("params").cloned().unwrap_or(Value::Null);
 
         let core = self.shared.core.get();
+        let silent =
+            method == "connect" && params.get("silent").and_then(Value::as_bool) == Some(true);
+        // A silent connect never gets an error: the site just stays out.
+        if silent && core.is_none() {
+            return reply::result(&id, json!({ "accounts": [] }));
+        }
         if waits_for_user(method) && core.is_none() {
             return reply::error(&id, "busy", "Airlock is starting.");
         }
@@ -182,9 +188,11 @@ impl Bridge {
                 self.shared.show.send_modify(|n| *n = n.wrapping_add(1));
                 reply::result(&id, json!({}))
             }
-            ("disconnect", _) => reply::result(&id, json!({})),
-            ("connect", _) if params.get("silent").and_then(Value::as_bool) == Some(true) => {
-                reply::result(&id, json!({ "accounts": [] }))
+            ("disconnect", core) => {
+                if let Some(core) = core {
+                    core.site_disconnected(&origin);
+                }
+                reply::result(&id, json!({}))
             }
             ("signTransaction", _) if transaction_count(&params) == 0 => {
                 reply::error(&id, "bad_request", "No transaction was included.")
@@ -196,16 +204,42 @@ impl Bridge {
                     &format!("Airlock signs at most {MAX_TRANSACTIONS} transactions per request."),
                 )
             }
-            ("connect" | "signTransaction", Some(core)) => wait_for_user(
-                core,
-                BridgeRequest {
-                    id,
-                    origin,
-                    method: method.to_owned(),
-                    params,
-                },
-                DECISION_TIMEOUT,
-            ),
+            ("connect", Some(core)) => match core.site_connect(&origin, silent) {
+                SiteConnect::Allowed(accounts) => reply::connected(&id, &accounts),
+                _ if silent => reply::result(&id, json!({ "accounts": [] })),
+                SiteConnect::Blocked => blocked(&id),
+                SiteConnect::Undecided => wait_for_user(
+                    core,
+                    BridgeRequest {
+                        id,
+                        origin,
+                        method: method.to_owned(),
+                        params,
+                    },
+                    DECISION_TIMEOUT,
+                ),
+            },
+            ("signTransaction", Some(core)) => {
+                let accounts = requested_accounts(&params);
+                match core.site_sign(&origin, &accounts) {
+                    SiteSign::Blocked => blocked(&id),
+                    SiteSign::Allowed if accounts.len() == transaction_count(&params) => {
+                        wait_for_user(
+                            core,
+                            BridgeRequest {
+                                id,
+                                origin,
+                                method: method.to_owned(),
+                                params,
+                            },
+                            DECISION_TIMEOUT,
+                        )
+                    }
+                    // A transaction that names no account is not for one the
+                    // site was given.
+                    _ => reply::error(&id, "rejected", NOT_CONNECTED),
+                }
+            }
             _ => reply::error(
                 &id,
                 "not_implemented",
@@ -213,6 +247,13 @@ impl Bridge {
             ),
         }
     }
+}
+
+const NOT_CONNECTED: &str = "This account is not connected to the site.";
+
+/// The reply to a site the user blocked.
+fn blocked(id: &str) -> Vec<u8> {
+    reply::error(id, "rejected", "This site is blocked in Airlock.")
 }
 
 /// One connection to the socket. It counts as an extension once it sends
@@ -347,6 +388,13 @@ pub fn requested_account(params: &Value, index: usize) -> Option<Pubkey> {
         .as_str()?
         .parse()
         .ok()
+}
+
+/// The accounts a `signTransaction` asks to sign, those that read as addresses.
+fn requested_accounts(params: &Value) -> Vec<Pubkey> {
+    (0..transaction_count(params))
+        .filter_map(|index| requested_account(params, index))
+        .collect()
 }
 
 /// The bytes of transaction `index`, when they read as a Solana transaction.

@@ -13,15 +13,18 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 use std::time::Duration;
 
+use solana_pubkey::Pubkey;
 use solana_signature::Signature;
 use tokio::sync::{broadcast, watch};
 use tracing::{debug, debug_span, info, warn};
 use wallet_core::{
-    AddressBook, EnrollError, Holdings, RosterError, Vault, VaultData, VaultError, WalletId,
-    Workspace,
+    connect_choice, current_first, reconnect_accounts, AddressBook, EnrollError, Holdings,
+    RosterError, ShareableAccount, SiteGrant, Vault, VaultData, VaultError, WalletId, Workspace,
 };
 
-use crate::bridge::{BridgeAnswer, BridgeReply, BridgeRequest, BridgeState, Taken};
+use crate::bridge::{
+    BridgeAnswer, BridgeReply, BridgeRequest, BridgeState, SiteChoice, SiteConnect, SiteSign, Taken,
+};
 use crate::diagnostics::log_status;
 use crate::events::Event;
 use crate::lock::{LockPolicy, LockReason};
@@ -253,6 +256,29 @@ impl Core {
     /// the request was waiting and `answer` fits its method.
     pub fn bridge_answer(&self, id: &str, answer: &BridgeAnswer) -> bool {
         self.inner.bridge_answer(id, answer)
+    }
+
+    /// Answer a `connect` with the accounts the user chose, the current
+    /// wallet moved first, and keep the choice: saved when `remember`, for as
+    /// long as the app is open otherwise. Answers whether it was waiting.
+    pub fn bridge_connect(
+        &self,
+        id: &str,
+        accounts: Vec<ShareableAccount>,
+        remember: bool,
+    ) -> bool {
+        self.inner.bridge_connect(id, accounts, remember)
+    }
+
+    /// Turn away the site that made request `id` from now on, and reject
+    /// everything it has waiting. Answers whether it was waiting.
+    pub fn bridge_block(&self, id: &str) -> bool {
+        self.inner.bridge_block(id)
+    }
+
+    /// What the connect modal opens with for `origin`.
+    pub fn site_choice(&self, origin: &str) -> SiteChoice {
+        self.inner.site_choice(origin)
     }
 
     /// Record how a browser request ended, on the notice pushed when it
@@ -753,6 +779,208 @@ impl Inner {
         true
     }
 
+    /// The accounts a site can be shown, and the current wallet's address.
+    fn site_accounts(&self) -> (Vec<ShareableAccount>, Option<Pubkey>) {
+        let vault = locked(&self.vault);
+        let list = locked(&self.wallet_list);
+        let data = shown_wallets(&vault, &list);
+        let current = data.and_then(VaultData::acting_address);
+        let workspace = locked(&self.workspace);
+        (
+            wallet_core::shareable_accounts(data, workspace.data()),
+            current,
+        )
+    }
+
+    /// What `origin` was given, remembered or for this run of the app.
+    fn site_grant(&self, origin: &str) -> Option<SiteGrant> {
+        let remembered = locked(&self.workspace)
+            .data()
+            .connections
+            .grant(origin)
+            .cloned();
+        remembered.or_else(|| locked(&self.bridge).session(origin).cloned())
+    }
+
+    fn site_is_blocked(&self, origin: &str) -> bool {
+        locked(&self.workspace)
+            .data()
+            .connections
+            .is_blocked(origin)
+    }
+
+    pub(crate) fn site_connect(&self, origin: &str, silent: bool) -> SiteConnect {
+        if self.site_is_blocked(origin) {
+            return SiteConnect::Blocked;
+        }
+        let Some(grant) = self.site_grant(origin) else {
+            return SiteConnect::Undecided;
+        };
+        // A site that disconnected stays out until it asks again.
+        if grant.ended && silent {
+            return SiteConnect::Undecided;
+        }
+        let (shareable, current) = self.site_accounts();
+        let keys: Vec<Pubkey> = shareable.iter().map(|account| account.pubkey).collect();
+        let Some(accounts) = reconnect_accounts(&grant.accounts, current, &keys) else {
+            return SiteConnect::Undecided;
+        };
+        if grant.ended {
+            self.set_site_ended(origin, false);
+        }
+        info!(target: "airlock::bridge", origin = %origin, silent, "site reconnected");
+        SiteConnect::Allowed(labelled(accounts, &shareable))
+    }
+
+    pub(crate) fn site_sign(&self, origin: &str, accounts: &[Pubkey]) -> SiteSign {
+        if self.site_is_blocked(origin) {
+            return SiteSign::Blocked;
+        }
+        match self.site_grant(origin) {
+            Some(grant)
+                if !grant.ended && accounts.iter().all(|key| grant.accounts.contains(key)) =>
+            {
+                SiteSign::Allowed
+            }
+            _ => SiteSign::NotConnected,
+        }
+    }
+
+    pub(crate) fn site_disconnected(&self, origin: &str) {
+        locked(&self.bridge).end_session(origin);
+        let remembered = locked(&self.workspace)
+            .data()
+            .connections
+            .grant(origin)
+            .is_some();
+        if remembered {
+            self.set_site_ended(origin, true);
+        }
+        info!(target: "airlock::bridge", origin = %origin, "site disconnected");
+    }
+
+    /// Saved now rather than deferred: this runs on the bridge's own thread,
+    /// which cannot start the saver task.
+    fn set_site_ended(&self, origin: &str, ended: bool) {
+        let saved = self.workspace_checked("site_ended", |workspace| {
+            workspace.connections.set_ended(origin, ended);
+        });
+        if let Err(err) = &saved {
+            self.report_site_save(err);
+        }
+    }
+
+    pub(crate) fn site_choice(&self, origin: &str) -> SiteChoice {
+        let (shareable, current) = self.site_accounts();
+        let keys: Vec<Pubkey> = shareable.iter().map(|account| account.pubkey).collect();
+        let grant = self.site_grant(origin);
+        let remembered = locked(&self.workspace)
+            .data()
+            .connections
+            .grant(origin)
+            .is_some();
+        SiteChoice {
+            choice: connect_choice(
+                &keys,
+                current,
+                grant.as_ref().map(|grant| grant.accounts.as_slice()),
+            ),
+            remembered,
+        }
+    }
+
+    pub(crate) fn bridge_connect(
+        self: &Arc<Self>,
+        id: &str,
+        accounts: Vec<ShareableAccount>,
+        remember: bool,
+    ) -> bool {
+        let _span = debug_span!(target: CORE, "command", name = "bridge_connect").entered();
+        let (_, current) = self.site_accounts();
+        let keys: Vec<Pubkey> = accounts.iter().map(|account| account.pubkey).collect();
+        let ordered = current_first(keys, current);
+        let answer = BridgeAnswer::Connect(labelled(ordered.clone(), &accounts));
+        let Some(taken) = self.bridge_take(id, Some(&answer)) else {
+            debug!(target: CORE, outcome = "not waiting", "command");
+            return false;
+        };
+        let origin = taken.request.origin.clone();
+        // A request with no origin has nothing a later one could match.
+        if !origin.is_empty() {
+            self.keep_site(&origin, ordered, remember);
+        }
+        let (bytes, outcome) = answer.reply(id);
+        if let Some(reply) = taken.reply {
+            reply(bytes);
+        }
+        self.bridge_finished(&taken.request, outcome);
+        true
+    }
+
+    /// Keep what `origin` was given. When it cannot be saved the site still
+    /// has it until the app closes, and the failure is reported.
+    fn keep_site(&self, origin: &str, accounts: Vec<Pubkey>, remember: bool) {
+        let was_remembered = locked(&self.workspace)
+            .data()
+            .connections
+            .grant(origin)
+            .is_some();
+        let saved = if remember {
+            let kept = accounts.clone();
+            self.workspace_checked("site_remember", move |workspace| {
+                workspace.connections.remember(origin, kept);
+            })
+        } else if was_remembered {
+            self.workspace_checked("site_forget", |workspace| {
+                workspace.connections.forget(origin);
+            })
+        } else {
+            Ok(())
+        };
+        let mut bridge = locked(&self.bridge);
+        bridge.end_session(origin);
+        if let Err(err) = &saved {
+            self.report_site_save(err);
+        }
+        if !remember || saved.is_err() {
+            bridge.set_session(origin, accounts);
+        }
+    }
+
+    fn report_site_save(&self, err: &VaultError) {
+        let _ = self.events.send(Event::SaveFailed {
+            store: Store::Workspace.name(),
+            error: err.to_string(),
+        });
+    }
+
+    pub(crate) fn bridge_block(self: &Arc<Self>, id: &str) -> bool {
+        let _span = debug_span!(target: CORE, "command", name = "bridge_block").entered();
+        let Some(origin) = locked(&self.bridge)
+            .queue()
+            .get(id)
+            .map(|request| request.origin.clone())
+        else {
+            debug!(target: CORE, outcome = "not waiting", "command");
+            return false;
+        };
+        if !origin.is_empty() {
+            let saved = self.workspace_checked("site_block", |workspace| {
+                workspace.connections.block(&origin);
+            });
+            if let Err(err) = &saved {
+                self.report_site_save(err);
+            }
+            locked(&self.bridge).end_session(&origin);
+        }
+        info!(target: "airlock::bridge", origin = %origin, "site blocked");
+        let waiting = locked(&self.bridge).waiting_from(&origin);
+        for waiting_id in waiting {
+            self.bridge_answer(&waiting_id, &BridgeAnswer::Rejected);
+        }
+        true
+    }
+
     fn bridge_take(&self, id: &str, answer: Option<&BridgeAnswer>) -> Option<Taken> {
         let mut bridge = locked(&self.bridge);
         let taken = bridge.take(id, answer)?;
@@ -1019,6 +1247,20 @@ impl Drop for Inner {
         // The last handle went away with changes still waiting for the timer.
         self.flush_all_dropping();
     }
+}
+
+/// `keys` as a site is sent them, each with the label it has here.
+fn labelled(keys: Vec<Pubkey>, accounts: &[ShareableAccount]) -> Vec<([u8; 32], String)> {
+    keys.into_iter()
+        .map(|key| {
+            let label = accounts
+                .iter()
+                .find(|account| account.pubkey == key)
+                .map(|account| account.label.clone())
+                .unwrap_or_default();
+            (key.to_bytes(), label)
+        })
+        .collect()
 }
 
 fn report_checked(store: &'static str, saved: &Result<(), VaultError>) {

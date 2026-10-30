@@ -83,6 +83,15 @@ impl VaultData {
             .or_else(|| self.wallets.first().map(|wallet| wallet.id))
     }
 
+    /// The address of the wallet the app is acting as.
+    pub fn acting_address(&self) -> Option<Pubkey> {
+        let id = self.acting_wallet()?;
+        self.wallets
+            .iter()
+            .find(|wallet| wallet.id == id)?
+            .address()
+    }
+
     /// Addresses a key of this vault can sign for.
     pub fn local_signer_pubkeys(&self) -> Vec<Pubkey> {
         self.wallets
