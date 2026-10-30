@@ -14,7 +14,7 @@ pub use state::online::{use_network, Network};
 pub use state::proposals::ProposalsOpen;
 pub use state::pump::{use_core, Pump};
 pub use state::session::{OnlineHooks, Session, Tab, WalletSummary};
-pub use state::submit::{SubmitFut, SubmitHandle, TxSubmit};
+pub use state::submit::{SiteSendFut, SubmitFut, SubmitHandle, TxSubmit};
 pub use state::theme::use_theme;
 pub use state::{open_core, open_core_with, use_session};
 pub use ui::{

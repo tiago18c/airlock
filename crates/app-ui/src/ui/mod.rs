@@ -25,6 +25,8 @@ pub fn tx_status_chip(status: &TxStatus) -> (&'static str, &'static str, bool) {
         TxStatus::Failed { .. } | TxStatus::Rejected { .. } => {
             ("chip danger", status.label(), false)
         }
-        TxStatus::Expired | TxStatus::Unknown => ("chip warn", status.label(), false),
+        TxStatus::Expired | TxStatus::Unknown | TxStatus::NotSent => {
+            ("chip warn", status.label(), false)
+        }
     }
 }

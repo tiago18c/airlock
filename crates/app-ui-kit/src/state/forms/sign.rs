@@ -58,6 +58,18 @@ pub struct QrPreview {
     pub transfer_id: String,
 }
 
+/// What came of a signed transaction given back to the site that asked for
+/// it, which may send it itself.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SiteSend {
+    /// The node is being watched for it. Submit waits.
+    Watching,
+    /// The site sent it and it landed: there is nothing left to submit.
+    Landed,
+    /// It did not land while it was watched. It can be submitted here.
+    NotSent,
+}
+
 /// One transaction of a batch a site sent, as it stood when the screen last
 /// showed it.
 #[derive(Clone, Debug, PartialEq)]
@@ -169,6 +181,10 @@ pub struct SignForm {
     /// create an account by keypair inside its own calls, which only a
     /// simulation shows. Kept in memory, like `made_here`.
     pub created: Signal<Vec<([u8; 32], Vec<Pubkey>)>>,
+    /// What came of each transaction given back to a site, by its
+    /// signature. Kept in memory, like `made_here`, so it holds for every
+    /// transaction of a batch.
+    pub site_sends: Signal<Vec<(solana_signature::Signature, SiteSend)>>,
 }
 
 /// A key made here, and the site's one-time key it takes the place of.
@@ -282,6 +298,24 @@ impl SignForm {
             .find(|(other, _)| *other == message)
             .map(|(_, created)| created.clone())
             .unwrap_or_else(|| wallet_flows::request::created_accounts(tx, None))
+    }
+
+    /// What came of `wire` after it went back to a site, when it did.
+    pub fn site_send(&self, wire: &[u8]) -> Option<SiteSend> {
+        let signature = wallet_core::parse_wire(wire).ok()?.signature()?;
+        (self.site_sends)()
+            .iter()
+            .find(|(other, _)| *other == signature)
+            .map(|(_, send)| *send)
+    }
+
+    /// Record `send` for the transaction signed `signature`.
+    pub fn set_site_send(&self, signature: solana_signature::Signature, send: SiteSend) {
+        let mut sends = self.site_sends;
+        sends.with_mut(|sends| {
+            sends.retain(|(other, _)| *other != signature);
+            sends.push((signature, send));
+        });
     }
 
     /// Put `wire` on the screen in place of whatever was there.

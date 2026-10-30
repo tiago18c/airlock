@@ -5,10 +5,14 @@ use std::time::Duration;
 
 use app_core::testing::{kit, settle};
 use app_core::{NoticeKind, TxStatus};
+use app_ui_kit::TxSubmit;
 use solana_signature::Signature;
-use wallet_core::{Cluster, ConfirmationLevel, SignatureStatus, SolanaRpc};
-use wallet_flows::testing::{pk, transfer, FakeRpc};
-use wallet_flows::track::{POLL_INTERVAL, TRACK_TIMEOUT};
+use wallet_core::{
+    apply_local_signatures, parse_wire, Cluster, ConfirmationLevel, KeypairSigner, SignatureStatus,
+    SolanaRpc, WalletSigner,
+};
+use wallet_flows::testing::{legacy_transfer, pk, transfer, FakeRpc};
+use wallet_flows::track::{POLL_INTERVAL, SITE_SEND_POLL, SITE_SEND_WINDOW, TRACK_TIMEOUT};
 
 use super::{Submitter, Tracker};
 
@@ -349,4 +353,55 @@ async fn signatures_on_one_node_share_each_poll() {
     let done = rpc.asked();
     advance_polls(&kit.clock, 3).await;
     assert_eq!(rpc.asked(), done, "nothing left, so the loop stopped");
+}
+
+/// A legacy transfer `payer` pays for and has signed, and its signature.
+fn signed_legacy(payer: &KeypairSigner) -> (Vec<u8>, Signature) {
+    let signers: [&dyn WalletSigner; 1] = [payer];
+    let wire = apply_local_signatures(&legacy_transfer(payer.pubkey(), pk(9)), &signers).unwrap();
+    let signature = parse_wire(&wire).unwrap().signature().unwrap();
+    (wire, signature)
+}
+
+#[tokio::test]
+async fn what_a_site_sends_is_tracked_and_what_it_does_not_is_told() {
+    let kit = kit();
+    let (sent_wire, sent) = signed_legacy(&KeypairSigner::new_random());
+    let (kept_wire, kept) = signed_legacy(&KeypairSigner::new_random());
+    let rpc = Arc::new(FakeRpc::default().with_signature_status(
+        sent,
+        SignatureStatus {
+            slot: 5,
+            err: None,
+            confirmation: Some(ConfirmationLevel::Processed),
+        },
+    ));
+    let submitter = Submitter::new(kit.core.public(), Tracker::new(kit.core.public()));
+    let answer = TxSubmit::watch_site_send(
+        &submitter,
+        rpc.clone(),
+        vec![(sent_wire, 1), (kept_wire, 2)],
+        "https://site.test".into(),
+        Cluster::Devnet,
+    );
+    let polls = SITE_SEND_WINDOW.as_millis() / SITE_SEND_POLL.as_millis();
+    for _ in 0..polls {
+        settle().await;
+        kit.clock.advance(SITE_SEND_POLL);
+    }
+    assert_eq!(answer.await, vec![(sent, true), (kept, false)]);
+    assert_eq!(status_of(&kit, sent), Some(TxStatus::Sent));
+    assert_eq!(status_of(&kit, kept), Some(TxStatus::NotSent));
+
+    // The one the site sent is followed like one sent here.
+    rpc.set_signature_status(
+        sent,
+        Some(SignatureStatus {
+            slot: 6,
+            err: None,
+            confirmation: Some(ConfirmationLevel::Confirmed),
+        }),
+    );
+    advance_polls(&kit.clock, 2).await;
+    assert_eq!(status_of(&kit, sent), Some(TxStatus::Confirmed { slot: 6 }));
 }

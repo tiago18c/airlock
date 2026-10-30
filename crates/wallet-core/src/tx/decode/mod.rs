@@ -43,6 +43,17 @@ pub struct WireView {
 }
 
 impl WireView {
+    /// The transaction's id on chain, its fee payer's signature, once that
+    /// signature is valid.
+    pub fn signature(&self) -> Option<Signature> {
+        if !self.slot_valid(0) {
+            return None;
+        }
+        let offset = *self.signature_offsets.first()?;
+        let bytes = self.wire.get(offset..offset + SIGNATURE_BYTES)?;
+        Signature::try_from(bytes).ok()
+    }
+
     /// Whether slot `index` holds a valid signature over the message.
     pub fn slot_valid(&self, index: usize) -> bool {
         let (Some(offset), Some(pubkey)) = (

@@ -12,7 +12,7 @@ pub mod theme;
 
 pub use online::use_network;
 pub use proposals::ProposalsOpen;
-pub use submit::{SubmitFut, SubmitHandle, TxSubmit};
+pub use submit::{SiteSendFut, SubmitFut, SubmitHandle, TxSubmit};
 
 use std::sync::Arc;
 

@@ -105,6 +105,7 @@ pub fn use_forms() -> Forms {
             batch: use_signal(|| None),
             made_here: use_signal(Vec::<MadeHere>::new),
             created: use_signal(Vec::new),
+            site_sends: use_signal(Vec::new),
         },
         stake: StakeForm {
             snapshot: use_signal(|| None),

@@ -4,11 +4,12 @@ use std::sync::Arc;
 
 use app_core::diagnostics::TxLog;
 use app_core::{FlowId, NoticeKind, PublicCore, TxStatus};
-use app_ui_kit::{SubmitFut, TxSubmit};
+use app_ui_kit::{SiteSendFut, SubmitFut, TxSubmit};
 use solana_signature::Signature;
 use tokio::sync::oneshot;
-use wallet_core::{parse_wire, Cluster, RpcError, SolanaRpc, SIGNATURE_BYTES};
+use wallet_core::{parse_wire, Cluster, RpcError, SolanaRpc};
 use wallet_flows::send;
+use wallet_flows::track::{watch_landed, SITE_SEND_POLL, SITE_SEND_WINDOW};
 
 use super::tracker::Tracker;
 
@@ -80,6 +81,62 @@ impl Submitter {
     }
 }
 
+impl Submitter {
+    /// Watch the node for the transactions in `returned`, each with its flow,
+    /// which went back to `origin`, a site that may send them itself. One
+    /// that lands gets a transaction notice and is tracked as if sent here;
+    /// one that does not gets a notice saying so. Answers whether each
+    /// signed one landed.
+    pub async fn watch_site_send(
+        &self,
+        rpc: Arc<dyn SolanaRpc>,
+        returned: &[(Vec<u8>, FlowId)],
+        origin: &str,
+        cluster: &Cluster,
+    ) -> Vec<(Signature, bool)> {
+        let watched: Vec<(Signature, FlowId, &[u8])> = returned
+            .iter()
+            .filter_map(|(wire, flow)| Some((first_signature(wire)?, *flow, wire.as_slice())))
+            .collect();
+        let signatures: Vec<Signature> = watched.iter().map(|(signature, ..)| *signature).collect();
+        let clock = self.core.ports().clock.clone();
+        let landed = watch_landed(
+            rpc.as_ref(),
+            &signatures,
+            SITE_SEND_WINDOW,
+            SITE_SEND_POLL,
+            |every| clock.sleep(every),
+        )
+        .await;
+        for (&(signature, flow, wire), &landed) in watched.iter().zip(&landed) {
+            let (label, status) = if landed {
+                TxLog {
+                    flow,
+                    wire,
+                    cluster: Some(cluster),
+                }
+                .log_sent(&signature.to_string());
+                (format!("Sent by {origin}"), TxStatus::Sent)
+            } else {
+                (format!("Returned to {origin}"), TxStatus::NotSent)
+            };
+            self.core.notices_push(NoticeKind::Transaction {
+                flow,
+                signature,
+                cluster: cluster.clone(),
+                label,
+                status,
+            });
+            if landed {
+                let deadline = self.tracker.fresh_deadline();
+                self.tracker
+                    .follow(rpc.clone(), cluster, signature, None, deadline);
+            }
+        }
+        signatures.into_iter().zip(landed).collect()
+    }
+}
+
 impl TxSubmit for Submitter {
     fn submit(
         &self,
@@ -107,14 +164,28 @@ impl TxSubmit for Submitter {
                 .unwrap_or_else(|_| Err(RpcError::Message("the submit task stopped".into())))
         })
     }
+
+    fn watch_site_send(
+        &self,
+        rpc: Arc<dyn SolanaRpc>,
+        returned: Vec<(Vec<u8>, FlowId)>,
+        origin: String,
+        cluster: Cluster,
+    ) -> SiteSendFut {
+        // On the core's spawner, like a send: the notices come whether or
+        // not the screen that asked is still open.
+        let this = self.clone();
+        let (reply, answer) = oneshot::channel();
+        self.core.ports().spawner.spawn(Box::pin(async move {
+            let landed = this
+                .watch_site_send(rpc, &returned, &origin, &cluster)
+                .await;
+            let _ = reply.send(landed);
+        }));
+        Box::pin(async move { answer.await.unwrap_or_default() })
+    }
 }
 
 fn first_signature(wire: &[u8]) -> Option<Signature> {
-    let view = parse_wire(wire).ok()?;
-    let offset = *view.signature_offsets.first()?;
-    if !view.slot_valid(0) {
-        return None;
-    }
-    let bytes = view.wire.get(offset..offset + SIGNATURE_BYTES)?;
-    Signature::try_from(bytes).ok()
+    parse_wire(wire).ok()?.signature()
 }
