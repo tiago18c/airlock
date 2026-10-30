@@ -408,7 +408,7 @@ A key made on the airgap device reaches the online device by its public key alon
 
 Desktop only. The extension registers a Wallet Standard wallet in the page, the service worker stamps the origin from the browser, `bridge-host` relays over a per-user local socket, and the app queues the request. The extension holds no keys and decides nothing. The protocol and the threat model are in [browser-bridge.md](browser-bridge.md).
 
-The app answers `connect`, a `signTransaction` with one to 16 transactions, legacy, v0 or v1, `signMessage` and `signIn`. Anything else returns `not_implemented`. A locked vault asks for the password in the modal. A request nobody answers expires after ten minutes.
+The app answers `connect`, a `signTransaction`, `signAndSendTransaction` or `signAndSendAllTransactions` with one to 16 transactions, legacy, v0 or v1, `signMessage` and `signIn`. Anything else returns `not_implemented`. A locked vault asks for the password in the modal. A request nobody answers expires after ten minutes.
 
 ### Connect
 
@@ -430,6 +430,26 @@ Choosing a wallet the site was given tells the site, with that wallet first. Cho
 - **Blocked**: **Unblock** lets the site ask again.
 
 Connected and Authorized also have **Block**. Disconnecting or revoking rejects the site's waiting signature requests, and blocking rejects everything it has waiting.
+
+### Sign and send
+
+`signAndSendTransaction` and `signAndSendAllTransactions` go through the same modal and Sign screen as `signTransaction`. Once this device has signed, the app sends the transaction itself and the site gets its signature (`app_ui_kit::actions::site_send`). `@solana/wallet-adapter` prefers this for `sendTransaction`, so on those sites transactions go out through the app's node, not the site's.
+
+- **The signature is of what went out.** When a transaction was rebuilt for a Squads vault or a programmatic signer, or converted, that is the rebuilt one, so a site waiting on its own signature's outcome may not see what it expected.
+- **A transaction goes only with every signature.** A slot left for the site, which `signTransaction` allows, keeps Sign off.
+- **The network has to match.** On another network the modal says so and Sign stays off until the user changes it, and the app checks again as it sends. A custom node whose genesis is none of the public ones cannot be compared, and is taken as the user's choice. `signTransaction` only warns, because the signature goes back to a site that may know better.
+- **Approving takes the request out of the queue,** so it cannot be rejected while it goes out. Each transaction gets a toast, as if sent from Sign.
+- **The reply comes when the node accepts it.** With `options.commitment` it waits for that level, for at most 90 seconds. The other options (`skipPreflight`, `maxRetries`, `preflightCommitment`, `minContextSlot`) are not passed on: the app sends as it always does.
+
+The transactions of one request are approved together, at most 16. How they go out:
+
+| Request | Sent | A failure |
+| --- | --- | --- |
+| `signAndSendTransaction` | In order, none waiting for the last to confirm | Stops the rest. The site gets `send_failed` |
+| `signAndSendAllTransactions`, `parallel` (the default) | In order, none waiting, and all before any commitment is waited for | Touches only that one |
+| `signAndSendAllTransactions`, `serial` | Each once the last reaches its commitment, or confirmed when it names none | The rest are not sent and report that |
+
+The standard does not say what the modes mean or which is the default. This is how Airlock reads them.
 
 ### Messages and sign-in
 

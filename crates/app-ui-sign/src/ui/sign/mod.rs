@@ -346,6 +346,15 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         Some(TxSource::Browser { id, .. }) => session.bridge.read().get(id).is_some(),
         _ => false,
     };
+    // The site asked this app to send it: Submit is what comes last.
+    let app_sends = match &source {
+        Some(TxSource::Browser { id, .. }) => session
+            .bridge
+            .read()
+            .get(id)
+            .is_some_and(|request| request.sends()),
+        _ => false,
+    };
     let returned = (form.returned)();
     // The site that has it back may send it itself.
     let site_send = match &source {
@@ -377,7 +386,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             needs_rebuild,
             rebuilt: (form.rebuilt)(),
             simulation: simulation_stage(&(form.simulation)(), online),
-            finish: if site_waiting || (from_browser && returned) {
+            finish: if !app_sends && (site_waiting || (from_browser && returned)) {
                 SignFinish::ReturnToSite
             } else if online {
                 SignFinish::Submit

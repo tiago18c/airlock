@@ -4,6 +4,7 @@ import { bytesToBase64 } from "../src/protocol";
 import { AirlockWallet } from "../src/wallet";
 
 const KEY = bytesToBase64(new Uint8Array(32).fill(7));
+const SENDING = ["solana:signTransaction", "solana:signAndSendTransaction", "solana:signAndSendAllTransactions"];
 
 function walletWith(reply: (method: string, params: unknown) => unknown) {
   const calls: { method: string; params: unknown }[] = [];
@@ -22,6 +23,8 @@ const sign = (wallet: AirlockWallet, ...inputs: unknown[]) =>
 test("the wallet offers only what the desktop app can do", () => {
   const { wallet } = walletWith(() => ({}));
   assert.deepEqual(Object.keys(wallet.features).sort(), [
+    "solana:signAndSendAllTransactions",
+    "solana:signAndSendTransaction",
     "solana:signIn",
     "solana:signMessage",
     "solana:signTransaction",
@@ -31,6 +34,10 @@ test("the wallet offers only what the desktop app can do", () => {
   ]);
   const feature = wallet.features["solana:signTransaction"] as { supportedTransactionVersions: readonly unknown[] };
   assert.deepEqual([...feature.supportedTransactionVersions], ["legacy", 0, 1]);
+  for (const name of ["solana:signAndSendTransaction", "solana:signAndSendAllTransactions"]) {
+    const sends = wallet.features[name] as { supportedTransactionVersions: readonly unknown[] };
+    assert.deepEqual([...sends.supportedTransactionVersions], ["legacy", 0, 1]);
+  }
 });
 
 test("connect exposes the accounts the desktop app returned", async () => {
@@ -38,7 +45,7 @@ test("connect exposes the accounts the desktop app returned", async () => {
   const { accounts } = await connect(wallet);
   assert.equal(accounts.length, 1);
   assert.equal(wallet.accounts[0].label, "Treasury");
-  assert.deepEqual([...wallet.accounts[0].features], ["solana:signTransaction"]);
+  assert.deepEqual([...wallet.accounts[0].features], SENDING);
 });
 
 test("a silent connect that cannot reach the app finds nothing, and a normal one fails", async () => {
@@ -63,8 +70,8 @@ test("only an account with a key here can sign messages", async () => {
     accounts: [{ publicKey: KEY, signsMessages: true }, { publicKey: OTHER }],
   }));
   await connect(wallet);
-  assert.deepEqual([...wallet.accounts[0].features], ["solana:signTransaction", "solana:signMessage"]);
-  assert.deepEqual([...wallet.accounts[1].features], ["solana:signTransaction"]);
+  assert.deepEqual([...wallet.accounts[0].features], [...SENDING, "solana:signMessage"]);
+  assert.deepEqual([...wallet.accounts[1].features], SENDING);
 });
 
 test("a message is signed for a connected account, one input at a time", async () => {
@@ -112,6 +119,57 @@ test("a sign-in reply naming another account is refused", async () => {
     signature: "aGk=",
   }));
   await assert.rejects(signIn(wallet), /did not return/);
+});
+
+const send = (wallet: AirlockWallet, ...inputs: unknown[]) =>
+  (wallet.features["solana:signAndSendTransaction"] as { signAndSendTransaction: (...i: unknown[]) => Promise<{ signature: Uint8Array }[]> }).signAndSendTransaction(...inputs);
+const sendAll = (wallet: AirlockWallet, inputs: unknown[], options?: unknown) =>
+  (wallet.features["solana:signAndSendAllTransactions"] as { signAndSendAllTransactions: (i: unknown[], o?: unknown) => Promise<PromiseSettledResult<{ signature: Uint8Array }>[]> }).signAndSendAllTransactions(inputs, options);
+const SIGNATURE = bytesToBase64(new Uint8Array(64).fill(3));
+
+test("sending returns the signature, for a connected account only", async () => {
+  const { wallet, calls } = walletWith((method) =>
+    method === "connect" ? { accounts: [{ publicKey: KEY }] } : { signatures: [SIGNATURE] },
+  );
+  await connect(wallet);
+  const account = wallet.accounts[0];
+  const input = { account, transaction: new Uint8Array([0x81]), chain: "solana:devnet", options: { commitment: "confirmed" } };
+  const [output] = await send(wallet, input);
+  assert.equal(output.signature.length, 64);
+  const sent = calls.at(-1)!;
+  assert.equal(sent.method, "signAndSendTransaction");
+  const item = (sent.params as { transactions: { chain: string; options: unknown }[] }).transactions[0];
+  assert.equal(item.chain, "solana:devnet");
+  assert.deepEqual(item.options, { commitment: "confirmed" });
+
+  const { wallet: stranger } = walletWith(() => ({}));
+  await assert.rejects(send(stranger, input), /not connected/);
+});
+
+test("a reply with the wrong number of signatures is refused", async () => {
+  const { wallet } = walletWith((method) =>
+    method === "connect" ? { accounts: [{ publicKey: KEY }] } : { signatures: [] },
+  );
+  await connect(wallet);
+  const input = { account: wallet.accounts[0], transaction: new Uint8Array([0x81]), chain: "solana:devnet" };
+  await assert.rejects(send(wallet, input), /wrong number/);
+});
+
+test("sending all settles each transaction on its own, in the mode asked", async () => {
+  const { wallet, calls } = walletWith((method) =>
+    method === "connect"
+      ? { accounts: [{ publicKey: KEY }] }
+      : { results: [{ signature: SIGNATURE }, { error: { code: "send_failed", message: "no" } }] },
+  );
+  await connect(wallet);
+  const input = { account: wallet.accounts[0], transaction: new Uint8Array([0x81]), chain: "solana:devnet" };
+  const [first, second] = await sendAll(wallet, [input, input], { mode: "serial" });
+  assert.equal(first.status, "fulfilled");
+  assert.equal(second.status, "rejected");
+  assert.equal((second as PromiseRejectedResult).reason.message, "no");
+  assert.equal((calls.at(-1)!.params as { mode: string }).mode, "serial");
+  assert.deepEqual(await sendAll(wallet, []), []);
+  await assert.rejects(sendAll(wallet, Array.from({ length: 17 }, () => input)), /at most 16/);
 });
 
 test("a key that is not 32 bytes is refused", async () => {

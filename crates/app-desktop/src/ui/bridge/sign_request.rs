@@ -2,6 +2,7 @@
 //! that goes back whole.
 
 use super::prepared::{use_prepared_request, Prepared, PreparedRequest, ReadyWire, SignWire};
+use app_ui_kit::actions::site_send::send_for_site;
 use app_ui_kit::state::forms::{BatchItem, BlockhashClock, BrowserBatch};
 
 use super::*;
@@ -28,6 +29,17 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
     let for_sign = prep.for_sign.clone();
     let clock = prep.clock;
     let replaced_payer = prep.replaced_payer;
+    let sends = current.sends;
+    // The app cannot send what the site still has to sign.
+    let left_for_site = sends && !prep.site_signs.is_empty();
+    let waits = send_waits_for_network(session, &current);
+    let can_sign = prep.can_sign && !left_for_site && !waits;
+    let title = if sends {
+        "Sign and send a transaction"
+    } else {
+        "Sign a transaction"
+    };
+    let label = sign_label(&current, None);
 
     rsx! {
         BlockhashCountdown {
@@ -36,8 +48,14 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
             expired: prep.clock_expired,
             label: countdown_label,
         }
-        RequestHead { current: current.clone(), title: "Sign a transaction".to_string(), on_close }
+        RequestHead { current: current.clone(), title: title.to_string(), on_close }
         div { class: "request-body",
+            ChainNotice { current: current.clone() }
+            if left_for_site {
+                p { class: "warn",
+                    "This site has not signed its part of this transaction, so Airlock cannot send it."
+                }
+            }
             if let Some(account) = prep.account {
                 div { class: "chip-row",
                     span { class: "muted", "asked of" }
@@ -96,8 +114,8 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                 "Review"
             }
             button {
-                class: sign_class(prep.can_sign, prep.unread_sign),
-                disabled: !prep.can_sign || busy(),
+                class: sign_class(can_sign, prep.unread_sign),
+                disabled: !can_sign || busy(),
                 title: if prep.unread_sign { UNREAD_SIGN } else if prep.can_sign { "" } else { "Sign is offered when this device holds every missing signature and none of them is an authorization. Review signs an authorization first, then the transaction." },
                 onclick: move |_| {
                     let Some(sign) = for_sign.clone() else {
@@ -106,6 +124,15 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                     error.set(None);
                     busy.set(true);
                     match sign_for_site(session, &sign, &site_signs) {
+                        Ok(wire) if sends => {
+                            if let Some(paid) = &taken_for_sign {
+                                paid.log_taken(session);
+                            }
+                            let items = vec![(wire, sign.3)];
+                            if let Err(why) = send_for_site(&session, &sign_id, &origin_for_sign, items) {
+                                error.set(Some(why));
+                            }
+                        }
                         Ok(wire) => {
                             if let Some(paid) = &taken_for_sign {
                                 paid.log_taken(session);
@@ -119,7 +146,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                     }
                     busy.set(false);
                 },
-                "Sign"
+                "{label}"
             }
         }
     }
@@ -370,10 +397,24 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
         && ready
             .as_ref()
             .is_some_and(|ready| ready.iter().all(|item| item.can_review));
+    let sends = current.sends;
+    let waits = send_waits_for_network(session, &current);
+    // The app cannot send what the site still has to sign.
     let can_sign = can_review
-        && ready
-            .as_ref()
-            .is_some_and(|ready| ready.iter().all(|item| item.can_sign));
+        && !waits
+        && ready.as_ref().is_some_and(|ready| {
+            ready
+                .iter()
+                .all(|item| item.can_sign && (!sends || item.site_signs.is_empty()))
+        });
+    let send_note = match current.params.get("mode").and_then(|mode| mode.as_str()) {
+        Some("serial") => {
+            "Each waits for the one before it to confirm, and a failure stops the rest."
+        }
+        _ if current.method == SEND_ALL => "Each goes out whatever becomes of the others.",
+        _ => "A rejected one stops the rest.",
+    };
+    let label = sign_label(&current, Some(count));
     let unread_sign = can_sign
         && ready
             .as_ref()
@@ -391,10 +432,17 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
     let for_sign = ready;
 
     rsx! {
-        RequestHead { current: current.clone(), title: format!("Sign {count} transactions"), on_close }
+        RequestHead { current: current.clone(), title: if sends { format!("Sign and send {count} transactions") } else { format!("Sign {count} transactions") }, on_close }
         div { class: "request-body",
-            p { class: "muted",
-                "The site sent {count} transactions in one request. It gets them all back once every one is signed, or none if you reject."
+            ChainNotice { current: current.clone() }
+            if sends {
+                p { class: "muted",
+                    "The site sent {count} transactions in one request. Airlock sends them once every one is signed, or none if you reject. {send_note}"
+                }
+            } else {
+                p { class: "muted",
+                    "The site sent {count} transactions in one request. It gets them all back once every one is signed, or none if you reject."
+                }
             }
             if locked {
                 LockedNotice {}
@@ -490,6 +538,14 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                     for paid in reports.iter().filter_map(|report| report.taken.as_ref()) {
                         paid.log_taken(session);
                     }
+                    if sends {
+                        let items = signed.into_iter().map(|(flow, wire)| (wire, flow)).collect();
+                        if let Err(why) = send_for_site(&session, &sign_id, &origin_for_sign, items) {
+                            error.set(Some(why));
+                        }
+                        busy.set(false);
+                        return;
+                    }
                     for (flow, wire) in &signed {
                         log_returned(session, *flow, wire, &origin_for_sign, &sign_id);
                     }
@@ -499,7 +555,7 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                     }
                     busy.set(false);
                 },
-                "Sign all {count}"
+                "{label}"
             }
         }
     }

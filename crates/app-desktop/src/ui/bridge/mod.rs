@@ -20,7 +20,7 @@
 //!   Otherwise the only way forward is Review, on the Sign screen.
 
 use crate::bridge::BridgePrompt;
-use app_core::bridge::BridgeAnswer;
+use app_core::bridge::{BridgeAnswer, SEND, SEND_ALL};
 use app_ui_kit::actions::idl_check::fetch_missing_idls;
 use app_ui_kit::actions::sentence;
 use app_ui_kit::actions::sign::{offer_paid_here, prepare_request, PaidHere};
@@ -170,6 +170,10 @@ fn RequestCard(current: BridgePrompt, on_open: EventHandler<()>) -> Element {
         ("connect", _, _) => "wants to connect".to_string(),
         ("signMessage", _, _) => "asks you to sign a message".to_string(),
         ("signIn", _, _) => "asks you to sign in".to_string(),
+        (SEND | SEND_ALL, count, _) if count > 1 => {
+            format!("asks you to sign and send {count} transactions")
+        }
+        (SEND | SEND_ALL, _, _) => "asks you to sign and send a transaction".to_string(),
         (_, count, true) if count > 1 => {
             format!("asks to sign {count} transactions · open on Sign")
         }
@@ -207,6 +211,52 @@ fn RequestCard(current: BridgePrompt, on_open: EventHandler<()>) -> Element {
                 }
             }
         }
+    }
+}
+
+/// A site's network against the app's. A send cannot go on another network,
+/// so it waits for the user to change it. A signature goes back to the site,
+/// which may know what it is doing, so that is only said.
+#[component]
+fn ChainNotice(current: BridgePrompt) -> Element {
+    let session = use_context::<Session>();
+    let cluster = session.cluster();
+    let Some(chain) = current
+        .chains
+        .iter()
+        .find(|chain| cluster.differs_from_chain(chain))
+    else {
+        return rsx! {};
+    };
+    let name = cluster.name().to_string();
+    rsx! {
+        p { class: "warn",
+            if current.sends {
+                "This site is on {chain}, and Airlock is on {name}. Change the network to send this."
+            } else {
+                "This site says it is on {chain}, and Airlock is on {name}. What you see here is read from {name}."
+            }
+        }
+    }
+}
+
+/// Whether a send has to wait for the user to change the network.
+fn send_waits_for_network(session: Session, current: &BridgePrompt) -> bool {
+    let cluster = session.cluster();
+    current.sends
+        && current
+            .chains
+            .iter()
+            .any(|chain| cluster.differs_from_chain(chain))
+}
+
+/// How a request's Sign reads.
+fn sign_label(current: &BridgePrompt, count: Option<usize>) -> String {
+    match (current.sends, count) {
+        (true, Some(count)) => format!("Sign and send all {count}"),
+        (true, None) => "Sign and send".to_string(),
+        (false, Some(count)) => format!("Sign all {count}"),
+        (false, None) => "Sign".to_string(),
     }
 }
 

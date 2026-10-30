@@ -46,6 +46,8 @@ fn only_connect_and_sign_wait_for_the_user() {
     assert!(waits_for_user("signTransaction"));
     assert!(waits_for_user("signMessage"));
     assert!(waits_for_user("signIn"));
+    assert!(waits_for_user(SEND));
+    assert!(waits_for_user(SEND_ALL));
     assert!(!waits_for_user("status"));
     assert!(!waits_for_user("show"));
     assert!(!waits_for_user("disconnect"));
@@ -599,6 +601,102 @@ async fn a_sign_in_asking_nothing_reaches_the_user() {
     );
     assert!(kit.core.bridge_answer("s", &BridgeAnswer::Rejected));
     asking.join().unwrap();
+}
+
+fn send_request(id: &str, method: &str, chain: Option<&str>) -> Value {
+    let mut request = sign_request(id, 1);
+    request["method"] = json!(method);
+    if let Some(chain) = chain {
+        request["params"]["transactions"][0]["chain"] = json!(chain);
+    }
+    request
+}
+
+#[tokio::test]
+async fn a_send_names_its_network_and_a_connected_account() {
+    let (kit, bridge) = attached_bridge();
+    let stranger = ask(&bridge, send_request("s", SEND, Some("solana:devnet")));
+    assert_eq!(stranger["error"]["code"], "rejected");
+    let unnamed = ask(&bridge, send_request("u", SEND, None));
+    assert_eq!(unnamed["error"]["code"], "bad_request");
+    let mut empty = send_request("e", SEND_ALL, Some("solana:devnet"));
+    empty["params"]["transactions"] = json!([]);
+    assert_eq!(ask(&bridge, empty)["error"]["code"], "bad_request");
+    assert!(kit.core.slices().bridge.get().is_empty());
+}
+
+/// A send waiting for the user, on its own thread.
+fn waiting_send(
+    kit: &Kit,
+    bridge: &Bridge,
+    method: &'static str,
+) -> std::thread::JoinHandle<Value> {
+    connected(kit, bridge, false);
+    let asking = {
+        let bridge = bridge.clone();
+        std::thread::spawn(move || {
+            ask(&bridge, send_request("send", method, Some("solana:devnet")))
+        })
+    };
+    while kit.core.slices().bridge.get().is_empty() {
+        std::thread::yield_now();
+    }
+    asking
+}
+
+#[tokio::test]
+async fn an_approved_send_leaves_the_queue_and_answers_when_done() {
+    let (kit, bridge) = attached_bridge();
+    let asking = waiting_send(&kit, &bridge, SEND);
+    let shown = BridgePrompt::head_of(&kit.core.slices().bridge.get()).unwrap();
+    assert!(shown.sends);
+    assert_eq!(shown.chains, ["solana:devnet"]);
+
+    // A signed transaction is not what a send answers with.
+    assert!(!kit
+        .core
+        .bridge_answer("send", &BridgeAnswer::Signed(vec![vec![0x81]])));
+    let sending = kit.core.bridge_begin_send("send", 1).unwrap();
+    assert!(kit.core.slices().bridge.get().is_empty());
+    // Nobody can reject it now.
+    assert!(!kit.core.bridge_answer("send", &BridgeAnswer::Rejected));
+
+    kit.core.bridge_send_finished(sending, vec![Ok([1; 64])]);
+    let value = asking.join().unwrap();
+    assert_eq!(value["result"]["signatures"].as_array().unwrap().len(), 1);
+}
+
+#[tokio::test]
+async fn a_failed_send_tells_the_site_why() {
+    let (kit, bridge) = attached_bridge();
+    let asking = waiting_send(&kit, &bridge, SEND);
+    let sending = kit.core.bridge_begin_send("send", 1).unwrap();
+    kit.core
+        .bridge_send_finished(sending, vec![Err("the node said no".into())]);
+    let value = asking.join().unwrap();
+    assert_eq!(value["error"]["code"], "send_failed");
+    assert_eq!(value["error"]["message"], "the node said no");
+}
+
+#[tokio::test]
+async fn send_all_answers_for_each_transaction() {
+    let (kit, bridge) = attached_bridge();
+    let asking = waiting_send(&kit, &bridge, SEND_ALL);
+    assert!(kit.core.bridge_begin_send("send", 2).is_none());
+    let sending = kit.core.bridge_begin_send("send", 1).unwrap();
+    kit.core
+        .bridge_send_finished(sending, vec![Err("failed".into())]);
+    let value = asking.join().unwrap();
+    assert_eq!(value["result"]["results"][0]["error"]["message"], "failed");
+}
+
+#[tokio::test]
+async fn disconnecting_rejects_a_waiting_message_as_well() {
+    let (kit, bridge) = attached_bridge();
+    let asking = waiting_send(&kit, &bridge, SEND);
+    kit.core.site_disconnect(ORIGIN);
+    assert_eq!(asking.join().unwrap()["error"]["code"], "rejected");
+    assert!(kit.core.slices().bridge.get().is_empty());
 }
 
 #[test]

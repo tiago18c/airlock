@@ -14,7 +14,7 @@ use std::sync::mpsc;
 use std::sync::{Arc, Mutex, OnceLock, PoisonError};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use app_core::bridge::{BridgeQueue, BridgeRequest, SiteConnect, SiteSign};
+use app_core::bridge::{BridgeQueue, BridgeRequest, SiteConnect, SiteSign, SEND, SEND_ALL};
 use app_core::PublicCore;
 use base64::Engine;
 use bridge_host::relay::{Connection, FrameSender};
@@ -235,10 +235,13 @@ impl Bridge {
                 }
                 reply::result(&id, json!({}))
             }
-            ("signTransaction", _) if transaction_count(&params) == 0 => {
+            (SEND | SEND_ALL, _) if !every_chain_named(&params) => {
+                reply::error(&id, "bad_request", "A transaction names no network.")
+            }
+            (TRANSACTION_METHODS!(), _) if transaction_count(&params) == 0 => {
                 reply::error(&id, "bad_request", "No transaction was included.")
             }
-            ("signTransaction", _) if transaction_count(&params) > MAX_TRANSACTIONS => {
+            (TRANSACTION_METHODS!(), _) if transaction_count(&params) > MAX_TRANSACTIONS => {
                 reply::error(
                     &id,
                     "not_implemented",
@@ -292,7 +295,7 @@ impl Bridge {
                     Err(message) => reply::error(&id, "rejected", &message),
                 }
             }
-            ("signTransaction", Some(core)) => {
+            (TRANSACTION_METHODS!(), Some(core)) => {
                 let accounts = requested_accounts(&params);
                 match core.site_sign(&origin, &accounts) {
                     SiteSign::Blocked => blocked(&id),
@@ -321,6 +324,14 @@ impl Bridge {
         }
     }
 }
+
+/// The requests that hand over transactions.
+macro_rules! TRANSACTION_METHODS {
+    () => {
+        "signTransaction" | SEND | SEND_ALL
+    };
+}
+use TRANSACTION_METHODS;
 
 const NOT_CONNECTED: &str = "This account is not connected to the site.";
 
@@ -524,7 +535,7 @@ fn method_of(message: &[u8]) -> Option<String> {
 fn waits_for_user(method: &str) -> bool {
     matches!(
         method,
-        "connect" | "signTransaction" | "signMessage" | "signIn"
+        "connect" | "signTransaction" | SEND | SEND_ALL | "signMessage" | "signIn"
     )
 }
 
@@ -579,6 +590,10 @@ pub struct BridgePrompt {
     pub detail: String,
     /// How many transactions a `signTransaction` asks to have signed.
     pub transactions: usize,
+    /// The app sends what this asks to have signed.
+    pub sends: bool,
+    /// The networks its transactions name.
+    pub chains: Vec<String>,
     /// Requests queued behind this one.
     pub waiting: usize,
 }
@@ -593,6 +608,8 @@ impl BridgePrompt {
             params: request.params.clone(),
             detail: detail(&request.method, &request.params),
             transactions: request.transaction_count(),
+            sends: request.sends(),
+            chains: request.chains(),
             waiting: queue.len() - 1,
         })
     }
@@ -654,7 +671,7 @@ pub fn transaction_wire(params: &Value, index: usize) -> Option<Vec<u8>> {
 fn detail(method: &str, params: &Value) -> String {
     match method {
         "connect" => "Choose which accounts this site may see.".into(),
-        "signTransaction" => sign_detail(params, 0),
+        TRANSACTION_METHODS!() => sign_detail(params, 0),
         "signMessage" => "Asks you to sign a message.".into(),
         "signIn" => "Asks you to sign in.".into(),
         other => other.into(),
@@ -683,6 +700,19 @@ pub fn sign_detail(params: &Value, index: usize) -> String {
         },
         Err(_) => "The transaction was not valid base64.".into(),
     }
+}
+
+/// Whether every transaction of a send says which network it is for, as the
+/// standard requires.
+fn every_chain_named(params: &Value) -> bool {
+    params
+        .get("transactions")
+        .and_then(Value::as_array)
+        .is_some_and(|items| {
+            items
+                .iter()
+                .all(|item| item.get("chain").is_some_and(Value::is_string))
+        })
 }
 
 fn transaction_count(params: &Value) -> usize {

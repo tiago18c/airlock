@@ -10,7 +10,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 use bridge_protocol::reply::SiteAccount;
 use serde_json::Value;
 use solana_pubkey::Pubkey;
-use wallet_core::{ConnectChoice, SiteGrant};
+use wallet_core::{ConfirmationLevel, ConnectChoice, SiteGrant};
 
 use crate::notices::BridgeRequestOutcome;
 
@@ -25,6 +25,9 @@ pub enum BridgeAnswer {
     /// A `signTransaction`, with every transaction it asked for, signed, in
     /// the order the site sent them.
     Signed(Vec<Vec<u8>>),
+    /// A `signAndSendTransaction` or `signAndSendAllTransactions`, with what
+    /// became of each transaction, in the order the site sent them.
+    Sent(Vec<Result<[u8; 64], String>>),
     /// A `signMessage`, with the bytes signed and the signature.
     SignedMessage {
         signed: Vec<u8>,
@@ -53,6 +56,11 @@ impl BridgeAnswer {
                     && !wires.is_empty()
                     && wires.len() == request.transaction_count()
             }
+            Self::Sent(results) => {
+                request.sends()
+                    && !results.is_empty()
+                    && results.len() == request.transaction_count()
+            }
             Self::SignedMessage { .. } => request.method == "signMessage",
             Self::SignedIn { .. } => request.method == "signIn",
             Self::Rejected => true,
@@ -60,8 +68,24 @@ impl BridgeAnswer {
     }
 
     /// The reply frame for request `id`, and the outcome for its notice.
-    pub(crate) fn reply(&self, id: &str) -> (Vec<u8>, BridgeRequestOutcome) {
+    pub(crate) fn reply(&self, id: &str, method: &str) -> (Vec<u8>, BridgeRequestOutcome) {
         match self {
+            Self::Sent(results) if method == SEND_ALL => (
+                bridge_protocol::reply::sent_each(id, results),
+                BridgeRequestOutcome::Answered,
+            ),
+            Self::Sent(results) => {
+                // All of them, or why not: the first failure says what happened.
+                let frame = match results.iter().find_map(|one| one.as_ref().err()) {
+                    Some(message) => bridge_protocol::reply::send_failed(id, message),
+                    None => {
+                        let signatures: Vec<[u8; 64]> =
+                            results.iter().filter_map(|one| one.clone().ok()).collect();
+                        bridge_protocol::reply::sent(id, &signatures)
+                    }
+                };
+                (frame, BridgeRequestOutcome::Answered)
+            }
             Self::Connect(accounts) => (
                 bridge_protocol::reply::connected(id, accounts),
                 BridgeRequestOutcome::Answered,
@@ -90,6 +114,11 @@ impl BridgeAnswer {
         }
     }
 }
+
+/// `signAndSendTransaction`: the app sends what it signs.
+pub const SEND: &str = "signAndSendTransaction";
+/// `signAndSendAllTransactions`: the same, with a result for each transaction.
+pub const SEND_ALL: &str = "signAndSendAllTransactions";
 
 /// What a `connect` from a site gets before anyone is asked.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -154,6 +183,67 @@ impl BridgeRequest {
         bridge_protocol::request_code(&self.id)
     }
 
+    /// Whether the app sends what this asks to have signed.
+    pub fn sends(&self) -> bool {
+        self.method == SEND || self.method == SEND_ALL
+    }
+
+    /// Whether this takes a connection, so that ending one rejects it. A
+    /// `connect` asks for one, and a `signIn` makes one.
+    pub fn needs_connection(&self) -> bool {
+        !matches!(self.method.as_str(), "connect" | "signIn")
+    }
+
+    /// How the transactions of a send go out. A site that names no mode gets
+    /// `parallel`, the standard's first.
+    pub fn send_plan(&self) -> SendPlan {
+        if self.method != SEND_ALL {
+            return SendPlan::InOrder;
+        }
+        match self.params.get("mode").and_then(Value::as_str) {
+            Some("serial") => SendPlan::Serial,
+            _ => SendPlan::Independent,
+        }
+    }
+
+    /// The commitment a site asked each transaction of a send to reach.
+    pub fn send_commitments(&self) -> Vec<Option<ConfirmationLevel>> {
+        let items = self.params.get("transactions").and_then(Value::as_array);
+        items
+            .map(|items| {
+                items
+                    .iter()
+                    .map(|item| {
+                        match item
+                            .get("options")
+                            .and_then(|options| options.get("commitment"))
+                            .and_then(Value::as_str)
+                        {
+                            Some("processed") => Some(ConfirmationLevel::Processed),
+                            Some("confirmed") => Some(ConfirmationLevel::Confirmed),
+                            Some("finalized") => Some(ConfirmationLevel::Finalized),
+                            _ => None,
+                        }
+                    })
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
+    /// The networks the transactions of this name, each once.
+    pub fn chains(&self) -> Vec<String> {
+        let mut chains: Vec<String> = self
+            .params
+            .get("transactions")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .filter_map(|item| item.get("chain")?.as_str().map(str::to_owned))
+            .collect();
+        chains.dedup();
+        chains
+    }
+
     /// How many transactions a `signTransaction` asks to have signed.
     pub fn transaction_count(&self) -> usize {
         self.params
@@ -189,6 +279,21 @@ impl BridgeQueue {
     pub fn get(&self, id: &str) -> Option<&BridgeRequest> {
         self.pending.iter().find(|request| request.id == id)
     }
+}
+
+/// How the transactions of a send go out.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SendPlan {
+    InOrder,
+    Independent,
+    Serial,
+}
+
+/// A send the user approved: out of the queue, so nobody can reject it while
+/// it goes out, with the way to tell the site how it went.
+pub struct SendingRequest {
+    pub request: BridgeRequest,
+    pub(crate) reply: Option<BridgeReply>,
 }
 
 /// The queue and, beside it, how to reply to each request in it. Only the
@@ -235,14 +340,14 @@ impl BridgeState {
         Some(Taken { request, reply })
     }
 
-    /// The ids of the requests waiting from `origin`: those of `method`, or
-    /// all of them when it is empty.
-    pub fn waiting_from(&self, origin: &str, method: &str) -> Vec<String> {
+    /// The ids of the requests waiting from `origin`: all of them, or only
+    /// those that take a connection.
+    pub fn waiting_from(&self, origin: &str, only_connected: bool) -> Vec<String> {
         self.queue
             .pending
             .iter()
             .filter(|request| {
-                request.origin == origin && (method.is_empty() || request.method == method)
+                request.origin == origin && (!only_connected || request.needs_connection())
             })
             .map(|request| request.id.clone())
             .collect()

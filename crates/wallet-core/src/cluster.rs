@@ -110,6 +110,23 @@ impl Cluster {
         }
     }
 
+    /// The Wallet Standard's name for this network. None for a custom RPC
+    /// whose genesis is none of the public ones, or not known yet.
+    pub fn standard_chain(&self) -> Option<&'static str> {
+        match self {
+            Self::MainnetBeta => Some("solana:mainnet"),
+            Self::Devnet => Some("solana:devnet"),
+            Self::Testnet => Some("solana:testnet"),
+            Self::Custom { known, .. } => known.and_then(|known| known.cluster().standard_chain()),
+        }
+    }
+
+    /// Whether a site asking for `chain` means another network than this. A
+    /// node whose network is not known cannot be compared, and the user chose it.
+    pub fn differs_from_chain(&self, chain: &str) -> bool {
+        self.standard_chain().is_some_and(|own| own != chain)
+    }
+
     pub fn from_genesis_hash(hash: &Hash) -> Option<Self> {
         KnownCluster::from_genesis_hash(hash).map(KnownCluster::cluster)
     }

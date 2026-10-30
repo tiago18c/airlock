@@ -5,9 +5,14 @@ import type {
   WalletIcon,
 } from "@wallet-standard/base";
 import {
+  SignAndSendAllTransactions,
+  SolanaSignAndSendTransaction,
   SolanaSignIn,
   SolanaSignMessage,
   SolanaSignTransaction,
+  type SolanaSignAndSendAllTransactionsOptions,
+  type SolanaSignAndSendTransactionInput,
+  type SolanaSignAndSendTransactionOutput,
   type SolanaSignInInput,
   type SolanaSignInOutput,
   type SolanaSignMessageInput,
@@ -38,9 +43,13 @@ import {
 const CHAINS = ["solana:mainnet", "solana:devnet", "solana:testnet"] as const;
 // Only what the desktop app can do is advertised, so a dApp never picks a
 // feature that is certain to fail. The desktop signs legacy, v0 and v1.
-const ACCOUNT_FEATURES = [SolanaSignTransaction] as const;
+const ACCOUNT_FEATURES = [
+  SolanaSignTransaction,
+  SolanaSignAndSendTransaction,
+  SignAndSendAllTransactions,
+] as const;
 // No key signs a message as a programmatic signer or a Squads vault.
-const KEY_ACCOUNT_FEATURES = [SolanaSignTransaction, SolanaSignMessage] as const;
+const KEY_ACCOUNT_FEATURES = [...ACCOUNT_FEATURES, SolanaSignMessage] as const;
 const VERSIONS = ["legacy", 0, 1] as const;
 
 export const ICON = iconPng as WalletIcon;
@@ -84,6 +93,22 @@ export class AirlockWallet implements Wallet {
         signTransaction: (
           ...inputs: readonly SolanaSignTransactionInput[]
         ): Promise<readonly SolanaSignTransactionOutput[]> => this.#signTransaction(...inputs),
+      },
+      [SolanaSignAndSendTransaction]: {
+        version: "1.0.0",
+        supportedTransactionVersions: VERSIONS,
+        signAndSendTransaction: (
+          ...inputs: readonly SolanaSignAndSendTransactionInput[]
+        ): Promise<readonly SolanaSignAndSendTransactionOutput[]> => this.#signAndSend(...inputs),
+      },
+      [SignAndSendAllTransactions]: {
+        version: "1.0.0",
+        supportedTransactionVersions: VERSIONS,
+        signAndSendAllTransactions: (
+          inputs: readonly SolanaSignAndSendTransactionInput[],
+          options?: SolanaSignAndSendAllTransactionsOptions,
+        ): Promise<readonly PromiseSettledResult<SolanaSignAndSendTransactionOutput>[]> =>
+          this.#signAndSendAll(inputs, options),
       },
       [SolanaSignMessage]: {
         version: "1.0.0",
@@ -160,6 +185,69 @@ export class AirlockWallet implements Wallet {
       throw new BridgeError("internal", "The desktop app returned the wrong number of transactions.");
     }
     return signed.map((item) => ({ signedTransaction: base64ToBytes(item) }));
+  }
+
+  /** The transactions of a request for the desktop app. */
+  #sendParams(inputs: readonly SolanaSignAndSendTransactionInput[]): { transactions: unknown[] } {
+    if (inputs.length > MAX_TRANSACTIONS) {
+      throw new BridgeError(
+        "not_implemented",
+        `Airlock signs at most ${MAX_TRANSACTIONS} transactions per request.`,
+      );
+    }
+    inputs.forEach((input) => this.#requireAccount(input.account));
+    return {
+      transactions: inputs.map((input) => ({
+        account: input.account.address,
+        transaction: bytesToBase64(input.transaction),
+        chain: input.chain,
+        options: input.options,
+      })),
+    };
+  }
+
+  async #signAndSend(
+    ...inputs: readonly SolanaSignAndSendTransactionInput[]
+  ): Promise<readonly SolanaSignAndSendTransactionOutput[]> {
+    if (inputs.length === 0) return [];
+    const result = await this.call("signAndSendTransaction", this.#sendParams(inputs));
+    const signatures = stringList(result, "signatures");
+    if (signatures.length !== inputs.length) {
+      throw new BridgeError("internal", "The desktop app returned the wrong number of signatures.");
+    }
+    return signatures.map((item) => ({ signature: base64ToBytes(item) }));
+  }
+
+  async #signAndSendAll(
+    inputs: readonly SolanaSignAndSendTransactionInput[],
+    options?: SolanaSignAndSendAllTransactionsOptions,
+  ): Promise<readonly PromiseSettledResult<SolanaSignAndSendTransactionOutput>[]> {
+    if (inputs.length === 0) return [];
+    const result = await this.call("signAndSendAllTransactions", {
+      ...this.#sendParams(inputs),
+      mode: options?.mode,
+    });
+    const results = asRecord(result).results;
+    if (!Array.isArray(results) || results.length !== inputs.length) {
+      throw new BridgeError("internal", "The desktop app returned the wrong number of results.");
+    }
+    return results.map((item): PromiseSettledResult<SolanaSignAndSendTransactionOutput> => {
+      const record = asRecord(item);
+      if (record.error) {
+        const error = asRecord(record.error);
+        return {
+          status: "rejected",
+          reason: new BridgeError(
+            requiredString(error, "code"),
+            requiredString(error, "message"),
+          ),
+        };
+      }
+      return {
+        status: "fulfilled",
+        value: { signature: base64ToBytes(requiredString(record, "signature")) },
+      };
+    });
   }
 
   // One at a time: each is shown to the user on its own, and the site gets
