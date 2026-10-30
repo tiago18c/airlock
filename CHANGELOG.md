@@ -10,6 +10,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 ## [Unreleased]
 
 ### Added
+- Sites can ask Airlock to sign a transaction and send it. You approve it as you would any other, Airlock submits it through your own node, and the site gets the signature. Each transaction gets a toast. A site on another network has to wait until you change yours. Most sites using the wallet adapter will send this way from now on.
 - Sites can ask you to sign a message or to sign in with Solana, from a wallet whose key is on this device. The modal shows exactly what is signed. Airlock writes the sign-in message itself, and refuses one for another site. It also refuses to sign, as a message, anything that could be read as a transaction or as an authorization for one of your wallets. Signing in also connects the site, and **Remember this connection** works as it does on connect.
 - Choosing another wallet tells a connected site, if it was given that wallet, so the site moves to it. Choosing a wallet it was not given changes nothing for it.
 - **Connections** lists the sites connected now, the sites you authorized and the sites you blocked. Disconnect ends a connection and keeps the site's authorization, Revoke forgets it, and Block and Unblock do what they say. Open it from the card on the Extension chip, or from Settings.
@@ -23,6 +24,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - The memo program's IDL ships with the app, for its three addresses (v4 `Memo4c…`, v3 `MemoSq…` and v1 `Memo1U…`) on mainnet, devnet and testnet. Review reads a memo as its text, and Build can add one.
 
 ### Changed
+- The request modal warns when a site says it is on another network than the one Airlock is on.
 - The connect modal opens with the wallet you are using ticked, at the top of the list. When you tick several, it is the first one the site gets, or else the first you ticked.
 - A site reloading its page finds your connection again, with no prompt, until it disconnects or the app closes. Before, it had to ask again each time. A closed app no longer shows the site an error when it checks for a connection.
 - A site can only ask for a signature from accounts it is connected to. The app checks this itself now.

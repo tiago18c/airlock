@@ -28,7 +28,7 @@ flowchart LR
 
 Manifest V3, TypeScript, in `extension/`.
 
-- A content script registers a wallet named Airlock with `@wallet-standard/wallet`, so sites using `@solana/wallet-adapter` or the Wallet Standard find it without a `window.solana` injection. It advertises `standard:connect`, `standard:disconnect`, `standard:events`, `solana:signTransaction` (versions legacy, 0 and 1), `solana:signMessage` and `solana:signIn` (version 1.0.0): only what the desktop app can do, so a site never picks a feature that is certain to fail. An account lists `solana:signMessage` only when a key on the device signs as it.
+- A content script registers a wallet named Airlock with `@wallet-standard/wallet`, so sites using `@solana/wallet-adapter` or the Wallet Standard find it without a `window.solana` injection. It advertises `standard:connect`, `standard:disconnect`, `standard:events`, `solana:signTransaction`, `solana:signAndSendTransaction` and `solana:signAndSendAllTransactions` (versions legacy, 0 and 1, the same for all three), `solana:signMessage` and `solana:signIn` (version 1.0.0): only what the desktop app can do, so a site never picks a feature that is certain to fail. An account lists `solana:signMessage` only when a key on the device signs as it.
 - `signTransaction` with several inputs, which is how the wallet adapter's `signAllTransactions` reaches a Wallet Standard wallet, is one request with every transaction in it, at most 16 (`MAX_TRANSACTIONS` in `protocol.ts` and `bridge_protocol`). The outputs come back in the order of the inputs.
 - The service worker relays page requests to `chrome.runtime.connectNative("dev.airlock.bridge")`. It sets each request's `origin` from the browser's `sender`, never from page data, and its `expiresAt` ten minutes ahead.
 - The popup lists pending requests by their request code (below), and says whether the host is missing or the app is not running.
@@ -111,6 +111,8 @@ JSON objects, one per frame. A frame is a 32-bit little-endian length, then the 
 | `connect` | `{ "silent"?: boolean }` | `{ "accounts": [ { "publicKey": "<base64>", "label"?: string, "signsMessages"?: true } ] }` |
 | `disconnect` | `{ "accounts": ["<base58>", …] }` | `{}` |
 | `signTransaction` | `{ "transactions": [ { "account", "transaction", "chain"? }, … ] }`, one to 16 | `{ "signedTransactions": ["<base64>", …] }`, one for each, in the same order |
+| `signAndSendTransaction` | As `signTransaction`, with `chain` required and `options.commitment` read | `{ "signatures": ["<base64>", …] }`, one for each, or `send_failed` |
+| `signAndSendAllTransactions` | The same, with `"mode"?: "parallel" \| "serial"` | `{ "results": [ { "signature": "<base64>" } or { "error": { "code", "message" } }, … ] }`, one for each |
 | `signMessage` | `{ "account": "<base58>", "message": "<base64>" }` | `{ "signedMessage": "<base64>", "signature": "<base64>" }` |
 | `signIn` | The Wallet Standard's `SolanaSignInInput`, all of it optional | `{ "account": "<base64>", "accounts": [ … ], "signedMessage": "<base64>", "signature": "<base64>" }`, `account` first in `accounts` |
 | `pages` | `{ "origins": ["<origin>", …] }`, every origin with a page open in this browser. From the service worker, whenever that changes and when the host starts | `{}` |
@@ -124,7 +126,8 @@ A reply repeats `id` and has either `result` or `error`, with `error.code` one o
 | `rejected` | The user declined. The extension surfaces it as a Wallet Standard rejection |
 | `expired` | `expiresAt` passed, or nobody decided in time |
 | `not_implemented` | Any other method, or more than 16 transactions |
-| `bad_request` | Not JSON, not version 1, or a `signTransaction` with no transaction |
+| `bad_request` | Not JSON, not version 1, a request with no transaction, or a send that names no network |
+| `send_failed` | The user approved a send, and it did not go through |
 | `busy` | The app is still starting |
 | `app_not_running` | `bridge-host` found no app on the socket |
 | `host_not_found` | The browser could not start `bridge-host` (set by the extension) |

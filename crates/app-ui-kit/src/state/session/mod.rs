@@ -325,7 +325,7 @@ impl Session {
     }
 
     /// A handle on the core, for a command or a read.
-    fn core(&self) -> Core {
+    pub(crate) fn core(&self) -> Core {
         self.core.peek().clone()
     }
 
@@ -390,7 +390,7 @@ impl Session {
 
     /// Run a core command, then bring the pumped signals up to date, so a
     /// read right after it sees the change.
-    fn command<R>(&self, run: impl FnOnce(&Core) -> R) -> R {
+    pub(crate) fn command<R>(&self, run: impl FnOnce(&Core) -> R) -> R {
         let core = self.core();
         let out = run(&core);
         self.pump.catch_up(&core);

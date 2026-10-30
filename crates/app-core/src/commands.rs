@@ -24,8 +24,8 @@ use wallet_core::{
 };
 
 use crate::bridge::{
-    BridgeAnswer, BridgeReply, BridgeRequest, BridgeState, ConnectedSite, SiteChoice, SiteConnect,
-    SiteSign, SitesView, Taken,
+    BridgeAnswer, BridgeReply, BridgeRequest, BridgeState, ConnectedSite, SendingRequest,
+    SiteChoice, SiteConnect, SiteSign, SitesView, Taken,
 };
 use crate::diagnostics::log_status;
 use crate::events::Event;
@@ -271,6 +271,22 @@ impl Core {
         remember: bool,
     ) -> bool {
         self.inner.bridge_connect(id, accounts, remember)
+    }
+
+    /// Take a send the user approved out of the queue, so it cannot be
+    /// rejected while it goes out. None when it is not waiting, is not a send,
+    /// or does not have `count` transactions.
+    pub fn bridge_begin_send(&self, id: &str, count: usize) -> Option<SendingRequest> {
+        self.inner.bridge_begin_send(id, count)
+    }
+
+    /// Tell the site how its send went.
+    pub fn bridge_send_finished(
+        &self,
+        sending: SendingRequest,
+        results: Vec<Result<[u8; 64], String>>,
+    ) {
+        self.inner.bridge_send_finished(sending, results);
     }
 
     /// Answer a `signIn` with what `account` signed, and let the site see it,
@@ -797,12 +813,37 @@ impl Inner {
             debug!(target: CORE, outcome = "not waiting", "command");
             return false;
         };
-        let (bytes, outcome) = answer.reply(id);
+        let (bytes, outcome) = answer.reply(id, &taken.request.method);
         if let Some(reply) = taken.reply {
             reply(bytes);
         }
         self.bridge_finished(&taken.request, outcome);
         true
+    }
+
+    pub(crate) fn bridge_begin_send(&self, id: &str, count: usize) -> Option<SendingRequest> {
+        let _span = debug_span!(target: CORE, "command", name = "bridge_begin_send").entered();
+        // Empty results only to test the fit: one for each transaction.
+        let fits = BridgeAnswer::Sent(vec![Err(String::new()); count]);
+        let taken = self.bridge_take(id, Some(&fits))?;
+        Some(SendingRequest {
+            request: taken.request,
+            reply: taken.reply,
+        })
+    }
+
+    pub(crate) fn bridge_send_finished(
+        self: &Arc<Self>,
+        sending: SendingRequest,
+        results: Vec<Result<[u8; 64], String>>,
+    ) {
+        let _span = debug_span!(target: CORE, "command", name = "bridge_send_finished").entered();
+        let answer = BridgeAnswer::Sent(results);
+        let (bytes, outcome) = answer.reply(&sending.request.id, &sending.request.method);
+        if let Some(reply) = sending.reply {
+            reply(bytes);
+        }
+        self.bridge_finished(&sending.request, outcome);
     }
 
     /// Drop `id` unanswered: the transport stopped waiting. Answers whether
@@ -901,7 +942,7 @@ impl Inner {
 
     pub(crate) fn site_disconnect(self: &Arc<Self>, origin: &str) {
         self.end_site(origin);
-        self.reject_waiting(origin, "signTransaction");
+        self.reject_waiting(origin, true);
         self.publish_sites();
         info!(target: "airlock::bridge", origin = %origin, "site disconnected by the user");
     }
@@ -915,7 +956,7 @@ impl Inner {
         if let Err(err) = &saved {
             self.report_site_save(err);
         }
-        self.reject_waiting(origin, "signTransaction");
+        self.reject_waiting(origin, true);
         self.publish_sites();
         info!(target: "airlock::bridge", origin = %origin, "site revoked");
     }
@@ -929,7 +970,7 @@ impl Inner {
         }
         locked(&self.bridge).end_session(origin);
         locked(&self.bridge).drop_holding(origin);
-        self.reject_waiting(origin, "");
+        self.reject_waiting(origin, false);
         self.publish_sites();
         info!(target: "airlock::bridge", origin = %origin, "site blocked");
     }
@@ -948,9 +989,10 @@ impl Inner {
         info!(target: "airlock::bridge", origin = %origin, "site unblocked");
     }
 
-    /// Reject what `origin` has waiting: requests of `method`, or any when empty.
-    fn reject_waiting(self: &Arc<Self>, origin: &str, method: &str) {
-        let waiting = locked(&self.bridge).waiting_from(origin, method);
+    /// Reject what `origin` has waiting: all of it, or only what takes a
+    /// connection.
+    fn reject_waiting(self: &Arc<Self>, origin: &str, only_connected: bool) {
+        let waiting = locked(&self.bridge).waiting_from(origin, only_connected);
         for id in waiting {
             self.bridge_answer(&id, &BridgeAnswer::Rejected);
         }
@@ -1064,7 +1106,7 @@ impl Inner {
             self.keep_site(&origin, ordered, remember);
             self.publish_sites();
         }
-        let (bytes, outcome) = answer.reply(id);
+        let (bytes, outcome) = answer.reply(id, &taken.request.method);
         if let Some(reply) = taken.reply {
             reply(bytes);
         }
@@ -1110,7 +1152,7 @@ impl Inner {
             self.keep_site(&origin, keys, remember);
             self.publish_sites();
         }
-        let (bytes, outcome) = answer.reply(id);
+        let (bytes, outcome) = answer.reply(id, &taken.request.method);
         if let Some(reply) = taken.reply {
             reply(bytes);
         }

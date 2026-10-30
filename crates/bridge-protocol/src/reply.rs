@@ -55,6 +55,31 @@ pub fn connected(id: &str, accounts: &[SiteAccount]) -> Vec<u8> {
     result(id, json!({ "accounts": accounts_json(accounts) }))
 }
 
+/// A `signAndSendTransaction` answered with the signature of each transaction
+/// sent, in the order the site sent them.
+pub fn sent(id: &str, signatures: &[[u8; 64]]) -> Vec<u8> {
+    let signatures: Vec<String> = signatures.iter().map(|one| base64(one)).collect();
+    result(id, json!({ "signatures": signatures }))
+}
+
+/// A `signAndSendAllTransactions` answered, one result for each transaction:
+/// its signature, or why it did not go through.
+pub fn sent_each(id: &str, results: &[Result<[u8; 64], String>]) -> Vec<u8> {
+    let results: Vec<Value> = results
+        .iter()
+        .map(|one| match one {
+            Ok(signature) => json!({ "signature": base64(signature) }),
+            Err(message) => json!({ "error": { "code": "send_failed", "message": message } }),
+        })
+        .collect();
+    result(id, json!({ "results": results }))
+}
+
+/// The user approved sending, and it did not go through.
+pub fn send_failed(id: &str, message: &str) -> Vec<u8> {
+    error(id, "send_failed", message)
+}
+
 /// A `signMessage` answered: the bytes signed, and the signature over them.
 pub fn message_signed(id: &str, signed: &[u8], signature: &[u8; 64]) -> Vec<u8> {
     result(
