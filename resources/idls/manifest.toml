@@ -133,3 +133,13 @@ voter weight record and deposit, castVote's voter weight records) and the accoun
 executeTransaction passes on are remaining-accounts groups, so names do not land on the \
 wrong accounts. createProposal's deposit account is writable. Token amounts are in base \
 units. Display nodes added by hand."""
+
+# The program the app reads IDLs from. Mainnet and devnet publish the same IDL
+# for it; the repository's adds only the program's error codes.
+[[idls]]
+file = "program-metadata.json"
+programId = "ProgM6JCCvbYkfKqJYHePx4xxSUSqJp7rh8Lyv7nk7S"
+name = "programMetadata"
+networks = ["mainnet", "devnet"]
+source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "f50187be5d750e48c71f394a06222edae97bdaaf1c8f73c63028a617e50c6e41" }
+changes = "Display nodes added by hand."

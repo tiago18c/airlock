@@ -542,7 +542,12 @@ impl Codec for FixedSizeCodec {
     fn decode(&self, input: &mut &[u8]) -> CodamaResult<Value> {
         let frame = take(input, self.size)?;
         let mut sub = frame;
-        self.inner.decode(&mut sub)
+        match self.inner.decode(&mut sub)? {
+            // The zeros `encode` pads a string with are not part of it, as
+            // Codama's TypeScript decoder strips them.
+            Value::String(s) => Ok(Value::String(s.trim_end_matches('\0').to_string())),
+            value => Ok(value),
+        }
     }
 
     fn fixed_size(&self) -> Option<usize> {
@@ -1224,6 +1229,14 @@ mod tests {
             size: 4,
         };
         check(&fixed, 7u8.into(), &[7, 0, 0, 0], 7u8.into());
+
+        let padded = FixedSizeCodec {
+            inner: Box::new(StringCodec {
+                encoding: BytesEncoding::Utf8,
+            }),
+            size: 5,
+        };
+        check(&padded, "idl".into(), &[105, 100, 108, 0, 0], "idl".into());
 
         let prefixed = SizePrefixCodec {
             inner: Box::new(StringCodec {
