@@ -37,6 +37,8 @@ pub fn AppShell(
     top_bar_extra: Option<Element>,
     /// The status bar at the bottom of the sidebar: the network chip.
     sidebar_status: Option<Element>,
+    /// In Settings, for what only this build has: browser connections.
+    settings_extra: Option<Element>,
     /// Above the pane: the browser-request bar.
     above_panes: Option<Element>,
     /// Outside the pane switch: modals and toasts a build hosts.
@@ -113,7 +115,7 @@ pub fn AppShell(
                                 Tab::Programs => rsx! { ProgramsPanel {} },
                                 Tab::Build => rsx! { BuildPanel {} },
                                 Tab::Sign => rsx! { SignPanel {} },
-                                Tab::Settings => rsx! { SettingsPanel {} },
+                                Tab::Settings => rsx! { SettingsPanel { extra: settings_extra.clone() } },
                             }
                         }
                     }

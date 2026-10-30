@@ -94,6 +94,26 @@ async fn an_answer_reaches_the_site_and_leaves_the_queue() {
     assert!(!kit.core.bridge_answer("c1", &BridgeAnswer::Rejected));
 }
 
+#[tokio::test]
+async fn a_deferred_save_can_start_on_a_thread_with_no_runtime() {
+    use app_core::runtime::{TokioClock, TokioSpawner};
+    let testing = kit();
+    let core = app_core::Core::open(app_core::ports::Ports {
+        spawner: std::sync::Arc::new(TokioSpawner::current()),
+        clock: std::sync::Arc::new(TokioClock),
+        notifier: testing.notifier.clone(),
+        storage: std::sync::Arc::new(MemoryStorage::default()),
+        links: testing.links.clone(),
+    });
+    let public = core.public();
+    // How a request that expires reaches the notices, on the bridge's thread.
+    std::thread::spawn(move || {
+        public.notices_set_bridge_outcome("x", ORIGIN, "connect", BridgeRequestOutcome::Expired);
+    })
+    .join()
+    .unwrap();
+}
+
 const ORIGIN: &str = "https://example.org";
 
 fn account(byte: u8) -> wallet_core::ShareableAccount {

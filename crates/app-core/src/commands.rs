@@ -23,7 +23,8 @@ use wallet_core::{
 };
 
 use crate::bridge::{
-    BridgeAnswer, BridgeReply, BridgeRequest, BridgeState, SiteChoice, SiteConnect, SiteSign, Taken,
+    BridgeAnswer, BridgeReply, BridgeRequest, BridgeState, ConnectedSite, SiteChoice, SiteConnect,
+    SiteSign, SitesView, Taken,
 };
 use crate::diagnostics::log_status;
 use crate::events::Event;
@@ -134,6 +135,7 @@ impl Core {
             vault: Slice::new(Arc::new(vault_state_from(&vault))),
             settings: Slice::new(settings),
             bridge: Slice::new(Arc::default()),
+            sites: Slice::new(Arc::new(sites_view(&workspace, &BridgeState::default()))),
             notices: Slice::new(notices_from(&notices)),
             sync: Slice::new(Arc::new(crate::slices::SyncStatus::default())),
         };
@@ -274,6 +276,26 @@ impl Core {
     /// everything it has waiting. Answers whether it was waiting.
     pub fn bridge_block(&self, id: &str) -> bool {
         self.inner.bridge_block(id)
+    }
+
+    /// End `origin`'s connection. A remembered site keeps its grant and is
+    /// let back in when it next asks to connect.
+    pub fn site_disconnect(&self, origin: &str) {
+        self.inner.site_disconnect(origin);
+    }
+
+    /// Forget what `origin` was given and disconnect it.
+    pub fn site_revoke(&self, origin: &str) {
+        self.inner.site_revoke(origin);
+    }
+
+    /// Turn `origin` away from now on, and reject what it has waiting.
+    pub fn site_block(&self, origin: &str) {
+        self.inner.site_block(origin);
+    }
+
+    pub fn site_unblock(&self, origin: &str) {
+        self.inner.site_unblock(origin);
     }
 
     /// What the connect modal opens with for `origin`.
@@ -829,6 +851,8 @@ impl Inner {
             self.set_site_ended(origin, false);
         }
         info!(target: "airlock::bridge", origin = %origin, silent, "site reconnected");
+        locked(&self.bridge).set_holding(origin, accounts.clone());
+        self.publish_sites();
         SiteConnect::Allowed(labelled(accounts, &shareable))
     }
 
@@ -840,6 +864,13 @@ impl Inner {
             Some(grant)
                 if !grant.ended && accounts.iter().all(|key| grant.accounts.contains(key)) =>
             {
+                // A page from before the app restarted still holds its accounts.
+                let mut bridge = locked(&self.bridge);
+                if !bridge.holding().contains_key(origin) {
+                    bridge.set_holding(origin, grant.accounts);
+                    drop(bridge);
+                    self.publish_sites();
+                }
                 SiteSign::Allowed
             }
             _ => SiteSign::NotConnected,
@@ -847,7 +878,114 @@ impl Inner {
     }
 
     pub(crate) fn site_disconnected(&self, origin: &str) {
+        self.end_site(origin);
+        self.publish_sites();
+        info!(target: "airlock::bridge", origin = %origin, "site disconnected");
+    }
+
+    pub(crate) fn site_disconnect(self: &Arc<Self>, origin: &str) {
+        self.end_site(origin);
+        self.reject_waiting(origin, "signTransaction");
+        self.publish_sites();
+        info!(target: "airlock::bridge", origin = %origin, "site disconnected by the user");
+    }
+
+    pub(crate) fn site_revoke(self: &Arc<Self>, origin: &str) {
         locked(&self.bridge).end_session(origin);
+        locked(&self.bridge).drop_holding(origin);
+        let saved = self.workspace_checked("site_revoke", |workspace| {
+            workspace.connections.forget(origin);
+        });
+        if let Err(err) = &saved {
+            self.report_site_save(err);
+        }
+        self.reject_waiting(origin, "signTransaction");
+        self.publish_sites();
+        info!(target: "airlock::bridge", origin = %origin, "site revoked");
+    }
+
+    pub(crate) fn site_block(self: &Arc<Self>, origin: &str) {
+        let saved = self.workspace_checked("site_block", |workspace| {
+            workspace.connections.block(origin);
+        });
+        if let Err(err) = &saved {
+            self.report_site_save(err);
+        }
+        locked(&self.bridge).end_session(origin);
+        locked(&self.bridge).drop_holding(origin);
+        self.reject_waiting(origin, "");
+        self.publish_sites();
+        info!(target: "airlock::bridge", origin = %origin, "site blocked");
+    }
+
+    pub(crate) fn site_unblock(&self, origin: &str) {
+        let saved = self.workspace_checked("site_unblock", |workspace| {
+            workspace
+                .connections
+                .blocked
+                .retain(|known| known != origin);
+        });
+        if let Err(err) = &saved {
+            self.report_site_save(err);
+        }
+        self.publish_sites();
+        info!(target: "airlock::bridge", origin = %origin, "site unblocked");
+    }
+
+    /// Reject what `origin` has waiting: requests of `method`, or any when empty.
+    fn reject_waiting(self: &Arc<Self>, origin: &str, method: &str) {
+        let waiting = locked(&self.bridge).waiting_from(origin, method);
+        for id in waiting {
+            self.bridge_answer(&id, &BridgeAnswer::Rejected);
+        }
+    }
+
+    pub(crate) fn site_pages(&self, pages: std::collections::BTreeSet<String>) {
+        locked(&self.bridge).set_pages(pages);
+        self.publish_sites();
+    }
+
+    pub(crate) fn sites_sync(&self) {
+        let (shareable, current) = self.site_accounts();
+        let keys: Vec<Pubkey> = shareable.iter().map(|account| account.pubkey).collect();
+        let holding = locked(&self.bridge).holding().clone();
+        for (origin, held) in holding {
+            let granted = self
+                .site_grant(&origin)
+                .map(|grant| grant.accounts)
+                .unwrap_or_default();
+            // A wallet the site was not given changes nothing, but one no
+            // longer on this device cannot stay with it.
+            let accounts = reconnect_accounts(&granted, current, &keys).unwrap_or_else(|| {
+                held.iter()
+                    .filter(|key| keys.contains(key))
+                    .copied()
+                    .collect()
+            });
+            if accounts != held {
+                locked(&self.bridge).set_holding(&origin, accounts);
+            }
+        }
+        self.publish_sites();
+    }
+
+    /// The labels of `keys`, for the bridge to tell a site.
+    pub(crate) fn site_labels(&self, keys: Vec<Pubkey>) -> Vec<([u8; 32], String)> {
+        let (shareable, _) = self.site_accounts();
+        labelled(keys, &shareable)
+    }
+
+    fn publish_sites(&self) {
+        let workspace = locked(&self.workspace);
+        let bridge = locked(&self.bridge);
+        let view = sites_view(&workspace, &bridge);
+        self.slices.sites.publish(Arc::new(view));
+    }
+
+    /// Take `origin` off what it holds. A remembered site keeps its grant.
+    fn end_site(&self, origin: &str) {
+        locked(&self.bridge).end_session(origin);
+        locked(&self.bridge).drop_holding(origin);
         let remembered = locked(&self.workspace)
             .data()
             .connections
@@ -856,7 +994,6 @@ impl Inner {
         if remembered {
             self.set_site_ended(origin, true);
         }
-        info!(target: "airlock::bridge", origin = %origin, "site disconnected");
     }
 
     /// Saved now rather than deferred: this runs on the bridge's own thread,
@@ -907,7 +1044,9 @@ impl Inner {
         let origin = taken.request.origin.clone();
         // A request with no origin has nothing a later one could match.
         if !origin.is_empty() {
+            locked(&self.bridge).set_holding(&origin, ordered.clone());
             self.keep_site(&origin, ordered, remember);
+            self.publish_sites();
         }
         let (bytes, outcome) = answer.reply(id);
         if let Some(reply) = taken.reply {
@@ -964,19 +1103,10 @@ impl Inner {
             debug!(target: CORE, outcome = "not waiting", "command");
             return false;
         };
-        if !origin.is_empty() {
-            let saved = self.workspace_checked("site_block", |workspace| {
-                workspace.connections.block(&origin);
-            });
-            if let Err(err) = &saved {
-                self.report_site_save(err);
-            }
-            locked(&self.bridge).end_session(&origin);
-        }
-        info!(target: "airlock::bridge", origin = %origin, "site blocked");
-        let waiting = locked(&self.bridge).waiting_from(&origin);
-        for waiting_id in waiting {
-            self.bridge_answer(&waiting_id, &BridgeAnswer::Rejected);
+        if origin.is_empty() {
+            self.bridge_answer(id, &BridgeAnswer::Rejected);
+        } else {
+            self.site_block(&origin);
         }
         true
     }
@@ -1148,10 +1278,12 @@ impl Inner {
         if saver.scheduled.swap(true, Ordering::SeqCst) {
             return;
         }
-        let sleep = self.ports.clock.sleep(SAVE_INTERVAL);
+        let clock = self.ports.clock.clone();
         let core = Arc::downgrade(self);
         self.ports.spawner.spawn(Box::pin(async move {
-            sleep.await;
+            // Made in the task: a timer needs a runtime, and the bridge's
+            // threads have none.
+            clock.sleep(SAVE_INTERVAL).await;
             if let Some(core) = core.upgrade() {
                 core.write_if_dirty(store);
             }
@@ -1246,6 +1378,23 @@ impl Drop for Inner {
     fn drop(&mut self) {
         // The last handle went away with changes still waiting for the timer.
         self.flush_all_dropping();
+    }
+}
+
+fn sites_view(workspace: &AppWorkspace, bridge: &BridgeState) -> SitesView {
+    let connections = &workspace.data().connections;
+    SitesView {
+        connected: bridge
+            .connected()
+            .map(|(origin, accounts)| ConnectedSite {
+                origin: origin.clone(),
+                accounts: accounts.clone(),
+                remembered: connections.grant(origin).is_some(),
+            })
+            .collect(),
+        authorized: connections.sites.clone(),
+        blocked: connections.blocked.clone(),
+        holding: bridge.holding().clone(),
     }
 }
 

@@ -33,6 +33,8 @@ export interface NativeMessage {
   v?: number;
   id?: string;
   method?: string;
+  /** The site a push from the app is for. */
+  origin?: string;
   params?: unknown;
   result?: unknown;
   error?: BridgeErrorBody;

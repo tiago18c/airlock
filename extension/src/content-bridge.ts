@@ -5,28 +5,38 @@ interface PageReply {
   error?: { code: string; message: string };
 }
 
-const port = chrome.runtime.connect({ name: "page" });
 const pending = new Map<string, (reply: PageReply) => void>();
+let port: chrome.runtime.Port | null = null;
 
-port.onMessage.addListener((message: PageReply & { id?: string; push?: unknown }) => {
-  if (message.push) {
-    window.postMessage({ source: EXTENSION_SOURCE, push: message.push }, window.location.origin);
-    return;
-  }
-  if (!message.id) return;
-  const waiter = pending.get(message.id);
-  if (!waiter) return;
-  pending.delete(message.id);
-  waiter(message);
-});
+/** The port to the service worker, which the browser may stop while it is
+ * idle. A new one is opened when the page next needs it. */
+function openPort(): chrome.runtime.Port {
+  if (port) return port;
+  const opened = chrome.runtime.connect({ name: "page" });
+  port = opened;
+  opened.onMessage.addListener((message: PageReply & { id?: string; push?: unknown }) => {
+    if (message.push) {
+      window.postMessage({ source: EXTENSION_SOURCE, push: message.push }, window.location.origin);
+      return;
+    }
+    if (!message.id) return;
+    const waiter = pending.get(message.id);
+    if (!waiter) return;
+    pending.delete(message.id);
+    waiter(message);
+  });
+  opened.onDisconnect.addListener(() => {
+    port = null;
+    const message = chrome.runtime.lastError?.message ?? "The extension disconnected.";
+    for (const waiter of pending.values()) {
+      waiter({ error: { code: "host_not_found", message } });
+    }
+    pending.clear();
+  });
+  return opened;
+}
 
-port.onDisconnect.addListener(() => {
-  const message = chrome.runtime.lastError?.message ?? "The extension disconnected.";
-  for (const waiter of pending.values()) {
-    waiter({ error: { code: "host_not_found", message } });
-  }
-  pending.clear();
-});
+openPort();
 
 window.addEventListener("message", (event: MessageEvent) => {
   if (event.source !== window) return;
@@ -38,5 +48,5 @@ window.addEventListener("message", (event: MessageEvent) => {
       window.location.origin,
     );
   });
-  port.postMessage({ id: data.id, method: data.method, params: data.params });
+  openPort().postMessage({ id: data.id, method: data.method, params: data.params });
 });

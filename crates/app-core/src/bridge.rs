@@ -5,7 +5,7 @@
 //!
 //! The transport (the socket) stays in the desktop shell.
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 use serde_json::Value;
 use solana_pubkey::Pubkey;
@@ -90,6 +90,26 @@ pub struct SiteChoice {
     pub remembered: bool,
 }
 
+/// A site with a page open that holds accounts now.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ConnectedSite {
+    pub origin: String,
+    pub accounts: Vec<Pubkey>,
+    /// It is also in [`SitesView::authorized`].
+    pub remembered: bool,
+}
+
+/// What the connections modal lists, and what sites are told.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct SitesView {
+    pub connected: Vec<ConnectedSite>,
+    pub authorized: Vec<SiteGrant>,
+    pub blocked: Vec<String>,
+    /// What each site holds now, the account it acts as first. The bridge
+    /// tells a site when its entry changes.
+    pub holding: BTreeMap<String, Vec<Pubkey>>,
+}
+
 /// One request a site made through the extension.
 #[derive(Clone, Debug, PartialEq)]
 pub struct BridgeRequest {
@@ -151,6 +171,10 @@ pub(crate) struct BridgeState {
     /// Sites connected without being remembered. They last until the site
     /// disconnects or the app closes.
     sessions: Vec<SiteGrant>,
+    /// What each site holds now.
+    holding: BTreeMap<String, Vec<Pubkey>>,
+    /// Origins with a page open, in any browser.
+    pages: BTreeSet<String>,
 }
 
 /// A request taken out of the queue, with its reply when it had one.
@@ -182,12 +206,15 @@ impl BridgeState {
         Some(Taken { request, reply })
     }
 
-    /// The ids of the requests waiting from `origin`.
-    pub fn waiting_from(&self, origin: &str) -> Vec<String> {
+    /// The ids of the requests waiting from `origin`: those of `method`, or
+    /// all of them when it is empty.
+    pub fn waiting_from(&self, origin: &str, method: &str) -> Vec<String> {
         self.queue
             .pending
             .iter()
-            .filter(|request| request.origin == origin)
+            .filter(|request| {
+                request.origin == origin && (method.is_empty() || request.method == method)
+            })
             .map(|request| request.id.clone())
             .collect()
     }
@@ -203,5 +230,38 @@ impl BridgeState {
 
     pub fn end_session(&mut self, origin: &str) {
         self.sessions.retain(|site| site.origin != origin);
+    }
+
+    pub fn holding(&self) -> &BTreeMap<String, Vec<Pubkey>> {
+        &self.holding
+    }
+
+    pub fn set_holding(&mut self, origin: &str, accounts: Vec<Pubkey>) {
+        self.holding.insert(origin.to_owned(), accounts);
+    }
+
+    pub fn drop_holding(&mut self, origin: &str) {
+        self.holding.remove(origin);
+    }
+
+    /// The origins with a page open. A site with none left holds nothing.
+    pub fn set_pages(&mut self, pages: BTreeSet<String>) {
+        let closed: Vec<String> = self
+            .pages
+            .difference(&pages)
+            .filter(|origin| self.holding.contains_key(*origin))
+            .cloned()
+            .collect();
+        for origin in closed {
+            self.holding.remove(&origin);
+        }
+        self.pages = pages;
+    }
+
+    /// The sites to show as connected: those holding accounts with a page open.
+    pub fn connected(&self) -> impl Iterator<Item = (&String, &Vec<Pubkey>)> {
+        self.holding
+            .iter()
+            .filter(|(origin, _)| self.pages.contains(*origin))
     }
 }

@@ -10,6 +10,8 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 ## [Unreleased]
 
 ### Added
+- Choosing another wallet tells a connected site, if it was given that wallet, so the site moves to it. Choosing a wallet it was not given changes nothing for it.
+- **Connections** lists the sites connected now, the sites you authorized and the sites you blocked. Disconnect ends a connection and keeps the site's authorization, Revoke forgets it, and Block and Unblock do what they say. Open it from the card on the Extension chip, or from Settings.
 - Connecting to a site can be remembered. The connect modal has **Remember this connection**: a remembered site that was given the wallet you are using reconnects by itself when it asks, even with the vault locked, and gets the accounts you gave it with your current wallet first. If you have moved to a wallet it was not given, the modal opens with what it was given ticked, and the current wallet at the top for you to tick if you want to. Every signature is still approved on its own.
 - The connect modal has **Block site**, which rejects the site's waiting requests and turns away everything it asks from then on.
 - A site can ask Airlock to sign several transactions at once (up to 16), as `signAllTransactions` and the Wallet Standard's `signTransaction` with several inputs do. The request modal prepares and explains each transaction on its own card. **Sign all** is offered when every one could be signed from the modal alone. **Review** opens them on Review and Sign, one at a time, as Transaction 1 of N. The steps there have a step for each transaction, which shows it when clicked, then Return to site, with the steps of the transaction on screen under them. Signing one moves on to the next. The site gets the transactions back together once every one is signed, and never only some of them.
@@ -39,6 +41,9 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - Share opens on Everything, now its first tab. Its Signatures tab has tabs of its own: Local, which it opens on, puts the signatures made by keys on this device in one transfer; All puts every signature in one transfer; Individual shows a code for each.
 
 ### Fixed
+- A request waiting in the app no longer holds up other requests from the same browser. A site reloading while a modal was open, for one, waited until that modal was answered.
+- A browser request that expired unanswered could stop that browser's connection to the app.
+- A page left open for a while could lose its connection to the extension and fail its next request.
 - The embedded IDL files have LF line endings on every checkout, so their checksums no longer depend on the OS the app was built on. A Windows build and a Linux or web build pinned different checksums for the same embedded IDL.
 - A browser or paste request whose programs create accounts from new keypairs in their own calls, like Orca's pool creation creating its two vaults, no longer converts into signer slots nobody can sign. When the transaction's own instructions do not explain an unsigned outside signer, it is simulated and the accounts its programs create count as one-time keys, left for the site to sign or replaced by keys made here. Without a node, or when the simulation fails, only the transaction's own instructions count, as before.
 - Review and Sign simulates a legacy or v0 transaction it signs as it came, instead of saying it could not simulate because the transaction is not v1.
