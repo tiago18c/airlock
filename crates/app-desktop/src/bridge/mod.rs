@@ -8,13 +8,16 @@
 //! (`app_core::storage::claim_data_dir`), which holds even when the socket
 //! cannot be named.
 
+use std::collections::{BTreeMap, BTreeSet};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::mpsc;
-use std::sync::{Arc, OnceLock};
+use std::sync::{Arc, Mutex, OnceLock, PoisonError};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use app_core::bridge::{BridgeQueue, BridgeRequest, SiteConnect, SiteSign};
 use app_core::PublicCore;
 use base64::Engine;
+use bridge_host::relay::{Connection, FrameSender};
 use bridge_protocol::reply;
 use serde_json::{json, Value};
 use solana_pubkey::Pubkey;
@@ -44,6 +47,16 @@ struct Shared {
     /// Native hosts connected now: one per browser whose extension has
     /// talked to the app since it last started.
     extension: watch::Sender<usize>,
+    /// The connections open now, by a number of their own.
+    peers: Mutex<BTreeMap<u64, PeerLink>>,
+    next_peer: AtomicU64,
+}
+
+/// What the app knows about one open connection.
+struct PeerLink {
+    sender: FrameSender,
+    /// The origins with a page open in this browser.
+    pages: BTreeSet<String>,
 }
 
 /// Result of claiming the bridge socket before the UI starts.
@@ -61,6 +74,8 @@ impl Bridge {
                 core: OnceLock::new(),
                 show: watch::channel(0).0,
                 extension: watch::channel(0).0,
+                peers: Mutex::new(BTreeMap::new()),
+                next_peer: AtomicU64::new(0),
             }),
         }
     }
@@ -91,9 +106,8 @@ impl Bridge {
             Ok(listener) => {
                 let serving = bridge.clone();
                 std::thread::spawn(move || {
-                    let accept = move || -> bridge_host::relay::Connection {
-                        let mut peer = Peer::new(serving.clone());
-                        Box::new(move |message: &[u8]| peer.answer(message))
+                    let accept = move |sender: FrameSender| -> Arc<dyn Connection> {
+                        Arc::new(Peer::new(serving.clone(), Some(sender)))
                     };
                     if let Err(err) = bridge_host::relay::serve_connections(listener, accept) {
                         tracing::error!(
@@ -121,7 +135,32 @@ impl Bridge {
 
     /// Let requests reach the core. Call once, when the window opens it.
     pub fn attach(&self, core: PublicCore) {
+        let spawner = core.ports().spawner.clone();
+        // A change of wallet may change what a site should act as.
+        let syncing = core.clone();
+        let mut wallets = core.slices().wallets.subscribe();
+        spawner.spawn(Box::pin(async move {
+            while wallets.changed().await.is_ok() {
+                syncing.sites_sync();
+            }
+        }));
+        // Tell each site when what it holds changes. One that just got its
+        // accounts in a reply has nothing to learn.
+        let telling = core.clone();
+        let shared = self.shared.clone();
+        let mut sites = core.slices().sites.subscribe();
+        spawner.spawn(Box::pin(async move {
+            let mut told = sites.borrow_and_update().holding.clone();
+            while sites.changed().await.is_ok() {
+                let now = sites.borrow_and_update().holding.clone();
+                for frame in changes(&told, &now, &telling) {
+                    shared.push(&frame);
+                }
+                told = now;
+            }
+        }));
         let _ = self.shared.core.set(core);
+        self.shared.report_pages();
     }
 
     /// Changes each time a second launch asks this one to show its window.
@@ -184,6 +223,8 @@ impl Bridge {
 
         match (method, core) {
             ("status", _) => reply::result(&id, json!({ "ready": true, "role": "desktop" })),
+            // The connection took it in already: it knows which browser this is.
+            ("pages", _) => reply::result(&id, json!({})),
             ("show", _) => {
                 self.shared.show.send_modify(|n| *n = n.wrapping_add(1));
                 reply::result(&id, json!({}))
@@ -256,47 +297,146 @@ fn blocked(id: &str) -> Vec<u8> {
     reply::error(id, "rejected", "This site is blocked in Airlock.")
 }
 
+/// The frames that tell sites what changed from `told` to `now`.
+fn changes(
+    told: &BTreeMap<String, Vec<Pubkey>>,
+    now: &BTreeMap<String, Vec<Pubkey>>,
+    core: &PublicCore,
+) -> Vec<Vec<u8>> {
+    let mut frames = Vec::new();
+    for (origin, held) in told {
+        match now.get(origin) {
+            Some(accounts) if accounts != held => frames.push(reply::accounts_changed(
+                origin,
+                &core.site_labels(accounts.clone()),
+            )),
+            None => frames.push(reply::accounts_changed(origin, &[])),
+            _ => {}
+        }
+    }
+    frames
+}
+
+impl Shared {
+    /// Send `frame` to every browser. The extension passes it only to pages
+    /// of the origin it names.
+    fn push(&self, frame: &[u8]) {
+        let peers = self.peers.lock().unwrap_or_else(PoisonError::into_inner);
+        for peer in peers.values() {
+            let _ = peer.sender.send(frame);
+        }
+    }
+
+    /// Tell the core which origins have a page open, in any browser.
+    fn report_pages(&self) {
+        let Some(core) = self.core.get() else {
+            return;
+        };
+        let pages: BTreeSet<String> = self
+            .peers
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .values()
+            .flat_map(|peer| peer.pages.iter().cloned())
+            .collect();
+        core.site_pages(pages);
+    }
+}
+
 /// One connection to the socket. It counts as an extension once it sends
 /// anything but `show`, which is a second launch knocking, and stops counting
 /// when it closes.
 struct Peer {
     bridge: Bridge,
-    counted: bool,
+    id: u64,
+    counted: AtomicBool,
 }
 
 impl Peer {
-    fn new(bridge: Bridge) -> Self {
+    fn new(bridge: Bridge, sender: Option<FrameSender>) -> Self {
+        let id = bridge.shared.next_peer.fetch_add(1, Ordering::SeqCst);
+        if let Some(sender) = sender {
+            let link = PeerLink {
+                sender,
+                pages: BTreeSet::new(),
+            };
+            bridge
+                .shared
+                .peers
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner)
+                .insert(id, link);
+        }
         Self {
             bridge,
-            counted: false,
+            id,
+            counted: AtomicBool::new(false),
         }
     }
 
-    fn answer(&mut self, message: &[u8]) -> Vec<u8> {
-        if !self.counted && !is_show(message) {
-            self.counted = true;
-            self.bridge.shared.extension.send_modify(|n| *n += 1);
+    /// The origins with a page open in this browser, as the extension lists them.
+    fn set_pages(&self, message: &[u8]) {
+        let value = serde_json::from_slice::<Value>(message).unwrap_or(Value::Null);
+        let pages: BTreeSet<String> = value
+            .get("params")
+            .and_then(|params| params.get("origins"))
+            .and_then(Value::as_array)
+            .map(|origins| {
+                origins
+                    .iter()
+                    .filter_map(Value::as_str)
+                    .map(str::to_owned)
+                    .collect()
+            })
+            .unwrap_or_default();
+        let shared = &self.bridge.shared;
+        if let Some(peer) = shared
+            .peers
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .get_mut(&self.id)
+        {
+            peer.pages = pages;
         }
-        self.bridge.answer(message)
+        shared.report_pages();
     }
 }
 
-impl Drop for Peer {
-    fn drop(&mut self) {
-        if self.counted {
-            self.bridge
-                .shared
-                .extension
-                .send_modify(|n| *n = n.saturating_sub(1));
+impl Connection for Peer {
+    fn answer(&self, message: &[u8]) -> Vec<u8> {
+        if !is_show(message) && !self.counted.swap(true, Ordering::SeqCst) {
+            self.bridge.shared.extension.send_modify(|n| *n += 1);
         }
+        if method_of(message).as_deref() == Some("pages") {
+            self.set_pages(message);
+        }
+        self.bridge.answer(message)
+    }
+
+    fn closed(&self) {
+        let shared = &self.bridge.shared;
+        if self.counted.swap(false, Ordering::SeqCst) {
+            shared.extension.send_modify(|n| *n = n.saturating_sub(1));
+        }
+        shared
+            .peers
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .remove(&self.id);
+        shared.report_pages();
     }
 }
 
 fn is_show(message: &[u8]) -> bool {
+    method_of(message).as_deref() == Some("show")
+}
+
+fn method_of(message: &[u8]) -> Option<String> {
     serde_json::from_slice::<Value>(message)
-        .ok()
-        .and_then(|value| value.get("method")?.as_str().map(|m| m == "show"))
-        .unwrap_or(false)
+        .ok()?
+        .get("method")?
+        .as_str()
+        .map(str::to_owned)
 }
 
 /// Whether `method` goes to the user, through the core's queue. The rest,

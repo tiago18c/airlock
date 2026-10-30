@@ -421,6 +421,16 @@ The modal lists the accounts this device can act as: wallets it holds a key for,
 
 A site that was given the current wallet reconnects without the modal, with the accounts it was given and the current wallet first. That works while the vault is locked, because it only shows public keys. Otherwise a normal `connect` opens the modal and a silent one gets no accounts. When a site disconnects it keeps its grant, but a silent `connect` gets nothing until the site asks to connect again. Origins are compared whole, so another subdomain, port or scheme is another site.
 
+Choosing a wallet the site was given tells the site, with that wallet first. Choosing one it was not given tells it nothing, and it stays on what it has. Removing a wallet takes it off what sites hold.
+
+**Connections**, from the extension chip's card or Settings, lists:
+
+- **Connected**: sites holding accounts with a page open now. **Disconnect** ends the connection and keeps the grant, so the site is let back in when it next asks to connect.
+- **Authorized**: remembered sites and what they were given. **Revoke** forgets the grant and disconnects the site.
+- **Blocked**: **Unblock** lets the site ask again.
+
+Connected and Authorized also have **Block**. Disconnecting or revoking rejects the site's waiting signature requests, and blocking rejects everything it has waiting.
+
 ### The sign request modal
 
 ```mermaid

@@ -393,6 +393,121 @@ async fn a_blocked_site_is_turned_away_without_the_modal() {
     assert!(kit.core.slices().bridge.get().is_empty());
 }
 
+fn held(pairs: &[(&str, &[u8])]) -> BTreeMap<String, Vec<Pubkey>> {
+    pairs
+        .iter()
+        .map(|(origin, keys)| {
+            let keys = keys
+                .iter()
+                .map(|b| Pubkey::new_from_array([*b; 32]))
+                .collect();
+            ((*origin).to_owned(), keys)
+        })
+        .collect()
+}
+
+fn told(frames: Vec<Vec<u8>>) -> Vec<Value> {
+    frames
+        .iter()
+        .map(|frame| serde_json::from_slice(frame).unwrap())
+        .collect()
+}
+
+#[tokio::test]
+async fn a_site_is_told_only_when_what_it_holds_changes() {
+    let (kit, _bridge) = attached_bridge();
+    let core = kit.core.public();
+    let before = held(&[("https://a.test", &[1, 2]), ("https://b.test", &[3])]);
+
+    // The same, or a site that just got its accounts in a reply.
+    let after = held(&[
+        ("https://a.test", &[1, 2]),
+        ("https://b.test", &[3]),
+        ("https://c.test", &[4]),
+    ]);
+    assert!(changes(&before, &after, &core).is_empty());
+
+    // A new first account, and a site that holds nothing now.
+    let after = held(&[("https://a.test", &[2, 1])]);
+    let frames = told(changes(&before, &after, &core));
+    assert_eq!(frames.len(), 2);
+    assert_eq!(frames[0]["method"], "accountsChanged");
+    assert_eq!(frames[0]["origin"], "https://a.test");
+    assert_eq!(frames[0]["params"]["accounts"].as_array().unwrap().len(), 2);
+    assert_eq!(frames[1]["origin"], "https://b.test");
+    assert_eq!(frames[1]["params"]["accounts"], json!([]));
+}
+
+#[tokio::test]
+async fn a_request_waiting_for_the_user_holds_up_nothing_else() {
+    let (kit, bridge) = attached_bridge();
+    let peer = Arc::new(Peer::new(bridge.clone(), None));
+    let waiting = {
+        let peer = peer.clone();
+        std::thread::spawn(move || {
+            peer.answer(
+                &serde_json::to_vec(
+                    &json!({ "v": 1, "id": "w", "origin": ORIGIN, "method": "connect" }),
+                )
+                .unwrap(),
+            )
+        })
+    };
+    while kit.core.slices().bridge.get().is_empty() {
+        std::thread::yield_now();
+    }
+    assert_eq!(silent_connect(&bridge)["result"]["accounts"], json!([]));
+    assert!(kit.core.bridge_answer("w", &BridgeAnswer::Rejected));
+    waiting.join().unwrap();
+}
+
+#[tokio::test]
+async fn the_pages_a_browser_lists_decide_who_shows_as_connected() {
+    let (kit, bridge) = attached_bridge();
+    connected(&kit, &bridge, true);
+    let sites = || kit.core.slices().sites.get();
+    assert!(sites().connected.is_empty());
+    assert!(sites().holding.contains_key(ORIGIN));
+
+    kit.core
+        .public()
+        .site_pages(BTreeSet::from([ORIGIN.to_string()]));
+    assert_eq!(sites().connected[0].origin, ORIGIN);
+    assert!(sites().connected[0].remembered);
+
+    kit.core.public().site_pages(BTreeSet::new());
+    assert!(sites().connected.is_empty());
+    assert!(!sites().holding.contains_key(ORIGIN));
+    assert_eq!(sites().authorized.len(), 1);
+}
+
+#[tokio::test]
+async fn disconnecting_keeps_the_grant_and_revoking_does_not() {
+    let (kit, bridge) = attached_bridge();
+    connected(&kit, &bridge, true);
+    kit.core.site_disconnect(ORIGIN);
+    let sites = kit.core.slices().sites.get();
+    assert!(!sites.holding.contains_key(ORIGIN));
+    assert_eq!(sites.authorized.len(), 1);
+    assert_eq!(
+        ask(&bridge, sign_request("after", 1))["error"]["code"],
+        "rejected"
+    );
+
+    kit.core.site_revoke(ORIGIN);
+    assert!(kit.core.slices().sites.get().authorized.is_empty());
+}
+
+#[tokio::test]
+async fn unblocking_lets_a_site_ask_again() {
+    let (kit, bridge) = attached_bridge();
+    kit.core.site_block(ORIGIN);
+    assert_eq!(kit.core.slices().sites.get().blocked, vec![ORIGIN]);
+    kit.core.site_unblock(ORIGIN);
+    assert!(kit.core.slices().sites.get().blocked.is_empty());
+    connected(&kit, &bridge, false);
+}
+
 #[test]
 fn a_readable_transaction_wire_is_accepted() {
     let payer = wallet_core::KeypairSigner::new_random();
@@ -435,16 +550,16 @@ fn a_connection_counts_as_the_extension_until_it_closes() {
     let extension = bridge.subscribe_extension();
     let status = serde_json::to_vec(&json!({ "v": 1, "id": "s", "method": "status" })).unwrap();
 
-    let mut first = Peer::new(bridge.clone());
+    let first = Peer::new(bridge.clone(), None);
     first.answer(&status);
     first.answer(&status);
-    let mut second = Peer::new(bridge.clone());
+    let second = Peer::new(bridge.clone(), None);
     second.answer(&status);
     assert_eq!(*extension.borrow(), 2);
 
-    drop(first);
+    first.closed();
     assert_eq!(*extension.borrow(), 1);
-    drop(second);
+    second.closed();
     assert_eq!(*extension.borrow(), 0);
 }
 
@@ -452,7 +567,7 @@ fn a_connection_counts_as_the_extension_until_it_closes() {
 fn a_second_launch_asking_to_show_is_not_the_extension() {
     let bridge = Bridge::new();
     let extension = bridge.subscribe_extension();
-    let mut launch = Peer::new(bridge.clone());
+    let launch = Peer::new(bridge.clone(), None);
     launch.answer(br#"{"v":1,"id":"show","method":"show"}"#);
     assert_eq!(*extension.borrow(), 0);
     drop(launch);

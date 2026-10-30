@@ -323,7 +323,11 @@ code { color: var(--text-2); }
 }
 /* Bridges the gap to the card, so the pointer can move onto it. */
 .net-card::before { content: ""; position: absolute; inset: calc(-1 * var(--space-2)) 0 100%; }
-.net-chip:hover .net-card, .net-chip:focus-visible .net-card { display: block; }
+.net-chip:hover .net-card, .net-chip:focus-visible .net-card, .net-chip:focus-within .net-card { display: block; }
+.net-card > button { margin-top: var(--space-3); width: 100%; }
+.site-row { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) 0; border-top: 1px solid var(--border); }
+.site-row:first-child { border-top: 0; }
+.site-row .btn-row { justify-content: flex-end; margin-top: 0; }
 .net-card dl {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);

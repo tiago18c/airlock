@@ -83,6 +83,7 @@ The listener is `app-desktop`'s bridge, behind the `bridge` feature that only th
 
 - `status` is answered at once. So is `disconnect`, which ends the site's connection and keeps what it was granted.
 - A `connect` from a site that has a grant holding the current wallet is answered at once, with the accounts it was granted and the current wallet first. Any other `connect` with `silent` gets no accounts, and never opens the modal, including from a site that disconnected. See [Connections](signing.md#connect).
+- Requests on one connection are answered at the same time, each on its own thread, so one waiting for the user holds up nothing else. Match replies by `id`.
 - A blocked site gets `rejected` at once, and no accounts for a silent `connect`.
 - A `signTransaction` naming an account the site is not connected to gets `rejected` at once.
 - Any other `connect`, and `signTransaction`, go into the core's `BridgeQueue`. A `signTransaction` with several transactions is one entry, and the core takes a signed answer for it only with one transaction for each the site sent (`BridgeAnswer::Signed`), so part of a batch can never go back. The app notifies and asks for attention, and the head of the queue opens as a modal; **Not now** folds it into a bar at the top of the page. A request nobody answers expires after ten minutes.
@@ -110,6 +111,9 @@ JSON objects, one per frame. A frame is a 32-bit little-endian length, then the 
 | `connect` | `{ "silent"?: boolean }` | `{ "accounts": [ { "publicKey": "<base64>", "label"?: string } ] }` |
 | `disconnect` | `{ "accounts": ["<base58>", …] }` | `{}` |
 | `signTransaction` | `{ "transactions": [ { "account", "transaction", "chain"? }, … ] }`, one to 16 | `{ "signedTransactions": ["<base64>", …] }`, one for each, in the same order |
+| `pages` | `{ "origins": ["<origin>", …] }`, every origin with a page open in this browser. From the service worker, whenever that changes and when the host starts | `{}` |
+
+The app sends one message of its own, with no `id`: `{ "v": 1, "method": "accountsChanged", "origin": "<origin>", "params": { "accounts": [ { "publicKey": "<base64>", "label"?: string } ] } }`. It says what a site holds now, the account to act as first, and is empty when the site is disconnected. It goes to every browser, and the service worker passes it only to pages of that origin. A site that just got its accounts in a reply is not told again.
 
 A reply repeats `id` and has either `result` or `error`, with `error.code` one of:
 

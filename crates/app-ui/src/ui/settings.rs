@@ -17,7 +17,7 @@ const AUTO_LOCK_CHOICES: &[(u64, &str)] = &[
 ];
 
 #[component]
-pub fn SettingsPanel() -> Element {
+pub fn SettingsPanel(extra: Option<Element>) -> Element {
     let session = use_context::<Session>();
     let cluster = session.cluster();
     let online = crate::state::use_network().is_some();
@@ -231,6 +231,8 @@ pub fn SettingsPanel() -> Element {
             if online {
                 PricesCard {}
             }
+
+            {extra}
 
             DiagnosticsCard {}
         }

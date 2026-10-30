@@ -106,6 +106,7 @@ fn App() -> Element {
                 {extension_chip()}
             },
             above_panes: bridge_requests(),
+            settings_extra: connections_card(),
             window_controls: window_controls(),
             // Outside the pane switch so toasts survive tab changes. Hosts
             // the Proposals and Send modals opened from other panes.
@@ -149,8 +150,21 @@ fn extension_chip() -> Element {
 }
 
 #[cfg(all(feature = "desktop", not(target_arch = "wasm32")))]
+fn connections_card() -> Element {
+    rsx! { app_desktop::ConnectionsCard {} }
+}
+
+#[cfg(not(all(feature = "desktop", not(target_arch = "wasm32"))))]
+fn connections_card() -> Element {
+    rsx! {}
+}
+
+#[cfg(all(feature = "desktop", not(target_arch = "wasm32")))]
 fn bridge_requests() -> Element {
-    rsx! { app_desktop::BridgeRequests {} }
+    rsx! {
+        app_desktop::BridgeRequests {}
+        app_desktop::ConnectionsHost {}
+    }
 }
 
 #[cfg(not(all(feature = "desktop", not(target_arch = "wasm32"))))]

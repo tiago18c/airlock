@@ -144,6 +144,8 @@ pub struct Session {
     pub sync: ReadSignal<Arc<SyncStatus>>,
     /// Browser requests waiting for the user. Empty without the bridge.
     pub bridge: ReadSignal<Arc<BridgeQueue>>,
+    /// Sites connected, remembered and blocked (desktop shell).
+    pub sites: ReadSignal<Arc<app_core::bridge::SitesView>>,
     /// Whether the vault exists and is unlocked.
     pub vault_state: Memo<VaultState>,
     /// Notification center panel open.
@@ -203,6 +205,7 @@ impl Session {
             notices: pump.notices,
             sync: pump.sync,
             bridge: pump.bridge,
+            sites: pump.sites,
             vault_state: pump.vault_state,
             notices_open,
             notices_focus,
@@ -256,6 +259,25 @@ impl Session {
     /// Turn away the site that made request `id` from now on.
     pub fn bridge_block(&self, id: &str) -> bool {
         self.command(|core| core.bridge_block(id))
+    }
+
+    /// End `origin`'s connection. What it was given stays.
+    pub fn site_disconnect(&self, origin: &str) {
+        self.command(|core| core.site_disconnect(origin));
+    }
+
+    /// Forget what `origin` was given and disconnect it.
+    pub fn site_revoke(&self, origin: &str) {
+        self.command(|core| core.site_revoke(origin));
+    }
+
+    /// Turn `origin` away from now on.
+    pub fn site_block(&self, origin: &str) {
+        self.command(|core| core.site_block(origin));
+    }
+
+    pub fn site_unblock(&self, origin: &str) {
+        self.command(|core| core.site_unblock(origin));
     }
 
     /// What the connect modal opens with for `origin`.

@@ -182,6 +182,22 @@ impl PublicCore {
         self.inner.site_disconnected(origin);
     }
 
+    /// The origins with a page open, across every browser.
+    pub fn site_pages(&self, pages: std::collections::BTreeSet<String>) {
+        self.inner.site_pages(pages);
+    }
+
+    /// The labels of `keys`, to tell a site what it holds.
+    pub fn site_labels(&self, keys: Vec<solana_pubkey::Pubkey>) -> Vec<([u8; 32], String)> {
+        self.inner.site_labels(keys)
+    }
+
+    /// The wallets changed: tell the sites that hold accounts what they hold
+    /// now. A site that was not given the current wallet keeps what it has.
+    pub fn sites_sync(&self) {
+        self.inner.sites_sync();
+    }
+
     /// Drop a request nobody answered in time. Its reply is dropped unsent.
     /// Answers whether it was waiting.
     pub fn bridge_expire(&self, id: &str) -> bool {

@@ -56,6 +56,7 @@ impl RequestModal {
 
 /// Provide the [`RequestModal`] [`BridgeRequests`] reads. Call from the root.
 pub fn use_request_modal() -> RequestModal {
+    use_context_provider(crate::ui::connections::ConnectionsModal::closed);
     use_context_provider(|| RequestModal {
         open: Signal::new(false),
     })

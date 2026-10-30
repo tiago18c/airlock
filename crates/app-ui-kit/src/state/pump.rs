@@ -12,7 +12,7 @@
 
 use std::sync::Arc;
 
-use app_core::bridge::BridgeQueue;
+use app_core::bridge::{BridgeQueue, SitesView};
 use app_core::slices::{NetworkStatus, Settings, SyncStatus, VaultState, WalletsView};
 use app_core::{Core, Notices, Slice, Slices};
 use dioxus::prelude::*;
@@ -38,6 +38,8 @@ pub struct Pump {
     pub sync: ReadSignal<Arc<SyncStatus>>,
     /// Browser requests waiting for the user (desktop shell).
     pub bridge: ReadSignal<Arc<BridgeQueue>>,
+    /// Sites connected, remembered and blocked (desktop shell).
+    pub sites: ReadSignal<Arc<SitesView>>,
     /// Whether the vault exists and is unlocked.
     pub vault_state: Memo<VaultState>,
     writes: Writes,
@@ -54,6 +56,7 @@ struct Writes {
     notices: Signal<Arc<Notices>>,
     sync: Signal<Arc<SyncStatus>>,
     bridge: Signal<Arc<BridgeQueue>>,
+    sites: Signal<Arc<SitesView>>,
     vault: Signal<Arc<VaultState>>,
 }
 
@@ -68,6 +71,7 @@ pub fn use_core(core: Core) -> Pump {
         notices: use_slice(&core, |slices| &slices.notices),
         sync: use_slice(&core, |slices| &slices.sync),
         bridge: use_slice(&core, |slices| &slices.bridge),
+        sites: use_slice(&core, |slices| &slices.sites),
         vault: use_slice(&core, |slices| &slices.vault),
     };
     let vault = writes.vault;
@@ -81,6 +85,7 @@ pub fn use_core(core: Core) -> Pump {
         notices: writes.notices.into(),
         sync: writes.sync.into(),
         bridge: writes.bridge.into(),
+        sites: writes.sites.into(),
         vault_state,
         writes,
     }
@@ -99,6 +104,7 @@ impl Pump {
         write_if_new(&mut writes.notices, slices.notices.get());
         write_if_new(&mut writes.sync, slices.sync.get());
         write_if_new(&mut writes.bridge, slices.bridge.get());
+        write_if_new(&mut writes.sites, slices.sites.get());
         write_if_new(&mut writes.vault, slices.vault.get());
     }
 }

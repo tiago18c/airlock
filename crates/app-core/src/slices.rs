@@ -8,7 +8,7 @@ use solana_pubkey::Pubkey;
 use tokio::sync::watch;
 use wallet_core::{AddressBook, Cluster, Holdings, Vault, VaultData, WalletId, WalletSummary};
 
-use crate::bridge::BridgeQueue;
+use crate::bridge::{BridgeQueue, SitesView};
 use crate::notices::Notices;
 use crate::storage::{AppHoldings, AppNotices, AppVault, AppWalletList, AppWorkspace};
 
@@ -48,6 +48,8 @@ pub struct Slices {
     pub vault: Slice<VaultState>,
     pub settings: Slice<Settings>,
     pub bridge: Slice<BridgeQueue>,
+    /// Sites connected, remembered and blocked.
+    pub sites: Slice<SitesView>,
     pub notices: Slice<Notices>,
     /// Background sync jobs. Empty until the online scheduler registers them.
     pub sync: Slice<SyncStatus>,

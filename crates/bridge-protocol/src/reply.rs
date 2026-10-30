@@ -39,6 +39,22 @@ pub fn connected(id: &str, accounts: &[([u8; 32], String)]) -> Vec<u8> {
     result(id, json!({ "accounts": accounts }))
 }
 
+/// Not a reply: tells the extension what `origin`'s pages may now see, the
+/// account they should act as first. Empty when the site is disconnected.
+pub fn accounts_changed(origin: &str, accounts: &[([u8; 32], String)]) -> Vec<u8> {
+    let Value::Object(body) =
+        serde_json::from_slice::<Value>(&connected("", accounts)).unwrap_or(Value::Null)
+    else {
+        return Vec::new();
+    };
+    encode(&json!({
+        "v": 1,
+        "method": "accountsChanged",
+        "origin": origin,
+        "params": { "accounts": body.get("result").and_then(|result| result.get("accounts")) },
+    }))
+}
+
 /// A `signTransaction` answered with its signed transactions, in the order
 /// the site sent them.
 pub fn signed(id: &str, wires: &[Vec<u8>]) -> Vec<u8> {

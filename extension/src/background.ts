@@ -13,6 +13,7 @@ import {
 } from "./protocol";
 
 const pagePorts: chrome.runtime.Port[] = [];
+const pageOrigins = new Map<chrome.runtime.Port, string>();
 const popupPorts: chrome.runtime.Port[] = [];
 const waiters = new Map<string, (message: NativeMessage) => void>();
 const pending: PendingRequest[] = [];
@@ -40,7 +41,13 @@ chrome.runtime.onConnect.addListener((port) => {
     return;
   }
   pagePorts.push(port);
-  port.onDisconnect.addListener(() => remove(pagePorts, port));
+  pageOrigins.set(port, origin);
+  reportPages();
+  port.onDisconnect.addListener(() => {
+    remove(pagePorts, port);
+    pageOrigins.delete(port);
+    reportPages();
+  });
   port.onMessage.addListener((body: unknown) => {
     void handlePage(origin, body).then((response) => {
       try {
@@ -129,11 +136,14 @@ function connectNative(): chrome.runtime.Port {
   nativePort = port;
   port.onMessage.addListener((message: NativeMessage) => {
     if (message.method === "accountsChanged") {
+      // Only that site's pages: another site must not learn its accounts.
       for (const page of [...pagePorts]) {
+        if (pageOrigins.get(page) !== message.origin) continue;
         try {
           page.postMessage({ push: message });
         } catch {
           remove(pagePorts, page);
+          pageOrigins.delete(page);
         }
       }
       return;
@@ -153,7 +163,27 @@ function connectNative(): chrome.runtime.Port {
     for (const waiter of [...waiters.values()]) waiter({ v: 1, error });
     notifyPopups();
   });
+  postPages(port);
   return port;
+}
+
+/** Tell the app which origins have a page open, so it can say which sites are
+ * connected. Does not start the host: it hears this when it starts. */
+function reportPages(): void {
+  if (nativePort) postPages(nativePort);
+}
+
+function postPages(port: chrome.runtime.Port): void {
+  try {
+    port.postMessage({
+      v: 1,
+      id: newRequestId(),
+      method: "pages",
+      params: { origins: [...new Set(pageOrigins.values())] },
+    });
+  } catch {
+    // The host went away. It hears this again when it next starts.
+  }
 }
 
 async function probeDesktop(): Promise<void> {
