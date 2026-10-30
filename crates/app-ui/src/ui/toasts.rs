@@ -148,6 +148,9 @@ fn ToastCard(notice: Notice) -> Element {
             if let Some(error) = status.error() {
                 p { class: "toast-error", "{error}" }
             }
+            if *status == TxStatus::NotSent {
+                p { class: "toast-note", "The site did not send it. It can be submitted from Sign." }
+            }
         }
     }
 }

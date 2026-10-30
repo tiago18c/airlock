@@ -12,6 +12,9 @@ use solana_signature::Signature;
 use wallet_core::{Cluster, RpcError, SolanaRpc};
 
 pub type SubmitFut = Pin<Box<dyn Future<Output = Result<Signature, RpcError>>>>;
+/// Whether each signed transaction handed back to a site landed while it
+/// was watched.
+pub type SiteSendFut = Pin<Box<dyn Future<Output = Vec<(Signature, bool)>>>>;
 
 /// What the online shell implements with its submitter.
 pub trait TxSubmit: Send + Sync {
@@ -24,6 +27,16 @@ pub trait TxSubmit: Send + Sync {
         cluster: Cluster,
         last_valid_height: Option<u64>,
     ) -> SubmitFut;
+
+    /// Watch for a site sending the transactions it was given back, each
+    /// with its flow, and tell the user what came of each.
+    fn watch_site_send(
+        &self,
+        rpc: Arc<dyn SolanaRpc>,
+        returned: Vec<(Vec<u8>, FlowId)>,
+        origin: String,
+        cluster: Cluster,
+    ) -> SiteSendFut;
 }
 
 /// Cloneable handle stored on [`Session`](super::session::Session).
@@ -62,6 +75,17 @@ impl SubmitHandle {
             last_valid_height,
         )
     }
+
+    pub fn watch_site_send(
+        &self,
+        rpc: Arc<dyn SolanaRpc>,
+        returned: Vec<(Vec<u8>, FlowId)>,
+        origin: &str,
+        cluster: &Cluster,
+    ) -> SiteSendFut {
+        self.inner
+            .watch_site_send(rpc, returned, origin.to_string(), cluster.clone())
+    }
 }
 
 struct NoSubmit;
@@ -77,5 +101,15 @@ impl TxSubmit for NoSubmit {
         _last_valid_height: Option<u64>,
     ) -> SubmitFut {
         Box::pin(async { Err(RpcError::Offline) })
+    }
+
+    fn watch_site_send(
+        &self,
+        _rpc: Arc<dyn SolanaRpc>,
+        _returned: Vec<(Vec<u8>, FlowId)>,
+        _origin: String,
+        _cluster: Cluster,
+    ) -> SiteSendFut {
+        Box::pin(async { Vec::new() })
     }
 }

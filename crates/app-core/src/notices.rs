@@ -76,11 +76,20 @@ impl BridgeRequestOutcome {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TxStatus {
     Sent,
-    Confirmed { slot: u64 },
-    Failed { error: String },
-    Rejected { error: String },
+    Confirmed {
+        slot: u64,
+    },
+    Failed {
+        error: String,
+    },
+    Rejected {
+        error: String,
+    },
     Expired,
     Unknown,
+    /// Returned to the site that asked for it, which did not send it while
+    /// this app watched. It can still be sent from Sign.
+    NotSent,
 }
 
 impl TxStatus {
@@ -93,7 +102,8 @@ impl TxStatus {
             | Self::Failed { .. }
             | Self::Rejected { .. }
             | Self::Expired
-            | Self::Unknown => 1,
+            | Self::Unknown
+            | Self::NotSent => 1,
         }
     }
 
@@ -111,6 +121,7 @@ impl TxStatus {
             Self::Rejected { .. } => "rejected",
             Self::Expired => "expired",
             Self::Unknown => "unknown",
+            Self::NotSent => "not_sent",
         }
     }
 
@@ -123,6 +134,7 @@ impl TxStatus {
             Self::Rejected { .. } => "Rejected",
             Self::Expired => "Expired",
             Self::Unknown => "Unknown",
+            Self::NotSent => "Not sent",
         }
     }
 

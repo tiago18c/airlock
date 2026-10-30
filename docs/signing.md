@@ -449,6 +449,15 @@ A site that asks for several transactions at once (the adapter's `signAllTransac
 - **The Sign screen** works on one transaction of the batch at a time, the batch kept beside it (`SignForm::batch`). The steps have one step for each transaction, which shows it when clicked, then Return to site; under them are the steps of the transaction on screen, without its own return. A transaction this device has finished signing is kept with the batch, and the screen moves on to the next one not signed yet. Signing the last sends them all. A transaction with nothing left for this device to sign and nothing missing but the site's own signatures can be taken as it is (**Keep as is**).
 - What the Sign screen does to a transaction of the batch, a signature added or a blockhash moved, stays with it when another is shown.
 
+### After the transaction goes back to the site
+
+The site may send what it gets back itself, so a transaction returned from the Sign screen is not offered to Submit straight away. Every transaction that went back with a valid fee payer signature, each one of a batch, is watched for on the node (`wallet_flows::track::watch_landed`, every second for 10 seconds, until each is known). Submit is off while it is watched (`SignForm::site_sends`).
+
+- **It lands**, failed or not: the site sent it. A transaction toast, "Sent by" the site, follows it to confirmed or failed like one sent here, and Submit stays off.
+- **It does not**: a toast, "Returned to" the site and marked Not sent, says it can be submitted from Sign, and Submit turns on.
+
+The modal's Sign and Sign all return without the Sign screen, so nothing is watched for there.
+
 ### Hot wallet
 
 ```mermaid

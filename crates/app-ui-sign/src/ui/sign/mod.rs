@@ -16,7 +16,7 @@ use crate::actions::build::edit_on_build;
 use crate::actions::idl_check::fetch_missing_idls;
 use crate::actions::sentence;
 use crate::actions::sign_screen::*;
-use crate::state::forms::{ShareTab, SignView, SimState, TxSource};
+use crate::state::forms::{ShareTab, SignView, SimState, SiteSend, TxSource};
 use crate::state::session::Session;
 use crate::state::use_network;
 use crate::ui::clock::BlockhashCountdown;
@@ -347,6 +347,13 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         _ => false,
     };
     let returned = (form.returned)();
+    // The site that has it back may send it itself.
+    let site_send = match &source {
+        Some(TxSource::Browser { origin, .. }) => {
+            form.site_send(&tx.wire).map(|send| (send, origin.clone()))
+        }
+        _ => None,
+    };
     // The batch this transaction is one of, when the site sent several.
     let batch = (form.batch)()
         .filter(|batch| matches!(&source, Some(TxSource::Browser { id, .. }) if *id == batch.id));
@@ -452,6 +459,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             show_refresh,
             site_blockhash,
             site_signs,
+            site_send,
         }
 
         if let Some(batch) = batch.as_ref().filter(|_| site_waiting) {
@@ -572,6 +580,9 @@ fn SignActions(
     show_refresh: bool,
     site_blockhash: bool,
     site_signs: usize,
+    /// What came of the transaction since it went back to the site, and
+    /// the site.
+    site_send: Option<(SiteSend, String)>,
 ) -> Element {
     let session = use_context::<Session>();
     let rebuilding = session.forms.sign.rebuilding;
@@ -583,7 +594,11 @@ fn SignActions(
             || !expired
             || refreshes_on_sign
             || blockhash_on_sign != BlockhashOnSign::Keep);
-    let can_submit = online && status.complete() && !needs_rebuild && !busy() && !expired;
+    // Submit waits while the site may be sending it, and stays off once
+    // it has landed.
+    let site_holds = matches!(site_send, Some((SiteSend::Watching | SiteSend::Landed, _)));
+    let can_submit =
+        online && status.complete() && !needs_rebuild && !busy() && !expired && !site_holds;
     let elsewhere = status.missing_elsewhere();
     let authorizations = status.authorizations_elsewhere();
     let sign_label = match step {
@@ -624,7 +639,15 @@ fn SignActions(
                 RefreshBlockhash {}
             }
         }
-        if expired && !refreshes_on_sign && blockhash_on_sign == BlockhashOnSign::Keep {
+        if let Some((send, origin)) = site_send.filter(|_| status.complete()) {
+            p { class: "hint",
+                match send {
+                    SiteSend::Watching => rsx! { "Watching for {origin} to send it. Submit waits a few seconds so it is not sent twice." },
+                    SiteSend::Landed => rsx! { "{origin} sent it, and it landed. There is nothing left to submit." },
+                    SiteSend::NotSent => rsx! { "{origin} did not send it. Submit it here." },
+                }
+            }
+        } else if expired && !refreshes_on_sign && blockhash_on_sign == BlockhashOnSign::Keep {
             // With the rebuild button there, it says what to do.
             if !show_refresh {
                 p { class: "hint",

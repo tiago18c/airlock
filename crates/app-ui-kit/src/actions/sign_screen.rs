@@ -4,7 +4,7 @@
 use crate::actions::sentence;
 use crate::actions::sign::{prepare_request, rebuild_for_wallets, ReceivedMeta};
 use crate::diagnostics::{next_flow_id, source_name, TxLog};
-use crate::state::forms::{BlockhashExpiry, SimState, TxSource};
+use crate::state::forms::{BlockhashExpiry, SimState, SiteSend, TxSource};
 use crate::state::session::Session;
 use app_core::bridge::BridgeAnswer;
 use dioxus::prelude::*;
@@ -571,6 +571,7 @@ pub fn return_to_browser(session: &Session, wire: &[u8]) -> HandBack {
         }
         let mut marked = form.returned;
         marked.set(true);
+        watch_site_send(session, origin, vec![(wire.to_vec(), flow)]);
         return HandBack::Returned { count: 1 };
     };
 
@@ -596,6 +597,11 @@ pub fn return_to_browser(session: &Session, wire: &[u8]) -> HandBack {
         .log_returned(&origin, &code);
     }
     let wires: Vec<Vec<u8>> = batch.items.iter().map(|item| item.wire.clone()).collect();
+    let returned: Vec<(Vec<u8>, u64)> = batch
+        .items
+        .iter()
+        .map(|item| (item.wire.clone(), item.flow))
+        .collect();
     let count = wires.len();
     let mut kept = form.batch;
     kept.set(Some(batch));
@@ -604,7 +610,47 @@ pub fn return_to_browser(session: &Session, wire: &[u8]) -> HandBack {
     }
     let mut marked = form.returned;
     marked.set(true);
+    watch_site_send(session, origin, returned);
     HandBack::Returned { count }
+}
+
+/// The site at `origin` has the transactions in `returned`, each with its
+/// flow, and may send them itself. Submit waits for each while the node is
+/// watched for it, and stays off for one that landed.
+fn watch_site_send(session: &Session, origin: String, returned: Vec<(Vec<u8>, u64)>) {
+    let Ok(rpc) = session.rpc() else {
+        return;
+    };
+    let form = session.forms.sign;
+    let signatures: Vec<_> = returned
+        .iter()
+        .filter_map(|(wire, _)| parse_wire(wire).ok()?.signature())
+        .collect();
+    if signatures.is_empty() {
+        return;
+    }
+    for signature in &signatures {
+        form.set_site_send(*signature, SiteSend::Watching);
+    }
+    let cluster = session.cluster();
+    let watch = session
+        .submitter()
+        .watch_site_send(rpc, returned, &origin, &cluster);
+    // In the app's scope: the answer is kept when the screen has closed.
+    crate::actions::spawn_app_task(async move {
+        let landed = watch.await;
+        for signature in signatures {
+            let landed = landed
+                .iter()
+                .any(|(other, landed)| *other == signature && *landed);
+            let send = if landed {
+                SiteSend::Landed
+            } else {
+                SiteSend::NotSent
+            };
+            form.set_site_send(signature, send);
+        }
+    });
 }
 
 /// Take the batch transaction on screen as it is, with nothing for this
@@ -832,6 +878,13 @@ pub fn submit_loaded(session: Session, mut busy: Signal<bool>) {
     let Some(wire) = form.wire.peek().clone() else {
         return;
     };
+    // The site that has it back may be sending it, or has.
+    if matches!(
+        form.site_send(&wire),
+        Some(SiteSend::Watching | SiteSend::Landed)
+    ) {
+        return;
+    }
     let flow = form.flow.peek().unwrap_or_else(next_flow_id);
     let cluster = session.cluster();
     let last_valid_height = form

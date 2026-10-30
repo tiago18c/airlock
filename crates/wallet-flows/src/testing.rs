@@ -421,3 +421,19 @@ pub fn transfer(from: Pubkey, to: Pubkey) -> DecodedTx {
     .wire;
     decode_v1_transaction(&wire).unwrap()
 }
+
+/// A legacy transfer of 5 lamports from `from`, which pays, to `to`, laid
+/// out by hand with its one signature slot empty.
+pub fn legacy_transfer(from: Pubkey, to: Pubkey) -> Vec<u8> {
+    let mut wire = vec![1u8];
+    wire.extend_from_slice(&[0u8; 64]);
+    wire.extend_from_slice(&[1, 0, 1, 3]);
+    for key in [from, to, SYSTEM_PROGRAM_ID] {
+        wire.extend_from_slice(key.as_ref());
+    }
+    wire.extend_from_slice(Hash::default().as_ref());
+    wire.extend_from_slice(&[1, 2, 2, 0, 1, 12]);
+    wire.extend_from_slice(&2u32.to_le_bytes());
+    wire.extend_from_slice(&5u64.to_le_bytes());
+    wire
+}
