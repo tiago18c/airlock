@@ -23,8 +23,8 @@ use solana_pubkey::Pubkey;
 
 mod steps;
 pub use steps::{
-    batch_steps, sign_steps, SignFinish, SignStep, SignStepInputs, SignStepKind, SignStepState,
-    SimulationStage,
+    batch_steps, only_simulate_and_sign, sign_steps, SignFinish, SignStep, SignStepInputs,
+    SignStepKind, SignStepState, SimulationStage,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

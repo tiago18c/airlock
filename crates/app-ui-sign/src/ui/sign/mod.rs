@@ -409,7 +409,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     rsx! {
         if let Some((states, signed, on_screen, own)) = batch_steps {
             BatchSteps { states, signed, on_screen, steps: own }
-        } else {
+        } else if !wallet_core::only_simulate_and_sign(&steps) {
             SignSteps { steps }
         }
 
