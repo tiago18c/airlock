@@ -11,6 +11,10 @@ pub fn WalletSwitcher() -> Element {
         return rsx! {};
     }
     let selected = session.selected_wallet();
+    let address = wallets
+        .iter()
+        .find(|wallet| Some(wallet.id) == selected)
+        .and_then(|wallet| wallet.address);
     let choices = wallets.clone();
     rsx! {
         label { class: "wallet-switch", title: "The wallet the app is acting as",
@@ -30,6 +34,9 @@ pub fn WalletSwitcher() -> Element {
                     }
                 }
             }
+        }
+        if let Some(address) = address {
+            CopyButton { text: address.to_string(), label: "Copy wallet address", class: "sm" }
         }
     }
 }

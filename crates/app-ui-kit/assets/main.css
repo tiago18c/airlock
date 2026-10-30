@@ -2018,6 +2018,7 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 /* The narrowest phones keep the brand mark and drop its name. */
 @media (max-width: 419px) {
   .topbar .brand-name { display: none; }
+  .topbar-tools { gap: var(--space-1); }
 }
 
 /* Wallet switcher in the top bar, and the settings of a smart contract wallet. */
@@ -2047,8 +2048,11 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   margin-block: var(--space-3);
 }
 @media (max-width: 639px) {
-  .wallet-switch { flex: 0 1 auto; }
-  .wallet-switch select { max-width: 7rem; }
+  /* Only the wallet switcher gives way, as in the frameless top bar. */
+  .topbar-tools { min-width: 0; }
+  .topbar-tools > * { flex-shrink: 0; }
+  .topbar-tools > .wallet-switch { flex: 0 1 auto; min-width: 3.5rem; }
+  .wallet-switch select { min-width: 0; max-width: 7rem; }
 }
 
 /* ---------- Sign ---------- */
