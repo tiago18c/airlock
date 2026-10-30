@@ -63,7 +63,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                 "Reject"
             }
             button {
-                class: if prep.can_sign { "" } else { "primary" },
+                class: review_class(prep.can_sign, prep.unread_sign),
                 disabled: !prep.can_review,
                 onclick: move |_| {
                     let Some((wire, adapted, _, _, tables, _, flow)) = for_review.clone() else {
@@ -134,6 +134,16 @@ fn sign_class(can_sign: bool, unread: bool) -> &'static str {
         (true, true) => "warn solid",
         (true, false) => "primary",
         (false, _) => "",
+    }
+}
+
+/// The Review button's look: the primary unless Sign signs from a trusted
+/// summary. Beside an amber Sign it stays the way the modal points to.
+fn review_class(can_sign: bool, unread: bool) -> &'static str {
+    if can_sign && !unread {
+        ""
+    } else {
+        "primary"
     }
 }
 
@@ -410,7 +420,7 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                 "Reject"
             }
             button {
-                class: if can_sign { "" } else { "primary" },
+                class: review_class(can_sign, unread_sign),
                 disabled: !can_review,
                 onclick: move |_| {
                     let Some(reports) = for_review.clone() else {
