@@ -188,7 +188,10 @@ impl PublicCore {
     }
 
     /// The labels of `keys`, to tell a site what it holds.
-    pub fn site_labels(&self, keys: Vec<solana_pubkey::Pubkey>) -> Vec<([u8; 32], String)> {
+    pub fn site_labels(
+        &self,
+        keys: Vec<solana_pubkey::Pubkey>,
+    ) -> Vec<bridge_protocol::reply::SiteAccount> {
         self.inner.site_labels(keys)
     }
 

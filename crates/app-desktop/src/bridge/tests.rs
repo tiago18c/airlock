@@ -44,6 +44,8 @@ fn status_accepts_an_expiry_in_unix_seconds() {
 fn only_connect_and_sign_wait_for_the_user() {
     assert!(waits_for_user("connect"));
     assert!(waits_for_user("signTransaction"));
+    assert!(waits_for_user("signMessage"));
+    assert!(waits_for_user("signIn"));
     assert!(!waits_for_user("status"));
     assert!(!waits_for_user("show"));
     assert!(!waits_for_user("disconnect"));
@@ -125,7 +127,11 @@ async fn the_window_answers_from_the_core_queue() {
 
     assert!(kit.core.bridge_answer(
         "count-1",
-        &BridgeAnswer::Connect(vec![([1; 32], String::new())])
+        &BridgeAnswer::Connect(vec![bridge_protocol::reply::SiteAccount {
+            pubkey: [1; 32],
+            label: String::new(),
+            signs_messages: false,
+        }])
     ));
     assert!(kit.core.bridge_answer("count-2", &BridgeAnswer::Rejected));
     let first: Value = serde_json::from_slice(&first.join().unwrap()).unwrap();
@@ -506,6 +512,93 @@ async fn unblocking_lets_a_site_ask_again() {
     kit.core.site_unblock(ORIGIN);
     assert!(kit.core.slices().sites.get().blocked.is_empty());
     connected(&kit, &bridge, false);
+}
+
+fn sign_message(id: &str, account: Pubkey, message: &[u8]) -> Value {
+    json!({
+        "v": 1, "id": id, "origin": ORIGIN, "method": "signMessage",
+        "params": {
+            "account": account.to_string(),
+            "message": base64::engine::general_purpose::STANDARD.encode(message),
+        }
+    })
+}
+
+#[tokio::test]
+async fn a_message_needs_a_connected_account_with_a_key_here() {
+    let (kit, bridge) = attached_bridge();
+    assert_eq!(
+        ask(&bridge, sign_message("stranger", account(), b"hello"))["error"]["code"],
+        "rejected"
+    );
+    // Connected, but this test core holds no key for it.
+    connected(&kit, &bridge, false);
+    let value = ask(&bridge, sign_message("keyless", account(), b"hello"));
+    assert_eq!(value["error"]["code"], "rejected");
+    assert!(value["error"]["message"]
+        .as_str()
+        .unwrap()
+        .contains("No key"));
+    assert!(kit.core.slices().bridge.get().is_empty());
+}
+
+fn sign_in_ask(id: &str, params: Value) -> Value {
+    json!({ "v": 1, "id": id, "origin": ORIGIN, "method": "signIn", "params": params })
+}
+
+#[tokio::test]
+async fn a_sign_in_that_cannot_be_honest_never_reaches_the_user() {
+    let (kit, bridge) = attached_bridge();
+    let other = ask(
+        &bridge,
+        sign_in_ask("o", json!({ "domain": "bank.example" })),
+    );
+    assert!(other["error"]["message"]
+        .as_str()
+        .unwrap()
+        .contains("bank.example"));
+    let injected = ask(
+        &bridge,
+        sign_in_ask("i", json!({ "statement": "a\nURI: b" })),
+    );
+    assert_eq!(injected["error"]["code"], "rejected");
+    let offchain = ask(
+        &bridge,
+        sign_in_ask(
+            "c",
+            json!({ "useOffchainMessage": { "messageVersion": 1 } }),
+        ),
+    );
+    assert_eq!(offchain["error"]["code"], "rejected");
+    let keyless = ask(
+        &bridge,
+        sign_in_ask("k", json!({ "address": account().to_string() })),
+    );
+    assert_eq!(keyless["error"]["code"], "rejected");
+    kit.core.site_block(ORIGIN);
+    let blocked = ask(&bridge, sign_in_ask("b", json!({})));
+    assert_eq!(blocked["error"]["code"], "rejected");
+    assert!(kit.core.slices().bridge.get().is_empty());
+}
+
+#[tokio::test]
+async fn a_sign_in_asking_nothing_reaches_the_user() {
+    let (kit, bridge) = attached_bridge();
+    let asking = {
+        let bridge = bridge.clone();
+        std::thread::spawn(move || ask(&bridge, sign_in_ask("s", Value::Null)))
+    };
+    while kit.core.slices().bridge.get().is_empty() {
+        std::thread::yield_now();
+    }
+    assert_eq!(
+        BridgePrompt::head_of(&kit.core.slices().bridge.get())
+            .unwrap()
+            .method,
+        "signIn"
+    );
+    assert!(kit.core.bridge_answer("s", &BridgeAnswer::Rejected));
+    asking.join().unwrap();
 }
 
 #[test]

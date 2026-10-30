@@ -81,7 +81,11 @@ async fn an_answer_reaches_the_site_and_leaves_the_queue() {
 
     assert!(kit.core.bridge_answer(
         "c1",
-        &BridgeAnswer::Connect(vec![([1; 32], "Treasury".into())])
+        &BridgeAnswer::Connect(vec![bridge_protocol::reply::SiteAccount {
+            pubkey: [1; 32],
+            label: "Treasury".into(),
+            signs_messages: true,
+        }])
     ));
 
     let reply = read(&answer.try_recv().unwrap());
@@ -149,6 +153,76 @@ async fn approving_sends_the_accounts_in_the_order_chosen() {
     let reply = approve(&kit, "c", vec![account(2), account(1)], false);
     assert_eq!(reply["result"]["accounts"][0]["label"], "Wallet 2");
     assert_eq!(reply["result"]["accounts"][1]["label"], "Wallet 1");
+}
+
+/// A `signIn` the window answers with what `signer` signed.
+fn sign_in(
+    kit: &app_core::testing::Kit,
+    id: &str,
+    signer: &wallet_core::ShareableAccount,
+    remember: bool,
+) -> Value {
+    let (send, answer) = reply();
+    kit.core.public().bridge_push(request(id, "signIn"), send);
+    assert!(kit
+        .core
+        .bridge_sign_in(id, signer.pubkey, b"signed".to_vec(), [9; 64], remember));
+    read(&answer.try_recv().unwrap())
+}
+
+#[tokio::test]
+async fn signing_in_grants_the_account_and_puts_it_first() {
+    let kit = kit();
+    approve(&kit, "c", vec![account(1)], true);
+    let reply = sign_in(&kit, "s", &account(2), true);
+    let accounts = reply["result"]["accounts"].as_array().unwrap();
+    assert_eq!(accounts.len(), 2);
+    assert_eq!(
+        reply["result"]["accounts"][0]["publicKey"],
+        reply["result"]["account"]
+    );
+    assert_eq!(
+        grant_of(&kit).unwrap().accounts,
+        vec![account(2).pubkey, account(1).pubkey]
+    );
+    assert_eq!(
+        kit.core.public().site_sign(ORIGIN, &[account(2).pubkey]),
+        app_core::bridge::SiteSign::Allowed
+    );
+    assert!(reply["result"]["signature"].is_string());
+}
+
+#[tokio::test]
+async fn signing_in_without_remembering_lasts_this_run() {
+    let kit = kit();
+    sign_in(&kit, "s", &account(1), false);
+    assert!(grant_of(&kit).is_none());
+    assert_eq!(
+        kit.core.public().site_sign(ORIGIN, &[account(1).pubkey]),
+        app_core::bridge::SiteSign::Allowed
+    );
+}
+
+#[tokio::test]
+async fn a_message_answer_fits_only_its_method() {
+    let kit = kit();
+    let (send, answer) = reply();
+    kit.core.public().bridge_push(request("c", "connect"), send);
+    let signed = BridgeAnswer::SignedMessage {
+        signed: b"hi".to_vec(),
+        signature: [1; 64],
+    };
+    assert!(!kit.core.bridge_answer("c", &signed));
+    assert!(kit.core.bridge_answer("c", &BridgeAnswer::Rejected));
+    drop(answer);
+
+    let (send, answer) = reply();
+    kit.core
+        .public()
+        .bridge_push(request("m", "signMessage"), send);
+    assert!(kit.core.bridge_answer("m", &signed));
+    let reply = read(&answer.try_recv().unwrap());
+    assert_eq!(reply["result"]["signedMessage"], "aGk=");
 }
 
 #[tokio::test]

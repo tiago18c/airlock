@@ -22,6 +22,8 @@ const sign = (wallet: AirlockWallet, ...inputs: unknown[]) =>
 test("the wallet offers only what the desktop app can do", () => {
   const { wallet } = walletWith(() => ({}));
   assert.deepEqual(Object.keys(wallet.features).sort(), [
+    "solana:signIn",
+    "solana:signMessage",
     "solana:signTransaction",
     "standard:connect",
     "standard:disconnect",
@@ -48,6 +50,68 @@ test("a silent connect that cannot reach the app finds nothing, and a normal one
   };
   assert.deepEqual((await features.connect({ silent: true })).accounts, []);
   await assert.rejects(features.connect(), /app_not_running/);
+});
+
+const signMessage = (wallet: AirlockWallet, ...inputs: unknown[]) =>
+  (wallet.features["solana:signMessage"] as { signMessage: (...i: unknown[]) => Promise<{ signedMessage: Uint8Array; signature: Uint8Array }[]> }).signMessage(...inputs);
+const signIn = (wallet: AirlockWallet, ...inputs: unknown[]) =>
+  (wallet.features["solana:signIn"] as { signIn: (...i: unknown[]) => Promise<{ account: { address: string }; signedMessage: Uint8Array; signature: Uint8Array }[]> }).signIn(...inputs);
+
+test("only an account with a key here can sign messages", async () => {
+  const OTHER = bytesToBase64(new Uint8Array(32).fill(8));
+  const { wallet } = walletWith(() => ({
+    accounts: [{ publicKey: KEY, signsMessages: true }, { publicKey: OTHER }],
+  }));
+  await connect(wallet);
+  assert.deepEqual([...wallet.accounts[0].features], ["solana:signTransaction", "solana:signMessage"]);
+  assert.deepEqual([...wallet.accounts[1].features], ["solana:signTransaction"]);
+});
+
+test("a message is signed for a connected account, one input at a time", async () => {
+  const { wallet, calls } = walletWith((method) =>
+    method === "connect"
+      ? { accounts: [{ publicKey: KEY, signsMessages: true }] }
+      : { signedMessage: "aGk=", signature: bytesToBase64(new Uint8Array(64).fill(1)) },
+  );
+  await connect(wallet);
+  const account = wallet.accounts[0];
+  const message = new TextEncoder().encode("hi");
+  const outputs = await signMessage(wallet, { account, message }, { account, message });
+  assert.equal(outputs.length, 2);
+  assert.equal(new TextDecoder().decode(outputs[0].signedMessage), "hi");
+  assert.equal(outputs[0].signature.length, 64);
+  const sent = calls.filter((call) => call.method === "signMessage");
+  assert.equal(sent.length, 2);
+  assert.deepEqual(sent[0].params, { account: account.address, message: "aGk=" });
+
+  const { wallet: stranger } = walletWith(() => ({}));
+  await assert.rejects(signMessage(stranger, { account, message }), /not connected/);
+});
+
+test("signing in connects the account it signed with", async () => {
+  const { wallet, calls } = walletWith(() => ({
+    account: KEY,
+    accounts: [{ publicKey: KEY, signsMessages: true }],
+    signedMessage: "aGk=",
+    signature: bytesToBase64(new Uint8Array(64).fill(1)),
+  }));
+  const [output] = await signIn(wallet, { domain: "a.test", nonce: "n" });
+  assert.equal(wallet.accounts.length, 1);
+  assert.equal(output.account.address, wallet.accounts[0].address);
+  assert.deepEqual(calls[0].params, { domain: "a.test", nonce: "n" });
+
+  await signIn(wallet);
+  assert.equal(calls.length, 2);
+});
+
+test("a sign-in reply naming another account is refused", async () => {
+  const { wallet } = walletWith(() => ({
+    account: bytesToBase64(new Uint8Array(32).fill(9)),
+    accounts: [{ publicKey: KEY }],
+    signedMessage: "aGk=",
+    signature: "aGk=",
+  }));
+  await assert.rejects(signIn(wallet), /did not return/);
 });
 
 test("a key that is not 32 bytes is refused", async () => {

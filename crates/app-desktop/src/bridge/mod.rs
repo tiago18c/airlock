@@ -260,6 +260,38 @@ impl Bridge {
                     DECISION_TIMEOUT,
                 ),
             },
+            ("signMessage", Some(core)) => {
+                let answer = check_message_request(core, &origin, &params);
+                match answer {
+                    Ok(()) => wait_for_user(
+                        core,
+                        BridgeRequest {
+                            id,
+                            origin,
+                            method: method.to_owned(),
+                            params,
+                        },
+                        DECISION_TIMEOUT,
+                    ),
+                    Err(message) => reply::error(&id, "rejected", &message),
+                }
+            }
+            ("signIn", Some(core)) => {
+                let answer = check_sign_in_request(core, &origin, &params);
+                match answer {
+                    Ok(()) => wait_for_user(
+                        core,
+                        BridgeRequest {
+                            id,
+                            origin,
+                            method: method.to_owned(),
+                            params,
+                        },
+                        DECISION_TIMEOUT,
+                    ),
+                    Err(message) => reply::error(&id, "rejected", &message),
+                }
+            }
             ("signTransaction", Some(core)) => {
                 let accounts = requested_accounts(&params);
                 match core.site_sign(&origin, &accounts) {
@@ -284,7 +316,7 @@ impl Bridge {
             _ => reply::error(
                 &id,
                 "not_implemented",
-                "This prototype approves connect and signTransaction.",
+                "Airlock does not know this request.",
             ),
         }
     }
@@ -292,9 +324,57 @@ impl Bridge {
 
 const NOT_CONNECTED: &str = "This account is not connected to the site.";
 
+const BLOCKED: &str = "This site is blocked in Airlock.";
+
 /// The reply to a site the user blocked.
 fn blocked(id: &str) -> Vec<u8> {
-    reply::error(id, "rejected", "This site is blocked in Airlock.")
+    reply::error(id, "rejected", BLOCKED)
+}
+
+/// Why a `signMessage` cannot even be shown to the user.
+fn check_message_request(core: &PublicCore, origin: &str, params: &Value) -> Result<(), String> {
+    let account = message_account(params).ok_or(NOT_CONNECTED)?;
+    match core.site_sign(origin, &[account]) {
+        SiteSign::Blocked => return Err(BLOCKED.into()),
+        SiteSign::NotConnected => return Err(NOT_CONNECTED.into()),
+        SiteSign::Allowed => {}
+    }
+    if !holds_key(core, &account) {
+        return Err("No key on this device signs as this account.".into());
+    }
+    let bytes = message_bytes(params).ok_or("The message was not valid base64.")?;
+    wallet_core::site_message::check_message(&bytes, origin).map_err(|err| err.to_string())
+}
+
+/// Why a `signIn` cannot even be shown to the user.
+fn check_sign_in_request(core: &PublicCore, origin: &str, params: &Value) -> Result<(), String> {
+    if core.site_sign(origin, &[]) == SiteSign::Blocked {
+        return Err(BLOCKED.into());
+    }
+    if params.get("useOffchainMessage").is_some() {
+        return Err("Airlock does not sign in with offchain messages yet.".into());
+    }
+    let sign_in = sign_in_request(params).ok_or("The sign-in request could not be read.")?;
+    sign_in.check(origin).map_err(|err| err.to_string())?;
+    if let Some(asked) = &sign_in.address {
+        let held = asked
+            .parse()
+            .ok()
+            .is_some_and(|account| holds_key(core, &account));
+        if !held {
+            return Err("No key on this device signs as the account this site asked for.".into());
+        }
+    }
+    Ok(())
+}
+
+/// Whether a key of the vault signs as `account`, locked or not.
+fn holds_key(core: &PublicCore, account: &Pubkey) -> bool {
+    core.slices()
+        .wallets
+        .get()
+        .local_signer_pubkeys
+        .contains(account)
 }
 
 /// The frames that tell sites what changed from `told` to `now`.
@@ -442,7 +522,10 @@ fn method_of(message: &[u8]) -> Option<String> {
 /// Whether `method` goes to the user, through the core's queue. The rest,
 /// `show` among them, is answered here even before the core opens.
 fn waits_for_user(method: &str) -> bool {
-    matches!(method, "connect" | "signTransaction")
+    matches!(
+        method,
+        "connect" | "signTransaction" | "signMessage" | "signIn"
+    )
 }
 
 /// Queue `request` in the core and wait for the window's answer, at most
@@ -537,6 +620,25 @@ fn requested_accounts(params: &Value) -> Vec<Pubkey> {
         .collect()
 }
 
+/// The account a `signMessage` names. The site chose it.
+pub fn message_account(params: &Value) -> Option<Pubkey> {
+    params.get("account")?.as_str()?.parse().ok()
+}
+
+/// The bytes a `signMessage` asks to have signed.
+pub fn message_bytes(params: &Value) -> Option<Vec<u8>> {
+    let text = params.get("message")?.as_str()?;
+    base64::engine::general_purpose::STANDARD.decode(text).ok()
+}
+
+/// What a `signIn` asks for. It may ask for nothing at all.
+pub fn sign_in_request(params: &Value) -> Option<wallet_core::site_message::SignIn> {
+    if params.is_null() {
+        return Some(Default::default());
+    }
+    serde_json::from_value(params.clone()).ok()
+}
+
 /// The bytes of transaction `index`, when they read as a Solana transaction.
 pub fn transaction_wire(params: &Value, index: usize) -> Option<Vec<u8>> {
     let text = transaction_item(params, index)?
@@ -553,6 +655,8 @@ fn detail(method: &str, params: &Value) -> String {
     match method {
         "connect" => "Choose which accounts this site may see.".into(),
         "signTransaction" => sign_detail(params, 0),
+        "signMessage" => "Asks you to sign a message.".into(),
+        "signIn" => "Asks you to sign in.".into(),
         other => other.into(),
     }
 }

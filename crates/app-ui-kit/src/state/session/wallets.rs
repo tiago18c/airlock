@@ -276,6 +276,28 @@ impl Session {
         self.leaf_marks.read().pending_rotation(address)
     }
 
+    /// Sign `message` as a wallet of the vault, for a site. Only a key the
+    /// vault holds: nothing Build made, and no programmatic signer or Squads
+    /// vault. The caller checks that the bytes may be signed
+    /// (`wallet_core::site_message`).
+    pub fn sign_site_message(
+        &self,
+        account: solana_pubkey::Pubkey,
+        message: &[u8],
+    ) -> Result<[u8; 64], String> {
+        let signer = self.core().with_vault(|vault| {
+            let data = Vault::data(vault).map_err(|err| err.to_string())?;
+            data.wallets
+                .iter()
+                .filter_map(|wallet| wallet.signer().ok())
+                .find(|signer| wallet_core::WalletSigner::pubkey(signer) == account)
+                .ok_or_else(|| "No key on this device signs as this account.".to_string())
+        })?;
+        let signature = wallet_core::WalletSigner::try_sign_message(&signer, message)
+            .map_err(|err| err.to_string())?;
+        Ok(signature.into())
+    }
+
     /// Sign everything in `wire` that a vault key can sign: authorizations
     /// first, then the transaction itself. `known` is what a rebuild or a
     /// context note said of the Vector accounts.

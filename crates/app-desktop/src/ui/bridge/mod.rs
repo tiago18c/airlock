@@ -36,9 +36,11 @@ use wallet_flows::adapt::held_back_note;
 
 mod connect;
 mod prepared;
+mod sign_message;
 mod sign_request;
 
 pub(in crate::ui) use connect::*;
+pub(in crate::ui) use sign_message::*;
 pub(in crate::ui) use sign_request::*;
 
 /// Whether the request modal is open. The shell provides it, so a click on an
@@ -106,6 +108,18 @@ pub fn BridgeRequests() -> Element {
                             current: current.clone(),
                             on_close: move |_| open.set(false),
                         }
+                    } else if current.method == "signMessage" {
+                        MessageRequest {
+                            key: "{current.id}",
+                            current: current.clone(),
+                            on_close: move |_| open.set(false),
+                        }
+                    } else if current.method == "signIn" {
+                        SignInRequest {
+                            key: "{current.id}",
+                            current: current.clone(),
+                            on_close: move |_| open.set(false),
+                        }
                     } else if current.transactions > 1 {
                         SignBatch {
                             key: "{current.id}",
@@ -154,6 +168,8 @@ fn RequestCard(current: BridgePrompt, on_open: EventHandler<()>) -> Element {
     );
     let what = match (current.method.as_str(), current.transactions, reviewing) {
         ("connect", _, _) => "wants to connect".to_string(),
+        ("signMessage", _, _) => "asks you to sign a message".to_string(),
+        ("signIn", _, _) => "asks you to sign in".to_string(),
         (_, count, true) if count > 1 => {
             format!("asks to sign {count} transactions · open on Sign")
         }

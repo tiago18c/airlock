@@ -11,7 +11,7 @@ export const REQUEST_TTL_MS = 10 * 60 * 1000;
 export const MAX_TRANSACTIONS = 16;
 
 /** What the desktop app answers today. Add a method here only with its desktop handler. */
-export const METHODS = ["status", "connect", "disconnect", "signTransaction"] as const;
+export const METHODS = ["status", "connect", "disconnect", "signTransaction", "signMessage", "signIn"] as const;
 
 export type BridgeMethod = (typeof METHODS)[number];
 
@@ -43,6 +43,8 @@ export interface NativeMessage {
 export interface AccountWire {
   publicKey: string;
   label?: string;
+  /** A key on the desktop can sign a message as this account. */
+  signsMessages?: boolean;
 }
 
 export interface BridgeState {

@@ -28,7 +28,7 @@ flowchart LR
 
 Manifest V3, TypeScript, in `extension/`.
 
-- A content script registers a wallet named Airlock with `@wallet-standard/wallet`, so sites using `@solana/wallet-adapter` or the Wallet Standard find it without a `window.solana` injection. It advertises `standard:connect`, `standard:disconnect`, `standard:events` and `solana:signTransaction` (versions legacy, 0 and 1): only what the desktop app can do, so a site never picks a feature that is certain to fail.
+- A content script registers a wallet named Airlock with `@wallet-standard/wallet`, so sites using `@solana/wallet-adapter` or the Wallet Standard find it without a `window.solana` injection. It advertises `standard:connect`, `standard:disconnect`, `standard:events`, `solana:signTransaction` (versions legacy, 0 and 1), `solana:signMessage` and `solana:signIn` (version 1.0.0): only what the desktop app can do, so a site never picks a feature that is certain to fail. An account lists `solana:signMessage` only when a key on the device signs as it.
 - `signTransaction` with several inputs, which is how the wallet adapter's `signAllTransactions` reaches a Wallet Standard wallet, is one request with every transaction in it, at most 16 (`MAX_TRANSACTIONS` in `protocol.ts` and `bridge_protocol`). The outputs come back in the order of the inputs.
 - The service worker relays page requests to `chrome.runtime.connectNative("dev.airlock.bridge")`. It sets each request's `origin` from the browser's `sender`, never from page data, and its `expiresAt` ten minutes ahead.
 - The popup lists pending requests by their request code (below), and says whether the host is missing or the app is not running.
@@ -108,9 +108,11 @@ JSON objects, one per frame. A frame is a 32-bit little-endian length, then the 
 | Method | `params` | `result` |
 | --- | --- | --- |
 | `status` | none | `{ "ready": true, "role": "desktop" }` (`"dev-stub"` from `listen`) |
-| `connect` | `{ "silent"?: boolean }` | `{ "accounts": [ { "publicKey": "<base64>", "label"?: string } ] }` |
+| `connect` | `{ "silent"?: boolean }` | `{ "accounts": [ { "publicKey": "<base64>", "label"?: string, "signsMessages"?: true } ] }` |
 | `disconnect` | `{ "accounts": ["<base58>", …] }` | `{}` |
 | `signTransaction` | `{ "transactions": [ { "account", "transaction", "chain"? }, … ] }`, one to 16 | `{ "signedTransactions": ["<base64>", …] }`, one for each, in the same order |
+| `signMessage` | `{ "account": "<base58>", "message": "<base64>" }` | `{ "signedMessage": "<base64>", "signature": "<base64>" }` |
+| `signIn` | The Wallet Standard's `SolanaSignInInput`, all of it optional | `{ "account": "<base64>", "accounts": [ … ], "signedMessage": "<base64>", "signature": "<base64>" }`, `account` first in `accounts` |
 | `pages` | `{ "origins": ["<origin>", …] }`, every origin with a page open in this browser. From the service worker, whenever that changes and when the host starts | `{}` |
 
 The app sends one message of its own, with no `id`: `{ "v": 1, "method": "accountsChanged", "origin": "<origin>", "params": { "accounts": [ { "publicKey": "<base64>", "label"?: string } ] } }`. It says what a site holds now, the account to act as first, and is empty when the site is disconnected. It goes to every browser, and the service worker passes it only to pages of that origin. A site that just got its accounts in a reply is not told again.

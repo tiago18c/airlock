@@ -5,7 +5,13 @@ import type {
   WalletIcon,
 } from "@wallet-standard/base";
 import {
+  SolanaSignIn,
+  SolanaSignMessage,
   SolanaSignTransaction,
+  type SolanaSignInInput,
+  type SolanaSignInOutput,
+  type SolanaSignMessageInput,
+  type SolanaSignMessageOutput,
   type SolanaSignTransactionInput,
   type SolanaSignTransactionOutput,
 } from "@solana/wallet-standard-features";
@@ -33,6 +39,8 @@ const CHAINS = ["solana:mainnet", "solana:devnet", "solana:testnet"] as const;
 // Only what the desktop app can do is advertised, so a dApp never picks a
 // feature that is certain to fail. The desktop signs legacy, v0 and v1.
 const ACCOUNT_FEATURES = [SolanaSignTransaction] as const;
+// No key signs a message as a programmatic signer or a Squads vault.
+const KEY_ACCOUNT_FEATURES = [SolanaSignTransaction, SolanaSignMessage] as const;
 const VERSIONS = ["legacy", 0, 1] as const;
 
 export const ICON = iconPng as WalletIcon;
@@ -76,6 +84,18 @@ export class AirlockWallet implements Wallet {
         signTransaction: (
           ...inputs: readonly SolanaSignTransactionInput[]
         ): Promise<readonly SolanaSignTransactionOutput[]> => this.#signTransaction(...inputs),
+      },
+      [SolanaSignMessage]: {
+        version: "1.0.0",
+        signMessage: (
+          ...inputs: readonly SolanaSignMessageInput[]
+        ): Promise<readonly SolanaSignMessageOutput[]> => this.#signMessage(...inputs),
+      },
+      // 1.0.0: version 1.1.0 promises offchain messages, which Airlock does not sign yet.
+      [SolanaSignIn]: {
+        version: "1.0.0",
+        signIn: (...inputs: readonly SolanaSignInInput[]): Promise<readonly SolanaSignInOutput[]> =>
+          this.#signIn(...inputs),
       },
     };
   }
@@ -142,6 +162,51 @@ export class AirlockWallet implements Wallet {
     return signed.map((item) => ({ signedTransaction: base64ToBytes(item) }));
   }
 
+  // One at a time: each is shown to the user on its own, and the site gets
+  // all of them or an error.
+  async #signMessage(
+    ...inputs: readonly SolanaSignMessageInput[]
+  ): Promise<readonly SolanaSignMessageOutput[]> {
+    inputs.forEach((input) => this.#requireAccount(input.account));
+    const outputs: SolanaSignMessageOutput[] = [];
+    for (const input of inputs) {
+      const record = asRecord(
+        await this.call("signMessage", {
+          account: input.account.address,
+          message: bytesToBase64(input.message),
+        }),
+      );
+      outputs.push({
+        signedMessage: base64ToBytes(requiredString(record, "signedMessage")),
+        signature: base64ToBytes(requiredString(record, "signature")),
+        signatureType: "ed25519",
+      });
+    }
+    return outputs;
+  }
+
+  async #signIn(...inputs: readonly SolanaSignInInput[]): Promise<readonly SolanaSignInOutput[]> {
+    const outputs: SolanaSignInOutput[] = [];
+    // A site that passes no input still asks to sign in.
+    for (const input of inputs.length ? inputs : [{}]) {
+      const record = asRecord(await this.call("signIn", input));
+      this.setAccounts(readAccounts(record));
+      const publicKey = requiredString(record, "account");
+      const address = encodeBase58(base64ToBytes(publicKey));
+      const account = this.#accounts.find((known) => known.address === address);
+      if (!account) {
+        throw new BridgeError("internal", "The desktop app signed in with an account it did not return.");
+      }
+      outputs.push({
+        account,
+        signedMessage: base64ToBytes(requiredString(record, "signedMessage")),
+        signature: base64ToBytes(requiredString(record, "signature")),
+        signatureType: "ed25519",
+      });
+    }
+    return outputs;
+  }
+
   #requireAccount(account: WalletAccount): void {
     if (!this.#accounts.some((known) => known.address === account.address)) {
       throw new BridgeError("rejected", "This account is not connected to the site.");
@@ -163,7 +228,7 @@ function toAccount(wire: AccountWire): WalletAccount {
     address: encodeBase58(publicKey),
     publicKey,
     chains: CHAINS as unknown as IdentifierArray,
-    features: ACCOUNT_FEATURES as unknown as IdentifierArray,
+    features: (wire.signsMessages ? KEY_ACCOUNT_FEATURES : ACCOUNT_FEATURES) as unknown as IdentifierArray,
     label: wire.label,
     icon: ICON,
   });
@@ -179,6 +244,7 @@ function readAccounts(value: unknown): AccountWire[] {
     return {
       publicKey: requiredString(record, "publicKey"),
       label: optionalString(record, "label"),
+      signsMessages: record.signsMessages === true,
     };
   });
 }

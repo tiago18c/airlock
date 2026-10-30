@@ -408,7 +408,7 @@ A key made on the airgap device reaches the online device by its public key alon
 
 Desktop only. The extension registers a Wallet Standard wallet in the page, the service worker stamps the origin from the browser, `bridge-host` relays over a per-user local socket, and the app queues the request. The extension holds no keys and decides nothing. The protocol and the threat model are in [browser-bridge.md](browser-bridge.md).
 
-The app answers `connect` and a `signTransaction` with one to 16 transactions, legacy, v0 or v1. Anything else returns `not_implemented`. A locked vault asks for the password in the modal. A request nobody answers expires after ten minutes.
+The app answers `connect`, a `signTransaction` with one to 16 transactions, legacy, v0 or v1, `signMessage` and `signIn`. Anything else returns `not_implemented`. A locked vault asks for the password in the modal. A request nobody answers expires after ten minutes.
 
 ### Connect
 
@@ -430,6 +430,28 @@ Choosing a wallet the site was given tells the site, with that wallet first. Cho
 - **Blocked**: **Unblock** lets the site ask again.
 
 Connected and Authorized also have **Block**. Disconnecting or revoking rejects the site's waiting signature requests, and blocking rejects everything it has waiting.
+
+### Messages and sign-in
+
+A key signs bytes and cannot tell what they are for, so `wallet_core::site_message` decides what may reach it. Only a wallet with a key on this device can do either: no key signs as a programmatic signer or a Squads vault, and the QR handoff carries only transactions.
+
+**`signMessage`** needs an account connected to the site. These are refused before the modal opens:
+
+- Bytes that read as a transaction or its message, in any format, even with more bytes after them. Signing those could move funds. A programmatic signer's authorization is a v1 message, so this covers it.
+- Exactly 32 bytes that are not text. A Vector authority signs a bare digest of that size, which looks like nothing else. The same hash written out as text can be signed.
+- A message in Solana's offchain format, which Airlock does not sign yet.
+- A Sign In With Solana message for a domain other than the site's.
+
+The modal shows the message as text, or in hex with a warning when it is not text or holds control characters that could hide what it says. The signature is over exactly those bytes, with nothing added.
+
+**`signIn`** always opens the modal, and needs no connection first. The app writes the message itself, line for line as `@solana/wallet-standard-util` does, so the site's own check passes, and shows it. These are refused before the modal opens:
+
+- A `domain` that is not the browser's host for the origin, port included. With no `domain`, that host is used.
+- A field holding a line break, which could write lines of its own into the message.
+- An `address` with no key on this device.
+- `useOffchainMessage`. The feature is advertised as version 1.0.0, which does not promise it.
+
+A `uri` on another host is allowed by the standard, so the modal warns about it instead. Times in the message are shown and not checked. Signing in also connects: the account comes first, with what the site could already see, and **Remember this connection** works as it does on connect. **Block site** is there too.
 
 ### The sign request modal
 

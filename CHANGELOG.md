@@ -10,6 +10,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 ## [Unreleased]
 
 ### Added
+- Sites can ask you to sign a message or to sign in with Solana, from a wallet whose key is on this device. The modal shows exactly what is signed. Airlock writes the sign-in message itself, and refuses one for another site. It also refuses to sign, as a message, anything that could be read as a transaction or as an authorization for one of your wallets. Signing in also connects the site, and **Remember this connection** works as it does on connect.
 - Choosing another wallet tells a connected site, if it was given that wallet, so the site moves to it. Choosing a wallet it was not given changes nothing for it.
 - **Connections** lists the sites connected now, the sites you authorized and the sites you blocked. Disconnect ends a connection and keeps the site's authorization, Revoke forgets it, and Block and Unblock do what they say. Open it from the card on the Extension chip, or from Settings.
 - Connecting to a site can be remembered. The connect modal has **Remember this connection**: a remembered site that was given the wallet you are using reconnects by itself when it asks, even with the vault locked, and gets the accounts you gave it with your current wallet first. If you have moved to a wallet it was not given, the modal opens with what it was given ticked, and the current wallet at the top for you to tick if you want to. Every signature is still approved on its own.
