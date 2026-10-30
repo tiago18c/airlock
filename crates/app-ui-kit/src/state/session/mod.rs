@@ -242,6 +242,28 @@ impl Session {
         self.command(|core| core.bridge_answer(id, &answer))
     }
 
+    /// Answer a `connect` with the accounts the user chose. Answers whether
+    /// it was still waiting.
+    pub fn bridge_connect(
+        &self,
+        id: &str,
+        accounts: Vec<wallet_core::ShareableAccount>,
+        remember: bool,
+    ) -> bool {
+        self.command(|core| core.bridge_connect(id, accounts, remember))
+    }
+
+    /// Turn away the site that made request `id` from now on.
+    pub fn bridge_block(&self, id: &str) -> bool {
+        self.command(|core| core.bridge_block(id))
+    }
+
+    /// What the connect modal opens with for `origin`.
+    pub fn site_choice(&self, origin: &str) -> app_core::bridge::SiteChoice {
+        self.track_wallets();
+        self.core().site_choice(origin)
+    }
+
     /// Mark the given notices read.
     pub fn notices_mark_read(&self, ids: &[NoticeId]) {
         self.command(|core| core.notices_mark_read(ids));

@@ -1,4 +1,5 @@
 use crate::book::address_book::AddressBook;
+use crate::book::connections::Connections;
 use crate::cluster::Cluster;
 use crate::error::VaultError;
 use serde::{Deserialize, Serialize};
@@ -32,6 +33,9 @@ pub struct Workspace {
     /// is locked.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tokens_api_key: Option<String>,
+    /// Sites the user chose to remember, and sites they blocked.
+    #[serde(default, skip_serializing_if = "Connections::is_empty")]
+    pub connections: Connections,
     pub book: AddressBook,
 }
 
@@ -51,6 +55,7 @@ impl Default for Workspace {
             auto_lock_secs: DEFAULT_AUTO_LOCK_SECS,
             close_to_tray: false,
             tokens_api_key: None,
+            connections: Connections::default(),
             book: AddressBook::default(),
         }
     }

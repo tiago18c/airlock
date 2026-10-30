@@ -39,6 +39,17 @@ test("connect exposes the accounts the desktop app returned", async () => {
   assert.deepEqual([...wallet.accounts[0].features], ["solana:signTransaction"]);
 });
 
+test("a silent connect that cannot reach the app finds nothing, and a normal one fails", async () => {
+  const wallet = new AirlockWallet(async () => {
+    throw new Error("app_not_running");
+  });
+  const features = wallet.features["standard:connect"] as {
+    connect: (input?: { silent?: boolean }) => Promise<{ accounts: readonly unknown[] }>;
+  };
+  assert.deepEqual((await features.connect({ silent: true })).accounts, []);
+  await assert.rejects(features.connect(), /app_not_running/);
+});
+
 test("a key that is not 32 bytes is refused", async () => {
   const { wallet } = walletWith(() => ({ accounts: [{ publicKey: bytesToBase64(new Uint8Array(31)) }] }));
   await assert.rejects(connect(wallet), /32 bytes/);

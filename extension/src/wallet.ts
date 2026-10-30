@@ -90,7 +90,16 @@ export class AirlockWallet implements Wallet {
   }
 
   async #connect(input?: StandardConnectInput): Promise<StandardConnectOutput> {
-    const result = await this.call("connect", { silent: input?.silent === true });
+    const silent = input?.silent === true;
+    let result: unknown;
+    try {
+      result = await this.call("connect", { silent });
+    } catch (err) {
+      // A silent connect is a question, not a request: with the app closed the
+      // answer is that nothing is connected, and the site shows as disconnected.
+      if (silent) return { accounts: this.#accounts };
+      throw err;
+    }
     this.setAccounts(readAccounts(result));
     return { accounts: this.#accounts };
   }

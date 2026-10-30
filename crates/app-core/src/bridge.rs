@@ -8,6 +8,8 @@
 use std::collections::HashMap;
 
 use serde_json::Value;
+use solana_pubkey::Pubkey;
+use wallet_core::{ConnectChoice, SiteGrant};
 
 use crate::notices::BridgeRequestOutcome;
 
@@ -58,6 +60,34 @@ impl BridgeAnswer {
             ),
         }
     }
+}
+
+/// What a `connect` from a site gets before anyone is asked.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum SiteConnect {
+    /// The user blocked the site.
+    Blocked,
+    /// The site reconnects with these accounts, the current wallet first.
+    Allowed(Vec<([u8; 32], String)>),
+    /// Nothing the site was given covers this: only the user can decide.
+    Undecided,
+}
+
+/// Whether a site may ask for a signature from some accounts.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SiteSign {
+    Blocked,
+    /// One of the accounts is not connected to the site.
+    NotConnected,
+    Allowed,
+}
+
+/// What the connect modal opens with for a site.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct SiteChoice {
+    pub choice: ConnectChoice,
+    /// The site is remembered, so the box starts ticked.
+    pub remembered: bool,
 }
 
 /// One request a site made through the extension.
@@ -118,6 +148,9 @@ impl BridgeQueue {
 pub(crate) struct BridgeState {
     queue: BridgeQueue,
     replies: HashMap<String, BridgeReply>,
+    /// Sites connected without being remembered. They last until the site
+    /// disconnects or the app closes.
+    sessions: Vec<SiteGrant>,
 }
 
 /// A request taken out of the queue, with its reply when it had one.
@@ -147,5 +180,28 @@ impl BridgeState {
         let request = self.queue.pending.remove(index);
         let reply = self.replies.remove(id);
         Some(Taken { request, reply })
+    }
+
+    /// The ids of the requests waiting from `origin`.
+    pub fn waiting_from(&self, origin: &str) -> Vec<String> {
+        self.queue
+            .pending
+            .iter()
+            .filter(|request| request.origin == origin)
+            .map(|request| request.id.clone())
+            .collect()
+    }
+
+    pub fn session(&self, origin: &str) -> Option<&SiteGrant> {
+        self.sessions.iter().find(|site| site.origin == origin)
+    }
+
+    pub fn set_session(&mut self, origin: &str, accounts: Vec<Pubkey>) {
+        self.end_session(origin);
+        self.sessions.push(SiteGrant::new(origin, accounts));
+    }
+
+    pub fn end_session(&mut self, origin: &str) {
+        self.sessions.retain(|site| site.origin != origin);
     }
 }

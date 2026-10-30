@@ -36,11 +36,12 @@ mod layers;
 // written out, not globbed, so the public surface reads here, and an item
 // can move between modules without its root name changing.
 pub use book::{
-    AddressBook, AddressBookFile, AddressEntry, AddressKind, AddressPlace, BookGroupInfo, BookRow,
-    Category, Cluster, Described, Directory, Fact, Group, HoldingSummary, Holdings, HoldingsStore,
-    KnownCluster, Origin, TokenFlag, TokenHolding, WalletSort, Workspace, WorkspaceStore,
-    DEFAULT_AUTO_LOCK_SECS, DEVNET_GENESIS, LOCAL_GROUP_ID, LOCAL_RPC_URL, MAINNET_BETA_GENESIS,
-    TESTNET_GENESIS,
+    connect_choice, current_first, reconnect_accounts, AddressBook, AddressBookFile, AddressEntry,
+    AddressKind, AddressPlace, BookGroupInfo, BookRow, Category, Cluster, ConnectChoice,
+    Connections, Described, Directory, Fact, Group, HoldingSummary, Holdings, HoldingsStore,
+    KnownCluster, Origin, SiteGrant, TokenFlag, TokenHolding, WalletSort, Workspace,
+    WorkspaceStore, DEFAULT_AUTO_LOCK_SECS, DEVNET_GENESIS, LOCAL_GROUP_ID, LOCAL_RPC_URL,
+    MAINNET_BETA_GENESIS, TESTNET_GENESIS,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use idl::DirIdlBodies;

@@ -412,7 +412,14 @@ The app answers `connect` and a `signTransaction` with one to 16 transactions, l
 
 ### Connect
 
-The modal lists the accounts this device can act as: wallets it holds a key for, its programmatic signers and its Squads vaults. The user ticks which ones the site may see. Only pubkeys are returned.
+The modal lists the accounts this device can act as: wallets it holds a key for, its programmatic signers and its Squads vaults, with the current wallet at the top. The user ticks which ones the site may see. Only pubkeys are returned: the current wallet first when it is ticked, then the others in the order they were ticked. Sites act as the first account they get.
+
+- **First request.** The current wallet is ticked.
+- **A later request**, when the current wallet was not given to the site: what it was given is ticked, and the current wallet is not. Showing a site a new address cannot be undone, so that takes a tick of the user's own.
+- **Remember this connection** keeps the list in `workspace.json`. Without it the site stays connected until it disconnects or the app closes. Approving again replaces the list.
+- **Block site** rejects this request and everything else the site has waiting, and turns it away from now on.
+
+A site that was given the current wallet reconnects without the modal, with the accounts it was given and the current wallet first. That works while the vault is locked, because it only shows public keys. Otherwise a normal `connect` opens the modal and a silent one gets no accounts. When a site disconnects it keeps its grant, but a silent `connect` gets nothing until the site asks to connect again. Origins are compared whole, so another subdomain, port or scheme is another site.
 
 ### The sign request modal
 
