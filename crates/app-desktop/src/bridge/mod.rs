@@ -8,13 +8,16 @@
 //! (`app_core::storage::claim_data_dir`), which holds even when the socket
 //! cannot be named.
 
+use std::collections::{BTreeMap, BTreeSet};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::mpsc;
-use std::sync::{Arc, OnceLock};
+use std::sync::{Arc, Mutex, OnceLock, PoisonError};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use app_core::bridge::{BridgeQueue, BridgeRequest};
+use app_core::bridge::{BridgeQueue, BridgeRequest, SiteConnect, SiteSign, SEND, SEND_ALL};
 use app_core::PublicCore;
 use base64::Engine;
+use bridge_host::relay::{Connection, FrameSender};
 use bridge_protocol::reply;
 use serde_json::{json, Value};
 use solana_pubkey::Pubkey;
@@ -44,6 +47,16 @@ struct Shared {
     /// Native hosts connected now: one per browser whose extension has
     /// talked to the app since it last started.
     extension: watch::Sender<usize>,
+    /// The connections open now, by a number of their own.
+    peers: Mutex<BTreeMap<u64, PeerLink>>,
+    next_peer: AtomicU64,
+}
+
+/// What the app knows about one open connection.
+struct PeerLink {
+    sender: FrameSender,
+    /// The origins with a page open in this browser.
+    pages: BTreeSet<String>,
 }
 
 /// Result of claiming the bridge socket before the UI starts.
@@ -61,6 +74,8 @@ impl Bridge {
                 core: OnceLock::new(),
                 show: watch::channel(0).0,
                 extension: watch::channel(0).0,
+                peers: Mutex::new(BTreeMap::new()),
+                next_peer: AtomicU64::new(0),
             }),
         }
     }
@@ -91,9 +106,8 @@ impl Bridge {
             Ok(listener) => {
                 let serving = bridge.clone();
                 std::thread::spawn(move || {
-                    let accept = move || -> bridge_host::relay::Connection {
-                        let mut peer = Peer::new(serving.clone());
-                        Box::new(move |message: &[u8]| peer.answer(message))
+                    let accept = move |sender: FrameSender| -> Arc<dyn Connection> {
+                        Arc::new(Peer::new(serving.clone(), Some(sender)))
                     };
                     if let Err(err) = bridge_host::relay::serve_connections(listener, accept) {
                         tracing::error!(
@@ -121,7 +135,32 @@ impl Bridge {
 
     /// Let requests reach the core. Call once, when the window opens it.
     pub fn attach(&self, core: PublicCore) {
+        let spawner = core.ports().spawner.clone();
+        // A change of wallet may change what a site should act as.
+        let syncing = core.clone();
+        let mut wallets = core.slices().wallets.subscribe();
+        spawner.spawn(Box::pin(async move {
+            while wallets.changed().await.is_ok() {
+                syncing.sites_sync();
+            }
+        }));
+        // Tell each site when what it holds changes. One that just got its
+        // accounts in a reply has nothing to learn.
+        let telling = core.clone();
+        let shared = self.shared.clone();
+        let mut sites = core.slices().sites.subscribe();
+        spawner.spawn(Box::pin(async move {
+            let mut told = sites.borrow_and_update().holding.clone();
+            while sites.changed().await.is_ok() {
+                let now = sites.borrow_and_update().holding.clone();
+                for frame in changes(&told, &now, &telling) {
+                    shared.push(&frame);
+                }
+                told = now;
+            }
+        }));
         let _ = self.shared.core.set(core);
+        self.shared.report_pages();
     }
 
     /// Changes each time a second launch asks this one to show its window.
@@ -163,6 +202,12 @@ impl Bridge {
         let params = value.get("params").cloned().unwrap_or(Value::Null);
 
         let core = self.shared.core.get();
+        let silent =
+            method == "connect" && params.get("silent").and_then(Value::as_bool) == Some(true);
+        // A silent connect never gets an error: the site just stays out.
+        if silent && core.is_none() {
+            return reply::result(&id, json!({ "accounts": [] }));
+        }
         if waits_for_user(method) && core.is_none() {
             return reply::error(&id, "busy", "Airlock is starting.");
         }
@@ -178,40 +223,214 @@ impl Bridge {
 
         match (method, core) {
             ("status", _) => reply::result(&id, json!({ "ready": true, "role": "desktop" })),
+            // The connection took it in already: it knows which browser this is.
+            ("pages", _) => reply::result(&id, json!({})),
             ("show", _) => {
                 self.shared.show.send_modify(|n| *n = n.wrapping_add(1));
                 reply::result(&id, json!({}))
             }
-            ("disconnect", _) => reply::result(&id, json!({})),
-            ("connect", _) if params.get("silent").and_then(Value::as_bool) == Some(true) => {
-                reply::result(&id, json!({ "accounts": [] }))
+            ("disconnect", core) => {
+                if let Some(core) = core {
+                    core.site_disconnected(&origin);
+                }
+                reply::result(&id, json!({}))
             }
-            ("signTransaction", _) if transaction_count(&params) == 0 => {
+            (SEND | SEND_ALL, _) if !every_chain_named(&params) => {
+                reply::error(&id, "bad_request", "A transaction names no network.")
+            }
+            (TRANSACTION_METHODS!(), _) if transaction_count(&params) == 0 => {
                 reply::error(&id, "bad_request", "No transaction was included.")
             }
-            ("signTransaction", _) if transaction_count(&params) > MAX_TRANSACTIONS => {
+            (TRANSACTION_METHODS!(), _) if transaction_count(&params) > MAX_TRANSACTIONS => {
                 reply::error(
                     &id,
                     "not_implemented",
                     &format!("Airlock signs at most {MAX_TRANSACTIONS} transactions per request."),
                 )
             }
-            ("connect" | "signTransaction", Some(core)) => wait_for_user(
-                core,
-                BridgeRequest {
-                    id,
-                    origin,
-                    method: method.to_owned(),
-                    params,
-                },
-                DECISION_TIMEOUT,
-            ),
+            ("connect", Some(core)) => match core.site_connect(&origin, silent) {
+                SiteConnect::Allowed(accounts) => reply::connected(&id, &accounts),
+                _ if silent => reply::result(&id, json!({ "accounts": [] })),
+                SiteConnect::Blocked => blocked(&id),
+                SiteConnect::Undecided => wait_for_user(
+                    core,
+                    BridgeRequest {
+                        id,
+                        origin,
+                        method: method.to_owned(),
+                        params,
+                    },
+                    DECISION_TIMEOUT,
+                ),
+            },
+            ("signMessage", Some(core)) => {
+                let answer = check_message_request(core, &origin, &params);
+                match answer {
+                    Ok(()) => wait_for_user(
+                        core,
+                        BridgeRequest {
+                            id,
+                            origin,
+                            method: method.to_owned(),
+                            params,
+                        },
+                        DECISION_TIMEOUT,
+                    ),
+                    Err(message) => reply::error(&id, "rejected", &message),
+                }
+            }
+            ("signIn", Some(core)) => {
+                let answer = check_sign_in_request(core, &origin, &params);
+                match answer {
+                    Ok(()) => wait_for_user(
+                        core,
+                        BridgeRequest {
+                            id,
+                            origin,
+                            method: method.to_owned(),
+                            params,
+                        },
+                        DECISION_TIMEOUT,
+                    ),
+                    Err(message) => reply::error(&id, "rejected", &message),
+                }
+            }
+            (TRANSACTION_METHODS!(), Some(core)) => {
+                let accounts = requested_accounts(&params);
+                match core.site_sign(&origin, &accounts) {
+                    SiteSign::Blocked => blocked(&id),
+                    SiteSign::Allowed if accounts.len() == transaction_count(&params) => {
+                        wait_for_user(
+                            core,
+                            BridgeRequest {
+                                id,
+                                origin,
+                                method: method.to_owned(),
+                                params,
+                            },
+                            DECISION_TIMEOUT,
+                        )
+                    }
+                    // A transaction that names no account is not for one the
+                    // site was given.
+                    _ => reply::error(&id, "rejected", NOT_CONNECTED),
+                }
+            }
             _ => reply::error(
                 &id,
                 "not_implemented",
-                "This prototype approves connect and signTransaction.",
+                "Airlock does not know this request.",
             ),
         }
+    }
+}
+
+/// The requests that hand over transactions.
+macro_rules! TRANSACTION_METHODS {
+    () => {
+        "signTransaction" | SEND | SEND_ALL
+    };
+}
+use TRANSACTION_METHODS;
+
+const NOT_CONNECTED: &str = "This account is not connected to the site.";
+
+const BLOCKED: &str = "This site is blocked in Airlock.";
+
+/// The reply to a site the user blocked.
+fn blocked(id: &str) -> Vec<u8> {
+    reply::error(id, "rejected", BLOCKED)
+}
+
+/// Why a `signMessage` cannot even be shown to the user.
+fn check_message_request(core: &PublicCore, origin: &str, params: &Value) -> Result<(), String> {
+    let account = message_account(params).ok_or(NOT_CONNECTED)?;
+    match core.site_sign(origin, &[account]) {
+        SiteSign::Blocked => return Err(BLOCKED.into()),
+        SiteSign::NotConnected => return Err(NOT_CONNECTED.into()),
+        SiteSign::Allowed => {}
+    }
+    if !holds_key(core, &account) {
+        return Err("No key on this device signs as this account.".into());
+    }
+    let bytes = message_bytes(params).ok_or("The message was not valid base64.")?;
+    wallet_core::site_message::check_message(&bytes, origin).map_err(|err| err.to_string())
+}
+
+/// Why a `signIn` cannot even be shown to the user.
+fn check_sign_in_request(core: &PublicCore, origin: &str, params: &Value) -> Result<(), String> {
+    if core.site_sign(origin, &[]) == SiteSign::Blocked {
+        return Err(BLOCKED.into());
+    }
+    if params.get("useOffchainMessage").is_some() {
+        return Err("Airlock does not sign in with offchain messages yet.".into());
+    }
+    let sign_in = sign_in_request(params).ok_or("The sign-in request could not be read.")?;
+    sign_in.check(origin).map_err(|err| err.to_string())?;
+    if let Some(asked) = &sign_in.address {
+        let held = asked
+            .parse()
+            .ok()
+            .is_some_and(|account| holds_key(core, &account));
+        if !held {
+            return Err("No key on this device signs as the account this site asked for.".into());
+        }
+    }
+    Ok(())
+}
+
+/// Whether a key of the vault signs as `account`, locked or not.
+fn holds_key(core: &PublicCore, account: &Pubkey) -> bool {
+    core.slices()
+        .wallets
+        .get()
+        .local_signer_pubkeys
+        .contains(account)
+}
+
+/// The frames that tell sites what changed from `told` to `now`.
+fn changes(
+    told: &BTreeMap<String, Vec<Pubkey>>,
+    now: &BTreeMap<String, Vec<Pubkey>>,
+    core: &PublicCore,
+) -> Vec<Vec<u8>> {
+    let mut frames = Vec::new();
+    for (origin, held) in told {
+        match now.get(origin) {
+            Some(accounts) if accounts != held => frames.push(reply::accounts_changed(
+                origin,
+                &core.site_labels(accounts.clone()),
+            )),
+            None => frames.push(reply::accounts_changed(origin, &[])),
+            _ => {}
+        }
+    }
+    frames
+}
+
+impl Shared {
+    /// Send `frame` to every browser. The extension passes it only to pages
+    /// of the origin it names.
+    fn push(&self, frame: &[u8]) {
+        let peers = self.peers.lock().unwrap_or_else(PoisonError::into_inner);
+        for peer in peers.values() {
+            let _ = peer.sender.send(frame);
+        }
+    }
+
+    /// Tell the core which origins have a page open, in any browser.
+    fn report_pages(&self) {
+        let Some(core) = self.core.get() else {
+            return;
+        };
+        let pages: BTreeSet<String> = self
+            .peers
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .values()
+            .flat_map(|peer| peer.pages.iter().cloned())
+            .collect();
+        core.site_pages(pages);
     }
 }
 
@@ -220,48 +439,104 @@ impl Bridge {
 /// when it closes.
 struct Peer {
     bridge: Bridge,
-    counted: bool,
+    id: u64,
+    counted: AtomicBool,
 }
 
 impl Peer {
-    fn new(bridge: Bridge) -> Self {
+    fn new(bridge: Bridge, sender: Option<FrameSender>) -> Self {
+        let id = bridge.shared.next_peer.fetch_add(1, Ordering::SeqCst);
+        if let Some(sender) = sender {
+            let link = PeerLink {
+                sender,
+                pages: BTreeSet::new(),
+            };
+            bridge
+                .shared
+                .peers
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner)
+                .insert(id, link);
+        }
         Self {
             bridge,
-            counted: false,
+            id,
+            counted: AtomicBool::new(false),
         }
     }
 
-    fn answer(&mut self, message: &[u8]) -> Vec<u8> {
-        if !self.counted && !is_show(message) {
-            self.counted = true;
-            self.bridge.shared.extension.send_modify(|n| *n += 1);
+    /// The origins with a page open in this browser, as the extension lists them.
+    fn set_pages(&self, message: &[u8]) {
+        let value = serde_json::from_slice::<Value>(message).unwrap_or(Value::Null);
+        let pages: BTreeSet<String> = value
+            .get("params")
+            .and_then(|params| params.get("origins"))
+            .and_then(Value::as_array)
+            .map(|origins| {
+                origins
+                    .iter()
+                    .filter_map(Value::as_str)
+                    .map(str::to_owned)
+                    .collect()
+            })
+            .unwrap_or_default();
+        let shared = &self.bridge.shared;
+        if let Some(peer) = shared
+            .peers
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .get_mut(&self.id)
+        {
+            peer.pages = pages;
         }
-        self.bridge.answer(message)
+        shared.report_pages();
     }
 }
 
-impl Drop for Peer {
-    fn drop(&mut self) {
-        if self.counted {
-            self.bridge
-                .shared
-                .extension
-                .send_modify(|n| *n = n.saturating_sub(1));
+impl Connection for Peer {
+    fn answer(&self, message: &[u8]) -> Vec<u8> {
+        if !is_show(message) && !self.counted.swap(true, Ordering::SeqCst) {
+            self.bridge.shared.extension.send_modify(|n| *n += 1);
         }
+        if method_of(message).as_deref() == Some("pages") {
+            self.set_pages(message);
+        }
+        self.bridge.answer(message)
+    }
+
+    fn closed(&self) {
+        let shared = &self.bridge.shared;
+        if self.counted.swap(false, Ordering::SeqCst) {
+            shared.extension.send_modify(|n| *n = n.saturating_sub(1));
+        }
+        shared
+            .peers
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .remove(&self.id);
+        shared.report_pages();
     }
 }
 
 fn is_show(message: &[u8]) -> bool {
+    method_of(message).as_deref() == Some("show")
+}
+
+fn method_of(message: &[u8]) -> Option<String> {
     serde_json::from_slice::<Value>(message)
-        .ok()
-        .and_then(|value| value.get("method")?.as_str().map(|m| m == "show"))
-        .unwrap_or(false)
+        .ok()?
+        .get("method")?
+        .as_str()
+        .map(str::to_owned)
 }
 
 /// Whether `method` goes to the user, through the core's queue. The rest,
 /// `show` among them, is answered here even before the core opens.
 fn waits_for_user(method: &str) -> bool {
-    matches!(method, "connect" | "signTransaction")
+    matches!(
+        method,
+        "connect" | "signTransaction" | SEND | SEND_ALL | "signMessage" | "signIn"
+    )
 }
 
 /// Queue `request` in the core and wait for the window's answer, at most
@@ -315,6 +590,10 @@ pub struct BridgePrompt {
     pub detail: String,
     /// How many transactions a `signTransaction` asks to have signed.
     pub transactions: usize,
+    /// The app sends what this asks to have signed.
+    pub sends: bool,
+    /// The networks its transactions name.
+    pub chains: Vec<String>,
     /// Requests queued behind this one.
     pub waiting: usize,
 }
@@ -329,6 +608,8 @@ impl BridgePrompt {
             params: request.params.clone(),
             detail: detail(&request.method, &request.params),
             transactions: request.transaction_count(),
+            sends: request.sends(),
+            chains: request.chains(),
             waiting: queue.len() - 1,
         })
     }
@@ -349,6 +630,32 @@ pub fn requested_account(params: &Value, index: usize) -> Option<Pubkey> {
         .ok()
 }
 
+/// The accounts a `signTransaction` asks to sign, those that read as addresses.
+fn requested_accounts(params: &Value) -> Vec<Pubkey> {
+    (0..transaction_count(params))
+        .filter_map(|index| requested_account(params, index))
+        .collect()
+}
+
+/// The account a `signMessage` names. The site chose it.
+pub fn message_account(params: &Value) -> Option<Pubkey> {
+    params.get("account")?.as_str()?.parse().ok()
+}
+
+/// The bytes a `signMessage` asks to have signed.
+pub fn message_bytes(params: &Value) -> Option<Vec<u8>> {
+    let text = params.get("message")?.as_str()?;
+    base64::engine::general_purpose::STANDARD.decode(text).ok()
+}
+
+/// What a `signIn` asks for. It may ask for nothing at all.
+pub fn sign_in_request(params: &Value) -> Option<wallet_core::site_message::SignIn> {
+    if params.is_null() {
+        return Some(Default::default());
+    }
+    serde_json::from_value(params.clone()).ok()
+}
+
 /// The bytes of transaction `index`, when they read as a Solana transaction.
 pub fn transaction_wire(params: &Value, index: usize) -> Option<Vec<u8>> {
     let text = transaction_item(params, index)?
@@ -364,7 +671,9 @@ pub fn transaction_wire(params: &Value, index: usize) -> Option<Vec<u8>> {
 fn detail(method: &str, params: &Value) -> String {
     match method {
         "connect" => "Choose which accounts this site may see.".into(),
-        "signTransaction" => sign_detail(params, 0),
+        TRANSACTION_METHODS!() => sign_detail(params, 0),
+        "signMessage" => "Asks you to sign a message.".into(),
+        "signIn" => "Asks you to sign in.".into(),
         other => other.into(),
     }
 }
@@ -391,6 +700,19 @@ pub fn sign_detail(params: &Value, index: usize) -> String {
         },
         Err(_) => "The transaction was not valid base64.".into(),
     }
+}
+
+/// Whether every transaction of a send says which network it is for, as the
+/// standard requires.
+fn every_chain_named(params: &Value) -> bool {
+    params
+        .get("transactions")
+        .and_then(Value::as_array)
+        .is_some_and(|items| {
+            items
+                .iter()
+                .all(|item| item.get("chain").is_some_and(Value::is_string))
+        })
 }
 
 fn transaction_count(params: &Value) -> usize {

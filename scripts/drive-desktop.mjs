@@ -138,6 +138,22 @@ const realmsInsert = () => {
   ], 5, [[7, [3, 1, 4, 0, 2, 0, 5, 6], data]]);
 };
 
+/** Publishing program-metadata's own IDL: allocate its `idl` metadata
+ * account, initialize it, and make it immutable. */
+const programMetadata = b58decode("ProgM6JCCvbYkfKqJYHePx4xxSUSqJp7rh8Lyv7nk7S");
+const metadata = () => {
+  const account = b58decode("9zzVPVwZojagC4mBCMrTi17Zu9KvXKoTvqnBL1vxYDyM");
+  const programData = b58decode("F8hZ6cQFCNZ3UdNkhUfjgxxRnUD8HiYPobpk2qRVD7aB");
+  const seed = Buffer.alloc(16);
+  seed.write("idl");
+  return legacy([account, programMetadata, programData, systemProgram], 3, [
+    [2, [1, 0, 2, 3, 4], Buffer.concat([Buffer.from([7]), seed])],
+    // utf8, zlib, json, direct, and the IDL in a later write
+    [2, [1, 0, 2, 3, 2], Buffer.concat([Buffer.from([1]), seed, Buffer.from([1, 2, 1, 0])])],
+    [2, [1, 0, 2, 3], Buffer.from([4])],
+  ]);
+};
+
 // ---- scenarios: the transactions of one signTransaction request each ----
 
 const scenarios = {
@@ -145,6 +161,7 @@ const scenarios = {
   unread: () => [unread(9)],
   batch: () => [transfer(5), unread(9)],
   realms: () => [realmsInsert()],
+  metadata: () => [metadata()],
 };
 const chosen = process.argv.slice(3);
 for (const name of chosen) {
@@ -299,6 +316,22 @@ if ((await replyTo("status-1"))?.result?.role !== "desktop") {
   stop(1);
 }
 
+// ---- connect ----
+
+// A site signs only for accounts it was given, so every scenario starts here.
+// The modal opens with the current wallet ticked.
+frame({
+  v: 1, id: "connect-1", origin: "https://drive.example", method: "connect",
+  expiresAt: Math.floor(Date.now() / 1000) + 600, params: {},
+});
+const connectState = await run(`
+  if (!await until(() => document.querySelector('.modal.request'))) return 'no modal';
+  await w(800);
+  return [...document.querySelectorAll('.modal.request .btn-row button')].filter(visible).map((b) => b.innerText.trim()).join(', ');
+`);
+console.log(`connect: ${connectState}`);
+if (connectState === "no modal") stop(1);
+
 // ---- requests ----
 
 /** Screenshot the request modal, scrolled to its top. */
@@ -310,6 +343,13 @@ const shotModal = async (path) => {
   });
   writeFileSync(path, Buffer.from(res.result.data, "base64"));
 };
+
+await shotModal(join(out, "connect.png"));
+await run(`button('Approve')?.click(); await w(800); return 1;`);
+if (!(await replyTo("connect-1", 5000))?.result?.accounts?.length) {
+  console.error("the site did not connect");
+  stop(1);
+}
 
 let n = 0;
 for (const name of chosen.length ? chosen : Object.keys(scenarios)) {

@@ -8,6 +8,7 @@ pub(crate) mod decode;
 pub(crate) mod renew;
 pub(crate) mod signatures;
 pub mod simulate;
+pub mod site_message;
 
 pub use builder::{
     compile_v1, compile_v1_budget, runtime_default_cu_limit, sol_transfer, CompiledTx,

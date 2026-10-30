@@ -6,7 +6,9 @@
 
 use std::{
     io::{self, Read, Write},
-    process, thread,
+    process,
+    sync::{Arc, Mutex, PoisonError},
+    thread,
 };
 
 use interprocess::local_socket::{traits::Stream as _, Name};
@@ -108,31 +110,58 @@ pub fn serve_app(on_message: Handler) -> io::Result<()> {
 /// Serve on an already-bound listener (used so the online shell can claim the
 /// socket before the UI starts, for single-instance).
 pub fn serve_listener(listener: endpoint::Listener, on_message: Handler) -> io::Result<()> {
-    serve_connections(listener, move || {
-        let on_message = on_message.clone();
-        Box::new(move |message: &[u8]| on_message(message))
-    })
+    struct Plain(Handler);
+    impl Connection for Plain {
+        fn answer(&self, message: &[u8]) -> Vec<u8> {
+            (self.0)(message)
+        }
+    }
+    serve_connections(listener, move |_| Arc::new(Plain(on_message.clone())))
 }
 
-/// Answers the frames of one connection, in order. Dropped when it closes.
-pub type Connection = Box<dyn FnMut(&[u8]) -> Vec<u8> + Send>;
+/// One open connection to the socket.
+pub trait Connection: Send + Sync {
+    /// The reply to one frame. Frames are answered at the same time, so a
+    /// request waiting for the user holds up nothing else: match replies by
+    /// their id.
+    fn answer(&self, message: &[u8]) -> Vec<u8>;
+
+    /// The other end went away. A request still waiting may yet be answered,
+    /// into nothing.
+    fn closed(&self) {}
+}
+
+/// Writes whole frames to a connection, from any thread.
+#[derive(Clone)]
+pub struct FrameSender(Arc<Mutex<interprocess::local_socket::SendHalf>>);
+
+impl FrameSender {
+    pub fn send(&self, frame: &[u8]) -> io::Result<()> {
+        let mut writer = self.0.lock().unwrap_or_else(PoisonError::into_inner);
+        write_frame(&mut *writer, frame)
+    }
+}
 
 /// Like [`serve_listener`], with a handler made for each connection by
-/// `accept`, so the caller can tell when one opens and closes.
+/// `accept`, which also gets the way to send it frames of the app's own.
 pub fn serve_connections(
     listener: endpoint::Listener,
-    accept: impl Fn() -> Connection,
+    accept: impl Fn(FrameSender) -> Arc<dyn Connection>,
 ) -> io::Result<()> {
     loop {
-        let mut connection = interprocess::local_socket::traits::Listener::accept(&listener)?;
-        let mut on_message = accept();
+        let stream = interprocess::local_socket::traits::Listener::accept(&listener)?;
+        let (mut reader, writer) = stream.split();
+        let sender = FrameSender(Arc::new(Mutex::new(writer)));
+        let connection = accept(sender.clone());
         thread::spawn(move || {
-            while let Ok(Some(message)) = read_frame(&mut connection) {
-                let reply = on_message(&message);
-                if write_frame(&mut connection, &reply).is_err() {
-                    break;
-                }
+            while let Ok(Some(message)) = read_frame(&mut reader) {
+                let connection = connection.clone();
+                let sender = sender.clone();
+                thread::spawn(move || {
+                    let _ = sender.send(&connection.answer(&message));
+                });
             }
+            connection.closed();
         });
     }
 }

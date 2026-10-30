@@ -3,6 +3,7 @@
 
 use dioxus::prelude::*;
 
+use super::connections::ConnectionsModal;
 use crate::bridge::Bridge;
 
 /// "Extension": green while a browser's extension holds a connection to the
@@ -10,6 +11,7 @@ use crate::bridge::Bridge;
 #[component]
 pub fn ExtensionChip() -> Element {
     let bridge = use_context::<Bridge>();
+    let manage = use_context::<ConnectionsModal>();
     let mut connected = use_signal(|| *bridge.subscribe_extension().borrow());
     use_future(move || {
         let mut extension = bridge.subscribe_extension();
@@ -35,7 +37,7 @@ pub fn ExtensionChip() -> Element {
             span { class: "status-dot" }
             span { "Extension" }
             // Not a place to move the window from.
-            div { class: "net-card", role: "tooltip", "data-drag": "false",
+            div { class: "net-card", "data-drag": "false",
                 dl {
                     dt { "Status" }
                     dd { "{status}" }
@@ -46,6 +48,10 @@ pub fn ExtensionChip() -> Element {
                         dt { "Opens" }
                         dd { "When a site or the extension's popup first asks for Airlock" }
                     }
+                }
+                button { class: "sm",
+                    onclick: move |_| manage.show(),
+                    "Manage connections"
                 }
             }
         }

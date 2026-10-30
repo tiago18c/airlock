@@ -55,4 +55,7 @@ pub use window::use_tray;
 mod ui;
 
 #[cfg(all(feature = "bridge", not(target_arch = "wasm32")))]
-pub use ui::{use_request_modal, BridgeRequests, ExtensionChip, RequestModal, RequestToast};
+pub use ui::{
+    use_request_modal, BridgeRequests, ConnectionsCard, ConnectionsHost, ExtensionChip,
+    RequestModal, RequestToast,
+};

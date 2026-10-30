@@ -4,7 +4,7 @@
 use std::sync::mpsc;
 
 use app_core::bridge::{BridgeAnswer, BridgeReply, BridgeRequest};
-use app_core::testing::{kit, settle};
+use app_core::testing::{kit, kit_on, settle, MemoryStorage};
 use app_core::{BridgeRequestOutcome, Event, NoticeKind};
 use serde_json::Value;
 
@@ -81,7 +81,11 @@ async fn an_answer_reaches_the_site_and_leaves_the_queue() {
 
     assert!(kit.core.bridge_answer(
         "c1",
-        &BridgeAnswer::Connect(vec![([1; 32], "Treasury".into())])
+        &BridgeAnswer::Connect(vec![bridge_protocol::reply::SiteAccount {
+            pubkey: [1; 32],
+            label: "Treasury".into(),
+            signs_messages: true,
+        }])
     ));
 
     let reply = read(&answer.try_recv().unwrap());
@@ -92,6 +96,192 @@ async fn an_answer_reaches_the_site_and_leaves_the_queue() {
 
     // Answered once: a second answer finds nothing waiting.
     assert!(!kit.core.bridge_answer("c1", &BridgeAnswer::Rejected));
+}
+
+#[tokio::test]
+async fn a_deferred_save_can_start_on_a_thread_with_no_runtime() {
+    use app_core::runtime::{TokioClock, TokioSpawner};
+    let testing = kit();
+    let core = app_core::Core::open(app_core::ports::Ports {
+        spawner: std::sync::Arc::new(TokioSpawner::current()),
+        clock: std::sync::Arc::new(TokioClock),
+        notifier: testing.notifier.clone(),
+        storage: std::sync::Arc::new(MemoryStorage::default()),
+        links: testing.links.clone(),
+    });
+    let public = core.public();
+    // How a request that expires reaches the notices, on the bridge's thread.
+    std::thread::spawn(move || {
+        public.notices_set_bridge_outcome("x", ORIGIN, "connect", BridgeRequestOutcome::Expired);
+    })
+    .join()
+    .unwrap();
+}
+
+const ORIGIN: &str = "https://example.org";
+
+fn account(byte: u8) -> wallet_core::ShareableAccount {
+    wallet_core::ShareableAccount {
+        pubkey: solana_pubkey::Pubkey::new_from_array([byte; 32]),
+        label: format!("Wallet {byte}"),
+        contract: false,
+        summary: String::new(),
+    }
+}
+
+/// A `connect` the window answers with `accounts`.
+fn approve(
+    kit: &app_core::testing::Kit,
+    id: &str,
+    accounts: Vec<wallet_core::ShareableAccount>,
+    remember: bool,
+) -> Value {
+    let (send, answer) = reply();
+    kit.core.public().bridge_push(request(id, "connect"), send);
+    assert!(kit.core.bridge_connect(id, accounts, remember));
+    read(&answer.try_recv().unwrap())
+}
+
+fn grant_of(kit: &app_core::testing::Kit) -> Option<wallet_core::SiteGrant> {
+    kit.core
+        .with_workspace(|workspace| workspace.connections.grant(ORIGIN).cloned())
+}
+
+#[tokio::test]
+async fn approving_sends_the_accounts_in_the_order_chosen() {
+    let kit = kit();
+    let reply = approve(&kit, "c", vec![account(2), account(1)], false);
+    assert_eq!(reply["result"]["accounts"][0]["label"], "Wallet 2");
+    assert_eq!(reply["result"]["accounts"][1]["label"], "Wallet 1");
+}
+
+/// A `signIn` the window answers with what `signer` signed.
+fn sign_in(
+    kit: &app_core::testing::Kit,
+    id: &str,
+    signer: &wallet_core::ShareableAccount,
+    remember: bool,
+) -> Value {
+    let (send, answer) = reply();
+    kit.core.public().bridge_push(request(id, "signIn"), send);
+    assert!(kit
+        .core
+        .bridge_sign_in(id, signer.pubkey, b"signed".to_vec(), [9; 64], remember));
+    read(&answer.try_recv().unwrap())
+}
+
+#[tokio::test]
+async fn signing_in_grants_the_account_and_puts_it_first() {
+    let kit = kit();
+    approve(&kit, "c", vec![account(1)], true);
+    let reply = sign_in(&kit, "s", &account(2), true);
+    let accounts = reply["result"]["accounts"].as_array().unwrap();
+    assert_eq!(accounts.len(), 2);
+    assert_eq!(
+        reply["result"]["accounts"][0]["publicKey"],
+        reply["result"]["account"]
+    );
+    assert_eq!(
+        grant_of(&kit).unwrap().accounts,
+        vec![account(2).pubkey, account(1).pubkey]
+    );
+    assert_eq!(
+        kit.core.public().site_sign(ORIGIN, &[account(2).pubkey]),
+        app_core::bridge::SiteSign::Allowed
+    );
+    assert!(reply["result"]["signature"].is_string());
+}
+
+#[tokio::test]
+async fn signing_in_without_remembering_lasts_this_run() {
+    let kit = kit();
+    sign_in(&kit, "s", &account(1), false);
+    assert!(grant_of(&kit).is_none());
+    assert_eq!(
+        kit.core.public().site_sign(ORIGIN, &[account(1).pubkey]),
+        app_core::bridge::SiteSign::Allowed
+    );
+}
+
+#[tokio::test]
+async fn a_message_answer_fits_only_its_method() {
+    let kit = kit();
+    let (send, answer) = reply();
+    kit.core.public().bridge_push(request("c", "connect"), send);
+    let signed = BridgeAnswer::SignedMessage {
+        signed: b"hi".to_vec(),
+        signature: [1; 64],
+    };
+    assert!(!kit.core.bridge_answer("c", &signed));
+    assert!(kit.core.bridge_answer("c", &BridgeAnswer::Rejected));
+    drop(answer);
+
+    let (send, answer) = reply();
+    kit.core
+        .public()
+        .bridge_push(request("m", "signMessage"), send);
+    assert!(kit.core.bridge_answer("m", &signed));
+    let reply = read(&answer.try_recv().unwrap());
+    assert_eq!(reply["result"]["signedMessage"], "aGk=");
+}
+
+#[tokio::test]
+async fn a_remembered_site_is_saved_and_survives_a_restart() {
+    let storage = MemoryStorage::default();
+    {
+        let kit = kit_on(storage.clone());
+        approve(&kit, "c", vec![account(1)], true);
+        assert!(grant_of(&kit).is_some());
+    }
+    let kit = kit_on(storage);
+    let grant = grant_of(&kit).expect("the grant was saved");
+    assert_eq!(grant.accounts, vec![account(1).pubkey]);
+}
+
+#[tokio::test]
+async fn a_site_not_remembered_lasts_only_this_run() {
+    let storage = MemoryStorage::default();
+    {
+        let kit = kit_on(storage.clone());
+        approve(&kit, "c", vec![account(1)], false);
+        assert!(grant_of(&kit).is_none());
+        assert_eq!(
+            kit.core.public().site_sign(ORIGIN, &[account(1).pubkey]),
+            app_core::bridge::SiteSign::Allowed
+        );
+    }
+    let kit = kit_on(storage);
+    assert_eq!(
+        kit.core.public().site_sign(ORIGIN, &[account(1).pubkey]),
+        app_core::bridge::SiteSign::NotConnected
+    );
+}
+
+#[tokio::test]
+async fn unticking_remember_forgets_a_site() {
+    let kit = kit();
+    approve(&kit, "c", vec![account(1)], true);
+    approve(&kit, "d", vec![account(1)], false);
+    assert!(grant_of(&kit).is_none());
+    assert!(!kit.core.site_choice(ORIGIN).remembered);
+}
+
+#[tokio::test]
+async fn a_failed_save_still_connects_the_site_until_the_app_closes() {
+    let kit = kit();
+    kit.storage.refuse_saves(true);
+    let mut events = kit.core.events();
+    approve(&kit, "c", vec![account(1)], true);
+    assert!(grant_of(&kit).is_none());
+    assert_eq!(
+        kit.core.public().site_sign(ORIGIN, &[account(1).pubkey]),
+        app_core::bridge::SiteSign::Allowed
+    );
+    let mut failed = false;
+    while let Ok(event) = events.try_recv() {
+        failed |= matches!(event, Event::SaveFailed { .. });
+    }
+    assert!(failed);
 }
 
 #[tokio::test]

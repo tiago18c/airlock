@@ -408,11 +408,70 @@ A key made on the airgap device reaches the online device by its public key alon
 
 Desktop only. The extension registers a Wallet Standard wallet in the page, the service worker stamps the origin from the browser, `bridge-host` relays over a per-user local socket, and the app queues the request. The extension holds no keys and decides nothing. The protocol and the threat model are in [browser-bridge.md](browser-bridge.md).
 
-The app answers `connect` and a `signTransaction` with one to 16 transactions, legacy, v0 or v1. Anything else returns `not_implemented`. A locked vault asks for the password in the modal. A request nobody answers expires after ten minutes.
+The app answers `connect`, a `signTransaction`, `signAndSendTransaction` or `signAndSendAllTransactions` with one to 16 transactions, legacy, v0 or v1, `signMessage` and `signIn`. Anything else returns `not_implemented`. A locked vault asks for the password in the modal. A request nobody answers expires after ten minutes.
 
 ### Connect
 
-The modal lists the accounts this device can act as: wallets it holds a key for, its programmatic signers and its Squads vaults. The user ticks which ones the site may see. Only pubkeys are returned.
+The modal lists the accounts this device can act as: wallets it holds a key for, its programmatic signers and its Squads vaults, with the current wallet at the top. The user ticks which ones the site may see. Only pubkeys are returned: the current wallet first when it is ticked, then the others in the order they were ticked. Sites act as the first account they get.
+
+- **First request.** The current wallet is ticked.
+- **A later request**, when the current wallet was not given to the site: what it was given is ticked, and the current wallet is not. Showing a site a new address cannot be undone, so that takes a tick of the user's own.
+- **Remember this connection** keeps the list in `workspace.json`. Without it the site stays connected until it disconnects or the app closes. Approving again replaces the list.
+- **Block site** rejects this request and everything else the site has waiting, and turns it away from now on.
+
+A site that was given the current wallet reconnects without the modal, with the accounts it was given and the current wallet first. That works while the vault is locked, because it only shows public keys. Otherwise a normal `connect` opens the modal and a silent one gets no accounts. When a site disconnects it keeps its grant, but a silent `connect` gets nothing until the site asks to connect again. Origins are compared whole, so another subdomain, port or scheme is another site.
+
+Choosing a wallet the site was given tells the site, with that wallet first. Choosing one it was not given tells it nothing, and it stays on what it has. Removing a wallet takes it off what sites hold.
+
+**Connections**, from the extension chip's card or Settings, lists:
+
+- **Connected**: sites holding accounts with a page open now. **Disconnect** ends the connection and keeps the grant, so the site is let back in when it next asks to connect.
+- **Authorized**: remembered sites and what they were given. **Revoke** forgets the grant and disconnects the site.
+- **Blocked**: **Unblock** lets the site ask again.
+
+Connected and Authorized also have **Block**. Disconnecting or revoking rejects the site's waiting signature requests, and blocking rejects everything it has waiting.
+
+### Sign and send
+
+`signAndSendTransaction` and `signAndSendAllTransactions` go through the same modal and Sign screen as `signTransaction`. Once this device has signed, the app sends the transaction itself and the site gets its signature (`app_ui_kit::actions::site_send`). `@solana/wallet-adapter` prefers this for `sendTransaction`, so on those sites transactions go out through the app's node, not the site's.
+
+- **The signature is of what went out.** When a transaction was rebuilt for a Squads vault or a programmatic signer, or converted, that is the rebuilt one, so a site waiting on its own signature's outcome may not see what it expected.
+- **A transaction goes only with every signature.** A slot left for the site, which `signTransaction` allows, keeps Sign off.
+- **The network has to match.** On another network the modal says so and Sign stays off until the user changes it, and the app checks again as it sends. A custom node whose genesis is none of the public ones cannot be compared, and is taken as the user's choice. `signTransaction` only warns, because the signature goes back to a site that may know better.
+- **Approving takes the request out of the queue,** so it cannot be rejected while it goes out. Each transaction gets a toast, as if sent from Sign.
+- **The reply comes when the node accepts it.** With `options.commitment` it waits for that level, for at most 90 seconds. The other options (`skipPreflight`, `maxRetries`, `preflightCommitment`, `minContextSlot`) are not passed on: the app sends as it always does.
+
+The transactions of one request are approved together, at most 16. How they go out:
+
+| Request | Sent | A failure |
+| --- | --- | --- |
+| `signAndSendTransaction` | In order, none waiting for the last to confirm | Stops the rest. The site gets `send_failed` |
+| `signAndSendAllTransactions`, `parallel` (the default) | In order, none waiting, and all before any commitment is waited for | Touches only that one |
+| `signAndSendAllTransactions`, `serial` | Each once the last reaches its commitment, or confirmed when it names none | The rest are not sent and report that |
+
+The standard does not say what the modes mean or which is the default. This is how Airlock reads them.
+
+### Messages and sign-in
+
+A key signs bytes and cannot tell what they are for, so `wallet_core::site_message` decides what may reach it. Only a wallet with a key on this device can do either: no key signs as a programmatic signer or a Squads vault, and the QR handoff carries only transactions.
+
+**`signMessage`** needs an account connected to the site. These are refused before the modal opens:
+
+- Bytes that read as a transaction or its message, in any format, even with more bytes after them. Signing those could move funds. A programmatic signer's authorization is a v1 message, so this covers it.
+- Exactly 32 bytes that are not text. A Vector authority signs a bare digest of that size, which looks like nothing else. The same hash written out as text can be signed.
+- A message in Solana's offchain format, which Airlock does not sign yet.
+- A Sign In With Solana message for a domain other than the site's.
+
+The modal shows the message as text, or in hex with a warning when it is not text or holds control characters that could hide what it says. The signature is over exactly those bytes, with nothing added.
+
+**`signIn`** always opens the modal, and needs no connection first. The app writes the message itself, line for line as `@solana/wallet-standard-util` does, so the site's own check passes, and shows it. These are refused before the modal opens:
+
+- A `domain` that is not the browser's host for the origin, port included. With no `domain`, that host is used.
+- A field holding a line break, which could write lines of its own into the message.
+- An `address` with no key on this device.
+- `useOffchainMessage`. The feature is advertised as version 1.0.0, which does not promise it.
+
+A `uri` on another host is allowed by the standard, so the modal warns about it instead. Times in the message are shown and not checked. Signing in also connects: the account comes first, with what the site could already see, and **Remember this connection** works as it does on connect. **Block site** is there too.
 
 ### The sign request modal
 

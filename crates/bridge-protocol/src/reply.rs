@@ -23,20 +23,100 @@ pub fn rejected(id: &str) -> Vec<u8> {
     error(id, "rejected", "Rejected in Airlock.")
 }
 
-/// A `connect` answered with exactly these accounts: the 32 bytes of each
-/// public key, and its label, which is left out when empty.
-pub fn connected(id: &str, accounts: &[([u8; 32], String)]) -> Vec<u8> {
-    let accounts: Vec<Value> = accounts
+/// An account a site is shown.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SiteAccount {
+    pub pubkey: [u8; 32],
+    /// Left out of the reply when empty.
+    pub label: String,
+    /// A key on this device can sign a message as this account. No key signs
+    /// as a programmatic signer or a Squads vault.
+    pub signs_messages: bool,
+}
+
+fn accounts_json(accounts: &[SiteAccount]) -> Vec<Value> {
+    accounts
         .iter()
-        .map(|(pubkey, label)| {
-            let mut account = json!({ "publicKey": base64(pubkey) });
-            if !label.is_empty() {
-                account["label"] = json!(label);
+        .map(|site| {
+            let mut account = json!({ "publicKey": base64(&site.pubkey) });
+            if !site.label.is_empty() {
+                account["label"] = json!(site.label);
+            }
+            if site.signs_messages {
+                account["signsMessages"] = json!(true);
             }
             account
         })
+        .collect()
+}
+
+/// A `connect` answered with exactly these accounts.
+pub fn connected(id: &str, accounts: &[SiteAccount]) -> Vec<u8> {
+    result(id, json!({ "accounts": accounts_json(accounts) }))
+}
+
+/// A `signAndSendTransaction` answered with the signature of each transaction
+/// sent, in the order the site sent them.
+pub fn sent(id: &str, signatures: &[[u8; 64]]) -> Vec<u8> {
+    let signatures: Vec<String> = signatures.iter().map(|one| base64(one)).collect();
+    result(id, json!({ "signatures": signatures }))
+}
+
+/// A `signAndSendAllTransactions` answered, one result for each transaction:
+/// its signature, or why it did not go through.
+pub fn sent_each(id: &str, results: &[Result<[u8; 64], String>]) -> Vec<u8> {
+    let results: Vec<Value> = results
+        .iter()
+        .map(|one| match one {
+            Ok(signature) => json!({ "signature": base64(signature) }),
+            Err(message) => json!({ "error": { "code": "send_failed", "message": message } }),
+        })
         .collect();
-    result(id, json!({ "accounts": accounts }))
+    result(id, json!({ "results": results }))
+}
+
+/// The user approved sending, and it did not go through.
+pub fn send_failed(id: &str, message: &str) -> Vec<u8> {
+    error(id, "send_failed", message)
+}
+
+/// A `signMessage` answered: the bytes signed, and the signature over them.
+pub fn message_signed(id: &str, signed: &[u8], signature: &[u8; 64]) -> Vec<u8> {
+    result(
+        id,
+        json!({ "signedMessage": base64(signed), "signature": base64(signature) }),
+    )
+}
+
+/// A `signIn` answered: `account` signed `signed`, and `accounts` are what the
+/// site may see now, `account` first.
+pub fn signed_in(
+    id: &str,
+    account: &[u8; 32],
+    accounts: &[SiteAccount],
+    signed: &[u8],
+    signature: &[u8; 64],
+) -> Vec<u8> {
+    result(
+        id,
+        json!({
+            "account": base64(account),
+            "accounts": accounts_json(accounts),
+            "signedMessage": base64(signed),
+            "signature": base64(signature),
+        }),
+    )
+}
+
+/// Not a reply: tells the extension what `origin`'s pages may now see, the
+/// account they should act as first. Empty when the site is disconnected.
+pub fn accounts_changed(origin: &str, accounts: &[SiteAccount]) -> Vec<u8> {
+    encode(&json!({
+        "v": 1,
+        "method": "accountsChanged",
+        "origin": origin,
+        "params": { "accounts": accounts_json(accounts) },
+    }))
 }
 
 /// A `signTransaction` answered with its signed transactions, in the order
@@ -69,7 +149,18 @@ mod tests {
     fn a_connect_reply_lists_only_the_given_accounts() {
         let reply = read(&connected(
             "c1",
-            &[([1; 32], "Treasury".into()), ([2; 32], String::new())],
+            &[
+                SiteAccount {
+                    pubkey: [1; 32],
+                    label: "Treasury".into(),
+                    signs_messages: true,
+                },
+                SiteAccount {
+                    pubkey: [2; 32],
+                    label: String::new(),
+                    signs_messages: false,
+                },
+            ],
         ));
         assert_eq!(reply["id"], "c1");
         let accounts = reply["result"]["accounts"].as_array().unwrap();
@@ -77,6 +168,8 @@ mod tests {
         assert_eq!(accounts[0]["label"], "Treasury");
         assert_eq!(accounts[0]["publicKey"], base64(&[1; 32]));
         assert!(accounts[1].get("label").is_none());
+        assert_eq!(accounts[0]["signsMessages"], true);
+        assert!(accounts[1].get("signsMessages").is_none());
     }
 
     #[test]

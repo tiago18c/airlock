@@ -28,7 +28,7 @@ flowchart LR
 
 Manifest V3, TypeScript, in `extension/`.
 
-- A content script registers a wallet named Airlock with `@wallet-standard/wallet`, so sites using `@solana/wallet-adapter` or the Wallet Standard find it without a `window.solana` injection. It advertises `standard:connect`, `standard:disconnect`, `standard:events` and `solana:signTransaction` (versions legacy, 0 and 1): only what the desktop app can do, so a site never picks a feature that is certain to fail.
+- A content script registers a wallet named Airlock with `@wallet-standard/wallet`, so sites using `@solana/wallet-adapter` or the Wallet Standard find it without a `window.solana` injection. It advertises `standard:connect`, `standard:disconnect`, `standard:events`, `solana:signTransaction`, `solana:signAndSendTransaction` and `solana:signAndSendAllTransactions` (versions legacy, 0 and 1, the same for all three), `solana:signMessage` and `solana:signIn` (version 1.0.0): only what the desktop app can do, so a site never picks a feature that is certain to fail. An account lists `solana:signMessage` only when a key on the device signs as it.
 - `signTransaction` with several inputs, which is how the wallet adapter's `signAllTransactions` reaches a Wallet Standard wallet, is one request with every transaction in it, at most 16 (`MAX_TRANSACTIONS` in `protocol.ts` and `bridge_protocol`). The outputs come back in the order of the inputs.
 - The service worker relays page requests to `chrome.runtime.connectNative("dev.airlock.bridge")`. It sets each request's `origin` from the browser's `sender`, never from page data, and its `expiresAt` ten minutes ahead.
 - The popup lists pending requests by their request code (below), and says whether the host is missing or the app is not running.
@@ -81,8 +81,12 @@ The [`interprocess`](https://crates.io/crates/interprocess) local socket API cov
 
 The listener is `app-desktop`'s bridge, behind the `bridge` feature that only the online app turns on. It binds the socket at startup, before the window opens, and a second launch that cannot bind it sends `show` and exits. The data folder's own lock is what keeps two processes off one vault ([architecture](architecture.md)).
 
-- `status` and `disconnect` are answered at once, and `connect` with `silent` gets no accounts.
-- `connect` and `signTransaction` go into the core's `BridgeQueue`. A `signTransaction` with several transactions is one entry, and the core takes a signed answer for it only with one transaction for each the site sent (`BridgeAnswer::Signed`), so part of a batch can never go back. The app notifies and asks for attention, and the head of the queue opens as a modal; **Not now** folds it into a bar at the top of the page. A request nobody answers expires after ten minutes.
+- `status` is answered at once. So is `disconnect`, which ends the site's connection and keeps what it was granted.
+- A `connect` from a site that has a grant holding the current wallet is answered at once, with the accounts it was granted and the current wallet first. Any other `connect` with `silent` gets no accounts, and never opens the modal, including from a site that disconnected. See [Connections](signing.md#connect).
+- Requests on one connection are answered at the same time, each on its own thread, so one waiting for the user holds up nothing else. Match replies by `id`.
+- A blocked site gets `rejected` at once, and no accounts for a silent `connect`.
+- A `signTransaction` naming an account the site is not connected to gets `rejected` at once.
+- Any other `connect`, and `signTransaction`, go into the core's `BridgeQueue`. A `signTransaction` with several transactions is one entry, and the core takes a signed answer for it only with one transaction for each the site sent (`BridgeAnswer::Signed`), so part of a batch can never go back. The app notifies and asks for attention, and the head of the queue opens as a modal; **Not now** folds it into a bar at the top of the page. A request nobody answers expires after ten minutes.
 - A locked vault asks for the password in the modal before the request is prepared.
 
 What the modals show, and when they offer Sign, is in [signing.md](signing.md#flows-that-start-in-a-browser).
@@ -104,9 +108,16 @@ JSON objects, one per frame. A frame is a 32-bit little-endian length, then the 
 | Method | `params` | `result` |
 | --- | --- | --- |
 | `status` | none | `{ "ready": true, "role": "desktop" }` (`"dev-stub"` from `listen`) |
-| `connect` | `{ "silent"?: boolean }` | `{ "accounts": [ { "publicKey": "<base64>", "label"?: string } ] }` |
+| `connect` | `{ "silent"?: boolean }` | `{ "accounts": [ { "publicKey": "<base64>", "label"?: string, "signsMessages"?: true } ] }` |
 | `disconnect` | `{ "accounts": ["<base58>", …] }` | `{}` |
 | `signTransaction` | `{ "transactions": [ { "account", "transaction", "chain"? }, … ] }`, one to 16 | `{ "signedTransactions": ["<base64>", …] }`, one for each, in the same order |
+| `signAndSendTransaction` | As `signTransaction`, with `chain` required and `options.commitment` read | `{ "signatures": ["<base64>", …] }`, one for each, or `send_failed` |
+| `signAndSendAllTransactions` | The same, with `"mode"?: "parallel" \| "serial"` | `{ "results": [ { "signature": "<base64>" } or { "error": { "code", "message" } }, … ] }`, one for each |
+| `signMessage` | `{ "account": "<base58>", "message": "<base64>" }` | `{ "signedMessage": "<base64>", "signature": "<base64>" }` |
+| `signIn` | The Wallet Standard's `SolanaSignInInput`, all of it optional | `{ "account": "<base64>", "accounts": [ … ], "signedMessage": "<base64>", "signature": "<base64>" }`, `account` first in `accounts` |
+| `pages` | `{ "origins": ["<origin>", …] }`, every origin with a page open in this browser. From the service worker, whenever that changes and when the host starts | `{}` |
+
+The app sends one message of its own, with no `id`: `{ "v": 1, "method": "accountsChanged", "origin": "<origin>", "params": { "accounts": [ { "publicKey": "<base64>", "label"?: string } ] } }`. It says what a site holds now, the account to act as first, and is empty when the site is disconnected. It goes to every browser, and the service worker passes it only to pages of that origin. A site that just got its accounts in a reply is not told again.
 
 A reply repeats `id` and has either `result` or `error`, with `error.code` one of:
 
@@ -115,7 +126,8 @@ A reply repeats `id` and has either `result` or `error`, with `error.code` one o
 | `rejected` | The user declined. The extension surfaces it as a Wallet Standard rejection |
 | `expired` | `expiresAt` passed, or nobody decided in time |
 | `not_implemented` | Any other method, or more than 16 transactions |
-| `bad_request` | Not JSON, not version 1, or a `signTransaction` with no transaction |
+| `bad_request` | Not JSON, not version 1, a request with no transaction, or a send that names no network |
+| `send_failed` | The user approved a send, and it did not go through |
 | `busy` | The app is still starting |
 | `app_not_running` | `bridge-host` found no app on the socket |
 | `host_not_found` | The browser could not start `bridge-host` (set by the extension) |
@@ -145,7 +157,7 @@ The extension has no keys and approves nothing. A malicious update, a hijacked s
 - **A malicious site** (drainers, approvals, authority changes, unknown programs). The modal explains each instruction with an IDL, and offers Sign when every missing signature is local (`wallet_core::quick_sign`). Unless every instruction was read with a built-in or imported IDL, Sign is amber and the modal says what it could not read. An IDL read from the chain is written by whoever controls the program, so it explains but never makes Sign the primary button. Simulation is on the Sign screen, online only.
 - **Origin spoofing.** The origin comes only from the browser's `sender`. The modal shows it with the request code.
 - **Wallet impersonation in the page.** Any extension can register a wallet with the same name. The defense is approval in the desktop window, not in browser UI.
-- **Local processes on the socket.** The socket is limited to the current user, and every connect and signature is approved in the desktop window; nothing is approved automatically. The app does not check which process connected, and user-level malware can rewrite the host manifest or binary anyway. That is what the offline device is for.
+- **Local processes on the socket.** The socket is limited to the current user, and every signature is approved in the desktop window, and so is every connect the user has not already approved for that origin. A remembered connection reconnects without asking, and that only shows the site public keys it was given before. Grants and blocks are in `workspace.json` in plain text, so anyone who can read the data folder sees which sites were connected to which addresses. The app does not check which process connected, and user-level malware can rewrite the host manifest or binary anyway. That is what the offline device is for.
 - **A compromised online app.** It can produce a malicious rebuild. The offline device reads the transaction on its own, so its review must stay complete.
 - **The bridge on the offline device.** Airlock Offline does not link the bridge, and no installer runs `install`.
 - **Stale requests.** Each request carries an expiry, and one nobody answers leaves the queue after ten minutes. A signature brought back from another device is verified against the transaction on screen before it is written in.

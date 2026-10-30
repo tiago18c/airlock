@@ -1417,3 +1417,120 @@ fn a_realms_proposal_transaction_with_extra_bytes_is_not_opened() {
             .is_none());
     }
 }
+
+/// The four calls a Squads vault made to publish program-metadata's own IDL
+/// on devnet (transaction `3vJooqCq…`): allocate the metadata account, copy
+/// the IDL into it from a buffer, initialize it, and close the buffer.
+#[test]
+fn publishing_an_idl_reads_as_program_metadata_calls() {
+    const PROGRAM_METADATA: &str = "ProgM6JCCvbYkfKqJYHePx4xxSUSqJp7rh8Lyv7nk7S";
+    let metadata = "9zzVPVwZojagC4mBCMrTi17Zu9KvXKoTvqnBL1vxYDyM";
+    let authority = "AXF4hqmBaXMwkpPwpbdJVPmq5KZ1mbF7e8sKqF2rrAPF";
+    let program_data = "F8hZ6cQFCNZ3UdNkhUfjgxxRnUD8HiYPobpk2qRVD7aB";
+    let buffer = "6fPLewV4HaCXUJtaeifu1qiHh4xrNnDuLNSgGhjs1KPR";
+    let recipient = "DULamQmz3KUf4ntxARS9qjD3okBRD3Aiw5VeuzBR2TZE";
+    let ix = |data: &str, accounts: &[(&str, bool, bool)]| Instruction {
+        program_id: Pubkey::from_str_const(PROGRAM_METADATA),
+        accounts: accounts
+            .iter()
+            .map(|&(address, signer, writable)| AccountMeta {
+                pubkey: Pubkey::from_str_const(address),
+                is_signer: signer,
+                is_writable: writable,
+            })
+            .collect(),
+        data: hex::decode(data).unwrap(),
+    };
+    let explain = |ix| explain_one_ix(&builtins(), Pubkey::from_str_const(authority), ix);
+
+    let allocate = explain(ix(
+        "0769646c00000000000000000000000000",
+        &[
+            (metadata, false, true),
+            (authority, true, false),
+            (PROGRAM_METADATA, false, false),
+            (program_data, false, false),
+            ("11111111111111111111111111111111", false, false),
+        ],
+    ));
+    assert_eq!(allocate.intent, "Allocate buffer");
+    assert_eq!(
+        allocate.interpolated_intent.as_deref(),
+        Some(format!("Allocate buffer {metadata}").as_str())
+    );
+    assert_eq!(field(&allocate, "Seed"), "idl");
+
+    let write = explain(ix(
+        "0000000000",
+        &[
+            (metadata, false, true),
+            (authority, true, false),
+            (buffer, false, false),
+        ],
+    ));
+    assert_eq!(
+        write.interpolated_intent.as_deref(),
+        Some(format!("Write to buffer {metadata} at offset 0").as_str())
+    );
+    assert_eq!(field(&write, "Copy From"), buffer);
+
+    // The program's own address stands in for the system program it was
+    // not passed.
+    let initialize = explain(ix(
+        "0169646c0000000000000000000000000001020000",
+        &[
+            (metadata, false, true),
+            (authority, true, false),
+            (PROGRAM_METADATA, false, false),
+            (program_data, false, false),
+            (PROGRAM_METADATA, false, false),
+        ],
+    ));
+    assert_eq!(initialize.intent, "Create program metadata");
+    assert_eq!(
+        initialize.interpolated_intent.as_deref(),
+        Some(
+            format!("Create metadata {metadata} with seed \"idl\" for program {PROGRAM_METADATA}")
+                .as_str()
+        )
+    );
+    assert_eq!(field(&initialize, "Encoding"), "UTF-8");
+    assert_eq!(field(&initialize, "Compression"), "zlib");
+    assert_eq!(field(&initialize, "Format"), "None");
+    assert_eq!(field(&initialize, "Data Source"), "Direct");
+    assert_eq!(initialize.unnamed_accounts, 0);
+
+    let accounts = &[
+        (metadata, false, true),
+        (authority, true, false),
+        (PROGRAM_METADATA, false, false),
+        (program_data, false, false),
+    ];
+    let new_authority = "4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T";
+    let bytes = bs58::decode(new_authority).into_vec().unwrap();
+    let set = explain(ix(&format!("0201{}", hex::encode(bytes)), accounts));
+    assert_eq!(
+        set.interpolated_intent.as_deref(),
+        Some(format!("Change the authority of {metadata} to {new_authority}").as_str())
+    );
+    let remove = explain(ix("0200", accounts));
+    assert_eq!(
+        remove.interpolated_intent.as_deref(),
+        Some(format!("Change the authority of {metadata} to None").as_str())
+    );
+
+    let close = explain(ix(
+        "06",
+        &[
+            (buffer, false, true),
+            (authority, true, false),
+            (PROGRAM_METADATA, false, false),
+            (program_data, false, false),
+            (recipient, false, true),
+        ],
+    ));
+    assert_eq!(
+        close.interpolated_intent.as_deref(),
+        Some(format!("Close {buffer} and send its balance to {recipient}").as_str())
+    );
+}

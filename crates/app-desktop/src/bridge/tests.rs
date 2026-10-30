@@ -44,6 +44,10 @@ fn status_accepts_an_expiry_in_unix_seconds() {
 fn only_connect_and_sign_wait_for_the_user() {
     assert!(waits_for_user("connect"));
     assert!(waits_for_user("signTransaction"));
+    assert!(waits_for_user("signMessage"));
+    assert!(waits_for_user("signIn"));
+    assert!(waits_for_user(SEND));
+    assert!(waits_for_user(SEND_ALL));
     assert!(!waits_for_user("status"));
     assert!(!waits_for_user("show"));
     assert!(!waits_for_user("disconnect"));
@@ -125,7 +129,11 @@ async fn the_window_answers_from_the_core_queue() {
 
     assert!(kit.core.bridge_answer(
         "count-1",
-        &BridgeAnswer::Connect(vec![([1; 32], String::new())])
+        &BridgeAnswer::Connect(vec![bridge_protocol::reply::SiteAccount {
+            pubkey: [1; 32],
+            label: String::new(),
+            signs_messages: false,
+        }])
     ));
     assert!(kit.core.bridge_answer("count-2", &BridgeAnswer::Rejected));
     let first: Value = serde_json::from_slice(&first.join().unwrap()).unwrap();
@@ -136,9 +144,53 @@ async fn the_window_answers_from_the_core_queue() {
     assert!(BridgePrompt::head_of(&kit.core.slices().bridge.get()).is_none());
 }
 
+const ORIGIN: &str = "https://example.test";
+
+fn account() -> Pubkey {
+    Pubkey::new_from_array([7; 32])
+}
+
+fn shareable(pubkey: Pubkey) -> wallet_core::ShareableAccount {
+    wallet_core::ShareableAccount {
+        pubkey,
+        label: "Main".into(),
+        contract: false,
+        summary: String::new(),
+    }
+}
+
+/// Connect the test origin to `account()` the way the modal does.
+fn connected(kit: &Kit, bridge: &Bridge, remember: bool) {
+    let asking = {
+        let bridge = bridge.clone();
+        std::thread::spawn(move || {
+            ask(
+                &bridge,
+                json!({ "v": 1, "id": "connect", "origin": ORIGIN, "method": "connect" }),
+            )
+        })
+    };
+    while kit.core.slices().bridge.get().is_empty() {
+        std::thread::yield_now();
+    }
+    assert!(kit
+        .core
+        .bridge_connect("connect", vec![shareable(account())], remember));
+    asking.join().unwrap();
+}
+
+fn silent_connect(bridge: &Bridge) -> Value {
+    ask(
+        bridge,
+        json!({ "v": 1, "id": "s", "origin": ORIGIN, "method": "connect", "params": { "silent": true } }),
+    )
+}
+
 fn sign_request(id: &str, count: usize) -> Value {
     let v1 = base64::engine::general_purpose::STANDARD.encode([0x81, 1, 2]);
-    let transactions: Vec<Value> = (0..count).map(|_| json!({ "transaction": v1 })).collect();
+    let transactions: Vec<Value> = (0..count)
+        .map(|_| json!({ "account": account().to_string(), "transaction": v1 }))
+        .collect();
     json!({
         "v": 1,
         "id": id,
@@ -161,6 +213,7 @@ async fn an_empty_or_oversized_batch_is_refused() {
 #[tokio::test]
 async fn a_batch_waits_as_one_request() {
     let (kit, bridge) = attached_bridge();
+    connected(&kit, &bridge, false);
     let waiting = std::thread::spawn(move || ask(&bridge, sign_request("batch", 3)));
     while kit.core.slices().bridge.get().is_empty() {
         std::thread::yield_now();
@@ -246,6 +299,406 @@ fn v0_transfer_wire(payer: &Pubkey) -> Vec<u8> {
     .unwrap()
 }
 
+#[tokio::test]
+async fn a_site_never_connected_cannot_ask_for_a_signature() {
+    let (kit, bridge) = attached_bridge();
+    let value = ask(&bridge, sign_request("stranger", 1));
+    assert_eq!(value["error"]["code"], "rejected");
+    assert!(kit.core.slices().bridge.get().is_empty());
+}
+
+#[tokio::test]
+async fn a_connected_site_cannot_sign_for_another_account() {
+    let (kit, bridge) = attached_bridge();
+    connected(&kit, &bridge, false);
+    let mut request = sign_request("other", 1);
+    request["params"]["transactions"][0]["account"] =
+        json!(Pubkey::new_from_array([9; 32]).to_string());
+    assert_eq!(ask(&bridge, request)["error"]["code"], "rejected");
+
+    let mut unnamed = sign_request("unnamed", 2);
+    unnamed["params"]["transactions"][1]
+        .as_object_mut()
+        .unwrap()
+        .remove("account");
+    assert_eq!(ask(&bridge, unnamed)["error"]["code"], "rejected");
+    assert!(kit.core.slices().bridge.get().is_empty());
+}
+
+#[tokio::test]
+async fn a_silent_connect_never_opens_the_modal() {
+    let (kit, bridge) = attached_bridge();
+    let value = silent_connect(&bridge);
+    assert_eq!(value["result"]["accounts"], json!([]));
+    assert!(kit.core.slices().bridge.get().is_empty());
+}
+
+#[test]
+fn a_silent_connect_gets_no_error_while_the_app_starts() {
+    let value = silent_connect(&Bridge::new());
+    assert_eq!(value["result"]["accounts"], json!([]));
+}
+
+#[tokio::test]
+async fn a_disconnected_site_is_not_let_back_in_silently_or_to_sign() {
+    let (kit, bridge) = attached_bridge();
+    connected(&kit, &bridge, true);
+    ask(
+        &bridge,
+        json!({ "v": 1, "id": "d", "origin": ORIGIN, "method": "disconnect" }),
+    );
+    assert_eq!(silent_connect(&bridge)["result"]["accounts"], json!([]));
+    assert_eq!(
+        ask(&bridge, sign_request("after", 1))["error"]["code"],
+        "rejected"
+    );
+    // The grant itself stays.
+    let grant = kit
+        .core
+        .with_workspace(|workspace| workspace.connections.grant(ORIGIN).cloned());
+    assert_eq!(grant.unwrap().accounts, vec![account()]);
+}
+
+#[tokio::test]
+async fn a_blocked_site_is_turned_away_without_the_modal() {
+    let (kit, bridge) = attached_bridge();
+    let asking = {
+        let bridge = bridge.clone();
+        std::thread::spawn(move || {
+            ask(
+                &bridge,
+                json!({ "v": 1, "id": "first", "origin": ORIGIN, "method": "connect" }),
+            )
+        })
+    };
+    let second = {
+        let bridge = bridge.clone();
+        std::thread::spawn(move || {
+            ask(
+                &bridge,
+                json!({ "v": 1, "id": "second", "origin": ORIGIN, "method": "connect" }),
+            )
+        })
+    };
+    while kit.core.slices().bridge.get().len() < 2 {
+        std::thread::yield_now();
+    }
+    assert!(kit.core.bridge_block("first"));
+    assert_eq!(asking.join().unwrap()["error"]["code"], "rejected");
+    assert_eq!(second.join().unwrap()["error"]["code"], "rejected");
+    assert!(kit.core.slices().bridge.get().is_empty());
+
+    let value = ask(
+        &bridge,
+        json!({ "v": 1, "id": "again", "origin": ORIGIN, "method": "connect" }),
+    );
+    assert_eq!(value["error"]["code"], "rejected");
+    assert_eq!(silent_connect(&bridge)["result"]["accounts"], json!([]));
+    assert_eq!(
+        ask(&bridge, sign_request("blocked", 1))["error"]["code"],
+        "rejected"
+    );
+    assert!(kit.core.slices().bridge.get().is_empty());
+}
+
+fn held(pairs: &[(&str, &[u8])]) -> BTreeMap<String, Vec<Pubkey>> {
+    pairs
+        .iter()
+        .map(|(origin, keys)| {
+            let keys = keys
+                .iter()
+                .map(|b| Pubkey::new_from_array([*b; 32]))
+                .collect();
+            ((*origin).to_owned(), keys)
+        })
+        .collect()
+}
+
+fn told(frames: Vec<Vec<u8>>) -> Vec<Value> {
+    frames
+        .iter()
+        .map(|frame| serde_json::from_slice(frame).unwrap())
+        .collect()
+}
+
+#[tokio::test]
+async fn a_site_is_told_only_when_what_it_holds_changes() {
+    let (kit, _bridge) = attached_bridge();
+    let core = kit.core.public();
+    let before = held(&[("https://a.test", &[1, 2]), ("https://b.test", &[3])]);
+
+    // The same, or a site that just got its accounts in a reply.
+    let after = held(&[
+        ("https://a.test", &[1, 2]),
+        ("https://b.test", &[3]),
+        ("https://c.test", &[4]),
+    ]);
+    assert!(changes(&before, &after, &core).is_empty());
+
+    // A new first account, and a site that holds nothing now.
+    let after = held(&[("https://a.test", &[2, 1])]);
+    let frames = told(changes(&before, &after, &core));
+    assert_eq!(frames.len(), 2);
+    assert_eq!(frames[0]["method"], "accountsChanged");
+    assert_eq!(frames[0]["origin"], "https://a.test");
+    assert_eq!(frames[0]["params"]["accounts"].as_array().unwrap().len(), 2);
+    assert_eq!(frames[1]["origin"], "https://b.test");
+    assert_eq!(frames[1]["params"]["accounts"], json!([]));
+}
+
+#[tokio::test]
+async fn a_request_waiting_for_the_user_holds_up_nothing_else() {
+    let (kit, bridge) = attached_bridge();
+    let peer = Arc::new(Peer::new(bridge.clone(), None));
+    let waiting = {
+        let peer = peer.clone();
+        std::thread::spawn(move || {
+            peer.answer(
+                &serde_json::to_vec(
+                    &json!({ "v": 1, "id": "w", "origin": ORIGIN, "method": "connect" }),
+                )
+                .unwrap(),
+            )
+        })
+    };
+    while kit.core.slices().bridge.get().is_empty() {
+        std::thread::yield_now();
+    }
+    assert_eq!(silent_connect(&bridge)["result"]["accounts"], json!([]));
+    assert!(kit.core.bridge_answer("w", &BridgeAnswer::Rejected));
+    waiting.join().unwrap();
+}
+
+#[tokio::test]
+async fn the_pages_a_browser_lists_decide_who_shows_as_connected() {
+    let (kit, bridge) = attached_bridge();
+    connected(&kit, &bridge, true);
+    let sites = || kit.core.slices().sites.get();
+    assert!(sites().connected.is_empty());
+    assert!(sites().holding.contains_key(ORIGIN));
+
+    kit.core
+        .public()
+        .site_pages(BTreeSet::from([ORIGIN.to_string()]));
+    assert_eq!(sites().connected[0].origin, ORIGIN);
+    assert!(sites().connected[0].remembered);
+
+    kit.core.public().site_pages(BTreeSet::new());
+    assert!(sites().connected.is_empty());
+    assert!(!sites().holding.contains_key(ORIGIN));
+    assert_eq!(sites().authorized.len(), 1);
+}
+
+#[tokio::test]
+async fn disconnecting_keeps_the_grant_and_revoking_does_not() {
+    let (kit, bridge) = attached_bridge();
+    connected(&kit, &bridge, true);
+    kit.core.site_disconnect(ORIGIN);
+    let sites = kit.core.slices().sites.get();
+    assert!(!sites.holding.contains_key(ORIGIN));
+    assert_eq!(sites.authorized.len(), 1);
+    assert_eq!(
+        ask(&bridge, sign_request("after", 1))["error"]["code"],
+        "rejected"
+    );
+
+    kit.core.site_revoke(ORIGIN);
+    assert!(kit.core.slices().sites.get().authorized.is_empty());
+}
+
+#[tokio::test]
+async fn unblocking_lets_a_site_ask_again() {
+    let (kit, bridge) = attached_bridge();
+    kit.core.site_block(ORIGIN);
+    assert_eq!(kit.core.slices().sites.get().blocked, vec![ORIGIN]);
+    kit.core.site_unblock(ORIGIN);
+    assert!(kit.core.slices().sites.get().blocked.is_empty());
+    connected(&kit, &bridge, false);
+}
+
+fn sign_message(id: &str, account: Pubkey, message: &[u8]) -> Value {
+    json!({
+        "v": 1, "id": id, "origin": ORIGIN, "method": "signMessage",
+        "params": {
+            "account": account.to_string(),
+            "message": base64::engine::general_purpose::STANDARD.encode(message),
+        }
+    })
+}
+
+#[tokio::test]
+async fn a_message_needs_a_connected_account_with_a_key_here() {
+    let (kit, bridge) = attached_bridge();
+    assert_eq!(
+        ask(&bridge, sign_message("stranger", account(), b"hello"))["error"]["code"],
+        "rejected"
+    );
+    // Connected, but this test core holds no key for it.
+    connected(&kit, &bridge, false);
+    let value = ask(&bridge, sign_message("keyless", account(), b"hello"));
+    assert_eq!(value["error"]["code"], "rejected");
+    assert!(value["error"]["message"]
+        .as_str()
+        .unwrap()
+        .contains("No key"));
+    assert!(kit.core.slices().bridge.get().is_empty());
+}
+
+fn sign_in_ask(id: &str, params: Value) -> Value {
+    json!({ "v": 1, "id": id, "origin": ORIGIN, "method": "signIn", "params": params })
+}
+
+#[tokio::test]
+async fn a_sign_in_that_cannot_be_honest_never_reaches_the_user() {
+    let (kit, bridge) = attached_bridge();
+    let other = ask(
+        &bridge,
+        sign_in_ask("o", json!({ "domain": "bank.example" })),
+    );
+    assert!(other["error"]["message"]
+        .as_str()
+        .unwrap()
+        .contains("bank.example"));
+    let injected = ask(
+        &bridge,
+        sign_in_ask("i", json!({ "statement": "a\nURI: b" })),
+    );
+    assert_eq!(injected["error"]["code"], "rejected");
+    let offchain = ask(
+        &bridge,
+        sign_in_ask(
+            "c",
+            json!({ "useOffchainMessage": { "messageVersion": 1 } }),
+        ),
+    );
+    assert_eq!(offchain["error"]["code"], "rejected");
+    let keyless = ask(
+        &bridge,
+        sign_in_ask("k", json!({ "address": account().to_string() })),
+    );
+    assert_eq!(keyless["error"]["code"], "rejected");
+    kit.core.site_block(ORIGIN);
+    let blocked = ask(&bridge, sign_in_ask("b", json!({})));
+    assert_eq!(blocked["error"]["code"], "rejected");
+    assert!(kit.core.slices().bridge.get().is_empty());
+}
+
+#[tokio::test]
+async fn a_sign_in_asking_nothing_reaches_the_user() {
+    let (kit, bridge) = attached_bridge();
+    let asking = {
+        let bridge = bridge.clone();
+        std::thread::spawn(move || ask(&bridge, sign_in_ask("s", Value::Null)))
+    };
+    while kit.core.slices().bridge.get().is_empty() {
+        std::thread::yield_now();
+    }
+    assert_eq!(
+        BridgePrompt::head_of(&kit.core.slices().bridge.get())
+            .unwrap()
+            .method,
+        "signIn"
+    );
+    assert!(kit.core.bridge_answer("s", &BridgeAnswer::Rejected));
+    asking.join().unwrap();
+}
+
+fn send_request(id: &str, method: &str, chain: Option<&str>) -> Value {
+    let mut request = sign_request(id, 1);
+    request["method"] = json!(method);
+    if let Some(chain) = chain {
+        request["params"]["transactions"][0]["chain"] = json!(chain);
+    }
+    request
+}
+
+#[tokio::test]
+async fn a_send_names_its_network_and_a_connected_account() {
+    let (kit, bridge) = attached_bridge();
+    let stranger = ask(&bridge, send_request("s", SEND, Some("solana:devnet")));
+    assert_eq!(stranger["error"]["code"], "rejected");
+    let unnamed = ask(&bridge, send_request("u", SEND, None));
+    assert_eq!(unnamed["error"]["code"], "bad_request");
+    let mut empty = send_request("e", SEND_ALL, Some("solana:devnet"));
+    empty["params"]["transactions"] = json!([]);
+    assert_eq!(ask(&bridge, empty)["error"]["code"], "bad_request");
+    assert!(kit.core.slices().bridge.get().is_empty());
+}
+
+/// A send waiting for the user, on its own thread.
+fn waiting_send(
+    kit: &Kit,
+    bridge: &Bridge,
+    method: &'static str,
+) -> std::thread::JoinHandle<Value> {
+    connected(kit, bridge, false);
+    let asking = {
+        let bridge = bridge.clone();
+        std::thread::spawn(move || {
+            ask(&bridge, send_request("send", method, Some("solana:devnet")))
+        })
+    };
+    while kit.core.slices().bridge.get().is_empty() {
+        std::thread::yield_now();
+    }
+    asking
+}
+
+#[tokio::test]
+async fn an_approved_send_leaves_the_queue_and_answers_when_done() {
+    let (kit, bridge) = attached_bridge();
+    let asking = waiting_send(&kit, &bridge, SEND);
+    let shown = BridgePrompt::head_of(&kit.core.slices().bridge.get()).unwrap();
+    assert!(shown.sends);
+    assert_eq!(shown.chains, ["solana:devnet"]);
+
+    // A signed transaction is not what a send answers with.
+    assert!(!kit
+        .core
+        .bridge_answer("send", &BridgeAnswer::Signed(vec![vec![0x81]])));
+    let sending = kit.core.bridge_begin_send("send", 1).unwrap();
+    assert!(kit.core.slices().bridge.get().is_empty());
+    // Nobody can reject it now.
+    assert!(!kit.core.bridge_answer("send", &BridgeAnswer::Rejected));
+
+    kit.core.bridge_send_finished(sending, vec![Ok([1; 64])]);
+    let value = asking.join().unwrap();
+    assert_eq!(value["result"]["signatures"].as_array().unwrap().len(), 1);
+}
+
+#[tokio::test]
+async fn a_failed_send_tells_the_site_why() {
+    let (kit, bridge) = attached_bridge();
+    let asking = waiting_send(&kit, &bridge, SEND);
+    let sending = kit.core.bridge_begin_send("send", 1).unwrap();
+    kit.core
+        .bridge_send_finished(sending, vec![Err("the node said no".into())]);
+    let value = asking.join().unwrap();
+    assert_eq!(value["error"]["code"], "send_failed");
+    assert_eq!(value["error"]["message"], "the node said no");
+}
+
+#[tokio::test]
+async fn send_all_answers_for_each_transaction() {
+    let (kit, bridge) = attached_bridge();
+    let asking = waiting_send(&kit, &bridge, SEND_ALL);
+    assert!(kit.core.bridge_begin_send("send", 2).is_none());
+    let sending = kit.core.bridge_begin_send("send", 1).unwrap();
+    kit.core
+        .bridge_send_finished(sending, vec![Err("failed".into())]);
+    let value = asking.join().unwrap();
+    assert_eq!(value["result"]["results"][0]["error"]["message"], "failed");
+}
+
+#[tokio::test]
+async fn disconnecting_rejects_a_waiting_message_as_well() {
+    let (kit, bridge) = attached_bridge();
+    let asking = waiting_send(&kit, &bridge, SEND);
+    kit.core.site_disconnect(ORIGIN);
+    assert_eq!(asking.join().unwrap()["error"]["code"], "rejected");
+    assert!(kit.core.slices().bridge.get().is_empty());
+}
+
 #[test]
 fn a_readable_transaction_wire_is_accepted() {
     let payer = wallet_core::KeypairSigner::new_random();
@@ -288,16 +741,16 @@ fn a_connection_counts_as_the_extension_until_it_closes() {
     let extension = bridge.subscribe_extension();
     let status = serde_json::to_vec(&json!({ "v": 1, "id": "s", "method": "status" })).unwrap();
 
-    let mut first = Peer::new(bridge.clone());
+    let first = Peer::new(bridge.clone(), None);
     first.answer(&status);
     first.answer(&status);
-    let mut second = Peer::new(bridge.clone());
+    let second = Peer::new(bridge.clone(), None);
     second.answer(&status);
     assert_eq!(*extension.borrow(), 2);
 
-    drop(first);
+    first.closed();
     assert_eq!(*extension.borrow(), 1);
-    drop(second);
+    second.closed();
     assert_eq!(*extension.borrow(), 0);
 }
 
@@ -305,7 +758,7 @@ fn a_connection_counts_as_the_extension_until_it_closes() {
 fn a_second_launch_asking_to_show_is_not_the_extension() {
     let bridge = Bridge::new();
     let extension = bridge.subscribe_extension();
-    let mut launch = Peer::new(bridge.clone());
+    let launch = Peer::new(bridge.clone(), None);
     launch.answer(br#"{"v":1,"id":"show","method":"show"}"#);
     assert_eq!(*extension.borrow(), 0);
     drop(launch);

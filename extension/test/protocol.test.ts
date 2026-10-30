@@ -56,7 +56,7 @@ test("newRequestId works when crypto.randomUUID is missing", () => {
 });
 
 test("only methods the desktop app answers are forwarded", () => {
-  assert.deepEqual([...METHODS], ["status", "connect", "disconnect", "signTransaction"]);
+  assert.deepEqual([...METHODS], ["status", "connect", "disconnect", "signTransaction", "signAndSendTransaction", "signAndSendAllTransactions", "signMessage", "signIn"]);
 });
 
 test("a rejection is named the way wallet adapters expect", () => {

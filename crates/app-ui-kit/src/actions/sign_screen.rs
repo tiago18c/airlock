@@ -511,12 +511,16 @@ pub fn start_simulation(session: Session, tx: DecodedTx) {
 }
 
 /// What became of a transaction this device finished signing.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum HandBack {
     /// No site is waiting for it.
     Nothing,
     /// It went back to the site, with the rest of its batch when it had one.
     Returned { count: usize },
+    /// The app is sending it for the site.
+    Sending { count: usize },
+    /// A site asked to have it sent, and it cannot be.
+    Refused(String),
     /// It waits with its batch for the others, and transaction `next` of it
     /// is on screen now.
     Kept {
@@ -528,9 +532,12 @@ pub enum HandBack {
 
 impl HandBack {
     /// What to tell the user, after what signing said.
-    pub fn note(self) -> Option<String> {
+    pub fn note(&self) -> Option<String> {
         match self {
             Self::Nothing => None,
+            Self::Sending { count: 1 } => Some("Sending it for the site.".into()),
+            Self::Sending { count } => Some(format!("Sending all {count} for the site.")),
+            Self::Refused(why) => Some(why.clone()),
             Self::Returned { count: 1 } => Some("Returned it to the browser.".into()),
             Self::Returned { count } => Some(format!(
                 "Returned all {count} transactions to the browser."
@@ -558,8 +565,16 @@ pub fn return_to_browser(session: &Session, wire: &[u8]) -> HandBack {
     let code = bridge_protocol::request_code(&id);
     let cluster = session.cluster();
     let batch = form.batch.peek().clone().filter(|batch| batch.id == id);
+    let sends = session
+        .bridge
+        .peek()
+        .get(&id)
+        .is_some_and(|request| request.sends());
     let Some(mut batch) = batch else {
         let flow = form.flow.peek().unwrap_or_else(next_flow_id);
+        if sends {
+            return send_from_form(session, &id, &origin, vec![(wire.to_vec(), flow)]);
+        }
         TxLog {
             flow,
             wire,
@@ -588,6 +603,14 @@ pub fn return_to_browser(session: &Session, wire: &[u8]) -> HandBack {
         form.load_batch(batch);
         return HandBack::Kept { signed, of, next };
     }
+    if sends {
+        let items: Vec<(Vec<u8>, u64)> = batch
+            .items
+            .iter()
+            .map(|item| (item.wire.clone(), item.flow))
+            .collect();
+        return send_from_form(session, &id, &origin, items);
+    }
     for item in &batch.items {
         TxLog {
             flow: item.flow,
@@ -612,6 +635,24 @@ pub fn return_to_browser(session: &Session, wire: &[u8]) -> HandBack {
     marked.set(true);
     watch_site_send(session, origin, returned);
     HandBack::Returned { count }
+}
+
+/// Send what the Sign screen finished, for the site that asked. A toast
+/// follows each from here, so the screen is done with it.
+fn send_from_form(
+    session: &Session,
+    id: &str,
+    origin: &str,
+    items: Vec<(Vec<u8>, u64)>,
+) -> HandBack {
+    let count = items.len();
+    match super::site_send::send_for_site(session, id, origin, items) {
+        Ok(()) => {
+            session.forms.sign.clear();
+            HandBack::Sending { count }
+        }
+        Err(why) => HandBack::Refused(why),
+    }
 }
 
 /// The site at `origin` has the transactions in `returned`, each with its
