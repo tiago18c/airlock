@@ -468,6 +468,17 @@ button:disabled {
 }
 .danger.solid:hover { background: var(--danger-solid-hover); border-color: var(--danger-solid-hover); }
 .danger.solid:disabled { background: var(--danger-solid); border-color: var(--danger-solid); }
+/* Goes ahead with something the app could not check, such as signing
+ * instructions it could not put in words. */
+button.warn.solid {
+  background: var(--warn-solid);
+  border-color: var(--warn-solid);
+  color: var(--on-warn);
+  font-weight: var(--weight-semibold);
+  box-shadow: var(--shadow-xs);
+}
+button.warn.solid:hover { background: var(--warn-solid-hover); border-color: var(--warn-solid-hover); }
+button.warn.solid:disabled { background: var(--warn-solid); border-color: var(--warn-solid); }
 
 .sm { min-height: var(--control-sm); padding: 0 10px; font-size: var(--text-md); }
 

@@ -59,7 +59,7 @@ Contrast, checked for both themes: body and secondary text at least 7:1, hint te
 
 | Component | Classes | Notes |
 | --- | --- | --- |
-| Button | bare `button`, `.primary`, `.ghost`, `.danger`, `.danger.solid` | A bare button is the secondary. One primary per view. `.ghost` is for Cancel, Clear, Dismiss. `.danger.solid` only confirms a destructive dialog |
+| Button | bare `button`, `.primary`, `.ghost`, `.danger`, `.danger.solid`, `.warn.solid` | A bare button is the secondary. One primary per view. `.ghost` is for Cancel, Clear, Dismiss. `.danger.solid` only confirms a destructive dialog. `.warn.solid` goes ahead with something the app could not check, such as Sign on a request it could not put in words. It sits beside the primary, which stays on the safer way forward |
 | Button size | `.sm`, `.icon-btn` | An icon-only button needs `title` and `aria_label` |
 | Field | `label` wrapping `input`, `select` or `textarea` | `label.check` for a checkbox row |
 | Tabs | `.tabs > .tab` | Views of one area |

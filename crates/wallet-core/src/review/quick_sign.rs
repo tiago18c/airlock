@@ -7,6 +7,9 @@
 //! And this device can add every signature that is missing, so signing
 //! finishes the job. Anything else needs the Sign screen, where raw
 //! instructions can be inspected and signatures collected from other devices.
+//!
+//! A prompt may still offer to sign what finishes the job without the first
+//! two, as long as it says the summary cannot be trusted.
 
 use crate::idl::catalog::IdlOrigin;
 use crate::review::explain::{ExplainedIx, ExplainedTx};
@@ -51,7 +54,13 @@ impl QuickSign {
     /// [`Self::allowed`], when `left` of the missing signatures are for
     /// whoever sent the transaction to add once it has it back.
     pub fn allowed_leaving(&self, left: usize) -> bool {
-        self.cleartext() && self.vetted() && self.signable > 0 && self.elsewhere == left
+        self.cleartext() && self.vetted() && self.completes_leaving(left)
+    }
+
+    /// Signing here leaves nothing missing but the `left` signatures of
+    /// whoever sent the transaction, whatever its summary reads.
+    pub fn completes_leaving(&self, left: usize) -> bool {
+        self.signable > 0 && self.elsewhere == left
     }
 }
 
@@ -202,6 +211,8 @@ mod tests {
         let verdict = judge(&wire, &[key.pubkey()]);
         assert_eq!(verdict.unread, 2);
         assert!(verdict.completes() && !verdict.cleartext() && !verdict.allowed());
+        // Signed without a summary, it would still be complete.
+        assert!(verdict.completes_leaving(0) && !verdict.allowed_leaving(0));
 
         // The System IDL does not know this tag either.
         let unknown = Instruction {

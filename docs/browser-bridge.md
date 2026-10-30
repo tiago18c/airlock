@@ -142,7 +142,7 @@ The extension has no keys and approves nothing. A malicious update, a hijacked s
 
 ### Threats
 
-- **A malicious site** (drainers, approvals, authority changes, unknown programs). The modal explains each instruction with an IDL, and offers Sign only when every instruction was read with a built-in or imported IDL and every missing signature is local (`wallet_core::quick_sign`). An IDL read from the chain is written by whoever controls the program, so it explains but never unlocks Sign. Simulation is on the Sign screen, online only.
+- **A malicious site** (drainers, approvals, authority changes, unknown programs). The modal explains each instruction with an IDL, and offers Sign when every missing signature is local (`wallet_core::quick_sign`). Unless every instruction was read with a built-in or imported IDL, Sign is amber and the modal says what it could not read. An IDL read from the chain is written by whoever controls the program, so it explains but never makes Sign the primary button. Simulation is on the Sign screen, online only.
 - **Origin spoofing.** The origin comes only from the browser's `sender`. The modal shows it with the request code.
 - **Wallet impersonation in the page.** Any extension can register a wallet with the same name. The defense is approval in the desktop window, not in browser UI.
 - **Local processes on the socket.** The socket is limited to the current user, and every connect and signature is approved in the desktop window; nothing is approved automatically. The app does not check which process connected, and user-level malware can rewrite the host manifest or binary anyway. That is what the offline device is for.

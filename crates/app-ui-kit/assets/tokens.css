@@ -52,6 +52,8 @@
   --warn-soft: #fff3da;
   --warn-line: #f0d48f;
   --warn-solid: #b26a00;
+  --warn-solid-hover: #965900;
+  --on-warn: #ffffff;
 
   --danger-text: #b42318;
   --danger-soft: #feecea;
@@ -199,6 +201,8 @@
     --warn-soft: #2b2110;
     --warn-line: #55411a;
     --warn-solid: #d9962b;
+    --warn-solid-hover: #e8a940;
+    --on-warn: #1a1206;
 
     --cat-hot: #ff7447;
     --cat-wallet: #7ea6ff;
@@ -265,6 +269,8 @@
   --warn-soft: #2b2110;
   --warn-line: #55411a;
   --warn-solid: #d9962b;
+  --warn-solid-hover: #e8a940;
+  --on-warn: #1a1206;
 
   --cat-hot: #ff7447;
   --cat-wallet: #7ea6ff;
