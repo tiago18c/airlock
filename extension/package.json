@@ -14,7 +14,7 @@
     "@wallet-standard/wallet": "1.1.1"
   },
   "devDependencies": {
-    "@types/chrome": "0.3.5",
+    "@types/chrome": "0.3.6",
     "esbuild": "0.28.2",
     "typescript": "7.0.2"
   }
