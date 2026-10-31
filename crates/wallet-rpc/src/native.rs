@@ -5,7 +5,7 @@ use crate::convert::{
 };
 use serde_json::json;
 use solana_account_decoder_client_types::{UiAccountEncoding, UiDataSliceConfig};
-use solana_client::client_error::{ClientError, ClientErrorKind};
+use solana_client::client_error::{reqwest, ClientError, ClientErrorKind};
 use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_client::rpc_config::{
     RpcAccountInfoConfig, RpcProgramAccountsConfig, RpcSimulateTransactionAccountsConfig,
@@ -29,16 +29,47 @@ pub struct Backend {
     client: RpcClient,
 }
 
-/// The client's error, with a timeout and a node that could not be reached
-/// told apart from an answer the node gave.
+/// The text of an HTTP error, without the node's address. That can hold an API
+/// key, and this text reaches sites, the notices and the logs.
+fn http_error_text(err: &reqwest::Error) -> String {
+    let text = err.to_string();
+    match err.url() {
+        Some(url) => text
+            .replace(&format!(" for url ({url})"), "")
+            .replace(url.as_str(), "the node"),
+        None => text,
+    }
+}
+
+/// The client's error, with a timeout, a node that could not be reached and a
+/// request that got no answer told apart from an answer the node gave.
 fn client_error(err: ClientError) -> RpcError {
     match err.kind() {
         ClientErrorKind::Reqwest(inner) if inner.is_timeout() => RpcError::Timeout,
         ClientErrorKind::Reqwest(inner) if inner.is_connect() => {
-            RpcError::Unreachable(inner.to_string())
+            RpcError::Unreachable(http_error_text(inner))
         }
-        ClientErrorKind::Io(inner) => RpcError::Unreachable(inner.to_string()),
+        ClientErrorKind::Reqwest(inner) => rpc_error(http_error_text(inner)),
+        ClientErrorKind::Io(inner) => RpcError::NoAnswer(inner.to_string()),
         _ => rpc_error(err),
+    }
+}
+
+/// The error of a send. A server error may come from a proxy in front of the
+/// node, and a body that cannot be read says nothing either, so neither says
+/// the transaction was not taken.
+fn send_error(err: ClientError) -> RpcError {
+    match err.kind() {
+        ClientErrorKind::Reqwest(inner)
+            if inner.is_decode()
+                || inner
+                    .status()
+                    .is_some_and(|status| status.is_server_error()) =>
+        {
+            RpcError::NoAnswer(http_error_text(inner))
+        }
+        ClientErrorKind::SerdeJson(inner) => RpcError::NoAnswer(inner.to_string()),
+        _ => client_error(err),
     }
 }
 
@@ -220,7 +251,7 @@ impl Backend {
         self.client
             .send_transaction(&typed(wire)?)
             .await
-            .map_err(client_error)
+            .map_err(send_error)
     }
 
     pub async fn signature_statuses(
@@ -360,7 +391,161 @@ mod tests {
     use super::*;
     use solana_message::{Message as LegacyMessage, MessageHeader, VersionedMessage};
     use solana_signature::Signature;
+    use std::io::{Read, Write};
+    use std::net::{TcpListener, TcpStream};
     use wallet_core::{KeypairSigner, WalletSigner, SYSTEM_PROGRAM_ID};
+
+    /// A node on a local port that deals with every request by `serve`.
+    fn local_node(serve: impl Fn(TcpStream) + Send + 'static) -> String {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let url = format!("http://{}", listener.local_addr().unwrap());
+        std::thread::spawn(move || {
+            for stream in listener.incoming().flatten() {
+                serve(stream);
+            }
+        });
+        url
+    }
+
+    /// Reads the whole of one HTTP request.
+    fn read_request(stream: &mut TcpStream) {
+        let mut seen = Vec::new();
+        let mut chunk = [0; 4096];
+        loop {
+            let read = stream.read(&mut chunk).unwrap_or(0);
+            if read == 0 {
+                return;
+            }
+            seen.extend_from_slice(&chunk[..read]);
+            let text = String::from_utf8_lossy(&seen).to_ascii_lowercase();
+            let Some(head) = text.find("\r\n\r\n") else {
+                continue;
+            };
+            let length = text
+                .lines()
+                .find_map(|line| line.strip_prefix("content-length:"))
+                .and_then(|length| length.trim().parse::<usize>().ok())
+                .unwrap_or(0);
+            if seen.len() >= head + 4 + length {
+                return;
+            }
+        }
+    }
+
+    /// A node that answers every request with `status` and `body`.
+    fn answering(status: &'static str, body: &'static str) -> String {
+        local_node(move |mut stream| {
+            read_request(&mut stream);
+            let reply = format!(
+                "HTTP/1.1 {status}\r\ncontent-type: application/json\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{body}",
+                body.len()
+            );
+            let _ = stream.write_all(reply.as_bytes());
+        })
+    }
+
+    fn any_wire() -> Vec<u8> {
+        let payer = KeypairSigner::new_random().pubkey();
+        wincode::serialize(&VersionedTransaction {
+            signatures: vec![Signature::default()],
+            message: VersionedMessage::Legacy(LegacyMessage::new(&[], Some(&payer))),
+        })
+        .unwrap()
+    }
+
+    async fn send_to(url: &str, timeout: Duration) -> RpcError {
+        Backend::new(url, timeout)
+            .send(&any_wire())
+            .await
+            .unwrap_err()
+    }
+
+    const LONG: Duration = Duration::from_secs(20);
+
+    #[tokio::test]
+    async fn a_refused_connection_sent_nothing() {
+        let closed = {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            listener.local_addr().unwrap()
+        };
+        let err = send_to(&format!("http://{closed}"), LONG).await;
+        assert!(matches!(err, RpcError::Unreachable(_)), "{err:?}");
+        assert!(!err.may_have_gone_out());
+    }
+
+    #[tokio::test]
+    async fn a_node_that_says_no_has_not_taken_it() {
+        let url = answering(
+            "200 OK",
+            r#"{"jsonrpc":"2.0","id":1,"error":{"code":-32002,"message":"Transaction simulation failed"}}"#,
+        );
+        let err = send_to(&url, LONG).await;
+        assert!(matches!(err, RpcError::Message(_)), "{err:?}");
+        assert!(!err.may_have_gone_out());
+
+        let err = send_to(&answering("400 Bad Request", ""), LONG).await;
+        assert!(matches!(err, RpcError::Message(_)), "{err:?}");
+        assert!(!err.may_have_gone_out());
+    }
+
+    #[tokio::test]
+    async fn a_send_that_got_no_answer_may_have_gone_out() {
+        let dropped = local_node(|mut stream| {
+            read_request(&mut stream);
+            drop(stream);
+        });
+        let unreadable = answering("200 OK", "<html>not json</html>");
+        for (what, url) in [
+            ("dropped", dropped),
+            ("a proxy's error", answering("502 Bad Gateway", "")),
+            ("unreadable", unreadable),
+        ] {
+            let err = send_to(&url, LONG).await;
+            assert!(matches!(err, RpcError::NoAnswer(_)), "{what}: {err:?}");
+            assert!(err.may_have_gone_out(), "{what}");
+        }
+    }
+
+    #[tokio::test]
+    async fn an_error_never_holds_the_address_of_the_node() {
+        const SECRET: &str = "my-api-key";
+        let closed = {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            format!("http://{}", listener.local_addr().unwrap())
+        };
+        let dropped = local_node(|mut stream| {
+            read_request(&mut stream);
+            drop(stream);
+        });
+        for url in [
+            closed,
+            dropped,
+            answering("502 Bad Gateway", ""),
+            answering("400 Bad Request", ""),
+            answering("200 OK", "<html>not json</html>"),
+        ] {
+            let host = url.trim_start_matches("http://").to_owned();
+            let err = send_to(&format!("{url}/{SECRET}?api-key={SECRET}"), LONG).await;
+            let text = err.to_string();
+            assert!(!text.contains(SECRET), "{text}");
+            assert!(!text.contains(&host), "{text}");
+        }
+    }
+
+    #[tokio::test]
+    async fn a_send_that_timed_out_may_have_gone_out() {
+        let url = local_node(|mut stream| {
+            read_request(&mut stream);
+            // Answers nothing, and keeps the connection open.
+            std::thread::spawn(move || {
+                std::thread::sleep(Duration::from_secs(5));
+                drop(stream);
+            });
+        });
+        let err = send_to(&url, Duration::from_millis(300)).await;
+        assert!(matches!(err, RpcError::Timeout), "{err:?}");
+        assert!(err.may_have_gone_out());
+    }
 
     fn transfer_data() -> Vec<u8> {
         let mut data = 2u32.to_le_bytes().to_vec();

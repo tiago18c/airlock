@@ -11,6 +11,7 @@ import {
   isRequestId,
   jsonBytes,
   newRequestId,
+  replyWindowMs,
   shortCode,
   waitsForUser,
   type BridgeMethod,
@@ -166,7 +167,7 @@ function sendNative(request: NativeRequest, asker?: chrome.runtime.Port): Promis
         id: request.id,
         error: { code: "expired", message: "The desktop app did not answer in time." },
       });
-    }, track ? REQUEST_TTL_MS : QUICK_TTL_MS);
+    }, replyWindowMs(request.method, request.params));
 
     waiters.set(request.id, finish);
     if (track) {

@@ -8,6 +8,7 @@ import {
   RATE_LIMIT,
   RATE_WINDOW_MS,
   REQUEST_TTL_MS,
+  replyWindowMs,
 } from "../src/protocol";
 
 // The service worker itself, on a browser made of these. It keeps its state
@@ -266,10 +267,40 @@ test("a request nobody has to decide is given up on soon, one for the user is no
   assert.equal(quick.error.code, "expired");
   assert.equal(page.sent.length, 1);
 
-  mock.timers.tick(REQUEST_TTL_MS - QUICK_TTL_MS);
+  mock.timers.tick(replyWindowMs("signTransaction", {}) - QUICK_TTL_MS);
   const long = await lastReply(page);
   assert.equal(long.id, "long");
   assert.equal(long.error.code, "expired");
+});
+
+test("the app has the last word on a request for the user", () => {
+  const decide = replyWindowMs("signTransaction", {});
+  assert.ok(decide > REQUEST_TTL_MS);
+  assert.ok(replyWindowMs("connect", {}) === decide);
+  assert.equal(replyWindowMs("connect", { silent: true }), QUICK_TTL_MS);
+  assert.equal(replyWindowMs("status", undefined), QUICK_TTL_MS);
+});
+
+test("a send approved as time runs out is still waited for", async () => {
+  newWindow();
+  const page = pageOf("https://sending.test");
+  const appId = nextId(page, "signAndSendTransaction", { transactions: [] }, "send");
+
+  // Past what the user has to decide, and far past it.
+  mock.timers.tick(REQUEST_TTL_MS + 30 * 60 * 1000);
+  await settle();
+  assert.equal(page.sent.length, 0);
+
+  native.onMessage.fire({ v: 1, id: appId, result: { signatures: ["sig"] } });
+  assert.deepEqual((await lastReply(page)).result, { signatures: ["sig"] });
+
+  // An app that has stopped answering is given up on in the end.
+  const lost = nextId(page, "signAndSendAllTransactions", { transactions: [] }, "lost");
+  assert.ok(lost);
+  mock.timers.tick(replyWindowMs("signAndSendAllTransactions", {}));
+  const reply = await lastReply(page);
+  assert.equal(reply.id, "lost");
+  assert.equal(reply.error.code, "expired");
 });
 
 test("the app hears the pages only when the list of origins changes", async () => {

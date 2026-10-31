@@ -52,6 +52,8 @@ pub struct FakeRpc {
     /// The slot each read that can ask for one asked for.
     pub since: Mutex<Vec<u64>>,
     pub asked: AtomicUsize,
+    /// What a send ends in, when not the signature.
+    pub send_fails: Mutex<Option<RpcError>>,
 }
 
 impl FakeRpc {
@@ -93,6 +95,14 @@ impl FakeRpc {
     pub fn with_block_height(self, height: u64) -> Self {
         self.block_height.store(height, Ordering::SeqCst);
         self
+    }
+
+    /// Make every send end in `err`, or with `None`, succeed again.
+    pub fn set_send_fails(&self, err: Option<RpcError>) {
+        *self
+            .send_fails
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner) = err;
     }
 
     /// Update a signature's status while a tracker is polling.
@@ -256,7 +266,15 @@ impl SolanaRpc for FakeRpc {
 
     async fn send_transaction(&self, _wire: &[u8]) -> Result<Signature, RpcError> {
         self.count()?;
-        Ok(Signature::default())
+        let fails = self
+            .send_fails
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .clone();
+        match fails {
+            Some(err) => Err(err),
+            None => Ok(Signature::default()),
+        }
     }
 
     async fn get_signature_statuses(

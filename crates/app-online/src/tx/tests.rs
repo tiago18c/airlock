@@ -8,9 +8,10 @@ use app_core::{NoticeKind, TxStatus};
 use app_ui_kit::TxSubmit;
 use solana_signature::Signature;
 use wallet_core::{
-    apply_local_signatures, parse_wire, Cluster, ConfirmationLevel, KeypairSigner, SignatureStatus,
-    SolanaRpc, WalletSigner,
+    apply_local_signatures, parse_wire, Cluster, ConfirmationLevel, KeypairSigner, RpcError,
+    SignatureStatus, SolanaRpc, WalletSigner,
 };
+use wallet_flows::send::SendFailure;
 use wallet_flows::testing::{legacy_transfer, pk, transfer, FakeRpc};
 use wallet_flows::track::{POLL_INTERVAL, SITE_SEND_POLL, SITE_SEND_WINDOW, TRACK_TIMEOUT};
 
@@ -304,6 +305,112 @@ async fn submitter_is_the_only_send_path() {
         }
         other => panic!("expected Sent notice, got {other:?}"),
     }
+}
+
+fn confirmed() -> Option<SignatureStatus> {
+    Some(SignatureStatus {
+        slot: 9,
+        err: None,
+        confirmation: Some(ConfirmationLevel::Confirmed),
+    })
+}
+
+fn transaction_notices(kit: &app_core::testing::Kit) -> usize {
+    kit.core
+        .slices()
+        .notices
+        .get()
+        .items()
+        .iter()
+        .filter(|n| matches!(n.kind, NoticeKind::Transaction { .. }))
+        .count()
+}
+
+#[tokio::test]
+async fn a_send_with_no_answer_is_followed_and_can_still_land() {
+    for no_answer in [RpcError::Timeout, RpcError::NoAnswer("reset".into())] {
+        let kit = kit();
+        let rpc = Arc::new(FakeRpc::default());
+        rpc.set_send_fails(Some(no_answer));
+        let (wire, signature) = signed_legacy(&KeypairSigner::new_random());
+        let tracker = Tracker::new(kit.core.public());
+        let submitter = Submitter::new(kit.core.public(), tracker);
+
+        let failure = submitter
+            .send(rpc.clone(), &wire, 7, "Sign", &Cluster::Devnet, None)
+            .await
+            .unwrap_err();
+        assert!(matches!(
+            &failure,
+            SendFailure::Unknown { signature: found, why }
+                if *found == signature && why.contains("may still land")
+        ));
+        settle().await;
+        assert_eq!(status_of(&kit, signature), Some(TxStatus::Sent));
+
+        rpc.set_signature_status(signature, confirmed());
+        advance_polls(&kit.clock, 2).await;
+        assert_eq!(
+            status_of(&kit, signature),
+            Some(TxStatus::Confirmed { slot: 9 })
+        );
+    }
+}
+
+#[tokio::test]
+async fn a_send_that_never_left_or_was_refused_is_final() {
+    for refused in [
+        RpcError::Unreachable("connection refused".into()),
+        RpcError::Message("Transaction simulation failed".into()),
+    ] {
+        let kit = kit();
+        let rpc = Arc::new(FakeRpc::default());
+        rpc.set_send_fails(Some(refused));
+        let (wire, signature) = signed_legacy(&KeypairSigner::new_random());
+        let tracker = Tracker::new(kit.core.public());
+        let submitter = Submitter::new(kit.core.public(), tracker);
+
+        let failure = submitter
+            .send(rpc.clone(), &wire, 7, "Sign", &Cluster::Devnet, None)
+            .await
+            .unwrap_err();
+        assert!(matches!(failure, SendFailure::Failed(_)));
+        settle().await;
+        assert!(matches!(
+            status_of(&kit, signature),
+            Some(TxStatus::Rejected { .. })
+        ));
+    }
+}
+
+#[tokio::test]
+async fn sending_again_after_no_answer_keeps_one_notice_that_can_still_end() {
+    let kit = kit();
+    let rpc = Arc::new(FakeRpc::default());
+    let (wire, signature) = signed_legacy(&KeypairSigner::new_random());
+    let tracker = Tracker::new(kit.core.public());
+    let submitter = Submitter::new(kit.core.public(), tracker);
+    let send = || submitter.send(rpc.clone(), &wire, 7, "Sign", &Cluster::Devnet, None);
+
+    rpc.set_send_fails(Some(RpcError::Timeout));
+    assert!(matches!(send().await, Err(SendFailure::Unknown { .. })));
+    // Still no answer.
+    assert!(matches!(send().await, Err(SendFailure::Unknown { .. })));
+    // The first went through after all, and the node says so.
+    rpc.set_send_fails(Some(RpcError::Message(
+        "This transaction has already been processed".into(),
+    )));
+    assert!(matches!(send().await, Err(SendFailure::Failed(_))));
+    settle().await;
+    assert_eq!(transaction_notices(&kit), 1);
+    assert_eq!(status_of(&kit, signature), Some(TxStatus::Sent));
+
+    rpc.set_signature_status(signature, confirmed());
+    advance_polls(&kit.clock, 2).await;
+    assert_eq!(
+        status_of(&kit, signature),
+        Some(TxStatus::Confirmed { slot: 9 })
+    );
 }
 
 #[tokio::test]

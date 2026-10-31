@@ -439,15 +439,16 @@ Connected and Authorized also have **Block**. Disconnecting or revoking rejects 
 - **A transaction goes only with every signature.** A slot left for the site, which `signTransaction` allows, keeps Sign off.
 - **The network has to match.** On another network the modal says so and Sign stays off until the user changes it, and the app checks again as it sends. A custom node whose genesis is none of the public ones cannot be compared, and is taken as the user's choice. `signTransaction` only warns, because the signature goes back to a site that may know better.
 - **Approving takes the request out of the queue,** so it cannot be rejected while it goes out. Each transaction gets a toast, as if sent from Sign.
-- **The reply comes when the node accepts it.** With `options.commitment` it waits for that level, for at most 90 seconds. The other options (`skipPreflight`, `maxRetries`, `preflightCommitment`, `minContextSlot`) are not passed on: the app sends as it always does.
+- **The reply comes when the node accepts it.** With `options.commitment` it waits for that level, for at most 90 seconds. If it does not get there, the site gets `send_unknown`.
+- **A node that does not answer has not said no.** A timeout, a dropped connection or a proxy's error says nothing about whether the node took it, so the transaction gets a toast as if sent and is followed. The site gets its signature if it is seen within 90 seconds, and `send_unknown` if not, never `send_failed`, which could lead it to send the same thing again. A node that refuses the connection, or answers with an error, gets `send_failed`. The same goes for Sign, which leaves the transaction on screen, because sending the same bytes again is safe. The other options (`skipPreflight`, `maxRetries`, `preflightCommitment`, `minContextSlot`) are not passed on: the app sends as it always does.
 
 The transactions of one request are approved together, at most 16. How they go out:
 
 | Request | Sent | A failure |
 | --- | --- | --- |
-| `signAndSendTransaction` | In order, none waiting for the last to confirm | Stops the rest. The site gets `send_failed` |
-| `signAndSendAllTransactions`, `parallel` (the default) | In order, none waiting, and all before any commitment is waited for | Touches only that one |
-| `signAndSendAllTransactions`, `serial` | Each once the last reaches its commitment, or confirmed when it names none | The rest are not sent and report that |
+| `signAndSendTransaction` | In order, none waiting for the last to confirm. One the node gave no answer about is looked for before the next goes | Stops the rest. The site gets `send_failed`, or `send_unknown` if any may still land |
+| `signAndSendAllTransactions`, `parallel` (the default) | In order, none waiting, and all before any commitment is waited for | Touches only that one, which reports `send_failed` or `send_unknown` |
+| `signAndSendAllTransactions`, `serial` | Each once the last reaches its commitment, or confirmed when it names none | The rest are not sent and report that, and that one reports `send_failed` or `send_unknown` |
 
 The standard does not say what the modes mean or which is the default. This is how Airlock reads them.
 

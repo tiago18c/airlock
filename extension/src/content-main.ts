@@ -3,8 +3,8 @@ import {
   BridgeError,
   EXTENSION_SOURCE,
   PAGE_SOURCE,
-  REQUEST_TTL_MS,
   newRequestId,
+  replyWindowMs,
   type AccountWire,
   type BridgeMethod,
 } from "./protocol";
@@ -31,7 +31,7 @@ function callDesktop(method: BridgeMethod, params?: unknown): Promise<unknown> {
     const timer = window.setTimeout(() => {
       window.removeEventListener("message", onMessage);
       reject(new BridgeError("expired", "Airlock did not answer in time."));
-    }, REQUEST_TTL_MS + 2000);
+    }, replyWindowMs(method, params) + 2000);
 
     function onMessage(event: MessageEvent) {
       if (event.source !== window) return;
