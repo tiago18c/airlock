@@ -46,6 +46,8 @@ pub enum NoticeKind {
     },
     /// The vault locked (user, hidden timeout, or idle).
     VaultLocked { reason: LockReason },
+    /// The vault's file was damaged, so its backup was opened.
+    VaultRecovered,
     /// A background sync job failed (at most one per job until it succeeds).
     SyncFailed { job: String, error: String },
     /// A deferred store write failed; the change is still in memory.
@@ -368,6 +370,7 @@ pub fn notice_row_text(notice: &Notice) -> String {
             LockReason::Hidden => "Vault locked · window hidden".into(),
             LockReason::Idle => "Vault locked · idle".into(),
         },
+        NoticeKind::VaultRecovered => "The vault's file was damaged, so the copy kept before its last save was opened. The last change to the vault may be missing. The damaged file is kept beside it, with .unreadable added to its name.".into(),
         NoticeKind::SyncFailed { job, error } => {
             format!("Sync failed · {job}: {error}")
         }

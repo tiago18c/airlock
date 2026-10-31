@@ -6,3 +6,4 @@ mod notices;
 mod old_files;
 mod public;
 mod saving;
+mod vault_file;

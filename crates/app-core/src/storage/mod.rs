@@ -48,6 +48,10 @@ impl VaultStore for BoxedStore {
         self.0.set_aside(bytes)
     }
 
+    fn load_backup(&self) -> Result<Option<Vec<u8>>, VaultError> {
+        self.0.load_backup()
+    }
+
     fn discard_backup(&self) -> Result<(), VaultError> {
         self.0.discard_backup()
     }

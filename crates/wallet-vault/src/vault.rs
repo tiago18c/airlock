@@ -1,6 +1,6 @@
 //! The vault: one encrypted document, held open in memory while unlocked.
 
-use crate::seal::{open as unseal, SealKey};
+use crate::seal::{open as unseal, open_or_backup, SealKey};
 use crate::store::VaultStore;
 use crate::VaultError;
 use serde::de::DeserializeOwned;
@@ -53,6 +53,28 @@ fn unnumbered() -> u32 {
 pub struct Vault<S: VaultStore, D> {
     store: S,
     open: Option<Open<D>>,
+    presence: Presence,
+    /// The last unlock found the file damaged and opened its backup.
+    recovered: bool,
+}
+
+/// What the store held when it was last read. Kept, so that asking takes no
+/// read: a screen asks on every render.
+enum Presence {
+    Absent,
+    Present,
+    /// Reading it failed, which says nothing of what it holds.
+    Unreadable(String),
+}
+
+impl Presence {
+    fn of(read: &Result<Option<Vec<u8>>, VaultError>) -> Self {
+        match read {
+            Ok(Some(_)) => Self::Present,
+            Ok(None) => Self::Absent,
+            Err(err) => Self::Unreadable(err.to_string()),
+        }
+    }
 }
 
 /// What an unlocked vault holds: the document and the key to seal it with.
@@ -63,15 +85,48 @@ struct Open<D> {
 
 impl<S: VaultStore, D: Document> Vault<S, D> {
     pub fn new(store: S) -> Self {
-        Self { store, open: None }
+        let presence = Presence::of(&store.load());
+        Self {
+            store,
+            open: None,
+            presence,
+            recovered: false,
+        }
     }
 
     pub fn is_unlocked(&self) -> bool {
         self.open.is_some()
     }
 
+    /// Whether a vault is stored, as of the last read of the store. An error
+    /// when that read failed: not knowing is not the same as there being none.
     pub fn is_initialized(&self) -> Result<bool, VaultError> {
-        Ok(self.store.load()?.is_some())
+        match &self.presence {
+            Presence::Absent => Ok(false),
+            Presence::Present => Ok(true),
+            Presence::Unreadable(why) => Err(VaultError::Io(why.clone())),
+        }
+    }
+
+    /// Why the store could not be read, as of the last time it was.
+    pub fn read_problem(&self) -> Option<&str> {
+        match &self.presence {
+            Presence::Unreadable(why) => Some(why),
+            Presence::Absent | Presence::Present => None,
+        }
+    }
+
+    /// Whether the last unlock found the file damaged and opened the backup
+    /// instead. Answers once.
+    pub fn take_recovered(&mut self) -> bool {
+        std::mem::take(&mut self.recovered)
+    }
+
+    /// Read the store, and note what it held.
+    fn read(&mut self) -> Result<Option<Vec<u8>>, VaultError> {
+        let read = self.store.load();
+        self.presence = Presence::of(&read);
+        read
     }
 
     pub fn data(&self) -> Result<&D, VaultError> {
@@ -89,8 +144,12 @@ impl<S: VaultStore, D: Document> Vault<S, D> {
     }
 
     /// Start an empty vault under `password` and save it. When the save
-    /// fails the vault stays locked.
+    /// fails the vault stays locked. Only over nothing: a store that holds a
+    /// vault, or that cannot be read, is refused and left as it is.
     pub fn create(&mut self, password: &str) -> Result<(), VaultError> {
+        if self.read()?.is_some() {
+            return Err(VaultError::AlreadyExists);
+        }
         self.open = Some(Open {
             data: D::default(),
             key: SealKey::new(password)?,
@@ -102,12 +161,26 @@ impl<S: VaultStore, D: Document> Vault<S, D> {
         saved
     }
 
+    /// Open the vault. A file that turns out damaged is opened from the
+    /// backup the store keeps of the save before: the damaged bytes are set
+    /// aside, the file is written whole again, and
+    /// [`take_recovered`](Self::take_recovered) says so.
     pub fn unlock(&mut self, password: &str) -> Result<(), VaultError> {
-        let bytes = self.store.load()?.ok_or(VaultError::NotInitialized)?;
-        let (key, mut json) = unseal(password, &bytes)?;
-        let opened = open::<D>(&json);
-        json.zeroize();
-        self.open = Some(Open { data: opened?, key });
+        let bytes = self.read()?.ok_or(VaultError::NotInitialized)?;
+        let backup = self.store.load_backup().ok().flatten();
+        let mut unsealed = open_or_backup(password, &bytes, backup.as_deref())?;
+        let opened = open::<D>(&unsealed.plaintext);
+        unsealed.plaintext.zeroize();
+        self.open = Some(Open {
+            data: opened?,
+            key: unsealed.key,
+        });
+        if unsealed.from_backup {
+            self.recovered = true;
+            // What is open is right, and the next save tries again.
+            let _ = self.store.set_aside(&bytes);
+            let _ = self.save();
+        }
         Ok(())
     }
 
@@ -121,8 +194,8 @@ impl<S: VaultStore, D: Document> Vault<S, D> {
             return Err(VaultError::Locked);
         }
         let bytes = self.store.load()?.ok_or(VaultError::NotInitialized)?;
-        let (_, mut json) = unseal(current, &bytes)?;
-        json.zeroize();
+        let mut unsealed = unseal(current, &bytes)?;
+        unsealed.plaintext.zeroize();
         let key = SealKey::new(new)?;
         let open = self.open.as_mut().ok_or(VaultError::Locked)?;
         let old = std::mem::replace(&mut open.key, key);
@@ -154,7 +227,9 @@ impl<S: VaultStore, D: Document> Vault<S, D> {
             serde_json::to_vec(&sealing).map_err(|e| VaultError::Serde(e.to_string()))?;
         let blob = open.key.seal(&json);
         json.zeroize();
-        self.store.save(&blob?)
+        self.store.save(&blob?)?;
+        self.presence = Presence::Present;
+        Ok(())
     }
 }
 
@@ -263,6 +338,87 @@ mod tests {
                 expected: 3
             })
         ));
+    }
+
+    fn stored_vault() -> std::sync::Arc<MemoryStore> {
+        let store = std::sync::Arc::new(MemoryStore::new());
+        let mut vault: Vault<_, Notes> = Vault::new(store.clone());
+        vault.create("pw").unwrap();
+        vault
+            .change(|notes| notes.lines.push("Bob".into()))
+            .unwrap();
+        store
+    }
+
+    #[test]
+    fn a_store_that_cannot_be_read_is_not_taken_for_an_empty_one() {
+        let store = stored_vault();
+        let sealed = store.load().unwrap().unwrap();
+        store.refuse_reads(true);
+        let mut vault: Vault<_, Notes> = Vault::new(store.clone());
+
+        assert!(vault.is_initialized().is_err());
+        assert!(matches!(vault.create("new"), Err(VaultError::Io(_))));
+        assert!(!vault.is_unlocked());
+        assert!(matches!(vault.unlock("pw"), Err(VaultError::Io(_))));
+
+        store.refuse_reads(false);
+        assert_eq!(store.load().unwrap().unwrap(), sealed);
+        vault.unlock("pw").unwrap();
+        assert!(vault.is_initialized().unwrap());
+        assert_eq!(vault.data().unwrap().lines, ["Bob"]);
+    }
+
+    #[test]
+    fn a_new_vault_is_never_made_over_one_that_is_stored() {
+        let store = stored_vault();
+        let sealed = store.load().unwrap().unwrap();
+        let mut vault: Vault<_, Notes> = Vault::new(store.clone());
+        assert!(matches!(
+            vault.create("new"),
+            Err(VaultError::AlreadyExists)
+        ));
+        assert!(!vault.is_unlocked());
+        assert_eq!(store.load().unwrap().unwrap(), sealed);
+        vault.unlock("pw").unwrap();
+    }
+
+    #[test]
+    fn asking_whether_a_vault_is_stored_does_not_read_the_store() {
+        let store = stored_vault();
+        let vault: Vault<_, Notes> = Vault::new(store.clone());
+        store.refuse_reads(true);
+        assert!(vault.is_initialized().unwrap());
+    }
+
+    #[test]
+    fn a_damaged_file_opens_from_its_backup_and_is_written_whole_again() {
+        let store = stored_vault();
+        store.damage(b"not a sealed file");
+        let mut vault: Vault<_, Notes> = Vault::new(store.clone());
+
+        // The wrong password finds nothing, and nothing changes.
+        assert!(matches!(
+            vault.unlock("nope"),
+            Err(VaultError::UnlockFailed)
+        ));
+        assert_eq!(store.set_aside_bytes(), None);
+
+        vault.unlock("pw").unwrap();
+        assert!(vault.take_recovered());
+        assert!(!vault.take_recovered());
+        // The backup holds the save before the last. The empty vault it was
+        // made from came before "Bob".
+        assert!(vault.data().unwrap().lines.is_empty());
+        assert_eq!(
+            store.set_aside_bytes().as_deref(),
+            Some(&b"not a sealed file"[..])
+        );
+
+        // Reading it again finds a whole file.
+        vault.lock();
+        vault.unlock("pw").unwrap();
+        assert!(!vault.take_recovered());
     }
 
     #[test]

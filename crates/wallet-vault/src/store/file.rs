@@ -56,6 +56,10 @@ impl VaultStore for FileStore {
         write_synced(&sibling(&self.path, ".unreadable"), bytes)
     }
 
+    fn load_backup(&self) -> Result<Option<Vec<u8>>, VaultError> {
+        read_optional(&sibling(&self.path, ".bak"))
+    }
+
     fn discard_backup(&self) -> Result<(), VaultError> {
         match std::fs::remove_file(sibling(&self.path, ".bak")) {
             Ok(()) => sync_parent(&self.path),

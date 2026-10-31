@@ -46,6 +46,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - Share opens on Everything, now its first tab. Its Signatures tab has tabs of its own: Local, which it opens on, puts the signatures made by keys on this device in one transfer; All puts every signature in one transfer; Individual shows a code for each.
 
 ### Fixed
+- A damaged `vault.json` no longer locks you out while a good copy sits beside it. Unlocking opens the copy kept before the last save, keeps the damaged file as `vault.json.unreadable`, and tells you the last change to the vault may be missing.
 - A request waiting in the app no longer holds up other requests from the same browser. A site reloading while a modal was open, for one, waited until that modal was answered.
 - A browser request that expired unanswered could stop that browser's connection to the app.
 - A page left open for a while could lose its connection to the extension and fail its next request.
@@ -56,6 +57,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - A transaction that went back to a site from Review and Sign is not sent twice. The site may send it itself, so Submit waits up to 10 seconds while the app watches for it on chain. If it lands, a toast says the site sent it and follows it to confirmed, and Submit stays off. If it does not, a toast says the site did not send it, and Submit turns on. In a batch, each transaction is watched for on its own.
 
 ### Security
+- A vault whose file could not be read for a moment was taken for no vault at all, and Airlock offered to create a new one over it. Doing so, then saving once more, destroyed the real vault. Airlock now says the file could not be read, offers to unlock, which tries the file again, and refuses to create a vault over a file that exists or cannot be read.
 - An IDL read from the chain can no longer crash or freeze Airlock. A type that linked to itself ended the app as soon as a transaction named its program, types that each named the next one twice froze the app for minutes or more, and a long list of empty items could use all its memory. Airlock now shows such an instruction undecoded. Any program's author could publish one, and a connected site only had to send a transaction naming the program.
 - More secrets are wiped from memory once used: the seeds a Vector wallet's key is rebuilt from, the seeds and normalized words of a recovery phrase (BIP-39 mnemonics now wipe themselves), the words on the add-Vector-wallet form when it closes, and the password field after a failed unlock as well as a successful one.
 - On desktop, when none of `AIRLOCK_DATA_DIR` (or `AIRLOCK_OFFLINE_DATA_DIR`), `LOCALAPPDATA`, `XDG_DATA_HOME` and `HOME` is set, the app refuses to start and says so. Before, it kept its vault and its record of used signing leaves in whatever folder it was started from, so a second launch from elsewhere had neither. The native host then keeps no log instead.

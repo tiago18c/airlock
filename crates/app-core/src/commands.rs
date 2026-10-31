@@ -111,6 +111,9 @@ impl Core {
     /// native shell calls this inside its tokio runtime.
     pub fn open(ports: Ports) -> Core {
         let vault = open_vault_in(&*ports.storage);
+        if let Some(why) = vault.read_problem() {
+            warn!(target: VAULT, error = %why, "could not read the vault file");
+        }
         let wallet_list = open_wallet_list_in(&*ports.storage);
         let workspace = open_workspace_in(&*ports.storage);
         let holdings = open_holdings_in(&*ports.storage);
@@ -460,6 +463,11 @@ impl Core {
     /// copy was kept or saving is blocked.
     pub fn load_problems(&self) -> Vec<String> {
         let mut out = Vec::new();
+        if let Some(why) = locked(&self.inner.vault).read_problem() {
+            out.push(format!(
+                "Could not read the vault's file ({why}). It was left as it is. Unlocking tries it again."
+            ));
+        }
         if let Some(problem) = locked(&self.inner.workspace).load_problem() {
             out.push(problem.message().to_string());
         }
@@ -1240,23 +1248,38 @@ impl Inner {
     fn create_vault(&self, password: &str) -> Result<(), VaultError> {
         let _span = debug_span!(target: CORE, "command", name = "create_vault").entered();
         let mut vault = locked(&self.vault);
+        let before = vault_state_from(&vault);
         let created = vault.create(password);
         if created.is_ok() {
             info!(target: VAULT, "created");
+        }
+        if created.is_ok() || vault_state_from(&vault) != before {
             self.publish_vault(&vault);
         }
         report_command(&created);
         created
     }
 
-    fn unlock(&self, password: &str) -> Result<(), VaultError> {
+    fn unlock(self: &Arc<Self>, password: &str) -> Result<(), VaultError> {
         let _span = debug_span!(target: CORE, "command", name = "unlock").entered();
-        let mut vault = locked(&self.vault);
-        let unlocked = vault.unlock(password);
-        if unlocked.is_ok() {
-            info!(target: VAULT, "unlocked");
-            self.adopt_locked_choice(&mut vault);
-            self.publish_vault(&vault);
+        let (unlocked, recovered) = {
+            let mut vault = locked(&self.vault);
+            let before = vault_state_from(&vault);
+            let unlocked = vault.unlock(password);
+            if unlocked.is_ok() {
+                info!(target: VAULT, "unlocked");
+                self.adopt_locked_choice(&mut vault);
+                self.publish_vault(&vault);
+            } else if vault_state_from(&vault) != before {
+                // A file that could not be read before can be now, or the
+                // other way round.
+                self.publish_vault(&vault);
+            }
+            (unlocked, vault.take_recovered())
+        };
+        if recovered {
+            warn!(target: VAULT, "the vault's file was damaged, and its backup was opened");
+            let _ = self.notices_push(NoticeKind::VaultRecovered);
         }
         report_command(&unlocked);
         unlocked
