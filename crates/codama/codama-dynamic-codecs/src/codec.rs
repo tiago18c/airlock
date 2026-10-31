@@ -2,6 +2,8 @@ use crate::value::{NumberValue, Value};
 use codama_nodes::{Endianness, NumberFormat, PostOffsetStrategy, PreOffsetStrategy};
 use codama_visitors_core::{DynamicError as CodamaError, DynamicResult as CodamaResult};
 use indexmap::IndexMap;
+use std::cell::Cell;
+use std::rc::Rc;
 
 /// A runtime codec able to encode a [`Value`] to bytes and decode it back.
 ///
@@ -401,6 +403,45 @@ impl Codec for ArrayCodec {
             CodecCount::Fixed(n) => self.item.fixed_size().map(|s| s * n),
             _ => None,
         }
+    }
+}
+
+/// How many items that consume no bytes one codec reads, in all its lists.
+const MAX_EMPTY_ITEMS: usize = 1 << 12;
+
+/// An item of a list or a key of a map, counted when it consumes no bytes.
+///
+/// How many items a list holds comes from the IDL or from the bytes. An item
+/// that consumes nothing never runs out of input, so nothing else stops four
+/// billion empty structs, or a list of lists of them.
+pub struct ListItemCodec {
+    pub item: Box<dyn Codec>,
+    /// Shared by every list of one codec.
+    pub empty_items: Rc<Cell<usize>>,
+}
+
+impl Codec for ListItemCodec {
+    fn encode(&self, value: &Value, out: &mut Vec<u8>) -> CodamaResult<()> {
+        self.item.encode(value, out)
+    }
+
+    fn decode(&self, input: &mut &[u8]) -> CodamaResult<Value> {
+        let before = input.len();
+        let value = self.item.decode(input)?;
+        if input.len() == before {
+            let empty_items = self.empty_items.get() + 1;
+            if empty_items > MAX_EMPTY_ITEMS {
+                return Err(err(format!(
+                    "more than {MAX_EMPTY_ITEMS} list items consumed no bytes"
+                )));
+            }
+            self.empty_items.set(empty_items);
+        }
+        Ok(value)
+    }
+
+    fn fixed_size(&self) -> Option<usize> {
+        self.item.fixed_size()
     }
 }
 

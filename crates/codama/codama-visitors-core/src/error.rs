@@ -20,6 +20,12 @@ pub enum DynamicError {
     #[error("Linked `{kind}` node not found: `{name}`")]
     LinkedNodeNotFound { kind: String, name: String },
 
+    #[error("A type nests more than {0} levels deep, or links to itself")]
+    TypeTooDeep(usize),
+
+    #[error("A type expands to more than {0} nodes")]
+    TypeTooLarge(usize),
+
     #[error("Cannot remove the last path in the node stack")]
     CannotRemoveLastPathInNodeStack,
 
