@@ -2,7 +2,6 @@
 //! bytes that are signed. Only a wallet with a key on this device can do either.
 
 use super::*;
-use crate::bridge::{message_account, message_bytes, sign_in_request};
 use wallet_core::site_message::{message_text, SignIn};
 use wallet_core::ShareableAccount;
 
@@ -42,9 +41,11 @@ fn UnlockFirst() -> Element {
 
 #[component]
 pub(in crate::ui) fn MessageRequest(current: BridgePrompt, on_close: EventHandler<()>) -> Element {
+    let SiteCall::SignMessage { account, message } = &current.request.call else {
+        return rsx! {};
+    };
+    let (account, bytes) = (*account, message.clone());
     let session = use_context::<Session>();
-    let account = message_account(&current.params);
-    let bytes = message_bytes(&current.params).unwrap_or_default();
     let mut error = use_signal(|| None::<String>);
     let unlocked = session.is_unlocked();
     let reject_id = current.id.clone();
@@ -54,9 +55,7 @@ pub(in crate::ui) fn MessageRequest(current: BridgePrompt, on_close: EventHandle
     rsx! {
         RequestHead { current: current.clone(), title: "Sign message".to_string(), on_close }
         div { class: "request-body",
-            if let Some(account) = account {
-                AddressRow { pubkey: account, no_copy: true }
-            }
+            AddressRow { pubkey: account, no_copy: true }
             MessageBody { bytes }
             p { class: "hint",
                 "Signing costs nothing, but a site or a program can act on what you sign. Sign only what you understand."
@@ -77,11 +76,8 @@ pub(in crate::ui) fn MessageRequest(current: BridgePrompt, on_close: EventHandle
             }
             button {
                 class: "primary",
-                disabled: !unlocked || account.is_none(),
+                disabled: !unlocked,
                 onclick: move |_| {
-                    let Some(account) = account else {
-                        return;
-                    };
                     match session.sign_site_message(account, &to_sign) {
                         Ok(signature) => {
                             let answer = BridgeAnswer::SignedMessage {
@@ -117,9 +113,12 @@ fn sign_in_accounts(accounts: Vec<ShareableAccount>, sign_in: &SignIn) -> Vec<Sh
 
 #[component]
 pub(in crate::ui) fn SignInRequest(current: BridgePrompt, on_close: EventHandler<()>) -> Element {
+    let SiteCall::SignIn(sign_in) = &current.request.call else {
+        return rsx! {};
+    };
+    let sign_in = (**sign_in).clone();
     let session = use_context::<Session>();
     let origin = current.origin.clone();
-    let sign_in = sign_in_request(&current.params).unwrap_or_default();
     let accounts = sign_in_accounts(session.shareable_accounts(), &sign_in);
     let start_origin = origin.clone();
     let start = use_hook(move || session.site_choice(&start_origin));

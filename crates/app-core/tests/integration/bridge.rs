@@ -3,17 +3,37 @@
 
 use std::sync::mpsc;
 
-use app_core::bridge::{BridgeAnswer, BridgeRefused, BridgeReply, BridgeRequest};
+use app_core::bridge::{
+    BridgeAnswer, BridgeRefused, BridgeReply, BridgeRequest, SiteCall, SiteTransaction, SiteWire,
+};
 use app_core::testing::{kit, kit_on, settle, MemoryStorage};
 use app_core::{BridgeRequestOutcome, Event, NoticeKind};
 use serde_json::Value;
 
+fn unsigned() -> SiteTransaction {
+    SiteTransaction {
+        account: solana_pubkey::Pubkey::new_from_array([1; 32]),
+        wire: SiteWire::Unreadable(1),
+        chain: None,
+        commitment: None,
+    }
+}
+
 fn request(id: &str, method: &str) -> BridgeRequest {
+    let call = match method {
+        "connect" => SiteCall::Connect,
+        "signIn" => SiteCall::SignIn(Default::default()),
+        "signMessage" => SiteCall::SignMessage {
+            account: solana_pubkey::Pubkey::new_from_array([1; 32]),
+            message: vec![1],
+        },
+        "signTransaction" => SiteCall::SignTransactions(vec![unsigned()]),
+        other => panic!("no such request: {other}"),
+    };
     BridgeRequest {
         id: id.into(),
         origin: "https://example.org".into(),
-        method: method.into(),
-        params: Value::Null,
+        call,
     }
 }
 
@@ -326,9 +346,7 @@ async fn a_batch_goes_back_only_whole() {
     let kit = kit();
     let (send, answer) = reply();
     let mut batch = request("b1", "signTransaction");
-    batch.params = serde_json::json!({
-        "transactions": [{ "transaction": "gQ==" }, { "transaction": "gQ==" }, { "transaction": "gQ==" }]
-    });
+    batch.call = SiteCall::SignTransactions(vec![unsigned(); 3]);
     kit.core.public().bridge_push(batch, send).unwrap();
     assert_eq!(
         kit.core

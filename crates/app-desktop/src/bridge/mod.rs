@@ -17,16 +17,20 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use std::{io, thread};
 
 use app_core::bridge::{
-    BridgeQueue, BridgeRefused, BridgeRequest, SiteConnect, SiteSign, SEND, SEND_ALL,
+    BridgeQueue, BridgeRefused, BridgeRequest, SendPlan, SiteCall, SiteConnect, SiteSign,
+    SiteTransaction, SiteWire, SEND, SEND_ALL,
 };
 use app_core::PublicCore;
 use base64::Engine;
 use bridge_host::endpoint::Endpoint;
 use bridge_host::relay::{Answer, Connection, FrameSender};
-use bridge_protocol::reply;
+use bridge_protocol::{reply, Frame};
+use serde::Deserialize;
 use serde_json::{json, Value};
 use solana_pubkey::Pubkey;
 use tokio::sync::watch;
+use wallet_core::site_message::SignIn;
+use wallet_core::{ConfirmationLevel, TxFormat};
 
 #[cfg(test)]
 mod tests;
@@ -200,37 +204,28 @@ impl Bridge {
 
     /// What becomes of one frame from the native host. A request that goes to
     /// the user joins `waiting`.
-    fn answer(&self, message: &[u8], waiting: &Waiting) -> Answer {
-        let value: Value = match serde_json::from_slice(message) {
-            Ok(value) => value,
-            Err(_) => {
-                return Answer::Now(reply::error("", "bad_request", "The request is not JSON."))
-            }
-        };
-        let id = value
-            .get("id")
-            .and_then(Value::as_str)
-            .unwrap_or("")
-            .to_owned();
-        if value.get("v").and_then(Value::as_u64) != Some(1) {
+    fn answer(&self, frame: Frame, waiting: &Waiting) -> Answer {
+        let Frame {
+            version,
+            id,
+            origin,
+            expires_at,
+            method,
+            params,
+        } = frame;
+        if version != Some(1) {
             return Answer::Now(reply::error(
                 &id,
                 "bad_request",
                 "Unsupported bridge version.",
             ));
         }
-        if let Some(expires) = value.get("expiresAt").and_then(Value::as_u64) {
+        if let Some(expires) = expires_at {
             if expires < now_secs() {
                 return Answer::Now(reply::error(&id, "expired", "The request expired."));
             }
         }
-        let method = value.get("method").and_then(Value::as_str).unwrap_or("");
-        let origin = value
-            .get("origin")
-            .and_then(Value::as_str)
-            .unwrap_or("")
-            .to_owned();
-        let params = value.get("params").cloned().unwrap_or(Value::Null);
+        let method = method.as_str();
 
         let core = self.shared.core.get();
         let silent =
@@ -289,68 +284,44 @@ impl Bridge {
                 SiteConnect::Allowed(accounts) => Answer::Now(reply::connected(&id, &accounts)),
                 _ if silent => Answer::Now(reply::result(&id, json!({ "accounts": [] }))),
                 SiteConnect::Blocked => Answer::Now(blocked(&id)),
-                SiteConnect::Undecided => wait_for_user(
-                    core,
-                    BridgeRequest {
+                SiteConnect::Undecided => {
+                    let request = BridgeRequest {
                         id,
                         origin,
-                        method: method.to_owned(),
-                        params,
-                    },
-                    DECISION_TIMEOUT,
-                    waiting,
-                ),
+                        call: SiteCall::Connect,
+                    };
+                    wait_for_user(core, request, DECISION_TIMEOUT, waiting)
+                }
             },
-            ("signMessage", Some(core)) => {
-                let answer = check_message_request(core, &origin, &params);
-                match answer {
-                    Ok(()) => wait_for_user(
-                        core,
-                        BridgeRequest {
-                            id,
-                            origin,
-                            method: method.to_owned(),
-                            params,
-                        },
-                        DECISION_TIMEOUT,
-                        waiting,
-                    ),
-                    Err(message) => Answer::Now(reply::error(&id, "rejected", &message)),
+            ("signMessage", Some(core)) => match read_message_request(core, &origin, &params) {
+                Ok(call) => {
+                    let request = BridgeRequest { id, origin, call };
+                    wait_for_user(core, request, DECISION_TIMEOUT, waiting)
                 }
-            }
-            ("signIn", Some(core)) => {
-                let answer = check_sign_in_request(core, &origin, &params);
-                match answer {
-                    Ok(()) => wait_for_user(
-                        core,
-                        BridgeRequest {
-                            id,
-                            origin,
-                            method: method.to_owned(),
-                            params,
-                        },
-                        DECISION_TIMEOUT,
-                        waiting,
-                    ),
-                    Err(message) => Answer::Now(reply::error(&id, "rejected", &message)),
+                Err(message) => Answer::Now(reply::error(&id, "rejected", &message)),
+            },
+            ("signIn", Some(core)) => match read_sign_in_request(core, &origin, &params) {
+                Ok(sign_in) => {
+                    let request = BridgeRequest {
+                        id,
+                        origin,
+                        call: SiteCall::SignIn(Box::new(sign_in)),
+                    };
+                    wait_for_user(core, request, DECISION_TIMEOUT, waiting)
                 }
-            }
+                Err(message) => Answer::Now(reply::error(&id, "rejected", &message)),
+            },
             (TRANSACTION_METHODS!(), Some(core)) => {
                 let accounts = requested_accounts(&params);
                 match core.site_sign(&origin, &accounts) {
                     SiteSign::Blocked => Answer::Now(blocked(&id)),
                     SiteSign::Allowed if accounts.len() == transaction_count(&params) => {
-                        wait_for_user(
-                            core,
-                            BridgeRequest {
-                                id,
-                                origin,
-                                method: method.to_owned(),
-                                params,
-                            },
-                            DECISION_TIMEOUT,
-                            waiting,
-                        )
+                        let request = BridgeRequest {
+                            call: transactions_call(method, &params, accounts),
+                            id,
+                            origin,
+                        };
+                        wait_for_user(core, request, DECISION_TIMEOUT, waiting)
                     }
                     // A transaction that names no account is not for one the
                     // site was given.
@@ -389,9 +360,17 @@ fn blocked(id: &str) -> Vec<u8> {
     reply::error(id, "rejected", BLOCKED)
 }
 
-/// Why a `signMessage` cannot even be shown to the user.
-fn check_message_request(core: &PublicCore, origin: &str, params: &Value) -> Result<(), String> {
-    let account = message_account(params).ok_or(NOT_CONNECTED)?;
+/// What a `signMessage` asks, or why it cannot even be shown to the user.
+fn read_message_request(
+    core: &PublicCore,
+    origin: &str,
+    params: &Value,
+) -> Result<SiteCall, String> {
+    let account: Pubkey = params
+        .get("account")
+        .and_then(Value::as_str)
+        .and_then(|account| account.parse().ok())
+        .ok_or(NOT_CONNECTED)?;
     match core.site_sign(origin, &[account]) {
         SiteSign::Blocked => return Err(BLOCKED.into()),
         SiteSign::NotConnected => return Err(NOT_CONNECTED.into()),
@@ -400,19 +379,29 @@ fn check_message_request(core: &PublicCore, origin: &str, params: &Value) -> Res
     if !holds_key(core, &account) {
         return Err("No key on this device signs as this account.".into());
     }
-    let bytes = message_bytes(params).ok_or("The message was not valid base64.")?;
-    wallet_core::site_message::check_message(&bytes, origin).map_err(|err| err.to_string())
+    let message = params
+        .get("message")
+        .and_then(Value::as_str)
+        .and_then(|text| base64::engine::general_purpose::STANDARD.decode(text).ok())
+        .ok_or("The message was not valid base64.")?;
+    wallet_core::site_message::check_message(&message, origin).map_err(|err| err.to_string())?;
+    Ok(SiteCall::SignMessage { account, message })
 }
 
-/// Why a `signIn` cannot even be shown to the user.
-fn check_sign_in_request(core: &PublicCore, origin: &str, params: &Value) -> Result<(), String> {
+/// What a `signIn` asks, or why it cannot even be shown to the user. It may ask
+/// for nothing at all.
+fn read_sign_in_request(core: &PublicCore, origin: &str, params: &Value) -> Result<SignIn, String> {
     if core.site_sign(origin, &[]) == SiteSign::Blocked {
         return Err(BLOCKED.into());
     }
     if params.get("useOffchainMessage").is_some() {
         return Err("Airlock does not sign in with offchain messages yet.".into());
     }
-    let sign_in = sign_in_request(params).ok_or("The sign-in request could not be read.")?;
+    let sign_in = if params.is_null() {
+        SignIn::default()
+    } else {
+        SignIn::deserialize(params).map_err(|_| "The sign-in request could not be read.")?
+    };
     sign_in.check(origin).map_err(|err| err.to_string())?;
     if let Some(asked) = &sign_in.address {
         let held = asked
@@ -423,7 +412,7 @@ fn check_sign_in_request(core: &PublicCore, origin: &str, params: &Value) -> Res
             return Err("No key on this device signs as the account this site asked for.".into());
         }
     }
-    Ok(())
+    Ok(sign_in)
 }
 
 /// Whether a key of the vault signs as `account`, locked or not.
@@ -524,13 +513,8 @@ impl Peer {
 
     /// The extension's word that nobody is waiting on one of its requests any
     /// more. Another connection's request is not its to end.
-    fn cancel(&self, message: &[u8]) {
-        let value = serde_json::from_slice::<Value>(message).unwrap_or(Value::Null);
-        let Some(id) = value
-            .get("params")
-            .and_then(|params| params.get("id"))
-            .and_then(Value::as_str)
-        else {
+    fn cancel(&self, params: &Value) {
+        let Some(id) = params.get("id").and_then(Value::as_str) else {
             return;
         };
         let ours = self
@@ -544,11 +528,9 @@ impl Peer {
     }
 
     /// The origins with a page open in this browser, as the extension lists them.
-    fn set_pages(&self, message: &[u8]) {
-        let value = serde_json::from_slice::<Value>(message).unwrap_or(Value::Null);
-        let pages: BTreeSet<String> = value
-            .get("params")
-            .and_then(|params| params.get("origins"))
+    fn set_pages(&self, params: &Value) {
+        let pages: BTreeSet<String> = params
+            .get("origins")
             .and_then(Value::as_array)
             .map(|origins| {
                 origins
@@ -573,15 +555,20 @@ impl Peer {
 
 impl Connection for Peer {
     fn answer(&self, message: &[u8]) -> Answer {
-        if !is_show(message) && !self.counted.swap(true, Ordering::SeqCst) {
+        let frame = Frame::parse(message);
+        let knocking = frame.as_ref().is_some_and(|frame| frame.method == "show");
+        if !knocking && !self.counted.swap(true, Ordering::SeqCst) {
             self.bridge.shared.extension.send_modify(|n| *n += 1);
         }
-        match method_of(message).as_deref() {
-            Some("pages") => self.set_pages(message),
-            Some("cancel") => self.cancel(message),
+        let Some(frame) = frame else {
+            return Answer::Now(reply::error("", "bad_request", "The request is not JSON."));
+        };
+        match frame.method.as_str() {
+            "pages" => self.set_pages(&frame.params),
+            "cancel" => self.cancel(&frame.params),
             _ => {}
         }
-        self.bridge.answer(message, &self.waiting)
+        self.bridge.answer(frame, &self.waiting)
     }
 
     fn closed(&self) {
@@ -607,18 +594,6 @@ impl Connection for Peer {
     }
 }
 
-fn is_show(message: &[u8]) -> bool {
-    method_of(message).as_deref() == Some("show")
-}
-
-fn method_of(message: &[u8]) -> Option<String> {
-    serde_json::from_slice::<Value>(message)
-        .ok()?
-        .get("method")?
-        .as_str()
-        .map(str::to_owned)
-}
-
 /// Whether `method` goes to the user, through the core's queue. The rest,
 /// `show` among them, is answered here even before the core opens.
 fn waits_for_user(method: &str) -> bool {
@@ -641,7 +616,7 @@ fn wait_for_user(
     tracing::debug!(
         target: "airlock::bridge",
         code = %request.code(),
-        method = %request.method,
+        method = %request.method(),
         origin = %request.origin,
         "request queued"
     );
@@ -732,8 +707,7 @@ fn ask_to_show(endpoint: &Endpoint, timeout: Duration) -> io::Result<()> {
 pub struct BridgePrompt {
     pub id: String,
     pub origin: String,
-    pub method: String,
-    pub params: Value,
+    pub request: Arc<BridgeRequest>,
     pub detail: String,
     /// How many transactions a `signTransaction` asks to have signed.
     pub transactions: usize,
@@ -747,13 +721,12 @@ pub struct BridgePrompt {
 
 impl BridgePrompt {
     pub fn head_of(queue: &BridgeQueue) -> Option<Self> {
-        let request = queue.head()?;
+        let request = queue.pending().first()?;
         Some(Self {
             id: request.id.clone(),
             origin: request.origin.clone(),
-            method: request.method.clone(),
-            params: request.params.clone(),
-            detail: detail(&request.method, &request.params),
+            request: request.clone(),
+            detail: detail(request),
             transactions: request.transaction_count(),
             sends: request.sends(),
             chains: request.chains(),
@@ -762,111 +735,114 @@ impl BridgePrompt {
     }
 }
 
-/// Transaction `index` of a `signTransaction` request.
-fn transaction_item(params: &Value, index: usize) -> Option<&Value> {
-    params.get("transactions")?.as_array()?.get(index)
+/// The transactions of a request, as the site sent them.
+fn transaction_items(params: &Value) -> &[Value] {
+    params
+        .get("transactions")
+        .and_then(Value::as_array)
+        .map_or(&[], Vec::as_slice)
 }
 
-/// The account transaction `index` of a `signTransaction` request says it is
-/// for. The site chose it, so it is shown and never relied on.
-pub fn requested_account(params: &Value, index: usize) -> Option<Pubkey> {
-    transaction_item(params, index)?
-        .get("account")?
-        .as_str()?
-        .parse()
-        .ok()
-}
-
-/// The accounts a `signTransaction` asks to sign, those that read as addresses.
+/// The accounts the transactions of a request name, those that read as addresses.
 fn requested_accounts(params: &Value) -> Vec<Pubkey> {
-    (0..transaction_count(params))
-        .filter_map(|index| requested_account(params, index))
+    transaction_items(params)
+        .iter()
+        .filter_map(|item| item.get("account")?.as_str()?.parse().ok())
         .collect()
 }
 
-/// The account a `signMessage` names. The site chose it.
-pub fn message_account(params: &Value) -> Option<Pubkey> {
-    params.get("account")?.as_str()?.parse().ok()
+/// A request for transactions, each of which named one of `accounts`.
+fn transactions_call(method: &str, params: &Value, accounts: Vec<Pubkey>) -> SiteCall {
+    let transactions = transaction_items(params)
+        .iter()
+        .zip(accounts)
+        .map(|(item, account)| read_transaction(item, account))
+        .collect();
+    let plan = match method {
+        SEND => SendPlan::InOrder,
+        SEND_ALL if params.get("mode").and_then(Value::as_str) == Some("serial") => {
+            SendPlan::Serial
+        }
+        SEND_ALL => SendPlan::Independent,
+        _ => return SiteCall::SignTransactions(transactions),
+    };
+    SiteCall::Send { transactions, plan }
 }
 
-/// The bytes a `signMessage` asks to have signed.
-pub fn message_bytes(params: &Value) -> Option<Vec<u8>> {
-    let text = params.get("message")?.as_str()?;
-    base64::engine::general_purpose::STANDARD.decode(text).ok()
-}
-
-/// What a `signIn` asks for. It may ask for nothing at all.
-pub fn sign_in_request(params: &Value) -> Option<wallet_core::site_message::SignIn> {
-    if params.is_null() {
-        return Some(Default::default());
-    }
-    serde_json::from_value(params.clone()).ok()
-}
-
-/// The bytes of transaction `index`, when they read as a Solana transaction.
-pub fn transaction_wire(params: &Value, index: usize) -> Option<Vec<u8>> {
-    let text = transaction_item(params, index)?
-        .get("transaction")?
-        .as_str()?;
-    let bytes = base64::engine::general_purpose::STANDARD
-        .decode(text)
-        .ok()?;
-    wallet_core::parse_wire(&bytes).ok()?;
-    Some(bytes)
-}
-
-fn detail(method: &str, params: &Value) -> String {
-    match method {
-        "connect" => "Choose which accounts this site may see.".into(),
-        TRANSACTION_METHODS!() => sign_detail(params, 0),
-        "signMessage" => "Asks you to sign a message.".into(),
-        "signIn" => "Asks you to sign in.".into(),
-        other => other.into(),
+fn read_transaction(item: &Value, account: Pubkey) -> SiteTransaction {
+    SiteTransaction {
+        account,
+        wire: read_wire(item),
+        chain: item.get("chain").and_then(Value::as_str).map(str::to_owned),
+        commitment: match item
+            .get("options")
+            .and_then(|options| options.get("commitment"))
+            .and_then(Value::as_str)
+        {
+            Some("processed") => Some(ConfirmationLevel::Processed),
+            Some("confirmed") => Some(ConfirmationLevel::Confirmed),
+            Some("finalized") => Some(ConfirmationLevel::Finalized),
+            _ => None,
+        },
     }
 }
 
-/// What transaction `index` of a request is, when it cannot be prepared.
-pub fn sign_detail(params: &Value, index: usize) -> String {
-    let Some(item) = transaction_item(params, index) else {
+fn read_wire(item: &Value) -> SiteWire {
+    let Some(text) = item.get("transaction").and_then(Value::as_str) else {
+        return SiteWire::Missing;
+    };
+    let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(text) else {
+        return SiteWire::NotBase64;
+    };
+    match wallet_core::parse_wire(&bytes).map(|view| view.format) {
+        Ok(format) => SiteWire::Readable(format, bytes),
+        Err(_) => SiteWire::Unreadable(bytes.len()),
+    }
+}
+
+fn detail(request: &BridgeRequest) -> String {
+    match &request.call {
+        SiteCall::Connect => "Choose which accounts this site may see.".into(),
+        SiteCall::SignTransactions(_) | SiteCall::Send { .. } => {
+            sign_detail(request.transactions().first())
+        }
+        SiteCall::SignMessage { .. } => "Asks you to sign a message.".into(),
+        SiteCall::SignIn(_) => "Asks you to sign in.".into(),
+    }
+}
+
+/// What a transaction of a request is, when it cannot be prepared.
+pub fn sign_detail(transaction: Option<&SiteTransaction>) -> String {
+    let Some(transaction) = transaction else {
         return "No transaction was included.".into();
     };
-    let Some(text) = item.get("transaction").and_then(Value::as_str) else {
-        return "The transaction was not base64.".into();
-    };
-    match base64::engine::general_purpose::STANDARD.decode(text) {
-        Ok(bytes) => match wallet_core::parse_wire(&bytes).map(|view| view.format) {
-            Ok(wallet_core::TxFormat::V1) => format!("{} byte v1 transaction.", bytes.len()),
-            Ok(wallet_core::TxFormat::V0) => format!("{} byte v0 transaction.", bytes.len()),
-            Ok(wallet_core::TxFormat::Legacy) => {
-                format!("{} byte legacy transaction.", bytes.len())
-            }
-            Err(_) => format!(
-                "{} bytes that could not be read as a Solana transaction.",
-                bytes.len()
-            ),
-        },
-        Err(_) => "The transaction was not valid base64.".into(),
+    match &transaction.wire {
+        SiteWire::Missing => "The transaction was not base64.".into(),
+        SiteWire::NotBase64 => "The transaction was not valid base64.".into(),
+        SiteWire::Unreadable(length) => {
+            format!("{length} bytes that could not be read as a Solana transaction.")
+        }
+        SiteWire::Readable(format, bytes) => {
+            let format = match format {
+                TxFormat::V1 => "v1",
+                TxFormat::V0 => "v0",
+                TxFormat::Legacy => "legacy",
+            };
+            format!("{} byte {format} transaction.", bytes.len())
+        }
     }
 }
 
 /// Whether every transaction of a send says which network it is for, as the
 /// standard requires.
 fn every_chain_named(params: &Value) -> bool {
-    params
-        .get("transactions")
-        .and_then(Value::as_array)
-        .is_some_and(|items| {
-            items
-                .iter()
-                .all(|item| item.get("chain").is_some_and(Value::is_string))
-        })
+    transaction_items(params)
+        .iter()
+        .all(|item| item.get("chain").is_some_and(Value::is_string))
 }
 
 fn transaction_count(params: &Value) -> usize {
-    params
-        .get("transactions")
-        .and_then(Value::as_array)
-        .map_or(0, Vec::len)
+    transaction_items(params).len()
 }
 
 fn now_secs() -> u64 {

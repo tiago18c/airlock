@@ -3,6 +3,7 @@ use app_core::bridge::BridgeAnswer;
 use app_core::testing::{kit, Kit};
 use app_core::{BridgeRequestOutcome, NoticeKind};
 use bridge_protocol::reply::SendError;
+use wallet_core::TxFormat as Format;
 use wallet_core::WalletSigner;
 
 /// A bridge attached to a test core.
@@ -23,7 +24,8 @@ fn settled(answer: Answer) -> Vec<u8> {
 
 fn ask(bridge: &Bridge, request: Value) -> Value {
     let message = serde_json::to_vec(&request).unwrap();
-    serde_json::from_slice(&settled(bridge.answer(&message, &Waiting::default()))).unwrap()
+    let frame = Frame::parse(&message).unwrap();
+    serde_json::from_slice(&settled(bridge.answer(frame, &Waiting::default()))).unwrap()
 }
 
 /// `request` from the connection `peer`, as it is taken in.
@@ -39,8 +41,24 @@ fn connect(id: &str) -> BridgeRequest {
     BridgeRequest {
         id: id.into(),
         origin: "https://example.test".into(),
-        method: "connect".into(),
-        params: Value::Null,
+        call: SiteCall::Connect,
+    }
+}
+
+/// A send of one transaction that is not a real one.
+fn a_send(id: &str) -> BridgeRequest {
+    BridgeRequest {
+        id: id.into(),
+        origin: ORIGIN.into(),
+        call: SiteCall::Send {
+            transactions: vec![SiteTransaction {
+                account: account(),
+                wire: SiteWire::Unreadable(1),
+                chain: Some("solana:devnet".into()),
+                commitment: None,
+            }],
+            plan: SendPlan::InOrder,
+        },
     }
 }
 
@@ -177,21 +195,6 @@ async fn a_request_nobody_answers_leaves_the_queue() {
 
 #[tokio::test]
 async fn the_window_answers_from_the_core_queue() {
-    let account = Pubkey::new_from_array([7; 32]);
-    let params = json!({
-        "transactions": [{ "account": account.to_string(), "transaction": "gQ==" }]
-    });
-    assert_eq!(requested_account(&params, 0), Some(account));
-    assert_eq!(requested_account(&params, 1), None);
-    assert_eq!(requested_account(&json!({ "transactions": [{}] }), 0), None);
-    assert_eq!(
-        requested_account(
-            &json!({ "transactions": [{ "account": "not an address" }] }),
-            0
-        ),
-        None
-    );
-
     let (kit, _bridge) = attached_bridge();
     let waiting = |id: &'static str| {
         let core = kit.core.public();
@@ -251,6 +254,10 @@ fn shareable(pubkey: Pubkey) -> wallet_core::ShareableAccount {
 
 /// Connect the test origin to `account()` the way the modal does.
 fn connected(kit: &Kit, bridge: &Bridge, remember: bool) {
+    connected_as(kit, bridge, account(), remember);
+}
+
+fn connected_as(kit: &Kit, bridge: &Bridge, account: Pubkey, remember: bool) {
     let asking = {
         let bridge = bridge.clone();
         std::thread::spawn(move || {
@@ -265,7 +272,7 @@ fn connected(kit: &Kit, bridge: &Bridge, remember: bool) {
     }
     assert!(kit
         .core
-        .bridge_connect("connect", vec![shareable(account())], remember));
+        .bridge_connect("connect", vec![shareable(account)], remember));
     asking.join().unwrap();
 }
 
@@ -330,12 +337,8 @@ fn v1_b64(wire: &[u8]) -> String {
     base64::engine::general_purpose::STANDARD.encode(wire)
 }
 
-fn params_for_wire(wire: &[u8]) -> Value {
-    json!({
-        "transactions": [{
-            "transaction": base64::engine::general_purpose::STANDARD.encode(wire)
-        }]
-    })
+fn wire_read(wire: &[u8]) -> SiteWire {
+    read_wire(&json!({ "transaction": v1_b64(wire) }))
 }
 
 fn legacy_transfer_wire(payer: &Pubkey) -> Vec<u8> {
@@ -793,7 +796,8 @@ async fn a_sign_in_asking_nothing_reaches_the_user() {
     assert_eq!(
         BridgePrompt::head_of(&kit.core.slices().bridge.get())
             .unwrap()
-            .method,
+            .request
+            .method(),
         "signIn"
     );
     assert!(kit.core.bridge_answer("s", &BridgeAnswer::Rejected));
@@ -896,15 +900,9 @@ async fn a_send_approved_as_time_runs_out_answers_with_its_result() {
     let (kit, bridge) = attached_bridge();
     connected(&kit, &bridge, false);
     let public = kit.core.public();
-    let request = BridgeRequest {
-        id: "late".into(),
-        origin: ORIGIN.into(),
-        method: SEND.into(),
-        params: send_request("late", SEND, Some("solana:devnet"))["params"].clone(),
-    };
     let waiting = wait_for_user(
         &public,
-        request,
+        a_send("late"),
         Duration::from_millis(50),
         &Waiting::default(),
     );
@@ -925,15 +923,9 @@ async fn a_send_approved_as_time_runs_out_answers_with_its_result() {
 async fn a_send_dropped_without_a_result_does_not_wait_for_ever() {
     let (kit, bridge) = attached_bridge();
     connected(&kit, &bridge, false);
-    let request = BridgeRequest {
-        id: "lost".into(),
-        origin: ORIGIN.into(),
-        method: SEND.into(),
-        params: send_request("lost", SEND, Some("solana:devnet"))["params"].clone(),
-    };
     let waiting = wait_for_user(
         &kit.core.public(),
-        request,
+        a_send("lost"),
         Duration::from_millis(10),
         &Waiting::default(),
     );
@@ -977,25 +969,184 @@ fn a_readable_transaction_wire_is_accepted() {
     )
     .unwrap()
     .wire;
-    assert_eq!(transaction_wire(&params_for_wire(&v1), 0).unwrap(), v1);
+    assert_eq!(wire_read(&v1), SiteWire::Readable(Format::V1, v1.clone()));
 
     let legacy = legacy_transfer_wire(&payer.pubkey());
     assert_eq!(
-        transaction_wire(&params_for_wire(&legacy), 0).unwrap(),
-        legacy
+        wire_read(&legacy),
+        SiteWire::Readable(Format::Legacy, legacy.clone())
     );
-    assert!(sign_detail(&params_for_wire(&legacy), 0).contains("legacy"));
 
     let v0 = v0_transfer_wire(&payer.pubkey());
-    assert_eq!(transaction_wire(&params_for_wire(&v0), 0).unwrap(), v0);
-    assert!(sign_detail(&params_for_wire(&v0), 0).contains("v0"));
+    assert_eq!(wire_read(&v0), SiteWire::Readable(Format::V0, v0.clone()));
 
-    let garbage = base64::engine::general_purpose::STANDARD.encode([0xff, 1, 2]);
-    let params =
-        json!({ "transactions": [{ "transaction": v1_b64(&v1) }, { "transaction": garbage }] });
-    assert_eq!(transaction_wire(&params, 0).unwrap(), v1);
-    assert!(transaction_wire(&params, 1).is_none());
-    assert!(transaction_wire(&params, 2).is_none());
+    assert_eq!(wire_read(&[0xff, 1, 2]), SiteWire::Unreadable(3));
+    assert_eq!(wire_read(&[0xff, 1, 2]).bytes(), None);
+    assert_eq!(read_wire(&json!({})), SiteWire::Missing);
+    assert_eq!(read_wire(&json!({ "transaction": 7 })), SiteWire::Missing);
+    assert_eq!(
+        read_wire(&json!({ "transaction": "not base64!" })),
+        SiteWire::NotBase64
+    );
+}
+
+#[test]
+fn what_the_modal_says_of_a_transaction_comes_from_how_it_read() {
+    let of = |wire| {
+        sign_detail(Some(&SiteTransaction {
+            account: account(),
+            wire,
+            chain: None,
+            commitment: None,
+        }))
+    };
+    assert_eq!(sign_detail(None), "No transaction was included.");
+    assert_eq!(of(SiteWire::Missing), "The transaction was not base64.");
+    assert_eq!(
+        of(SiteWire::NotBase64),
+        "The transaction was not valid base64."
+    );
+    assert_eq!(
+        of(SiteWire::Unreadable(3)),
+        "3 bytes that could not be read as a Solana transaction."
+    );
+    assert_eq!(
+        of(SiteWire::Readable(Format::V0, vec![0; 5])),
+        "5 byte v0 transaction."
+    );
+    assert_eq!(
+        of(SiteWire::Readable(Format::Legacy, vec![0; 5])),
+        "5 byte legacy transaction."
+    );
+    assert_eq!(
+        of(SiteWire::Readable(Format::V1, vec![0; 5])),
+        "5 byte v1 transaction."
+    );
+}
+
+#[tokio::test]
+async fn a_request_for_transactions_is_read_into_what_the_queue_holds() {
+    let (kit, bridge) = attached_bridge();
+    connected(&kit, &bridge, false);
+    let queued = |request: Value| {
+        let peer = Peer::new(bridge.clone(), None);
+        let waiting = sent(&peer, request);
+        assert!(matches!(waiting, Answer::Later(_)));
+        let head = kit.core.slices().bridge.get().head().unwrap().clone();
+        peer.closed();
+        head
+    };
+
+    let mut sign = sign_request("sign", 1);
+    sign["params"]["transactions"][0]["chain"] = json!("solana:devnet");
+    let head = queued(sign);
+    assert_eq!(head.method(), "signTransaction");
+    assert!(!head.sends());
+    assert_eq!(head.transactions()[0].account, account());
+    assert_eq!(head.chains(), ["solana:devnet"]);
+
+    let mut send = send_request("send", SEND, Some("solana:devnet"));
+    send["params"]["transactions"][0]["options"] = json!({ "commitment": "finalized" });
+    let head = queued(send);
+    assert_eq!(head.method(), SEND);
+    assert_eq!(head.send_plan(), SendPlan::InOrder);
+    assert_eq!(
+        head.send_commitments(),
+        [Some(ConfirmationLevel::Finalized)]
+    );
+
+    let head = queued(send_request("all", SEND_ALL, Some("solana:devnet")));
+    assert_eq!(head.method(), SEND_ALL);
+    assert_eq!(head.send_plan(), SendPlan::Independent);
+
+    let mut serial = send_request("serial", SEND_ALL, Some("solana:devnet"));
+    serial["params"]["mode"] = json!("serial");
+    assert_eq!(queued(serial).send_plan(), SendPlan::Serial);
+
+    // Only the all-at-once request has modes.
+    let mut mode = send_request("one", SEND, Some("solana:devnet"));
+    mode["params"]["mode"] = json!("serial");
+    assert_eq!(queued(mode).send_plan(), SendPlan::InOrder);
+}
+
+#[tokio::test]
+async fn a_transaction_naming_something_that_is_no_address_is_refused() {
+    let (kit, bridge) = attached_bridge();
+    connected(&kit, &bridge, false);
+    let mut request = sign_request("odd", 1);
+    request["params"]["transactions"][0]["account"] = json!("not an address");
+    assert_eq!(ask(&bridge, request)["error"]["code"], "rejected");
+    assert!(kit.core.slices().bridge.get().is_empty());
+}
+
+#[tokio::test]
+async fn a_message_reaches_the_queue_as_the_bytes_that_were_checked() {
+    let (kit, bridge) = attached_bridge();
+    kit.core.create_vault("pw").unwrap();
+    let wallet = wallet_core::WalletRecord::from_keypair_seed("Hot", [7; 32]);
+    let key = wallet.address().unwrap();
+    let signers = vec![wallet_core::NewSigner {
+        pubkey: key,
+        label: wallet.label.clone(),
+        origin: wallet_core::Origin::Imported,
+        wallet,
+    }];
+    kit.core
+        .enroll(
+            "add_signers",
+            |data| data.add_signers(&signers),
+            |book, _| wallet_core::name_signers(book, &signers),
+        )
+        .unwrap();
+    connected_as(&kit, &bridge, key, false);
+
+    let peer = Peer::new(bridge.clone(), None);
+    let waiting = sent(&peer, sign_message("m", key, b"hello there"));
+    assert!(matches!(waiting, Answer::Later(_)));
+    assert_eq!(
+        kit.core.slices().bridge.get().head().unwrap().call,
+        SiteCall::SignMessage {
+            account: key,
+            message: b"hello there".to_vec(),
+        }
+    );
+    peer.closed();
+}
+
+#[tokio::test]
+async fn a_sign_in_reaches_the_queue_as_it_was_checked() {
+    let (kit, bridge) = attached_bridge();
+    let peer = Peer::new(bridge.clone(), None);
+    let waiting = sent(&peer, sign_in_ask("s", json!({ "statement": "Welcome" })));
+    assert!(matches!(waiting, Answer::Later(_)));
+    assert_eq!(
+        kit.core.slices().bridge.get().head().unwrap().call,
+        SiteCall::SignIn(Box::new(SignIn {
+            statement: Some("Welcome".into()),
+            ..Default::default()
+        }))
+    );
+    peer.closed();
+
+    // One that asks for nothing is still asking to sign in.
+    let empty = json!({ "v": 1, "id": "e", "origin": ORIGIN, "method": "signIn" });
+    let waiting = sent(&peer, empty);
+    assert!(matches!(waiting, Answer::Later(_)));
+    assert_eq!(
+        kit.core.slices().bridge.get().head().unwrap().call,
+        SiteCall::SignIn(Box::default())
+    );
+    peer.closed();
+}
+
+#[test]
+fn a_frame_that_is_not_json_is_refused_and_counts_as_the_extension() {
+    let bridge = Bridge::new();
+    let extension = bridge.subscribe_extension();
+    let peer = Peer::new(bridge.clone(), None);
+    let reply = read(&settled(peer.answer(b"not json")));
+    assert_eq!(reply["error"]["code"], "bad_request");
+    assert_eq!(*extension.borrow(), 1);
 }
 
 #[test]
