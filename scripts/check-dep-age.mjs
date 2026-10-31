@@ -71,7 +71,7 @@ async function getJson(url) {
 }
 
 async function crateDate({ name, version }) {
-  const body = await getJson(`https://crates.io/api/v1/crates/${name}/${version}`);
+  const body = await getJson(`https://crates.io/api/v1/crates/${encodeURIComponent(name)}/${encodeURIComponent(version)}`);
   await new Promise((resolve) => setTimeout(resolve, CRATES_IO_DELAY_MS));
   return body.version.created_at;
 }
@@ -80,7 +80,7 @@ const npmDocuments = new Map();
 
 async function npmDate({ name, version }) {
   if (!npmDocuments.has(name)) {
-    npmDocuments.set(name, await getJson(`https://registry.npmjs.org/${name.replace("/", "%2f")}`));
+    npmDocuments.set(name, await getJson(`https://registry.npmjs.org/${encodeURIComponent(name)}`));
   }
   return npmDocuments.get(name).time[version];
 }
