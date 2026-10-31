@@ -2,6 +2,7 @@
 
 use super::*;
 use app_ui_kit::state::forms::BlockhashClock;
+use wallet_flows::offer::{modal_offer, ModalFacts};
 
 /// The transaction a sign request will be answered with.
 #[derive(Clone, PartialEq)]
@@ -267,7 +268,6 @@ pub(in crate::ui) fn use_prepared_request(
     // Preparing may rebuild the request around a wallet's keys, so nothing
     // goes further until the vault is open.
     let locked = session.is_initialized() && !session.is_unlocked();
-    let can_review = ready.is_some() && !locked;
     let vector_here = session.local_vector_accounts();
     let local_keys = session.local_signer_pubkeys();
     let local = wallet_core::LocalKeys {
@@ -306,33 +306,22 @@ pub(in crate::ui) fn use_prepared_request(
     }));
     let clock_expired = use_signal(|| false);
     let countdown_label = use_signal(|| String::from("…"));
-    let modal_expired = clock_expired()
-        && matches!(
-            step,
-            Some(wallet_core::NextSignature::Transaction | wallet_core::NextSignature::Nothing)
-        );
-    // A rebuild with a key made here simulates only once its authorization is
-    // signed, which Review does before anything is sent.
-    let unsimulated = adapted.is_some()
-        && converted
+    let modal = modal_offer(ModalFacts {
+        prepared: ready.is_some(),
+        locked,
+        rebuilt: adapted.is_some(),
+        keys_replaced: converted
             .as_ref()
-            .is_some_and(|converted| !converted.replaced.is_empty());
-    // An authorization signed here changes what runs, so Review signs it,
-    // simulates the transaction again and fits its limits, then signs the
-    // transaction on a later press.
-    let authorizes_here = status
-        .as_ref()
-        .is_some_and(|status| status.authorizations_here() > 0);
-    // A summary missing an instruction, or worded by an IDL from the chain,
-    // still lets Sign through. The button turns amber to say so.
-    let can_sign = can_review
-        && !unsimulated
-        && !authorizes_here
-        && verdict.is_some_and(|verdict| verdict.completes_leaving(site_signs.len()))
-        && !fetching()
-        && !modal_expired;
-    let unread_sign =
-        can_sign && verdict.is_some_and(|verdict| !verdict.allowed_leaving(site_signs.len()));
+            .is_some_and(|converted| !converted.replaced.is_empty()),
+        authorizations_here: status
+            .as_ref()
+            .map_or(0, |status| status.authorizations_here()),
+        verdict,
+        left_for_site: site_signs.len(),
+        looking_for_idls: fetching(),
+        clock_expired: clock_expired(),
+        step,
+    });
 
     let for_review = ready.clone();
     let for_sign = ready.as_ref().map(|ready| SignWire {
@@ -359,13 +348,13 @@ pub(in crate::ui) fn use_prepared_request(
         shown,
         explained,
         locked,
-        can_review,
-        can_sign,
-        unread_sign,
+        can_review: modal.review,
+        can_sign: modal.sign,
+        unread_sign: modal.unread_sign,
         verdict,
         step,
         lifetime,
-        modal_expired,
+        modal_expired: modal.expired,
         countdown_label,
         clock,
         clock_expired,

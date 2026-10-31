@@ -683,6 +683,7 @@ A summary on either device is only as good as the IDLs it was read with. IDLs fe
 | Signer states and signing order | `crates/wallet-core/src/review/signing` |
 | Proposals, and approving together | `crates/wallet-core/src/wallets/proposals` |
 | One-click Sign rule | `crates/wallet-core/src/review/quick_sign.rs` |
+| What Sign and the request modal offer, and when a press moves the blockhash | `crates/wallet-flows/src/offer.rs` |
 | Rebuild plans, fee payer swap | `crates/wallet-core/src/wallets/adapt` |
 | Rebuild against the chain | `crates/wallet-flows/src/adapt.rs` |
 | Routing a site's legacy or v0 request, one-time keys | `crates/wallet-flows/src/request.rs`, `crates/wallet-core/src/tx/convert.rs` |

@@ -1,0 +1,766 @@
+//! What the Sign screen and the request modal offer for a transaction, and what
+//! a press will do. Decided from plain facts, so each rule can be read and tested
+//! apart from the screens. The screens only gather the facts and draw the answers.
+
+use wallet_core::{NextSignature, QuickSign};
+
+/// Whether a Sign press first moves the transaction to a fresh blockhash. A
+/// relayed transaction is moved inside [`crate::sign`] and is not one of these.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum BlockhashOnSign {
+    /// Signed on the blockhash it has.
+    Keep,
+    /// Moved when the node answers, signed as it is when it does not.
+    Fresh,
+    /// The blockhash has expired: a press that cannot move it signs nothing.
+    Required,
+}
+
+/// Where a transaction on the Sign screen stands with its blockhash.
+#[derive(Clone, Copy, Debug)]
+pub struct BlockhashFacts {
+    pub online: bool,
+    pub uses_nonce: bool,
+    /// Signing moves it by itself, as it does a relayed transaction.
+    pub refreshes_on_sign: bool,
+    /// The countdown ran out, or the node said the blockhash is gone.
+    pub clock_expired: bool,
+    /// What the next press is for.
+    pub step: NextSignature,
+    /// Signatures this device can add now.
+    pub signable: usize,
+    /// It holds no signature over the transaction itself. An authorization does
+    /// not count, because moving keeps one.
+    pub untouched: bool,
+    /// An authorization stands inside it.
+    pub relayed: bool,
+    pub from_browser: bool,
+    /// Another screen of this app made it.
+    pub app_built: bool,
+}
+
+/// What the blockhash of a transaction on the Sign screen means for its buttons.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct BlockhashPlan {
+    pub on_sign: BlockhashOnSign,
+    /// Expired, with nothing left here to sign: moving it is a press of its own.
+    pub offer_refresh: bool,
+    /// Expired, at a step where that matters. An authorization does not expire.
+    pub expired: bool,
+}
+
+/// What a press does with the blockhash. It moves the transaction first when it
+/// is about to sign the transaction itself, and only if the blockhash can still
+/// be chosen. Before expiry, only a transaction this app made or relays is moved:
+/// a site's, or another device's, is left as it came. Once expired, any
+/// transaction on a blockhash is.
+pub fn blockhash_plan(facts: BlockhashFacts) -> BlockhashPlan {
+    let gone = facts.clock_expired && !facts.refreshes_on_sign;
+    let this_apps = facts.untouched && ((facts.relayed && !facts.from_browser) || facts.app_built);
+    let moves = facts.online
+        && !facts.uses_nonce
+        && !facts.refreshes_on_sign
+        && facts.step == NextSignature::Transaction
+        && facts.signable > 0
+        && (gone || this_apps);
+    BlockhashPlan {
+        on_sign: match (moves, gone) {
+            (false, _) => BlockhashOnSign::Keep,
+            (true, false) => BlockhashOnSign::Fresh,
+            (true, true) => BlockhashOnSign::Required,
+        },
+        offer_refresh: facts.online
+            && !facts.uses_nonce
+            && gone
+            && !moves
+            && facts.step != NextSignature::Authorization,
+        expired: facts.clock_expired
+            && matches!(
+                facts.step,
+                NextSignature::Transaction | NextSignature::Nothing
+            ),
+    }
+}
+
+/// What decides the buttons of the Sign screen.
+#[derive(Clone, Copy, Debug)]
+pub struct ButtonFacts {
+    pub online: bool,
+    /// A wallet that no key signs as is among the signers.
+    pub needs_rebuild: bool,
+    /// Something is under way for this transaction.
+    pub busy: bool,
+    pub step: NextSignature,
+    /// Signatures this device can add now.
+    pub signable: usize,
+    /// Every signature is in.
+    pub complete: bool,
+    pub refreshes_on_sign: bool,
+    pub blockhash: BlockhashPlan,
+    /// A site that has it back may be sending it, or it has landed.
+    pub site_holds: bool,
+}
+
+/// Whether Sign can be pressed. An expired blockhash holds it back only if the
+/// press would not move the transaction off it.
+pub fn may_sign(facts: ButtonFacts) -> bool {
+    facts.signable > 0
+        && !facts.needs_rebuild
+        && !facts.busy
+        && (facts.step == NextSignature::Authorization
+            || !facts.blockhash.expired
+            || facts.refreshes_on_sign
+            || facts.blockhash.on_sign != BlockhashOnSign::Keep)
+}
+
+/// Whether Submit can be pressed.
+pub fn may_submit(facts: ButtonFacts) -> bool {
+    facts.online
+        && facts.complete
+        && !facts.needs_rebuild
+        && !facts.busy
+        && !facts.blockhash.expired
+        && !facts.site_holds
+}
+
+/// Where one transaction of a batch stands on the Sign screen.
+#[derive(Clone, Copy, Debug)]
+pub struct BatchFacts {
+    /// It belongs to a batch.
+    pub in_batch: bool,
+    /// It has been signed, or taken as it is, already.
+    pub already_kept: bool,
+    /// The site's request is still waiting.
+    pub site_waiting: bool,
+    pub signable: usize,
+    pub needs_rebuild: bool,
+    /// A key here is ready for the transaction, once an authorization comes.
+    pub waiting_for_authority: bool,
+    pub step: NextSignature,
+    /// Signatures only another device can add.
+    pub missing_elsewhere: usize,
+    /// How many of those the site adds itself.
+    pub left_for_site: usize,
+    pub expired: bool,
+}
+
+/// Nothing here to sign, and nothing missing but what the site adds: the batch
+/// can take the transaction as it is.
+pub fn batch_keepable(facts: BatchFacts) -> bool {
+    facts.in_batch
+        && !facts.already_kept
+        && facts.site_waiting
+        && facts.signable == 0
+        && !facts.needs_rebuild
+        && !facts.waiting_for_authority
+        && facts.step != NextSignature::Authorization
+        && facts.missing_elsewhere == facts.left_for_site
+        && !facts.expired
+}
+
+/// Where a site's transaction stands in the request modal.
+#[derive(Clone, Copy, Debug)]
+pub struct ModalFacts {
+    /// Preparing it finished.
+    pub prepared: bool,
+    /// The vault is locked. Preparing may rebuild it around a wallet's keys, so
+    /// nothing goes further until it is open.
+    pub locked: bool,
+    /// It was rebuilt for a keyless wallet.
+    pub rebuilt: bool,
+    /// A key made here took the place of a site's one-time key.
+    pub keys_replaced: bool,
+    /// Authorizations this device can sign.
+    pub authorizations_here: usize,
+    pub verdict: Option<QuickSign>,
+    /// Signatures the site adds itself once it has the transaction back.
+    pub left_for_site: usize,
+    /// IDLs for what it shows are still being looked for.
+    pub looking_for_idls: bool,
+    pub clock_expired: bool,
+    pub step: Option<NextSignature>,
+}
+
+/// What the request modal offers.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct ModalOffer {
+    pub review: bool,
+    /// Signing here, with no further step, finishes the request.
+    pub sign: bool,
+    /// Sign is offered, but not every instruction was put in words by an IDL
+    /// that ships with the app or that the user imported.
+    pub unread_sign: bool,
+    /// Expired, at a step where that matters.
+    pub expired: bool,
+}
+
+/// What the modal offers. Sign means signing completes the transaction now, so
+/// not for one that still has to simulate or has an authorization to sign here:
+/// that changes what runs, so Review signs it, simulates again and fits the
+/// limits, and the transaction is signed on a later press.
+pub fn modal_offer(facts: ModalFacts) -> ModalOffer {
+    let review = facts.prepared && !facts.locked;
+    let expired = facts.clock_expired
+        && matches!(
+            facts.step,
+            Some(NextSignature::Transaction | NextSignature::Nothing)
+        );
+    // A rebuild with a key made here simulates only once its authorization is
+    // signed, which Review does before anything is sent.
+    let unsimulated = facts.rebuilt && facts.keys_replaced;
+    let sign = review
+        && !unsimulated
+        && facts.authorizations_here == 0
+        && facts
+            .verdict
+            .is_some_and(|verdict| verdict.completes_leaving(facts.left_for_site))
+        && !facts.looking_for_idls
+        && !expired;
+    // A summary missing an instruction, or worded by an IDL from the chain, still
+    // lets Sign through. The button turns amber to say so.
+    let unread_sign = sign
+        && facts
+            .verdict
+            .is_some_and(|verdict| !verdict.allowed_leaving(facts.left_for_site));
+    ModalOffer {
+        review,
+        sign,
+        unread_sign,
+        expired,
+    }
+}
+
+/// The app cannot send what a site still has to sign.
+pub fn can_go_out(sends: bool, left_for_site: usize) -> bool {
+    !sends || left_for_site == 0
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use NextSignature::{Authorization, Nothing, Transaction};
+
+    /// A transaction a site sent, on a live blockhash, with this device's key
+    /// still to sign, on an online device.
+    fn from_a_site() -> BlockhashFacts {
+        BlockhashFacts {
+            online: true,
+            uses_nonce: false,
+            refreshes_on_sign: false,
+            clock_expired: false,
+            step: Transaction,
+            signable: 1,
+            untouched: true,
+            relayed: false,
+            from_browser: true,
+            app_built: false,
+        }
+    }
+
+    fn on_sign(facts: BlockhashFacts) -> BlockhashOnSign {
+        blockhash_plan(facts).on_sign
+    }
+
+    #[test]
+    fn a_sites_transaction_keeps_its_blockhash_until_it_expires() {
+        assert_eq!(on_sign(from_a_site()), BlockhashOnSign::Keep);
+        // Even with an authorization in it: it is the site's, and it may hold
+        // on to what it sent.
+        let relayed = BlockhashFacts {
+            relayed: true,
+            ..from_a_site()
+        };
+        assert_eq!(on_sign(relayed), BlockhashOnSign::Keep);
+        let expired = BlockhashFacts {
+            clock_expired: true,
+            ..from_a_site()
+        };
+        assert_eq!(on_sign(expired), BlockhashOnSign::Required);
+    }
+
+    #[test]
+    fn what_this_app_made_or_relays_moves_on_the_press_that_signs_it() {
+        let built = BlockhashFacts {
+            from_browser: false,
+            app_built: true,
+            ..from_a_site()
+        };
+        assert_eq!(on_sign(built), BlockhashOnSign::Fresh);
+        let relayed = BlockhashFacts {
+            from_browser: false,
+            relayed: true,
+            ..from_a_site()
+        };
+        assert_eq!(on_sign(relayed), BlockhashOnSign::Fresh);
+    }
+
+    #[test]
+    fn a_signature_over_it_keeps_it_on_its_blockhash_until_it_expires() {
+        let signed = BlockhashFacts {
+            from_browser: false,
+            app_built: true,
+            untouched: false,
+            ..from_a_site()
+        };
+        assert_eq!(on_sign(signed), BlockhashOnSign::Keep);
+        assert_eq!(
+            on_sign(BlockhashFacts {
+                clock_expired: true,
+                ..signed
+            }),
+            BlockhashOnSign::Required
+        );
+    }
+
+    #[test]
+    fn nothing_moves_what_cannot_or_need_not_be_moved() {
+        let expired_built = BlockhashFacts {
+            from_browser: false,
+            app_built: true,
+            clock_expired: true,
+            ..from_a_site()
+        };
+        assert_eq!(on_sign(expired_built), BlockhashOnSign::Required);
+        for keeps in [
+            // No node to ask for a new one.
+            BlockhashFacts {
+                online: false,
+                ..expired_built
+            },
+            // A durable nonce does not expire, and has no blockhash to move.
+            BlockhashFacts {
+                uses_nonce: true,
+                ..expired_built
+            },
+            // Signing moves it by itself.
+            BlockhashFacts {
+                refreshes_on_sign: true,
+                ..expired_built
+            },
+            // Nothing for this press to sign.
+            BlockhashFacts {
+                signable: 0,
+                ..expired_built
+            },
+            // The press signs an authorization, which moving would not touch.
+            BlockhashFacts {
+                step: Authorization,
+                ..expired_built
+            },
+            BlockhashFacts {
+                step: Nothing,
+                ..expired_built
+            },
+        ] {
+            assert_eq!(on_sign(keeps), BlockhashOnSign::Keep, "{keeps:?}");
+        }
+    }
+
+    #[test]
+    fn moving_is_a_press_of_its_own_with_nothing_left_here_to_sign() {
+        let expired = BlockhashFacts {
+            clock_expired: true,
+            ..from_a_site()
+        };
+        // There is a signature to make, and the press moves it.
+        assert!(!blockhash_plan(expired).offer_refresh);
+        let nothing_to_sign = BlockhashFacts {
+            signable: 0,
+            step: Nothing,
+            ..expired
+        };
+        assert!(blockhash_plan(nothing_to_sign).offer_refresh);
+
+        for not_offered in [
+            BlockhashFacts {
+                clock_expired: false,
+                ..nothing_to_sign
+            },
+            BlockhashFacts {
+                online: false,
+                ..nothing_to_sign
+            },
+            BlockhashFacts {
+                uses_nonce: true,
+                ..nothing_to_sign
+            },
+            BlockhashFacts {
+                refreshes_on_sign: true,
+                ..nothing_to_sign
+            },
+            BlockhashFacts {
+                step: Authorization,
+                ..nothing_to_sign
+            },
+        ] {
+            assert!(
+                !blockhash_plan(not_offered).offer_refresh,
+                "{not_offered:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn an_authorization_does_not_expire() {
+        let at = |step, clock_expired| {
+            blockhash_plan(BlockhashFacts {
+                step,
+                clock_expired,
+                ..from_a_site()
+            })
+            .expired
+        };
+        assert!(at(Transaction, true));
+        assert!(at(Nothing, true));
+        assert!(!at(Authorization, true));
+        assert!(!at(Transaction, false));
+    }
+
+    fn keep() -> BlockhashPlan {
+        BlockhashPlan {
+            on_sign: BlockhashOnSign::Keep,
+            offer_refresh: false,
+            expired: false,
+        }
+    }
+
+    /// One this device can sign, on a live blockhash, with nothing under way.
+    fn ready() -> ButtonFacts {
+        ButtonFacts {
+            online: true,
+            needs_rebuild: false,
+            busy: false,
+            step: Transaction,
+            signable: 1,
+            complete: false,
+            refreshes_on_sign: false,
+            blockhash: keep(),
+            site_holds: false,
+        }
+    }
+
+    #[test]
+    fn sign_needs_something_to_sign_and_nothing_in_the_way() {
+        assert!(may_sign(ready()));
+        for held in [
+            ButtonFacts {
+                signable: 0,
+                ..ready()
+            },
+            ButtonFacts {
+                needs_rebuild: true,
+                ..ready()
+            },
+            ButtonFacts {
+                busy: true,
+                ..ready()
+            },
+        ] {
+            assert!(!may_sign(held), "{held:?}");
+        }
+    }
+
+    #[test]
+    fn an_expired_blockhash_holds_sign_back_unless_the_press_moves_it() {
+        let expired = ButtonFacts {
+            blockhash: BlockhashPlan {
+                expired: true,
+                ..keep()
+            },
+            ..ready()
+        };
+        assert!(!may_sign(expired));
+        assert!(may_sign(ButtonFacts {
+            refreshes_on_sign: true,
+            ..expired
+        }));
+        assert!(may_sign(ButtonFacts {
+            blockhash: BlockhashPlan {
+                expired: true,
+                on_sign: BlockhashOnSign::Required,
+                offer_refresh: false,
+            },
+            ..expired
+        }));
+        assert!(may_sign(ButtonFacts {
+            step: Authorization,
+            ..expired
+        }));
+    }
+
+    #[test]
+    fn submit_needs_every_signature_a_node_and_a_live_blockhash() {
+        let complete = ButtonFacts {
+            complete: true,
+            signable: 0,
+            step: Nothing,
+            ..ready()
+        };
+        assert!(may_submit(complete));
+        for held in [
+            ButtonFacts {
+                complete: false,
+                ..complete
+            },
+            ButtonFacts {
+                online: false,
+                ..complete
+            },
+            ButtonFacts {
+                needs_rebuild: true,
+                ..complete
+            },
+            ButtonFacts {
+                busy: true,
+                ..complete
+            },
+            ButtonFacts {
+                site_holds: true,
+                ..complete
+            },
+            ButtonFacts {
+                blockhash: BlockhashPlan {
+                    expired: true,
+                    ..keep()
+                },
+                ..complete
+            },
+        ] {
+            assert!(!may_submit(held), "{held:?}");
+        }
+    }
+
+    /// One of a batch with nothing here to sign, and nothing else missing.
+    fn nothing_to_add() -> BatchFacts {
+        BatchFacts {
+            in_batch: true,
+            already_kept: false,
+            site_waiting: true,
+            signable: 0,
+            needs_rebuild: false,
+            waiting_for_authority: false,
+            step: Nothing,
+            missing_elsewhere: 0,
+            left_for_site: 0,
+            expired: false,
+        }
+    }
+
+    #[test]
+    fn a_batch_takes_a_transaction_only_with_nothing_missing_but_the_sites_own() {
+        assert!(batch_keepable(nothing_to_add()));
+        assert!(batch_keepable(BatchFacts {
+            missing_elsewhere: 2,
+            left_for_site: 2,
+            ..nothing_to_add()
+        }));
+        for refused in [
+            BatchFacts {
+                in_batch: false,
+                ..nothing_to_add()
+            },
+            BatchFacts {
+                already_kept: true,
+                ..nothing_to_add()
+            },
+            BatchFacts {
+                site_waiting: false,
+                ..nothing_to_add()
+            },
+            // This device could sign it, so it should.
+            BatchFacts {
+                signable: 1,
+                ..nothing_to_add()
+            },
+            BatchFacts {
+                needs_rebuild: true,
+                ..nothing_to_add()
+            },
+            BatchFacts {
+                waiting_for_authority: true,
+                ..nothing_to_add()
+            },
+            BatchFacts {
+                step: Authorization,
+                ..nothing_to_add()
+            },
+            // Someone other than the site has yet to sign it.
+            BatchFacts {
+                missing_elsewhere: 2,
+                left_for_site: 1,
+                ..nothing_to_add()
+            },
+            BatchFacts {
+                expired: true,
+                ..nothing_to_add()
+            },
+        ] {
+            assert!(!batch_keepable(refused), "{refused:?}");
+        }
+    }
+
+    fn verdict() -> QuickSign {
+        QuickSign {
+            unread: 0,
+            unvetted: 0,
+            elsewhere: 0,
+            signable: 1,
+        }
+    }
+
+    /// Prepared, unlocked, read in full, and finished by signing here.
+    fn clear() -> ModalFacts {
+        ModalFacts {
+            prepared: true,
+            locked: false,
+            rebuilt: false,
+            keys_replaced: false,
+            authorizations_here: 0,
+            verdict: Some(verdict()),
+            left_for_site: 0,
+            looking_for_idls: false,
+            clock_expired: false,
+            step: Some(Transaction),
+        }
+    }
+
+    #[test]
+    fn the_modal_offers_sign_when_signing_here_finishes_it() {
+        let offer = modal_offer(clear());
+        assert!(offer.review && offer.sign && !offer.unread_sign && !offer.expired);
+    }
+
+    #[test]
+    fn nothing_goes_further_until_it_is_prepared_and_the_vault_is_open() {
+        for held in [
+            ModalFacts {
+                prepared: false,
+                ..clear()
+            },
+            ModalFacts {
+                locked: true,
+                ..clear()
+            },
+        ] {
+            assert_eq!(modal_offer(held), ModalOffer::default(), "{held:?}");
+        }
+    }
+
+    #[test]
+    fn what_needs_another_step_goes_to_review_not_sign() {
+        for review_only in [
+            // It can only simulate once its authorization is signed.
+            ModalFacts {
+                rebuilt: true,
+                keys_replaced: true,
+                ..clear()
+            },
+            ModalFacts {
+                authorizations_here: 1,
+                ..clear()
+            },
+            ModalFacts {
+                verdict: None,
+                ..clear()
+            },
+            // Another device has yet to sign it.
+            ModalFacts {
+                verdict: Some(QuickSign {
+                    elsewhere: 1,
+                    ..verdict()
+                }),
+                ..clear()
+            },
+            // Nothing here to sign.
+            ModalFacts {
+                verdict: Some(QuickSign {
+                    signable: 0,
+                    ..verdict()
+                }),
+                ..clear()
+            },
+            ModalFacts {
+                looking_for_idls: true,
+                ..clear()
+            },
+            ModalFacts {
+                clock_expired: true,
+                ..clear()
+            },
+        ] {
+            let offer = modal_offer(review_only);
+            assert!(offer.review && !offer.sign, "{review_only:?}");
+            assert!(!offer.unread_sign);
+        }
+
+        // A rebuild alone, or a key replaced with no rebuild, simulates as it is.
+        for signs in [
+            ModalFacts {
+                rebuilt: true,
+                ..clear()
+            },
+            ModalFacts {
+                keys_replaced: true,
+                ..clear()
+            },
+        ] {
+            assert!(modal_offer(signs).sign, "{signs:?}");
+        }
+    }
+
+    #[test]
+    fn what_a_site_signs_after_this_device_does_not_hold_sign_back() {
+        let left = ModalFacts {
+            verdict: Some(QuickSign {
+                elsewhere: 1,
+                ..verdict()
+            }),
+            left_for_site: 1,
+            ..clear()
+        };
+        assert!(modal_offer(left).sign);
+    }
+
+    #[test]
+    fn sign_is_marked_when_the_summary_cannot_be_trusted() {
+        for marked in [
+            QuickSign {
+                unread: 1,
+                ..verdict()
+            },
+            QuickSign {
+                unvetted: 1,
+                ..verdict()
+            },
+        ] {
+            let offer = modal_offer(ModalFacts {
+                verdict: Some(marked),
+                ..clear()
+            });
+            assert!(offer.sign && offer.unread_sign, "{marked:?}");
+        }
+    }
+
+    #[test]
+    fn an_expired_blockhash_holds_the_modal_back_only_at_a_step_it_matters() {
+        let at = |step| {
+            modal_offer(ModalFacts {
+                clock_expired: true,
+                step,
+                ..clear()
+            })
+        };
+        assert!(at(Some(Transaction)).expired);
+        assert!(at(Some(Nothing)).expired);
+        assert!(!at(Some(Authorization)).expired);
+        assert!(!at(None).expired);
+        assert!(at(Some(Authorization)).sign);
+    }
+
+    #[test]
+    fn the_app_sends_only_what_no_site_still_has_to_sign() {
+        assert!(can_go_out(true, 0));
+        assert!(!can_go_out(true, 1));
+        assert!(can_go_out(false, 1));
+    }
+}

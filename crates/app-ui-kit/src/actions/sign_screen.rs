@@ -20,6 +20,7 @@ use wallet_core::{
     DecodeError, DecodedTx, KeypairSigner, LookupTables, Phrase, TxFormat, WalletSigner,
 };
 use wallet_flows::adapt::rebuilt_note;
+pub use wallet_flows::offer::BlockhashOnSign;
 use wallet_flows::request::{
     accounts_created, one_time_signers, replaceable_signers, reshape_unsupported,
 };
@@ -801,19 +802,6 @@ pub fn apply_personal_sign(session: Session, account: Pubkey, pasted: String) {
         }
         Err(err) => error.set(Some(sentence(err))),
     }
-}
-
-/// Whether a Sign press first moves the transaction to a fresh blockhash
-/// with [`refresh_blockhash`]. A relayed transaction is moved inside
-/// `wallet_flows::sign` and is not one of these.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum BlockhashOnSign {
-    /// Signed on the blockhash it has.
-    Keep,
-    /// Moved when the node answers, signed as it is when it does not.
-    Fresh,
-    /// The blockhash has expired: a press that cannot move it signs nothing.
-    Required,
 }
 
 /// Sign what is loaded with this device's keys, once the vault is unlocked. The

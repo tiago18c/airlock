@@ -4,6 +4,7 @@
 use super::prepared::{use_prepared_request, Prepared, PreparedRequest, ReadyWire, SignWire};
 use app_ui_kit::actions::site_send::send_for_site;
 use app_ui_kit::state::forms::{BatchItem, BlockhashClock, BrowserBatch, SignLoad};
+use wallet_flows::offer::can_go_out;
 
 use super::*;
 
@@ -30,8 +31,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
     let clock = prep.clock;
     let replaced_payer = prep.replaced_payer;
     let sends = current.sends;
-    // The app cannot send what the site still has to sign.
-    let left_for_site = sends && !prep.site_signs.is_empty();
+    let left_for_site = !can_go_out(sends, prep.site_signs.len());
     let waits = send_waits_for_network(session, &current);
     let can_sign = prep.can_sign && !left_for_site && !waits;
     let title = if sends {
@@ -403,13 +403,12 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
             .is_some_and(|ready| ready.iter().all(|item| item.can_review));
     let sends = current.sends;
     let waits = send_waits_for_network(session, &current);
-    // The app cannot send what the site still has to sign.
     let can_sign = can_review
         && !waits
         && ready.as_ref().is_some_and(|ready| {
             ready
                 .iter()
-                .all(|item| item.can_sign && (!sends || item.site_signs.is_empty()))
+                .all(|item| item.can_sign && can_go_out(sends, item.site_signs.len()))
         });
     let send_note = match current.request.send_plan() {
         SendPlan::Serial => {

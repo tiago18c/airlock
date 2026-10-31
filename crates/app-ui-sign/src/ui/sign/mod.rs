@@ -41,6 +41,10 @@ use wallet_core::{
     NextSignature, SignFinish, SignStepInputs, SignerRole, SignerState, SigningStatus,
     SimulationStage, TxFormat,
 };
+use wallet_flows::offer::{
+    batch_keepable, blockhash_plan, may_sign, may_submit, BatchFacts, BlockhashFacts,
+    BlockhashPlan, ButtonFacts,
+};
 use wallet_flows::sign::wants_fresh_blockhash;
 
 mod banners;
@@ -291,11 +295,6 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     // expired one does not hold Sign back. Vector keys are not transaction
     // signers, so wants_fresh_blockhash only needs the hot keys.
     let refreshes_on_sign = online && wants_fresh_blockhash(tx.as_ref(), local.keys);
-    let expired =
-        clock_expired() && matches!(step, NextSignature::Transaction | NextSignature::Nothing);
-    // Signatures over the transaction itself. Refreshing keeps an
-    // authorization, so one does not count here.
-    let untouched = !tx.signers.iter().any(|slot| slot.valid);
     let from_browser = matches!(source, Some(TxSource::Browser { .. }));
     let app_built = matches!(
         source,
@@ -312,25 +311,19 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     } else {
         0
     };
-    // The press that signs the transaction moves it to a fresh blockhash
-    // first. Before expiry, only a transaction this app made (or relays) is
-    // moved: a site's or another device's is left as it came. Once expired,
-    // any transaction on a blockhash is.
-    let blockhash_gone = clock_expired() && !refreshes_on_sign;
-    let moves = online
-        && !uses_nonce
-        && !refreshes_on_sign
-        && step == NextSignature::Transaction
-        && status.signable > 0
-        && (blockhash_gone || (untouched && ((relayed && !from_browser) || app_built)));
-    let blockhash_on_sign = match (moves, blockhash_gone) {
-        (false, _) => BlockhashOnSign::Keep,
-        (true, false) => BlockhashOnSign::Fresh,
-        (true, true) => BlockhashOnSign::Required,
-    };
-    // Expired with nothing left here to sign: moving it is a press of its own.
-    let show_refresh =
-        online && !uses_nonce && blockhash_gone && !moves && step != NextSignature::Authorization;
+    let blockhash = blockhash_plan(BlockhashFacts {
+        online,
+        uses_nonce,
+        refreshes_on_sign,
+        clock_expired: clock_expired(),
+        step,
+        signable: status.signable,
+        untouched: !tx.signers.iter().any(|slot| slot.valid),
+        relayed,
+        from_browser,
+        app_built,
+    });
+    let expired = blockhash.expired;
     let site_blockhash = from_browser && !exact;
     // Every address a signature row draws. The change the simulation finds
     // for one is shown on its row.
@@ -369,17 +362,18 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     let batch_signed = batch
         .as_ref()
         .is_some_and(|batch| batch.items[batch.current].signed);
-    // Nothing here to sign, and nothing missing but what the site adds: the
-    // batch can take it as it is.
-    let batch_keepable = batch.is_some()
-        && !batch_signed
-        && site_waiting
-        && status.signable == 0
-        && !needs_rebuild
-        && !status.waiting_for_authority
-        && step != NextSignature::Authorization
-        && status.missing_elsewhere() == site_signs
-        && !expired;
+    let batch_keepable = batch_keepable(BatchFacts {
+        in_batch: batch.is_some(),
+        already_kept: batch_signed,
+        site_waiting,
+        signable: status.signable,
+        needs_rebuild,
+        waiting_for_authority: status.waiting_for_authority,
+        step,
+        missing_elsewhere: status.missing_elsewhere(),
+        left_for_site: site_signs,
+        expired,
+    });
     let steps = sign_steps(
         &status,
         &SignStepInputs {
@@ -397,7 +391,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             expired: clock_expired(),
             // Sign moves the transaction off an expired blockhash, so it
             // holds nothing back.
-            refreshes_on_sign: refreshes_on_sign || moves,
+            refreshes_on_sign: refreshes_on_sign || blockhash.on_sign != BlockhashOnSign::Keep,
             left_for_site: site_signs,
         },
     );
@@ -462,10 +456,8 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             online,
             busy,
             needs_rebuild,
-            expired,
             refreshes_on_sign,
-            blockhash_on_sign,
-            show_refresh,
+            blockhash,
             site_blockhash,
             site_signs,
             site_send,
@@ -583,10 +575,8 @@ fn SignActions(
     online: bool,
     busy: Signal<bool>,
     needs_rebuild: bool,
-    expired: bool,
     refreshes_on_sign: bool,
-    blockhash_on_sign: BlockhashOnSign,
-    show_refresh: bool,
+    blockhash: BlockhashPlan,
     site_blockhash: bool,
     site_signs: usize,
     /// What came of the transaction since it went back to the site, and
@@ -595,19 +585,26 @@ fn SignActions(
 ) -> Element {
     let session = use_context::<Session>();
     let rebuilding = session.forms.sign.rebuilding;
-    let signing_auth = matches!(step, NextSignature::Authorization);
-    let can_sign = status.signable > 0
-        && !needs_rebuild
-        && !busy()
-        && (signing_auth
-            || !expired
-            || refreshes_on_sign
-            || blockhash_on_sign != BlockhashOnSign::Keep);
-    // Submit waits while the site may be sending it, and stays off once
-    // it has landed.
-    let site_holds = matches!(site_send, Some((SiteSend::Watching | SiteSend::Landed, _)));
-    let can_submit =
-        online && status.complete() && !needs_rebuild && !busy() && !expired && !site_holds;
+    let BlockhashPlan {
+        on_sign: blockhash_on_sign,
+        offer_refresh: show_refresh,
+        expired,
+    } = blockhash;
+    let buttons = ButtonFacts {
+        online,
+        needs_rebuild,
+        busy: busy(),
+        step,
+        signable: status.signable,
+        complete: status.complete(),
+        refreshes_on_sign,
+        blockhash,
+        // Submit waits while the site may be sending it, and stays off once
+        // it has landed.
+        site_holds: matches!(site_send, Some((SiteSend::Watching | SiteSend::Landed, _))),
+    };
+    let can_sign = may_sign(buttons);
+    let can_submit = may_submit(buttons);
     let elsewhere = status.missing_elsewhere();
     let authorizations = status.authorizations_elsewhere();
     let sign_label = match step {
