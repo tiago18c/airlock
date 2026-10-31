@@ -214,12 +214,13 @@ impl Session {
     /// The Vector keys of this device for one press of Sign over `wire`, with
     /// what each hash-based key signs with recorded first. `signers` sign in
     /// the same press. `known` is what is known of the accounts: their
-    /// nonces, keys and leaf floors.
+    /// nonces, keys and leaf floors, and `floors` where the floors came from.
     pub fn vector_keys_for_sign(
         &self,
         wire: &[u8],
         signers: &[&dyn wallet_core::WalletSigner],
         known: &[wallet_core::relay::VectorContext],
+        floors: wallet_core::vector::FloorsFrom,
     ) -> Result<Vec<wallet_core::vector::VectorKey>, wallet_core::SignError> {
         let mut marks = self.leaf_marks;
         let keys = self.command(|core| {
@@ -231,6 +232,7 @@ impl Session {
                     wire,
                     signers,
                     known,
+                    floors,
                 )
             })
         });
@@ -312,7 +314,10 @@ impl Session {
             .iter()
             .map(|signer| signer as &dyn wallet_core::WalletSigner)
             .collect();
-        let vector = self.vector_keys_for_sign(wire, &refs, known)?;
+        // A rebuild read `known` from the chain, and no hash-based key signs
+        // here unless one did: the modal leaves authorizations to Review.
+        let floors = wallet_core::vector::FloorsFrom::Chain;
+        let vector = self.vector_keys_for_sign(wire, &refs, known, floors)?;
         let mut cache = self.xmss_retries.peek().clone();
         let done = wallet_core::sign_locally_in_with(
             wire,

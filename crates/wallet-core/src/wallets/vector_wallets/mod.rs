@@ -20,8 +20,8 @@ mod rotation_tests;
 
 pub use held::{held_vector_accounts, local_vector_keys};
 pub use leaves::{
-    install_landed_rotations, keys_to_sign_with, reserve, reserve_leaf, LeafError, LeafFor,
-    LeafMarks, Reserved, LEAVES_SKIPPED_WITHOUT_MARK,
+    install_landed_rotations, keys_to_sign_with, reserve, reserve_leaf, FloorsFrom, LeafError,
+    LeafFor, LeafMarks, Reserved, LEAVES_SKIPPED_WITHOUT_MARK,
 };
 pub use rotate::{account_state, adopt_account_state, sign_rotation, Adopted};
 pub use rotation::{next_key_target, RotationError};

@@ -57,6 +57,8 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - A transaction that went back to a site from Review and Sign is not sent twice. The site may send it itself, so Submit waits up to 10 seconds while the app watches for it on chain. If it lands, a toast says the site sent it and follows it to confirmed, and Submit stays off. If it does not, a toast says the site did not send it, and Submit turns on. In a batch, each transaction is watched for on its own.
 
 ### Security
+- The record of used signing leaves (`vector-leaves.json`) is written so that a power cut on Windows cannot undo it after a leaf has signed. It also keeps no older copy, which could have been read in its place and let a leaf sign twice. Every other file's save is flushed the same way.
+- A context note can no longer use up an XMSS key's leaves by naming a high floor. The device that holds the key refuses a floor above its own count, and says to scan the account state if the other device is right.
 - A site can no longer get a Vector authorization by asking for a signed message. A message of exactly 32 bytes was refused only if it did not read as text, and a site that builds the transaction can vary it until the digest does. Now every 32-byte message is refused, unless it is all hex digits, as a nonce often is.
 - A message or sign-in holding characters that hide or reorder text, such as a right-to-left override, no longer shows as text. A message shows in hex with a warning, and a sign-in is refused.
 - A key or seed phrase on Add wallet is wiped from the screen and from memory however the vault locks. Before, only the lock button in the top bar did that: when the vault locked by itself, or from the tray, a new seed phrase stayed on screen and in memory.
