@@ -1,10 +1,18 @@
 import {
   HOST_NAME,
+  MAX_PENDING,
+  MAX_PENDING_PER_ORIGIN,
+  MAX_REQUEST_BYTES,
   METHODS,
+  QUICK_TTL_MS,
+  RATE_LIMIT,
+  RATE_WINDOW_MS,
   REQUEST_TTL_MS,
   isRequestId,
+  jsonBytes,
   newRequestId,
   shortCode,
+  waitsForUser,
   type BridgeMethod,
   type BridgeState,
   type NativeMessage,
@@ -17,7 +25,14 @@ const pageOrigins = new Map<chrome.runtime.Port, string>();
 const popupPorts: chrome.runtime.Port[] = [];
 const waiters = new Map<string, (message: NativeMessage) => void>();
 const pending: PendingRequest[] = [];
+/** The page waiting on each request in `pending`. */
+const askers = new Map<string, chrome.runtime.Port>();
+/** Requests from each origin in the current rate window. */
+const asked = new Map<string, number>();
 
+let rateWindowStart = 0;
+/** The origins the app last heard about. */
+let reportedPages: string | null = null;
 let nativePort: chrome.runtime.Port | null = null;
 let host: BridgeState["host"] = "down";
 let role: string | null = null;
@@ -47,9 +62,10 @@ chrome.runtime.onConnect.addListener((port) => {
     remove(pagePorts, port);
     pageOrigins.delete(port);
     reportPages();
+    abandon(port);
   });
   port.onMessage.addListener((body: unknown) => {
-    void handlePage(origin, body).then((response) => {
+    void handlePage(port, origin, body).then((response) => {
       try {
         port.postMessage(response);
       } catch {
@@ -59,28 +75,74 @@ chrome.runtime.onConnect.addListener((port) => {
   });
 });
 
-async function handlePage(origin: string, body: unknown): Promise<NativeMessage> {
+async function handlePage(port: chrome.runtime.Port, origin: string, body: unknown): Promise<NativeMessage> {
   const record = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
-  if (!isRequestId(record.id)) {
+  const pageId = record.id;
+  if (!isRequestId(pageId)) {
     return { v: 1, error: { code: "bad_request", message: "Missing request id." } };
   }
+  const refuse = (code: string, message: string): NativeMessage => ({ v: 1, id: pageId, error: { code, message } });
   if (typeof record.method !== "string" || !isMethod(record.method)) {
-    return { v: 1, id: record.id, error: { code: "bad_request", message: "Unsupported method." } };
+    return refuse("bad_request", "Unsupported method.");
   }
-  return sendNative(
-    {
-      v: 1,
-      id: record.id,
-      origin,
-      method: record.method,
-      params: record.params,
-      expiresAt: Math.floor((Date.now() + REQUEST_TTL_MS) / 1000),
-    },
-    record.method !== "status",
-  );
+  if (!withinRate(origin)) {
+    return refuse("too_many_requests", "This site is asking too often.");
+  }
+  const waits = waitsForUser(record.method, record.params);
+  if (waits && !hasRoom(origin)) {
+    return refuse("too_many_requests", "Too many requests are waiting in Airlock.");
+  }
+  // An id of this worker's own: a page chooses its id, and another page's
+  // reply must never find its way to it.
+  const request: NativeRequest = {
+    v: 1,
+    id: newRequestId(),
+    origin,
+    method: record.method,
+    params: record.params,
+    expiresAt: Math.floor((Date.now() + (waits ? REQUEST_TTL_MS : QUICK_TTL_MS)) / 1000),
+  };
+  if (jsonBytes(request) > MAX_REQUEST_BYTES) {
+    return refuse("bad_request", "The request is too large.");
+  }
+  return { ...(await sendNative(request, waits ? port : undefined)), id: pageId };
 }
 
-function sendNative(request: NativeRequest, track: boolean): Promise<NativeMessage> {
+function withinRate(origin: string): boolean {
+  const now = Date.now();
+  if (now - rateWindowStart >= RATE_WINDOW_MS) {
+    rateWindowStart = now;
+    asked.clear();
+  }
+  const count = (asked.get(origin) ?? 0) + 1;
+  asked.set(origin, count);
+  return count <= RATE_LIMIT;
+}
+
+function hasRoom(origin: string): boolean {
+  const fromSite = pending.filter((item) => item.origin === origin).length;
+  return pending.length < MAX_PENDING && fromSite < MAX_PENDING_PER_ORIGIN;
+}
+
+/** The page is gone, so nobody is waiting on what it asked. The app drops those
+ * requests rather than ask the user about them. A send the user approved left
+ * its queue already, and goes on. */
+function abandon(port: chrome.runtime.Port): void {
+  for (const [id, asker] of askers) {
+    if (asker !== port) continue;
+    waiters.get(id)?.({ v: 1, error: { code: "expired", message: "The page closed." } });
+    try {
+      nativePort?.postMessage({ v: 1, id: newRequestId(), method: "cancel", params: { id } });
+    } catch {
+      // The host went away, and the app dropped the request with it.
+    }
+  }
+}
+
+/** Send `request` to the app. `asker` is the page waiting on the user for it;
+ * with none, it is answered at once, or soon given up on. */
+function sendNative(request: NativeRequest, asker?: chrome.runtime.Port): Promise<NativeMessage> {
+  const track = asker !== undefined;
   return new Promise((resolve) => {
     let settled = false;
     const finish = (message: NativeMessage) => {
@@ -89,6 +151,7 @@ function sendNative(request: NativeRequest, track: boolean): Promise<NativeMessa
       clearTimeout(timer);
       waiters.delete(request.id);
       if (track) {
+        askers.delete(request.id);
         const index = pending.findIndex((item) => item.id === request.id);
         if (index >= 0) pending.splice(index, 1);
         notifyPopups();
@@ -103,10 +166,11 @@ function sendNative(request: NativeRequest, track: boolean): Promise<NativeMessa
         id: request.id,
         error: { code: "expired", message: "The desktop app did not answer in time." },
       });
-    }, REQUEST_TTL_MS);
+    }, track ? REQUEST_TTL_MS : QUICK_TTL_MS);
 
     waiters.set(request.id, finish);
     if (track) {
+      askers.set(request.id, asker);
       pending.push({
         id: request.id,
         shortCode: shortCode(request.id),
@@ -134,6 +198,7 @@ function connectNative(): chrome.runtime.Port {
   if (nativePort) return nativePort;
   const port = chrome.runtime.connectNative(HOST_NAME);
   nativePort = port;
+  reportedPages = null;
   port.onMessage.addListener((message: NativeMessage) => {
     if (message.method === "accountsChanged") {
       // Only that site's pages: another site must not learn its accounts.
@@ -174,12 +239,18 @@ function reportPages(): void {
 }
 
 function postPages(port: chrome.runtime.Port): void {
+  const origins = [...new Set(pageOrigins.values())].sort();
+  const list = JSON.stringify(origins);
+  // Another page of an origin already listed tells the app nothing. A list too
+  // long to send leaves it with the last one it heard, which does no harm.
+  if (list === reportedPages || list.length > MAX_REQUEST_BYTES) return;
+  reportedPages = list;
   try {
     port.postMessage({
       v: 1,
       id: newRequestId(),
       method: "pages",
-      params: { origins: [...new Set(pageOrigins.values())] },
+      params: { origins },
     });
   } catch {
     // The host went away. It hears this again when it next starts.
@@ -193,9 +264,8 @@ async function probeDesktop(): Promise<void> {
       id: newRequestId(),
       origin: `chrome-extension://${chrome.runtime.id}`,
       method: "status",
-      expiresAt: Math.floor(Date.now() / 1000) + 15,
+      expiresAt: Math.floor((Date.now() + QUICK_TTL_MS) / 1000),
     },
-    false,
   );
   if (message.error) {
     host = message.error.code === "host_not_found" ? "missing" : "down";
@@ -227,14 +297,11 @@ function notifyPopups(): void {
   }
 }
 
+/** Where the browser says a page is from. A sandboxed frame says "null": its
+ * URL may name a site, but it has none of that site's rights, and it must not
+ * ask in that site's name. Every browser the manifest allows sets this. */
 function originOf(sender: chrome.runtime.MessageSender): string | null {
-  if (sender.origin && sender.origin !== "null") return sender.origin;
-  if (!sender.url) return null;
-  try {
-    return new URL(sender.url).origin;
-  } catch {
-    return null;
-  }
+  return sender.origin && sender.origin !== "null" ? sender.origin : null;
 }
 
 function isMethod(value: string): value is BridgeMethod {

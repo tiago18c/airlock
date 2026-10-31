@@ -5,6 +5,14 @@
 /// `not_implemented`.
 pub const MAX_TRANSACTIONS: usize = 16;
 
+/// The most requests one site may have waiting for the user. The extension
+/// refuses more before asking, and the desktop app refuses them again, since
+/// several browsers can ask for one site.
+pub const MAX_PENDING_PER_ORIGIN: usize = 8;
+
+/// The most requests waiting for the user, from every site together.
+pub const MAX_PENDING: usize = 32;
+
 /// The four characters shown beside a request, so it can be matched with the
 /// one the extension lists.
 pub fn request_code(id: &str) -> String {

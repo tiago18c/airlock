@@ -6,8 +6,10 @@
 //! The transport (the socket) stays in the desktop shell.
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::sync::Arc;
 
 use bridge_protocol::reply::SiteAccount;
+use bridge_protocol::{MAX_PENDING, MAX_PENDING_PER_ORIGIN};
 use serde_json::Value;
 use solana_pubkey::Pubkey;
 use wallet_core::{ConfirmationLevel, ConnectChoice, SiteGrant};
@@ -253,19 +255,29 @@ impl BridgeRequest {
     }
 }
 
-/// Pending requests, oldest first. The head is the one on screen.
+/// Why a request did not join the queue.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum BridgeRefused {
+    /// Its site, or every site together, has as many waiting as may wait.
+    Full,
+    /// One with this id is waiting, and answers find a request by its id.
+    SameId,
+}
+
+/// Pending requests, oldest first. The head is the one on screen. Published
+/// each time it changes, so it holds them by reference: one can be 1 MiB.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct BridgeQueue {
-    pending: Vec<BridgeRequest>,
+    pending: Vec<Arc<BridgeRequest>>,
 }
 
 impl BridgeQueue {
-    pub fn pending(&self) -> &[BridgeRequest] {
+    pub fn pending(&self) -> &[Arc<BridgeRequest>] {
         &self.pending
     }
 
     pub fn head(&self) -> Option<&BridgeRequest> {
-        self.pending.first()
+        self.pending.first().map(Arc::as_ref)
     }
 
     pub fn len(&self) -> usize {
@@ -277,7 +289,10 @@ impl BridgeQueue {
     }
 
     pub fn get(&self, id: &str) -> Option<&BridgeRequest> {
-        self.pending.iter().find(|request| request.id == id)
+        self.pending
+            .iter()
+            .find(|request| request.id == id)
+            .map(Arc::as_ref)
     }
 }
 
@@ -292,7 +307,7 @@ pub enum SendPlan {
 /// A send the user approved: out of the queue, so nobody can reject it while
 /// it goes out, with the way to tell the site how it went.
 pub struct SendingRequest {
-    pub request: BridgeRequest,
+    pub request: Arc<BridgeRequest>,
     pub(crate) reply: Option<BridgeReply>,
 }
 
@@ -313,7 +328,7 @@ pub(crate) struct BridgeState {
 
 /// A request taken out of the queue, with its reply when it had one.
 pub(crate) struct Taken {
-    pub request: BridgeRequest,
+    pub request: Arc<BridgeRequest>,
     pub reply: Option<BridgeReply>,
 }
 
@@ -322,9 +337,26 @@ impl BridgeState {
         &self.queue
     }
 
-    pub fn push(&mut self, request: BridgeRequest, reply: BridgeReply) {
+    pub fn push(
+        &mut self,
+        request: BridgeRequest,
+        reply: BridgeReply,
+    ) -> Result<(), BridgeRefused> {
+        if self.queue.get(&request.id).is_some() {
+            return Err(BridgeRefused::SameId);
+        }
+        let from_site = self
+            .queue
+            .pending
+            .iter()
+            .filter(|waiting| waiting.origin == request.origin)
+            .count();
+        if self.queue.len() >= MAX_PENDING || from_site >= MAX_PENDING_PER_ORIGIN {
+            return Err(BridgeRefused::Full);
+        }
         self.replies.insert(request.id.clone(), reply);
-        self.queue.pending.push(request);
+        self.queue.pending.push(Arc::new(request));
+        Ok(())
     }
 
     /// Take `id` out of the queue: any request, or with `answer`, only one

@@ -12,8 +12,26 @@ fn attached_bridge() -> (Kit, Bridge) {
     (kit, bridge)
 }
 
+/// The reply, however long it takes.
+fn settled(answer: Answer) -> Vec<u8> {
+    match answer {
+        Answer::Now(bytes) => bytes,
+        Answer::Later(wait) => wait(),
+    }
+}
+
 fn ask(bridge: &Bridge, request: Value) -> Value {
-    serde_json::from_slice(&bridge.answer(&serde_json::to_vec(&request).unwrap())).unwrap()
+    let message = serde_json::to_vec(&request).unwrap();
+    serde_json::from_slice(&settled(bridge.answer(&message, &Waiting::default()))).unwrap()
+}
+
+/// `request` from the connection `peer`, as it is taken in.
+fn sent(peer: &Peer, request: Value) -> Answer {
+    peer.answer(&serde_json::to_vec(&request).unwrap())
+}
+
+fn read(bytes: &[u8]) -> Value {
+    serde_json::from_slice(bytes).unwrap()
 }
 
 fn connect(id: &str) -> BridgeRequest {
@@ -72,11 +90,12 @@ fn a_second_launch_can_show_the_window_before_the_core_opens() {
 #[tokio::test]
 async fn a_request_nobody_answers_leaves_the_queue() {
     let (kit, _bridge) = attached_bridge();
-    let bytes = wait_for_user(
+    let bytes = settled(wait_for_user(
         &kit.core.public(),
         connect("stale"),
         Duration::from_millis(10),
-    );
+        &Waiting::default(),
+    ));
     let value: Value = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(value["error"]["code"], "expired");
     assert!(kit.core.slices().bridge.get().is_empty());
@@ -112,7 +131,14 @@ async fn the_window_answers_from_the_core_queue() {
     let (kit, _bridge) = attached_bridge();
     let waiting = |id: &'static str| {
         let core = kit.core.public();
-        std::thread::spawn(move || wait_for_user(&core, connect(id), Duration::from_secs(5)))
+        std::thread::spawn(move || {
+            settled(wait_for_user(
+                &core,
+                connect(id),
+                Duration::from_secs(5),
+                &Waiting::default(),
+            ))
+        })
     };
     let first = waiting("count-1");
     while kit.core.slices().bridge.get().is_empty() {
@@ -449,24 +475,131 @@ async fn a_site_is_told_only_when_what_it_holds_changes() {
 #[tokio::test]
 async fn a_request_waiting_for_the_user_holds_up_nothing_else() {
     let (kit, bridge) = attached_bridge();
-    let peer = Arc::new(Peer::new(bridge.clone(), None));
-    let waiting = {
-        let peer = peer.clone();
-        std::thread::spawn(move || {
-            peer.answer(
-                &serde_json::to_vec(
-                    &json!({ "v": 1, "id": "w", "origin": ORIGIN, "method": "connect" }),
-                )
-                .unwrap(),
-            )
-        })
-    };
-    while kit.core.slices().bridge.get().is_empty() {
-        std::thread::yield_now();
-    }
-    assert_eq!(silent_connect(&bridge)["result"]["accounts"], json!([]));
+    let peer = Peer::new(bridge.clone(), None);
+    let waiting = sent(
+        &peer,
+        json!({ "v": 1, "id": "w", "origin": ORIGIN, "method": "connect" }),
+    );
+    assert!(matches!(waiting, Answer::Later(_)));
+    assert_eq!(kit.core.slices().bridge.get().len(), 1);
+
+    let answer = sent(
+        &peer,
+        json!({ "v": 1, "id": "s", "origin": ORIGIN, "method": "connect", "params": { "silent": true } }),
+    );
+    assert!(matches!(answer, Answer::Now(_)));
+    assert_eq!(read(&settled(answer))["result"]["accounts"], json!([]));
+
     assert!(kit.core.bridge_answer("w", &BridgeAnswer::Rejected));
-    waiting.join().unwrap();
+    assert_eq!(read(&settled(waiting))["error"]["code"], "rejected");
+}
+
+fn connect_from(id: &str, origin: &str) -> Value {
+    json!({ "v": 1, "id": id, "origin": origin, "method": "connect" })
+}
+
+fn cancel_of(id: &str) -> Value {
+    json!({ "v": 1, "id": "c", "method": "cancel", "params": { "id": id } })
+}
+
+#[tokio::test]
+async fn a_request_its_page_gave_up_on_leaves_the_queue() {
+    let (kit, bridge) = attached_bridge();
+    let peer = Peer::new(bridge.clone(), None);
+    let waiting = sent(&peer, connect_from("w", ORIGIN));
+    assert_eq!(kit.core.slices().bridge.get().len(), 1);
+
+    // The cancel follows its request straight away, and still finds it.
+    let reply = read(&settled(sent(&peer, cancel_of("w"))));
+    assert_eq!(reply["id"], "c");
+    assert!(reply.get("error").is_none());
+    assert!(kit.core.slices().bridge.get().is_empty());
+    assert_eq!(read(&settled(waiting))["error"]["code"], "expired");
+    assert!(peer.waiting.lock().unwrap().is_empty());
+}
+
+#[tokio::test]
+async fn one_browser_cannot_cancel_what_another_asked() {
+    let (kit, bridge) = attached_bridge();
+    let chrome = Peer::new(bridge.clone(), None);
+    let edge = Peer::new(bridge.clone(), None);
+    let waiting = sent(&chrome, connect_from("w", ORIGIN));
+
+    settled(sent(&edge, cancel_of("w")));
+    assert_eq!(kit.core.slices().bridge.get().len(), 1);
+
+    assert!(kit.core.bridge_answer("w", &BridgeAnswer::Rejected));
+    assert_eq!(read(&settled(waiting))["error"]["code"], "rejected");
+}
+
+#[tokio::test]
+async fn a_browser_going_away_ends_only_its_own_requests() {
+    let (kit, bridge) = attached_bridge();
+    let chrome = Peer::new(bridge.clone(), None);
+    let edge = Peer::new(bridge.clone(), None);
+    let gone = sent(&chrome, connect_from("gone", ORIGIN));
+    let stays = sent(&edge, connect_from("stays", ORIGIN));
+
+    chrome.closed();
+    let queue = kit.core.slices().bridge.get();
+    assert_eq!(queue.len(), 1);
+    assert_eq!(queue.head().unwrap().id, "stays");
+    assert_eq!(read(&settled(gone))["error"]["code"], "expired");
+
+    assert!(kit.core.bridge_answer("stays", &BridgeAnswer::Rejected));
+    assert_eq!(read(&settled(stays))["error"]["code"], "rejected");
+}
+
+#[tokio::test]
+async fn a_send_the_user_approved_goes_on_without_the_browser() {
+    let (kit, bridge) = attached_bridge();
+    connected(&kit, &bridge, false);
+    let peer = Peer::new(bridge.clone(), None);
+    let waiting = sent(&peer, send_request("send", SEND, Some("solana:devnet")));
+    let sending = kit.core.bridge_begin_send("send", 1).unwrap();
+    assert!(kit.core.slices().bridge.get().is_empty());
+
+    peer.closed();
+    kit.core.bridge_send_finished(sending, vec![Ok([1u8; 64])]);
+    let reply = read(&settled(waiting));
+    assert_eq!(reply["id"], "send");
+    assert_eq!(reply["result"]["signatures"].as_array().unwrap().len(), 1);
+}
+
+#[tokio::test]
+async fn the_queue_turns_away_a_flood_and_answers_it_at_once() {
+    let (kit, bridge) = attached_bridge();
+    let peer = Peer::new(bridge.clone(), None);
+    let mut waits = Vec::new();
+    for n in 0..bridge_protocol::MAX_PENDING_PER_ORIGIN {
+        let answer = sent(&peer, connect_from(&format!("w{n}"), ORIGIN));
+        assert!(matches!(answer, Answer::Later(_)));
+        waits.push(answer);
+    }
+    let refused = sent(&peer, connect_from("over", ORIGIN));
+    assert!(matches!(refused, Answer::Now(_)));
+    assert_eq!(
+        read(&settled(refused))["error"]["code"],
+        "too_many_requests"
+    );
+
+    // Another site still gets through.
+    let other = sent(&peer, connect_from("other", "https://other.test"));
+    assert!(matches!(other, Answer::Later(_)));
+    waits.push(other);
+
+    // An id that is waiting is not taken twice: the first would lose its reply.
+    let again = read(&settled(sent(
+        &peer,
+        connect_from("w0", "https://other.test"),
+    )));
+    assert_eq!(again["error"]["code"], "bad_request");
+
+    peer.closed();
+    assert!(kit.core.slices().bridge.get().is_empty());
+    for wait in waits {
+        assert_eq!(read(&settled(wait))["error"]["code"], "expired");
+    }
 }
 
 #[tokio::test]
@@ -742,10 +875,10 @@ fn a_connection_counts_as_the_extension_until_it_closes() {
     let status = serde_json::to_vec(&json!({ "v": 1, "id": "s", "method": "status" })).unwrap();
 
     let first = Peer::new(bridge.clone(), None);
-    first.answer(&status);
-    first.answer(&status);
+    settled(first.answer(&status));
+    settled(first.answer(&status));
     let second = Peer::new(bridge.clone(), None);
-    second.answer(&status);
+    settled(second.answer(&status));
     assert_eq!(*extension.borrow(), 2);
 
     first.closed();
@@ -759,7 +892,7 @@ fn a_second_launch_asking_to_show_is_not_the_extension() {
     let bridge = Bridge::new();
     let extension = bridge.subscribe_extension();
     let launch = Peer::new(bridge.clone(), None);
-    launch.answer(br#"{"v":1,"id":"show","method":"show"}"#);
+    settled(launch.answer(br#"{"v":1,"id":"show","method":"show"}"#));
     assert_eq!(*extension.borrow(), 0);
     drop(launch);
     assert_eq!(*extension.borrow(), 0);

@@ -61,11 +61,88 @@ async fn notice_status_moves_forward() {
     assert!(events.try_recv().is_err());
 }
 
+fn browser_request(id: usize) -> NoticeKind {
+    NoticeKind::BridgeRequest {
+        id: format!("req-{id}"),
+        origin: "https://flood.test".into(),
+        method: "connect".into(),
+        outcome: BridgeRequestOutcome::Expired,
+    }
+}
+
+#[tokio::test]
+async fn no_amount_of_notices_drops_a_transaction_being_watched() {
+    let kit = kit();
+    let watched = sig(1);
+    kit.core.notices_push(tx_kind(watched, TxStatus::Sent));
+    for i in 2..=(MAX_NOTICES + 10) {
+        kit.core
+            .notices_push(tx_kind(sig(i), TxStatus::Confirmed { slot: 1 }));
+    }
+    let notices = kit.core.slices().notices.get();
+    assert_eq!(notices.len(), MAX_NOTICES);
+    let kept = |signature| {
+        notices.items().iter().any(
+            |n| matches!(&n.kind, NoticeKind::Transaction { signature: s, .. } if *s == signature),
+        )
+    };
+    // It is the oldest, and what went instead are the oldest that had ended.
+    assert!(kept(watched));
+    assert!(!kept(sig(2)));
+
+    // Its status still lands.
+    assert!(kit
+        .core
+        .notices_set_tx_status(watched, TxStatus::Confirmed { slot: 9 }));
+}
+
+#[tokio::test]
+async fn a_flood_of_browser_requests_does_not_push_out_transactions() {
+    let kit = kit();
+    for i in 0..10 {
+        kit.core
+            .notices_push(tx_kind(sig(i), TxStatus::Confirmed { slot: 1 }));
+    }
+    for id in 0..(MAX_NOTICES * 2) {
+        kit.core.notices_push(browser_request(id));
+    }
+    let notices = kit.core.slices().notices.get();
+    assert_eq!(notices.len(), MAX_NOTICES);
+    let transactions = notices
+        .items()
+        .iter()
+        .filter(|n| matches!(n.kind, NoticeKind::Transaction { .. }))
+        .count();
+    assert_eq!(transactions, 10);
+    // The newest request is the one on top.
+    assert!(matches!(
+        &notices.items()[0].kind,
+        NoticeKind::BridgeRequest { id, .. } if *id == format!("req-{}", MAX_NOTICES * 2 - 1)
+    ));
+}
+
+#[tokio::test]
+async fn a_new_browser_request_is_kept_when_only_transactions_are_older() {
+    let kit = kit();
+    for i in 0..MAX_NOTICES {
+        kit.core
+            .notices_push(tx_kind(sig(i), TxStatus::Confirmed { slot: 1 }));
+    }
+    kit.core.notices_push(browser_request(1));
+    let notices = kit.core.slices().notices.get();
+    assert_eq!(notices.len(), MAX_NOTICES);
+    assert!(matches!(
+        notices.items()[0].kind,
+        NoticeKind::BridgeRequest { .. }
+    ));
+}
+
 #[tokio::test]
 async fn notices_capped() {
     let kit = kit();
     for i in 0..=MAX_NOTICES {
-        kit.core.notices_push(tx_kind(sig(i), TxStatus::Sent));
+        kit.core
+            .notices_push(tx_kind(sig(i), TxStatus::Confirmed { slot: 1 }));
     }
     let notices = kit.core.slices().notices.get();
     assert_eq!(notices.len(), MAX_NOTICES);
