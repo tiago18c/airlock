@@ -4,7 +4,6 @@ use super::sentence;
 use crate::diagnostics::{next_flow_id, TxLog};
 use crate::state::session::Session;
 use dioxus::prelude::ReadableExt;
-#[cfg(not(target_arch = "wasm32"))]
 use solana_pubkey::Pubkey;
 use wallet_core::adapt::{Adapted, AdaptedStep};
 use wallet_core::{
@@ -12,6 +11,7 @@ use wallet_core::{
     TxFormat,
 };
 use wallet_flows::lookup::resolve_lookup_tables;
+use wallet_flows::request::wallets_asked;
 use wallet_flows::request::{
     accounts_created, replaceable_signers, route_created, OneTimeKeys, Route,
 };
@@ -35,6 +35,10 @@ pub struct PreparedRequest {
     pub last_valid_height: Option<u64>,
     /// Log trail id shared with later stages.
     pub flow: u64,
+    /// The wallets here the transaction asked for a signature as it came, with
+    /// any lookup tables read: see [`wallets_asked`]. A site may ask this only of
+    /// what it was given, and the app is free to rewrite it after that.
+    pub asks: Vec<Pubkey>,
 }
 
 /// Prepare a browser (or paste) request: v1 as today; legacy/v0 signed as-is
@@ -70,7 +74,13 @@ pub async fn prepare_request(
     }
 
     let view = parse_wire(&wire).map_err(sentence)?;
+    let mut wallets_here = session.known_wallet_pubkeys();
+    wallets_here.extend(session.local_signer_pubkeys());
     if view.format == TxFormat::V1 {
+        let asks = wallets_asked(
+            &decode_v1_transaction(&wire).map_err(sentence)?,
+            &wallets_here,
+        );
         let (wire, adapted, last_valid_height) =
             rebuild_for_wallets_flow(session, wire, flow).await?;
         let (wire, last_valid_height) =
@@ -83,11 +93,13 @@ pub async fn prepare_request(
             converted: None,
             last_valid_height,
             flow,
+            asks,
         });
     }
 
     let tables = lookup_tables_for(session, &wire).await?;
     let tx = decode_transaction(&wire, &tables).map_err(sentence)?;
+    let asks = wallets_asked(&tx, &wallets_here);
     let known = session.known_wallet_pubkeys();
     let rpc = session.rpc().ok();
     // Found once, and kept for the screens that show the transaction.
@@ -118,6 +130,7 @@ pub async fn prepare_request(
             converted: None,
             last_valid_height: None,
             flow,
+            asks,
         });
     };
     let from_message = hex::encode(sha256_bytes(&view.message));
@@ -144,6 +157,7 @@ pub async fn prepare_request(
         converted: Some(converted),
         last_valid_height,
         flow,
+        asks,
     })
 }
 

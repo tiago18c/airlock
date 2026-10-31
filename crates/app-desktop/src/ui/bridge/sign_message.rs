@@ -48,6 +48,7 @@ pub(in crate::ui) fn MessageRequest(current: BridgePrompt, on_close: EventHandle
     let session = use_context::<Session>();
     let mut error = use_signal(|| None::<String>);
     let unlocked = session.is_unlocked();
+    let armed = use_armed(unlocked);
     let reject_id = current.id.clone();
     let sign_id = current.id.clone();
     let to_sign = bytes.clone();
@@ -76,7 +77,7 @@ pub(in crate::ui) fn MessageRequest(current: BridgePrompt, on_close: EventHandle
             }
             button {
                 class: "primary",
-                disabled: !unlocked,
+                disabled: !armed,
                 onclick: move |_| {
                     match session.sign_site_message(account, &to_sign) {
                         Ok(signature) => {
@@ -136,6 +137,7 @@ pub(in crate::ui) fn SignInRequest(current: BridgePrompt, on_close: EventHandler
     let elsewhere = sign_in.uri_elsewhere(&origin);
     let message = chosen().map(|key| sign_in.message(&origin, &key.to_string()));
     let to_sign = message.clone();
+    let armed = use_armed(unlocked && to_sign.is_some());
     let reject_id = current.id.clone();
     let block_id = current.id.clone();
     let sign_id = current.id.clone();
@@ -205,7 +207,7 @@ pub(in crate::ui) fn SignInRequest(current: BridgePrompt, on_close: EventHandler
             }
             button {
                 class: "primary",
-                disabled: !unlocked || to_sign.is_none(),
+                disabled: !armed,
                 onclick: move |_| {
                     let (Some(account), Some(text)) = (chosen(), to_sign.clone()) else {
                         return;

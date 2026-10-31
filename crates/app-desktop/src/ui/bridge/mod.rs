@@ -21,6 +21,7 @@
 
 use crate::bridge::BridgePrompt;
 use app_core::bridge::{BridgeAnswer, SendPlan, SiteCall};
+use app_core::ports::Clock;
 use app_ui_kit::actions::idl_check::fetch_missing_idls;
 use app_ui_kit::actions::sentence;
 use app_ui_kit::actions::sign::{offer_paid_here, prepare_request, PaidHere};
@@ -30,6 +31,8 @@ use app_ui_kit::ui::tx_view::{FeeLine, InstructionList};
 use app_ui_kit::{Address, AddressRow, Session};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
+use std::sync::Arc;
+use std::time::Duration;
 use wallet_core::adapt::{Adapted, AdaptedStep};
 use wallet_core::{missing_catalog_programs, quick_sign_in, sha256_bytes};
 use wallet_flows::adapt::held_back_note;
@@ -62,6 +65,144 @@ pub fn use_request_modal() -> RequestModal {
     use_context_provider(|| RequestModal {
         open: Signal::new(false),
     })
+}
+
+/// How long a button that approves a request stays off once it could be pressed.
+const ARM_DELAY: Duration = Duration::from_millis(800);
+
+/// Whether an approving button that could be pressed (`ready`) may be pressed yet.
+/// A site chooses when its request appears, so a click meant for something else,
+/// perhaps on its own page, could land on the button. It has to have been on
+/// screen and ready for a moment first, and starts again each time it is not.
+fn use_armed(ready: bool) -> bool {
+    let session = use_context::<Session>();
+    use_armed_on(session.clock(), ready)
+}
+
+fn use_armed_on(clock: Arc<dyn Clock>, ready: bool) -> bool {
+    let mut armed = use_signal(|| false);
+    // Counts changes of `ready`, so an older wait cannot arm a newer one.
+    let mut turn = use_signal(|| 0u64);
+    use_effect(use_reactive!(|(ready)| {
+        let mine = *turn.peek() + 1;
+        turn.set(mine);
+        armed.set(false);
+        if !ready {
+            return;
+        }
+        let waited = clock.sleep(ARM_DELAY);
+        spawn(async move {
+            waited.await;
+            if *turn.peek() == mine {
+                armed.set(true);
+            }
+        });
+    }));
+    ready && armed()
+}
+
+#[cfg(test)]
+mod arming_tests {
+    use super::*;
+    use app_core::testing::ManualClock;
+    use dioxus::dioxus_core::{NoOpMutations, VirtualDom};
+    use std::cell::Cell;
+    use std::rc::Rc;
+
+    #[derive(Clone)]
+    struct Held {
+        clock: Arc<ManualClock>,
+        ready: Rc<Cell<Option<Signal<bool>>>>,
+        armed: Rc<Cell<bool>>,
+    }
+
+    fn app(held: Held) -> Element {
+        let ready = use_signal(|| false);
+        held.ready.set(Some(ready));
+        let armed = use_armed_on(held.clock.clone(), ready());
+        held.armed.set(armed);
+        rsx! {}
+    }
+
+    async fn settle(dom: &mut VirtualDom) {
+        for _ in 0..4 {
+            let _ = tokio::time::timeout(Duration::from_millis(20), dom.wait_for_work()).await;
+            dom.render_immediate(&mut NoOpMutations);
+        }
+    }
+
+    #[tokio::test]
+    async fn a_button_arms_only_after_it_has_been_ready_for_a_moment() {
+        let clock = Arc::new(ManualClock::default());
+        let held = Held {
+            clock: clock.clone(),
+            ready: Rc::new(Cell::new(None)),
+            armed: Rc::new(Cell::new(false)),
+        };
+        let mut dom = VirtualDom::new_with_props(app, held.clone());
+        dom.rebuild_in_place();
+        settle(&mut dom).await;
+        let armed = || held.armed.get();
+        assert!(!armed());
+        let mut ready = held.ready.get().unwrap();
+
+        // Not ready: time passing arms nothing.
+        clock.advance(ARM_DELAY * 2);
+        settle(&mut dom).await;
+        assert!(!armed());
+
+        dom.in_runtime(|| ready.set(true));
+        settle(&mut dom).await;
+        assert!(!armed());
+        clock.advance(ARM_DELAY - Duration::from_millis(1));
+        settle(&mut dom).await;
+        assert!(!armed());
+        clock.advance(Duration::from_millis(1));
+        settle(&mut dom).await;
+        assert!(armed());
+
+        // Off at once when it no longer could be pressed, and it starts again.
+        dom.in_runtime(|| ready.set(false));
+        settle(&mut dom).await;
+        assert!(!armed());
+        dom.in_runtime(|| ready.set(true));
+        settle(&mut dom).await;
+        assert!(!armed());
+        clock.advance(ARM_DELAY);
+        settle(&mut dom).await;
+        assert!(armed());
+    }
+
+    #[tokio::test]
+    async fn a_wait_from_before_does_not_arm_a_later_one() {
+        let clock = Arc::new(ManualClock::default());
+        let held = Held {
+            clock: clock.clone(),
+            ready: Rc::new(Cell::new(None)),
+            armed: Rc::new(Cell::new(false)),
+        };
+        let mut dom = VirtualDom::new_with_props(app, held.clone());
+        dom.rebuild_in_place();
+        settle(&mut dom).await;
+        let mut ready = held.ready.get().unwrap();
+
+        dom.in_runtime(|| ready.set(true));
+        settle(&mut dom).await;
+        clock.advance(ARM_DELAY / 2);
+        settle(&mut dom).await;
+        dom.in_runtime(|| ready.set(false));
+        settle(&mut dom).await;
+        dom.in_runtime(|| ready.set(true));
+        settle(&mut dom).await;
+
+        // The first wait is up now. The second, which started later, is not.
+        clock.advance(ARM_DELAY / 2);
+        settle(&mut dom).await;
+        assert!(!held.armed.get());
+        clock.advance(ARM_DELAY / 2);
+        settle(&mut dom).await;
+        assert!(held.armed.get());
+    }
 }
 
 #[component]

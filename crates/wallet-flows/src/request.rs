@@ -3,11 +3,36 @@
 use crate::error::FlowError;
 use crate::simulate::measure;
 use solana_pubkey::Pubkey;
+use wallet_core::relay::{authority_slots_in, AuthContext};
 use wallet_core::simulate::{Simulation, SimulationError};
 use wallet_core::{
     decode_v1_transaction, to_v1_swapping, Converted, DecodedTx, KeypairSigner, Limits, SolanaRpc,
     WalletSigner, SYSTEM_PROGRAM_ID,
 };
+
+/// Which of the wallets `known` the site's transaction `tx` asks for a signature,
+/// whatever account the site says it is for: those that have yet to sign it, and
+/// for an authorization inside it not yet signed, the address it acts as and the
+/// key that signs it. Read before anything here rewrites the transaction. A site
+/// may ask this only of what it was given.
+pub fn wallets_asked(tx: &DecodedTx, known: &[Pubkey]) -> Vec<Pubkey> {
+    let signers = tx
+        .signers
+        .iter()
+        .filter(|slot| !slot.valid)
+        .map(|slot| slot.pubkey);
+    let authorities = authority_slots_in(tx, &AuthContext::default())
+        .into_iter()
+        .filter(|slot| !slot.signed)
+        .flat_map(|slot| [slot.address, slot.authority.shown_as()]);
+    let mut asked: Vec<Pubkey> = signers
+        .chain(authorities)
+        .filter(|key| known.contains(key))
+        .collect();
+    asked.sort();
+    asked.dedup();
+    asked
+}
 
 /// What happens to a legacy or v0 request.
 #[derive(Debug, PartialEq, Eq)]
@@ -329,7 +354,67 @@ pub fn reshape_unsupported(swaps: &[(Pubkey, Pubkey)], failure: &SimulationError
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::testing::{pk, FakeRpc};
+    use crate::testing::{pk, transfer, transfer_instruction, FakeRpc};
+    use solana_hash::Hash;
+    use wallet_core::programmatic::{programmatic_signer_address, ExecutorNonce};
+    use wallet_core::relay::wrap_for_programmatic;
+    use wallet_core::{compile_v1, decode_v1_transaction as decoded, KeypairSigner as Key};
+
+    #[test]
+    fn a_transaction_asks_each_wallet_that_has_yet_to_sign_it() {
+        let tx = transfer(pk(1), pk(2));
+        assert_eq!(wallets_asked(&tx, &[pk(1), pk(3)]), vec![pk(1)]);
+        // A signer that is no wallet here is the site's own affair.
+        assert_eq!(wallets_asked(&tx, &[pk(3)]), Vec::<Pubkey>::new());
+
+        let both = compile_v1(
+            pk(1),
+            vec![transfer_instruction(pk(4), pk(2))],
+            None,
+            Some(Hash::default()),
+        )
+        .unwrap()
+        .wire;
+        let both = decoded(&both).unwrap();
+        assert_eq!(wallets_asked(&both, &[pk(1), pk(4)]), vec![pk(1), pk(4)]);
+        assert_eq!(wallets_asked(&both, &[pk(4)]), vec![pk(4)]);
+    }
+
+    #[test]
+    fn a_wallet_that_has_signed_is_not_asked_again() {
+        let key = Key::new_random();
+        let wire = transfer(key.pubkey(), pk(2)).wire;
+        let signers: [&dyn WalletSigner; 1] = [&key];
+        let signed = wallet_core::apply_local_signatures(&wire, &signers).unwrap();
+        let tx = decoded(&signed).unwrap();
+        assert_eq!(wallets_asked(&tx, &[key.pubkey()]), Vec::<Pubkey>::new());
+    }
+
+    #[test]
+    fn an_authorization_asks_the_wallet_it_acts_as_and_the_key_that_signs_it() {
+        let authority = pk(6);
+        let acts_as = programmatic_signer_address(&authority);
+        let nonce = ExecutorNonce {
+            account: pk(7),
+            authority,
+            value: Hash::default(),
+        };
+        let wire = wrap_for_programmatic(
+            &transfer(acts_as, pk(2)),
+            &[authority],
+            nonce,
+            pk(8),
+            Hash::default(),
+        )
+        .unwrap();
+        let tx = decoded(&wire).unwrap();
+        // A wallet here that the transaction never names as a signer.
+        assert_eq!(wallets_asked(&tx, &[acts_as]), vec![acts_as]);
+        assert_eq!(wallets_asked(&tx, &[authority]), vec![authority]);
+        assert_eq!(wallets_asked(&tx, &[pk(8)]), vec![pk(8)]);
+        assert_eq!(wallets_asked(&tx, &[pk(9)]), Vec::<Pubkey>::new());
+    }
+
     use wallet_core::simulate::{read_simulation, CompiledCall, InnerReply, SimulationReply};
     use wallet_core::{decode_transaction, LimitFrom, LookupTables, COMPUTE_BUDGET_PROGRAM_ID};
 

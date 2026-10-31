@@ -31,6 +31,7 @@ use solana_pubkey::Pubkey;
 use tokio::sync::watch;
 use wallet_core::site_message::SignIn;
 use wallet_core::{ConfirmationLevel, TxFormat};
+use wallet_flows::request::wallets_asked;
 
 #[cfg(test)]
 mod tests;
@@ -321,6 +322,16 @@ impl Bridge {
                             id,
                             origin,
                         };
+                        // The account a site names is only what it says. This
+                        // is what its transactions really ask of this device.
+                        let asked = asked_of_this_device(core, request.transactions());
+                        if core.site_sign(&request.origin, &asked) != SiteSign::Allowed {
+                            return Answer::Now(reply::error(
+                                &request.id,
+                                "rejected",
+                                NOT_GIVEN_TO_SITE,
+                            ));
+                        }
                         wait_for_user(core, request, DECISION_TIMEOUT, waiting)
                     }
                     // A transaction that names no account is not for one the
@@ -352,6 +363,10 @@ fn cannot_set_up(err: &io::Error) -> String {
 }
 
 const NOT_CONNECTED: &str = "This account is not connected to the site.";
+
+/// Why a transaction that asks a wallet the site was not given is refused.
+pub const NOT_GIVEN_TO_SITE: &str =
+    "This transaction asks a wallet that is not connected to the site to sign.";
 
 const BLOCKED: &str = "This site is blocked in Airlock.";
 
@@ -767,6 +782,38 @@ fn transactions_call(method: &str, params: &Value, accounts: Vec<Pubkey>) -> Sit
         _ => return SiteCall::SignTransactions(transactions),
     };
     SiteCall::Send { transactions, plan }
+}
+
+/// The wallets of this device that `transactions` ask for a signature. One that
+/// needs lookup tables to be read is judged here by its own signers, and in full
+/// when it is prepared.
+fn asked_of_this_device(core: &PublicCore, transactions: &[SiteTransaction]) -> Vec<Pubkey> {
+    let wallets = core.slices().wallets.get();
+    let mut known = wallets.local_signer_pubkeys.clone();
+    known.extend(wallets.summaries.iter().filter_map(|wallet| wallet.address));
+    transactions
+        .iter()
+        .filter_map(|transaction| transaction.wire.bytes())
+        .flat_map(|wire| {
+            match wallet_core::decode_transaction(wire, &wallet_core::LookupTables::new()) {
+                Ok(tx) => wallets_asked(&tx, &known),
+                Err(_) => unsigned_signers(wire)
+                    .into_iter()
+                    .filter(|key| known.contains(key))
+                    .collect(),
+            }
+        })
+        .collect()
+}
+
+fn unsigned_signers(wire: &[u8]) -> Vec<Pubkey> {
+    let Ok(view) = wallet_core::parse_wire(wire) else {
+        return Vec::new();
+    };
+    (0..view.num_required_signatures)
+        .filter(|slot| !view.slot_valid(*slot))
+        .map(|slot| view.static_keys[slot])
+        .collect()
 }
 
 fn read_transaction(item: &Value, account: Pubkey) -> SiteTransaction {

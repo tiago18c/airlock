@@ -34,6 +34,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
     let left_for_site = !can_go_out(sends, prep.site_signs.len());
     let waits = send_waits_for_network(session, &current);
     let can_sign = prep.can_sign && !left_for_site && !waits;
+    let armed = use_armed(can_sign);
     let title = if sends {
         "Sign and send a transaction"
     } else {
@@ -114,7 +115,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
             }
             button {
                 class: sign_class(can_sign, prep.unread_sign),
-                disabled: !can_sign || busy(),
+                disabled: !armed || busy(),
                 title: if prep.unread_sign { UNREAD_SIGN } else if prep.can_sign { "" } else { "Sign is offered when this device holds every missing signature and none of them is an authorization. Review signs an authorization first, then the transaction." },
                 onclick: move |_| {
                     let Some(sign) = for_sign.clone() else {
@@ -275,7 +276,18 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
                 }
             }
         },
+        Prepared::Refused(problem) => rsx! {
+            p { class: "error", role: "alert", "{problem}" }
+        },
         Prepared::Ready { .. } => rsx! {
+            if !prep.signs_with.is_empty() {
+                div { class: "chip-row",
+                    span { class: "muted", "signs with" }
+                    for key in prep.signs_with.clone() {
+                        Address { key: "{key}", pubkey: key }
+                    }
+                }
+            }
             if let Some(converted) = prep.converted.clone() {
                 ConvertedNotice { converted: converted.clone() }
                 if prep.adapted.is_some() && !converted.replaced.is_empty() {
@@ -410,6 +422,7 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                 .iter()
                 .all(|item| item.can_sign && can_go_out(sends, item.site_signs.len()))
         });
+    let armed = use_armed(can_sign);
     let send_note = match current.request.send_plan() {
         SendPlan::Serial => {
             "Each waits for the one before it to confirm, and a failure stops the rest."
@@ -511,7 +524,7 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
             }
             button {
                 class: sign_class(can_sign, unread_sign),
-                disabled: !can_sign || busy(),
+                disabled: !armed || busy(),
                 title: if unread_sign { UNREAD_SIGN } else { "" },
                 onclick: move |_| {
                     let Some(reports) = for_sign.clone() else {
@@ -598,6 +611,7 @@ fn BatchCard(
         (_, false) => ("chip danger", "Unreadable"),
         (Prepared::Working, _) => ("chip", "Preparing…"),
         (Prepared::Failed(_), _) => ("chip danger", "Cannot be prepared"),
+        (Prepared::Refused(_), _) => ("chip danger", "Refused"),
         (Prepared::Ready { .. }, _) if prep.unread_sign => ("chip warn", "Sign without summary"),
         (Prepared::Ready { .. }, _) if prep.can_sign => ("chip ok", "Can sign here"),
         (Prepared::Ready { .. }, _) => ("chip warn", "Review"),

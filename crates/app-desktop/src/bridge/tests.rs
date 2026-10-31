@@ -1079,6 +1079,121 @@ async fn a_transaction_naming_something_that_is_no_address_is_refused() {
     assert!(kit.core.slices().bridge.get().is_empty());
 }
 
+/// Vault with a hot wallet for each seed, and their addresses.
+fn with_hot_wallets(kit: &Kit, seeds: &[u8]) -> Vec<Pubkey> {
+    kit.core.create_vault("pw").unwrap();
+    let signers: Vec<wallet_core::NewSigner> = seeds
+        .iter()
+        .map(|seed| {
+            let wallet = wallet_core::WalletRecord::from_keypair_seed("Hot", [*seed; 32]);
+            wallet_core::NewSigner {
+                pubkey: wallet.address().unwrap(),
+                label: wallet.label.clone(),
+                origin: wallet_core::Origin::Imported,
+                wallet,
+            }
+        })
+        .collect();
+    kit.core
+        .enroll(
+            "add_signers",
+            |data| data.add_signers(&signers),
+            |book, _| wallet_core::name_signers(book, &signers),
+        )
+        .unwrap();
+    signers.iter().map(|signer| signer.pubkey).collect()
+}
+
+/// A legacy transfer out of `from`, with `payer` paying its fee.
+fn paid_by(payer: &Pubkey, from: &Pubkey) -> Vec<u8> {
+    let mut message = solana_message::Message::new(
+        &[solana_system_interface::instruction::transfer(
+            from,
+            &Pubkey::new_from_array([2; 32]),
+            1,
+        )],
+        Some(payer),
+    );
+    message.recent_blockhash = solana_hash::Hash::new_from_array([1; 32]);
+    let signers = usize::from(message.header.num_required_signatures);
+    wincode::serialize(&solana_transaction::versioned::VersionedTransaction {
+        signatures: vec![solana_signature::Signature::default(); signers],
+        message: solana_message::VersionedMessage::Legacy(message),
+    })
+    .unwrap()
+}
+
+fn asking(id: &str, names: Pubkey, wires: &[Vec<u8>]) -> Value {
+    let transactions: Vec<Value> = wires
+        .iter()
+        .map(|wire| json!({ "account": names.to_string(), "transaction": v1_b64(wire) }))
+        .collect();
+    json!({
+        "v": 1,
+        "id": id,
+        "origin": ORIGIN,
+        "method": "signTransaction",
+        "params": { "transactions": transactions }
+    })
+}
+
+#[tokio::test]
+async fn a_site_can_ask_to_sign_only_the_wallets_it_was_given() {
+    let (kit, bridge) = attached_bridge();
+    let wallets = with_hot_wallets(&kit, &[7, 8]);
+    let (given, other) = (wallets[0], wallets[1]);
+    connected_as(&kit, &bridge, given, false);
+    let refused = |wire: Vec<u8>| {
+        let reply = ask(&bridge, asking("x", given, &[wire]));
+        assert_eq!(reply["error"]["code"], "rejected", "{reply}");
+        assert_eq!(reply["error"]["message"], NOT_GIVEN_TO_SITE);
+        assert!(kit.core.slices().bridge.get().is_empty());
+    };
+
+    // It names the wallet it was given, and asks another to sign.
+    refused(paid_by(&other, &other));
+    refused(paid_by(&given, &other));
+    refused(paid_by(&other, &given));
+    refused(v0_transfer_wire(&other));
+
+    let goes_through = |request: Value| {
+        let peer = Peer::new(bridge.clone(), None);
+        let waiting = sent(&peer, request);
+        assert!(matches!(waiting, Answer::Later(_)));
+        assert_eq!(kit.core.slices().bridge.get().len(), 1);
+        peer.closed();
+    };
+    goes_through(asking("own", given, &[paid_by(&given, &given)]));
+    // A signer that is no wallet here is the site's own affair.
+    let site_key = Pubkey::new_from_array([3; 32]);
+    goes_through(asking("sites", given, &[paid_by(&site_key, &given)]));
+    goes_through(asking("sites-all", given, &[paid_by(&site_key, &site_key)]));
+
+    // One of a batch is enough to refuse it all.
+    let batch = [paid_by(&given, &given), paid_by(&other, &other)];
+    assert_eq!(
+        ask(&bridge, asking("b", given, &batch))["error"]["message"],
+        NOT_GIVEN_TO_SITE
+    );
+}
+
+#[tokio::test]
+async fn a_wallet_that_has_signed_already_is_not_being_asked() {
+    let (kit, bridge) = attached_bridge();
+    let wallets = with_hot_wallets(&kit, &[7, 8]);
+    let (given, other) = (wallets[0], wallets[1]);
+    connected_as(&kit, &bridge, given, false);
+
+    let key = wallet_core::KeypairSigner::from_seed(&[8; 32]).unwrap();
+    let signers: [&dyn wallet_core::WalletSigner; 1] = [&key];
+    let signed = wallet_core::apply_local_signatures(&paid_by(&given, &other), &signers).unwrap();
+
+    let peer = Peer::new(bridge.clone(), None);
+    let waiting = sent(&peer, asking("signed", given, &[signed]));
+    assert!(matches!(waiting, Answer::Later(_)));
+    peer.closed();
+}
+
 #[tokio::test]
 async fn a_message_reaches_the_queue_as_the_bytes_that_were_checked() {
     let (kit, bridge) = attached_bridge();
