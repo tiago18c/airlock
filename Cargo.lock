@@ -1902,7 +1902,7 @@ dependencies = [
 name = "codama-dynamic-codecs"
 version = "0.1.0"
 dependencies = [
- "base64 0.22.1",
+ "base64 0.23.1",
  "bs58",
  "codama-errors",
  "codama-nodes",
@@ -1926,7 +1926,7 @@ dependencies = [
  "pretty_assertions",
  "serde",
  "serde_json",
- "solana-instruction 3.5.1",
+ "solana-instruction 4.0.0",
  "solana-pubkey 4.3.0",
 ]
 
@@ -1939,7 +1939,7 @@ dependencies = [
  "codama-nodes",
  "codama-visitors-core",
  "pretty_assertions",
- "solana-instruction 3.5.1",
+ "solana-instruction 4.0.0",
  "solana-pubkey 4.3.0",
 ]
 
@@ -2006,7 +2006,7 @@ dependencies = [
  "codama-nodes",
  "hex",
  "serde_json",
- "sha2 0.10.9",
+ "sha2 0.11.1",
  "solana-pubkey 4.3.0",
  "thiserror 2.0.21",
 ]

@@ -324,6 +324,36 @@ pub enum CodecCount {
     Remainder,
 }
 
+impl CodecCount {
+    /// Rejects a zero-byte item under the remainder count, which relies on items
+    /// consuming bytes to reach the end of the input. As `@solana/codecs` does.
+    pub fn check_item_size(&self, item_size: Option<usize>) -> CodamaResult<()> {
+        if matches!(self, CodecCount::Remainder) && item_size == Some(0) {
+            return Err(err(
+                "cannot use the remainder count: the item has a fixed size of zero",
+            ));
+        }
+        Ok(())
+    }
+}
+
+/// Decodes items until the input runs out. A variable-size item can also consume
+/// nothing, which [`CodecCount::check_item_size`] cannot see, so each read must advance.
+fn decode_remainder<T>(
+    input: &mut &[u8],
+    mut decode_item: impl FnMut(&mut &[u8]) -> CodamaResult<T>,
+) -> CodamaResult<Vec<T>> {
+    let mut items = Vec::new();
+    while !input.is_empty() {
+        let before = input.len();
+        items.push(decode_item(input)?);
+        if input.len() == before {
+            return Err(err("a remainder item consumed no bytes"));
+        }
+    }
+    Ok(items)
+}
+
 pub struct ArrayCodec {
     pub item: Box<dyn Codec>,
     pub count: CodecCount,
@@ -384,9 +414,7 @@ impl Codec for ArrayCodec {
                 }
             }
             CodecCount::Remainder => {
-                while !input.is_empty() {
-                    items.push(self.item.decode(input)?);
-                }
+                items = decode_remainder(input, |input| self.item.decode(input))?;
             }
         }
         Ok(if self.as_set {
@@ -1024,9 +1052,7 @@ impl Codec for MapCodec {
                 }
             }
             CodecCount::Remainder => {
-                while !input.is_empty() {
-                    pairs.push(decode_pair(input)?);
-                }
+                pairs = decode_remainder(input, decode_pair)?;
             }
         }
         Ok(Value::Map(pairs))
@@ -1191,6 +1217,32 @@ mod tests {
         };
         let v = Value::Array(vec![1u8.into(), 2u8.into(), 3u8.into()]);
         check(&remainder, v.clone(), &[1, 2, 3], v);
+    }
+
+    // `Fixed(0)` of a variable-size item reports no fixed size but consumes nothing.
+    fn empty_variable_item() -> Box<dyn Codec> {
+        Box::new(ArrayCodec {
+            item: Box::new(BytesCodec),
+            count: CodecCount::Fixed(0),
+            as_set: false,
+        })
+    }
+
+    #[test]
+    fn remainder_stops_on_an_item_that_consumes_nothing() {
+        let array = ArrayCodec {
+            item: empty_variable_item(),
+            count: CodecCount::Remainder,
+            as_set: false,
+        };
+        assert!(array.decode(&mut &[1u8, 2, 3][..]).is_err());
+
+        let map = MapCodec {
+            key: empty_variable_item(),
+            value: empty_variable_item(),
+            count: CodecCount::Remainder,
+        };
+        assert!(map.decode(&mut &[1u8, 2, 3][..]).is_err());
     }
 
     #[test]

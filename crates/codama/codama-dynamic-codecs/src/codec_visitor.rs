@@ -169,6 +169,7 @@ impl Visitor<Box<dyn Codec>> for CodecVisitor<'_> {
     fn visit_array_type(&mut self, node: &ArrayTypeNode) -> CodamaResult<Box<dyn Codec>> {
         let item = node.item.accept(self)?;
         let count = self.count_to_codec(&node.count)?;
+        count.check_item_size(item.fixed_size())?;
         Ok(Box::new(ArrayCodec {
             item,
             count,
@@ -178,6 +179,7 @@ impl Visitor<Box<dyn Codec>> for CodecVisitor<'_> {
     fn visit_set_type(&mut self, node: &SetTypeNode) -> CodamaResult<Box<dyn Codec>> {
         let item = node.item.accept(self)?;
         let count = self.count_to_codec(&node.count)?;
+        count.check_item_size(item.fixed_size())?;
         Ok(Box::new(ArrayCodec {
             item,
             count,
@@ -324,6 +326,8 @@ impl Visitor<Box<dyn Codec>> for CodecVisitor<'_> {
         let key = node.key.accept(self)?;
         let value = node.value.accept(self)?;
         let count = self.count_to_codec(&node.count)?;
+        let entry_size = key.fixed_size().and_then(|k| Some(k + value.fixed_size()?));
+        count.check_item_size(entry_size)?;
         Ok(Box::new(MapCodec { key, value, count }))
     }
 }
@@ -356,7 +360,8 @@ mod tests {
     use super::*;
     use crate::Value;
     use codama_nodes::{
-        DefinedTypeNode, Endianness, NumberFormat::*, ProgramNode, RootNode, StructFieldTypeNode,
+        DefinedTypeNode, Endianness, FixedCountNode, NumberFormat::*, ProgramNode,
+        RemainderCountNode, RootNode, StructFieldTypeNode,
     };
 
     #[test]
@@ -368,6 +373,34 @@ mod tests {
         let codec = get_type_codec(&ty).unwrap();
         let value = Value::struct_from([("a".into(), 1u8.into()), ("b".into(), 2u16.into())]);
         assert_eq!(codec.encode_to_vec(&value).unwrap(), vec![1, 2, 0]);
+    }
+
+    #[test]
+    fn rejects_zero_size_items_only_under_the_remainder_count() {
+        let empty = || StructTypeNode::new(vec![]);
+        let remainder = || CountNode::Remainder(RemainderCountNode::new());
+
+        for ty in [
+            TypeNode::Array(ArrayTypeNode::new(empty(), remainder())),
+            TypeNode::Set(SetTypeNode::new(empty(), remainder())),
+            TypeNode::Map(MapTypeNode::new(empty(), empty(), remainder())),
+        ] {
+            assert!(get_type_codec(&ty).is_err());
+        }
+
+        let fixed = TypeNode::Array(ArrayTypeNode::new(empty(), FixedCountNode::new(3)));
+        let codec = get_type_codec(&fixed).unwrap();
+        assert_eq!(codec.decode(&mut &[][..]).unwrap(), {
+            let item = Value::struct_from([]);
+            Value::Array(vec![item.clone(), item.clone(), item])
+        });
+
+        let map = TypeNode::Map(MapTypeNode::new(
+            empty(),
+            NumberTypeNode::le(U8),
+            remainder(),
+        ));
+        assert!(get_type_codec(&map).is_ok());
     }
 
     #[test]
