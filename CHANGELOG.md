@@ -46,6 +46,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - Share opens on Everything, now its first tab. Its Signatures tab has tabs of its own: Local, which it opens on, puts the signatures made by keys on this device in one transfer; All puts every signature in one transfer; Individual shows a code for each.
 
 ### Fixed
+- An IDL with a list of empty items could freeze Airlock until it ran out of memory while reading a transaction. Airlock now shows that instruction undecoded.
 - A request waiting in the app no longer holds up other requests from the same browser. A site reloading while a modal was open, for one, waited until that modal was answered.
 - A browser request that expired unanswered could stop that browser's connection to the app.
 - A page left open for a while could lose its connection to the extension and fail its next request.

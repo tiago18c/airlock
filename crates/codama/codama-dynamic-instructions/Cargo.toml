@@ -16,7 +16,7 @@ codama-visitors-core = { path = "../codama-visitors-core" }
 indexmap = "2"
 serde = { version = "1", features = ["derive"] }
 solana-pubkey = { version = "4", default-features = false, features = ["std", "sha2", "curve25519"] }
-solana-instruction = { version = "3", default-features = false, features = ["std"] }
+solana-instruction = { version = "4", default-features = false, features = ["std"] }
 
 [dev-dependencies]
 pretty_assertions = "1.4.1"

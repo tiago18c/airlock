@@ -4,8 +4,6 @@ Runtime Rust port of the TypeScript `@codama/dynamic-*` packages. Given a Codama
 
 `wallet-core` builds and explains every instruction through `codama-dynamic-client`, and converts Anchor IDLs with `codama-nodes-from-anchor`. How the app uses IDLs is in [docs/idls.md](../../docs/idls.md).
 
-`vendor/codama-rs` is an older local fork. It is not a dependency of these crates, and it is the wrong tree to diff when updating this port. `codama-program-cli` stays in that vendor tree.
-
 ## Crates
 
 | Crate | TypeScript package | Role |
@@ -31,13 +29,15 @@ There is no nested Cargo workspace under `crates/codama`. Members are listed in 
 
 ## Snapshot
 
-Recorded 8 October 2026. Diff later changes against these revisions, not against `vendor/codama-rs`.
+Recorded 31 October 2026. Diff later changes against these revisions.
 
 ### TypeScript behavior
 
 Repository: <https://github.com/codama-idl/codama>
 
-Branch **`1.x`**, commit **`759dd1f81054ef8d70778147e2dd3724aa85c2b9`** (6 October 2026, `build(deps-dev): bump turbo from 2.11.6 to 2.11.7`).
+Branch **`1.x`**, commit **`1e722ac1eec498f65f11e0567efdaa164f5f4353`** (26 October 2026, `build(deps-dev): bump turbo from 2.11.9 to 2.11.10`).
+
+Those packages get their codecs from `@solana/codecs`, at **8.5.0** in that commit. A bump there changes behavior without changing anything the diff below shows, so read the [Kit release notes](https://github.com/anza-xyz/kit/releases) for the versions in between.
 
 Packages this port tracks:
 
@@ -52,7 +52,7 @@ Packages this port tracks:
 `main` is Codama spec 2.0 and is not the baseline. Do not diff `main` into this tree until the "Future work" note on spec 2.0 is in scope.
 
 ```bash
-git diff 759dd1f81054ef8d70778147e2dd3724aa85c2b9..origin/1.x -- \
+git diff 1e722ac1eec498f65f11e0567efdaa164f5f4353..origin/1.x -- \
   packages/dynamic-client \
   packages/dynamic-codecs \
   packages/dynamic-instructions \
@@ -206,6 +206,10 @@ Display never changes signed bytes. Codecs walk the type tree and ignore display
 **Account-field decoding needs a root-relative path.** The parsed instruction path must start at the `RootNode`. The account's `accountLink` is resolved with `LinkableDictionary` against that path, then `get_node_codec` decodes the preloaded bytes. A failed link or a failed decode is "no value", not a hard error, so display degrades instead of failing the render.
 
 **Dates and durations do not use `chrono`.** Instants are UTC `YYYY-MM-DDTHH:MM:SS.mmmZ`. Years outside 0..=9999, a zero `ticksPerSecond`, or a non-integer fall back to the raw number and do not mark the sentence degraded. Durations are `HH:MM:SS` (hours may exceed 24). A negative duration falls back to the raw number. Amount scaling is integer-only; a fractional number, or more than 80 decimals, is degraded.
+
+**Odd-length base16 is an error.** Kit encodes `abc` as `[0xab, 0x0c]`, guessing where the missing digit goes. `decode_bytes` refuses it, so a wallet does not sign a guess.
+
+**A remainder collection needs items that consume bytes.** A zero-size item is rejected when the codec is built, as in Kit. Kit does not catch a variable-size item that consumes nothing, and would loop on it; here the decode fails.
 
 **String slices count chars, like JavaScript `String.slice`.** They are not byte offsets.
 
