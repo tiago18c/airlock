@@ -3,22 +3,25 @@
 //! which the window reads and answers (`Core::bridge_answer`); this module
 //! only waits for that answer and writes it back.
 //!
-//! A second launch that cannot bind the socket sends `show` and exits. What
+//! A launch that cannot bind the socket sends `show` to whatever holds it, and
+//! exits if that answers. Anything else holding it does not stop the app: what
 //! keeps two processes off one data folder is the folder's own lock
 //! (`app_core::storage::claim_data_dir`), which holds even when the socket
-//! cannot be named.
+//! cannot be named. The app then runs without the bridge, and says so.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex, OnceLock, PoisonError};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::{io, thread};
 
 use app_core::bridge::{
     BridgeQueue, BridgeRefused, BridgeRequest, SiteConnect, SiteSign, SEND, SEND_ALL,
 };
 use app_core::PublicCore;
 use base64::Engine;
+use bridge_host::endpoint::Endpoint;
 use bridge_host::relay::{Answer, Connection, FrameSender};
 use bridge_protocol::reply;
 use serde_json::{json, Value};
@@ -30,6 +33,10 @@ mod tests;
 
 /// How long a prompt waits for a decision in the window.
 const DECISION_TIMEOUT: Duration = Duration::from_secs(600);
+
+/// How long a launch waits for what holds the socket to answer. An app that is
+/// running does at once, and whatever else holds it may never.
+const SHOW_TIMEOUT: Duration = Duration::from_secs(5);
 
 pub use bridge_protocol::{request_code, MAX_TRANSACTIONS};
 
@@ -52,6 +59,8 @@ struct Shared {
     /// The connections open now, by a number of their own.
     peers: Mutex<BTreeMap<u64, PeerLink>>,
     next_peer: AtomicU64,
+    /// Why this app has no socket, for the user. Sites cannot reach it.
+    unavailable: OnceLock<String>,
 }
 
 /// What the app knows about one open connection.
@@ -67,7 +76,8 @@ type Waiting = Arc<Mutex<BTreeSet<String>>>;
 
 /// Result of claiming the bridge socket before the UI starts.
 pub enum Bootstrap {
-    /// This process owns the socket and is serving it.
+    /// This process goes on. It serves the socket, unless
+    /// [`Bridge::unavailable`] says why not.
     Primary(Bridge),
     /// Another instance is running; it was asked to show its window.
     AlreadyRunning,
@@ -82,6 +92,7 @@ impl Bridge {
                 extension: watch::channel(0).0,
                 peers: Mutex::new(BTreeMap::new()),
                 next_peer: AtomicU64::new(0),
+                unavailable: OnceLock::new(),
             }),
         }
     }
@@ -90,53 +101,60 @@ impl Bridge {
     /// `main` before `dioxus::launch`.
     pub fn bootstrap() -> Bootstrap {
         let bridge = Bridge::new();
-        let endpoint = match bridge_host::endpoint::desktop_endpoint() {
-            Ok(endpoint) => endpoint,
-            Err(err) => {
+        match bridge_host::endpoint::desktop_endpoint() {
+            Ok(endpoint) => bridge.claim(&endpoint, SHOW_TIMEOUT),
+            Err(err) => bridge.without_socket(&err, cannot_set_up(&err)),
+        }
+    }
+
+    /// Serve `endpoint`, or find out what holds it.
+    fn claim(self, endpoint: &Endpoint, show_timeout: Duration) -> Bootstrap {
+        if let Err(err) = bridge_host::endpoint::prepare_directory(endpoint) {
+            return self.without_socket(&err, cannot_set_up(&err));
+        }
+        let listener = match bridge_host::endpoint::bind_endpoint(endpoint) {
+            Ok(listener) => listener,
+            Err(bind_error) => {
+                return match ask_to_show(endpoint, show_timeout) {
+                    Ok(()) => Bootstrap::AlreadyRunning,
+                    Err(err) => {
+                        tracing::warn!(
+                            target: "airlock::bridge",
+                            error = %bind_error,
+                            "could not bind the bridge socket"
+                        );
+                        self.without_socket(&err, HELD_BY_SOMETHING_ELSE.to_owned())
+                    }
+                };
+            }
+        };
+        let serving = self.clone();
+        thread::spawn(move || {
+            let accept = move |sender: FrameSender| -> Arc<dyn Connection> {
+                Arc::new(Peer::new(serving.clone(), Some(sender)))
+            };
+            if let Err(err) = bridge_host::relay::serve_connections(listener, accept) {
                 tracing::error!(
                     target: "airlock::bridge",
                     error = %err,
-                    "could not resolve bridge endpoint"
+                    "bridge server failed"
                 );
-                return Bootstrap::Primary(bridge);
             }
-        };
-        if let Err(err) = bridge_host::endpoint::prepare_directory(&endpoint) {
-            tracing::warn!(
-                target: "airlock::bridge",
-                error = %err,
-                "could not prepare bridge directory"
-            );
-        }
-        match bridge_host::endpoint::bind_endpoint(&endpoint) {
-            Ok(listener) => {
-                let serving = bridge.clone();
-                std::thread::spawn(move || {
-                    let accept = move |sender: FrameSender| -> Arc<dyn Connection> {
-                        Arc::new(Peer::new(serving.clone(), Some(sender)))
-                    };
-                    if let Err(err) = bridge_host::relay::serve_connections(listener, accept) {
-                        tracing::error!(
-                            target: "airlock::bridge",
-                            error = %err,
-                            "bridge server failed"
-                        );
-                    }
-                });
-                tracing::info!(target: "airlock::bridge", "listening");
-                Bootstrap::Primary(bridge)
-            }
-            Err(_) => {
-                if let Err(err) = ask_running_to_show() {
-                    tracing::warn!(
-                        target: "airlock::bridge",
-                        error = %err,
-                        "could not ask running instance to show"
-                    );
-                }
-                Bootstrap::AlreadyRunning
-            }
-        }
+        });
+        tracing::info!(target: "airlock::bridge", "listening");
+        Bootstrap::Primary(self)
+    }
+
+    /// Go on with no socket, and `why` for the user.
+    fn without_socket(self, err: &io::Error, why: String) -> Bootstrap {
+        tracing::error!(target: "airlock::bridge", error = %err, "no bridge socket");
+        let _ = self.shared.unavailable.set(why);
+        Bootstrap::Primary(self)
+    }
+
+    /// Why sites cannot reach this app, when they cannot.
+    pub fn unavailable(&self) -> Option<&str> {
+        self.shared.unavailable.get().map(String::as_str)
     }
 
     /// Let requests reach the core. Call once, when the window opens it.
@@ -355,6 +373,12 @@ macro_rules! TRANSACTION_METHODS {
     };
 }
 use TRANSACTION_METHODS;
+
+const HELD_BY_SOMETHING_ELSE: &str = "Something other than Airlock holds its connection to the browser, so sites cannot reach this window. Close it, then start Airlock again.";
+
+fn cannot_set_up(err: &io::Error) -> String {
+    format!("Airlock could not set up its connection to the browser: {err}.")
+}
 
 const NOT_CONNECTED: &str = "This account is not connected to the site.";
 
@@ -683,13 +707,23 @@ fn wait_for_decision(
     reply::error(id, "expired", "No decision arrived.")
 }
 
-fn ask_running_to_show() -> std::io::Result<()> {
+/// Ask what holds `endpoint` to show its window. Fine only if it answers within
+/// `timeout`, which an app that is running does. A read of a pipe cannot time out
+/// by itself, so this one runs apart, and is left behind if it never ends.
+fn ask_to_show(endpoint: &Endpoint, timeout: Duration) -> io::Result<()> {
     use bridge_host::frame::{read_frame, write_frame};
-    let endpoint = bridge_host::endpoint::desktop_endpoint()?;
-    let mut stream = bridge_host::endpoint::connect(&endpoint.name)?;
-    write_frame(&mut stream, br#"{"v":1,"id":"show","method":"show"}"#)?;
-    let _ = read_frame(&mut stream)?;
-    Ok(())
+    let name = endpoint.name.clone();
+    let (done, finished) = mpsc::channel();
+    thread::spawn(move || {
+        let answered = bridge_host::endpoint::connect(&name).and_then(|mut stream| {
+            write_frame(&mut stream, br#"{"v":1,"id":"show","method":"show"}"#)?;
+            read_frame(&mut stream)?.ok_or_else(|| io::ErrorKind::UnexpectedEof.into())
+        });
+        let _ = done.send(answered.map(|_| ()));
+    });
+    finished
+        .recv_timeout(timeout)
+        .unwrap_or_else(|_| Err(io::ErrorKind::TimedOut.into()))
 }
 
 /// The request on screen: the head of the core's queue, with what the window

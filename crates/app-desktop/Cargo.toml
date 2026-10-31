@@ -37,6 +37,7 @@ windows-core = "0.61"
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
 
 [dev-dependencies]
+interprocess = "2.4"
 solana-hash.workspace = true
 solana-message.workspace = true
 solana-signature.workspace = true

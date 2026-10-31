@@ -44,6 +44,69 @@ fn connect(id: &str) -> BridgeRequest {
     }
 }
 
+fn endpoint(label: &str) -> Endpoint {
+    let endpoint = bridge_host::endpoint::test_endpoint(label).unwrap();
+    bridge_host::endpoint::prepare_directory(&endpoint).unwrap();
+    endpoint
+}
+
+const SHORT: Duration = Duration::from_millis(500);
+
+#[test]
+fn a_second_launch_asks_the_app_that_holds_the_socket_to_show() {
+    let endpoint = endpoint("second-launch");
+    let Bootstrap::Primary(first) = Bridge::new().claim(&endpoint, SHOW_TIMEOUT) else {
+        panic!("the socket was free");
+    };
+    assert_eq!(first.unavailable(), None);
+    let show = first.subscribe_show();
+
+    assert!(matches!(
+        Bridge::new().claim(&endpoint, SHOW_TIMEOUT),
+        Bootstrap::AlreadyRunning
+    ));
+    assert!(show.has_changed().unwrap());
+}
+
+#[test]
+fn what_holds_the_socket_and_does_not_answer_does_not_stop_the_app() {
+    use interprocess::local_socket::traits::Listener as _;
+    let endpoint = endpoint("silent");
+    let holder = bridge_host::endpoint::bind(&endpoint.name).unwrap();
+    std::thread::spawn(move || {
+        let mut held = Vec::new();
+        while let Ok(stream) = holder.accept() {
+            held.push(stream);
+        }
+    });
+
+    let Bootstrap::Primary(bridge) = Bridge::new().claim(&endpoint, SHORT) else {
+        panic!("nothing answered, so no app is running");
+    };
+    assert_eq!(bridge.unavailable(), Some(HELD_BY_SOMETHING_ELSE));
+    // Nothing is listening, and the window still answers what it can.
+    assert_eq!(
+        ask(&bridge, json!({ "v": 1, "id": "s", "method": "status" }))["result"]["role"],
+        "desktop"
+    );
+}
+
+#[test]
+fn what_holds_the_socket_and_hangs_up_is_not_a_running_app() {
+    use interprocess::local_socket::traits::Listener as _;
+    let endpoint = endpoint("hangs-up");
+    let holder = bridge_host::endpoint::bind(&endpoint.name).unwrap();
+    std::thread::spawn(move || {
+        while let Ok(stream) = holder.accept() {
+            drop(stream);
+        }
+    });
+    let Bootstrap::Primary(bridge) = Bridge::new().claim(&endpoint, SHOW_TIMEOUT) else {
+        panic!("nothing answered, so no app is running");
+    };
+    assert!(bridge.unavailable().is_some());
+}
+
 #[test]
 fn status_accepts_an_expiry_in_unix_seconds() {
     let value = ask(
