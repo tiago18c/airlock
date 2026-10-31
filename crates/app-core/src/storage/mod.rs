@@ -23,6 +23,12 @@ use crate::notices::NoticesStore;
 /// A place that opens one named file, or one browser key, at a time.
 pub trait Storage: Send + Sync {
     fn open(&self, name: &str) -> Box<dyn VaultStore>;
+
+    /// [`open`](Self::open), for a record whose loss lets something happen
+    /// twice: what it holds must never go back to an older copy.
+    fn open_record(&self, name: &str) -> Box<dyn VaultStore> {
+        self.open(name)
+    }
 }
 
 pub const VAULT_FILE: &str = "vault.json";
@@ -120,7 +126,7 @@ pub fn open_vault() -> AppVault {
 /// High-water marks for XMSS leaves, outside the vault so a restore of only
 /// the vault cannot reuse a spent leaf.
 pub fn open_leaf_marks() -> AppLeafMarks {
-    LeafMarks::open(BoxedStore(platform_storage().open(LEAF_MARKS_FILE)))
+    LeafMarks::open(BoxedStore(platform_storage().open_record(LEAF_MARKS_FILE)))
 }
 
 pub fn open_workspace() -> AppWorkspace {

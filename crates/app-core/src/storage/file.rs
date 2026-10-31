@@ -26,6 +26,10 @@ impl Storage for FileStorage {
     fn open(&self, name: &str) -> Box<dyn VaultStore> {
         Box::new(FileStore::new(self.dir.join(name)))
     }
+
+    fn open_record(&self, name: &str) -> Box<dyn VaultStore> {
+        Box::new(FileStore::without_backup(self.dir.join(name)))
+    }
 }
 
 /// This app's data folder: `<prefix>_DATA_DIR` when set, else its own folder

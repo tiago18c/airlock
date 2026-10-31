@@ -36,7 +36,7 @@ use crate::error::VaultError;
 use crate::ids::WalletId;
 use crate::keys::signer::WalletSigner;
 use crate::transport::protocol::MAX_ROTATION_NONCES;
-use crate::wallets::record::{Authority, Protocol, WalletKind};
+use crate::wallets::record::{Authority, Protocol, WalletKind, WalletRecord};
 use crate::wallets::relay::{
     refuse_handover, sign_authorizations_in, to_sign_now, AuthContext, VectorContext,
 };
@@ -55,6 +55,16 @@ use wallet_vault::store::{check_saveable, load_json_or_block, LoadProblem, Vault
 /// has signed. The record may be an older copy of the vault, so the leaves
 /// just after it may have signed already.
 pub const LEAVES_SKIPPED_WITHOUT_MARK: u32 = 16;
+
+/// Where the leaf floors of a press of Sign came from.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FloorsFrom {
+    /// Read from the chain for this press.
+    Chain,
+    /// Told by a context note, or read earlier. A floor above this device's
+    /// own count is not taken: see [`LeafError::FloorPastOwnCount`].
+    Note,
+}
 
 /// What a leaf is reserved to sign.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -459,6 +469,8 @@ pub enum LeafError {
     RestoredMustRotate(String),
     #[error("{0} has used all but the last few leaves of its key. Those are kept for moving to its next key, so it signs nothing else: Rotate key on its row.")]
     MustRotate(String),
+    #[error("The other device says {label} has used {floor} leaves of its key, and this device has used {own}. Either another copy of the key has signed, or the other device is wrong. Nothing was signed or recorded. To take its word for it, scan the account state from it, then try again.")]
+    FloorPastOwnCount { label: String, floor: u32, own: u32 },
     #[error("{0}")]
     Rotation(String),
 }
@@ -587,6 +599,11 @@ pub fn reserve_leaf<V: VaultStore, M: VaultStore>(
 /// waiting to sign last. An XMSS retry over the same digest takes its leaf
 /// and salt from `cache` and records nothing new.
 ///
+/// A leaf floor the chain gave is taken as it is. One that only a note gave
+/// is not taken when it is above this device's own count: only this device
+/// signs for the account, so its own count is the better word, and a single
+/// lying note would otherwise spend every leaf below the floor.
+///
 /// `signers` are the keys that sign in the same press. The Vector digest
 /// covers each `Submit`'s signature, so the `Submit`s they are the authority
 /// of are signed first, here too: an Ed25519 signature is the same every
@@ -598,6 +615,7 @@ pub fn keys_to_sign_with<V: VaultStore, M: VaultStore>(
     wire: &[u8],
     signers: &[&dyn WalletSigner],
     known: &[VectorContext],
+    floors: FloorsFrom,
 ) -> Result<Vec<VectorKey>, LeafError> {
     install_landed_rotations(vault, marks, known)?;
     let data = vault.data().map_err(|_| LeafError::Locked)?;
@@ -650,6 +668,16 @@ pub fn keys_to_sign_with<V: VaultStore, M: VaultStore>(
             .iter()
             .find(|known| known.account == key.account)
             .map(|known| known.leaf_floor);
+        if floors == FloorsFrom::Note && key.signer.scheme() == SchemeId::Xmss {
+            let own = own_count(record, marks, &key.account, &key.signer.key());
+            if let Some(floor) = floor.filter(|floor| *floor > own) {
+                return Err(LeafError::FloorPastOwnCount {
+                    label: record.label.clone(),
+                    floor,
+                    own,
+                });
+            }
+        }
         let reserved = reserve(vault, marks, wallet, &key.signer, digest, floor, purpose)?;
         if let Some(nonce) = nonce {
             marks
@@ -671,6 +699,23 @@ pub fn keys_to_sign_with<V: VaultStore, M: VaultStore>(
         key.reserved_for = Some(*digest);
     }
     Ok(keys)
+}
+
+/// The lowest leaf of `key` this device has not used, by its own count.
+fn own_count<M: VaultStore>(
+    record: &WalletRecord,
+    marks: &LeafMarks<M>,
+    account: &Pubkey,
+    key: &[u8],
+) -> u32 {
+    let counted = match &record.kind {
+        WalletKind::Programmatic {
+            authority: Authority::Held { next_leaf, .. },
+            ..
+        } => *next_leaf,
+        _ => 0,
+    };
+    counted.max(marks.next_leaf(account, key).unwrap_or(0))
 }
 
 /// Install the next key of each account of `known` whose nonce is the

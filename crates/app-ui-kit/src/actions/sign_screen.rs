@@ -14,6 +14,7 @@ use wallet_core::relay::{
     accept_signature_in, authority_signature_objects, authority_slots_in, insert_personal_sign,
     overlay_note, vector_signature_objects, AuthContext, SignatureUse,
 };
+use wallet_core::vector::FloorsFrom;
 use wallet_core::{
     decode_transaction, decode_v1_transaction, parse_wire, renew, sha256_bytes, Converted,
     DecodeError, DecodedTx, KeypairSigner, LookupTables, Phrase, TxFormat, WalletSigner,
@@ -821,7 +822,12 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
             .iter()
             .map(|signer| signer as &dyn WalletSigner)
             .collect();
-        let vector_keys = match session.vector_keys_for_sign(&wire, &signers, &known) {
+        let floors = if known_is_current {
+            FloorsFrom::Chain
+        } else {
+            FloorsFrom::Note
+        };
+        let vector_keys = match session.vector_keys_for_sign(&wire, &signers, &known, floors) {
             Ok(keys) => keys,
             Err(err) => {
                 error.set(Some(sentence(err)));

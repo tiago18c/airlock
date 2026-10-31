@@ -7,7 +7,7 @@ use crate::support::{sign_through, Chain, SOL};
 use wallet_core::adapt::{plan_adaptation, AdaptedStep, HeldBack};
 use wallet_core::programmatic::create_executor_nonce;
 use wallet_core::squads::{Squad, SquadsMember, SquadsProgram, SquadsSetup, PERMISSION_ALL};
-use wallet_core::vector::keys_to_sign_with;
+use wallet_core::vector::{keys_to_sign_with, FloorsFrom};
 use wallet_core::{
     decode_v1_transaction, KeypairSigner, MemoryStore, Vault, WalletId, WalletRecord, WalletSigner,
 };
@@ -128,6 +128,7 @@ fn sign_mixed_by(
         wire,
         &local,
         &known,
+        FloorsFrom::Chain,
     )
     .unwrap();
     desk.wallets = vault.data().unwrap().wallets.clone();
@@ -468,6 +469,7 @@ fn sign_offline(
         wire,
         &local,
         &known,
+        FloorsFrom::Chain,
     )
     .map_err(|err| err.to_string())?;
     desk.wallets = vault.data().unwrap().wallets.clone();

@@ -7,32 +7,76 @@ use std::path::{Path, PathBuf};
 
 pub struct FileStore {
     path: PathBuf,
+    keep_backup: bool,
 }
 
 impl FileStore {
     pub fn new(path: impl Into<PathBuf>) -> Self {
-        Self { path: path.into() }
+        Self {
+            path: path.into(),
+            keep_backup: true,
+        }
+    }
+
+    /// A file that keeps no older copy, for a record that must never go back.
+    /// It is replaced in one step, so it is never missing, and nothing older
+    /// is there to be read in its place.
+    pub fn without_backup(path: impl Into<PathBuf>) -> Self {
+        Self {
+            path: path.into(),
+            keep_backup: false,
+        }
+    }
+
+    fn create_parent(&self) -> Result<(), VaultError> {
+        if let Some(parent) = self.path.parent() {
+            if !parent.as_os_str().is_empty() {
+                std::fs::create_dir_all(parent).map_err(io)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn replace(&self, bytes: &[u8]) -> Result<(), VaultError> {
+        self.create_parent()?;
+        let tmp = sibling(&self.path, ".tmp");
+        write_synced(&tmp, bytes)?;
+        std::fs::rename(&tmp, &self.path).map_err(io)?;
+        // A build before this one may have left a copy, and that copy could
+        // hide this file's going missing.
+        match std::fs::remove_file(sibling(&self.path, ".bak")) {
+            Ok(()) => {}
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
+            Err(err) => return Err(io(err)),
+        }
+        sync_parent(&self.path)
     }
 }
 
 impl VaultStore for FileStore {
     fn load(&self) -> Result<Option<Vec<u8>>, VaultError> {
+        let bak = sibling(&self.path, ".bak");
         match read_optional(&self.path)? {
             Some(bytes) => Ok(Some(bytes)),
-            None => read_optional(&sibling(&self.path, ".bak")),
+            None if self.keep_backup => read_optional(&bak),
+            None if bak.exists() => Err(VaultError::Io(format!(
+                "only an older copy of {} is left, and it may hold less than the file did",
+                self.path.display()
+            ))),
+            None => Ok(None),
         }
     }
 
     /// Write to a sibling temp file, fsync it, move the current file aside as
     /// `.bak`, then rename the temp file into place. A crash mid-write leaves
     /// the previous file intact. A crash after the previous file was moved
-    /// aside is recovered by [`load`](Self::load) reading `.bak`.
+    /// aside is recovered by [`load`](Self::load) reading `.bak`. Without a
+    /// backup, the temp file replaces the file in one step.
     fn save(&self, bytes: &[u8]) -> Result<(), VaultError> {
-        if let Some(parent) = self.path.parent() {
-            if !parent.as_os_str().is_empty() {
-                std::fs::create_dir_all(parent).map_err(io)?;
-            }
+        if !self.keep_backup {
+            return self.replace(bytes);
         }
+        self.create_parent()?;
         let tmp = sibling(&self.path, ".tmp");
         let bak = sibling(&self.path, ".bak");
         write_synced(&tmp, bytes)?;
@@ -102,9 +146,16 @@ fn sync_parent(path: &Path) -> Result<(), VaultError> {
     Ok(())
 }
 
+/// Windows cannot sync a folder, and a rename is only in the NTFS log until
+/// that log reaches the disk. Flushing a file flushes the log up to that
+/// file's last change, which is the rename.
 #[cfg(not(unix))]
-fn sync_parent(_path: &Path) -> Result<(), VaultError> {
-    Ok(())
+fn sync_parent(path: &Path) -> Result<(), VaultError> {
+    let file = std::fs::OpenOptions::new()
+        .write(true)
+        .open(path)
+        .map_err(io)?;
+    file.sync_all().map_err(io)
 }
 
 fn read_optional(path: &Path) -> Result<Option<Vec<u8>>, VaultError> {
@@ -170,6 +221,39 @@ mod tests {
         let (_, problem): (Vec<u8>, _) = load_json(&ReadOnly, "address book");
         assert!(matches!(problem, Some(LoadProblem::Blocked(_))));
         assert!(check_saveable(&problem).is_err());
+    }
+
+    #[test]
+    fn a_file_without_a_backup_is_replaced_and_keeps_no_copy() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("marks.json");
+        let store = FileStore::without_backup(&path);
+        assert_eq!(store.load().unwrap(), None);
+
+        store.save(b"first").unwrap();
+        store.save(b"second").unwrap();
+
+        assert_eq!(store.load().unwrap().unwrap(), b"second");
+        assert!(!sibling(&path, ".bak").exists());
+        assert!(!sibling(&path, ".tmp").exists());
+    }
+
+    #[test]
+    fn a_file_without_a_backup_does_not_read_an_older_copy_in_its_place() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("marks.json");
+        // What an earlier build could leave: a copy from before its last save,
+        // and the file itself gone.
+        std::fs::write(sibling(&path, ".bak"), b"older").unwrap();
+        let store = FileStore::without_backup(&path);
+        assert!(store.load().is_err());
+
+        // With the file there the copy is not looked at, and the next save
+        // removes it.
+        std::fs::write(&path, b"current").unwrap();
+        assert_eq!(store.load().unwrap().unwrap(), b"current");
+        store.save(b"next").unwrap();
+        assert!(!sibling(&path, ".bak").exists());
     }
 
     #[test]
