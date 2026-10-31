@@ -9,7 +9,7 @@ pub mod rt;
 pub mod state;
 pub mod ui;
 
-pub use state::forms::{use_forms, Forms, TxSource};
+pub use state::forms::{use_forms, Forms, SignLoad, TxSource};
 pub use state::online::{use_network, Network};
 pub use state::proposals::ProposalsOpen;
 pub use state::pump::{use_core, Pump};

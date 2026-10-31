@@ -1,6 +1,6 @@
 //! From the Build form to instructions, and a compiled transaction back onto it.
 
-use crate::state::forms::{IxBody, IxDraft, TxSource};
+use crate::state::forms::{IxBody, IxDraft, SignLoad, TxSource};
 use crate::state::session::{Session, Tab};
 use dioxus::prelude::*;
 use wallet_core::edit::{idl_draft_for, open_for_edit, OpenedIx, RawDraft};
@@ -147,11 +147,10 @@ fn review_compiled(
     extra: &str,
     last_valid_height: Option<u64>,
 ) {
-    session.open_in_sign_with_lifetime(
-        compiled.wire,
-        TxSource::Build,
-        format!("Compiled on Build{extra}."),
-        last_valid_height,
+    session.open_in_sign(
+        SignLoad::new(compiled.wire, TxSource::Build)
+            .with_note(format!("Compiled on Build{extra}."))
+            .expiring_at(last_valid_height),
     );
 }
 

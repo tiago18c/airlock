@@ -4,7 +4,7 @@
 use crate::actions::sentence;
 use crate::actions::sign::{prepare_request, rebuild_for_wallets, ReceivedMeta};
 use crate::diagnostics::{next_flow_id, source_name, TxLog};
-use crate::state::forms::{BlockhashExpiry, SimState, SiteSend, TxSource};
+use crate::state::forms::{BlockhashExpiry, SignLoad, SimState, SiteSend, TxSource};
 use crate::state::session::Session;
 use app_core::bridge::BridgeAnswer;
 use dioxus::prelude::*;
@@ -26,6 +26,9 @@ use wallet_flows::request::{
 use wallet_flows::send::SendFailure;
 use wallet_flows::sign::VectorSigning;
 
+#[cfg(test)]
+mod tests;
+
 /// Rebuild the transaction on Sign for the keyless wallet it asks to sign:
 /// inside a Squads proposal, or behind a signer's authorization. A
 /// transaction loaded in its place meanwhile is left alone.
@@ -39,12 +42,13 @@ pub fn rebuild_loaded(session: Session) {
     if *rebuilding.peek() {
         return;
     }
+    let generation = form.generation();
     error.set(None);
     rebuilding.set(true);
     spawn(async move {
         let result = rebuild_for_wallets(session, loaded.clone()).await;
         rebuilding.set(false);
-        if form.wire.peek().as_ref() != Some(&loaded) {
+        if !form.still_on_screen(generation) || form.wire.peek().as_ref() != Some(&loaded) {
             return;
         }
         match result {
@@ -68,11 +72,14 @@ pub struct Refreshed {
     /// One-time keys never used on chain, each with the key made here to
     /// take its place. The new key is kept and signs with this device's.
     pub replaced: Vec<(Pubkey, Pubkey)>,
+    /// The height the new blockhash expires at.
+    pub last_valid_height: u64,
 }
 
 /// Move `wire` onto the node's latest blockhash. Signatures over the
 /// transaction are cleared, and an authorization inside it is left as it is.
-/// Records the exact expiry height on the Sign form.
+/// The Sign form is not touched: by the time this answers, another transaction
+/// may be on it.
 ///
 /// A signature this device cannot make again blocks the move, with one
 /// exception: a signer the chain has never seen is taken for a one-time key
@@ -85,6 +92,7 @@ pub async fn refresh_blockhash(session: Session, wire: &[u8]) -> Result<Refreshe
     let rpc = session.rpc().map_err(sentence)?;
     let local = session.local_signer_pubkeys();
     let tables = session.forms.sign.tables.peek().clone();
+    let flow = session.forms.sign.flow.peek().unwrap_or_else(next_flow_id);
     let tx = decode_on_sign(wire, &tables).map_err(sentence)?;
     let created = accounts_created(Some(rpc.as_ref()), &tx, &local).await;
     let candidates = replaceable_signers(&tx, &local, &created);
@@ -125,11 +133,6 @@ pub async fn refresh_blockhash(session: Session, wire: &[u8]) -> Result<Refreshe
         }
         session.keep_made_here(fresh.iter().map(|(old, key)| (*old, key)));
     }
-    session
-        .forms
-        .sign
-        .set_exact_blockhash_height(Some(last_valid_height));
-    let flow = session.forms.sign.flow.peek().unwrap_or_else(next_flow_id);
     let cluster = session.cluster();
     TxLog {
         flow,
@@ -140,7 +143,54 @@ pub async fn refresh_blockhash(session: Session, wire: &[u8]) -> Result<Refreshe
     Ok(Refreshed {
         wire: next,
         replaced: swaps,
+        last_valid_height,
     })
+}
+
+/// Move the transaction on screen to a fresh blockhash, with nothing else to do:
+/// one this device has nothing left to sign. Every other move happens on the
+/// Sign press.
+pub fn refresh_loaded(session: Session, mut busy: Signal<bool>) {
+    let form = session.forms.sign;
+    let mut error = form.error;
+    let mut note = form.note;
+    let mut stored = form.wire;
+    let Some(wire) = form.wire.peek().clone() else {
+        return;
+    };
+    let generation = form.generation();
+    error.set(None);
+    busy.set(true);
+    spawn(async move {
+        let refreshed = refresh_blockhash(session, &wire).await;
+        busy.set(false);
+        if !form.still_on_screen(generation) {
+            return;
+        }
+        match refreshed {
+            Ok(Refreshed {
+                wire,
+                replaced,
+                last_valid_height,
+            }) => {
+                stored.set(Some(wire));
+                form.set_exact_blockhash_height(Some(last_valid_height));
+                let mut text = Phrase::text(
+                    "Moved to a fresh blockhash. Signatures over the transaction were cleared.",
+                );
+                for (old, new) in replaced {
+                    text = text
+                        .t(" ")
+                        .a(old)
+                        .t(" was never used on chain, so it was a one-time key: ")
+                        .a(new)
+                        .t(", made on this device, takes its place and signs with this device's keys, and the transaction still simulates. The account is created at the new address.");
+                }
+                note.set(Some(text));
+            }
+            Err(err) => error.set(Some(err)),
+        }
+    });
 }
 
 /// Take in every object of one transfer, in order: a transaction before the
@@ -211,13 +261,15 @@ pub fn accept(session: Session, object: QrObject, from: TxSource) {
                 } else {
                     "Loaded a transaction."
                 };
-                form.load(bytes, from, Some(what.into()));
+                form.load(SignLoad::new(bytes, from).with_note(what));
                 return;
             }
             // Legacy and v0 take the same route as a browser request: signed
             // as is when only hot keys are missing, otherwise rewritten as v1.
             // A pasted or scanned one has no site to sign after this device.
             let site_signs = matches!(from, TxSource::Browser { .. });
+            // The newest arrival wins, whichever is ready first.
+            let mine = form.begin_replacing();
             spawn(async move {
                 let source = source_name(&from);
                 match prepare_request(
@@ -233,19 +285,18 @@ pub fn accept(session: Session, object: QrObject, from: TxSource) {
                 )
                 .await
                 {
-                    Ok(prepared) => {
+                    Ok(prepared) if form.still_on_screen(mine) => {
                         let what = loaded_note(format, prepared.converted.as_ref());
-                        form.load_prepared_flow(
-                            prepared.wire,
-                            from,
-                            Some(what.into()),
-                            prepared.last_valid_height.map(BlockhashExpiry::exact),
-                            prepared.tables,
-                            Vec::new(),
-                            Some(prepared.flow),
+                        form.load(
+                            SignLoad::new(prepared.wire, from)
+                                .with_note(what)
+                                .with_expiry(prepared.last_valid_height.map(BlockhashExpiry::exact))
+                                .with_tables(prepared.tables)
+                                .with_flow(prepared.flow),
                         );
                     }
-                    Err(err) => error.set(Some(err)),
+                    Ok(_) => {}
+                    Err(err) => form.report(mine, err),
                 }
             });
         }
@@ -434,9 +485,11 @@ pub fn attach_context(session: Session, context: TxContext) {
 ///
 /// The probe runs at the highest compute limit so a rebuild's earlier
 /// estimate cannot cut it short, then both limits are written back from what
-/// the node used. Authorization signatures stay on the wire. A signature over
-/// the transaction itself is left alone: fitting would void it. Legacy and v0
-/// are simulated as they are.
+/// the node used, if the transaction on screen is still the very one asked
+/// about: anything else, such as a signature added since, would be lost.
+/// Authorization signatures stay on the wire. A signature over the transaction
+/// itself is left alone: fitting would void it. Legacy and v0 are simulated as
+/// they are.
 pub fn start_simulation(session: Session, tx: DecodedTx) {
     let form = session.forms.sign;
     let mut state = form.simulation;
@@ -445,6 +498,7 @@ pub fn start_simulation(session: Session, tx: DecodedTx) {
     let replaced = form.made_here_in(&tx);
     let mut marked = form.simulated_for;
     let digest = sha256_bytes(&tx.message);
+    let generation = form.generation();
     marked.set(Some(digest));
 
     if !matches!(session.plan_adaptation(&tx), Ok(None)) {
@@ -480,7 +534,9 @@ pub fn start_simulation(session: Session, tx: DecodedTx) {
             (Ok(rpc), Some(wire)) => {
                 match wallet_flows::adapt::simulate_fitting(rpc.as_ref(), &wire).await {
                     Ok((fitted, simulation)) => {
-                        if fitted != wire {
+                        let still_this_one = form.still_on_screen(generation)
+                            && wire_signal.peek().as_ref() == Some(&wire);
+                        if fitted != wire && still_this_one {
                             if let Ok(fitted_tx) = decode_v1_transaction(&fitted) {
                                 answer_for = sha256_bytes(&fitted_tx.message);
                                 marked.set(Some(answer_for));
@@ -760,17 +816,26 @@ pub enum BlockhashOnSign {
     Required,
 }
 
-/// Sign what is loaded with this device's keys, once the vault is unlocked.
+/// Sign what is loaded with this device's keys, once the vault is unlocked. The
+/// press was for what is on screen now, so nothing is signed if that has changed
+/// by then.
 pub fn sign_loaded(session: Session, busy: Signal<bool>, blockhash: BlockhashOnSign) {
     if session.is_initialized() && !session.is_unlocked() {
+        let form = session.forms.sign;
+        let generation = form.generation();
         session.when_unlocked("Unlock the vault to sign with its keys.", move || {
-            sign_unlocked(session, busy, blockhash)
+            if form.still_on_screen(generation) {
+                sign_unlocked(session, busy, blockhash);
+            }
         });
         return;
     }
     sign_unlocked(session, busy, blockhash);
 }
 
+/// Sign what is on screen. If another transaction has taken its place by the
+/// time the signatures exist, they are not used: nothing goes to the screen, and
+/// nothing to a site, since the request a site is told about is the one on screen.
 fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: BlockhashOnSign) {
     let form = session.forms.sign;
     let mut error = form.error;
@@ -779,12 +844,14 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
     let Some(loaded) = form.wire.peek().clone() else {
         return;
     };
+    let generation = form.generation();
     error.set(None);
     busy.set(true);
     // Without a network, the transaction is signed on the blockhash it has.
     let rpc = session.rpc().ok();
     let told = form.vector.peek().clone();
     let tables = form.tables.peek().clone();
+    let flow = form.flow.peek().unwrap_or_else(next_flow_id);
     spawn(async move {
         // The move is kept only with the signatures made on it, so a
         // simulation started in between cannot write over them.
@@ -796,11 +863,11 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
                     let cleared = decode_on_sign(&loaded, &tables)
                         .map(|tx| tx.signers.iter().filter(|slot| slot.valid).count())
                         .unwrap_or(0);
-                    moved = Some((refreshed.replaced, cleared));
+                    moved = Some((refreshed.replaced, cleared, refreshed.last_valid_height));
                     refreshed.wire
                 }
                 Err(err) if blockhash == BlockhashOnSign::Required => {
-                    error.set(Some(err));
+                    form.report(generation, err);
                     busy.set(false);
                     return;
                 }
@@ -818,6 +885,11 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
             }
             _ => (told, false),
         };
+        // Before a hash-based key spends a leaf on what is no longer on screen.
+        if !form.still_on_screen(generation) {
+            busy.set(false);
+            return;
+        }
         let signers = session.local_signers();
         let signers: Vec<&dyn WalletSigner> = signers
             .iter()
@@ -831,7 +903,7 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
         let vector_keys = match session.vector_keys_for_sign(&wire, &signers, &known, floors) {
             Ok(keys) => keys,
             Err(err) => {
-                error.set(Some(sentence(err)));
+                form.report(generation, sentence(err));
                 busy.set(false);
                 return;
             }
@@ -848,7 +920,6 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
             Ok(mut done) => {
                 session.xmss_retries.set(cache);
                 done.refreshed |= moved.is_some();
-                let flow = form.flow.peek().unwrap_or_else(next_flow_id);
                 let cluster = session.cluster();
                 let by = if done.authorizations > 0 && done.signatures == 0 {
                     "Vector key"
@@ -861,12 +932,22 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
                     cluster: Some(&cluster),
                 }
                 .log_signed(by);
+                if !form.still_on_screen(generation) {
+                    tracing::info!(
+                        target: "airlock::tx",
+                        flow,
+                        "signed, but another transaction is on screen: not used"
+                    );
+                    busy.set(false);
+                    return;
+                }
                 let text = done.note();
-                if let Some(height) = done.last_valid_height {
+                let moved_to = moved.as_ref().map(|(_, _, height)| *height);
+                if let Some(height) = done.last_valid_height.or(moved_to) {
                     form.set_exact_blockhash_height(Some(height));
                 }
                 let mut phrase = Phrase::text(text);
-                if let Some((replaced, cleared)) = moved {
+                if let Some((replaced, cleared, _)) = moved {
                     if cleared > 0 {
                         phrase = phrase.t(format!(
                             " {cleared} signature(s) made on the old blockhash were cleared and have to be made again."
@@ -913,12 +994,14 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
                     }
                 }
             }
-            Err(err) => error.set(Some(sentence(err))),
+            Err(err) => form.report(generation, sentence(err)),
         }
         busy.set(false);
     });
 }
 
+/// Send what is on screen. The toast follows it from then on, whatever the screen
+/// does: only the transaction that was sent is cleared off it.
 pub fn submit_loaded(session: Session, mut busy: Signal<bool>) {
     let form = session.forms.sign;
     let mut error = form.error;
@@ -933,6 +1016,7 @@ pub fn submit_loaded(session: Session, mut busy: Signal<bool>) {
     ) {
         return;
     }
+    let generation = form.generation();
     let flow = form.flow.peek().unwrap_or_else(next_flow_id);
     let cluster = session.cluster();
     let last_valid_height = form
@@ -954,6 +1038,10 @@ pub fn submit_loaded(session: Session, mut busy: Signal<bool>) {
             }
             Err(err) => Err(SendFailure::Failed(err.to_string())),
         };
+        busy.set(false);
+        if !form.still_on_screen(generation) {
+            return;
+        }
         match submitted {
             // The toast follows the transaction from here.
             Ok(signature) => {
@@ -971,6 +1059,5 @@ pub fn submit_loaded(session: Session, mut busy: Signal<bool>) {
                 error.set(Some(sentence(err)));
             }
         }
-        busy.set(false);
     });
 }

@@ -78,44 +78,13 @@ pub(in crate::ui) fn RebuildBanner(plan: Result<AdaptPlan, String>, online: bool
 #[component]
 pub(in crate::ui) fn RefreshBlockhash() -> Element {
     let session = use_context::<Session>();
-    let form = session.forms.sign;
-    let mut busy = use_signal(|| false);
+    let busy = use_signal(|| false);
     rsx! {
         button {
             class: "primary",
             disabled: busy(),
             title: "A transaction is only accepted for about 30 seconds after its blockhash. An authorization inside it does not expire.",
-            onclick: move |_| {
-                let mut error = form.error;
-                let mut note = form.note;
-                let mut stored = form.wire;
-                let Some(wire) = form.wire.peek().clone() else {
-                    return;
-                };
-                error.set(None);
-                busy.set(true);
-                spawn(async move {
-                    match refresh_blockhash(session, &wire).await {
-                        Ok(Refreshed { wire, replaced }) => {
-                            stored.set(Some(wire));
-                            let mut text = wallet_core::Phrase::text(
-                                "Moved to a fresh blockhash. Signatures over the transaction were cleared.",
-                            );
-                            for (old, new) in replaced {
-                                text = text
-                                    .t(" ")
-                                    .a(old)
-                                    .t(" was never used on chain, so it was a one-time key: ")
-                                    .a(new)
-                                    .t(", made on this device, takes its place and signs with this device's keys, and the transaction still simulates. The account is created at the new address.");
-                            }
-                            note.set(Some(text));
-                        }
-                        Err(err) => error.set(Some(err)),
-                    }
-                    busy.set(false);
-                });
-            },
+            onclick: move |_| refresh_loaded(session, busy),
             if busy() { "Rebuilding…" } else { "Rebuild on a fresh blockhash" }
         }
     }

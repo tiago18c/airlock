@@ -3,7 +3,7 @@
 
 use super::prepared::{use_prepared_request, Prepared, PreparedRequest, ReadyWire, SignWire};
 use app_ui_kit::actions::site_send::send_for_site;
-use app_ui_kit::state::forms::{BatchItem, BlockhashClock, BrowserBatch};
+use app_ui_kit::state::forms::{BatchItem, BlockhashClock, BrowserBatch, SignLoad};
 
 use super::*;
 
@@ -84,7 +84,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                 class: review_class(prep.can_sign, prep.unread_sign),
                 disabled: !prep.can_review,
                 onclick: move |_| {
-                    let Some((wire, adapted, _, _, tables, _, flow)) = for_review.clone() else {
+                    let Some(ReadyWire { wire, adapted, tables, flow, .. }) = for_review.clone() else {
                         return;
                     };
                     if let Some(paid) = &taken_for_review {
@@ -95,19 +95,18 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                         .as_ref()
                         .map(|adapted| adapted.context.clone())
                         .unwrap_or_default();
-                    session.open_in_sign_flow(
-                        wire,
-                        TxSource::Browser {
+                    session.open_in_sign(
+                        SignLoad::new(wire, TxSource::Browser {
                             id: review_id.clone(),
                             origin: origin.clone(),
-                        },
+                        })
                         // The request toast names the site. Say only what
                         // changed on the way here.
-                        review_note(adapted.is_some(), replaced_payer).to_string(),
-                        expiry,
-                        tables,
-                        vector,
-                        Some(flow),
+                        .with_note(review_note(adapted.is_some(), replaced_payer))
+                        .with_expiry(expiry)
+                        .with_tables(tables)
+                        .with_vector(vector)
+                        .with_flow(flow),
                     );
                     on_close.call(());
                 },
@@ -128,7 +127,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                             if let Some(paid) = &taken_for_sign {
                                 paid.log_taken(session);
                             }
-                            let items = vec![(wire, sign.3)];
+                            let items = vec![(wire, sign.flow)];
                             if let Err(why) = send_for_site(&session, &sign_id, &origin_for_sign, items) {
                                 error.set(Some(why));
                             }
@@ -137,7 +136,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                             if let Some(paid) = &taken_for_sign {
                                 paid.log_taken(session);
                             }
-                            log_returned(session, sign.3, &wire, &origin_for_sign, &sign_id);
+                            log_returned(session, sign.flow, &wire, &origin_for_sign, &sign_id);
                             if !session.bridge_answer(&sign_id, BridgeAnswer::Signed(vec![wire])) {
                                 error.set(Some("The site stopped waiting for this request.".into()));
                             }
@@ -189,7 +188,12 @@ fn review_note(rebuilt: bool, replaced_payer: bool) -> &'static str {
 /// wire only when nothing but the site's own signatures is left in it.
 fn sign_for_site(
     session: Session,
-    (wire, tables, known, flow): &SignWire,
+    SignWire {
+        wire,
+        tables,
+        known,
+        flow,
+    }: &SignWire,
     site_signs: &[Pubkey],
 ) -> Result<Vec<u8>, String> {
     let done = session.sign_locally(wire, known).map_err(sentence)?;
@@ -476,7 +480,7 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                     };
                     let mut items = Vec::with_capacity(reports.len());
                     for report in &reports {
-                        let Some((wire, adapted, _, _, tables, _, flow)) = report.review.clone() else {
+                        let Some(ReadyWire { wire, adapted, tables, flow, .. }) = report.review.clone() else {
                             return;
                         };
                         let note = review_note(adapted.is_some(), report.taken.is_some());
@@ -524,7 +528,7 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                             return;
                         };
                         match sign_for_site(session, sign, &report.site_signs) {
-                            Ok(wire) => signed.push((sign.3, wire)),
+                            Ok(wire) => signed.push((sign.flow, wire)),
                             Err(err) => {
                                 error.set(Some(format!(
                                     "Transaction {}: {err} Nothing was sent to the site.",

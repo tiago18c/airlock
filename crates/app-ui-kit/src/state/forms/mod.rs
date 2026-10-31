@@ -84,6 +84,7 @@ pub fn use_forms() -> Forms {
         },
         sign: SignForm {
             wire: use_signal(|| None::<Vec<u8>>),
+            generation: use_signal(|| 0u64),
             source: use_signal(|| None::<TxSource>),
             flow: use_signal(|| None::<u64>),
             context: use_signal(|| None),

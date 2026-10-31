@@ -132,10 +132,77 @@ impl BrowserBatch {
     }
 }
 
+/// A transaction for the Sign screen, with what is known of it already.
+#[derive(Clone, Debug)]
+pub struct SignLoad {
+    wire: Vec<u8>,
+    from: TxSource,
+    note: Option<wallet_core::Phrase>,
+    expiry: Option<BlockhashExpiry>,
+    tables: wallet_core::LookupTables,
+    vector: Vec<wallet_core::relay::VectorContext>,
+    flow: Option<u64>,
+}
+
+impl SignLoad {
+    pub fn new(wire: Vec<u8>, from: TxSource) -> Self {
+        Self {
+            wire,
+            from,
+            note: None,
+            expiry: None,
+            tables: wallet_core::LookupTables::new(),
+            vector: Vec::new(),
+            flow: None,
+        }
+    }
+
+    /// What to say above it. An empty note says nothing.
+    pub fn with_note(mut self, note: impl Into<wallet_core::Phrase>) -> Self {
+        self.note = Some(note.into()).filter(|note| !note.plain().is_empty());
+        self
+    }
+
+    /// When its blockhash stops being accepted, when that is known.
+    pub fn with_expiry(mut self, expiry: Option<BlockhashExpiry>) -> Self {
+        self.expiry = expiry;
+        self
+    }
+
+    /// This app chose its blockhash, which expires at `height` when known.
+    pub fn expiring_at(self, height: Option<u64>) -> Self {
+        self.with_expiry(height.map(BlockhashExpiry::exact))
+    }
+
+    /// The lookup tables of a v0 wire.
+    pub fn with_tables(mut self, tables: wallet_core::LookupTables) -> Self {
+        self.tables = tables;
+        self
+    }
+
+    /// What a rebuild already read of its Vector accounts.
+    pub fn with_vector(mut self, vector: Vec<wallet_core::relay::VectorContext>) -> Self {
+        self.vector = vector;
+        self
+    }
+
+    /// Its log flow, when it was logged already (a browser prepare, a rebuild,
+    /// a conversion).
+    pub fn with_flow(mut self, flow: u64) -> Self {
+        self.flow = Some(flow);
+        self
+    }
+}
+
 /// The one transaction the Sign screen is working on.
 #[derive(Clone, Copy)]
 pub struct SignForm {
     pub wire: Signal<Option<Vec<u8>>>,
+    /// Goes up each time the transaction on screen is replaced, or something is
+    /// on its way to replace it. A task that takes time remembers it when it
+    /// starts, and does nothing with the screen if it has changed: see
+    /// [`SignForm::still_on_screen`].
+    pub generation: Signal<u64>,
     pub source: Signal<Option<TxSource>>,
     /// Log trail id for the transaction on screen. Set when it is received.
     pub flow: Signal<Option<u64>>,
@@ -318,52 +385,48 @@ impl SignForm {
         });
     }
 
-    /// Put `wire` on the screen in place of whatever was there.
-    pub fn load(&self, wire: Vec<u8>, from: TxSource, note: Option<wallet_core::Phrase>) {
-        self.load_with_lifetime(wire, from, note, None, wallet_core::LookupTables::new());
+    /// Which transaction is on screen, for a task about to take time.
+    pub fn generation(&self) -> u64 {
+        *self.generation.peek()
     }
 
-    /// Like [`load`](Self::load), recording when the blockhash expires when
-    /// that is known, and lookup tables when the wire is v0.
-    pub fn load_with_lifetime(
-        &self,
-        wire: Vec<u8>,
-        from: TxSource,
-        note: Option<wallet_core::Phrase>,
-        expiry: Option<BlockhashExpiry>,
-        tables: wallet_core::LookupTables,
-    ) {
-        self.load_prepared(wire, from, note, expiry, tables, Vec::new());
+    /// Whether what was on screen at `generation` still is. Nothing else may
+    /// write to the screen, or answer for what is on it. The transaction may
+    /// have changed since without this changing, by a signature or a rebuild.
+    pub fn still_on_screen(&self, generation: u64) -> bool {
+        self.generation() == generation
     }
 
-    /// Like [`load_with_lifetime`](Self::load_with_lifetime), with what a
-    /// rebuild already read of the Vector accounts.
-    pub fn load_prepared(
-        &self,
-        wire: Vec<u8>,
-        from: TxSource,
-        note: Option<wallet_core::Phrase>,
-        expiry: Option<BlockhashExpiry>,
-        tables: wallet_core::LookupTables,
-        vector: Vec<wallet_core::relay::VectorContext>,
-    ) {
-        self.load_prepared_flow(wire, from, note, expiry, tables, vector, None);
+    /// Something is on its way to replace the transaction on screen, so what is
+    /// under way for that one no longer counts. Answers the generation of what
+    /// is coming, which is dropped in turn if something newer overtakes it.
+    pub fn begin_replacing(&self) -> u64 {
+        let next = self.generation() + 1;
+        let mut generation = self.generation;
+        generation.set(next);
+        next
     }
 
-    /// Like [`load_prepared`](Self::load_prepared), reusing a flow id when the
-    /// transaction was already logged (browser prepare, rebuild, convert).
-    #[allow(clippy::too_many_arguments)]
-    pub fn load_prepared_flow(
-        &self,
-        wire: Vec<u8>,
-        from: TxSource,
-        note: Option<wallet_core::Phrase>,
-        expiry: Option<BlockhashExpiry>,
-        tables: wallet_core::LookupTables,
-        vector: Vec<wallet_core::relay::VectorContext>,
-        existing_flow: Option<u64>,
-    ) {
-        let flow = existing_flow.unwrap_or_else(|| {
+    /// Show `why`, if what it is about is still on screen.
+    pub fn report(&self, generation: u64, why: String) {
+        if self.still_on_screen(generation) {
+            let mut error = self.error;
+            error.set(Some(why));
+        }
+    }
+
+    /// Put a transaction on the screen in place of whatever was there.
+    pub fn load(&self, load: SignLoad) {
+        let SignLoad {
+            wire,
+            from,
+            note,
+            expiry,
+            tables,
+            vector,
+            flow,
+        } = load;
+        let flow = flow.unwrap_or_else(|| {
             let flow = crate::diagnostics::next_flow_id();
             let (origin, code): (Option<&str>, Option<String>) = match &from {
                 TxSource::Browser { id, origin } => (
@@ -381,22 +444,15 @@ impl SignForm {
             .log_received(crate::diagnostics::source_name(&from), origin, code_ref);
             flow
         });
+        self.reset();
         let mut this = *self;
         this.wire.set(Some(wire));
         this.source.set(Some(from));
         this.flow.set(Some(flow));
-        this.context.set(None);
         this.vector.set(vector);
-        this.import.set(String::new());
-        this.error.set(None);
         this.note.set(note);
-        this.simulation.set(SimState::Idle);
-        this.simulated_for.set(None);
         this.tables.set(tables);
         this.clock.reset(expiry);
-        this.rebuilt.set(false);
-        this.returned.set(false);
-        this.batch.set(None);
     }
 
     /// Put a site's batch on the screen, on its transaction `batch.current`.
@@ -404,15 +460,15 @@ impl SignForm {
         let Some(item) = batch.items.get(batch.current).cloned() else {
             return;
         };
-        self.load_prepared_flow(
-            item.wire,
-            batch.source(),
-            item.note,
-            item.expiry,
-            item.tables,
-            item.vector,
-            Some(item.flow),
-        );
+        self.load(SignLoad {
+            wire: item.wire,
+            from: batch.source(),
+            note: item.note,
+            expiry: item.expiry,
+            tables: item.tables,
+            vector: item.vector,
+            flow: Some(item.flow),
+        });
         let mut this = *self;
         this.batch.set(Some(batch));
     }
@@ -465,10 +521,19 @@ impl SignForm {
     }
 
     pub fn clear(&self) {
+        self.reset();
         let mut this = *self;
         this.wire.set(None);
         this.source.set(None);
         this.flow.set(None);
+        this.share.set(ShareTab::Everything);
+    }
+
+    /// Forget what is known of the transaction on screen, and so whatever is
+    /// under way for it.
+    fn reset(&self) {
+        self.begin_replacing();
+        let mut this = *self;
         this.context.set(None);
         this.vector.set(Vec::new());
         this.import.set(String::new());
@@ -476,7 +541,6 @@ impl SignForm {
         this.note.set(None);
         this.simulation.set(SimState::Idle);
         this.simulated_for.set(None);
-        this.share.set(ShareTab::Everything);
         this.tables.set(wallet_core::LookupTables::new());
         this.clock.reset(None);
         this.rebuilt.set(false);

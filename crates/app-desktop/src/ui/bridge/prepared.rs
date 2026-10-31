@@ -24,25 +24,29 @@ pub(in crate::ui) enum Prepared {
     Failed(String),
 }
 
-/// What Review hands to the Sign screen: the wire, its rebuild, the height
-/// its blockhash expires at, its format, tables, conversion and log flow.
-pub(in crate::ui) type ReadyWire = (
-    Vec<u8>,
-    Option<Adapted>,
-    Option<u64>,
-    wallet_core::TxFormat,
-    wallet_core::LookupTables,
-    Option<wallet_core::Converted>,
-    u64,
-);
+/// What Review hands to the Sign screen.
+#[derive(Clone, PartialEq)]
+pub(in crate::ui) struct ReadyWire {
+    pub wire: Vec<u8>,
+    /// Set when the site's transaction was rebuilt for a keyless wallet.
+    pub adapted: Option<Adapted>,
+    /// When this app chose the blockhash, the height it expires at.
+    pub last_valid_height: Option<u64>,
+    pub tables: wallet_core::LookupTables,
+    /// Set when a legacy or v0 wire was rewritten as v1.
+    pub converted: Option<wallet_core::Converted>,
+    pub flow: u64,
+}
 
-/// What Sign signs: the wire, its tables, its Vector accounts and log flow.
-pub(in crate::ui) type SignWire = (
-    Vec<u8>,
-    wallet_core::LookupTables,
-    Vec<wallet_core::relay::VectorContext>,
-    u64,
-);
+/// What Sign signs.
+#[derive(Clone, PartialEq)]
+pub(in crate::ui) struct SignWire {
+    pub wire: Vec<u8>,
+    pub tables: wallet_core::LookupTables,
+    /// What is known of its Vector accounts.
+    pub known: Vec<wallet_core::relay::VectorContext>,
+    pub flow: u64,
+}
 
 /// Values derived from a bridge sign prompt, for the request modal.
 pub(in crate::ui) struct PreparedRequest {
@@ -201,55 +205,48 @@ pub(in crate::ui) fn use_prepared_request(
         (
             Prepared::Ready {
                 last_valid_height,
-                format,
                 tables,
                 converted,
                 flow,
                 ..
             },
             Some(paid),
-        ) => Some((
-            paid.wire.clone(),
-            paid.adapted.clone(),
-            *last_valid_height,
-            *format,
-            tables.clone(),
-            converted.as_deref().cloned(),
-            *flow,
-        )),
+        ) => Some(ReadyWire {
+            wire: paid.wire.clone(),
+            adapted: paid.adapted.clone(),
+            last_valid_height: *last_valid_height,
+            tables: tables.clone(),
+            converted: converted.as_deref().cloned(),
+            flow: *flow,
+        }),
         (
             Prepared::Ready {
                 wire,
                 adapted,
                 last_valid_height,
-                format,
                 tables,
                 converted,
                 flow,
+                ..
             },
             None,
-        ) => Some((
-            wire.clone(),
-            adapted.as_deref().cloned(),
-            *last_valid_height,
-            *format,
-            tables.clone(),
-            converted.as_deref().cloned(),
-            *flow,
-        )),
+        ) => Some(ReadyWire {
+            wire: wire.clone(),
+            adapted: adapted.as_deref().cloned(),
+            last_valid_height: *last_valid_height,
+            tables: tables.clone(),
+            converted: converted.as_deref().cloned(),
+            flow: *flow,
+        }),
         _ => None,
     };
-    let adapted = ready
-        .as_ref()
-        .and_then(|(_, adapted, _, _, _, _, _)| adapted.clone());
-    let converted = ready
-        .as_ref()
-        .and_then(|(_, _, _, _, _, converted, _)| converted.clone());
+    let adapted = ready.as_ref().and_then(|ready| ready.adapted.clone());
+    let converted = ready.as_ref().and_then(|ready| ready.converted.clone());
     let replaced_payer = taken.is_some();
     // Decoded once per wire, not on every render of the modal.
     let decode_key = ready
         .as_ref()
-        .map(|(wire, _, _, _, tables, _, _)| (wire.clone(), tables.clone()));
+        .map(|ready| (ready.wire.clone(), ready.tables.clone()));
     let tx = use_memo(use_reactive!(|(decode_key)| {
         decode_key
             .as_ref()
@@ -302,9 +299,7 @@ pub(in crate::ui) fn use_prepared_request(
     // an exact expiry. A site's is estimated from when the request arrived,
     // and Review hands that estimate on to the Sign screen.
     let clock = use_blockhash_clock_state();
-    let prepared_height = ready
-        .as_ref()
-        .and_then(|(_, _, height, _, _, _, _)| *height);
+    let prepared_height = ready.as_ref().and_then(|ready| ready.last_valid_height);
     use_effect(use_reactive!(|(lifetime, prepared_height)| {
         let _ = lifetime;
         clock.reset(prepared_height.map(BlockhashExpiry::exact));
@@ -340,19 +335,16 @@ pub(in crate::ui) fn use_prepared_request(
         can_sign && verdict.is_some_and(|verdict| !verdict.allowed_leaving(site_signs.len()));
 
     let for_review = ready.clone();
-    let for_sign = ready
-        .as_ref()
-        .map(|(wire, adapted, _, _, tables, _, flow)| {
-            (
-                wire.clone(),
-                tables.clone(),
-                adapted
-                    .as_ref()
-                    .map(|adapted| adapted.context.clone())
-                    .unwrap_or_default(),
-                *flow,
-            )
-        });
+    let for_sign = ready.as_ref().map(|ready| SignWire {
+        wire: ready.wire.clone(),
+        tables: ready.tables.clone(),
+        known: ready
+            .adapted
+            .as_ref()
+            .map(|adapted| adapted.context.clone())
+            .unwrap_or_default(),
+        flow: ready.flow,
+    });
 
     PreparedRequest {
         account,
