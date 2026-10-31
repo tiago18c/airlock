@@ -143,15 +143,17 @@ mod tests {
     async fn waiting_request_opens_modal() {
         let kit = kit();
         let public = kit.core.public();
-        public.bridge_push(
-            BridgeRequest {
-                id: "req-1".into(),
-                origin: "https://example.org".into(),
-                method: "connect".into(),
-                params: serde_json::Value::Null,
-            },
-            Box::new(|_| {}),
-        );
+        public
+            .bridge_push(
+                BridgeRequest {
+                    id: "req-1".into(),
+                    origin: "https://example.org".into(),
+                    method: "connect".into(),
+                    params: serde_json::Value::Null,
+                },
+                Box::new(|_| {}),
+            )
+            .unwrap();
         let id = public.notices_push(NoticeKind::BridgeRequest {
             id: "req-1".into(),
             origin: "https://example.org".into(),

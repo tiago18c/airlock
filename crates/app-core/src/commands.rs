@@ -24,8 +24,8 @@ use wallet_core::{
 };
 
 use crate::bridge::{
-    BridgeAnswer, BridgeReply, BridgeRequest, BridgeState, ConnectedSite, SendingRequest,
-    SiteChoice, SiteConnect, SiteSign, SitesView, Taken,
+    BridgeAnswer, BridgeRefused, BridgeReply, BridgeRequest, BridgeState, ConnectedSite,
+    SendingRequest, SiteChoice, SiteConnect, SiteSign, SitesView, Taken,
 };
 use crate::diagnostics::log_status;
 use crate::events::Event;
@@ -801,16 +801,24 @@ impl Inner {
         })
     }
 
-    pub(crate) fn bridge_push(&self, request: BridgeRequest, reply: BridgeReply) {
+    pub(crate) fn bridge_push(
+        &self,
+        request: BridgeRequest,
+        reply: BridgeReply,
+    ) -> Result<(), BridgeRefused> {
         let _span = debug_span!(target: CORE, "command", name = "bridge_push").entered();
         let id = request.id.clone();
         {
             let mut bridge = locked(&self.bridge);
-            bridge.push(request, reply);
+            if let Err(refused) = bridge.push(request, reply) {
+                debug!(target: CORE, outcome = "refused", "command");
+                return Err(refused);
+            }
             self.slices.bridge.publish(Arc::new(bridge.queue().clone()));
         }
         let _ = self.events.send(Event::RequestArrived { id });
         debug!(target: CORE, outcome = "ok", "command");
+        Ok(())
     }
 
     /// Reply to `id` with what the user decided. Answers whether the request
