@@ -32,7 +32,7 @@ fn on_request_arrived(core: &PublicCore, id: &str) {
         return;
     };
     let origin = request.origin.clone();
-    let method = request.method.clone();
+    let method = request.method().to_owned();
     let code = request.code();
 
     let notice_id = core.notices_push(NoticeKind::BridgeRequest {
@@ -148,8 +148,7 @@ mod tests {
                 BridgeRequest {
                     id: "req-1".into(),
                     origin: "https://example.org".into(),
-                    method: "connect".into(),
-                    params: serde_json::Value::Null,
+                    call: app_core::bridge::SiteCall::Connect,
                 },
                 Box::new(|_| {}),
             )

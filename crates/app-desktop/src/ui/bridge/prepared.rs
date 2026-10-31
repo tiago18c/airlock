@@ -84,8 +84,9 @@ pub(in crate::ui) fn use_prepared_request(
     current: BridgePrompt,
     index: usize,
 ) -> PreparedRequest {
-    let original = crate::bridge::transaction_wire(&current.params, index);
-    let account = crate::bridge::requested_account(&current.params, index);
+    let transaction = current.request.transactions().get(index);
+    let original = transaction.and_then(|transaction| transaction.wire.bytes().map(<[u8]>::to_vec));
+    let account = transaction.map(|transaction| transaction.account);
 
     let mut prepared = use_signal(|| Prepared::Working);
     let attempt = use_signal(|| 0u32);

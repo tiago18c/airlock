@@ -10,9 +10,9 @@ use std::sync::Arc;
 
 use bridge_protocol::reply::{SendError, SiteAccount};
 use bridge_protocol::{MAX_PENDING, MAX_PENDING_PER_ORIGIN};
-use serde_json::Value;
 use solana_pubkey::Pubkey;
-use wallet_core::{ConfirmationLevel, ConnectChoice, SiteGrant};
+use wallet_core::site_message::SignIn;
+use wallet_core::{ConfirmationLevel, ConnectChoice, SiteGrant, TxFormat};
 
 use crate::notices::BridgeRequestOutcome;
 
@@ -51,28 +51,26 @@ impl BridgeAnswer {
     /// fits only with one transaction for each the site sent, so part of a
     /// batch never goes back.
     fn fits(&self, request: &BridgeRequest) -> bool {
-        match self {
-            Self::Connect(_) => request.method == "connect",
-            Self::Signed(wires) => {
-                request.method == "signTransaction"
-                    && !wires.is_empty()
-                    && wires.len() == request.transaction_count()
+        match (self, &request.call) {
+            (Self::Rejected, _)
+            | (Self::Connect(_), SiteCall::Connect)
+            | (Self::SignedMessage { .. }, SiteCall::SignMessage { .. })
+            | (Self::SignedIn { .. }, SiteCall::SignIn(_)) => true,
+            (Self::Signed(wires), SiteCall::SignTransactions(transactions)) => {
+                !wires.is_empty() && wires.len() == transactions.len()
             }
-            Self::Sent(results) => {
-                request.sends()
-                    && !results.is_empty()
-                    && results.len() == request.transaction_count()
+            (Self::Sent(results), SiteCall::Send { transactions, .. }) => {
+                !results.is_empty() && results.len() == transactions.len()
             }
-            Self::SignedMessage { .. } => request.method == "signMessage",
-            Self::SignedIn { .. } => request.method == "signIn",
-            Self::Rejected => true,
+            _ => false,
         }
     }
 
-    /// The reply frame for request `id`, and the outcome for its notice.
-    pub(crate) fn reply(&self, id: &str, method: &str) -> (Vec<u8>, BridgeRequestOutcome) {
+    /// The reply frame for `request`, and the outcome for its notice.
+    pub(crate) fn reply(&self, request: &BridgeRequest) -> (Vec<u8>, BridgeRequestOutcome) {
+        let id = request.id.as_str();
         match self {
-            Self::Sent(results) if method == SEND_ALL => (
+            Self::Sent(results) if request.send_plan() != SendPlan::InOrder => (
                 bridge_protocol::reply::sent_each(id, results),
                 BridgeRequestOutcome::Answered,
             ),
@@ -175,13 +173,83 @@ pub struct SitesView {
     pub holding: BTreeMap<String, Vec<Pubkey>>,
 }
 
+/// What a site asks for. The transport reads it from the frame once, and checks
+/// it as it reads, so what a modal shows is what was checked.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum SiteCall {
+    Connect,
+    /// `signTransaction`: sign these and give them back.
+    SignTransactions(Vec<SiteTransaction>),
+    /// `signAndSendTransaction`, or by any other plan,
+    /// `signAndSendAllTransactions`: the app sends what it signs.
+    Send {
+        transactions: Vec<SiteTransaction>,
+        plan: SendPlan,
+    },
+    SignMessage {
+        account: Pubkey,
+        message: Vec<u8>,
+    },
+    SignIn(Box<SignIn>),
+}
+
+impl SiteCall {
+    /// The name the site used for it. Notices keep this.
+    pub fn method(&self) -> &'static str {
+        match self {
+            Self::Connect => "connect",
+            Self::SignTransactions(_) => "signTransaction",
+            Self::Send {
+                plan: SendPlan::InOrder,
+                ..
+            } => SEND,
+            Self::Send { .. } => SEND_ALL,
+            Self::SignMessage { .. } => "signMessage",
+            Self::SignIn(_) => "signIn",
+        }
+    }
+}
+
+/// One transaction a site handed over.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SiteTransaction {
+    /// The account the site says it is for. The site chose it, so it is shown
+    /// and never relied on.
+    pub account: Pubkey,
+    pub wire: SiteWire,
+    /// The network it names.
+    pub chain: Option<String>,
+    /// The commitment the site asked it to reach, for a send.
+    pub commitment: Option<ConfirmationLevel>,
+}
+
+/// As far as the bytes a site sent for a transaction could be read. One that
+/// cannot be still opens the modal, which says so.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum SiteWire {
+    Missing,
+    NotBase64,
+    /// This many bytes that are no Solana transaction.
+    Unreadable(usize),
+    Readable(TxFormat, Vec<u8>),
+}
+
+impl SiteWire {
+    /// The bytes of a transaction that could be read.
+    pub fn bytes(&self) -> Option<&[u8]> {
+        match self {
+            Self::Readable(_, bytes) => Some(bytes),
+            _ => None,
+        }
+    }
+}
+
 /// One request a site made through the extension.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BridgeRequest {
     pub id: String,
     pub origin: String,
-    pub method: String,
-    pub params: Value,
+    pub call: SiteCall,
 }
 
 impl BridgeRequest {
@@ -190,73 +258,62 @@ impl BridgeRequest {
         bridge_protocol::request_code(&self.id)
     }
 
+    /// The name the site used for it.
+    pub fn method(&self) -> &'static str {
+        self.call.method()
+    }
+
+    /// The transactions it hands over, if any.
+    pub fn transactions(&self) -> &[SiteTransaction] {
+        match &self.call {
+            SiteCall::SignTransactions(transactions) | SiteCall::Send { transactions, .. } => {
+                transactions
+            }
+            _ => &[],
+        }
+    }
+
     /// Whether the app sends what this asks to have signed.
     pub fn sends(&self) -> bool {
-        self.method == SEND || self.method == SEND_ALL
+        matches!(self.call, SiteCall::Send { .. })
     }
 
     /// Whether this takes a connection, so that ending one rejects it. A
     /// `connect` asks for one, and a `signIn` makes one.
     pub fn needs_connection(&self) -> bool {
-        !matches!(self.method.as_str(), "connect" | "signIn")
+        !matches!(self.call, SiteCall::Connect | SiteCall::SignIn(_))
     }
 
-    /// How the transactions of a send go out. A site that names no mode gets
-    /// `parallel`, the standard's first.
+    /// How the transactions of a send go out.
     pub fn send_plan(&self) -> SendPlan {
-        if self.method != SEND_ALL {
-            return SendPlan::InOrder;
-        }
-        match self.params.get("mode").and_then(Value::as_str) {
-            Some("serial") => SendPlan::Serial,
-            _ => SendPlan::Independent,
+        match self.call {
+            SiteCall::Send { plan, .. } => plan,
+            _ => SendPlan::InOrder,
         }
     }
 
     /// The commitment a site asked each transaction of a send to reach.
     pub fn send_commitments(&self) -> Vec<Option<ConfirmationLevel>> {
-        let items = self.params.get("transactions").and_then(Value::as_array);
-        items
-            .map(|items| {
-                items
-                    .iter()
-                    .map(|item| {
-                        match item
-                            .get("options")
-                            .and_then(|options| options.get("commitment"))
-                            .and_then(Value::as_str)
-                        {
-                            Some("processed") => Some(ConfirmationLevel::Processed),
-                            Some("confirmed") => Some(ConfirmationLevel::Confirmed),
-                            Some("finalized") => Some(ConfirmationLevel::Finalized),
-                            _ => None,
-                        }
-                    })
-                    .collect()
-            })
-            .unwrap_or_default()
+        self.transactions()
+            .iter()
+            .map(|transaction| transaction.commitment)
+            .collect()
     }
 
     /// The networks the transactions of this name, each once.
     pub fn chains(&self) -> Vec<String> {
         let mut chains: Vec<String> = self
-            .params
-            .get("transactions")
-            .and_then(Value::as_array)
-            .into_iter()
-            .flatten()
-            .filter_map(|item| item.get("chain")?.as_str().map(str::to_owned))
+            .transactions()
+            .iter()
+            .filter_map(|transaction| transaction.chain.clone())
             .collect();
         chains.dedup();
         chains
     }
 
-    /// How many transactions a `signTransaction` asks to have signed.
+    /// How many transactions it hands over.
     pub fn transaction_count(&self) -> usize {
-        self.params
-            .get("transactions")
-            .and_then(Value::as_array)
-            .map_or(0, Vec::len)
+        self.transactions().len()
     }
 }
 
@@ -301,7 +358,8 @@ impl BridgeQueue {
     }
 }
 
-/// How the transactions of a send go out.
+/// How the transactions of a send go out. A site that names no mode gets
+/// `parallel`, the standard's first, which is `Independent`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SendPlan {
     InOrder,
