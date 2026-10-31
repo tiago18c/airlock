@@ -4,8 +4,6 @@ Runtime Rust port of the TypeScript `@codama/dynamic-*` packages. Given a Codama
 
 `wallet-core` builds and explains every instruction through `codama-dynamic-client`, and converts Anchor IDLs with `codama-nodes-from-anchor`. How the app uses IDLs is in [docs/idls.md](../../docs/idls.md).
 
-`vendor/codama-rs` is an older local fork. It is not a dependency of these crates, and it is the wrong tree to diff when updating this port. `codama-program-cli` stays in that vendor tree.
-
 ## Crates
 
 | Crate | TypeScript package | Role |
@@ -31,7 +29,7 @@ There is no nested Cargo workspace under `crates/codama`. Members are listed in 
 
 ## Snapshot
 
-Recorded 31 October 2026. Diff later changes against these revisions, not against `vendor/codama-rs`.
+Recorded 31 October 2026. Diff later changes against these revisions.
 
 ### TypeScript behavior
 
