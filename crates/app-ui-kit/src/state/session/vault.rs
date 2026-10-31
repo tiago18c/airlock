@@ -56,9 +56,6 @@ impl Session {
 
     pub fn lock(&self) {
         self.command(|core| core.lock());
-        self.forms.wallet.clear();
-        let mut modal = self.forms.wallet.modal_open;
-        modal.set(false);
     }
 
     /// Run `then` now when the vault is unlocked. Otherwise ask for the

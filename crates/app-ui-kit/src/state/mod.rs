@@ -116,6 +116,22 @@ fn use_save_failures(core: CopyValue<Core>, mut save_error: Signal<Option<String
     });
 }
 
+/// However the vault locks, by itself or from the tray as well as from the top
+/// bar, the screens let go of the secrets they hold.
+fn use_forgetting_on_lock(core: CopyValue<Core>, forms: forms::Forms) {
+    use_hook(move || {
+        let mut vault = core.peek().slices().vault.subscribe();
+        spawn(async move {
+            while vault.changed().await.is_ok() {
+                let state = **vault.borrow_and_update();
+                if state != app_core::VaultState::Unlocked {
+                    forms.wallet.forget_secrets();
+                }
+            }
+        });
+    });
+}
+
 /// The session over `core`, provided as context for every screen: the
 /// pumped slices, and the screen state a window holds (forms, tab, gate,
 /// banners). `online` and `submitter` are what the shell plugs in; a shell
@@ -129,6 +145,7 @@ pub fn use_session(core: CopyValue<Core>, online: OnlineHooks, submitter: Submit
     let xmss_retries = use_signal(wallet_core::vector::XmssRetryCache::default);
     let tab = use_signal(|| Tab::Wallets);
     let forms = use_forms();
+    use_forgetting_on_lock(core, forms);
     let gate = use_signal(|| true);
     let unlock_prompt = use_signal(|| None);
     let save_error = use_signal(|| None::<String>);
@@ -175,4 +192,60 @@ pub fn use_session(core: CopyValue<Core>, online: OnlineHooks, submitter: Submit
             directory,
         )
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use dioxus::dioxus_core::VirtualDom;
+    use std::cell::Cell;
+    use std::rc::Rc;
+    use std::time::Duration;
+
+    #[derive(Clone)]
+    struct Held {
+        core: Core,
+        form: Rc<Cell<Option<forms::WalletForm>>>,
+    }
+
+    fn app(held: Held) -> Element {
+        let core = use_hook(|| CopyValue::new(held.core.clone()));
+        let forms = use_forms();
+        use_forgetting_on_lock(core, forms);
+        held.form.set(Some(forms.wallet));
+        rsx! {}
+    }
+
+    /// A lock the core made by itself, as auto-lock and the tray do.
+    #[tokio::test]
+    async fn a_lock_the_window_did_not_ask_for_wipes_what_add_wallet_holds() {
+        let kit = app_core::testing::kit();
+        kit.core.create_vault("pw").unwrap();
+        let form = Rc::new(Cell::new(None));
+        let mut dom = VirtualDom::new_with_props(
+            app,
+            Held {
+                core: kit.core.clone(),
+                form: form.clone(),
+            },
+        );
+        dom.rebuild_in_place();
+        let wallet = form.get().unwrap();
+        dom.in_runtime(|| {
+            let (mut secret, mut passphrase, mut open) =
+                (wallet.secret, wallet.passphrase, wallet.modal_open);
+            secret.set("twelve words".into());
+            passphrase.set("and a passphrase".into());
+            open.set(true);
+        });
+
+        kit.core.lock();
+        let _ = tokio::time::timeout(Duration::from_millis(200), dom.wait_for_work()).await;
+
+        dom.in_runtime(|| {
+            assert!(wallet.secret.peek().is_empty());
+            assert!(wallet.passphrase.peek().is_empty());
+            assert!(!*wallet.modal_open.peek());
+        });
+    }
 }
