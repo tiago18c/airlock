@@ -7,7 +7,7 @@
 //! candidate of the requested kinds with no discriminators, that candidate is
 //! the match, as in TypeScript.
 
-use crate::discriminators::match_discriminators;
+use crate::discriminators::{match_discriminators, LinkedDiscriminators};
 use codama_dynamic_codecs::struct_type_node_from_instruction_arguments;
 use codama_nodes::{NestedTypeNodeTrait, Node, ProgramNode, RootNode, StructTypeNode, TypeNode};
 use codama_visitors_core::DynamicResult as CodamaResult;
@@ -52,6 +52,7 @@ pub fn identify_data(
     kinds: &[ParsableKind],
 ) -> CodamaResult<Option<NodePath>> {
     let program = &root.program;
+    let mut linked = LinkedDiscriminators::default();
 
     if kinds.contains(&ParsableKind::Account) {
         for account in &program.accounts {
@@ -59,7 +60,13 @@ pub fn identify_data(
                 continue;
             }
             let struct_type = account.data.get_nested_type_node().clone();
-            if match_discriminators(bytes, &account.discriminators, Some(&struct_type), root)? {
+            if match_discriminators(
+                bytes,
+                &account.discriminators,
+                Some(&struct_type),
+                root,
+                &mut linked,
+            )? {
                 return Ok(Some(node_path(root, program, account.clone().into())));
             }
         }
@@ -71,7 +78,13 @@ pub fn identify_data(
                 continue;
             }
             let struct_type = resolve_struct_type(&event.data);
-            if match_discriminators(bytes, &event.discriminators, struct_type.as_ref(), root)? {
+            if match_discriminators(
+                bytes,
+                &event.discriminators,
+                struct_type.as_ref(),
+                root,
+                &mut linked,
+            )? {
                 return Ok(Some(node_path(root, program, event.clone().into())));
             }
         }
@@ -83,7 +96,13 @@ pub fn identify_data(
                 continue;
             }
             let struct_type = struct_type_node_from_instruction_arguments(&instruction.arguments);
-            if match_discriminators(bytes, &instruction.discriminators, Some(&struct_type), root)? {
+            if match_discriminators(
+                bytes,
+                &instruction.discriminators,
+                Some(&struct_type),
+                root,
+                &mut linked,
+            )? {
                 return Ok(Some(node_path(root, program, instruction.clone().into())));
             }
         }

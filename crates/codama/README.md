@@ -209,6 +209,8 @@ Display never changes signed bytes. Codecs walk the type tree and ignore display
 
 **String slices count chars, like JavaScript `String.slice`.** They are not byte offsets.
 
+**An IDL cannot make a codec run away.** The IDL may come from the chain, written by whoever controls the program. A codec visits at most `MAX_TYPE_NODES` type nodes, `MAX_TYPE_DEPTH` deep, links followed, and reads at most `MAX_EMPTY_ITEMS` list items that consume no bytes. One identification reads at most `MAX_LINKED_DISCRIMINATORS` discriminators whose type links elsewhere. Past any of these it fails, so a caller reads the instruction raw. Kit has none of them: a type that links to itself overflows its stack.
+
 **Identification misses return `None`, not an error.** `parse_instruction` and `parse_*_data` return `Ok(None)` when no discriminator matches. `get_instruction_display` returns `None` when the path does not end in an instruction node. A program whose only candidate of the kinds asked for has no discriminators (memo v4's one instruction) is the match for any bytes, as in TypeScript; the bytes may still fail to decode.
 
 **Large IDLs are slow in debug.** Parsing the Token-2022 fixture dominates `spl_fixtures`. Display metadata does not change the wire bytes those vectors check.

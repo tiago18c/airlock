@@ -19,6 +19,14 @@ pub trait Visitor<T> {
         Err(CodamaError::UnsupportedNodeKind(kind.to_string()))
     }
 
+    /// Called before each [`TypeNode`] is visited, with
+    /// [`leave_type`](Visitor::leave_type) after it. A visitor that follows
+    /// links walks whatever the IDL describes, so it can refuse to go on here.
+    fn enter_type(&mut self) -> CodamaResult<()> {
+        Ok(())
+    }
+    fn leave_type(&mut self) {}
+
     // Top-level nodes.
     fn visit_root(&mut self, node: &RootNode) -> CodamaResult<T> {
         self.visit_fallback(node.kind())
@@ -438,10 +446,13 @@ macro_rules! standalone_type_node_arms {
 
 impl VisitableNode for TypeNode {
     fn accept<T, V: Visitor<T> + ?Sized>(&self, v: &mut V) -> CodamaResult<T> {
-        match self {
+        v.enter_type()?;
+        let visited = match self {
             TypeNode::Link(n) => v.visit_defined_type_link(n),
             other => standalone_type_node_arms!(TypeNode, other, v),
-        }
+        };
+        v.leave_type();
+        visited
     }
 }
 
