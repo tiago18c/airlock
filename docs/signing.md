@@ -458,16 +458,16 @@ A key signs bytes and cannot tell what they are for, so `wallet_core::site_messa
 **`signMessage`** needs an account connected to the site. These are refused before the modal opens:
 
 - Bytes that read as a transaction or its message, in any format, even with more bytes after them. Signing those could move funds. A programmatic signer's authorization is a v1 message, so this covers it.
-- Exactly 32 bytes that are not text. A Vector authority signs a bare digest of that size, which looks like nothing else. The same hash written out as text can be signed.
+- Exactly 32 bytes, unless all of them are hex digits. A Vector authority signs a bare digest of that size, which looks like nothing else. Reading as text is no defence: a site that builds the transaction can vary it until its digest reads as text, which takes about 2^36 tries. A digest that is all hex digits takes about 2^113, so a nonce written as 32 hex digits can be signed, and a hash written out in full is longer. This protects a hot key that is also a Vector authority only while the app is the one refusing. The digest itself carries no domain separation, which only a change to the program can add.
 - A message in Solana's offchain format, which Airlock does not sign yet.
 - A Sign In With Solana message for a domain other than the site's.
 
-The modal shows the message as text, or in hex with a warning when it is not text or holds control characters that could hide what it says. The signature is over exactly those bytes, with nothing added.
+The modal shows the message as text, or in hex with a warning when it is not text or holds characters that could hide what it says or put it in another order: control characters, bidirectional overrides, and format characters that draw nothing. The signature is over exactly those bytes, with nothing added.
 
 **`signIn`** always opens the modal, and needs no connection first. The app writes the message itself, line for line as `@solana/wallet-standard-util` does, so the site's own check passes, and shows it. These are refused before the modal opens:
 
 - A `domain` that is not the browser's host for the origin, port included. With no `domain`, that host is used.
-- A field holding a line break, which could write lines of its own into the message.
+- A field holding a line break, which could write lines of its own into the message, or characters that could hide what it says.
 - An `address` with no key on this device.
 - `useOffchainMessage`. The feature is advertised as version 1.0.0, which does not promise it.
 
