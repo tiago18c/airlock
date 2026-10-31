@@ -1,9 +1,13 @@
+# Version updates wait a week after a release. Security updates do not: the
+# cooldown does not apply to them. See docs/releasing.md#updating-dependencies.
 version: 2
 updates:
   - package-ecosystem: cargo
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 5
     labels: [dependencies, no-changelog]
     groups:
@@ -18,10 +22,14 @@ updates:
     directory: /extension
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     labels: [dependencies, no-changelog]
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     labels: [dependencies, no-changelog]
