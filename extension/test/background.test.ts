@@ -82,6 +82,9 @@ function nextId(page: FakePort, method: string, params?: unknown, id = "page-id"
   return posted[posted.length - 1].id;
 }
 
+/** The origins the app last heard have a page open. */
+const lastListed = () => new Set<string>(toApp("pages").at(-1).params.origins);
+
 /** A new rate window, so that only what a test does counts. */
 function newWindow() {
   mock.timers.tick(RATE_WINDOW_MS);
@@ -319,10 +322,10 @@ test("the app hears the pages only when the list of origins changes", async () =
 
   const other = pageOf("https://new-origin.test");
   assert.equal(told(), start + 1);
-  assert.ok(toApp("pages").at(-1).params.origins.includes("https://new-origin.test"));
+  assert.ok(lastListed().has("https://new-origin.test"));
   other.close();
   assert.equal(told(), start + 2);
-  assert.ok(!toApp("pages").at(-1).params.origins.includes("https://new-origin.test"));
+  assert.ok(!lastListed().has("https://new-origin.test"));
 });
 
 test("a host that went away is told the pages again when a new one starts", async () => {
@@ -334,7 +337,7 @@ test("a host that went away is told the pages again when a new one starts", asyn
 
   // The list has not changed, and the new host has still not heard it.
   page.onMessage.fire({ id: "again", method: "status" });
-  assert.ok(toApp("pages").at(-1).params.origins.includes("https://reborn.test"));
+  assert.ok(lastListed().has("https://reborn.test"));
   native.onMessage.fire({ v: 1, id: toApp("status").at(-1).id, result: {} });
   await settle();
 });
