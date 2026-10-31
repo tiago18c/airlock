@@ -74,15 +74,17 @@ The committed extension `key` is a development key, so the unpacked extension id
 
 | OS | Endpoint | Current user only |
 | --- | --- | --- |
-| Windows | named pipe `\\.\pipe\airlock-bridge-<user>` | the pipe's ACL grants only its owner |
-| Linux | `$XDG_RUNTIME_DIR/airlock/bridge.sock` (or `airlock-<uid>` in the temp folder) | directory `0700`, socket `0600` |
+| Windows | named pipe `\\.\pipe\airlock-bridge-<user>` | the pipe's ACL grants only its owner, and whoever connects checks the owner |
+| Linux | `$XDG_RUNTIME_DIR/airlock/bridge.sock` (or `airlock-<uid>` in the temp folder) | directory `0700`, socket `0600`, and whoever connects checks the peer's user |
 | macOS | `~/Library/Application Support/airlock/bridge.sock` | directory `0700`, socket `0600` |
 
 The [`interprocess`](https://crates.io/crates/interprocess) local socket API covers all three, so the code is shared (`bridge_host::endpoint`). A socket file left by a killed app, which nothing answers, is removed before binding.
 
+These names can be worked out by anyone, and another account can take one first: make the pipe, or make the folder in the temp folder. So `bridge_host::endpoint::connect` writes nothing until it knows this user holds the socket, by the pipe's owner on Windows and the peer's user elsewhere. The app refuses a folder for the socket that this user does not own, or that is a link. `bridge-host` treats a socket someone else holds as an app that is not running, and logs which it was. A connection that takes more than five seconds is given up on.
+
 ### Desktop app
 
-The listener is `app-desktop`'s bridge, behind the `bridge` feature that only the online app turns on. It binds the socket at startup, before the window opens, and a second launch that cannot bind it sends `show` and exits. The data folder's own lock is what keeps two processes off one vault ([architecture](architecture.md)).
+The listener is `app-desktop`'s bridge, behind the `bridge` feature that only the online app turns on. It binds the socket at startup, before the window opens. A launch that cannot bind it sends `show`, and exits if that is answered within five seconds. Otherwise something else holds the socket: the app starts without the bridge, and the Extension chip says so. The data folder's own lock is what keeps two processes off one vault ([architecture](architecture.md)).
 
 - `status` is answered at once. So is `disconnect`, which ends the site's connection and keeps what it was granted.
 - A `connect` from a site that has a grant holding the current wallet is answered at once, with the accounts it was granted and the current wallet first. Any other `connect` with `silent` gets no accounts, and never opens the modal, including from a site that disconnected. See [Connections](signing.md#connect).
@@ -183,6 +185,7 @@ The extension has no keys and approves nothing. A malicious update, a hijacked s
 - **What a site learns of the node.** A failed send tells the site why, but never the node's address, which can hold an API key: the client's error has it taken out (`wallet_rpc`).
 - **A page that floods.** The [limits](#limits) keep a page from filling the app with requests, from stalling the host for every other site with one oversized message, and from pushing the record of a transaction out of the notices. A page nobody has used cannot open a connect or sign-in modal.
 - **Wallet impersonation in the page.** Any extension can register a wallet with the same name. The defense is approval in the desktop window, not in browser UI.
+- **Another account on the machine.** It can take the socket's name first, and then hear what every site asks and answer in the app's place. The host and a second launch refuse a socket this user does not hold, and write nothing to it. It can still keep the app from serving sites, for as long as it holds the name, and the app says so.
 - **Local processes on the socket.** The socket is limited to the current user, and every signature is approved in the desktop window, and so is every connect the user has not already approved for that origin. A remembered connection reconnects without asking, and that only shows the site public keys it was given before. Grants and blocks are in `workspace.json` in plain text, so anyone who can read the data folder sees which sites were connected to which addresses. The app does not check which process connected, and user-level malware can rewrite the host manifest or binary anyway. That is what the offline device is for.
 - **A compromised online app.** It can produce a malicious rebuild. The offline device reads the transaction on its own, so its review must stay complete.
 - **The bridge on the offline device.** Airlock Offline does not link the bridge, and no installer runs `install`.

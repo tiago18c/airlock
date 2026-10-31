@@ -29,7 +29,9 @@ pub fn relay_stdio() -> io::Result<()> {
                 tracing::info!(target: "airlock::bridge", "connected to the desktop app");
                 duplex(stream);
             }
-            Err(_) => {
+            // To a site, a socket someone else holds is an app that is not
+            // running. The log says which.
+            Err(err) => {
                 let message = {
                     let mut input = io::stdin().lock();
                     let Some(message) = read_frame(&mut input)? else {
@@ -37,7 +39,11 @@ pub fn relay_stdio() -> io::Result<()> {
                     };
                     message
                 };
-                tracing::warn!(target: "airlock::bridge", "desktop app is not running");
+                tracing::warn!(
+                    target: "airlock::bridge",
+                    error = %err,
+                    "desktop app is not running"
+                );
                 let mut output = io::stdout().lock();
                 write_frame(
                     &mut output,

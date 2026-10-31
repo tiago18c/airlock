@@ -12,6 +12,7 @@ use crate::bridge::Bridge;
 pub fn ExtensionChip() -> Element {
     let bridge = use_context::<Bridge>();
     let manage = use_context::<ConnectionsModal>();
+    let unavailable = bridge.unavailable().map(str::to_owned);
     let mut connected = use_signal(|| *bridge.subscribe_extension().borrow());
     use_future(move || {
         let mut extension = bridge.subscribe_extension();
@@ -24,7 +25,9 @@ pub fn ExtensionChip() -> Element {
     });
 
     let n = connected();
-    let (class, status) = if n > 0 {
+    let (class, status) = if unavailable.is_some() {
+        ("status net-chip offline", "Unavailable")
+    } else if n > 0 {
         ("status net-chip online", "Connected")
     } else {
         ("status net-chip idle", "Not connected")
@@ -41,7 +44,10 @@ pub fn ExtensionChip() -> Element {
                 dl {
                     dt { "Status" }
                     dd { "{status}" }
-                    if n > 0 {
+                    if let Some(why) = unavailable {
+                        dt { "Why" }
+                        dd { class: "net-err", "{why}" }
+                    } else if n > 0 {
                         dt { "Browsers" }
                         dd { "{n}" }
                     } else {
