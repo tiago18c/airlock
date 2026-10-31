@@ -25,7 +25,7 @@ pub enum SiteMessageError {
         "These bytes could be read as a Solana transaction, so signing them could move funds."
     )]
     Transaction,
-    #[error("These 32 bytes could be a digest that authorizes a Vector account, so they are not signed as a message.")]
+    #[error("These 32 bytes could be a digest that authorizes a Vector account, so they are not signed as a message. A nonce of this length can be signed as 32 hex digits.")]
     Digest,
     #[error("These bytes are an offchain message, which Airlock does not sign yet.")]
     Offchain,
@@ -35,6 +35,8 @@ pub enum SiteMessageError {
     WrongDomain { asked: String, origin: String },
     #[error("The {0} of a sign-in cannot hold a line break.")]
     LineBreak(&'static str),
+    #[error("The {0} of a sign-in holds characters that would hide what it says.")]
+    HiddenText(&'static str),
     #[error("The sign-in has no site address to name.")]
     NoDomain,
 }
@@ -51,7 +53,10 @@ pub fn check_message(bytes: &[u8], origin: &str) -> Result<(), SiteMessageError>
         return Err(SiteMessageError::Transaction);
     }
     // A Vector authority signs a bare digest, which looks like nothing else.
-    if bytes.len() == DIGEST_BYTES && message_text(bytes).is_none() {
+    // Reading as text proves nothing: whoever builds the transaction can vary
+    // it until its digest does, in about 2^36 tries. A digest that is all hex
+    // digits takes about 2^113, and that is how a nonce is often written.
+    if bytes.len() == DIGEST_BYTES && !bytes.iter().all(u8::is_ascii_hexdigit) {
         return Err(SiteMessageError::Digest);
     }
     // A site must not get a sign-in to another site through a plain message.
@@ -92,12 +97,38 @@ fn reads_as_transaction(bytes: &[u8]) -> bool {
 }
 
 /// How a message is shown: as text when it reads as text, and bytes otherwise.
-/// Control characters could hide what the text says.
 pub fn message_text(bytes: &[u8]) -> Option<&str> {
     let text = std::str::from_utf8(bytes).ok()?;
-    text.chars()
-        .all(|c| !c.is_control() || matches!(c, '\n' | '\r' | '\t'))
-        .then_some(text)
+    (!text.chars().any(hides_text)).then_some(text)
+}
+
+/// Whether `c` could hide what text says, or put it in another order than it
+/// is signed in: a control character, or a format character that draws
+/// nothing. A line break and a tab are plain to see, and the joiner inside an
+/// emoji changes no meaning.
+fn hides_text(c: char) -> bool {
+    if matches!(c, '\n' | '\r' | '\t') {
+        return false;
+    }
+    c.is_control()
+        || matches!(
+            c,
+            '\u{ad}'
+                | '\u{34f}'
+                | '\u{61c}'
+                | '\u{115f}'..='\u{1160}'
+                | '\u{17b4}'..='\u{17b5}'
+                | '\u{180b}'..='\u{180f}'
+                | '\u{200b}'..='\u{200c}'
+                | '\u{200e}'..='\u{200f}'
+                | '\u{2028}'..='\u{202e}'
+                | '\u{2060}'..='\u{206f}'
+                | '\u{3164}'
+                | '\u{feff}'
+                | '\u{ffa0}'
+                | '\u{fff9}'..='\u{fffb}'
+                | '\u{e0000}'..='\u{e0fff}'
+        )
 }
 
 /// The host of an origin, with its port: `https://a.test:8080` is `a.test:8080`.
@@ -158,17 +189,12 @@ impl SignIn {
             ("request ID", &self.request_id),
         ];
         for (name, value) in lines {
-            if value.as_deref().is_some_and(has_line_break) {
-                return Err(SiteMessageError::LineBreak(name));
+            if let Some(value) = value {
+                check_field(name, value)?;
             }
         }
-        if self
-            .resources
-            .iter()
-            .flatten()
-            .any(|resource| has_line_break(resource))
-        {
-            return Err(SiteMessageError::LineBreak("resources"));
+        for resource in self.resources.iter().flatten() {
+            check_field("resources", resource)?;
         }
         Ok(())
     }
@@ -215,8 +241,16 @@ impl SignIn {
     }
 }
 
-fn has_line_break(text: &str) -> bool {
-    text.contains(['\n', '\r'])
+/// Refuse a field that could write lines of its own into the message, or hide
+/// what it says. The line separators of Unicode draw a line break too.
+fn check_field(name: &'static str, text: &str) -> Result<(), SiteMessageError> {
+    if text.contains(['\n', '\r', '\u{85}', '\u{2028}', '\u{2029}']) {
+        return Err(SiteMessageError::LineBreak(name));
+    }
+    if text.chars().any(hides_text) {
+        return Err(SiteMessageError::HiddenText(name));
+    }
+    Ok(())
 }
 
 fn filled(value: &Option<String>) -> Option<&str> {
@@ -332,13 +366,26 @@ mod tests {
     }
 
     #[test]
-    fn a_bare_digest_is_refused_and_its_text_form_is_not() {
+    fn a_bare_digest_is_refused_even_if_it_reads_as_text() {
         assert_eq!(
             check_message(&[0xfe; 32], ORIGIN),
             Err(SiteMessageError::Digest)
         );
+        // About one digest in 2^36 reads as text, and a site can grind for one.
+        let reads = b"k7$Fz!mQ2_xR9@vL4#tN8&pW1*sY6%uC";
+        assert_eq!(reads.len(), 32);
+        assert!(message_text(reads).is_some());
+        assert_eq!(check_message(reads, ORIGIN), Err(SiteMessageError::Digest));
+
         assert_eq!(check_message(&[0xfe; 31], ORIGIN), Ok(()));
-        assert_eq!(check_message(&[b'a'; 32], ORIGIN), Ok(()));
+        assert_eq!(check_message(&[0xfe; 33], ORIGIN), Ok(()));
+    }
+
+    #[test]
+    fn a_nonce_of_32_hex_digits_may_be_signed() {
+        let nonce = b"0123456789abcdefABCDEF0123456789";
+        assert_eq!(nonce.len(), 32);
+        assert_eq!(check_message(nonce, ORIGIN), Ok(()));
     }
 
     #[test]
@@ -370,6 +417,28 @@ mod tests {
         );
         assert_eq!(message_text(b"hidden\x1b[2Jtext"), None);
         assert_eq!(message_text(&[0xff, 0xfe]), None);
+    }
+
+    #[test]
+    fn characters_that_hide_or_reorder_text_show_as_bytes() {
+        for hiding in [
+            "pay \u{202e}000,1 ot",
+            "isolate \u{2066}this\u{2069}",
+            "zero\u{200b}width",
+            "soft\u{ad}hyphen",
+            "line\u{2028}separator",
+            "\u{feff}bom",
+            "tag\u{e0041}",
+        ] {
+            assert_eq!(message_text(hiding.as_bytes()), None, "{hiding:?}");
+        }
+        for plain in [
+            "caf\u{e9}",
+            "\u{65e5}\u{672c}\u{8a9e}",
+            "family \u{1f468}\u{200d}\u{1f469}",
+        ] {
+            assert_eq!(message_text(plain.as_bytes()), Some(plain));
+        }
     }
 
     #[test]
@@ -414,6 +483,34 @@ mod tests {
         assert_eq!(
             resource.check(ORIGIN),
             Err(SiteMessageError::LineBreak("resources"))
+        );
+        let separator = SignIn {
+            statement: Some("Hello\u{2028}URI: https://bank.example".into()),
+            ..SignIn::default()
+        };
+        assert_eq!(
+            separator.check(ORIGIN),
+            Err(SiteMessageError::LineBreak("statement"))
+        );
+    }
+
+    #[test]
+    fn a_field_cannot_hide_what_it_says() {
+        let statement = SignIn {
+            statement: Some("Sign in to \u{202e}moc.knab".into()),
+            ..SignIn::default()
+        };
+        assert_eq!(
+            statement.check(ORIGIN),
+            Err(SiteMessageError::HiddenText("statement"))
+        );
+        let resource = SignIn {
+            resources: Some(vec!["https://a\u{200b}".into()]),
+            ..SignIn::default()
+        };
+        assert_eq!(
+            resource.check(ORIGIN),
+            Err(SiteMessageError::HiddenText("resources"))
         );
     }
 
