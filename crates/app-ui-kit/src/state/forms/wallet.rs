@@ -60,4 +60,12 @@ impl WalletForm {
         creating.set(false);
         error.set(None);
     }
+
+    /// The vault locked: wipe what is being typed or shown, and close the
+    /// modal, which wipes what its own forms hold.
+    pub fn forget_secrets(&self) {
+        self.clear();
+        let mut modal_open = self.modal_open;
+        modal_open.set(false);
+    }
 }
