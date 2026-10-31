@@ -115,6 +115,9 @@ pub enum VaultState {
     Uninitialized,
     Locked,
     Unlocked,
+    /// The vault's file could not be read. There may well be a vault, so none
+    /// is offered in its place. Unlocking tries the file again.
+    Unreadable,
 }
 
 /// What the user chose in Settings.
@@ -182,7 +185,7 @@ pub fn settings_from(workspace: &AppWorkspace) -> Arc<Settings> {
 pub fn shown_wallets<'a>(vault: &'a AppVault, list: &'a AppWalletList) -> Option<&'a VaultData> {
     match vault_state_from(vault) {
         VaultState::Unlocked => Vault::data(vault).ok(),
-        VaultState::Locked => list.data(),
+        VaultState::Locked | VaultState::Unreadable => list.data(),
         VaultState::Uninitialized => None,
     }
 }
@@ -219,11 +222,12 @@ pub fn notices_from(notices: &AppNotices) -> Arc<Notices> {
 }
 
 pub fn vault_state_from(vault: &AppVault) -> VaultState {
-    if !vault.is_initialized().unwrap_or(false) {
-        VaultState::Uninitialized
-    } else if vault.is_unlocked() {
-        VaultState::Unlocked
-    } else {
-        VaultState::Locked
+    if vault.is_unlocked() {
+        return VaultState::Unlocked;
+    }
+    match vault.is_initialized() {
+        Ok(true) => VaultState::Locked,
+        Ok(false) => VaultState::Uninitialized,
+        Err(_) => VaultState::Unreadable,
     }
 }

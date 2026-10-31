@@ -192,46 +192,153 @@ impl SealKey {
     }
 }
 
-/// Open a sealed file with its password, and keep the key for the saves after.
-pub(crate) fn open(password: &str, file: &[u8]) -> Result<(SealKey, Vec<u8>), VaultError> {
-    let Envelope { header, ciphertext } =
-        serde_json::from_slice(file).map_err(|_| VaultError::UnsupportedVersion)?;
-    if header.format != FORMAT
-        || header.version != VERSION
-        || header.kdf.name != KDF
-        || header.cipher.name != CIPHER
-    {
-        return Err(VaultError::UnsupportedVersion);
+/// A sealed file, read as far as it can be without the password.
+struct Sealed {
+    header: Header,
+    ciphertext: Vec<u8>,
+    params: KdfParams,
+    salt: [u8; SALT_LEN],
+}
+
+/// Why a file could not even be tried with the password.
+enum Unsealable {
+    /// It is not a sealed file at all.
+    Damaged,
+    /// It says it is another build's, and nothing here can say more about it.
+    Other(VaultError),
+}
+
+impl From<Unsealable> for VaultError {
+    fn from(why: Unsealable) -> Self {
+        match why {
+            Unsealable::Damaged => VaultError::UnsupportedVersion,
+            Unsealable::Other(err) => err,
+        }
     }
-    let salt: [u8; SALT_LEN] = header
-        .kdf
-        .salt
-        .as_slice()
-        .try_into()
-        .map_err(|_| VaultError::UnsupportedVersion)?;
-    if header.cipher.nonce.len() != NONCE_LEN {
-        return Err(VaultError::UnsupportedVersion);
+}
+
+impl Sealed {
+    fn read(file: &[u8]) -> Result<Self, Unsealable> {
+        let Envelope { header, ciphertext } =
+            serde_json::from_slice(file).map_err(|_| Unsealable::Damaged)?;
+        if header.format != FORMAT
+            || header.version != VERSION
+            || header.kdf.name != KDF
+            || header.cipher.name != CIPHER
+        {
+            return Err(Unsealable::Other(VaultError::UnsupportedVersion));
+        }
+        let salt: [u8; SALT_LEN] = header
+            .kdf
+            .salt
+            .as_slice()
+            .try_into()
+            .map_err(|_| Unsealable::Damaged)?;
+        if header.cipher.nonce.len() != NONCE_LEN {
+            return Err(Unsealable::Damaged);
+        }
+        let params = KdfParams {
+            m_kib: header.kdf.memory_kib,
+            t: header.kdf.iterations,
+            p: header.kdf.parallelism,
+        }
+        .checked()
+        .map_err(Unsealable::Other)?;
+        Ok(Self {
+            header,
+            ciphertext,
+            params,
+            salt,
+        })
     }
-    let params = KdfParams {
-        m_kib: header.kdf.memory_kib,
-        t: header.kdf.iterations,
-        p: header.kdf.parallelism,
+
+    fn derive(&self, password: &str) -> Result<Zeroizing<[u8; KEY_LEN]>, VaultError> {
+        derive_key(password, &self.salt, self.params)
     }
-    .checked()?;
-    let key = derive_key(password, &salt, params)?;
-    let cipher = XChaCha20Poly1305::new_from_slice(key.as_ref())
-        .map_err(|e| VaultError::Crypto(e.to_string()))?;
-    let aad = header.aad()?;
-    let opened = cipher
-        .decrypt(
-            XNonce::from_slice(&header.cipher.nonce),
-            Payload {
-                msg: &ciphertext,
-                aad: &aad,
+
+    fn decrypt(&self, key: &[u8; KEY_LEN]) -> Result<Vec<u8>, VaultError> {
+        let cipher = XChaCha20Poly1305::new_from_slice(key)
+            .map_err(|e| VaultError::Crypto(e.to_string()))?;
+        let aad = self.header.aad()?;
+        cipher
+            .decrypt(
+                XNonce::from_slice(&self.header.cipher.nonce),
+                Payload {
+                    msg: &self.ciphertext,
+                    aad: &aad,
+                },
+            )
+            .map_err(|_| VaultError::UnlockFailed)
+    }
+
+    /// The vault this opens, under `key`.
+    fn opened(
+        self,
+        key: Zeroizing<[u8; KEY_LEN]>,
+        plaintext: Vec<u8>,
+        from_backup: bool,
+    ) -> Opened {
+        Opened {
+            key: SealKey {
+                params: self.params,
+                salt: self.salt,
+                key,
             },
-        )
-        .map_err(|_| VaultError::UnlockFailed)?;
-    Ok((SealKey { params, salt, key }, opened))
+            plaintext,
+            from_backup,
+        }
+    }
+}
+
+/// What opening a stored vault found.
+pub(crate) struct Opened {
+    /// For the saves after.
+    pub key: SealKey,
+    pub plaintext: Vec<u8>,
+    /// The file was damaged, and this is what its backup holds.
+    pub from_backup: bool,
+}
+
+/// Open a sealed file with its password.
+pub(crate) fn open(password: &str, file: &[u8]) -> Result<Opened, VaultError> {
+    open_or_backup(password, file, None)
+}
+
+/// Open `file` with its password, or `backup` when `file` is damaged.
+///
+/// Damage to the ciphertext and a wrong password look the same, so a file
+/// that does not open is tried against its backup. Both are sealed under one
+/// key, so that takes no second derivation and a wrong password costs what it
+/// always did. A backup under another salt is from before a password change,
+/// and the old password must not open anything: it is tried only when `file`
+/// is not a sealed file at all, with no salt to compare.
+pub(crate) fn open_or_backup(
+    password: &str,
+    file: &[u8],
+    backup: Option<&[u8]>,
+) -> Result<Opened, VaultError> {
+    let older = backup.and_then(|bytes| Sealed::read(bytes).ok());
+    let sealed = match (Sealed::read(file), older) {
+        (Ok(sealed), older) => (sealed, older),
+        (Err(Unsealable::Damaged), Some(older)) => {
+            let key = older.derive(password)?;
+            let plaintext = older.decrypt(&key)?;
+            return Ok(older.opened(key, plaintext, true));
+        }
+        (Err(why), _) => return Err(why.into()),
+    };
+    let (sealed, older) = sealed;
+    let key = sealed.derive(password)?;
+    match sealed.decrypt(&key) {
+        Ok(plaintext) => Ok(sealed.opened(key, plaintext, false)),
+        Err(err) => match older {
+            Some(older) if older.salt == sealed.salt && older.params == sealed.params => {
+                let plaintext = older.decrypt(&key).map_err(|_| err)?;
+                Ok(older.opened(key, plaintext, true))
+            }
+            _ => Err(err),
+        },
+    }
 }
 
 mod b64 {
@@ -281,14 +388,14 @@ mod tests {
         assert_eq!(value["kdf"]["parallelism"], 1);
         assert_eq!(value["cipher"]["name"], "xchacha20-poly1305");
         assert!(value["ciphertext"].is_string());
-        assert_eq!(open("pw", &file).unwrap().1, b"hello");
+        assert_eq!(open("pw", &file).unwrap().plaintext, b"hello");
     }
 
     #[test]
     fn open_reads_kdf_parameters_from_the_header() {
         let file = small(b"hello");
         assert_eq!(json(&file)["kdf"]["memoryKib"], 8);
-        assert_eq!(open("pw", &file).unwrap().1, b"hello");
+        assert_eq!(open("pw", &file).unwrap().plaintext, b"hello");
         assert!(matches!(open("nope", &file), Err(VaultError::UnlockFailed)));
     }
 
@@ -314,7 +421,7 @@ mod tests {
         // Spacing is not part of what is sealed.
         let compact = serde_json::to_vec(&json(&file)).unwrap();
         assert_ne!(compact, file);
-        assert_eq!(open("pw", &compact).unwrap().1, b"hello");
+        assert_eq!(open("pw", &compact).unwrap().plaintext, b"hello");
     }
 
     #[test]
@@ -342,16 +449,80 @@ mod tests {
         }
     }
 
+    /// `again`, and `hello` as what its backup holds, under one key.
+    fn saved_twice() -> (Vec<u8>, Vec<u8>) {
+        let key = SealKey::with_params("pw", SMALL).unwrap();
+        (key.seal(b"again").unwrap(), key.seal(b"hello").unwrap())
+    }
+
+    /// `file` with the last byte of its ciphertext changed.
+    fn flipped(file: &[u8]) -> Vec<u8> {
+        let mut value = json(file);
+        let mut ciphertext = STANDARD
+            .decode(value["ciphertext"].as_str().unwrap())
+            .unwrap();
+        *ciphertext.last_mut().unwrap() ^= 1;
+        value["ciphertext"] = STANDARD.encode(ciphertext).into();
+        serde_json::to_vec(&value).unwrap()
+    }
+
+    #[test]
+    fn a_whole_file_opens_as_itself_whatever_its_backup_holds() {
+        let (file, backup) = saved_twice();
+        let opened = open_or_backup("pw", &file, Some(&backup)).unwrap();
+        assert_eq!(opened.plaintext, b"again");
+        assert!(!opened.from_backup);
+    }
+
+    #[test]
+    fn a_damaged_file_opens_from_its_backup_with_the_right_password_only() {
+        let (file, backup) = saved_twice();
+        for damaged in [flipped(&file), b"not a sealed file".to_vec(), Vec::new()] {
+            let opened = open_or_backup("pw", &damaged, Some(&backup)).unwrap();
+            assert_eq!(opened.plaintext, b"hello");
+            assert!(opened.from_backup);
+            assert!(matches!(
+                open_or_backup("nope", &damaged, Some(&backup)),
+                Err(VaultError::UnlockFailed)
+            ));
+            assert!(open_or_backup("pw", &damaged, None).is_err());
+        }
+    }
+
+    #[test]
+    fn a_backup_from_before_a_password_change_is_not_tried() {
+        // Under one password here, and each with a salt of its own, which is
+        // how a change leaves them.
+        let before = small(b"old");
+        let after = small(b"new");
+        assert!(matches!(
+            open_or_backup("pw", &flipped(&after), Some(&before)),
+            Err(VaultError::UnlockFailed)
+        ));
+    }
+
+    #[test]
+    fn a_file_of_another_version_is_left_to_its_build() {
+        let (file, backup) = saved_twice();
+        let mut value = json(&file);
+        value["version"] = 2.into();
+        let newer = serde_json::to_vec(&value).unwrap();
+        assert!(matches!(
+            open_or_backup("pw", &newer, Some(&backup)),
+            Err(VaultError::UnsupportedVersion)
+        ));
+    }
+
     #[test]
     fn the_key_kept_from_an_open_seals_what_the_password_opens() {
         let first = small(b"hello");
-        let (key, _) = open("pw", &first).unwrap();
+        let key = open("pw", &first).unwrap().key;
         let second = key.seal(b"again").unwrap();
         let third = key.seal(b"again").unwrap();
         // The same salt and cost, a new nonce each time.
         assert_eq!(json(&second)["kdf"], json(&first)["kdf"]);
         assert_ne!(json(&second)["cipher"], json(&third)["cipher"]);
-        assert_eq!(open("pw", &second).unwrap().1, b"again");
-        assert_eq!(open("pw", &third).unwrap().1, b"again");
+        assert_eq!(open("pw", &second).unwrap().plaintext, b"again");
+        assert_eq!(open("pw", &third).unwrap().plaintext, b"again");
     }
 }
