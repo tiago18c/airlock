@@ -35,9 +35,13 @@ pub enum RpcError {
     Offline,
     #[error("RPC timed out")]
     Timeout,
-    /// No connection to the node could be made.
+    /// No connection to the node could be made, so nothing reached it.
     #[error("The node could not be reached: {0}")]
     Unreachable(String),
+    /// The request may have reached the node, and no answer came back that
+    /// could be read.
+    #[error("The node gave no answer: {0}")]
+    NoAnswer(String),
     /// The node has not reached the slot the read asked for yet.
     #[error("The node has not caught up with the chain yet")]
     Behind,
@@ -49,7 +53,16 @@ impl RpcError {
     /// The node did not answer at all, so asking it again right away would
     /// not answer either. A node that answered with an error is not down.
     pub fn is_down(&self) -> bool {
-        matches!(self, Self::Offline | Self::Timeout | Self::Unreachable(_))
+        matches!(
+            self,
+            Self::Offline | Self::Timeout | Self::Unreachable(_) | Self::NoAnswer(_)
+        )
+    }
+
+    /// A transaction sent with this result may still land: the node did not
+    /// say no, and it may have taken it before the answer was lost.
+    pub fn may_have_gone_out(&self) -> bool {
+        matches!(self, Self::Timeout | Self::NoAnswer(_))
     }
 }
 

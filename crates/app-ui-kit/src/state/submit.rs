@@ -10,8 +10,9 @@ use std::sync::Arc;
 use app_core::FlowId;
 use solana_signature::Signature;
 use wallet_core::{Cluster, RpcError, SolanaRpc};
+use wallet_flows::send::SendFailure;
 
-pub type SubmitFut = Pin<Box<dyn Future<Output = Result<Signature, RpcError>>>>;
+pub type SubmitFut = Pin<Box<dyn Future<Output = Result<Signature, SendFailure>>>>;
 /// Whether each signed transaction handed back to a site landed while it
 /// was watched.
 pub type SiteSendFut = Pin<Box<dyn Future<Output = Vec<(Signature, bool)>>>>;
@@ -100,7 +101,7 @@ impl TxSubmit for NoSubmit {
         _cluster: Cluster,
         _last_valid_height: Option<u64>,
     ) -> SubmitFut {
-        Box::pin(async { Err(RpcError::Offline) })
+        Box::pin(async { Err(SendFailure::Failed(RpcError::Offline.to_string())) })
     }
 
     fn watch_site_send(

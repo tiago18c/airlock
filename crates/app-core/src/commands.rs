@@ -23,6 +23,8 @@ use wallet_core::{
     RosterError, ShareableAccount, SiteGrant, Vault, VaultData, VaultError, WalletId, Workspace,
 };
 
+use bridge_protocol::reply::SendError;
+
 use crate::bridge::{
     BridgeAnswer, BridgeRefused, BridgeReply, BridgeRequest, BridgeState, ConnectedSite,
     SendingRequest, SiteChoice, SiteConnect, SiteSign, SitesView, Taken,
@@ -287,7 +289,7 @@ impl Core {
     pub fn bridge_send_finished(
         &self,
         sending: SendingRequest,
-        results: Vec<Result<[u8; 64], String>>,
+        results: Vec<Result<[u8; 64], SendError>>,
     ) {
         self.inner.bridge_send_finished(sending, results);
     }
@@ -840,7 +842,7 @@ impl Inner {
     pub(crate) fn bridge_begin_send(&self, id: &str, count: usize) -> Option<SendingRequest> {
         let _span = debug_span!(target: CORE, "command", name = "bridge_begin_send").entered();
         // Empty results only to test the fit: one for each transaction.
-        let fits = BridgeAnswer::Sent(vec![Err(String::new()); count]);
+        let fits = BridgeAnswer::Sent(vec![Err(SendError::Failed(String::new())); count]);
         let taken = self.bridge_take(id, Some(&fits))?;
         Some(SendingRequest {
             request: taken.request,
@@ -851,7 +853,7 @@ impl Inner {
     pub(crate) fn bridge_send_finished(
         self: &Arc<Self>,
         sending: SendingRequest,
-        results: Vec<Result<[u8; 64], String>>,
+        results: Vec<Result<[u8; 64], SendError>>,
     ) {
         let _span = debug_span!(target: CORE, "command", name = "bridge_send_finished").entered();
         let answer = BridgeAnswer::Sent(results);
