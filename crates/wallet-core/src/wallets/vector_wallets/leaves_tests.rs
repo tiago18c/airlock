@@ -493,10 +493,12 @@ fn the_nonce_is_where_the_last_signature_was_made_or_one_of_its_digests() {
         vec![[2; 32], [4; 32], [5; 32]]
     );
     assert_eq!(marks.pending_rotation(&account), Some(vec![9; 41]));
+    assert_eq!(marks.pending_rotations(), [(account, vec![9; 41])]);
     assert_eq!(marks.rotation_landed(&account, &[4; 32]), None);
     assert_eq!(marks.rotation_landed(&account, &[5; 32]), Some(vec![9; 41]));
 
     marks.settle_rotation(&account, &[5; 32]).unwrap();
     assert_eq!(marks.pending_rotation(&account), None);
+    assert!(marks.pending_rotations().is_empty());
     assert_eq!(marks.possible_nonces(&account), vec![[5; 32]]);
 }

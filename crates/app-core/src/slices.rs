@@ -10,7 +10,9 @@ use wallet_core::{AddressBook, Cluster, Holdings, Vault, VaultData, WalletId, Wa
 
 use crate::bridge::{BridgeQueue, SitesView};
 use crate::notices::Notices;
-use crate::storage::{AppHoldings, AppNotices, AppVault, AppWalletList, AppWorkspace};
+use crate::storage::{
+    AppHoldings, AppLeafMarks, AppNotices, AppVault, AppWalletList, AppWorkspace,
+};
 
 /// One published value.
 pub struct Slice<T> {
@@ -87,6 +89,9 @@ pub struct WalletsView {
     pub selected: Option<WalletId>,
     pub local_signer_pubkeys: Vec<Pubkey>,
     pub local_vector_accounts: Vec<Pubkey>,
+    /// Rotations signed here that may not have landed: the account, and the key it
+    /// moves to.
+    pub pending_rotations: Vec<(Pubkey, Vec<u8>)>,
 }
 
 /// The cluster in use, and whether its node answered.
@@ -213,7 +218,7 @@ pub fn shown_wallets<'a>(vault: &'a AppVault, list: &'a AppWalletList) -> Option
     }
 }
 
-pub fn wallets_view_from(data: Option<&VaultData>) -> Arc<WalletsView> {
+pub fn wallets_view_from(data: Option<&VaultData>, marks: &AppLeafMarks) -> Arc<WalletsView> {
     let Some(data) = data else {
         return Arc::new(WalletsView::default());
     };
@@ -222,6 +227,7 @@ pub fn wallets_view_from(data: Option<&VaultData>) -> Arc<WalletsView> {
         selected: data.acting_wallet(),
         local_signer_pubkeys: data.local_signer_pubkeys(),
         local_vector_accounts: wallet_core::vector::held_vector_accounts(&data.wallets),
+        pending_rotations: marks.pending_rotations(),
     })
 }
 

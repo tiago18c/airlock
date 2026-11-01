@@ -12,6 +12,7 @@ use std::sync::{Mutex, MutexGuard, PoisonError};
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub(crate) enum Rank {
     Vault,
+    LeafMarks,
     WalletList,
     Workspace,
     Holdings,

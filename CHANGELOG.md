@@ -26,6 +26,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - The program-metadata program's IDL ships with the app, for mainnet and devnet. Review reads the calls that publish or change a program's IDL and other metadata, such as creating, writing, closing or making it immutable, in words, and Build can make them.
 
 ### Changed
+- Your settings and address book, the sites you connected, and the balances read from the chain are now kept in separate files, so a sync no longer rewrites the first, and damage to one file loses only what it holds. If the list of connected sites is damaged, sites ask again and you are told. Files from an earlier version are moved the first time they are saved.
 - IDLs read from the chain are now a cache: at most 64, or 32 MiB, for each network. The oldest goes first, and is read again when something needs it. A file you imported is never let go.
 - A large address book is read a part at a time, so a public node is not asked for more than it allows: about 40 requests every 30 seconds rather than two for every address. Your wallets come first and more often, every address still comes around, and Refresh still reads them all.
 - Unlocking, creating a vault and changing the password no longer hold up the window, and say they are working.

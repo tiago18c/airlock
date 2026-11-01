@@ -42,8 +42,9 @@ use crate::slices::{
     vault_state_from, wallets_view_from, Reach, Slice, Slices,
 };
 use crate::storage::{
-    open_holdings_in, open_notices_in, open_vault_in, open_wallet_list_in, open_workspace_in,
-    AppHoldings, AppNotices, AppVault, AppWalletList, AppWorkspace,
+    open_holdings_in, open_leaf_marks_in, open_notices_in, open_vault_in, open_wallet_list_in,
+    open_workspace_in, AppHoldings, AppLeafMarks, AppNotices, AppVault, AppWalletList,
+    AppWorkspace,
 };
 
 /// How often a deferred store is written at most.
@@ -89,6 +90,9 @@ pub struct Core {
 pub(crate) struct Inner {
     ports: Ports,
     vault: Ranked<AppVault>,
+    /// What each hash-based key has signed with. Written before the vault when a
+    /// leaf is reserved.
+    leaf_marks: Ranked<AppLeafMarks>,
     wallet_list: Ranked<AppWalletList>,
     workspace: Ranked<AppWorkspace>,
     holdings: Ranked<AppHoldings>,
@@ -117,11 +121,18 @@ impl Core {
             warn!(target: VAULT, error = %why, "could not read the vault file");
         }
         let wallet_list = open_wallet_list_in(&*ports.storage);
+        let leaf_marks = open_leaf_marks_in(&*ports.storage);
+        if let Some(problem) = leaf_marks.load_problem() {
+            warn!(target: CORE, store = "leaf marks", problem = %problem.message(), "load problem");
+        }
         let workspace = open_workspace_in(&*ports.storage);
         let holdings = open_holdings_in(&*ports.storage);
         let mut notices = open_notices_in(&*ports.storage);
         if let Some(problem) = workspace.load_problem() {
             warn!(target: CORE, store = "workspace", problem = %problem.message(), "load problem");
+        }
+        if let Some(problem) = workspace.grants_problem() {
+            warn!(target: CORE, store = "grants", problem = %problem.message(), "load problem");
         }
         if let Some(problem) = holdings.load_problem() {
             warn!(target: CORE, store = "holdings", problem = %problem.message(), "load problem");
@@ -134,7 +145,10 @@ impl Core {
 
         let settings = settings_from(&workspace);
         let slices = Slices {
-            wallets: Slice::new(wallets_view_from(shown_wallets(&vault, &wallet_list))),
+            wallets: Slice::new(wallets_view_from(
+                shown_wallets(&vault, &wallet_list),
+                &leaf_marks,
+            )),
             book: Slice::new(book_from(&workspace)),
             holdings: Slice::new(holdings_from(&holdings)),
             network: Slice::new(network_from(&workspace, Reach::default())),
@@ -148,6 +162,7 @@ impl Core {
         let inner = Arc::new(Inner {
             ports,
             vault: Ranked::new(Rank::Vault, vault),
+            leaf_marks: Ranked::new(Rank::LeafMarks, leaf_marks),
             wallet_list: Ranked::new(Rank::WalletList, wallet_list),
             workspace: Ranked::new(Rank::Workspace, workspace),
             holdings: Ranked::new(Rank::Holdings, holdings),
@@ -465,11 +480,23 @@ impl Core {
         self.inner.select_wallet(id)
     }
 
-    /// Read the vault mutably, for the one job that must reserve a signing
-    /// leaf inside it before anything is signed. Publishes the slices after.
+    /// Read the vault mutably. Publishes the slices after.
     pub fn with_vault_mut<R>(&self, f: impl FnOnce(&mut AppVault) -> R) -> R {
         let mut vault = locked(&self.inner.vault);
         let out = f(&mut vault);
+        self.inner.publish_vault(&vault);
+        out
+    }
+
+    /// Read the vault mutably with what each hash-based key has signed with, for
+    /// the jobs that must reserve a signing leaf before anything is signed.
+    /// Publishes the slices after.
+    pub fn with_vault_and_marks<R>(
+        &self,
+        f: impl FnOnce(&mut AppVault, &mut AppLeafMarks) -> R,
+    ) -> R {
+        let mut vault = locked(&self.inner.vault);
+        let out = f(&mut vault, &mut locked(&self.inner.leaf_marks));
         self.inner.publish_vault(&vault);
         out
     }
@@ -505,13 +532,22 @@ impl Core {
     /// copy was kept or saving is blocked.
     pub fn load_problems(&self) -> Vec<String> {
         let mut out = Vec::new();
+        if let Some(problem) = locked(&self.inner.leaf_marks).load_problem() {
+            out.push(problem.message().to_string());
+        }
         if let Some(why) = locked(&self.inner.vault).read_problem() {
             out.push(format!(
                 "Could not read the vault's file ({why}). It was left as it is. Unlocking tries it again."
             ));
         }
-        if let Some(problem) = locked(&self.inner.workspace).load_problem() {
-            out.push(problem.message().to_string());
+        {
+            let workspace = locked(&self.inner.workspace);
+            for problem in [workspace.load_problem(), workspace.grants_problem()]
+                .into_iter()
+                .flatten()
+            {
+                out.push(problem.message().to_string());
+            }
         }
         if let Some(problem) = locked(&self.inner.holdings).load_problem() {
             out.push(problem.message().to_string());
@@ -576,6 +612,7 @@ impl Inner {
     /// Publish the vault, and while it is open keep its wallets without
     /// their secrets for when it is locked.
     fn publish_vault(&self, vault: &AppVault) {
+        let marks = locked(&self.leaf_marks);
         let mut list = locked(&self.wallet_list);
         if let Ok(data) = Vault::data(vault) {
             if let Err(err) = list.keep(data) {
@@ -593,7 +630,7 @@ impl Inner {
         }
         self.slices
             .wallets
-            .publish(wallets_view_from(shown_wallets(vault, &list)));
+            .publish(wallets_view_from(shown_wallets(vault, &list), &marks));
         self.slices.vault.publish(Arc::new(vault_state_from(vault)));
     }
 

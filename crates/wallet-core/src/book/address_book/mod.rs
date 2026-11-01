@@ -19,6 +19,7 @@ mod types;
 #[cfg(test)]
 mod tests;
 
+pub use chain_state::ChainState;
 use groups::*;
 pub use types::*;
 

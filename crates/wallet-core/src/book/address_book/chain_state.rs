@@ -2,7 +2,64 @@
 
 use super::*;
 
+/// What a node said about one address.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReadState {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lamports: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub token_amount: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nonce_hash: Option<solana_hash::Hash>,
+}
+
+/// What a node said, by group and then address.
+pub type ChainState = BTreeMap<String, BTreeMap<String, ReadState>>;
+
 impl AddressBook {
+    /// What was read from the chain, apart from what the user wrote: the part of
+    /// [`clear_chain_state`](Self::clear_chain_state) that is forgotten.
+    pub fn chain_state(&self) -> ChainState {
+        let groups = std::iter::once(&self.local).chain(self.imported.iter());
+        groups
+            .map(|group| {
+                let read = group
+                    .entries
+                    .iter()
+                    .filter_map(|(address, entry)| {
+                        let read = ReadState {
+                            lamports: entry.lamports,
+                            token_amount: entry.token_amount,
+                            nonce_hash: entry.nonce_hash,
+                        };
+                        (read != ReadState::default()).then(|| (address.clone(), read))
+                    })
+                    .collect::<BTreeMap<_, _>>();
+                (group.id.clone(), read)
+            })
+            .filter(|(_, read)| !read.is_empty())
+            .collect()
+    }
+
+    /// Put back what [`chain_state`](Self::chain_state) gave. An address no longer
+    /// in the book is left out.
+    pub fn restore_chain_state(&mut self, state: &ChainState) {
+        let groups = std::iter::once(&mut self.local).chain(self.imported.iter_mut());
+        for group in groups {
+            let Some(read) = state.get(&group.id) else {
+                continue;
+            };
+            for (address, read) in read {
+                if let Some(entry) = group.entries.get_mut(address) {
+                    entry.lamports = read.lamports;
+                    entry.token_amount = read.token_amount;
+                    entry.nonce_hash = read.nonce_hash;
+                }
+            }
+        }
+    }
+
     /// Update a token account that is already in the book. New accounts go to
     /// the holdings cache, not into this list.
     pub fn apply_discovered_token(&mut self, token: DiscoveredTokenAccount) {

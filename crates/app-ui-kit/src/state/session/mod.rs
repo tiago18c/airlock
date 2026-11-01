@@ -1,7 +1,7 @@
 //! The app's shared state: the core's slices as read-only signals, the screen
 //! forms, and the operations the screens perform, which call into the core.
 
-use crate::platform::storage::{AppIdls, AppLeafMarks};
+use crate::platform::storage::AppIdls;
 use crate::state::forms::{Forms, SignLoad};
 use crate::state::proposals::ProposalsOpen;
 use crate::state::pump::Pump;
@@ -109,8 +109,6 @@ pub struct Session {
     /// Programs a node said publish no IDL, by the node's URL. Not asked
     /// again while the app runs.
     pub idl_misses: CopyValue<HashSet<(String, Pubkey)>>,
-    /// XMSS leaf marks; written before the vault when a leaf is reserved.
-    pub leaf_marks: Signal<AppLeafMarks>,
     /// Last XMSS leaf and salt per account, so a second Sign press reuses them.
     pub xmss_retries: Signal<wallet_core::vector::XmssRetryCache>,
     pub tab: Signal<Tab>,
@@ -167,7 +165,6 @@ impl Session {
         idls: Signal<AppIdls>,
         idl_pack: Signal<crate::platform::idl_pack::IdlPackState>,
         idl_misses: CopyValue<HashSet<(String, Pubkey)>>,
-        leaf_marks: Signal<AppLeafMarks>,
         xmss_retries: Signal<wallet_core::vector::XmssRetryCache>,
         tab: Signal<Tab>,
         forms: Forms,
@@ -187,7 +184,6 @@ impl Session {
             idls,
             idl_pack,
             idl_misses,
-            leaf_marks,
             xmss_retries,
             tab,
             forms,
@@ -433,9 +429,6 @@ impl Session {
     pub fn load_problems(&self) -> Vec<String> {
         let mut out = self.core().load_problems();
         if let Some(problem) = self.idls.peek().load_problem() {
-            out.push(problem.message().to_string());
-        }
-        if let Some(problem) = self.leaf_marks.peek().load_problem() {
             out.push(problem.message().to_string());
         }
         out
