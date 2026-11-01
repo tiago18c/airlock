@@ -5,7 +5,7 @@
 //! {
 //!   "format": "airlock-vault",
 //!   "version": 1,
-//!   "kdf": { "name": "argon2id", "memoryKib": 19456, "iterations": 2, "parallelism": 1, "salt": "<base64>" },
+//!   "kdf": { "name": "argon2id", "memoryKib": 262144, "iterations": 3, "parallelism": 1, "salt": "<base64>" },
 //!   "cipher": { "name": "xchacha20-poly1305", "nonce": "<base64>" },
 //!   "ciphertext": "<base64>"
 //! }
@@ -19,15 +19,20 @@
 //! [`SealKey`] while it is open. Each save seals under that key and salt with
 //! a fresh random nonce, so a save does not run Argon2 and nothing has to keep
 //! the password.
+//!
+//! The cost is what stands between a copied file and its password, so it is set
+//! as high as a person will wait for: about a quarter of a second on a fast
+//! desktop and about a second on an ordinary laptop. A vault sealed at less is
+//! raised to it when it is next unlocked.
 
 use crate::VaultError;
-use argon2::{Algorithm, Argon2, Params, Version};
+use argon2::{Algorithm, Argon2, Block, Params, Version};
 use base64::{engine::general_purpose::STANDARD, Engine};
 use chacha20poly1305::aead::{Aead, KeyInit, Payload};
 use chacha20poly1305::{XChaCha20Poly1305, XNonce};
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
-use zeroize::Zeroizing;
+use zeroize::{Zeroize, Zeroizing};
 
 const FORMAT: &str = "airlock-vault";
 const VERSION: u32 = 1;
@@ -47,14 +52,41 @@ struct KdfParams {
 }
 
 impl KdfParams {
-    const CURRENT: Self = Self {
-        m_kib: 19 * 1024,
-        t: 2,
+    /// What a vault is sealed at in a real build. The library has no threads, so
+    /// more lanes would only slow down this device and not an attacker's.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg_attr(feature = "test-hook", allow(dead_code))]
+    const STRONG: Self = Self {
+        m_kib: 256 * 1024,
+        t: 3,
+        p: 1,
+    };
+    /// A browser tab has one thread, which waits for this, and less to spare.
+    #[cfg(target_arch = "wasm32")]
+    #[cfg_attr(feature = "test-hook", allow(dead_code))]
+    const STRONG: Self = Self {
+        m_kib: 64 * 1024,
+        t: 3,
         p: 1,
     };
 
+    #[cfg(not(any(test, feature = "test-hook")))]
+    const CURRENT: Self = Self::STRONG;
+    /// Tests seal many vaults, side by side.
+    #[cfg(any(test, feature = "test-hook"))]
+    const CURRENT: Self = Self {
+        m_kib: 16,
+        t: 1,
+        p: 1,
+    };
+
+    /// The most memory a file can ask for, in kibibytes. The header is only
+    /// checked once the key is derived, so this is what stops a changed file from
+    /// taking all the machine has.
+    const MOST_KIB: u32 = 1024 * 1024;
+
     fn checked(self) -> Result<Self, VaultError> {
-        if !(8..=256 * 1024).contains(&self.m_kib)
+        if !(8..=Self::MOST_KIB).contains(&self.m_kib)
             || !(1..=32).contains(&self.t)
             || !(1..=16).contains(&self.p)
         {
@@ -63,6 +95,11 @@ impl KdfParams {
             ));
         }
         Ok(self)
+    }
+
+    /// Whether a vault sealed at this cost is to be raised to the current one.
+    fn below_current(self) -> bool {
+        self.m_kib < Self::CURRENT.m_kib || self.t < Self::CURRENT.t
     }
 }
 
@@ -118,17 +155,28 @@ fn derive_key(
 ) -> Result<Zeroizing<[u8; KEY_LEN]>, VaultError> {
     let argon_params = Params::new(params.m_kib, params.t, params.p, Some(KEY_LEN))
         .map_err(|e| VaultError::Crypto(e.to_string()))?;
+    // Asked for here: the library ends the process when there is not enough.
+    let blocks = argon_params.block_count();
+    let mut memory: Vec<Block> = Vec::new();
+    memory
+        .try_reserve_exact(blocks)
+        .map_err(|_| VaultError::NoMemory)?;
+    memory.resize(blocks, Block::default());
+    #[cfg(feature = "test-hook")]
+    crate::testing::deriving();
     let argon = Argon2::new(Algorithm::Argon2id, Version::V0x13, argon_params);
     let mut key = Zeroizing::new([0u8; KEY_LEN]);
-    argon
-        .hash_password_into(password.as_bytes(), salt, key.as_mut())
-        .map_err(|e| VaultError::Crypto(e.to_string()))?;
+    let derived =
+        argon.hash_password_into_with_memory(password.as_bytes(), salt, key.as_mut(), &mut memory);
+    // All of it follows from the password.
+    memory.zeroize();
+    derived.map_err(|e| VaultError::Crypto(e.to_string()))?;
     Ok(key)
 }
 
 /// The key of an open vault, with the salt and cost it was derived with.
 /// Wiped when dropped, and never printed.
-pub(crate) struct SealKey {
+pub struct SealKey {
     params: KdfParams,
     salt: [u8; SALT_LEN],
     key: Zeroizing<[u8; KEY_LEN]>,
@@ -143,9 +191,43 @@ impl Drop for SealKey {
 }
 
 impl SealKey {
-    /// A key for a new vault: a fresh salt, at the current cost.
-    pub(crate) fn new(password: &str) -> Result<Self, VaultError> {
+    /// A key for a new vault: a fresh salt, at the current cost. This is what
+    /// takes about a second, so it should not run where a window waits on it.
+    pub fn new(password: &str) -> Result<Self, VaultError> {
         Self::with_params(password, KdfParams::CURRENT)
+    }
+
+    /// Whether what is sealed under this key is to be raised to the current cost.
+    pub(crate) fn below_current(&self) -> bool {
+        self.params.below_current()
+    }
+
+    /// A key at less than the current cost, as a vault from an earlier build has.
+    #[cfg(test)]
+    pub(crate) fn from_earlier_build(password: &str) -> Self {
+        Self::with_params(
+            password,
+            KdfParams {
+                m_kib: 8,
+                t: 1,
+                p: 1,
+            },
+        )
+        .unwrap()
+    }
+
+    /// A key at more than the current cost, as a vault from a later build has.
+    #[cfg(test)]
+    pub(crate) fn from_later_build(password: &str) -> Self {
+        Self::with_params(
+            password,
+            KdfParams {
+                m_kib: 32,
+                t: 2,
+                p: 1,
+            },
+        )
+        .unwrap()
     }
 
     fn with_params(password: &str, params: KdfParams) -> Result<Self, VaultError> {
@@ -377,14 +459,77 @@ mod tests {
     }
 
     #[test]
+    fn a_real_build_asks_for_what_it_says_and_derives_what_it_always_will() {
+        const {
+            assert!(KdfParams::STRONG.m_kib >= 256 * 1024);
+            assert!(KdfParams::STRONG.t >= 3);
+            assert!(KdfParams::STRONG.p == 1);
+        }
+        assert_eq!(KdfParams::STRONG.checked().ok(), Some(KdfParams::STRONG));
+        // Whatever updates the library, what was sealed has to open. Worked out
+        // with the library's own allocation.
+        let key = derive_key("correct horse battery", &[7; SALT_LEN], KdfParams::STRONG).unwrap();
+        assert_eq!(
+            hex(key.as_ref()),
+            "e99b7c4f3ffa4ded3e5ff6c9239ead9fa083e7173e5888686a0a0cf09f52aaaa"
+        );
+    }
+
+    #[test]
+    fn a_vault_from_before_the_cost_went_up_still_opens() {
+        let earlier = KdfParams {
+            m_kib: 19 * 1024,
+            t: 2,
+            p: 1,
+        };
+        let key = derive_key("correct horse battery", &[7; SALT_LEN], earlier).unwrap();
+        assert_eq!(
+            hex(key.as_ref()),
+            "58b44651ad77fc1dcc5f39c5b1edf71487783bef836982faba561430486946a1"
+        );
+        let file = SealKey::with_params("pw", earlier)
+            .unwrap()
+            .seal(b"hello")
+            .unwrap();
+        assert_eq!(open("pw", &file).unwrap().plaintext, b"hello");
+    }
+
+    #[test]
+    fn what_is_below_the_current_cost_is_told_by_memory_or_time() {
+        let at = |m_kib, t| KdfParams { m_kib, t, p: 1 };
+        let current = KdfParams::CURRENT;
+        assert!(!current.below_current());
+        assert!(at(current.m_kib - 1, current.t).below_current());
+        assert!(at(current.m_kib, current.t - 1).below_current());
+        assert!(!at(current.m_kib * 2, current.t + 1).below_current());
+        assert!(!KdfParams::STRONG.below_current());
+    }
+
+    #[test]
+    fn a_file_that_asks_for_too_much_memory_is_refused_before_any_is_taken() {
+        let file = small(b"hello");
+        let mut value = json(&file);
+        value["kdf"]["memoryKib"] = (KdfParams::MOST_KIB + 1).into();
+        let changed = serde_json::to_vec(&value).unwrap();
+        assert!(matches!(open("pw", &changed), Err(VaultError::Crypto(_))));
+        // The most it can ask for is more than a vault is sealed at today, so a
+        // later build can raise it.
+        const { assert!(KdfParams::STRONG.m_kib < KdfParams::MOST_KIB) }
+    }
+
+    fn hex(bytes: &[u8]) -> String {
+        bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+    }
+
+    #[test]
     fn the_file_is_json_that_names_how_it_was_sealed() {
         let file = SealKey::new("pw").unwrap().seal(b"hello").unwrap();
         let value = json(&file);
         assert_eq!(value["format"], "airlock-vault");
         assert_eq!(value["version"], 1);
         assert_eq!(value["kdf"]["name"], "argon2id");
-        assert_eq!(value["kdf"]["memoryKib"], 19 * 1024);
-        assert_eq!(value["kdf"]["iterations"], 2);
+        assert_eq!(value["kdf"]["memoryKib"], KdfParams::CURRENT.m_kib);
+        assert_eq!(value["kdf"]["iterations"], KdfParams::CURRENT.t);
         assert_eq!(value["kdf"]["parallelism"], 1);
         assert_eq!(value["cipher"]["name"], "xchacha20-poly1305");
         assert!(value["ciphertext"].is_string());

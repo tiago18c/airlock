@@ -108,6 +108,14 @@ unimplemented = "deny"
 [profile.dev.package.qr-codec]
 opt-level = 3
 
+# Unlocking takes seconds without these. A debug build's vault costs what a
+# release build's does.
+[profile.dev.package.argon2]
+opt-level = 3
+
+[profile.dev.package.blake2]
+opt-level = 3
+
 [profile.wasm-dev]
 inherits = "dev"
 opt-level = 1

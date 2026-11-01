@@ -101,3 +101,96 @@ async fn a_damaged_file_opens_from_its_backup_and_says_so() {
     // The file was written whole again.
     assert!(storage.read(VAULT_FILE).unwrap().starts_with(b"{"));
 }
+
+/// Check that the vault is free whenever a key is derived on this thread, and
+/// count how many are.
+fn watch_derivations(core: &app_core::Core) -> std::rc::Rc<std::cell::Cell<usize>> {
+    let (core, seen) = (core.clone(), std::rc::Rc::new(std::cell::Cell::new(0)));
+    let counted = seen.clone();
+    wallet_vault::testing::on_derive(move || {
+        counted.set(counted.get() + 1);
+        let core = core.clone();
+        let (done, answered) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            core.with_vault(|_| ());
+            let _ = done.send(());
+        });
+        answered
+            .recv_timeout(std::time::Duration::from_secs(10))
+            .expect("the vault was held while a key was derived");
+    });
+    seen
+}
+
+#[tokio::test]
+async fn nothing_waits_on_the_vault_while_a_key_is_derived() {
+    let kit = kit();
+    let seen = watch_derivations(&kit.core);
+
+    kit.core.create_vault("pw").unwrap();
+    assert_eq!(seen.get(), 1);
+
+    kit.core.change_password("pw", "new").unwrap();
+    assert_eq!(seen.get(), 3);
+
+    kit.core.lock();
+    kit.core.unlock("new").unwrap();
+    assert_eq!(seen.get(), 4);
+    assert_eq!(*kit.core.slices().vault.get(), VaultState::Unlocked);
+}
+
+#[tokio::test]
+async fn what_a_step_finds_wrong_is_answered_by_the_step_that_finishes() {
+    let kit = kit();
+    // Nothing stored to open.
+    assert!(matches!(
+        kit.core.begin_unlock(),
+        Err(VaultError::NotInitialized)
+    ));
+    assert!(matches!(
+        kit.core.unlock("pw"),
+        Err(VaultError::NotInitialized)
+    ));
+    assert!(matches!(
+        kit.core.begin_password_change(),
+        Err(VaultError::Locked)
+    ));
+
+    kit.core.create_vault("pw").unwrap();
+    assert!(matches!(
+        kit.core.create_vault("other"),
+        Err(VaultError::AlreadyExists)
+    ));
+    assert!(matches!(
+        kit.core.change_password("nope", "new"),
+        Err(VaultError::UnlockFailed)
+    ));
+    kit.core.lock();
+    assert!(matches!(
+        kit.core.unlock("other"),
+        Err(VaultError::UnlockFailed)
+    ));
+    assert_eq!(*kit.core.slices().vault.get(), VaultState::Locked);
+    kit.core.unlock("pw").unwrap();
+}
+
+#[tokio::test]
+async fn an_unlock_that_arrives_late_leaves_what_is_open_as_it_is() {
+    let kit = kit();
+    kit.core.create_vault("pw").unwrap();
+    kit.core.lock();
+
+    let first = kit.core.begin_unlock().unwrap().open("pw");
+    let second = kit.core.begin_unlock().unwrap().open("pw");
+    kit.core.finish_unlock(first).unwrap();
+    kit.core
+        .vault_checked("add", |data| {
+            data.wallets
+                .push(WalletRecord::from_keypair_seed("Main", [7; 32]));
+        })
+        .unwrap();
+    kit.core.finish_unlock(second).unwrap();
+    kit.core.with_vault(|vault| {
+        assert_eq!(vault.data().unwrap().wallets.len(), 1);
+    });
+}

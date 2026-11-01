@@ -111,7 +111,10 @@ pub use solana_instruction::Instruction;
 pub use solana_message::v1::{MAX_TRANSACTION_SIZE, V1_PREFIX};
 pub use solana_signature::SIGNATURE_BYTES;
 pub use units::{format_sol, format_token_amount, parse_amount, LAMPORTS_PER_SOL};
-pub use wallet_vault::{LoadProblem, MemoryStore, SecretBytes, SecretString, VaultStore};
+pub use wallet_vault::{
+    password_problem, LoadProblem, MemoryStore, PasswordChange, SealKey, SecretBytes, SecretString,
+    Unlocked, Unlocking, VaultStore,
+};
 
 #[cfg(not(target_arch = "wasm32"))]
 pub use wallet_vault::FileStore;

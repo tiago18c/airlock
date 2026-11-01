@@ -45,6 +45,7 @@ solana-system-interface.workspace = true
 solana-transaction.workspace = true
 tokio = { workspace = true, features = ["sync", "rt", "time", "macros"] }
 wallet-core.workspace = true
+wallet-vault = { workspace = true, features = ["test-hook"] }
 wincode.workspace = true
 
 [features]

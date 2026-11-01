@@ -17,3 +17,23 @@ pub async fn sleep(duration: Duration) {
         gloo_timers::future::TimeoutFuture::new(millis).await;
     }
 }
+
+/// Run `work`, which takes too long for a window to wait on, where it does not
+/// wait: on another thread on desktop. A page has only the one, so there it gets
+/// the chance to draw first, and then waits.
+pub async fn off_the_window<T: Send + 'static>(work: impl FnOnce() -> T + Send + 'static) -> T {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        match tokio::task::spawn_blocking(work).await {
+            Ok(out) => out,
+            Err(failed) if failed.is_panic() => std::panic::resume_unwind(failed.into_panic()),
+            // The runtime is going away, and the window with it.
+            Err(_) => std::future::pending().await,
+        }
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        sleep(Duration::from_millis(50)).await;
+        work()
+    }
+}

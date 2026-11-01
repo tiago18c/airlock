@@ -26,4 +26,5 @@ solana-vote-interface = { version = "7.0", features = ["bincode"] }
 solana-transaction = { workspace = true, features = ["default"] }
 wallet-core.workspace = true
 wallet-flows.workspace = true
+wallet-vault = { workspace = true, features = ["test-hook"] }
 wincode.workspace = true

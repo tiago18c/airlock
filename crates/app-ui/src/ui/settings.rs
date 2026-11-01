@@ -248,6 +248,8 @@ fn PasswordChange() -> Element {
     let mut confirm = use_signal(String::new);
     let mut note = use_signal(|| None::<String>);
     let mut error = use_signal(|| None::<String>);
+    // Two keys are being derived, which takes about two seconds.
+    let mut working = use_signal(|| false);
     use_drop(move || {
         current.write().zeroize();
         new.write().zeroize();
@@ -257,25 +259,29 @@ fn PasswordChange() -> Element {
         note.set(None);
         error.set(None);
         let (old, next) = (Zeroizing::new(current()), Zeroizing::new(new()));
-        if next.len() < 8 {
-            error.set(Some("Use at least 8 characters.".into()));
+        if let Some(problem) = wallet_core::password_problem(&next) {
+            error.set(Some(problem.into()));
             return;
         }
         if *next != *Zeroizing::new(confirm()) {
             error.set(Some("The new passwords do not match.".into()));
             return;
         }
-        let changed = session.change_password(&old, &next);
         current.write().zeroize();
         new.write().zeroize();
         confirm.write().zeroize();
-        match changed {
-            Ok(()) => note.set(Some(
-                "Password changed. The vault is sealed under it, and the copy kept from before is deleted."
-                    .into(),
-            )),
-            Err(err) => error.set(Some(err.to_string())),
-        }
+        working.set(true);
+        spawn(async move {
+            let changed = session.change_password(old, next).await;
+            working.set(false);
+            match changed {
+                Ok(()) => note.set(Some(
+                    "Password changed. The vault is sealed under it, and the copy kept from before is deleted."
+                        .into(),
+                )),
+                Err(err) => error.set(Some(err.to_string())),
+            }
+        });
     };
 
     rsx! {
@@ -306,9 +312,9 @@ fn PasswordChange() -> Element {
         }
         div { class: "btn-row",
             button { class: "primary",
-                disabled: current().is_empty() || new().is_empty(),
+                disabled: working() || current().is_empty() || new().is_empty(),
                 onclick: move |_| change(),
-                "Change password"
+                if working() { "Changing…" } else { "Change password" }
             }
         }
         p { class: "hint",

@@ -74,3 +74,4 @@ agave-reserved-account-keys = { version = "4.3", features = ["agave-unstable-api
 idl-pack = { workspace = true, features = ["build"] }
 pollster.workspace = true
 tempfile.workspace = true
+wallet-vault = { workspace = true, features = ["test-hook"] }

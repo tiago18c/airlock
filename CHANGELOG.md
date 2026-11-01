@@ -26,6 +26,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - The program-metadata program's IDL ships with the app, for mainnet and devnet. Review reads the calls that publish or change a program's IDL and other metadata, such as creating, writing, closing or making it immutable, in words, and Build can make them.
 
 ### Changed
+- Unlocking, creating a vault and changing the password no longer hold up the window, and say they are working.
 - The request modal simulates what a site asks before it offers Sign, and shows what would change. If the node says it would fail, or cannot say, Sign turns amber and the modal says why.
 - The request modal and Review and Sign now say when Airlock changed a site's transaction on its own: moving it onto an offline key's durable nonce, or setting its compute limits from a simulation.
 - The request modal says how many of a v0 transaction's accounts come from lookup tables.
@@ -70,6 +71,8 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - A transaction that went back to a site from Review and Sign is not sent twice. The site may send it itself, so Submit waits up to 10 seconds while the app watches for it on chain. If it lands, a toast says the site sent it and follows it to confirmed, and Submit stays off. If it does not, a toast says the site did not send it, and Submit turns on. In a batch, each transaction is watched for on its own.
 
 ### Security
+- The password of a vault is far more expensive to guess from a copy of its file: deriving its key now takes 256 MiB and three passes, rather than 19 MiB and two. A vault you already have moves to the new cost the next time you unlock it, and so does the backup beside it. A copy made before then stays at the old cost.
+- A new vault or a new password has to be at least 12 characters, and cannot be made of common words or patterns. A password you already have keeps working.
 - Approving or running a Squads proposal, or voting on a Realms proposal, signs something stored on chain rather than what it does. Airlock now says so, and the request modal no longer offers one-click Sign for it. Online, Review and Sign shows what the node says the proposal holds. On a device with no network, Sign waits until you tick that you have checked it somewhere you trust, and any contents the other device sends in the context note are marked as something it cannot check.
 - A transaction that hands over control of something no longer gets one-click Sign in the request modal, however well it reads: a token approval or change of authority, giving an account to a program, handing over a stake account or durable nonce, or changing a program. The modal and Review and Sign say what it does, and you sign it from Review.
 - A site connected to one wallet can no longer ask another wallet of this device to sign. Only the account it named was checked, not who the transaction asks to sign, so a press could have used a wallet the site was never given. Now such a request is refused.
