@@ -683,6 +683,7 @@ A summary on either device is only as good as the IDLs it was read with. IDLs fe
 - **Transactions prepared on one durable nonce are not tracked.** Only the first to land is valid. Nothing warns before a second is made on the same nonce.
 - **Not implemented:** hardware wallets.
 - **A node can lie, and the online device cannot tell.** See [the threat model](browser-bridge.md#a-node-that-lies).
+- **Code that ran in the window could still get something out**, through the default browser or WebRTC. What the screens show does not run as code, and a policy holds the rest. See [the threat model](browser-bridge.md#threats).
 - **An approval on an offline device is taken on trust.** It signs a proposal's address, and what the proposal holds can only be what the other device says. See [What a transaction does not hold](#what-a-transaction-does-not-hold).
 - **A site on many subdomains counts as many sites** for the [limits](browser-bridge.md#limits) on what it may have waiting, though the total is capped.
 - **A batch waits on its slowest transaction.** The site's blockhash is the same clock for all of them, so a batch that needs a QR round trip for one transaction usually expires before it can go back.

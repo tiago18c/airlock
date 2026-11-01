@@ -197,7 +197,14 @@ The extension has no keys and approves nothing. A malicious update, a hijacked s
 - **The bridge on the offline device.** Airlock Offline does not link the bridge, and no installer runs `install`.
 - **Stale requests.** Each request carries an expiry, and one nobody answers leaves the queue after ten minutes, or as soon as its page or browser goes away. A signature brought back from another device is verified against the transaction on screen before it is written in.
 - **Privacy.** A site sees only the accounts ticked for it. The injected wallet reveals that Airlock is installed, as any wallet does. The service worker tells the app every origin with a page open in the browser, so that what a closed page asked goes away. That stays on this device.
-- **Something that gets into the page.** A wallet's window shows what strangers wrote, and it should not be able to send anything anywhere. A Content Security Policy holds the page to the app's own files, and to the loopback websocket Dioxus sends its edits on (`app_desktop::window`). It cannot hold scripts to a list, because Dioxus's start-up script is inline and its `eval` builds a function from text. So it limits what a script that got in could do, and does not stop one getting in: what does that is that the screens write what they are given as text.
+- **Something that gets into the page.** A wallet's window shows what strangers wrote. The screens write it as text, and nothing handed to `eval` is built from it. Behind that is a Content Security Policy (`app_desktop::window`). Once the page's own scripts have been read, no inline script, handler or `javascript:` address runs, so markup that got in runs nothing. The page loads only the app's own files, makes no ordinary request to anywhere else, and cannot be replaced by another page. `eval` stays allowed, because Dioxus is built on it.
+
+  That is not a seal. Code that did run in the page would still have these ways out:
+
+  - **The default browser.** It can open any address, with what it read in that address. Dioxus does this for any http, https or mailto navigation and for a message from the page, and has no setting to stop it. The user sees a browser open, after the fact.
+  - **WebRTC.** It can send packets to any address. No directive this WebView knows governs that, and nothing shows.
+  - **Preconnect.** `<link rel="preconnect">` connects to any host, so the name it looks up can carry something. Nothing shows.
+  - **The loopback.** It can open a websocket to anything listening on this device, since Dioxus picks its port at launch and the policy cannot name it.
 
 ### A node that lies
 

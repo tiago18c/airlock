@@ -22,13 +22,15 @@ use dioxus::desktop::DesktopContext;
 /// 640 px), with the top bar's tools and the window buttons on one line.
 const MIN_WINDOW: LogicalSize<f64> = LogicalSize::new(720.0, 540.0);
 
-/// What the page may load, and where it may send anything: the app's own files and
-/// nothing else. A key is worth a lot, and a window that shows what strangers wrote
-/// should have no way to send it anywhere, whatever gets into the page.
+/// What the page may load, and where it may send anything: the app's own files, and the
+/// websocket on the loopback that Dioxus sends it edits on, on a port it picks at launch.
+/// A window that shows what strangers wrote should run nothing they wrote, and have as
+/// few ways as can be managed of sending anything out. `docs/browser-bridge.md` has what
+/// this leaves.
 ///
-/// Scripts cannot be held to a list. Dioxus's start-up script is inline with a key
-/// made at each launch, and its `eval` builds a function from text. The websocket on
-/// the loopback is how it sends the page its edits, on a port it picks at launch.
+/// `'unsafe-inline'` is only for starting: Dioxus's start-up script is inline, with a key
+/// made at each launch, so it cannot be named. [`AFTER_START_UP`] takes it away. Its
+/// `eval` builds a function from text, so `'unsafe-eval'` stays.
 const CONTENT_POLICY: &str = "default-src 'none'; \
     script-src 'self' 'unsafe-inline' 'unsafe-eval'; \
     style-src 'self' 'unsafe-inline'; \
@@ -38,6 +40,26 @@ const CONTENT_POLICY: &str = "default-src 'none'; \
     connect-src 'self' ws://127.0.0.1:*; \
     base-uri 'none'; \
     form-action 'none'";
+
+/// Added to the page once its own scripts have been read, and before anything is drawn.
+/// Policies add up, so from then on no inline script, handler or speculation rule runs.
+const AFTER_START_UP: &str = "script-src 'self' 'unsafe-eval'";
+
+/// The page's policy, and what adds [`AFTER_START_UP`] to it. Dioxus's scripts are read
+/// before `DOMContentLoaded`, and it draws nothing until `load`.
+fn page_head() -> String {
+    format!(
+        r#"<meta http-equiv="Content-Security-Policy" content="{CONTENT_POLICY}">
+<script>
+addEventListener("DOMContentLoaded", () => {{
+    const policy = document.createElement("meta");
+    policy.httpEquiv = "Content-Security-Policy";
+    policy.content = "{AFTER_START_UP}";
+    document.head.append(policy);
+}});
+</script>"#
+    )
+}
 
 /// The window and WebView settings both desktop builds launch with. `icon`
 /// is the build's PNG app icon, for the window and the taskbar. On Windows
@@ -54,9 +76,11 @@ pub fn desktop_config(title: &str, icon: &[u8]) -> dioxus::desktop::Config {
     let window = window.with_decorations(false);
     let cfg = dioxus::desktop::Config::new()
         .with_window(window)
-        .with_custom_head(format!(
-            r#"<meta http-equiv="Content-Security-Policy" content="{CONTENT_POLICY}">"#
-        ));
+        .with_custom_head(page_head())
+        // Refuses what would otherwise replace the app, such as `about:blank` or a page
+        // made from a `blob:`. Dioxus opens http, https and mailto in the default browser
+        // before it asks this, and has no setting for that.
+        .with_navigation_handler(|_| false);
     // Dioxus desktop maps dioxus:// to http://dioxus.index.html, which is not a
     // secure context, so navigator.mediaDevices is undefined unless we force it.
     // Setting any arguments replaces the WebView's defaults, so the first
@@ -164,7 +188,7 @@ fn report_to_core(core: CopyValue<Core>) {
 
 #[cfg(test)]
 mod policy_tests {
-    use super::CONTENT_POLICY;
+    use super::{page_head, AFTER_START_UP, CONTENT_POLICY};
 
     /// Each directive, and the places it allows.
     fn directives() -> Vec<(&'static str, Vec<&'static str>)> {
@@ -205,5 +229,15 @@ mod policy_tests {
         assert_eq!(of("form-action"), ["'none'"]);
         assert_eq!(of("base-uri"), ["'none'"]);
         assert!(!of("img-src").iter().any(|source| source.contains("http")));
+    }
+
+    #[test]
+    fn inline_scripts_run_only_until_the_page_has_been_read() {
+        assert!(!AFTER_START_UP.contains("unsafe-inline"));
+        let head = page_head();
+        let at_first = head.find(CONTENT_POLICY).unwrap();
+        let waits = head.find("DOMContentLoaded").unwrap();
+        let after = head.find(AFTER_START_UP).unwrap();
+        assert!(at_first < waits && waits < after);
     }
 }
