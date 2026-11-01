@@ -10,7 +10,7 @@
 //!   most, and a failure is sent as `SaveFailed` while the change stays.
 
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
+use std::sync::Arc;
 use std::time::Duration;
 
 use bridge_protocol::reply::SiteAccount;
@@ -36,6 +36,7 @@ use crate::lock::{LockPolicy, LockReason};
 use crate::notices::{BridgeRequestOutcome, NoticeId, NoticeKind, TxStatus};
 use crate::ports::Ports;
 use crate::public::PublicCore;
+use crate::ranked::{Rank, Ranked, RankedGuard};
 use crate::slices::{
     book_from, holdings_from, network_from, notices_from, settings_from, shown_wallets,
     vault_state_from, wallets_view_from, Reach, Slice, Slices,
@@ -87,26 +88,24 @@ pub struct Core {
 
 pub(crate) struct Inner {
     ports: Ports,
-    vault: Mutex<AppVault>,
-    /// Always taken after `vault`, and before `workspace`.
-    wallet_list: Mutex<AppWalletList>,
-    workspace: Mutex<AppWorkspace>,
-    holdings: Mutex<AppHoldings>,
-    notices: Mutex<AppNotices>,
-    bridge: Mutex<BridgeState>,
+    vault: Ranked<AppVault>,
+    wallet_list: Ranked<AppWalletList>,
+    workspace: Ranked<AppWorkspace>,
+    holdings: Ranked<AppHoldings>,
+    notices: Ranked<AppNotices>,
+    bridge: Ranked<BridgeState>,
     slices: Slices,
     events: broadcast::Sender<Event>,
     visible: watch::Sender<bool>,
     activity: watch::Sender<()>,
-    reach: Mutex<Reach>,
+    reach: Ranked<Reach>,
     workspace_saver: Saver,
     holdings_saver: Saver,
     notices_saver: Saver,
 }
 
-fn locked<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
-    // A panic elsewhere must not stop a save or a lock.
-    mutex.lock().unwrap_or_else(PoisonError::into_inner)
+fn locked<T>(mutex: &Ranked<T>) -> RankedGuard<'_, T> {
+    mutex.lock()
 }
 
 impl Core {
@@ -148,17 +147,17 @@ impl Core {
         };
         let inner = Arc::new(Inner {
             ports,
-            vault: Mutex::new(vault),
-            wallet_list: Mutex::new(wallet_list),
-            workspace: Mutex::new(workspace),
-            holdings: Mutex::new(holdings),
-            notices: Mutex::new(notices),
-            bridge: Mutex::new(BridgeState::default()),
+            vault: Ranked::new(Rank::Vault, vault),
+            wallet_list: Ranked::new(Rank::WalletList, wallet_list),
+            workspace: Ranked::new(Rank::Workspace, workspace),
+            holdings: Ranked::new(Rank::Holdings, holdings),
+            notices: Ranked::new(Rank::Notices, notices),
+            bridge: Ranked::new(Rank::Bridge, BridgeState::default()),
             slices,
             events: broadcast::channel(EVENT_BACKLOG).0,
             visible: watch::channel(true).0,
             activity: watch::channel(()).0,
-            reach: Mutex::new(Reach::default()),
+            reach: Ranked::new(Rank::Reach, Reach::default()),
             workspace_saver: Saver::default(),
             holdings_saver: Saver::default(),
             notices_saver: Saver::default(),
@@ -555,7 +554,9 @@ impl Inner {
 
     fn publish_workspace(&self, workspace: &AppWorkspace) {
         let slices = &self.slices;
-        slices.book.publish(book_from(workspace));
+        slices
+            .book
+            .publish_copy(&wallet_core::WorkspaceStore::data(workspace).book);
         slices
             .network
             .publish(network_from(workspace, *locked(&self.reach)));
@@ -563,11 +564,13 @@ impl Inner {
     }
 
     fn publish_holdings(&self, holdings: &AppHoldings) {
-        self.slices.holdings.publish(holdings_from(holdings));
+        self.slices
+            .holdings
+            .publish_copy(wallet_core::HoldingsStore::data(holdings));
     }
 
     fn publish_notices(&self, notices: &AppNotices) {
-        self.slices.notices.publish(notices_from(notices));
+        self.slices.notices.publish_copy(notices.data());
     }
 
     /// Publish the vault, and while it is open keep its wallets without
@@ -822,9 +825,10 @@ impl Inner {
     }
 
     pub(crate) fn set_reach(&self, reach: Reach) {
-        *locked(&self.reach) = reach;
+        // With the workspace's lock, so that this cannot pass a cluster change.
         let workspace = locked(&self.workspace);
-        self.publish_workspace(&workspace);
+        *locked(&self.reach) = reach;
+        self.slices.network.publish(network_from(&workspace, reach));
     }
 
     pub(crate) fn set_sync_status(&self, status: crate::slices::SyncStatus) {
@@ -1416,15 +1420,22 @@ impl Inner {
         label: impl FnOnce(&mut AddressBook, &T),
     ) -> Result<T, EnrollError> {
         let _span = debug_span!(target: CORE, "command", name).entered();
-        // Always vault first, then workspace.
         let mut vault = locked(&self.vault);
-        let mut workspace = locked(&self.workspace);
-        let enrolled = wallet_core::enroll(&mut *vault, &mut *workspace, add, label);
+        let enrolled = {
+            let mut workspace = locked(&self.workspace);
+            let enrolled = wallet_core::enroll(&mut *vault, &mut *workspace, add, label);
+            if enrolled.is_ok() {
+                // Saved just now, and nothing else can have changed it yet.
+                self.workspace_saver.dirty.store(false, Ordering::SeqCst);
+            }
+            enrolled
+        };
         match &enrolled {
             Ok(_) => {
-                self.workspace_saver.dirty.store(false, Ordering::SeqCst);
+                // The wallet list comes before the workspace, so the workspace's
+                // lock is let go first. Each publishes what is current.
                 self.publish_vault(&vault);
-                self.publish_workspace(&workspace);
+                self.publish_workspace(&locked(&self.workspace));
                 debug!(target: CORE, outcome = "ok", "command");
             }
             Err(err) => {

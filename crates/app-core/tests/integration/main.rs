@@ -5,5 +5,6 @@ mod locked_wallets;
 mod notices;
 mod old_files;
 mod public;
+mod publishing;
 mod saving;
 mod vault_file;

@@ -250,8 +250,33 @@ impl DecodedTx {
     }
 }
 
+/// What [`read_wire`] finds: a [`WireView`], with the transaction it read and
+/// without a copy of the wire.
+struct ReadWire {
+    tx: VersionedTransaction,
+    format: TxFormat,
+    message: Vec<u8>,
+    signature_offsets: Vec<usize>,
+    static_keys: Vec<Pubkey>,
+    num_required_signatures: usize,
+    lookup_table_keys: Vec<Pubkey>,
+}
+
 /// Read signature slots and the message from any format, without lookup tables.
 pub fn parse_wire(wire: &[u8]) -> Result<WireView, DecodeError> {
+    let read = read_wire(wire)?;
+    Ok(WireView {
+        format: read.format,
+        wire: wire.to_vec(),
+        message: read.message,
+        signature_offsets: read.signature_offsets,
+        static_keys: read.static_keys,
+        num_required_signatures: read.num_required_signatures,
+        lookup_table_keys: read.lookup_table_keys,
+    })
+}
+
+fn read_wire(wire: &[u8]) -> Result<ReadWire, DecodeError> {
     if wire.is_empty() {
         return Err(DecodeError::Truncated);
     }
@@ -308,9 +333,9 @@ pub fn parse_wire(wire: &[u8]) -> Result<WireView, DecodeError> {
         }
     };
 
-    Ok(WireView {
+    Ok(ReadWire {
+        tx,
         format,
-        wire: wire.to_vec(),
         message,
         signature_offsets,
         static_keys,
@@ -348,9 +373,8 @@ pub fn parse_lookup_table_addresses(data: &[u8]) -> Result<Vec<Pubkey>, DecodeEr
 /// Decode any format. Legacy and v1 need no tables. V0 needs every table it
 /// names in `tables`.
 pub fn decode_transaction(wire: &[u8], tables: &LookupTables) -> Result<DecodedTx, DecodeError> {
-    let view = parse_wire(wire)?;
-    let tx: VersionedTransaction =
-        wincode::deserialize(wire).map_err(|_| DecodeError::Truncated)?;
+    let view = read_wire(wire)?;
+    let tx = &view.tx;
 
     let signers = (0..view.num_required_signatures)
         .map(|i| {

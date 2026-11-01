@@ -206,6 +206,52 @@ fn signed_by_seed(wire: &[u8]) -> Vec<u8> {
     apply_local_signatures(wire, &signers).unwrap()
 }
 
+// ---- The keys a press of Sign builds.
+
+#[tokio::test]
+async fn a_press_of_sign_builds_only_the_keys_the_transaction_asks_for() {
+    let screen = Screen::new().await;
+    let other = wallet_core::WalletRecord::from_keypair_seed("Other", [8; 32]);
+    let other_key = other.address().unwrap();
+    let signers = vec![wallet_core::NewSigner {
+        pubkey: other_key,
+        label: other.label.clone(),
+        origin: wallet_core::Origin::Imported,
+        wallet: other,
+    }];
+    screen
+        .kit
+        .core
+        .enroll(
+            "add_signers",
+            |data| data.add_signers(&signers),
+            |book, _| wallet_core::name_signers(book, &signers),
+        )
+        .unwrap();
+
+    let built = |wire: &[u8]| {
+        screen.act(|| {
+            screen
+                .session
+                .local_signers_for(wire)
+                .iter()
+                .map(WalletSigner::pubkey)
+                .collect::<Vec<_>>()
+        })
+    };
+    assert_eq!(built(&screen.transfer(1)), [screen.key]);
+    // A key it does not name, however many it would take to find out.
+    let elsewhere = compile_v1(
+        pk(50),
+        vec![transfer_instruction(pk(50), pk(1))],
+        None,
+        Some(solana_hash::Hash::new_from_array([3; 32])),
+    )
+    .unwrap();
+    assert!(built(&elsewhere.wire).is_empty());
+    assert!(built(b"not a transaction").is_empty());
+}
+
 // ---- What is stored behind an approval.
 
 fn some_target() -> wallet_core::StoredTarget {

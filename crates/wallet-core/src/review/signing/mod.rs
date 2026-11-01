@@ -392,6 +392,28 @@ pub fn sign_locally_in(
 }
 
 /// [`sign_locally_in`], remembering XMSS salts in `cache`.
+/// Every key `wire` asks for a signature: its signers, and the authority of each
+/// `Submit` it carries. A Vector account's key is not here: it comes from the
+/// account's wallet.
+///
+/// Building a signer can run a seed phrase's derivation, and leaves a key in memory
+/// while it lives, so a press of Sign builds only these.
+pub fn keys_asked_for(wire: &[u8]) -> Result<Vec<Pubkey>, DecodeError> {
+    let view = parse_wire(wire)?;
+    let mut keys = view.static_keys[..view.num_required_signatures].to_vec();
+    if view.format == TxFormat::V1 {
+        let tx = decode_v1_transaction(wire)?;
+        for slot in authority_slots_in(&tx, &AuthContext::default()) {
+            if let AuthorityId::Ed25519(authority) = slot.authority {
+                if !keys.contains(&authority) {
+                    keys.push(authority);
+                }
+            }
+        }
+    }
+    Ok(keys)
+}
+
 pub fn sign_locally_in_with(
     wire: &[u8],
     signers: &[&dyn WalletSigner],

@@ -183,24 +183,33 @@ impl Session {
         })
     }
 
-    /// A signer for every key the unlocked vault holds, and for each keypair
-    /// Build made.
-    pub fn local_signers(&self) -> Vec<KeypairSigner> {
+    /// A signer for each key `wire` asks for that the unlocked vault holds or
+    /// Build made. The rest stay as they are in their records.
+    pub fn local_signers_for(&self, wire: &[u8]) -> Vec<KeypairSigner> {
         self.track_wallets();
+        let asked = wallet_core::keys_asked_for(wire).unwrap_or_default();
         let generated = self.forms.build.generated.read().clone();
         let mut signers: Vec<KeypairSigner> = self.core().with_vault(|vault| {
             Vault::data(vault)
                 .map(|data| {
                     data.wallets
                         .iter()
+                        .filter(|wallet| wallet.address().is_some_and(|key| asked.contains(&key)))
                         .filter_map(|wallet| wallet.signer().ok())
                         .collect()
                 })
                 .unwrap_or_default()
         });
-        signers.extend(generated.iter().map(GeneratedKey::signer));
+        let is_asked =
+            |key: &KeypairSigner| asked.contains(&wallet_core::WalletSigner::pubkey(key));
+        signers.extend(generated.iter().map(GeneratedKey::signer).filter(is_asked));
         let made_here = self.forms.sign.made_here.read().clone();
-        signers.extend(made_here.iter().map(|made| made.key.signer()));
+        signers.extend(
+            made_here
+                .iter()
+                .map(|made| made.key.signer())
+                .filter(is_asked),
+        );
         signers
     }
 
@@ -291,6 +300,7 @@ impl Session {
             let data = Vault::data(vault).map_err(|err| err.to_string())?;
             data.wallets
                 .iter()
+                .filter(|wallet| wallet.address() == Some(account))
                 .filter_map(|wallet| wallet.signer().ok())
                 .find(|signer| wallet_core::WalletSigner::pubkey(signer) == account)
                 .ok_or_else(|| "No key on this device signs as this account.".to_string())
@@ -309,7 +319,7 @@ impl Session {
         wire: &[u8],
         known: &[wallet_core::relay::VectorContext],
     ) -> Result<wallet_core::LocalSigning, wallet_core::SignError> {
-        let signers = self.local_signers();
+        let signers = self.local_signers_for(wire);
         let refs: Vec<&dyn wallet_core::WalletSigner> = signers
             .iter()
             .map(|signer| signer as &dyn wallet_core::WalletSigner)

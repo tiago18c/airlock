@@ -33,9 +33,32 @@ impl<T> Slice<T> {
     pub fn subscribe(&self) -> watch::Receiver<Arc<T>> {
         self.tx.subscribe()
     }
+}
 
+impl<T: PartialEq> Slice<T> {
+    /// Send out `value`, unless it is what is out already: nothing wakes and
+    /// nothing draws again for what did not change.
     pub(crate) fn publish(&self, value: Arc<T>) {
-        self.tx.send_replace(value);
+        self.tx.send_if_modified(|current| {
+            let changed = **current != *value;
+            if changed {
+                *current = value;
+            }
+            changed
+        });
+    }
+}
+
+impl<T: PartialEq + Clone> Slice<T> {
+    /// [`publish`](Self::publish) a copy of `value`, made only if it is needed.
+    pub(crate) fn publish_copy(&self, value: &T) {
+        self.tx.send_if_modified(|current| {
+            let changed = **current != *value;
+            if changed {
+                *current = Arc::new(value.clone());
+            }
+            changed
+        });
     }
 }
 
@@ -229,5 +252,49 @@ pub fn vault_state_from(vault: &AppVault) -> VaultState {
         Ok(true) => VaultState::Locked,
         Ok(false) => VaultState::Uninitialized,
         Err(_) => VaultState::Unreadable,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_same_value_again_wakes_nobody_and_keeps_what_was_out() {
+        let slice = Slice::new(Arc::new(vec![1, 2]));
+        let mut reader = slice.subscribe();
+        let out = slice.get();
+
+        slice.publish(Arc::new(vec![1, 2]));
+        slice.publish_copy(&vec![1, 2]);
+        assert!(!reader.has_changed().unwrap());
+        assert!(Arc::ptr_eq(&out, &slice.get()));
+
+        slice.publish_copy(&vec![1, 2, 3]);
+        assert!(reader.has_changed().unwrap());
+        assert_eq!(*reader.borrow_and_update().clone(), vec![1, 2, 3]);
+        slice.publish(Arc::new(vec![4]));
+        assert!(reader.has_changed().unwrap());
+        assert_eq!(*slice.get(), vec![4]);
+    }
+
+    #[test]
+    fn a_copy_is_made_only_when_one_is_needed() {
+        #[derive(PartialEq)]
+        struct Counted(u8);
+        impl Clone for Counted {
+            fn clone(&self) -> Self {
+                COPIES.with(|copies| copies.set(copies.get() + 1));
+                Self(self.0)
+            }
+        }
+        thread_local! {
+            static COPIES: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+        }
+        let slice = Slice::new(Arc::new(Counted(1)));
+        slice.publish_copy(&Counted(1));
+        assert_eq!(COPIES.with(std::cell::Cell::get), 0);
+        slice.publish_copy(&Counted(2));
+        assert_eq!(COPIES.with(std::cell::Cell::get), 1);
     }
 }
