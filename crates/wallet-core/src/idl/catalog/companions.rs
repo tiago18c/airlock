@@ -70,6 +70,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
                     check: host.check.clone(),
                     host: Some(host.program_id),
                     source: host.source,
+                    read_turn: 0,
                 };
                 chosen.insert(companion.program_id, (rank, record));
             }
@@ -102,31 +103,29 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
             .find(|record| record.program_id == *program_id)
             .and_then(|record| record.host)
     }
+}
 
-    /// A client for a companion: its host's tree, turned so that the companion
-    /// is the program and the host one of the additional ones. Links from one
-    /// to another still resolve.
-    pub(super) fn companion_client(
-        &self,
-        program_id: &Pubkey,
-        host: &Pubkey,
-    ) -> Option<ProgramClient> {
-        let host_client = self.program_client(host)?;
-        let mut root = host_client.root().clone();
-        let wanted = program_id.to_string();
-        let index = root
-            .additional_programs
-            .iter()
-            .position(|program| program.public_key == wanted)?;
-        let program = root.additional_programs.remove(index);
-        let host_program = std::mem::replace(&mut root.program, program);
-        root.additional_programs.insert(0, host_program);
-        ProgramClient::from_root(root).ok()
-    }
+/// A client for a companion: its host's tree, turned so that the companion is the
+/// program and the host one of the additional ones. Links from one to another
+/// still resolve.
+pub(super) fn companion_client(
+    host_client: &ProgramClient,
+    program_id: &Pubkey,
+) -> Option<ProgramClient> {
+    let mut root = host_client.root().clone();
+    let wanted = program_id.to_string();
+    let index = root
+        .additional_programs
+        .iter()
+        .position(|program| program.public_key == wanted)?;
+    let program = root.additional_programs.remove(index);
+    let host_program = std::mem::replace(&mut root.program, program);
+    root.additional_programs.insert(0, host_program);
+    ProgramClient::from_root(root).ok()
 }
 
 /// The `additionalPrograms` of a Codama file. Anything else yields none.
-fn companions_in(body: &[u8]) -> Vec<Companion> {
+pub(super) fn companions_in(body: &[u8]) -> Vec<Companion> {
     #[derive(Deserialize)]
     struct Root {
         kind: Option<String>,

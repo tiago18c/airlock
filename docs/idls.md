@@ -89,6 +89,10 @@ Nothing on chain ties an IDL to a program build. The program-metadata and Anchor
 
 The index lists each imported file with its network. Bodies are `idls/<network>/<program id>.json` on desktop and `airlock.idl.<network>.<program id>` in a browser. Only the network in use is read into memory; switching cluster reads the other's files. An index from before networks has no `network` on its records: the files are moved under the network in use when the app opens. An export holds every network's files as `<network>.<program id>.json`, and an older bundle with `<program id>.json` files is imported for the network in use.
 
+### What is read from the chain
+
+A site can name any program, and the IDL it publishes is read and kept, so what is read from the chain is a cache: at most 64 IDLs or 32 MiB for each network (`IdlStore::keep_within_limits`). The oldest read goes first, and is read again when something needs it. A file imported by hand, and what ships with the app, is not counted and is never let go.
+
 ### Additional programs
 
 A Codama file can carry other programs in `additionalPrograms`. The catalog gives each one a record of its own (`IdlRecord::host` names the file it is read from), so build and review use it like any other program. Its checksum, origin and online check are the host file's. Such a record is never stored or exported, cannot be removed on its own, and goes when its host file goes.

@@ -52,7 +52,7 @@ pub struct IdlStore<S: VaultStore, B: IdlBodies> {
     loaded: BTreeMap<Pubkey, Arc<[u8]>>,
     /// Parsed clients, kept until that program's IDL changes. Parsing a large
     /// IDL on every keystroke of a form is far too slow.
-    clients: Mutex<BTreeMap<Pubkey, Arc<ProgramClient>>>,
+    clients: Arc<ClientCache>,
     /// The `additionalPrograms` of each stored file, by the checksum they were
     /// read from, so a change elsewhere does not read every file again.
     peeked: BTreeMap<Pubkey, ([u8; 32], Vec<companions::Companion>)>,
@@ -63,12 +63,79 @@ pub struct IdlStore<S: VaultStore, B: IdlBodies> {
     problem: Option<LoadProblem>,
 }
 
+/// Parsed clients, by program and the checksum of the file they were read from.
+/// A [`CatalogView`] made before an IDL changed may still leave one here, and the
+/// checksum keeps that from being taken for the new one.
+type ClientCache = Mutex<BTreeMap<(Pubkey, [u8; 32]), Arc<ProgramClient>>>;
+
 /// The stored IDLs, as something that reads them needs them: which programs
 /// have one, and a client for each. How they are stored is not its business.
 pub trait IdlCatalog {
     fn records(&self) -> &[IdlRecord];
     /// A client for one stored IDL.
     fn program_client(&self, program_id: &Pubkey) -> Option<Arc<ProgramClient>>;
+}
+
+/// A catalog as it stood, for reading transactions away from it. It can go to
+/// another thread, which a large IDL or one built to be slow may need. It shares
+/// the clients already parsed, and what it parses is there for the catalog next.
+#[derive(Clone)]
+pub struct CatalogView {
+    records: Vec<IdlRecord>,
+    loaded: BTreeMap<Pubkey, Arc<[u8]>>,
+    clients: Arc<ClientCache>,
+}
+
+impl IdlCatalog for CatalogView {
+    fn records(&self) -> &[IdlRecord] {
+        &self.records
+    }
+
+    fn program_client(&self, program_id: &Pubkey) -> Option<Arc<ProgramClient>> {
+        client_of(&self.records, &self.loaded, &self.clients, program_id)
+    }
+}
+
+/// A catalog with nothing in it, for saying what can be said without any IDL.
+pub struct NoIdls;
+
+impl IdlCatalog for NoIdls {
+    fn records(&self) -> &[IdlRecord] {
+        &[]
+    }
+
+    fn program_client(&self, _program_id: &Pubkey) -> Option<Arc<ProgramClient>> {
+        None
+    }
+}
+
+/// A client for one program, parsed once and then shared.
+fn client_of(
+    records: &[IdlRecord],
+    loaded: &BTreeMap<Pubkey, Arc<[u8]>>,
+    clients: &ClientCache,
+    program_id: &Pubkey,
+) -> Option<Arc<ProgramClient>> {
+    let record = records
+        .iter()
+        .find(|record| record.program_id == *program_id)?;
+    let key = (*program_id, record.sha256);
+    if let Some(client) = clients.lock().ok()?.get(&key) {
+        return Some(client.clone());
+    }
+    let client = match record.host {
+        Some(host) => {
+            companions::companion_client(&*client_of(records, loaded, clients, &host)?, program_id)?
+        }
+        None => {
+            open_client(&loaded.get(program_id)?[..], Some(*program_id))
+                .ok()?
+                .0
+        }
+    };
+    let client = Arc::new(client);
+    clients.lock().ok()?.insert(key, client.clone());
+    Some(client)
 }
 
 impl<S: VaultStore, B: IdlBodies> IdlCatalog for IdlStore<S, B> {
@@ -99,7 +166,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
             records: Vec::new(),
             elsewhere: Vec::new(),
             loaded: BTreeMap::new(),
-            clients: Mutex::new(BTreeMap::new()),
+            clients: Arc::new(Mutex::new(BTreeMap::new())),
             peeked: BTreeMap::new(),
             embedded: Vec::new(),
             problem,
@@ -278,28 +345,21 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
 
     /// A client for one stored IDL. Parsed once, then shared until the IDL changes.
     pub fn program_client(&self, program_id: &Pubkey) -> Option<Arc<ProgramClient>> {
-        if let Some(client) = self.clients.lock().ok()?.get(program_id) {
-            return Some(client.clone());
+        client_of(&self.records, &self.loaded, &self.clients, program_id)
+    }
+
+    /// The catalog as it stands now, for reading away from it.
+    pub fn view(&self) -> CatalogView {
+        CatalogView {
+            records: self.records.clone(),
+            loaded: self.loaded.clone(),
+            clients: self.clients.clone(),
         }
-        let client = match self.host_of(program_id) {
-            Some(host) => self.companion_client(program_id, &host)?,
-            None => {
-                open_client(&self.loaded.get(program_id)?[..], Some(*program_id))
-                    .ok()?
-                    .0
-            }
-        };
-        let client = Arc::new(client);
-        self.clients
-            .lock()
-            .ok()?
-            .insert(*program_id, client.clone());
-        Some(client)
     }
 
     fn forget_client(&self, program_id: &Pubkey) {
         if let Ok(mut clients) = self.clients.lock() {
-            clients.remove(program_id);
+            clients.retain(|(program, _), _| program != program_id);
         }
     }
 
@@ -329,6 +389,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
             check: None,
             host: None,
             source: builtin.source.chain(),
+            read_turn: 0,
         };
         self.records.retain(|row| row.program_id != *program_id);
         self.records.push(record);
@@ -464,9 +525,28 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
         program_id: Option<Pubkey>,
         origin: IdlOrigin,
     ) -> Result<IdlRecord, IdlError> {
-        let inspected = inspect_idl(bytes, program_id)?;
+        self.import_inspected(bytes, inspect_idl(bytes, program_id)?, origin)
+    }
+
+    /// Store what [`inspect_idl`] found good, without reading it again.
+    pub fn import_inspected(
+        &mut self,
+        bytes: &[u8],
+        inspected: InspectedIdl,
+        origin: IdlOrigin,
+    ) -> Result<IdlRecord, IdlError> {
         let previous_records = self.records.clone();
         let previous_body = self.loaded.get(&inspected.program_id).cloned();
+        let read_turn = if origin.is_read_from_chain() {
+            self.records
+                .iter()
+                .map(|row| row.read_turn)
+                .max()
+                .unwrap_or(0)
+                + 1
+        } else {
+            0
+        };
         let record = IdlRecord {
             program_id: inspected.program_id,
             name: inspected.name,
@@ -476,7 +556,9 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
             check: None,
             host: None,
             source: None,
+            read_turn,
         };
+        let key = (record.program_id, record.sha256);
         self.records
             .retain(|row| row.program_id != record.program_id);
         self.records.push(record.clone());
@@ -489,8 +571,47 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
             self.refresh_companions();
             return Err(err);
         }
+        if let Ok(mut clients) = self.clients.lock() {
+            clients.insert(key, inspected.client);
+        }
+        self.peeked
+            .insert(record.program_id, (record.sha256, inspected.companions));
         self.refresh_companions();
+        self.keep_within_limits(record.program_id);
         Ok(record)
+    }
+
+    /// Let go of the oldest IDLs read from the chain while there are more than
+    /// the limits allow, keeping `just_read`. A site can name any program, and what
+    /// it names is read and kept, so these are a cache: one let go is read again
+    /// when something needs it. A file the user imported is never let go.
+    fn keep_within_limits(&mut self, just_read: Pubkey) {
+        loop {
+            let read: Vec<&IdlRecord> = self
+                .records
+                .iter()
+                .filter(|row| row.host.is_none() && row.origin.is_read_from_chain())
+                .collect();
+            let bytes: usize = read
+                .iter()
+                .filter_map(|row| self.loaded.get(&row.program_id))
+                .map(|body| body.len())
+                .sum();
+            if read.len() <= MAX_READ_FROM_CHAIN && bytes <= MAX_READ_FROM_CHAIN_BYTES {
+                return;
+            }
+            let Some(oldest) = read
+                .iter()
+                .filter(|row| row.program_id != just_read)
+                .min_by_key(|row| row.read_turn)
+                .map(|row| row.program_id)
+            else {
+                return;
+            };
+            if self.remove(&oldest).is_err() {
+                return;
+            }
+        }
     }
 
     /// [`Self::import`] for `network`, which need not be the one shown.
@@ -513,6 +634,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
             check: None,
             host: None,
             source: None,
+            read_turn: 0,
         };
         let id = record.program_id;
         let previous_body = self.bodies.load(network, &id).ok().flatten();
@@ -588,22 +710,34 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
     }
 }
 
-struct Inspected {
+/// A file found good, and not stored yet.
+pub struct InspectedIdl {
     program_id: Pubkey,
     name: String,
     sha256: [u8; 32],
     spec: IdlSpec,
+    client: Arc<ProgramClient>,
+    companions: Vec<companions::Companion>,
 }
 
-fn inspect_idl(bytes: &[u8], program_id: Option<Pubkey>) -> Result<Inspected, IdlError> {
+/// Read `bytes` as an IDL, and say whether it is one. Reading a large file takes
+/// a while, and needs nothing of the catalog, so it can be done away from it.
+pub fn inspect_idl(bytes: &[u8], program_id: Option<Pubkey>) -> Result<InspectedIdl, IdlError> {
     let (client, spec, digest) = open_client(bytes, program_id)?;
-    Ok(Inspected {
+    Ok(InspectedIdl {
         program_id: client.program_address(),
         name: client.root().program.name.to_string(),
         sha256: digest,
         spec,
+        client: Arc::new(client),
+        companions: companions::companions_in(bytes),
     })
 }
+
+/// The most IDLs read from the chain kept for one network, and the most bytes
+/// they take together. One file can be [`MAX_IDL_BYTES`].
+const MAX_READ_FROM_CHAIN: usize = 64;
+const MAX_READ_FROM_CHAIN_BYTES: usize = 32 * 1024 * 1024;
 
 /// How deep an IDL's JSON may nest. The deepest that ships is 14 levels. The
 /// JSON reader stops at 128, but reading a Codama tree takes so much stack per

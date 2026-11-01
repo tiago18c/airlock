@@ -26,6 +26,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - The program-metadata program's IDL ships with the app, for mainnet and devnet. Review reads the calls that publish or change a program's IDL and other metadata, such as creating, writing, closing or making it immutable, in words, and Build can make them.
 
 ### Changed
+- IDLs read from the chain are now a cache: at most 64, or 32 MiB, for each network. The oldest goes first, and is read again when something needs it. A file you imported is never let go.
 - A large address book is read a part at a time, so a public node is not asked for more than it allows: about 40 requests every 30 seconds rather than two for every address. Your wallets come first and more often, every address still comes around, and Refresh still reads them all.
 - Unlocking, creating a vault and changing the password no longer hold up the window, and say they are working.
 - The request modal simulates what a site asks before it offers Sign, and shows what would change. If the node says it would fail, or cannot say, Sign turns amber and the modal says why.
@@ -52,6 +53,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - Share opens on Everything, now its first tab. Its Signatures tab has tabs of its own: Local, which it opens on, puts the signatures made by keys on this device in one transfer; All puts every signature in one transfer; Individual shows a code for each.
 
 ### Fixed
+- A site's request that names a program with a large IDL no longer freezes the window while it is read. Reading now happens away from the window, and says so. If it takes more than 4 seconds, the transaction is shown as its programs and bytes rather than in words, and Sign is offered only as it is for anything unread.
 - A node that says it is getting too many requests now stops the background read, and the sync status and notices say so. Before, Airlock went on asking and showed "Synced". What was read before it stopped is kept, and the next read goes on from there.
 - Addresses a node refuses to read are now reported, in a notice and on Refresh, rather than quietly left as they were.
 - The sync status on the network chip now tells of any background job that failed, not only the balances.

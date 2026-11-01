@@ -18,9 +18,11 @@ use wallet_core::{
 
 mod facts;
 mod instruction;
+mod reading;
 
 pub use facts::*;
 pub use instruction::*;
+pub use reading::*;
 
 /// What a transaction does that hands over control of something, however well
 /// it reads.
@@ -56,38 +58,25 @@ pub fn SimulatedDeltas(
     rsx! { {children} }
 }
 
-/// How the Sign screen reads `tx`.
-pub fn use_explained(tx: DecodedTx) -> ExplainedTx {
-    let session = use_context::<Session>();
-    let stored = (session.forms.sign.context)();
-    // Decoding against the IDL catalog is the expensive part of this screen.
-    // Redo it only when the transaction, the note or the catalog changes.
-    // What an Advance does to a hash-based key is read with the accounts'
-    // schemes: from a context note, a rebuild, or a Vector wallet in this
-    // vault. A pasted or scanned transaction brings only the wallets'.
-    let vector = (session.forms.sign.vector)();
-    let wallets = (session.wallets)().summaries.clone();
-    use_memo(use_reactive!(|(tx, stored, vector, wallets)| {
-        let note = display_note(&tx, stored.as_ref())
-            .with_vector_schemes(&vector)
-            .with_wallet_schemes(&wallets);
-        explain_with_note(&*session.idls.read(), &tx, &note)
-    }))()
-}
-
-/// `explained` is [`use_explained`] of `tx`. `signers` are the addresses the
+/// `reading` is [`use_explained`] of `tx`. `signers` are the addresses the
 /// screen lists under its signatures, inside the same [`SimulatedDeltas`]. Their
 /// changes are drawn there, so Summary does not repeat them. `children` sit
 /// beside the heading.
 #[component]
 pub fn TxView(
     tx: DecodedTx,
-    explained: ExplainedTx,
+    reading: TxReading,
     inspect: bool,
     #[props(default)] signers: Vec<Pubkey>,
     children: Element,
 ) -> Element {
     let shown = tx.clone();
+    let TxReading {
+        explained,
+        waiting,
+        gave_up,
+        ..
+    } = reading;
     // Summary names only some accounts. One that changes and is neither
     // named nor a signer gets a line of its own; Inspect lists every account.
     let deltas = try_use_context::<BalanceDeltas>();
@@ -115,7 +104,10 @@ pub fn TxView(
             {children}
         }
         RiskNotice { explained: explained.clone() }
-        InstructionList { instructions: explained.instructions.clone(), inspect }
+        ReadingNote { waiting, gave_up }
+        if !waiting {
+            InstructionList { instructions: explained.instructions.clone(), inspect }
+        }
         if !unnamed.is_empty() {
             p { class: "fee-line muted",
                 "Also changes "

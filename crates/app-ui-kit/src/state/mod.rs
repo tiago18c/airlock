@@ -51,6 +51,19 @@ pub fn open_core_with(notifier: Arc<dyn Notifier>) -> Core {
 
 /// The IDL catalog, on the network of the cluster in use, with the IDL pack
 /// in it: read while it opens on desktop, fetched once in a browser.
+/// A window under test opens its stores in a folder of its own. The real one holds
+/// someone's vault and IDLs, and a test has no business with them.
+#[cfg(test)]
+fn keep_tests_off_the_data_folder() {
+    static FOLDER: std::sync::OnceLock<tempfile::TempDir> = std::sync::OnceLock::new();
+    FOLDER.get_or_init(|| {
+        let folder = tempfile::tempdir().expect("a folder for this run of the tests");
+        let variable = crate::platform::storage::app_dirs().env_var("DATA_DIR");
+        std::env::set_var(variable, folder.path());
+        folder
+    });
+}
+
 fn use_idls(
     network: ReadSignal<Arc<app_core::NetworkStatus>>,
 ) -> (
@@ -139,6 +152,8 @@ fn use_forgetting_on_lock(core: CopyValue<Core>, forms: forms::Forms) {
 /// [`SubmitHandle::none`](crate::SubmitHandle::none). Call once, from the root.
 pub fn use_session(core: CopyValue<Core>, online: OnlineHooks, submitter: SubmitHandle) -> Session {
     let pump = pump::use_core(core.peek().clone());
+    #[cfg(test)]
+    keep_tests_off_the_data_folder();
     let (idls, idl_pack) = use_idls(pump.network);
     let idl_misses = use_hook(|| CopyValue::new(std::collections::HashSet::new()));
     let leaf_marks = use_signal(crate::platform::storage::open_leaf_marks);

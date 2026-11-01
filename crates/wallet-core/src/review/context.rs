@@ -3,7 +3,7 @@
 //! and what each Vector account's next signature has to be made over.
 
 use crate::idl::catalog::{sha256_bytes, IdlCatalog};
-use crate::review::explain::{explain_with_note, DisplayNote};
+use crate::review::explain::{programs_of, DisplayNote};
 use crate::transport::protocol::{
     ContextAccount, ContextAuthorization, ContextPin, ProtocolError, TxContext, MAX_ACCOUNTS,
 };
@@ -44,8 +44,7 @@ pub fn context_note_with(
             .filter_map(VectorContext::from_note)
             .collect::<Vec<_>>(),
     );
-    let pins: Vec<ContextPin> = explain_with_note(store, tx, &note)
-        .programs
+    let pins: Vec<ContextPin> = programs_of(store, tx, &note)
         .iter()
         .filter_map(|line| {
             line.sha256.map(|idl_sha256| ContextPin {

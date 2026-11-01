@@ -102,6 +102,8 @@ pub struct ButtonFacts {
     /// It says yes to something it does not hold, and that is not settled:
     /// see [`blind_offer`].
     pub blind_holds: bool,
+    /// It is still being read, so the screen does not say yet what it does.
+    pub reading: bool,
 }
 
 /// Whether Sign can be pressed. An expired blockhash holds it back only if the
@@ -111,6 +113,7 @@ pub fn may_sign(facts: ButtonFacts) -> bool {
         && !facts.needs_rebuild
         && !facts.busy
         && !facts.blind_holds
+        && !facts.reading
         && (facts.step == NextSignature::Authorization
             || !facts.blockhash.expired
             || facts.refreshes_on_sign
@@ -493,6 +496,7 @@ mod tests {
             blockhash: keep(),
             site_holds: false,
             blind_holds: false,
+            reading: false,
         }
     }
 
@@ -553,6 +557,10 @@ mod tests {
     fn sign_needs_something_to_sign_and_nothing_in_the_way() {
         assert!(may_sign(ready()));
         for held in [
+            ButtonFacts {
+                reading: true,
+                ..ready()
+            },
             // Held even for the authorization, which is a signature too.
             ButtonFacts {
                 blind_holds: true,

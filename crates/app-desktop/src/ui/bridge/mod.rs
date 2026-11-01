@@ -27,7 +27,9 @@ use app_ui_kit::actions::sentence;
 use app_ui_kit::actions::sign::{offer_paid_here, prepare_request, PaidHere, ONTO_NONCE_NOTE};
 use app_ui_kit::state::forms::{use_blockhash_clock_state, BlockhashExpiry, SimState, TxSource};
 use app_ui_kit::ui::clock::BlockhashCountdown;
-use app_ui_kit::ui::tx_view::{FeeLine, InstructionList, RiskNotice, SimulatedDeltas};
+use app_ui_kit::ui::tx_view::{
+    use_explained_for_site, FeeLine, InstructionList, ReadingNote, RiskNotice, SimulatedDeltas,
+};
 use app_ui_kit::{Address, AddressRow, Session};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;

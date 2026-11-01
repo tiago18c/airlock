@@ -179,6 +179,17 @@ pub fn missing_catalog_programs(store: &dyn IdlCatalog, tx: &DecodedTx) -> Vec<P
     called
 }
 
+/// One line per program `tx` calls, at any depth, first seen first. It takes no
+/// reading of what they do.
+pub fn programs_of(store: &dyn IdlCatalog, tx: &DecodedTx, note: &DisplayNote) -> Vec<ProgramLine> {
+    let mut called = Vec::new();
+    programs_called(&tx.native_instructions(), 0, &mut called);
+    called
+        .into_iter()
+        .map(|program_id| program_line(store, program_id, note))
+        .collect()
+}
+
 pub fn explain_transaction(store: &dyn IdlCatalog, tx: &DecodedTx) -> ExplainedTx {
     explain_with_note(store, tx, &DisplayNote::default())
 }
@@ -189,12 +200,7 @@ pub fn explain_with_note(
     note: &DisplayNote,
 ) -> ExplainedTx {
     let native = tx.native_instructions();
-    let mut called = Vec::new();
-    programs_called(&native, 0, &mut called);
-    let programs = called
-        .into_iter()
-        .map(|program_id| program_line(store, program_id, note))
-        .collect();
+    let programs = programs_of(store, tx, note);
     let mut clients = Clients::new();
     let changes = key_changes(tx, note);
     let instructions = native
