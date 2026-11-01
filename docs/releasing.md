@@ -7,7 +7,7 @@ A release is a tag. Pushing `v1.2.3` builds the files and opens a **draft** rele
 | File | What it is |
 | --- | --- |
 | `airlock-<version>-windows-x64-setup.exe` | Online desktop installer |
-| `airlock-offline-<version>-windows-x64-setup.exe` | Airgap desktop installer (no network stacks) |
+| `airlock-offline-<version>-windows-x64-setup.exe` | Airgap desktop installer (opens no connection of its own) |
 | `bridge-host-<version>-windows-x64.exe` | Native messaging host for the browser extension |
 | `airlock-extension-<version>.zip` | Browser extension, ready to load or to upload to a store |
 | `SHA256SUMS.txt` | Checksum of every file above |

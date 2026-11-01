@@ -82,6 +82,11 @@ pub fn AccountList(tx: DecodedTx) -> Element {
                         } else {
                             span { class: "chip", "readonly" }
                         }
+                        // The message names a table and a place in it. Which
+                        // address is there is what the node says now.
+                        if account.lookup.is_some() {
+                            span { class: "chip warn", "from a lookup table" }
+                        }
                     }
                 }
             }
