@@ -428,11 +428,38 @@ pub fn decode_on_sign(wire: &[u8], tables: &LookupTables) -> Result<DecodedTx, D
     decode_transaction(wire, tables)
 }
 
+/// Ask the node what is stored behind `targets`. The answer is dropped if another
+/// transaction is on screen by the time it arrives. A node that cannot be asked
+/// has said nothing, which leaves it to the user.
+pub fn read_stored_behind(
+    session: Session,
+    targets: Vec<wallet_core::StoredTarget>,
+    mut reading: Signal<bool>,
+) {
+    let form = session.forms.sign;
+    let generation = form.generation();
+    reading.set(true);
+    spawn(async move {
+        let found = match session.rpc() {
+            Ok(rpc) => wallet_flows::squads::read_stored(rpc.as_ref(), &targets)
+                .await
+                .unwrap_or_default(),
+            Err(_) => Default::default(),
+        };
+        reading.set(false);
+        if form.still_on_screen(generation) {
+            let mut behind = form.stored_behind;
+            behind.set(Some(found));
+        }
+    });
+}
+
 pub fn attach_context(session: Session, context: TxContext) {
     let form = session.forms.sign;
     let mut error = form.error;
     let mut note = form.note;
     let mut stored = form.context;
+    let mut checked = form.blind_checked;
     let mut import = form.import;
     let tables = form.tables.peek().clone();
     let matches = form
@@ -447,6 +474,8 @@ pub fn attach_context(session: Session, context: TxContext) {
         ));
         return;
     }
+    // It may say something else of what the user said they had checked.
+    checked.set(None);
     let pins = context.pins.len();
     let authorizations = context.authorizations.len();
     // A note's authorizations overlay what a rebuild already knew: same

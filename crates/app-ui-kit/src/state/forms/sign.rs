@@ -207,6 +207,12 @@ pub struct SignForm {
     /// Log trail id for the transaction on screen. Set when it is received.
     pub flow: Signal<Option<u64>>,
     pub context: Signal<Option<wallet_core::protocol::TxContext>>,
+    /// What a node said is stored behind what the transaction says yes to, by
+    /// address. `None` until it has answered. Empty when it had nothing, or
+    /// could not be asked.
+    pub stored_behind: Signal<Option<std::collections::HashMap<Pubkey, Vec<u8>>>>,
+    /// The message whose approvals the user said they have checked elsewhere.
+    pub blind_checked: Signal<Option<[u8; 32]>>,
     /// What is known of each Vector account the transaction's `Advance`
     /// lists: from a rebuild, a context note, or both. Signing and placing
     /// their signatures need it.
@@ -535,6 +541,8 @@ impl SignForm {
         self.begin_replacing();
         let mut this = *self;
         this.context.set(None);
+        this.stored_behind.set(None);
+        this.blind_checked.set(None);
         this.vector.set(Vec::new());
         this.import.set(String::new());
         this.error.set(None);

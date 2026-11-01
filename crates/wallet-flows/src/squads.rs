@@ -4,11 +4,14 @@
 use crate::compile::compile_fresh;
 use crate::error::FlowError;
 use solana_pubkey::Pubkey;
+use std::collections::HashMap;
 use wallet_core::proposals::{page_accounts, page_indexes, read_page, ProposalEntry};
 use wallet_core::squads::{
     Squad, SquadState, SquadsMember, SquadsProgram, SquadsSetup, PERMISSION_ALL,
 };
-use wallet_core::{apply_local_signatures, KeypairSigner, SolanaRpc, WalletSigner};
+use wallet_core::{
+    apply_local_signatures, stored_in, KeypairSigner, SolanaRpc, StoredTarget, WalletSigner,
+};
 
 /// What a node says about an address that should be a multisig.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -113,10 +116,151 @@ pub async fn load_page(
     Ok((state, entries))
 }
 
+/// What the node says is stored behind `targets`, by address: the raw bytes, to
+/// show and to pass on, of what fits what each acts on.
+pub async fn read_stored(
+    rpc: &dyn SolanaRpc,
+    targets: &[StoredTarget],
+) -> Result<HashMap<Pubkey, Vec<u8>>, FlowError> {
+    // The proposal holds the number that says where its transaction is.
+    let proposals: Vec<Pubkey> = targets.iter().map(|target| target.proposal).collect();
+    let read = rpc.get_accounts(&proposals).await?;
+    let asked: Vec<(StoredTarget, Pubkey)> = targets
+        .iter()
+        .zip(read)
+        .filter_map(|(target, account)| {
+            let account =
+                account.filter(|account| account.owner == target.squad.program.program_id())?;
+            let proposal = target.squad.parse_proposal(&account.data)?;
+            Some((*target, target.squad.transaction(proposal.index)))
+        })
+        .collect();
+    let addresses: Vec<Pubkey> = asked.iter().map(|(_, address)| *address).collect();
+    let read = rpc.get_accounts(&addresses).await?;
+    let mut found = HashMap::new();
+    for ((target, address), account) in asked.into_iter().zip(read) {
+        let Some(account) =
+            account.filter(|account| account.owner == target.squad.program.program_id())
+        else {
+            continue;
+        };
+        let one = HashMap::from([(address, account.data)]);
+        if stored_in(&target, &one).is_some() {
+            found.extend(one);
+        }
+    }
+    Ok(found)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::testing::{pk, FakeRpc};
+    use wallet_core::RawAccount;
+
+    /// A v4 multisig on a local chain, as wallet-core's tests read it: what the
+    /// program wrote for its transaction 1, and that transaction's proposal.
+    const MULTISIG: &str = "d9a5e44daa78c870fe9cc9c9cd9b18266e9f23d17ba3babdb928f35f539137b7";
+    const TRANSACTION: &str = "a8faa264510ea2cfd9a5e44daa78c870fe9cc9c9cd9b18266e9f23d17ba3babdb928f35f539137b735a8380093a2d2386c1b25d1024507dbc5ae3ac66a3e65a3f6f192dee20896d30100000000000000ff00ff0000000001010103000000cd14d8623ad6e0db012f89806e133cc3326376b5c15ff369d4e7df8821d6eb07e2649cd17279322c1945b9c13b9d8f063e52f3723d3e70d81b9f339357aa3670000000000000000000000000000000000000000000000000000000000000000001000000020200000000010c00000002000000443322110000000000000000";
+    const PROPOSAL: &str = "1a5ebdbb74883521d9a5e44daa78c870fe9cc9c9cd9b18266e9f23d17ba3babdb928f35f539137b70100000000000000010000000000000000ff0100000035a8380093a2d2386c1b25d1024507dbc5ae3ac66a3e65a3f6f192dee20896d30000000000000000";
+
+    fn written() -> (Squad, StoredTarget, Vec<u8>, Vec<u8>) {
+        let address: [u8; 32] = hex::decode(MULTISIG).unwrap().try_into().unwrap();
+        let squad = Squad {
+            program: SquadsProgram::V4,
+            address: Pubkey::new_from_array(address),
+        };
+        let target = StoredTarget {
+            squad,
+            proposal: squad.proposal(1),
+            transaction: None,
+        };
+        let stored = hex::decode(TRANSACTION).unwrap();
+        (squad, target, stored, hex::decode(PROPOSAL).unwrap())
+    }
+
+    fn owned_by(owner: Pubkey, data: Vec<u8>) -> RawAccount {
+        RawAccount {
+            lamports: 1,
+            data,
+            owner,
+            executable: false,
+            rent_epoch: 0,
+        }
+    }
+
+    fn node(accounts: Vec<(Pubkey, RawAccount)>) -> FakeRpc {
+        FakeRpc {
+            accounts: accounts.into_iter().collect(),
+            ..FakeRpc::default()
+        }
+    }
+
+    fn read(rpc: &FakeRpc, target: StoredTarget) -> Result<HashMap<Pubkey, Vec<u8>>, FlowError> {
+        pollster::block_on(read_stored(rpc, &[target]))
+    }
+
+    #[test]
+    fn what_a_proposal_holds_is_found_through_the_number_it_keeps() {
+        let (squad, target, stored, proposal) = written();
+        let program = squad.program.program_id();
+        let rpc = node(vec![
+            (squad.proposal(1), owned_by(program, proposal)),
+            (squad.transaction(1), owned_by(program, stored.clone())),
+        ]);
+        assert_eq!(
+            read(&rpc, target).unwrap(),
+            HashMap::from([(squad.transaction(1), stored)])
+        );
+    }
+
+    #[test]
+    fn only_what_the_program_owns_and_what_fits_is_taken() {
+        let (squad, target, stored, proposal) = written();
+        let program = squad.program.program_id();
+
+        // Another program holds the proposal, or the stored transaction.
+        let rpc = node(vec![
+            (squad.proposal(1), owned_by(pk(9), proposal.clone())),
+            (squad.transaction(1), owned_by(program, stored.clone())),
+        ]);
+        assert!(read(&rpc, target).unwrap().is_empty());
+        let rpc = node(vec![
+            (squad.proposal(1), owned_by(program, proposal.clone())),
+            (squad.transaction(1), owned_by(pk(9), stored.clone())),
+        ]);
+        assert!(read(&rpc, target).unwrap().is_empty());
+
+        // A proposal at the address asked about that keeps the number of a
+        // proposal somewhere else: what that points at is not what was asked.
+        let elsewhere = StoredTarget {
+            proposal: pk(5),
+            ..target
+        };
+        let rpc = node(vec![
+            (pk(5), owned_by(program, proposal.clone())),
+            (squad.transaction(1), owned_by(program, stored.clone())),
+        ]);
+        assert!(read(&rpc, elsewhere).unwrap().is_empty());
+
+        // The stored transaction is not one this app reads.
+        let rpc = node(vec![
+            (squad.proposal(1), owned_by(program, proposal.clone())),
+            (squad.transaction(1), owned_by(program, proposal)),
+        ]);
+        assert!(read(&rpc, target).unwrap().is_empty());
+    }
+
+    #[test]
+    fn a_node_that_has_nothing_is_told_apart_from_one_that_cannot_be_asked() {
+        let (_, target, _, _) = written();
+        assert!(read(&FakeRpc::default(), target).unwrap().is_empty());
+        let down = FakeRpc {
+            offline: true,
+            ..FakeRpc::default()
+        };
+        assert!(read(&down, target).is_err());
+    }
 
     #[test]
     fn an_address_that_is_not_a_multisig_is_told_apart_from_a_node_that_is_down() {

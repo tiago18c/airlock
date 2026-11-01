@@ -4,11 +4,17 @@
 
 use crate::idl::catalog::{sha256_bytes, IdlCatalog};
 use crate::review::explain::{explain_with_note, DisplayNote};
-use crate::transport::protocol::{ContextAuthorization, ContextPin, ProtocolError, TxContext};
+use crate::transport::protocol::{
+    ContextAccount, ContextAuthorization, ContextPin, ProtocolError, TxContext, MAX_ACCOUNTS,
+};
 use crate::tx::decode::DecodedTx;
 use crate::wallets::relay::{authorizations_for_note, VectorContext};
 use solana_pubkey::Pubkey;
 use std::collections::HashMap;
+
+/// The most bytes of stored transactions one note carries. It has to fit one
+/// transfer, beside the transaction and its signatures.
+const MAX_STORED_IN_NOTE: usize = 8 * 1024;
 
 /// The context note for `tx`: one checksum per program this device has an IDL
 /// for, and no Vector authorizations.
@@ -51,6 +57,25 @@ pub fn context_note_with(
     TxContext::new(sha256_bytes(&tx.message), &pins, authorizations)
 }
 
+/// `note`, also carrying what a node said is stored behind the transaction's
+/// approvals, by address, for a device that cannot ask. What does not fit stays
+/// out, and that device says it was not told.
+pub fn carrying_stored(mut note: TxContext, accounts: &HashMap<Pubkey, Vec<u8>>) -> TxContext {
+    let mut sorted: Vec<_> = accounts.iter().collect();
+    sorted.sort_by_key(|(address, _)| **address);
+    let mut room = MAX_STORED_IN_NOTE;
+    for (address, data) in sorted {
+        if data.len() <= room && note.accounts.len() < MAX_ACCOUNTS {
+            room -= data.len();
+            note.accounts.push(ContextAccount {
+                pubkey: address.to_bytes(),
+                data: data.clone(),
+            });
+        }
+    }
+    note
+}
+
 /// A note is written for one message. It says nothing about any other.
 pub fn context_is_for(context: &TxContext, tx: &DecodedTx) -> bool {
     context.message_sha256 == sha256_bytes(&tx.message)
@@ -91,7 +116,6 @@ mod tests {
     use super::*;
     use crate::fixtures::{compile, transfer};
     use crate::idl::catalog::{IdlStore, MemoryBodies};
-    use crate::transport::protocol::ContextAccount;
     use crate::tx::decode::decode_v1_transaction;
     use wallet_vault::store::MemoryStore;
 
@@ -122,6 +146,46 @@ mod tests {
         let elsewhere = decode_v1_transaction(&unsigned(other, payer)).unwrap();
         assert!(!context_is_for(&context, &elsewhere));
         assert!(display_note(&elsewhere, Some(&context)).accounts.is_empty());
+    }
+
+    #[test]
+    fn a_note_carries_what_fits_of_what_is_stored_in_a_settled_order() {
+        let payer = Pubkey::new_from_array([1; 32]);
+        let other = Pubkey::new_from_array([2; 32]);
+        let tx = decode_v1_transaction(&unsigned(payer, other)).unwrap();
+        let store = IdlStore::open(MemoryStore::new(), MemoryBodies::new());
+        let note = context_note(&store, &tx).unwrap();
+        let at = |n: u8| Pubkey::new_from_array([n; 32]);
+
+        let accounts = HashMap::from([(at(9), vec![9; 10]), (at(8), vec![8; 20])]);
+        let carried = carrying_stored(note.clone(), &accounts);
+        assert_eq!(
+            carried
+                .accounts
+                .iter()
+                .map(|account| account.pubkey[0])
+                .collect::<Vec<_>>(),
+            [8, 9]
+        );
+        // The other device reads them back, for this message and no other.
+        let back = display_note(&tx, Some(&carried));
+        assert_eq!(back.accounts, accounts);
+
+        // One too large to fit stays out. The rest still goes.
+        let large = HashMap::from([
+            (at(7), vec![7; MAX_STORED_IN_NOTE + 1]),
+            (at(9), vec![9; 10]),
+        ]);
+        let carried = carrying_stored(note.clone(), &large);
+        assert_eq!(carried.accounts.len(), 1);
+        assert_eq!(carried.accounts[0].pubkey, at(9).to_bytes());
+
+        // Together they stop at the limit too, and at the most a note holds.
+        let many: HashMap<Pubkey, Vec<u8>> = (0..40u8).map(|n| (at(n), vec![n; 300])).collect();
+        let carried = carrying_stored(note.clone(), &many);
+        assert_eq!(carried.accounts.len(), MAX_STORED_IN_NOTE / 300);
+        let small: HashMap<Pubkey, Vec<u8>> = (0..40u8).map(|n| (at(n), vec![n])).collect();
+        assert_eq!(carrying_stored(note, &small).accounts.len(), MAX_ACCOUNTS);
     }
 
     #[test]

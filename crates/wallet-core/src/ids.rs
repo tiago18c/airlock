@@ -106,6 +106,10 @@ pub const SQUADS_V4_PROGRAM_ID: Pubkey =
 pub const SQUADS_SMART_ACCOUNT_PROGRAM_ID: Pubkey =
     Pubkey::from_str_const("SMRTzfY6DfH5ik3TKiyLFfXexV8uSG3d2UksSCYdunG");
 
+/// The SPL Governance program Realms runs, on mainnet and devnet.
+pub const REALMS_GOVERNANCE_PROGRAM_ID: Pubkey =
+    Pubkey::from_str_const("GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw");
+
 pub fn short_pubkey(pubkey: &Pubkey) -> String {
     let s = pubkey.to_string();
     if s.len() <= 10 {

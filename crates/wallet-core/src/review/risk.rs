@@ -7,8 +7,12 @@
 //! program will read. No IDL comes into it: the IDLs that ship with the app are
 //! pinned by checksum across devices, and one from the chain says what its author
 //! wants said.
+//!
+//! Saying yes to what the transaction does not hold is on the list too: see
+//! [`super::blind`].
 
 use crate::ids::{STAKE_PROGRAM_ID, SYSTEM_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID};
+use crate::review::blind::blind_in;
 use crate::review::explain::{ExplainedIx, ExplainedTx};
 use solana_pubkey::Pubkey;
 
@@ -67,6 +71,11 @@ pub fn risks_in(explained: &ExplainedTx) -> Vec<&'static str> {
     let mut found = Vec::new();
     for instruction in &explained.instructions {
         collect(instruction, &mut found);
+    }
+    for approval in blind_in(explained) {
+        if !found.contains(&approval.what) {
+            found.push(approval.what);
+        }
     }
     found
 }

@@ -1,6 +1,7 @@
 //! Reading a transaction before signing it: what it does in words, who still
 //! has to sign, and whether a short prompt is enough.
 
+pub(crate) mod blind;
 pub(crate) mod clock;
 pub(crate) mod context;
 pub(crate) mod explain;
@@ -8,12 +9,14 @@ pub(crate) mod quick_sign;
 pub(crate) mod risk;
 pub(crate) mod signing;
 
+pub use blind::{blind_in, stored_in, BlindApproval, StoredTarget};
 pub use clock::{
     blocks_left, blocks_left_after, format_countdown, read_clock, seconds_left, ClockReading,
     FRESH_BLOCKHASH_BLOCKS, SECONDS_PER_BLOCK,
 };
 pub use context::{
-    context_is_for, context_note, context_note_for, context_note_with, display_note,
+    carrying_stored, context_is_for, context_note, context_note_for, context_note_with,
+    display_note,
 };
 pub use explain::{
     explain_instructions, explain_transaction, explain_with_note, missing_catalog_programs,

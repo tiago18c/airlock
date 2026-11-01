@@ -206,6 +206,99 @@ fn signed_by_seed(wire: &[u8]) -> Vec<u8> {
     apply_local_signatures(wire, &signers).unwrap()
 }
 
+// ---- What is stored behind an approval.
+
+fn some_target() -> wallet_core::StoredTarget {
+    let squad = wallet_core::squads::Squad::v4(&pk(50));
+    wallet_core::StoredTarget {
+        squad,
+        proposal: squad.proposal(1),
+        transaction: None,
+    }
+}
+
+#[tokio::test]
+async fn a_late_answer_about_what_is_stored_stays_off_what_took_its_place() {
+    let mut screen = Screen::new().await;
+    screen.load(&screen.transfer(1), TxSource::Pasted);
+    screen.settle().await;
+    let reading = screen.act(|| Signal::new(false));
+
+    screen.rpc.gate.hold();
+    screen.act(|| read_stored_behind(screen.session, vec![some_target()], reading));
+    screen.settle().await;
+    assert!(screen.act(|| *reading.peek()));
+
+    screen.load(&screen.transfer(2), TxSource::Pasted);
+    screen.rpc.gate.open();
+    screen.settle().await;
+    // Not an answer for this one, and free to ask about it.
+    assert!(!screen.act(|| *reading.peek()));
+    assert_eq!(
+        screen.act(|| screen.form().stored_behind.peek().clone()),
+        None
+    );
+}
+
+#[tokio::test]
+async fn a_node_that_cannot_be_asked_has_said_nothing_and_is_not_asked_again() {
+    let down = FakeRpc {
+        offline: true,
+        ..good_node()
+    };
+    let mut screen = Screen::on(down, SubmitHandle::none()).await;
+    screen.load(&screen.transfer(1), TxSource::Pasted);
+    screen.settle().await;
+    let reading = screen.act(|| Signal::new(false));
+
+    screen.act(|| read_stored_behind(screen.session, vec![some_target()], reading));
+    screen.settle().await;
+    assert!(!screen.act(|| *reading.peek()));
+    assert_eq!(
+        screen.act(|| screen.form().stored_behind.peek().clone()),
+        Some(Default::default())
+    );
+}
+
+#[tokio::test]
+async fn what_was_checked_or_read_goes_with_the_transaction_and_a_new_note_unsays_it() {
+    let mut screen = Screen::new().await;
+    let wire = screen.transfer(1);
+    screen.load(&wire, TxSource::Pasted);
+    screen.settle().await;
+    let form = screen.form();
+    let tx = decode_on_sign(&wire, &wallet_core::LookupTables::new()).unwrap();
+    let mark = || {
+        screen.act(|| {
+            let (mut checked, mut behind) = (form.blind_checked, form.stored_behind);
+            checked.set(Some(wallet_core::sha256_bytes(&tx.message)));
+            behind.set(Some(Default::default()));
+        })
+    };
+
+    // A note for this message may say something else of what was checked.
+    mark();
+    let store = wallet_core::IdlStore::open(
+        wallet_vault::store::MemoryStore::new(),
+        wallet_core::MemoryBodies::new(),
+    );
+    let note = wallet_core::context_note(&store, &tx).unwrap();
+    screen.act(|| attach_context(screen.session, note));
+    assert_eq!(screen.act(|| *form.blind_checked.peek()), None);
+
+    // One for some other message changes nothing.
+    mark();
+    let other = decode_on_sign(&screen.transfer(2), &wallet_core::LookupTables::new()).unwrap();
+    let elsewhere = wallet_core::context_note(&store, &other).unwrap();
+    screen.act(|| attach_context(screen.session, elsewhere));
+    assert!(screen.act(|| form.blind_checked.peek().is_some()));
+
+    // Another transaction starts over.
+    screen.load(&screen.transfer(3), TxSource::Pasted);
+    assert_eq!(screen.act(|| *form.blind_checked.peek()), None);
+    assert_eq!(screen.act(|| form.stored_behind.peek().clone()), None);
+}
+
 // ---- A simulation.
 
 #[tokio::test]

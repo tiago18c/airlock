@@ -117,6 +117,8 @@ accounts        u16 count, 0..=32, each:
   data          u16 length, then the bytes
 ```
 
+`accounts` carries what a node said is stored behind what the transaction approves, as the raw account, for a device that cannot ask. See [What a transaction does not hold](signing.md#what-a-transaction-does-not-hold).
+
 [signing.md](signing.md) lists the object kinds.
 
 - Pins are one per distinct program id. Pins and authorizations are kept: more than a note holds, and it is not built.

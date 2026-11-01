@@ -3,6 +3,17 @@
 
 use super::*;
 
+/// This device's context note for `tx`, with what a node said is stored behind
+/// what it says yes to.
+fn note_for(session: Session, tx: &DecodedTx) -> Result<wallet_core::protocol::TxContext, String> {
+    let form = session.forms.sign;
+    let known = form.vector.peek().clone();
+    let stored = form.stored_behind.read().clone().unwrap_or_default();
+    context_note_for(&*session.idls.read(), tx, &known)
+        .map(|note| wallet_core::carrying_stored(note, &stored))
+        .map_err(|err| err.to_string())
+}
+
 /// What another device needs: the transaction, the signatures made here, a
 /// note saying which IDLs this device read it with, or all of them at once.
 #[component]
@@ -193,12 +204,8 @@ fn SignaturesShare(signatures: Vec<ShownSignature>) -> Element {
 #[component]
 fn TransactionShare(tx: std::rc::Rc<DecodedTx>) -> Element {
     let session = use_context::<Session>();
-    let form = session.forms.sign;
     let mut with_note = use_signal(|| true);
-    let note = use_memo(use_reactive!(|(tx)| {
-        let known = form.vector.peek().clone();
-        context_note_for(&*session.idls.read(), &tx, &known).map_err(|err| err.to_string())
-    }))();
+    let note = use_memo(use_reactive!(|(tx)| note_for(session, &tx)))();
     let mut objects = vec![QrObject::Transaction(tx.wire.clone())];
     if with_note() {
         if let Ok(context) = &note {
@@ -238,11 +245,7 @@ fn TransactionShare(tx: std::rc::Rc<DecodedTx>) -> Element {
 #[component]
 fn EverythingShare(tx: std::rc::Rc<DecodedTx>, signatures: Vec<QrObject>) -> Element {
     let session = use_context::<Session>();
-    let form = session.forms.sign;
-    let note = use_memo(use_reactive!(|(tx)| {
-        let known = form.vector.peek().clone();
-        context_note_for(&*session.idls.read(), &tx, &known).map_err(|err| err.to_string())
-    }))();
+    let note = use_memo(use_reactive!(|(tx)| note_for(session, &tx)))();
     let mut objects = vec![QrObject::Transaction(tx.wire.clone())];
     if let Ok(context) = &note {
         objects.push(QrObject::Context(context.clone()));
@@ -284,17 +287,20 @@ pub(in crate::ui) fn ContextShare(tx: std::rc::Rc<DecodedTx>) -> Element {
     let known = (form.vector)();
     let authorizations = known.len();
     let built = use_memo(use_reactive!(|(tx)| {
-        let known = form.vector.peek().clone();
-        context_note_for(&*session.idls.read(), &tx, &known)
-            .map_err(|err| err.to_string())
-            .map(|context| vec![QrObject::Context(context)])
+        note_for(session, &tx).map(|context| vec![QrObject::Context(context)])
     }))();
+    let says_stored = (form.stored_behind)().is_some_and(|stored| !stored.is_empty());
     rsx! {
         p { class: "hint",
             if authorizations > 0 {
                 "Checksums of the IDLs this device read the transaction with, and the nonce of each Vector account it lists. The other device needs the note to place and sign those authorizations. A note is never signed."
             } else {
                 "Checksums of the IDLs this device read the transaction with. The other device compares them with its own, after it has loaded the transaction. A note is never signed."
+            }
+        }
+        if says_stored {
+            p { class: "hint",
+                "It also says what the node says is stored behind this transaction's approval, for a device that cannot ask. That device marks it as something it cannot check."
             }
         }
         p { class: "hint",

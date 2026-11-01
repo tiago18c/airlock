@@ -88,17 +88,17 @@ fn a_truncated_account_is_not_read() {
 /// Accounts the two programs wrote on a local chain: a transfer of
 /// 0x11223344 lamports from vault 0, stored as transaction 1 and approved
 /// by its creator, in a multisig of two that needs both.
-struct Written {
-    squad: Squad,
+pub(crate) struct Written {
+    pub(crate) squad: Squad,
     creator: &'static str,
     other: &'static str,
     to: &'static str,
     settings: &'static str,
-    transaction: &'static str,
-    proposal: &'static str,
+    pub(crate) transaction: &'static str,
+    pub(crate) proposal: &'static str,
 }
 
-fn unhex(text: &str) -> Vec<u8> {
+pub(crate) fn unhex(text: &str) -> Vec<u8> {
     hex::decode(text).unwrap()
 }
 
@@ -106,7 +106,7 @@ fn address(text: &str) -> Pubkey {
     Pubkey::new_from_array(unhex(text).try_into().unwrap())
 }
 
-fn written() -> [Written; 2] {
+pub(crate) fn written() -> [Written; 2] {
     [
         Written {
             squad: Squad {
