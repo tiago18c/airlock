@@ -26,6 +26,9 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - The program-metadata program's IDL ships with the app, for mainnet and devnet. Review reads the calls that publish or change a program's IDL and other metadata, such as creating, writing, closing or making it immutable, in words, and Build can make them.
 
 ### Changed
+- The request modal simulates what a site asks before it offers Sign, and shows what would change. If the node says it would fail, or cannot say, Sign turns amber and the modal says why.
+- The request modal and Review and Sign now say when Airlock changed a site's transaction on its own: moving it onto an offline key's durable nonce, or setting its compute limits from a simulation.
+- The request modal says how many of a v0 transaction's accounts come from lookup tables.
 - The request modal lists the wallets that sign if you press Sign.
 - The request modal warns when a site says it is on another network than the one Airlock is on.
 - The connect modal opens with the wallet you are using ticked, at the top of the list. When you tick several, it is the first one the site gets, or else the first you ticked.
@@ -67,6 +70,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - A transaction that went back to a site from Review and Sign is not sent twice. The site may send it itself, so Submit waits up to 10 seconds while the app watches for it on chain. If it lands, a toast says the site sent it and follows it to confirmed, and Submit stays off. If it does not, a toast says the site did not send it, and Submit turns on. In a batch, each transaction is watched for on its own.
 
 ### Security
+- A transaction that hands over control of something no longer gets one-click Sign in the request modal, however well it reads: a token approval or change of authority, giving an account to a program, handing over a stake account or durable nonce, or changing a program. The modal and Review and Sign say what it does, and you sign it from Review.
 - A site connected to one wallet can no longer ask another wallet of this device to sign. Only the account it named was checked, not who the transaction asks to sign, so a press could have used a wallet the site was never given. Now such a request is refused.
 - The buttons that approve a request stay off for a moment after they could first be pressed, so a click meant for something else cannot land on one as a site's request appears.
 - A transaction signed on Review and Sign can no longer go to the wrong site. If a site's request was opened on the screen while a signature was being made, that site was sent the transaction signed for what was there before, and the screen went back to it. Now a signature for something no longer on the screen is not used.

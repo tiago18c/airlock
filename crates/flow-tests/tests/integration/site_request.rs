@@ -261,7 +261,8 @@ fn a_request_for_a_programmatic_signer_is_rebuilt_authorized_signed_and_lands() 
             unread: 0,
             unvetted: 0,
             elsewhere: 0,
-            signable: 2
+            signable: 2,
+            risky: 0,
         }
     );
     // Without the authority key it does not.

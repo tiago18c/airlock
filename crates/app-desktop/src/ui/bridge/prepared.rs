@@ -1,8 +1,8 @@
 //! Prepare a browser sign request for display and action.
 
 use super::*;
-use app_ui_kit::state::forms::BlockhashClock;
-use wallet_flows::offer::{modal_offer, ModalFacts};
+use app_ui_kit::state::forms::{BlockhashClock, SimState};
+use wallet_flows::offer::{modal_offer, ModalFacts, Simulated};
 
 /// The transaction a sign request will be answered with.
 #[derive(Clone, PartialEq)]
@@ -21,6 +21,8 @@ pub(in crate::ui) enum Prepared {
         /// When this app chose the blockhash, the height it expires at.
         last_valid_height: Option<u64>,
         flow: u64,
+        /// It was moved onto an offline key's durable nonce on the way here.
+        onto_nonce: bool,
     },
     Failed(String),
     /// It asks something the site was not given. Trying again changes nothing.
@@ -39,6 +41,8 @@ pub(in crate::ui) struct ReadyWire {
     /// Set when a legacy or v0 wire was rewritten as v1.
     pub converted: Option<wallet_core::Converted>,
     pub flow: u64,
+    /// It was moved onto an offline key's durable nonce on the way here.
+    pub onto_nonce: bool,
 }
 
 /// What Sign signs.
@@ -67,11 +71,14 @@ pub(in crate::ui) struct PreparedRequest {
     pub locked: bool,
     pub can_review: bool,
     pub can_sign: bool,
-    /// Sign is offered, but not every instruction was put in words by an IDL
-    /// that ships with the app or that the user imported.
-    pub unread_sign: bool,
+    /// Sign is offered, but something says to look twice.
+    pub cautious_sign: bool,
+    /// What the node said it would do.
+    pub simulation: Signal<SimState>,
     /// Who signs if this device signs it now.
     pub signs_with: Vec<Pubkey>,
+    /// It was moved onto an offline key's durable nonce on the way here.
+    pub onto_nonce: bool,
     pub verdict: Option<wallet_core::QuickSign>,
     pub step: Option<wallet_core::NextSignature>,
     pub lifetime: Option<wallet_core::TxLifetime>,
@@ -158,6 +165,7 @@ pub(in crate::ui) fn use_prepared_request(
                     converted: prepared.converted.map(Box::new),
                     last_valid_height: prepared.last_valid_height,
                     flow: prepared.flow,
+                    onto_nonce: prepared.onto_nonce,
                 },
                 Err(err) => Prepared::Failed(err),
             });
@@ -216,6 +224,7 @@ pub(in crate::ui) fn use_prepared_request(
                 tables,
                 converted,
                 flow,
+                onto_nonce,
                 ..
             },
             Some(paid),
@@ -226,6 +235,7 @@ pub(in crate::ui) fn use_prepared_request(
             tables: tables.clone(),
             converted: converted.as_deref().cloned(),
             flow: *flow,
+            onto_nonce: *onto_nonce,
         }),
         (
             Prepared::Ready {
@@ -235,6 +245,7 @@ pub(in crate::ui) fn use_prepared_request(
                 tables,
                 converted,
                 flow,
+                onto_nonce,
                 ..
             },
             None,
@@ -245,6 +256,7 @@ pub(in crate::ui) fn use_prepared_request(
             tables: tables.clone(),
             converted: converted.as_deref().cloned(),
             flow: *flow,
+            onto_nonce: *onto_nonce,
         }),
         _ => None,
     };
@@ -320,19 +332,58 @@ pub(in crate::ui) fn use_prepared_request(
     }));
     let clock_expired = use_signal(|| false);
     let countdown_label = use_signal(|| String::from("…"));
+    let keys_replaced = converted
+        .as_ref()
+        .is_some_and(|converted| !converted.replaced.is_empty());
+    let authorizations_here = status
+        .as_ref()
+        .map_or(0, |status| status.authorizations_here());
+    // What the node says it would do, before anyone is asked to sign it. One with
+    // an authorization to sign first would only fail for the lack of it.
+    let to_simulate = shown
+        .clone()
+        .filter(|_| authorizations_here == 0 && !(adapted.is_some() && keys_replaced));
+    let mut simulation = use_signal(|| SimState::Idle);
+    // Counts simulations, so a slow older one cannot overwrite a newer one.
+    let mut simulations = use_signal(|| 0u64);
+    use_effect(use_reactive!(|(to_simulate)| {
+        let mine = *simulations.peek() + 1;
+        simulations.set(mine);
+        let Some(tx) = to_simulate.clone() else {
+            simulation.set(SimState::Idle);
+            return;
+        };
+        simulation.set(SimState::Running);
+        let rpc = session.rpc();
+        spawn(async move {
+            let result = match rpc {
+                Ok(rpc) => wallet_flows::simulate::simulate(rpc.as_ref(), &tx).await,
+                Err(err) => Err(err),
+            };
+            if *simulations.peek() == mine {
+                simulation.set(match result {
+                    Ok(simulation) => SimState::Done(simulation),
+                    Err(err) => SimState::Failed(err.to_string()),
+                });
+            }
+        });
+    }));
+    let simulated = match &*simulation.read() {
+        SimState::Done(done) if done.error.is_some() => Simulated::Fails,
+        SimState::Done(_) => Simulated::Succeeds,
+        SimState::Failed(_) => Simulated::Unavailable,
+        _ => Simulated::Pending,
+    };
     let modal = modal_offer(ModalFacts {
         prepared: ready.is_some(),
         locked,
         rebuilt: adapted.is_some(),
-        keys_replaced: converted
-            .as_ref()
-            .is_some_and(|converted| !converted.replaced.is_empty()),
-        authorizations_here: status
-            .as_ref()
-            .map_or(0, |status| status.authorizations_here()),
+        keys_replaced,
+        authorizations_here,
         verdict,
         left_for_site: site_signs.len(),
         looking_for_idls: fetching(),
+        simulated,
         clock_expired: clock_expired(),
         step,
     });
@@ -364,8 +415,10 @@ pub(in crate::ui) fn use_prepared_request(
         locked,
         can_review: modal.review,
         can_sign: modal.sign,
-        unread_sign: modal.unread_sign,
+        cautious_sign: modal.cautious_sign,
+        simulation,
         signs_with,
+        onto_nonce: ready.as_ref().is_some_and(|ready| ready.onto_nonce),
         verdict,
         step,
         lifetime,

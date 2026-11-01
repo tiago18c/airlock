@@ -39,7 +39,12 @@ pub struct PreparedRequest {
     /// any lookup tables read: see [`wallets_asked`]. A site may ask this only of
     /// what it was given, and the app is free to rewrite it after that.
     pub asks: Vec<Pubkey>,
+    /// It was moved onto the durable nonce of the offline key that signs it.
+    pub onto_nonce: bool,
 }
+
+/// What to say of a transaction moved onto a durable nonce on the way here.
+pub const ONTO_NONCE_NOTE: &str = "It was moved onto the durable nonce of the offline key that signs it, so it stays valid until that key has signed.";
 
 /// Prepare a browser (or paste) request: v1 as today; legacy/v0 signed as-is
 /// when every missing signature is a hot key here and no keyless wallet is
@@ -83,8 +88,10 @@ pub async fn prepare_request(
         );
         let (wire, adapted, last_valid_height) =
             rebuild_for_wallets_flow(session, wire, flow).await?;
+        let rebuilt = wire.clone();
         let (wire, last_valid_height) =
             onto_offline_nonce(session, wire, adapted.as_ref(), last_valid_height, flow).await;
+        let onto_nonce = wire != rebuilt;
         return Ok(PreparedRequest {
             wire,
             format: TxFormat::V1,
@@ -94,6 +101,7 @@ pub async fn prepare_request(
             last_valid_height,
             flow,
             asks,
+            onto_nonce,
         });
     }
 
@@ -131,6 +139,7 @@ pub async fn prepare_request(
             last_valid_height: None,
             flow,
             asks,
+            onto_nonce: false,
         });
     };
     let from_message = hex::encode(sha256_bytes(&view.message));
@@ -146,8 +155,10 @@ pub async fn prepare_request(
     session.keep_made_here(one_time.pairs());
     let (wire, adapted, last_valid_height) =
         rebuild_for_wallets_flow(session, converted.wire.clone(), flow).await?;
+    let rebuilt = wire.clone();
     let (wire, last_valid_height) =
         onto_offline_nonce(session, wire, adapted.as_ref(), last_valid_height, flow).await;
+    let onto_nonce = wire != rebuilt;
     still_signs(&wire, &one_time)?;
     Ok(PreparedRequest {
         wire,
@@ -158,6 +169,7 @@ pub async fn prepare_request(
         last_valid_height,
         flow,
         asks,
+        onto_nonce,
     })
 }
 
