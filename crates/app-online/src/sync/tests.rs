@@ -4,7 +4,7 @@ use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 
 use app_core::testing::{kit, settle};
-use app_core::{notice_row_text, Clock, NoticeKind, VaultState};
+use app_core::{notice_row_text, Clock, NoticeKind, Reach, VaultState};
 use async_trait::async_trait;
 use solana_hash::Hash;
 use solana_pubkey::Pubkey;
@@ -974,4 +974,246 @@ async fn prices_wait_for_mainnet() {
     let ok = run_prices_once(&kit).await.unwrap();
     assert!(ok.note.unwrap().contains("mainnet"));
     assert!(kit.core.slices().holdings.get().market.quotes.is_empty());
+}
+
+// ---- Pacing the token accounts.
+
+fn tokens_scheduler(kit: &app_core::testing::Kit, rpc: Arc<FakeRpc>) -> Scheduler {
+    let scheduler = Scheduler::new(kit.core.public());
+    register_tokens(
+        &scheduler,
+        Arc::new(move || Ok(rpc.clone() as Arc<dyn SolanaRpc>)),
+    );
+    scheduler.start();
+    scheduler
+}
+
+fn holds_tokens_of(kit: &app_core::testing::Kit, owner: Pubkey) -> bool {
+    !kit.core
+        .slices()
+        .holdings
+        .get()
+        .page(&owner, 0, 1)
+        .is_empty()
+}
+
+fn token_of(owner: Pubkey) -> wallet_core::DiscoveredTokenAccount {
+    wallet_core::DiscoveredTokenAccount {
+        pubkey: Pubkey::new_unique(),
+        owner,
+        mint: Pubkey::new_unique(),
+        amount: 1,
+        decimals: 0,
+    }
+}
+
+/// `contacts` in the book, each holding one token account.
+fn book_of(kit: &app_core::testing::Kit, contacts: u8) -> (Vec<Pubkey>, FakeRpc) {
+    let owners: Vec<Pubkey> = (1..=contacts).map(pk).collect();
+    let mut rpc = FakeRpc::default();
+    for owner in &owners {
+        add_contact(kit, *owner);
+        rpc.tokens.insert(*owner, vec![token_of(*owner)]);
+    }
+    (owners, rpc)
+}
+
+#[tokio::test]
+async fn a_big_book_is_read_a_part_at_a_time_and_all_of_it_comes_around() {
+    let kit = kit();
+    let (owners, rpc) = book_of(&kit, 60);
+    let rpc = Arc::new(rpc);
+    let scheduler = tokens_scheduler(&kit, rpc.clone());
+    settle().await;
+
+    scheduler.run_now(TOKENS_JOB).await.unwrap();
+    settle().await;
+    // No more than one turn's worth was asked for.
+    assert_eq!(rpc.asked(), wallet_flows::refresh::TOKENS_PER_TURN);
+    let read = owners
+        .iter()
+        .filter(|owner| holds_tokens_of(&kit, **owner))
+        .count();
+    assert_eq!(read, wallet_flows::refresh::TOKENS_PER_TURN);
+
+    scheduler.run_now(TOKENS_JOB).await.unwrap();
+    scheduler.run_now(TOKENS_JOB).await.unwrap();
+    settle().await;
+    assert!(owners.iter().all(|owner| holds_tokens_of(&kit, *owner)));
+}
+
+#[tokio::test]
+async fn a_node_that_says_it_is_asked_too_often_stops_the_read_and_what_it_gave_is_kept() {
+    let kit = kit();
+    let (owners, mut rpc) = book_of(&kit, 10);
+    rpc.tokens_stop_after = Some((3, RpcError::RateLimited));
+    let rpc = Arc::new(rpc);
+    let scheduler = tokens_scheduler(&kit, rpc.clone());
+    settle().await;
+
+    let result = scheduler.run_now(TOKENS_JOB).await;
+    settle().await;
+    assert_eq!(result.unwrap_err(), RpcError::RateLimited.to_string());
+    // Three answers and the refusal, and nobody after that was asked.
+    assert_eq!(rpc.asked(), 4);
+    let read = owners
+        .iter()
+        .filter(|owner| holds_tokens_of(&kit, **owner))
+        .count();
+    assert_eq!(read, 3);
+
+    // It says so, and the node is not shown as down: it answered.
+    let notices = kit.core.slices().notices.get();
+    assert!(notices.items().iter().any(|notice| matches!(
+        &notice.kind,
+        NoticeKind::SyncFailed { job, .. } if job == TOKENS_JOB
+    )));
+    assert_ne!(kit.core.slices().network.get().reach, Reach::Unreachable);
+    // And it waits before asking again.
+    let waits = wait_of(&kit, TOKENS_JOB);
+    assert_eq!(waits, INITIAL_BACKOFF.as_millis() as u64);
+}
+
+#[tokio::test]
+async fn the_read_goes_on_from_where_a_node_stopped_it() {
+    let kit = kit();
+    let (owners, mut rpc) = book_of(&kit, 10);
+    rpc.tokens_stop_after = Some((3, RpcError::RateLimited));
+    let rpc = Arc::new(rpc);
+    let scheduler = tokens_scheduler(&kit, rpc.clone());
+    settle().await;
+
+    scheduler.run_now(TOKENS_JOB).await.unwrap_err();
+    settle().await;
+    assert_eq!(
+        owners
+            .iter()
+            .filter(|owner| holds_tokens_of(&kit, **owner))
+            .count(),
+        3
+    );
+    // Three answered, and the fourth is who it stopped at. That one goes first.
+    scheduler.run_now(TOKENS_JOB).await.unwrap_err();
+    let asked = rpc.tokens_asked.lock().unwrap().clone();
+    assert_eq!(asked.len(), 5);
+    assert_eq!(asked[4], asked[3]);
+}
+
+#[tokio::test]
+async fn a_node_that_refuses_every_address_is_a_failure_rather_than_a_quiet_nothing() {
+    let kit = kit();
+    let (_, mut rpc) = book_of(&kit, 3);
+    rpc.tokens_fail = true;
+    let scheduler = tokens_scheduler(&kit, Arc::new(rpc));
+    settle().await;
+
+    let err = scheduler.run_now(TOKENS_JOB).await.unwrap_err();
+    assert_eq!(
+        err,
+        "The node would not read the token accounts of 3 address(es): token accounts are not served"
+    );
+}
+
+#[tokio::test]
+async fn refresh_says_how_far_it_got_when_a_node_stops_it() {
+    let kit = kit();
+    let (owners, mut rpc) = book_of(&kit, 5);
+    rpc.tokens_stop_after = Some((3, RpcError::RateLimited));
+    // The balances are one request, so two token accounts come back.
+    let scheduler = balances_scheduler(&kit, Arc::new(rpc));
+    settle().await;
+
+    let err = scheduler.run_now(BALANCES_JOB).await.unwrap_err();
+    settle().await;
+    assert_eq!(
+        err,
+        format!(
+            "Read the token accounts of 2 of 5 addresses. {}",
+            RpcError::RateLimited
+        )
+    );
+    let read = owners
+        .iter()
+        .filter(|owner| holds_tokens_of(&kit, **owner))
+        .count();
+    assert_eq!(read, 2);
+}
+
+#[tokio::test]
+async fn what_moved_and_was_not_read_is_kept_for_the_next_run() {
+    let kit = kit();
+    let (owners, mut rpc) = book_of(&kit, 4);
+    rpc.tokens_stop_after = Some((2, RpcError::RateLimited));
+    let moved = Moved::default();
+    moved.mark_all(&owners);
+    let scheduler = Scheduler::new(kit.core.public());
+    let rpc = Arc::new(rpc);
+    register_balances(
+        &scheduler,
+        Arc::new(move || Ok(rpc.clone() as Arc<dyn SolanaRpc>)),
+        moved.clone(),
+    );
+    scheduler.start();
+    settle().await;
+
+    scheduler.kick(BALANCES_JOB);
+    settle().await;
+    // One request for the balances and one owner read, then the node said stop.
+    let mut left = moved.take();
+    left.sort();
+    let mut expected = owners[1..].to_vec();
+    expected.sort();
+    assert_eq!(left, expected);
+}
+
+#[tokio::test]
+async fn a_few_addresses_refused_are_said_once_and_the_rest_are_read_with_no_waiting() {
+    let kit = kit();
+    let (owners, mut rpc) = book_of(&kit, 3);
+    rpc.tokens_refused_for = vec![owners[1]];
+    let scheduler = tokens_scheduler(&kit, Arc::new(rpc));
+    settle().await;
+
+    for _ in 0..2 {
+        scheduler.run_now(TOKENS_JOB).await.unwrap();
+        settle().await;
+    }
+    assert!(holds_tokens_of(&kit, owners[0]));
+    assert!(!holds_tokens_of(&kit, owners[1]));
+    assert!(holds_tokens_of(&kit, owners[2]));
+
+    let notices = kit.core.slices().notices.get();
+    let told: Vec<_> = notices
+        .items()
+        .iter()
+        .filter(|notice| matches!(&notice.kind, NoticeKind::SyncFailed { job, .. } if job == TOKENS_JOB))
+        .collect();
+    assert_eq!(told.len(), 1);
+    assert!(notice_row_text(told[0])
+        .contains("The node would not read the token accounts of 1 address(es)"));
+
+    // It is not a failure: the job waits its usual time, and does not back off.
+    let status = kit.core.slices().sync.get();
+    let job = status.job(TOKENS_JOB).unwrap();
+    assert_eq!(job.last_error, None);
+    assert!(job.last_success_ms.is_some());
+    assert_eq!(
+        wait_of(&kit, TOKENS_JOB),
+        super::TOKENS_INTERVAL.as_millis() as u64
+    );
+}
+
+#[tokio::test]
+async fn refresh_says_which_addresses_it_could_not_read_and_reads_the_rest() {
+    let kit = kit();
+    let (owners, mut rpc) = book_of(&kit, 3);
+    rpc.tokens_refused_for = vec![owners[1]];
+    let scheduler = balances_scheduler(&kit, Arc::new(rpc));
+    settle().await;
+
+    let note = scheduler.run_now(BALANCES_JOB).await.unwrap().note.unwrap();
+    assert_eq!(
+        note,
+        "Refreshed 3 owners, 2 token accounts. The node would not read the token accounts of 1 address(es): token accounts are not served"
+    );
 }

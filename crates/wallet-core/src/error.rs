@@ -45,6 +45,9 @@ pub enum RpcError {
     /// The node has not reached the slot the read asked for yet.
     #[error("The node has not caught up with the chain yet")]
     Behind,
+    /// The node, or a proxy in front of it, says it is being asked too often.
+    #[error("The node says it is getting too many requests")]
+    RateLimited,
     #[error("{0}")]
     Message(String),
 }
@@ -57,6 +60,11 @@ impl RpcError {
             self,
             Self::Offline | Self::Timeout | Self::Unreachable(_) | Self::NoAnswer(_)
         )
+    }
+
+    /// Asking about the next thing right away would only be refused as well.
+    pub fn stops_a_read(&self) -> bool {
+        self.is_down() || matches!(self, Self::RateLimited)
     }
 
     /// A transaction sent with this result may still land: the node did not

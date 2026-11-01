@@ -68,6 +68,12 @@ pub struct FakeRpc {
     pub offline: bool,
     /// Token account requests are refused.
     pub tokens_fail: bool,
+    /// After this many token account requests, each fails with this.
+    pub tokens_stop_after: Option<(usize, RpcError)>,
+    /// Whose token accounts were asked about, in order.
+    pub tokens_asked: Mutex<Vec<Pubkey>>,
+    /// Whose token accounts are refused.
+    pub tokens_refused_for: Vec<Pubkey>,
     pub balances: HashMap<Pubkey, u64>,
     /// Token accounts by owner.
     pub tokens: HashMap<Pubkey, Vec<DiscoveredTokenAccount>>,
@@ -260,7 +266,16 @@ impl SolanaRpc for FakeRpc {
     ) -> Result<Vec<DiscoveredTokenAccount>, RpcError> {
         self.count()?;
         self.answer_at(min_slot)?;
-        if self.tokens_fail {
+        self.tokens_asked
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .push(*owner);
+        if let Some((after, err)) = &self.tokens_stop_after {
+            if self.asked() > *after {
+                return Err(err.clone());
+            }
+        }
+        if self.tokens_fail || self.tokens_refused_for.contains(owner) {
             return Err(RpcError::Message("token accounts are not served".into()));
         }
         Ok(self.tokens.get(owner).cloned().unwrap_or_default())

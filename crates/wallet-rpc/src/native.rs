@@ -463,6 +463,18 @@ mod tests {
     const LONG: Duration = Duration::from_secs(20);
 
     #[tokio::test]
+    async fn a_node_that_is_asked_too_often_says_so_and_a_send_it_refused_did_not_go_out() {
+        let url = answering("429 Too Many Requests", "{}");
+        let err = Backend::new(&url, LONG).genesis_hash().await.unwrap_err();
+        assert_eq!(err, RpcError::RateLimited);
+        let err = send_to(&url, LONG).await;
+        assert_eq!(err, RpcError::RateLimited);
+        assert!(!err.may_have_gone_out());
+        assert!(!err.is_down());
+        assert!(err.stops_a_read());
+    }
+
+    #[tokio::test]
     async fn a_refused_connection_sent_nothing() {
         let closed = {
             let listener = TcpListener::bind("127.0.0.1:0").unwrap();

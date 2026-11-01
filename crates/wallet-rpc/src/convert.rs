@@ -41,13 +41,24 @@ pub fn signature_status(
     }
 }
 
+/// Whether a client's text says the node is being asked too often. What a program
+/// logs can say anything, so a simulation's logs do not count.
+fn says_rate_limited(lower: &str) -> bool {
+    !lower.contains("log messages")
+        && ["too many requests", "rate limit", "-32429"]
+            .iter()
+            .any(|words| lower.contains(words))
+}
+
 /// An error a client only gives as text. A timeout, a request that never
 /// reached the node and one that got no answer are told apart from an answer
 /// the node gave.
 pub fn rpc_error(err: impl ToString) -> RpcError {
     let message = err.to_string();
     let lower = message.to_ascii_lowercase();
-    if lower.contains("timed out") || lower.contains("timeout") {
+    if says_rate_limited(&lower) {
+        RpcError::RateLimited
+    } else if lower.contains("timed out") || lower.contains("timeout") {
         RpcError::Timeout
     } else if lower.contains("minimum context slot has not been reached") {
         RpcError::Behind
@@ -233,6 +244,20 @@ mod tests {
             RpcError::Timeout
         ));
         assert!(matches!(rpc_error("HTTP 403"), RpcError::Message(_)));
+        for limited in [
+            "HTTP status client error (429 Too Many Requests)",
+            "RPC response error -32429: limit reached",
+            "Rate limit exceeded",
+        ] {
+            assert_eq!(rpc_error(limited), RpcError::RateLimited, "{limited}");
+        }
+        // A program's logs can say anything, and the words can pass by chance.
+        let logged = "RPC response error -32002: Transaction simulation failed; 1 log messages:\n  Program log: too many requests";
+        assert!(matches!(rpc_error(logged), RpcError::Message(_)));
+        assert!(matches!(
+            rpc_error("custom program error: 0x429"),
+            RpcError::Message(_)
+        ));
     }
 
     #[test]
