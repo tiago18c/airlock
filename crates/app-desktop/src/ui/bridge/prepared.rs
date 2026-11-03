@@ -23,6 +23,8 @@ pub(in crate::ui) enum Prepared {
         flow: u64,
     },
     Failed(String),
+    /// It asks something the site was not given. Trying again changes nothing.
+    Refused(String),
 }
 
 /// What Review hands to the Sign screen.
@@ -68,6 +70,8 @@ pub(in crate::ui) struct PreparedRequest {
     /// Sign is offered, but not every instruction was put in words by an IDL
     /// that ships with the app or that the user imported.
     pub unread_sign: bool,
+    /// Who signs if this device signs it now.
+    pub signs_with: Vec<Pubkey>,
     pub verdict: Option<wallet_core::QuickSign>,
     pub step: Option<wallet_core::NextSignature>,
     pub lifetime: Option<wallet_core::TxLifetime>,
@@ -143,6 +147,9 @@ pub(in crate::ui) fn use_prepared_request(
             }
             let ready = result.is_ok();
             prepared.set(match result {
+                Ok(prepared) if !session.site_given(&origin, &prepared.asks) => {
+                    Prepared::Refused(crate::bridge::NOT_GIVEN_TO_SITE.to_owned())
+                }
                 Ok(prepared) => Prepared::Ready {
                     wire: prepared.wire,
                     format: prepared.format,
@@ -294,6 +301,13 @@ pub(in crate::ui) fn use_prepared_request(
         .as_ref()
         .map(|tx| wallet_core::signing_status_in(tx, &local, &ctx));
     let step = status.as_ref().map(wallet_core::next_step);
+    let mut signs_with: Vec<Pubkey> = status
+        .iter()
+        .flat_map(|status| &status.lines)
+        .filter(|line| line.state == wallet_core::SignerState::Local)
+        .map(|line| line.authority_chip())
+        .collect();
+    signs_with.dedup();
     let lifetime = shown.as_ref().map(wallet_core::tx_lifetime);
     // The modal's own countdown. A blockhash this app chose (a rebuild) has
     // an exact expiry. A site's is estimated from when the request arrived,
@@ -351,6 +365,7 @@ pub(in crate::ui) fn use_prepared_request(
         can_review: modal.review,
         can_sign: modal.sign,
         unread_sign: modal.unread_sign,
+        signs_with,
         verdict,
         step,
         lifetime,

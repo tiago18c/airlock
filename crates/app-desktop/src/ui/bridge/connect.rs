@@ -14,6 +14,7 @@ pub(in crate::ui) fn ConnectRequest(current: BridgePrompt, on_close: EventHandle
     let current_is_new = start.choice.current_is_new;
     // Kept in the order they were ticked: the first goes to the site first.
     let mut chosen = use_signal(|| start.choice.ticked.clone());
+    let armed = use_armed(!chosen.read().is_empty());
     let mut remember = use_signal(|| start.remembered);
     let shares_contract = accounts
         .iter()
@@ -84,7 +85,7 @@ pub(in crate::ui) fn ConnectRequest(current: BridgePrompt, on_close: EventHandle
             }
             button {
                 class: "primary",
-                disabled: chosen.read().is_empty(),
+                disabled: !armed,
                 onclick: move |_| {
                     let held = session.shareable_accounts();
                     let shared: Vec<ShareableAccount> = chosen

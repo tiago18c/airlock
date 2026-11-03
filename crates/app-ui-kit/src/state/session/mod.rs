@@ -274,6 +274,17 @@ impl Session {
         self.command(|core| core.bridge_block(id))
     }
 
+    /// The clock of the core, which a test can move.
+    pub fn clock(&self) -> std::sync::Arc<dyn app_core::ports::Clock> {
+        self.core().ports().clock.clone()
+    }
+
+    /// Whether `origin` was given every one of `accounts`, and may ask them for a
+    /// signature. The user still approves the signature itself.
+    pub fn site_given(&self, origin: &str, accounts: &[Pubkey]) -> bool {
+        self.core().public().site_sign(origin, accounts) == app_core::bridge::SiteSign::Allowed
+    }
+
     /// End `origin`'s connection. What it was given stays.
     pub fn site_disconnect(&self, origin: &str) {
         self.command(|core| core.site_disconnect(origin));
