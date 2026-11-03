@@ -5,6 +5,7 @@ pub(crate) mod clock;
 pub(crate) mod context;
 pub(crate) mod explain;
 pub(crate) mod quick_sign;
+pub(crate) mod risk;
 pub(crate) mod signing;
 
 pub use clock::{
@@ -21,6 +22,7 @@ pub use explain::{
     ProgramLine, RunsAs,
 };
 pub use quick_sign::{quick_sign, quick_sign_in, QuickSign};
+pub use risk::risks_in;
 pub use signing::{
     batch_steps, next_step, only_simulate_and_sign, sign_locally, sign_locally_in,
     sign_locally_in_with, sign_steps, signing_status, signing_status_in, tx_lifetime, LocalKeys,

@@ -2,7 +2,7 @@
 //! simulate, sign and submit.
 
 use crate::actions::sentence;
-use crate::actions::sign::{prepare_request, rebuild_for_wallets, ReceivedMeta};
+use crate::actions::sign::{prepare_request, rebuild_for_wallets, ReceivedMeta, ONTO_NONCE_NOTE};
 use crate::diagnostics::{next_flow_id, source_name, TxLog};
 use crate::state::forms::{BlockhashExpiry, SignLoad, SimState, SiteSend, TxSource};
 use crate::state::session::Session;
@@ -287,7 +287,10 @@ pub fn accept(session: Session, object: QrObject, from: TxSource) {
                 .await
                 {
                     Ok(prepared) if form.still_on_screen(mine) => {
-                        let what = loaded_note(format, prepared.converted.as_ref());
+                        let mut what = loaded_note(format, prepared.converted.as_ref());
+                        if prepared.onto_nonce {
+                            what = format!("{what} {ONTO_NONCE_NOTE}");
+                        }
                         form.load(
                             SignLoad::new(prepared.wire, from)
                                 .with_note(what)
@@ -543,6 +546,24 @@ pub fn start_simulation(session: Session, tx: DecodedTx) {
                                 marked.set(Some(answer_for));
                             }
                             wire_signal.set(Some(fitted));
+                            // What this app made it fits as a matter of course.
+                            // Anyone else's should hear what was changed in it.
+                            let from_app = matches!(
+                                *form.source.peek(),
+                                Some(TxSource::Build | TxSource::Wallets | TxSource::Stake)
+                            );
+                            if !from_app {
+                                const FITTED: &str =
+                                    "Its compute limits were set from what it used in simulation.";
+                                let said = match form.note.peek().clone() {
+                                    Some(note) if !note.plain().is_empty() => {
+                                        note.t(format!(" {FITTED}"))
+                                    }
+                                    _ => FITTED.into(),
+                                };
+                                let mut note = form.note;
+                                note.set(Some(said));
+                            }
                         }
                         Ok(simulation)
                     }

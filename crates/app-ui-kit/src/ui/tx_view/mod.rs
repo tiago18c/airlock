@@ -22,12 +22,28 @@ mod instruction;
 pub use facts::*;
 pub use instruction::*;
 
-/// Gives every address drawn in `children` the change the last simulation
-/// found for it. A failed simulation changes nothing.
+/// What a transaction does that hands over control of something, however well
+/// it reads.
 #[component]
-pub fn SimulatedDeltas(children: Element) -> Element {
+pub fn RiskNotice(explained: wallet_core::ExplainedTx) -> Element {
+    let risks = wallet_core::risks_in(&explained);
+    rsx! {
+        for risk in risks {
+            p { key: "{risk}", class: "warn", role: "alert", "{risk}" }
+        }
+    }
+}
+
+/// Gives every address drawn in `children` the change a simulation found for
+/// it: `from`, or else the Sign screen's. A failed simulation changes nothing.
+#[component]
+pub fn SimulatedDeltas(
+    #[props(default)] from: Option<Signal<SimState>>,
+    children: Element,
+) -> Element {
     let session = use_context::<Session>();
-    let deltas = use_memo(move || match (session.forms.sign.simulation)() {
+    let source = from.unwrap_or(session.forms.sign.simulation);
+    let deltas = use_memo(move || match source() {
         SimState::Done(simulation) if simulation.error.is_none() => simulation
             .balance_changes
             .iter()
@@ -92,6 +108,7 @@ pub fn TxView(
             h3 { if inspect { "Instructions" } else { "Transaction" } }
             {children}
         }
+        RiskNotice { explained: explained.clone() }
         InstructionList { instructions: explained.instructions.clone(), inspect }
         if !unnamed.is_empty() {
             p { class: "fee-line muted",

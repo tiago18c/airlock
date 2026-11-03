@@ -223,6 +223,14 @@ async fn a_simulation_fits_the_limits_of_the_transaction_it_asked_about() {
     let form = screen.form();
     screen.act(|| {
         assert!(matches!(*form.simulation.peek(), SimState::Done(_)));
+        // It came from outside, so it says what changed in it.
+        assert!(form
+            .note
+            .peek()
+            .as_ref()
+            .unwrap()
+            .plain()
+            .contains("compute limits"));
         let digest = sha256_bytes(&decode_v1_transaction(&fitted).unwrap().message);
         assert_eq!(*form.simulated_for.peek(), Some(digest));
     });
@@ -269,6 +277,20 @@ async fn a_late_simulation_does_not_take_a_signature_off_the_transaction() {
 
     assert_eq!(screen.wire().unwrap(), signed);
     assert!(is_signed(&signed));
+}
+
+#[tokio::test]
+async fn fitting_what_this_app_made_says_nothing() {
+    let mut screen = Screen::new().await;
+    let wire = screen.transfer(1);
+    screen.load(&wire, TxSource::Build);
+    let tx = decode_v1_transaction(&wire).unwrap();
+    screen.act(|| start_simulation(screen.session, tx));
+    screen.settle().await;
+
+    assert_ne!(screen.wire().unwrap(), wire);
+    let form = screen.form();
+    screen.act(|| assert!(form.note.peek().is_none()));
 }
 
 // ---- A signature.

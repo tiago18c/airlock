@@ -158,6 +158,18 @@ pub fn batch_keepable(facts: BatchFacts) -> bool {
         && !facts.expired
 }
 
+/// What the node said it would do with a site's transaction, in the request modal.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Simulated {
+    /// It has not answered yet, or has not been asked.
+    Pending,
+    Succeeds,
+    /// It would fail.
+    Fails,
+    /// The node could not say.
+    Unavailable,
+}
+
 /// Where a site's transaction stands in the request modal.
 #[derive(Clone, Copy, Debug)]
 pub struct ModalFacts {
@@ -177,6 +189,7 @@ pub struct ModalFacts {
     pub left_for_site: usize,
     /// IDLs for what it shows are still being looked for.
     pub looking_for_idls: bool,
+    pub simulated: Simulated,
     pub clock_expired: bool,
     pub step: Option<NextSignature>,
 }
@@ -187,9 +200,10 @@ pub struct ModalOffer {
     pub review: bool,
     /// Signing here, with no further step, finishes the request.
     pub sign: bool,
-    /// Sign is offered, but not every instruction was put in words by an IDL
-    /// that ships with the app or that the user imported.
-    pub unread_sign: bool,
+    /// Sign is offered, but something says to look twice: not every instruction
+    /// was put in words by an IDL that ships with the app or that the user
+    /// imported, or the node did not say it would succeed.
+    pub cautious_sign: bool,
     /// Expired, at a step where that matters.
     pub expired: bool,
 }
@@ -197,7 +211,9 @@ pub struct ModalOffer {
 /// What the modal offers. Sign means signing completes the transaction now, so
 /// not for one that still has to simulate or has an authorization to sign here:
 /// that changes what runs, so Review signs it, simulates again and fits the
-/// limits, and the transaction is signed on a later press.
+/// limits, and the transaction is signed on a later press. Nor for one that hands
+/// over control of something, however well it reads, which takes the deliberate
+/// step of Review. Nor before the node has said what it would do.
 pub fn modal_offer(facts: ModalFacts) -> ModalOffer {
     let review = facts.prepared && !facts.locked;
     let expired = facts.clock_expired
@@ -211,21 +227,24 @@ pub fn modal_offer(facts: ModalFacts) -> ModalOffer {
     let sign = review
         && !unsimulated
         && facts.authorizations_here == 0
-        && facts
-            .verdict
-            .is_some_and(|verdict| verdict.completes_leaving(facts.left_for_site))
+        && facts.verdict.is_some_and(|verdict| {
+            verdict.completes_leaving(facts.left_for_site) && verdict.risky == 0
+        })
         && !facts.looking_for_idls
+        && facts.simulated != Simulated::Pending
         && !expired;
     // A summary missing an instruction, or worded by an IDL from the chain, still
-    // lets Sign through. The button turns amber to say so.
-    let unread_sign = sign
-        && facts
-            .verdict
-            .is_some_and(|verdict| !verdict.allowed_leaving(facts.left_for_site));
+    // lets Sign through, and so does a node that does not say it would succeed.
+    // The button turns amber to say so.
+    let cautious_sign = sign
+        && (facts.simulated != Simulated::Succeeds
+            || facts
+                .verdict
+                .is_some_and(|verdict| !verdict.allowed_leaving(facts.left_for_site)));
     ModalOffer {
         review,
         sign,
-        unread_sign,
+        cautious_sign,
         expired,
     }
 }
@@ -605,6 +624,7 @@ mod tests {
             unvetted: 0,
             elsewhere: 0,
             signable: 1,
+            risky: 0,
         }
     }
 
@@ -619,6 +639,7 @@ mod tests {
             verdict: Some(verdict()),
             left_for_site: 0,
             looking_for_idls: false,
+            simulated: Simulated::Succeeds,
             clock_expired: false,
             step: Some(Transaction),
         }
@@ -627,7 +648,7 @@ mod tests {
     #[test]
     fn the_modal_offers_sign_when_signing_here_finishes_it() {
         let offer = modal_offer(clear());
-        assert!(offer.review && offer.sign && !offer.unread_sign && !offer.expired);
+        assert!(offer.review && offer.sign && !offer.cautious_sign && !offer.expired);
     }
 
     #[test]
@@ -687,10 +708,23 @@ mod tests {
                 clock_expired: true,
                 ..clear()
             },
+            // It hands over control of something, however well it reads.
+            ModalFacts {
+                verdict: Some(QuickSign {
+                    risky: 1,
+                    ..verdict()
+                }),
+                ..clear()
+            },
+            // The node has not said what it would do.
+            ModalFacts {
+                simulated: Simulated::Pending,
+                ..clear()
+            },
         ] {
             let offer = modal_offer(review_only);
             assert!(offer.review && !offer.sign, "{review_only:?}");
-            assert!(!offer.unread_sign);
+            assert!(!offer.cautious_sign);
         }
 
         // A rebuild alone, or a key replaced with no rebuild, simulates as it is.
@@ -737,7 +771,18 @@ mod tests {
                 verdict: Some(marked),
                 ..clear()
             });
-            assert!(offer.sign && offer.unread_sign, "{marked:?}");
+            assert!(offer.sign && offer.cautious_sign, "{marked:?}");
+        }
+    }
+
+    #[test]
+    fn sign_is_marked_when_the_node_does_not_say_it_would_succeed() {
+        for simulated in [Simulated::Fails, Simulated::Unavailable] {
+            let offer = modal_offer(ModalFacts {
+                simulated,
+                ..clear()
+            });
+            assert!(offer.sign && offer.cautious_sign, "{simulated:?}");
         }
     }
 

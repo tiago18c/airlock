@@ -68,7 +68,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
             } else if prep.locked {
                 LockedNotice {}
             } else {
-                {prepared_body(&prep)}
+                SimulatedDeltas { from: prep.simulation, {prepared_body(&prep)} }
             }
             if let Some(text) = error() {
                 p { class: "error", role: "alert", "{text}" }
@@ -82,10 +82,10 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                 "Reject"
             }
             button {
-                class: review_class(prep.can_sign, prep.unread_sign),
+                class: review_class(prep.can_sign, prep.cautious_sign),
                 disabled: !prep.can_review,
                 onclick: move |_| {
-                    let Some(ReadyWire { wire, adapted, tables, flow, .. }) = for_review.clone() else {
+                    let Some(ReadyWire { wire, adapted, tables, flow, onto_nonce, .. }) = for_review.clone() else {
                         return;
                     };
                     if let Some(paid) = &taken_for_review {
@@ -103,7 +103,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                         })
                         // The request toast names the site. Say only what
                         // changed on the way here.
-                        .with_note(review_note(adapted.is_some(), replaced_payer))
+                        .with_note(review_note(adapted.is_some(), replaced_payer, onto_nonce))
                         .with_expiry(expiry)
                         .with_tables(tables)
                         .with_vector(vector)
@@ -114,9 +114,9 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                 "Review"
             }
             button {
-                class: sign_class(can_sign, prep.unread_sign),
+                class: sign_class(can_sign, prep.cautious_sign),
                 disabled: !armed || busy(),
-                title: if prep.unread_sign { UNREAD_SIGN } else if prep.can_sign { "" } else { "Sign is offered when this device holds every missing signature and none of them is an authorization. Review signs an authorization first, then the transaction." },
+                title: if prep.cautious_sign { CAUTIOUS_SIGN } else if prep.can_sign { "" } else { "Sign is offered when this device holds every missing signature and none of them is an authorization. Review signs an authorization first, then the transaction." },
                 onclick: move |_| {
                     let Some(sign) = for_sign.clone() else {
                         return;
@@ -152,8 +152,57 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
     }
 }
 
-/// Why Sign is amber: it signs more than the modal could put in words.
-const UNREAD_SIGN: &str = "Not every instruction was put in words by an IDL that ships with the app or that you imported. Sign signs it anyway. Review shows everything in it.";
+/// What the node said it would do.
+#[component]
+fn ModalSimulation(simulation: Signal<SimState>) -> Element {
+    match simulation() {
+        SimState::Running => rsx! {
+            p { class: "muted", role: "status", "Simulating…" }
+        },
+        SimState::Done(done) => match done.error {
+            Some(error) => {
+                let why = error.message.trim_end_matches('.');
+                rsx! {
+                    p { class: "warn", role: "alert",
+                        "In simulation this fails: {why}. If it were sent, it would still cost the fee."
+                    }
+                }
+            }
+            None => {
+                let changes: Vec<Pubkey> = done
+                    .balance_changes
+                    .iter()
+                    .filter(|change| change.before != change.after)
+                    .map(|change| change.pubkey)
+                    .collect();
+                rsx! {
+                    p { class: "hint",
+                        "In simulation this succeeds."
+                        if !changes.is_empty() {
+                            " It changes "
+                            for (i, pubkey) in changes.into_iter().enumerate() {
+                                span { key: "{pubkey}",
+                                    if i > 0 {
+                                        ", "
+                                    }
+                                    Address { pubkey }
+                                }
+                            }
+                            "."
+                        }
+                    }
+                }
+            }
+        },
+        SimState::Failed(why) => rsx! {
+            p { class: "warn", "It could not be simulated: {why}" }
+        },
+        _ => rsx! {},
+    }
+}
+
+/// Why Sign is amber: it signs more than the modal could vouch for.
+const CAUTIOUS_SIGN: &str = "Look at what this says first. Not every instruction was put in words by an IDL that ships with the app or that you imported. Sign signs it anyway. Review shows everything in it.";
 
 /// The Sign button's look: amber when it signs without a trusted summary.
 fn sign_class(can_sign: bool, unread: bool) -> &'static str {
@@ -176,12 +225,17 @@ fn review_class(can_sign: bool, unread: bool) -> &'static str {
 
 /// What the Sign screen says about a transaction Review hands it: only what
 /// changed on the way there.
-fn review_note(rebuilt: bool, replaced_payer: bool) -> &'static str {
-    match (rebuilt, replaced_payer) {
+fn review_note(rebuilt: bool, replaced_payer: bool, onto_nonce: bool) -> String {
+    let changed = match (rebuilt, replaced_payer) {
         (true, true) => "It was rebuilt for the wallet it asks to sign, and a wallet of this device pays its fee in place of the one the site named, so read it again here.",
         (true, false) => "It was rebuilt for the wallet it asks to sign, so read it again here.",
         (false, true) => "A wallet of this device pays its fee in place of the one the site named, so read it again here.",
         (false, false) => "",
+    };
+    match (changed.is_empty(), onto_nonce) {
+        (_, false) => changed.to_owned(),
+        (true, true) => ONTO_NONCE_NOTE.to_owned(),
+        (false, true) => format!("{changed} {ONTO_NONCE_NOTE}"),
     }
 }
 
@@ -256,6 +310,12 @@ fn LockedNotice() -> Element {
 /// What the modal says about one prepared transaction: what was done to it,
 /// what it does, and what signing it here takes.
 fn prepared_body(prep: &PreparedRequest) -> Element {
+    let from_tables = prep.shown.as_ref().map_or(0, |tx| {
+        tx.accounts
+            .iter()
+            .filter(|account| account.lookup.is_some())
+            .count()
+    });
     let mut attempt = prep.attempt;
     let mut paid_here = prep.paid_here;
     let fetching = prep.fetching;
@@ -287,6 +347,9 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
                         Address { key: "{key}", pubkey: key }
                     }
                 }
+            }
+            if prep.onto_nonce {
+                p { class: "hint", "{ONTO_NONCE_NOTE}" }
             }
             if let Some(converted) = prep.converted.clone() {
                 ConvertedNotice { converted: converted.clone() }
@@ -332,6 +395,10 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
                 }
             }
             if let (Some(tx), Some(explained), Some(verdict)) = (prep.shown.clone(), prep.explained.clone(), prep.verdict) {
+                if verdict.risky > 0 {
+                    RiskNotice { explained: explained.clone() }
+                    p { class: "hint", "So it is signed from Review, not from here." }
+                }
                 if fetching() {
                     p { class: "muted", role: "status", "Looking for the IDLs of its programs…" }
                 } else if verdict.cleartext() {
@@ -361,6 +428,12 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
                         "{verdict.unread} instruction(s) could not be put in words with the IDLs on this device, so there is no summary of what Sign signs. Review the transaction to see everything in it."
                     }
                 }
+                ModalSimulation { simulation: prep.simulation }
+                if prep.converted.is_none() && from_tables > 0 {
+                    p { class: "hint",
+                        "It loads {from_tables} of its accounts from lookup tables, shown as the chain has them now."
+                    }
+                }
                 if !prep.site_signs.is_empty() {
                     p { class: "hint",
                         "The site signs for {prep.site_signs.len()} account(s) it creates, such as a new mint, once this device has signed. Its transaction is signed as it sent it."
@@ -385,7 +458,7 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
 struct BatchReport {
     can_review: bool,
     can_sign: bool,
-    unread_sign: bool,
+    cautious_sign: bool,
     review: Option<ReadyWire>,
     sign: Option<SignWire>,
     /// The paid-here offer, when the user switched to it.
@@ -431,10 +504,10 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
         SendPlan::InOrder => "A rejected one stops the rest.",
     };
     let label = sign_label(&current, Some(count));
-    let unread_sign = can_sign
+    let cautious_sign = can_sign
         && ready
             .as_ref()
-            .is_some_and(|ready| ready.iter().any(|item| item.unread_sign));
+            .is_some_and(|ready| ready.iter().any(|item| item.cautious_sign));
     let to_sign = ready
         .as_ref()
         .map_or(0, |ready| ready.iter().filter(|item| item.can_sign).count());
@@ -484,7 +557,7 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                 "Reject"
             }
             button {
-                class: review_class(can_sign, unread_sign),
+                class: review_class(can_sign, cautious_sign),
                 disabled: !can_review,
                 onclick: move |_| {
                     let Some(reports) = for_review.clone() else {
@@ -492,10 +565,10 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                     };
                     let mut items = Vec::with_capacity(reports.len());
                     for report in &reports {
-                        let Some(ReadyWire { wire, adapted, tables, flow, .. }) = report.review.clone() else {
+                        let Some(ReadyWire { wire, adapted, tables, flow, onto_nonce, .. }) = report.review.clone() else {
                             return;
                         };
-                        let note = review_note(adapted.is_some(), report.taken.is_some());
+                        let note = review_note(adapted.is_some(), report.taken.is_some(), onto_nonce);
                         items.push(BatchItem {
                             wire,
                             tables,
@@ -523,9 +596,9 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                 "Review"
             }
             button {
-                class: sign_class(can_sign, unread_sign),
+                class: sign_class(can_sign, cautious_sign),
                 disabled: !armed || busy(),
-                title: if unread_sign { UNREAD_SIGN } else { "" },
+                title: if cautious_sign { CAUTIOUS_SIGN } else { "" },
                 onclick: move |_| {
                     let Some(reports) = for_sign.clone() else {
                         return;
@@ -592,7 +665,7 @@ fn BatchCard(
     let report = BatchReport {
         can_review: prep.can_review,
         can_sign: prep.can_sign,
-        unread_sign: prep.unread_sign,
+        cautious_sign: prep.cautious_sign,
         review: prep.for_review.clone(),
         sign: prep.for_sign.clone(),
         taken: prep.offered.clone().filter(|_| prep.replaced_payer),
@@ -612,7 +685,7 @@ fn BatchCard(
         (Prepared::Working, _) => ("chip", "Preparing…"),
         (Prepared::Failed(_), _) => ("chip danger", "Cannot be prepared"),
         (Prepared::Refused(_), _) => ("chip danger", "Refused"),
-        (Prepared::Ready { .. }, _) if prep.unread_sign => ("chip warn", "Sign without summary"),
+        (Prepared::Ready { .. }, _) if prep.cautious_sign => ("chip warn", "Sign without summary"),
         (Prepared::Ready { .. }, _) if prep.can_sign => ("chip ok", "Can sign here"),
         (Prepared::Ready { .. }, _) => ("chip warn", "Review"),
     };
@@ -650,7 +723,7 @@ fn BatchCard(
                     if prep.original.is_none() {
                         p { class: "warn", "{detail}" }
                     } else {
-                        {prepared_body(&prep)}
+                        SimulatedDeltas { from: prep.simulation, {prepared_body(&prep)} }
                     }
                 }
             }

@@ -13,6 +13,7 @@
 
 use crate::idl::catalog::IdlOrigin;
 use crate::review::explain::{ExplainedIx, ExplainedTx};
+use crate::review::risk::risks_in;
 use crate::review::signing::{signing_status_in, LocalKeys};
 use crate::tx::decode::DecodedTx;
 use crate::wallets::relay::AuthContext;
@@ -29,6 +30,9 @@ pub struct QuickSign {
     pub elsewhere: usize,
     /// Signatures this device can add now.
     pub signable: usize,
+    /// Things it does that hand over control, however well it reads. See
+    /// [`crate::review::risk`].
+    pub risky: usize,
 }
 
 impl QuickSign {
@@ -107,6 +111,7 @@ pub fn quick_sign_in(
         unvetted: reading.unvetted,
         elsewhere: status.missing_elsewhere(),
         signable: status.signable,
+        risky: risks_in(explained).len(),
     }
 }
 
@@ -162,6 +167,25 @@ mod tests {
     }
 
     #[test]
+    fn what_hands_over_control_is_counted_however_well_it_reads() {
+        let key = KeypairSigner::new_random();
+        // A token approval, which the IDL that ships with the app reads in full.
+        let approve = Instruction {
+            program_id: crate::ids::TOKEN_PROGRAM_ID,
+            accounts: vec![
+                AccountMeta::new(pk(3), false),
+                AccountMeta::new_readonly(pk(4), false),
+                AccountMeta::new_readonly(key.pubkey(), true),
+            ],
+            data: [&[4u8][..], &1_000u64.to_le_bytes()].concat(),
+        };
+        let wire = compile(key.pubkey(), vec![approve]).wire;
+        let verdict = judge(&wire, &[key.pubkey()]);
+        assert_eq!(verdict.risky, 1);
+        assert_eq!(verdict.unread, 0);
+    }
+
+    #[test]
     fn a_transfer_this_device_can_finish_is_allowed() {
         let key = KeypairSigner::new_random();
         let wire = compile(key.pubkey(), vec![transfer(key.pubkey(), pk(2), 5)]).wire;
@@ -172,7 +196,8 @@ mod tests {
                 unread: 0,
                 unvetted: 0,
                 elsewhere: 0,
-                signable: 1
+                signable: 1,
+                risky: 0,
             }
         );
         assert!(verdict.allowed());
@@ -328,7 +353,8 @@ mod tests {
                 unread: 0,
                 unvetted: 0,
                 elsewhere: 0,
-                signable: 2
+                signable: 2,
+                risky: 0,
             }
         );
         // With the authority on another device, the payer has to wait.
@@ -398,7 +424,8 @@ mod tests {
                 unread: 0,
                 unvetted: 0,
                 elsewhere: 0,
-                signable: 2
+                signable: 2,
+                risky: 0,
             }
         );
         assert!(verdict.allowed());
