@@ -2,7 +2,7 @@
 //! forms, and the operations the screens perform, which call into the core.
 
 use crate::platform::storage::{AppIdls, AppLeafMarks};
-use crate::state::forms::{BlockhashExpiry, Forms, TxSource};
+use crate::state::forms::{Forms, SignLoad};
 use crate::state::proposals::ProposalsOpen;
 use crate::state::pump::Pump;
 use crate::state::slices::{NetworkStatus, VaultState, WalletsView};
@@ -451,83 +451,8 @@ impl Session {
 
     /// Hand a transaction to the Sign screen and go there. This is the one
     /// way in for every other part of the app.
-    pub fn open_in_sign(
-        &self,
-        wire: Vec<u8>,
-        from: TxSource,
-        note: impl Into<wallet_core::Phrase>,
-    ) {
-        self.open_in_sign_with_lifetime(wire, from, note, None);
-    }
-
-    /// Like [`open_in_sign`](Self::open_in_sign), when this app chose the
-    /// blockhash and knows when it expires.
-    pub fn open_in_sign_with_lifetime(
-        &self,
-        wire: Vec<u8>,
-        from: TxSource,
-        note: impl Into<wallet_core::Phrase>,
-        last_valid_height: Option<u64>,
-    ) {
-        self.open_in_sign_prepared(
-            wire,
-            from,
-            note,
-            last_valid_height.map(BlockhashExpiry::exact),
-            wallet_core::LookupTables::new(),
-        );
-    }
-
-    /// Hand a prepared transaction to Sign, with when its blockhash expires
-    /// when that is known, and lookup tables for v0.
-    pub fn open_in_sign_prepared(
-        &self,
-        wire: Vec<u8>,
-        from: TxSource,
-        note: impl Into<wallet_core::Phrase>,
-        expiry: Option<BlockhashExpiry>,
-        tables: wallet_core::LookupTables,
-    ) {
-        self.open_in_sign_adapted(wire, from, note, expiry, tables, Vec::new());
-    }
-
-    /// [`open_in_sign_prepared`](Self::open_in_sign_prepared), with what a
-    /// rebuild already read of the Vector accounts the transaction lists.
-    pub fn open_in_sign_adapted(
-        &self,
-        wire: Vec<u8>,
-        from: TxSource,
-        note: impl Into<wallet_core::Phrase>,
-        expiry: Option<BlockhashExpiry>,
-        tables: wallet_core::LookupTables,
-        vector: Vec<wallet_core::relay::VectorContext>,
-    ) {
-        self.open_in_sign_flow(wire, from, note, expiry, tables, vector, None);
-    }
-
-    /// Like [`open_in_sign_adapted`](Self::open_in_sign_adapted), reusing a
-    /// log flow id when the transaction was already received.
-    #[allow(clippy::too_many_arguments)]
-    pub fn open_in_sign_flow(
-        &self,
-        wire: Vec<u8>,
-        from: TxSource,
-        note: impl Into<wallet_core::Phrase>,
-        expiry: Option<BlockhashExpiry>,
-        tables: wallet_core::LookupTables,
-        vector: Vec<wallet_core::relay::VectorContext>,
-        flow: Option<u64>,
-    ) {
-        let note: wallet_core::Phrase = note.into();
-        self.forms.sign.load_prepared_flow(
-            wire,
-            from,
-            Some(note).filter(|note| !note.plain().is_empty()),
-            expiry,
-            tables,
-            vector,
-            flow,
-        );
+    pub fn open_in_sign(&self, load: SignLoad) {
+        self.forms.sign.load(load);
         self.goto(Tab::Sign);
     }
 

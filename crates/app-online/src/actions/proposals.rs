@@ -1,7 +1,7 @@
 //! Reading one page of a multisig's proposals, and acting on one of them.
 
 use app_ui_kit::actions::sentence;
-use app_ui_kit::{Session, TxSource};
+use app_ui_kit::{Session, SignLoad, TxSource};
 use solana_pubkey::Pubkey;
 use wallet_core::proposals::{ProposalAction, ProposalEntry, ProposalRequest};
 use wallet_core::squads::{Squad, SquadState};
@@ -63,11 +63,10 @@ pub async fn open_request(
             (wire, Some(height))
         }
     };
-    session.open_in_sign_with_lifetime(
-        wire,
-        TxSource::Wallets,
-        request_note(request, entry.index, label),
-        last_valid_height,
+    session.open_in_sign(
+        SignLoad::new(wire, TxSource::Wallets)
+            .with_note(request_note(request, entry.index, label))
+            .expiring_at(last_valid_height),
     );
     Ok(())
 }

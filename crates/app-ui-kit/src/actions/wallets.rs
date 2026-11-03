@@ -1,6 +1,6 @@
 //! Adding the wallets that are more than a key, and setting them up.
 
-use crate::state::forms::{SendAsset, TxSource};
+use crate::state::forms::{SendAsset, SignLoad, TxSource};
 use crate::state::session::{Session, WalletSummary};
 use solana_pubkey::Pubkey;
 use wallet_core::squads::{Squad, SquadsProgram};
@@ -193,9 +193,8 @@ pub async fn create_squad(
         .add_contract_wallet(wallet)
         .map_err(|err| err.to_string())?;
     session.open_in_sign(
-        made.wire,
-        TxSource::Wallets,
-        "This creates the multisig. Sign and send it, then the wallet is ready.",
+        SignLoad::new(made.wire, TxSource::Wallets)
+            .with_note("This creates the multisig. Sign and send it, then the wallet is ready."),
     );
     Ok(())
 }
@@ -215,9 +214,8 @@ pub async fn create_nonce(session: Session, id: WalletId) -> Result<(), String> 
         .update_wallet(id, |kind| kind.set_executor_nonce(Some(made.account)))
         .map_err(|err| err.to_string())?;
     session.open_in_sign(
-        made.wire,
-        TxSource::Wallets,
-        "This creates the nonce account that orders the signer's actions.",
+        SignLoad::new(made.wire, TxSource::Wallets)
+            .with_note("This creates the nonce account that orders the signer's actions."),
     );
     Ok(())
 }
@@ -243,9 +241,9 @@ pub async fn create_durable_nonce(session: Session, id: WalletId) -> Result<(), 
         })
         .map_err(|err| err.to_string())?;
     session.open_in_sign(
-        made.wire,
-        TxSource::Wallets,
-        "This creates the durable nonce account of the offline key. Once it lands, what this key signs for itself stays valid until it is signed.",
+        SignLoad::new(made.wire, TxSource::Wallets).with_note(
+            "This creates the durable nonce account of the offline key. Once it lands, what this key signs for itself stays valid until it is signed.",
+        ),
     );
     Ok(())
 }
@@ -282,7 +280,7 @@ pub async fn initialize_vector(session: Session, id: WalletId) -> Result<(), Str
     let made = wallet_flows::vector::initialize(rpc.as_ref(), payer, scheme, &key)
         .await
         .map_err(|err| err.to_string())?;
-    session.open_in_sign(made.wire, TxSource::Wallets, made.note);
+    session.open_in_sign(SignLoad::new(made.wire, TxSource::Wallets).with_note(made.note));
     Ok(())
 }
 
@@ -320,7 +318,7 @@ pub async fn send_rotation(
     let made = wallet_flows::vector::rotate(rpc.as_ref(), payer, scheme, &key, &rotation)
         .await
         .map_err(|err| format!("This rotation cannot be sent: {err}"))?;
-    session.open_in_sign(made.wire, TxSource::Wallets, made.note);
+    session.open_in_sign(SignLoad::new(made.wire, TxSource::Wallets).with_note(made.note));
     Ok(())
 }
 
@@ -343,7 +341,11 @@ pub async fn send(
         }
     }
     .map_err(|err| err.to_string())?;
-    session.open_in_sign_with_lifetime(prepared.wire, TxSource::Wallets, prepared.note, height);
+    session.open_in_sign(
+        SignLoad::new(prepared.wire, TxSource::Wallets)
+            .with_note(prepared.note)
+            .expiring_at(height),
+    );
     Ok(())
 }
 

@@ -112,6 +112,8 @@ The browser request modal shows how long the blockhash has left. The Sign screen
 
 Every flow ends on the Sign screen. Other screens and the browser modal hand a transaction in through `Session::open_in_sign`, and the Sign screen's inbox takes pasted or scanned objects.
 
+The screen holds one transaction, and much of what it does waits on the node, during which another can take its place. So each task notes `SignForm::generation` when it starts, and does nothing to the screen afterwards if it has changed. A signature made for a transaction no longer on screen is not used, and no site is told about it, since the request answered is always the one on screen. A request that loses a signature this way stays waiting.
+
 ```mermaid
 flowchart TD
   subgraph Sources

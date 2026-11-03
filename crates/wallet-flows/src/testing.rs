@@ -9,8 +9,10 @@ use solana_signature::Signature;
 use solana_stake_interface::stake_history::StakeHistory;
 use solana_stake_interface::state::{Authorized, Lockup, Meta, StakeStateV2};
 use std::collections::HashMap;
+use std::future::poll_fn;
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Mutex, PoisonError};
+use std::task::{Poll, Waker};
 use wallet_core::simulate::{SimulationReply, SimulationRequest};
 use wallet_core::stake::{EpochInfo, StakeReward};
 use wallet_core::{
@@ -20,6 +22,42 @@ use wallet_core::{
 
 pub fn pk(byte: u8) -> Pubkey {
     Pubkey::new_from_array([byte; 32])
+}
+
+/// Holds answers back until a test lets them go, so that it can do something
+/// while they are on their way.
+#[derive(Default)]
+pub struct Gate {
+    /// Whether it is held, and who is waiting.
+    state: Mutex<(bool, Vec<Waker>)>,
+}
+
+impl Gate {
+    pub fn hold(&self) {
+        self.state.lock().unwrap_or_else(PoisonError::into_inner).0 = true;
+    }
+
+    pub fn open(&self) {
+        let mut state = self.state.lock().unwrap_or_else(PoisonError::into_inner);
+        state.0 = false;
+        for waiting in state.1.drain(..) {
+            waiting.wake();
+        }
+    }
+
+    /// Ready once the gate is open.
+    pub async fn pass(&self) {
+        poll_fn(|cx| {
+            let mut state = self.state.lock().unwrap_or_else(PoisonError::into_inner);
+            if state.0 {
+                state.1.push(cx.waker().clone());
+                Poll::Pending
+            } else {
+                Poll::Ready(())
+            }
+        })
+        .await;
+    }
 }
 
 /// Answers from what it was given. Anything it was not given is absent, not
@@ -54,6 +92,8 @@ pub struct FakeRpc {
     pub asked: AtomicUsize,
     /// What a send ends in, when not the signature.
     pub send_fails: Mutex<Option<RpcError>>,
+    /// Held, it keeps back simulations and new blockhashes.
+    pub gate: Gate,
 }
 
 impl FakeRpc {
@@ -250,6 +290,7 @@ impl SolanaRpc for FakeRpc {
     }
 
     async fn get_latest_blockhash_with_height(&self) -> Result<(Hash, u64), RpcError> {
+        self.gate.pass().await;
         self.count()?;
         Ok((Hash::new_from_array([9; 32]), 150))
     }
@@ -306,6 +347,7 @@ impl SolanaRpc for FakeRpc {
     }
 
     async fn simulate(&self, _request: &SimulationRequest) -> Result<SimulationReply, RpcError> {
+        self.gate.pass().await;
         self.count()?;
         self.simulation
             .clone()
