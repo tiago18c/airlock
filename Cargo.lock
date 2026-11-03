@@ -355,6 +355,7 @@ dependencies = [
  "bridge-host",
  "bridge-protocol",
  "dioxus",
+ "interprocess",
  "notify-rust",
  "serde",
  "serde_json",
@@ -1493,6 +1494,7 @@ dependencies = [
  "tracing-appender",
  "tracing-subscriber",
  "widestring",
+ "windows-sys 0.61.2",
  "winreg",
 ]
 

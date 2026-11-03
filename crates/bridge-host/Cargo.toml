@@ -23,4 +23,11 @@ tracing-subscriber.workspace = true
 
 [target.'cfg(windows)'.dependencies]
 widestring = "1"
+# Who owns the pipe the host connects to.
+windows-sys = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_Security_Authorization",
+    "Win32_System_Threading",
+] }
 winreg = "0.56"
