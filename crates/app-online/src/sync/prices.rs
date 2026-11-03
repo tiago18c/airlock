@@ -42,11 +42,13 @@ async fn run_prices(ctx: JobCtx, source: SourceFn) -> JobResult {
     let Some(key) = slices.settings.get().tokens_api_key.clone() else {
         return Ok(JobOk {
             note: Some("No Tokens API key: prices are off.".into()),
+            ..JobOk::default()
         });
     };
     if !prices_apply_to(&slices.network.get().cluster) {
         return Ok(JobOk {
             note: Some("Prices are for mainnet only.".into()),
+            ..JobOk::default()
         });
     }
     let owners = portfolio_addresses(&slices.book.get(), &slices.wallets.get());
@@ -72,6 +74,7 @@ async fn run_prices(ctx: JobCtx, source: SourceFn) -> JobResult {
                 .holdings_deferred("market", |holdings| holdings.market.apply(update, now));
             Ok(JobOk {
                 note: Some(format!("Priced {priced} tokens.")),
+                ..JobOk::default()
             })
         }
         Ok(Err(err)) => {

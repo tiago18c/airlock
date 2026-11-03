@@ -110,14 +110,31 @@ pub async fn run_balances(ctx: JobCtx, rpc: RpcFn, moved: Moved) -> JobResult {
     if ctx.is_cancelled() {
         return Err("sync job was cancelled.".into());
     }
-    apply_snapshot(&ctx.core, &tokens);
+    apply_snapshot(&ctx.core, &tokens.snapshot);
+    if let Some(err) = &tokens.stopped {
+        moved.mark_all(&token_owners[tokens.asked..]);
+        note_reach(&ctx.core, err);
+        return Err(format!(
+            "Read the token accounts of {} of {} addresses. {err}",
+            tokens.asked,
+            token_owners.len(),
+        ));
+    }
 
-    let note = format!(
+    let mut note = format!(
         "Refreshed {} owners, {} token accounts.",
         owners.len(),
-        tokens.tokens.len(),
+        tokens.snapshot.tokens.len(),
     );
-    Ok(JobOk { note: Some(note) })
+    let partial = tokens.refusal();
+    if let Some(partial) = &partial {
+        note.push(' ');
+        note.push_str(partial);
+    }
+    Ok(JobOk {
+        note: Some(note),
+        partial,
+    })
 }
 
 /// `read` from a node that has seen `since`. One that is behind it is asked

@@ -2,7 +2,7 @@
 //! and which network, with the cluster, the node and the background sync a
 //! hover away.
 
-use app_core::{JobSyncStatus, Reach};
+use app_core::{JobSyncStatus, Reach, SyncStatus};
 use app_ui_kit::actions::unix_now;
 use app_ui_kit::Session;
 use dioxus::prelude::*;
@@ -16,7 +16,7 @@ pub fn NetworkChip() -> Element {
     let session = use_context::<Session>();
     let network = (session.network)();
     let sync = (session.sync)();
-    let job = sync.jobs.first();
+    let job = job_to_show(&sync);
     let reach = match network.reach {
         Reach::Probing => "Detecting",
         Reach::Answered => "Online",
@@ -131,9 +131,39 @@ fn sync_view(job: &JobSyncStatus, now_secs: i64) -> (String, String) {
     (last, next)
 }
 
+/// The job the chip tells of: one that failed, if any did, or else the first.
+fn job_to_show(sync: &SyncStatus) -> Option<&JobSyncStatus> {
+    sync.jobs
+        .iter()
+        .find(|job| job.last_error.is_some())
+        .or_else(|| sync.jobs.first())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn job(name: &str, last_error: Option<&str>) -> JobSyncStatus {
+        JobSyncStatus {
+            job: name.into(),
+            last_success_ms: None,
+            last_error: last_error.map(str::to_owned),
+            next_run_ms: None,
+        }
+    }
+
+    #[test]
+    fn the_chip_tells_of_a_job_that_failed_whichever_it_is() {
+        let fine = SyncStatus {
+            jobs: vec![job("balances", None), job("tokens", None)],
+        };
+        assert_eq!(job_to_show(&fine).unwrap().job, "balances");
+        let failed = SyncStatus {
+            jobs: vec![job("balances", None), job("tokens", Some("limited"))],
+        };
+        assert_eq!(job_to_show(&failed).unwrap().job, "tokens");
+        assert!(job_to_show(&SyncStatus::default()).is_none());
+    }
 
     fn custom(name: &str, url: &str, known: Option<KnownCluster>) -> Cluster {
         Cluster::Custom {

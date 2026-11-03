@@ -51,6 +51,9 @@ pub type JobResult = Result<JobOk, String>;
 #[derive(Clone, Debug, Default)]
 pub struct JobOk {
     pub note: Option<String>,
+    /// Part of it could not be done, and the rest was. It is said once, until a
+    /// run does it all, and does not count as a failure: it needs no backing off.
+    pub partial: Option<String>,
 }
 
 /// Async work a job performs for one run. The future is `Send` on native
@@ -391,7 +394,7 @@ impl Scheduler {
 
             let now = self.core.ports().clock.now_ms();
             match &result {
-                Ok(_) => {
+                Ok(ok) => {
                     backoff = INITIAL_BACKOFF;
                     let next = now.saturating_add(interval.as_millis() as u64);
                     self.update_status(name, |s| {
@@ -399,11 +402,14 @@ impl Scheduler {
                         s.last_error = None;
                         s.next_run_ms = Some(next);
                     });
-                    {
+                    let told_before = {
                         let mut jobs = self.jobs();
-                        if let Some(entry) = jobs.get_mut(name) {
-                            entry.failed_notice = false;
-                        }
+                        jobs.get_mut(name).is_some_and(|entry| {
+                            std::mem::replace(&mut entry.failed_notice, ok.partial.is_some())
+                        })
+                    };
+                    if let (Some(partial), false) = (&ok.partial, told_before) {
+                        self.core.report_sync_failed(name, partial);
                     }
                     if let Some(reply) = kick.reply {
                         if let Some(tx) =
