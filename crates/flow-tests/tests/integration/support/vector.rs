@@ -12,8 +12,8 @@ use wallet_core::relay::{
     accept_signature_in, vector_signature_objects, AuthContext, VectorContext,
 };
 use wallet_core::vector::{
-    address, initialize, keys_to_sign_with, local_vector_keys, LeafMarks, SchemeId, VectorAccount,
-    XmssRetryCache, PROGRAM_ID,
+    address, initialize, keys_to_sign_with, local_vector_keys, FloorsFrom, LeafMarks, SchemeId,
+    VectorAccount, XmssRetryCache, PROGRAM_ID,
 };
 use wallet_core::{
     decode_v1_transaction, Authority, ComputeBudgetSpec, Instruction, KeypairSigner, MemoryStore,
@@ -340,6 +340,7 @@ impl Desk {
             wire,
             &[&self.payer],
             &known,
+            FloorsFrom::Chain,
         )
         .map_err(|err| err.to_string())?;
         self.wallets = vault.data().unwrap().wallets.clone();

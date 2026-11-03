@@ -1,8 +1,8 @@
 //! Which keys one press of Sign uses, and what it records for them: only an
 //! account that signs the transaction now records a leaf.
 
-use super::keys_to_sign_with;
 use super::leaves_tests::Device;
+use super::{keys_to_sign_with, FloorsFrom};
 use crate::fixtures::{blockhash, compile, pk, transfer};
 use crate::tx::decode::decode_v1_transaction;
 use crate::wallets::relay::{wrap_for_vector, VectorContext, VectorWrap};
@@ -23,6 +23,7 @@ impl Press for Device {
             wire,
             &[],
             known,
+            FloorsFrom::Chain,
         )
         .unwrap()
     }
@@ -90,10 +91,54 @@ fn a_transaction_the_key_signs_reserves_one_leaf() {
 }
 
 #[test]
-fn a_floor_from_a_note_does_not_spend_the_leaves_kept_for_rotating() {
+fn a_floor_past_what_this_device_has_used_is_not_taken_from_a_note() {
     let mut device = Device::new(0);
     let (wire, mut known) = device.wrapped_transfer();
-    // What a note may claim: the chain accepts only the last leaf.
+    known[0].leaf_floor = 200;
+    let press = |device: &mut Device, known: &[VectorContext]| {
+        keys_to_sign_with(
+            &mut device.vault,
+            &mut device.marks,
+            &XmssRetryCache::default(),
+            &wire,
+            &[],
+            known,
+            FloorsFrom::Note,
+        )
+    };
+    let refused = press(&mut device, &known);
+    assert!(matches!(
+        refused,
+        Err(super::LeafError::FloorPastOwnCount {
+            floor: 200,
+            own: 0,
+            ..
+        })
+    ));
+    // Nothing was spent.
+    assert_eq!(device.stored_next_leaf(), 0);
+    assert_eq!(device.marks.next_leaf(&device.account, &device_key()), None);
+
+    // A floor at or below this device's count is what signing leaves behind.
+    known[0].leaf_floor = 0;
+    let keys = press(&mut device, &known).unwrap();
+    assert_eq!(keys[0].leaf, Some(0));
+
+    // The account state says so on purpose, and then the floor is its own.
+    device
+        .marks
+        .raise(&device.account, &device_key(), 200)
+        .unwrap();
+    known[0].leaf_floor = 200;
+    let keys = press(&mut device, &known).unwrap();
+    assert_eq!(keys[0].leaf, Some(200));
+}
+
+#[test]
+fn a_floor_from_the_chain_does_not_spend_the_leaves_kept_for_rotating() {
+    let mut device = Device::new(0);
+    let (wire, mut known) = device.wrapped_transfer();
+    // The chain accepts only the last leaf.
     known[0].leaf_floor = crate::wallets::vector::XMSS_LEAVES - 1;
     let refused = keys_to_sign_with(
         &mut device.vault,
@@ -102,6 +147,7 @@ fn a_floor_from_a_note_does_not_spend_the_leaves_kept_for_rotating() {
         &wire,
         &[],
         &known,
+        FloorsFrom::Chain,
     );
     assert!(matches!(refused, Err(super::LeafError::MustRotate(_))));
     assert_eq!(device.stored_next_leaf(), 0);
@@ -134,6 +180,7 @@ fn a_hand_over_to_a_key_not_made_here_records_nothing() {
         &wire,
         &[],
         &known,
+        FloorsFrom::Chain,
     );
     assert!(matches!(refused, Err(super::LeafError::Rotation(_))));
     assert_eq!(device.stored_next_leaf(), 0);
