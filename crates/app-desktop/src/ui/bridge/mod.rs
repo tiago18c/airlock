@@ -20,7 +20,7 @@
 //!   Otherwise the only way forward is Review, on the Sign screen.
 
 use crate::bridge::BridgePrompt;
-use app_core::bridge::{BridgeAnswer, SEND, SEND_ALL};
+use app_core::bridge::{BridgeAnswer, SendPlan, SiteCall};
 use app_ui_kit::actions::idl_check::fetch_missing_idls;
 use app_ui_kit::actions::sentence;
 use app_ui_kit::actions::sign::{offer_paid_here, prepare_request, PaidHere};
@@ -102,19 +102,19 @@ pub fn BridgeRequests() -> Element {
                 onclick: move |_| open.set(false),
                 div { class: "modal wide request", role: "dialog", aria_modal: "true",
                     onclick: move |e| e.stop_propagation(),
-                    if current.method == "connect" {
+                    if matches!(current.request.call, SiteCall::Connect) {
                         ConnectRequest {
                             key: "{current.id}",
                             current: current.clone(),
                             on_close: move |_| open.set(false),
                         }
-                    } else if current.method == "signMessage" {
+                    } else if matches!(current.request.call, SiteCall::SignMessage { .. }) {
                         MessageRequest {
                             key: "{current.id}",
                             current: current.clone(),
                             on_close: move |_| open.set(false),
                         }
-                    } else if current.method == "signIn" {
+                    } else if matches!(current.request.call, SiteCall::SignIn(_)) {
                         SignInRequest {
                             key: "{current.id}",
                             current: current.clone(),
@@ -166,20 +166,24 @@ fn RequestCard(current: BridgePrompt, on_open: EventHandler<()>) -> Element {
         (session.forms.sign.source)(),
         Some(TxSource::Browser { id, .. }) if id == current.id
     );
-    let what = match (current.method.as_str(), current.transactions, reviewing) {
-        ("connect", _, _) => "wants to connect".to_string(),
-        ("signMessage", _, _) => "asks you to sign a message".to_string(),
-        ("signIn", _, _) => "asks you to sign in".to_string(),
-        (SEND | SEND_ALL, count, _) if count > 1 => {
+    let what = match (&current.request.call, current.transactions, reviewing) {
+        (SiteCall::Connect, _, _) => "wants to connect".to_string(),
+        (SiteCall::SignMessage { .. }, _, _) => "asks you to sign a message".to_string(),
+        (SiteCall::SignIn(_), _, _) => "asks you to sign in".to_string(),
+        (SiteCall::Send { .. }, count, _) if count > 1 => {
             format!("asks you to sign and send {count} transactions")
         }
-        (SEND | SEND_ALL, _, _) => "asks you to sign and send a transaction".to_string(),
-        (_, count, true) if count > 1 => {
+        (SiteCall::Send { .. }, _, _) => "asks you to sign and send a transaction".to_string(),
+        (SiteCall::SignTransactions(_), count, true) if count > 1 => {
             format!("asks to sign {count} transactions · open on Sign")
         }
-        (_, count, false) if count > 1 => format!("asks to sign {count} transactions"),
-        (_, _, true) => "asks for a signature · open on Sign".to_string(),
-        (_, _, false) => "asks for a signature".to_string(),
+        (SiteCall::SignTransactions(_), count, false) if count > 1 => {
+            format!("asks to sign {count} transactions")
+        }
+        (SiteCall::SignTransactions(_), _, true) => {
+            "asks for a signature · open on Sign".to_string()
+        }
+        (SiteCall::SignTransactions(_), _, false) => "asks for a signature".to_string(),
     };
     let id = current.id.clone();
     rsx! {

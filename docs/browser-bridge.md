@@ -88,6 +88,7 @@ The listener is `app-desktop`'s bridge, behind the `bridge` feature that only th
 
 - `status` is answered at once. So is `disconnect`, which ends the site's connection and keeps what it was granted.
 - A `connect` from a site that has a grant holding the current wallet is answered at once, with the accounts it was granted and the current wallet first. Any other `connect` with `silent` gets no accounts, and never opens the modal, including from a site that disconnected. See [Connections](signing.md#connect).
+- A frame is read once, into `bridge_protocol::Frame`, and a request that reaches the queue is read and checked once more, into a typed `SiteCall`. What a modal shows is what was checked.
 - Frames on one connection are taken in the order they were sent. A request that waits for the user then gets a thread of its own, so it holds up nothing else. Match replies by `id`.
 - A blocked site gets `rejected` at once, and no accounts for a silent `connect`.
 - A `signTransaction` naming an account the site is not connected to gets `rejected` at once.

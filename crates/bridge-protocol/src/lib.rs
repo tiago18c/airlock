@@ -9,4 +9,4 @@ pub mod message;
 pub mod reply;
 pub mod request;
 
-pub use request::{request_code, MAX_PENDING, MAX_PENDING_PER_ORIGIN, MAX_TRANSACTIONS};
+pub use request::{request_code, Frame, MAX_PENDING, MAX_PENDING_PER_ORIGIN, MAX_TRANSACTIONS};

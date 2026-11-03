@@ -831,7 +831,7 @@ impl Inner {
             debug!(target: CORE, outcome = "not waiting", "command");
             return false;
         };
-        let (bytes, outcome) = answer.reply(id, &taken.request.method);
+        let (bytes, outcome) = answer.reply(&taken.request);
         if let Some(reply) = taken.reply {
             reply(bytes);
         }
@@ -857,7 +857,7 @@ impl Inner {
     ) {
         let _span = debug_span!(target: CORE, "command", name = "bridge_send_finished").entered();
         let answer = BridgeAnswer::Sent(results);
-        let (bytes, outcome) = answer.reply(&sending.request.id, &sending.request.method);
+        let (bytes, outcome) = answer.reply(&sending.request);
         if let Some(reply) = sending.reply {
             reply(bytes);
         }
@@ -1124,7 +1124,7 @@ impl Inner {
             self.keep_site(&origin, ordered, remember);
             self.publish_sites();
         }
-        let (bytes, outcome) = answer.reply(id, &taken.request.method);
+        let (bytes, outcome) = answer.reply(&taken.request);
         if let Some(reply) = taken.reply {
             reply(bytes);
         }
@@ -1170,7 +1170,7 @@ impl Inner {
             self.keep_site(&origin, keys, remember);
             self.publish_sites();
         }
-        let (bytes, outcome) = answer.reply(id, &taken.request.method);
+        let (bytes, outcome) = answer.reply(&taken.request);
         if let Some(reply) = taken.reply {
             reply(bytes);
         }
@@ -1244,12 +1244,12 @@ impl Inner {
         info!(
             target: "airlock::bridge",
             code = %request.code(),
-            method = %request.method,
+            method = %request.method(),
             origin = %request.origin,
             outcome = outcome.as_str(),
             "request finished"
         );
-        self.notices_set_bridge_outcome(&request.id, &request.origin, &request.method, outcome);
+        self.notices_set_bridge_outcome(&request.id, &request.origin, request.method(), outcome);
         debug!(target: CORE, outcome = "ok", "command");
     }
 

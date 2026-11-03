@@ -407,12 +407,12 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                 .iter()
                 .all(|item| item.can_sign && (!sends || item.site_signs.is_empty()))
         });
-    let send_note = match current.params.get("mode").and_then(|mode| mode.as_str()) {
-        Some("serial") => {
+    let send_note = match current.request.send_plan() {
+        SendPlan::Serial => {
             "Each waits for the one before it to confirm, and a failure stops the rest."
         }
-        _ if current.method == SEND_ALL => "Each goes out whatever becomes of the others.",
-        _ => "A rejected one stops the rest.",
+        SendPlan::Independent => "Each goes out whatever becomes of the others.",
+        SendPlan::InOrder => "A rejected one stops the rest.",
     };
     let label = sign_label(&current, Some(count));
     let unread_sign = can_sign
@@ -601,7 +601,7 @@ fn BatchCard(
     };
     let number = index + 1;
     let count = current.transactions;
-    let detail = crate::bridge::sign_detail(&current.params, index);
+    let detail = crate::bridge::sign_detail(current.request.transactions().get(index));
 
     rsx! {
         BlockhashCountdown {
