@@ -48,40 +48,55 @@ pub fn VaultUnlock(
     let mut password = use_signal(String::new);
     let mut confirm = use_signal(String::new);
     let mut error = use_signal(|| None::<String>);
+    // The key is being derived, which takes about a second. A form that goes
+    // away meanwhile takes its task with it, so nothing is unlocked after all.
+    let mut working = use_signal(|| false);
     // The button and Enter in either field do the same.
     let mut submit = move || {
+        if working() {
+            return;
+        }
         error.set(None);
         let pw = Zeroizing::new(password());
-        if pw.len() < 8 {
-            error.set(Some("Use at least 8 characters.".into()));
-            return;
-        }
-        if !initialized && *pw != confirm() {
-            error.set(Some("Passwords do not match.".into()));
-            return;
-        }
-        let result = if initialized {
-            session.unlock(&pw)
+        if initialized {
+            // Whatever else it is, it is for the vault to say. One made before
+            // today's floor still opens.
+            if pw.is_empty() {
+                error.set(Some("Enter the password.".into()));
+                return;
+            }
         } else {
-            session.create(&pw)
-        };
-        match result {
-            Ok(()) => {
-                // The vault keeps the key it derived, not the password.
-                password.write().zeroize();
-                confirm.write().zeroize();
-                crate::actions::network::start_refresh(session);
-                if let Some(done) = on_unlocked {
-                    done.call(());
-                }
+            if let Some(problem) = wallet_core::password_problem(&pw) {
+                error.set(Some(problem.into()));
+                return;
             }
-            Err(err) => {
-                // Typed again on a retry; not kept in between.
-                password.write().zeroize();
-                confirm.write().zeroize();
-                error.set(Some(err.to_string()));
+            if *pw != *Zeroizing::new(confirm()) {
+                error.set(Some("Passwords do not match.".into()));
+                return;
             }
         }
+        // The vault keeps the key it derived, not the password. Typed again on a
+        // retry; not kept in between.
+        password.write().zeroize();
+        confirm.write().zeroize();
+        working.set(true);
+        spawn(async move {
+            let result = if initialized {
+                session.unlock(pw).await
+            } else {
+                session.create(pw).await
+            };
+            working.set(false);
+            match result {
+                Ok(()) => {
+                    crate::actions::network::start_refresh(session);
+                    if let Some(done) = on_unlocked {
+                        done.call(());
+                    }
+                }
+                Err(err) => error.set(Some(err.to_string())),
+            }
+        });
     };
     let on_enter = move |e: KeyboardEvent| {
         if e.key() == Key::Enter {
@@ -102,6 +117,7 @@ pub fn VaultUnlock(
                     input {
                         r#type: "password",
                         value: "{password}",
+                        disabled: working(),
                         oninput: move |e| password.set(e.value()),
                         onkeydown: on_enter,
                     }
@@ -111,9 +127,13 @@ pub fn VaultUnlock(
                         input {
                             r#type: "password",
                             value: "{confirm}",
+                            disabled: working(),
                             oninput: move |e| confirm.set(e.value()),
                             onkeydown: on_enter,
                         }
+                    }
+                    p { class: "hint",
+                        "This password is all that protects the vault if someone copies its file, and it cannot be recovered. A few random words are easy to type and hard to guess."
                     }
                 }
                 if let Some(err) = error() {
@@ -121,8 +141,14 @@ pub fn VaultUnlock(
                 }
                 div { class: "btn-row",
                     button { class: "primary",
+                        disabled: working(),
                         onclick: move |_| submit(),
-                        if initialized { "Unlock" } else { "Create vault" }
+                        match (initialized, working()) {
+                            (true, false) => "Unlock",
+                            (true, true) => "Unlocking…",
+                            (false, false) => "Create vault",
+                            (false, true) => "Creating…",
+                        }
                     }
                     if show_skip {
                         button { class: "ghost",

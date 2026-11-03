@@ -161,7 +161,7 @@ A screen collects input and shows state. To do something, it calls an action in 
 - `wallet-core` is the domain: address book, keys, transactions, IDLs, wallet kinds, and the review of a transaction before it is signed. It defines the `SolanaRpc` port and opens no socket.
 - `wallet-flows` holds the use cases. Each takes a `SolanaRpc` and plain data, and returns plain data, so it runs the same behind a screen and against the fake node in its tests.
 - `wallet-rpc` implements `SolanaRpc` and is the only crate that talks to a node: Agave's `solana-client` on desktop, the vendored `solana-client-wasm` in a browser.
-- `wallet-vault` seals whatever document it is given (Argon2id, then XChaCha20-Poly1305) and wipes secrets. It does not know what a wallet is.
+- `wallet-vault` seals whatever document it is given (Argon2id at 256 MiB and three passes, then XChaCha20-Poly1305) and wipes secrets. It does not know what a wallet is.
 - `qr-protocol` is the QRS1 format. It knows bytes, not Solana.
 - `qr-codec` draws and reads QR codes, with no dependencies. `qr-codec-wasm` builds its scanner into the WebAssembly module the camera loop runs.
 - `flow-tests` runs transactions built by `wallet-core` against the real on-chain programs in an in-process VM.

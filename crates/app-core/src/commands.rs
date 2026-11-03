@@ -20,7 +20,8 @@ use tokio::sync::{broadcast, watch};
 use tracing::{debug, debug_span, info, warn};
 use wallet_core::{
     connect_choice, current_first, reconnect_accounts, AddressBook, EnrollError, Holdings,
-    RosterError, ShareableAccount, SiteGrant, Vault, VaultData, VaultError, WalletId, Workspace,
+    PasswordChange, RosterError, SealKey, ShareableAccount, SiteGrant, Unlocked, Unlocking, Vault,
+    VaultData, VaultError, WalletId, Workspace,
 };
 
 use bridge_protocol::reply::SendError;
@@ -375,18 +376,58 @@ impl Core {
 
     // The vault. Only here, never on `PublicCore`.
 
+    // Deriving a key takes about a second. None of these holds the vault while
+    // it does, and a window takes the steps apart so that it does not wait either.
+
     /// Start a vault under `password`.
     pub fn create_vault(&self, password: &str) -> Result<(), VaultError> {
-        self.inner.create_vault(password)
+        self.finish_create_vault(SealKey::new(password))
+    }
+
+    /// Start a vault under a key already derived.
+    pub fn finish_create_vault(&self, key: Result<SealKey, VaultError>) -> Result<(), VaultError> {
+        self.inner.finish_create_vault(key)
     }
 
     pub fn unlock(&self, password: &str) -> Result<(), VaultError> {
-        self.inner.unlock(password)
+        let opened = self
+            .begin_unlock()
+            .and_then(|reading| reading.open(password));
+        self.finish_unlock(opened)
+    }
+
+    /// Read what opening the vault needs, for [`Unlocking::open`].
+    pub fn begin_unlock(&self) -> Result<Unlocking<VaultData>, VaultError> {
+        self.inner.begin_unlock()
+    }
+
+    /// Take in what [`Unlocking::open`] made of it.
+    pub fn finish_unlock(
+        &self,
+        opened: Result<Unlocked<VaultData>, VaultError>,
+    ) -> Result<(), VaultError> {
+        self.inner.finish_unlock(opened)
     }
 
     /// Seal the unlocked vault under `new`, once `current` opens it.
     pub fn change_password(&self, current: &str, new: &str) -> Result<(), VaultError> {
-        self.inner.change_password(current, new)
+        let key = self
+            .begin_password_change()
+            .and_then(|change| change.derive(current, new));
+        self.finish_password_change(key)
+    }
+
+    /// Read what changing the password needs, for [`PasswordChange::derive`].
+    pub fn begin_password_change(&self) -> Result<PasswordChange, VaultError> {
+        locked(&self.inner.vault).begin_password_change()
+    }
+
+    /// Seal under what [`PasswordChange::derive`] made.
+    pub fn finish_password_change(
+        &self,
+        key: Result<SealKey, VaultError>,
+    ) -> Result<(), VaultError> {
+        self.inner.finish_password_change(key)
     }
 
     /// Lock now, as the user asked.
@@ -1255,11 +1296,11 @@ impl Inner {
 
     // The vault.
 
-    fn create_vault(&self, password: &str) -> Result<(), VaultError> {
+    fn finish_create_vault(&self, key: Result<SealKey, VaultError>) -> Result<(), VaultError> {
         let _span = debug_span!(target: CORE, "command", name = "create_vault").entered();
         let mut vault = locked(&self.vault);
         let before = vault_state_from(&vault);
-        let created = vault.create(password);
+        let created = key.and_then(|key| vault.create_under(key));
         if created.is_ok() {
             info!(target: VAULT, "created");
         }
@@ -1270,34 +1311,45 @@ impl Inner {
         created
     }
 
-    fn unlock(self: &Arc<Self>, password: &str) -> Result<(), VaultError> {
-        let _span = debug_span!(target: CORE, "command", name = "unlock").entered();
-        let (unlocked, recovered) = {
-            let mut vault = locked(&self.vault);
-            let before = vault_state_from(&vault);
-            let unlocked = vault.unlock(password);
-            if unlocked.is_ok() {
-                info!(target: VAULT, "unlocked");
-                self.adopt_locked_choice(&mut vault);
-                self.publish_vault(&vault);
-            } else if vault_state_from(&vault) != before {
-                // A file that could not be read before can be now, or the
-                // other way round.
-                self.publish_vault(&vault);
-            }
-            (unlocked, vault.take_recovered())
-        };
-        if recovered {
-            warn!(target: VAULT, "the vault's file was damaged, and its backup was opened");
-            let _ = self.notices_push(NoticeKind::VaultRecovered);
+    fn begin_unlock(&self) -> Result<Unlocking<VaultData>, VaultError> {
+        let mut vault = locked(&self.vault);
+        let before = vault_state_from(&vault);
+        let reading = vault.begin_unlock();
+        if vault_state_from(&vault) != before {
+            // A file that could not be read before can be now, or the other way
+            // round.
+            self.publish_vault(&vault);
         }
+        reading
+    }
+
+    fn finish_unlock(
+        self: &Arc<Self>,
+        opened: Result<Unlocked<VaultData>, VaultError>,
+    ) -> Result<(), VaultError> {
+        let _span = debug_span!(target: CORE, "command", name = "unlock").entered();
+        let unlocked = opened.map(|opened| {
+            let recovered = {
+                let mut vault = locked(&self.vault);
+                if vault.finish_unlock(opened) {
+                    info!(target: VAULT, "unlocked");
+                    self.adopt_locked_choice(&mut vault);
+                    self.publish_vault(&vault);
+                }
+                vault.take_recovered()
+            };
+            if recovered {
+                warn!(target: VAULT, "the vault's file was damaged, and its backup was opened");
+                let _ = self.notices_push(NoticeKind::VaultRecovered);
+            }
+        });
         report_command(&unlocked);
         unlocked
     }
 
-    fn change_password(&self, current: &str, new: &str) -> Result<(), VaultError> {
+    fn finish_password_change(&self, key: Result<SealKey, VaultError>) -> Result<(), VaultError> {
         let _span = debug_span!(target: CORE, "command", name = "change_password").entered();
-        let changed = locked(&self.vault).change_password(current, new);
+        let changed = key.and_then(|key| locked(&self.vault).finish_password_change(key));
         if changed.is_ok() {
             info!(target: VAULT, "password changed");
         }

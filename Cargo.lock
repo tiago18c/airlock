@@ -369,6 +369,7 @@ dependencies = [
  "tracing",
  "wallet-core",
  "wallet-flows",
+ "wallet-vault",
  "webview2-com",
  "wincode",
  "windows-core 0.61.2",
@@ -393,6 +394,7 @@ dependencies = [
  "wallet-core",
  "wallet-flows",
  "wallet-rpc",
+ "wallet-vault",
 ]
 
 [[package]]
@@ -530,6 +532,7 @@ dependencies = [
  "blake2",
  "cpufeatures 0.2.17",
  "password-hash",
+ "zeroize",
 ]
 
 [[package]]
@@ -3917,6 +3920,7 @@ dependencies = [
  "solana-vote-interface 7.0.0",
  "wallet-core",
  "wallet-flows",
+ "wallet-vault",
  "wincode",
 ]
 

@@ -5,6 +5,7 @@ use crate::store::VaultStore;
 use crate::VaultError;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
+use std::marker::PhantomData;
 use zeroize::Zeroize;
 
 /// What a vault holds. Its shape has a number, sealed in with it.
@@ -83,6 +84,64 @@ struct Open<D> {
     key: SealKey,
 }
 
+/// What opening a vault needs from its store, read without the password.
+///
+/// Deriving the key takes about a second, so it is a step of its own: whoever
+/// shares the vault can go on using it meanwhile, and a window can go on drawing.
+pub struct Unlocking<D> {
+    file: Vec<u8>,
+    backup: Option<Vec<u8>>,
+    document: PhantomData<fn() -> D>,
+}
+
+impl<D: Document> Unlocking<D> {
+    /// Derive the key and open what was read. A vault sealed at less than the
+    /// current cost gets a second derivation, only once the password has opened it.
+    pub fn open(self, password: &str) -> Result<Unlocked<D>, VaultError> {
+        let mut unsealed = open_or_backup(password, &self.file, self.backup.as_deref())?;
+        let opened = open::<D>(&unsealed.plaintext);
+        unsealed.plaintext.zeroize();
+        let data = opened?;
+        // One that cannot be made now is tried at the next unlock.
+        let stronger = unsealed
+            .key
+            .below_current()
+            .then(|| SealKey::new(password).ok())
+            .flatten();
+        Ok(Unlocked {
+            data,
+            key: unsealed.key,
+            stronger,
+            damaged: unsealed.from_backup.then_some(self.file),
+        })
+    }
+}
+
+/// A vault opened by [`Unlocking::open`], for [`Vault::finish_unlock`].
+pub struct Unlocked<D> {
+    data: D,
+    key: SealKey,
+    /// The key to seal it with from now on, when `key` is below the current cost.
+    stronger: Option<SealKey>,
+    /// What the file held, when it was damaged and its backup opened instead.
+    damaged: Option<Vec<u8>>,
+}
+
+/// What changing a password needs from the store, read without either password.
+pub struct PasswordChange {
+    file: Vec<u8>,
+}
+
+impl PasswordChange {
+    /// Check that `current` opens what is stored, and derive the key for `new`.
+    /// Takes twice what an unlock does.
+    pub fn derive(self, current: &str, new: &str) -> Result<SealKey, VaultError> {
+        let mut unsealed = unseal(current, &self.file)?;
+        unsealed.plaintext.zeroize();
+        SealKey::new(new)
+    }
+}
+
 impl<S: VaultStore, D: Document> Vault<S, D> {
     pub fn new(store: S) -> Self {
         let presence = Presence::of(&store.load());
@@ -150,9 +209,17 @@ impl<S: VaultStore, D: Document> Vault<S, D> {
         if self.read()?.is_some() {
             return Err(VaultError::AlreadyExists);
         }
+        self.create_under(SealKey::new(password)?)
+    }
+
+    /// [`create`](Self::create), under a key already derived.
+    pub fn create_under(&mut self, key: SealKey) -> Result<(), VaultError> {
+        if self.read()?.is_some() {
+            return Err(VaultError::AlreadyExists);
+        }
         self.open = Some(Open {
             data: D::default(),
-            key: SealKey::new(password)?,
+            key,
         });
         let saved = self.save();
         if saved.is_err() {
@@ -161,42 +228,97 @@ impl<S: VaultStore, D: Document> Vault<S, D> {
         saved
     }
 
-    /// Open the vault. A file that turns out damaged is opened from the
-    /// backup the store keeps of the save before: the damaged bytes are set
-    /// aside, the file is written whole again, and
-    /// [`take_recovered`](Self::take_recovered) says so.
+    /// Open the vault: [`begin_unlock`](Self::begin_unlock),
+    /// [`Unlocking::open`] and [`finish_unlock`](Self::finish_unlock) in turn.
     pub fn unlock(&mut self, password: &str) -> Result<(), VaultError> {
-        let bytes = self.read()?.ok_or(VaultError::NotInitialized)?;
+        let opened = self.begin_unlock()?.open(password)?;
+        self.finish_unlock(opened);
+        Ok(())
+    }
+
+    /// Read what [`Unlocking::open`] needs.
+    pub fn begin_unlock(&mut self) -> Result<Unlocking<D>, VaultError> {
+        let file = self.read()?.ok_or(VaultError::NotInitialized)?;
         let backup = self.store.load_backup().ok().flatten();
-        let mut unsealed = open_or_backup(password, &bytes, backup.as_deref())?;
-        let opened = open::<D>(&unsealed.plaintext);
-        unsealed.plaintext.zeroize();
-        self.open = Some(Open {
-            data: opened?,
-            key: unsealed.key,
-        });
-        if unsealed.from_backup {
+        Ok(Unlocking {
+            file,
+            backup,
+            document: PhantomData,
+        })
+    }
+
+    /// Take in what [`Unlocking::open`] opened, and answer whether it was. It is
+    /// not when the vault was unlocked since, and what is open may have changed.
+    ///
+    /// A file that turned out damaged was opened from the backup the store keeps
+    /// of the save before: the damaged bytes are set aside, the file is written
+    /// whole again, and [`take_recovered`](Self::take_recovered) says so. A vault
+    /// below the current cost is raised to it.
+    pub fn finish_unlock(&mut self, unlocked: Unlocked<D>) -> bool {
+        if self.open.is_some() {
+            return false;
+        }
+        let Unlocked {
+            data,
+            key,
+            stronger,
+            damaged,
+        } = unlocked;
+        self.open = Some(Open { data, key });
+        if let Some(bytes) = damaged {
             self.recovered = true;
             // What is open is right, and the next save tries again.
             let _ = self.store.set_aside(&bytes);
             let _ = self.save();
         }
-        Ok(())
+        if let Some(stronger) = stronger {
+            self.raise_cost(stronger);
+        }
+        true
+    }
+
+    /// Seal under `stronger` from now on. The save leaves what was stored as the
+    /// store's backup, at the old cost and just as good to anyone guessing the
+    /// password, so a second save replaces it. When a save fails the old key stays,
+    /// and the next unlock tries again.
+    fn raise_cost(&mut self, stronger: SealKey) {
+        let Some(open) = self.open.as_mut() else {
+            return;
+        };
+        let older = std::mem::replace(&mut open.key, stronger);
+        if self.save().is_err() {
+            if let Some(open) = self.open.as_mut() {
+                open.key = older;
+            }
+            return;
+        }
+        let _ = self.save();
     }
 
     /// Seal the vault under `new` from now on. `current` has to open what is
     /// stored, so an unlocked window left alone is not enough to change it.
-    /// The new key has its own salt. Once the vault is saved under it, the
-    /// backup the store kept of the save before, still sealed under
-    /// `current`, is deleted. When the save fails nothing changes.
+    /// [`begin_password_change`](Self::begin_password_change),
+    /// [`PasswordChange::derive`] and
+    /// [`finish_password_change`](Self::finish_password_change) in turn.
     pub fn change_password(&mut self, current: &str, new: &str) -> Result<(), VaultError> {
+        let key = self.begin_password_change()?.derive(current, new)?;
+        self.finish_password_change(key)
+    }
+
+    /// Read what [`PasswordChange::derive`] needs.
+    pub fn begin_password_change(&self) -> Result<PasswordChange, VaultError> {
         if self.open.is_none() {
             return Err(VaultError::Locked);
         }
-        let bytes = self.store.load()?.ok_or(VaultError::NotInitialized)?;
-        let mut unsealed = unseal(current, &bytes)?;
-        unsealed.plaintext.zeroize();
-        let key = SealKey::new(new)?;
+        let file = self.store.load()?.ok_or(VaultError::NotInitialized)?;
+        Ok(PasswordChange { file })
+    }
+
+    /// Seal under what [`PasswordChange::derive`] made, which has its own salt.
+    /// Once the vault is saved under it, the backup the store kept of the save
+    /// before, still sealed under the old password, is deleted. When the save fails
+    /// nothing changes.
+    pub fn finish_password_change(&mut self, key: SealKey) -> Result<(), VaultError> {
         let open = self.open.as_mut().ok_or(VaultError::Locked)?;
         let old = std::mem::replace(&mut open.key, key);
         if let Err(err) = self.save() {
@@ -286,6 +408,176 @@ mod tests {
 
     impl Document for OldNotes {
         const FORMAT: u32 = 2;
+    }
+
+    fn cost_of(file: &[u8]) -> (u64, u64) {
+        let value: serde_json::Value = serde_json::from_slice(file).unwrap();
+        (
+            value["kdf"]["memoryKib"].as_u64().unwrap(),
+            value["kdf"]["iterations"].as_u64().unwrap(),
+        )
+    }
+
+    /// A vault sealed at less than today's cost, with one save behind it so
+    /// that its backup is at that cost too. Locked, as a new run finds it.
+    fn from_an_earlier_build(
+        store: &std::sync::Arc<MemoryStore>,
+    ) -> Vault<std::sync::Arc<MemoryStore>, Notes> {
+        let mut vault: Vault<_, Notes> = Vault::new(store.clone());
+        vault
+            .create_under(SealKey::from_earlier_build("pw"))
+            .unwrap();
+        vault.data_mut().unwrap().lines.push("Bob".into());
+        vault.save().unwrap();
+        vault.lock();
+        vault
+    }
+
+    #[test]
+    fn a_vault_sealed_at_less_is_raised_on_unlock_and_its_backup_with_it() {
+        let store = std::sync::Arc::new(MemoryStore::new());
+        let mut vault = from_an_earlier_build(&store);
+        let before = cost_of(&store.load().unwrap().unwrap());
+        assert!(before < cost_of(&SealKey::new("pw").unwrap().seal(b"x").unwrap()));
+        assert_eq!(cost_of(&store.load_backup().unwrap().unwrap()), before);
+
+        vault.unlock("pw").unwrap();
+
+        let raised = cost_of(&SealKey::new("pw").unwrap().seal(b"x").unwrap());
+        assert_eq!(cost_of(&store.load().unwrap().unwrap()), raised);
+        assert_eq!(cost_of(&store.load_backup().unwrap().unwrap()), raised);
+        assert_eq!(vault.data().unwrap().lines, ["Bob"]);
+        assert!(!vault.take_recovered());
+
+        // The password is what it was, and nothing is raised a second time.
+        vault.lock();
+        let file = store.load().unwrap();
+        vault.unlock("pw").unwrap();
+        assert_eq!(store.load().unwrap(), file);
+        assert_eq!(vault.data().unwrap().lines, ["Bob"]);
+    }
+
+    #[test]
+    fn a_wrong_password_raises_nothing() {
+        let store = std::sync::Arc::new(MemoryStore::new());
+        let mut vault = from_an_earlier_build(&store);
+        let file = store.load().unwrap();
+        assert!(matches!(
+            vault.unlock("nope"),
+            Err(VaultError::UnlockFailed)
+        ));
+        assert_eq!(store.load().unwrap(), file);
+        assert!(!vault.is_unlocked());
+    }
+
+    #[test]
+    fn a_vault_that_cannot_be_raised_opens_anyway_and_is_raised_at_the_next_unlock() {
+        let store = std::sync::Arc::new(MemoryStore::new());
+        let mut vault = from_an_earlier_build(&store);
+        let file = store.load().unwrap();
+
+        store.refuse_saves(true);
+        vault.unlock("pw").unwrap();
+        assert_eq!(vault.data().unwrap().lines, ["Bob"]);
+        assert_eq!(store.load().unwrap(), file);
+
+        // Saves go on under the key the file was opened with.
+        store.refuse_saves(false);
+        vault.save().unwrap();
+        let older = cost_of(file.as_deref().unwrap());
+        assert_eq!(cost_of(&store.load().unwrap().unwrap()), older);
+
+        vault.lock();
+        vault.unlock("pw").unwrap();
+        assert!(cost_of(&store.load().unwrap().unwrap()) > older);
+        assert_eq!(vault.data().unwrap().lines, ["Bob"]);
+    }
+
+    #[test]
+    fn a_vault_sealed_at_more_is_left_there() {
+        let store = std::sync::Arc::new(MemoryStore::new());
+        let mut vault: Vault<_, Notes> = Vault::new(store.clone());
+        vault.create_under(SealKey::from_later_build("pw")).unwrap();
+        vault.lock();
+        let file = store.load().unwrap();
+        vault.unlock("pw").unwrap();
+        assert_eq!(store.load().unwrap(), file);
+    }
+
+    #[test]
+    fn a_damaged_file_at_less_is_recovered_and_raised() {
+        let store = std::sync::Arc::new(MemoryStore::new());
+        let mut vault = from_an_earlier_build(&store);
+        store.damage(b"not a sealed file");
+        vault.unlock("pw").unwrap();
+        assert!(vault.take_recovered());
+        assert_eq!(store.set_aside_bytes().unwrap(), b"not a sealed file");
+        let raised = cost_of(&SealKey::new("pw").unwrap().seal(b"x").unwrap());
+        assert_eq!(cost_of(&store.load().unwrap().unwrap()), raised);
+        assert_eq!(cost_of(&store.load_backup().unwrap().unwrap()), raised);
+    }
+
+    #[test]
+    fn an_unlock_that_arrives_late_does_not_replace_what_is_open() {
+        let store = std::sync::Arc::new(MemoryStore::new());
+        let mut vault: Vault<_, Notes> = Vault::new(store.clone());
+        vault.create("pw").unwrap();
+        vault.lock();
+
+        let first = vault.begin_unlock().unwrap().open("pw").unwrap();
+        let second = vault.begin_unlock().unwrap().open("pw").unwrap();
+        assert!(vault.finish_unlock(first));
+        vault.data_mut().unwrap().lines.push("Bob".into());
+        assert!(!vault.finish_unlock(second));
+        assert_eq!(vault.data().unwrap().lines, ["Bob"]);
+    }
+
+    #[test]
+    fn the_steps_of_an_unlock_hold_nothing_of_the_vault() {
+        // They own what they read, so the compiler lets the vault go on being
+        // used between them. That is what keeps a window from waiting.
+        fn sends<T: Send + 'static>(_: &T) {}
+        let store = std::sync::Arc::new(MemoryStore::new());
+        let mut vault: Vault<_, Notes> = Vault::new(store);
+        vault.create("pw").unwrap();
+        let change = vault.begin_password_change().unwrap();
+        sends(&change);
+        vault.data_mut().unwrap().lines.push("Bob".into());
+        let key = change.derive("pw", "new").unwrap();
+        sends(&key);
+        vault.finish_password_change(key).unwrap();
+
+        vault.lock();
+        let reading = vault.begin_unlock().unwrap();
+        sends(&reading);
+        assert!(!vault.is_unlocked());
+        let opened = reading.open("new").unwrap();
+        sends(&opened);
+        assert!(vault.finish_unlock(opened));
+        assert_eq!(vault.data().unwrap().lines, ["Bob"]);
+    }
+
+    #[test]
+    fn a_vault_stored_or_locked_since_the_key_was_derived_is_left_alone() {
+        let store = std::sync::Arc::new(MemoryStore::new());
+        let mut vault: Vault<_, Notes> = Vault::new(store.clone());
+        let late = SealKey::new("pw").unwrap();
+        vault.create("pw").unwrap();
+        assert!(matches!(
+            vault.create_under(late),
+            Err(VaultError::AlreadyExists)
+        ));
+        let key = vault
+            .begin_password_change()
+            .unwrap()
+            .derive("pw", "new")
+            .unwrap();
+        vault.lock();
+        assert!(matches!(
+            vault.finish_password_change(key),
+            Err(VaultError::Locked)
+        ));
+        vault.unlock("pw").unwrap();
     }
 
     #[test]

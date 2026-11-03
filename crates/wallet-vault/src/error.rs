@@ -24,4 +24,8 @@ pub enum VaultError {
     Serde(String),
     #[error("crypto error: {0}")]
     Crypto(String),
+    #[error(
+        "There is not enough free memory to open the vault. Close something else and try again."
+    )]
+    NoMemory,
 }
