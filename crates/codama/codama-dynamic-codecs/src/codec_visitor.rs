@@ -13,6 +13,18 @@ use codama_visitors_core::{
     visit, LinkableDictionary, NodePath, NodeStack, VisitableNode, Visitor,
 };
 use codama_visitors_core::{DynamicError as CodamaError, DynamicResult as CodamaResult};
+use std::cell::Cell;
+use std::rc::Rc;
+
+/// How deep one type may nest, counting the types its links lead to. A link
+/// is followed afresh each time, so an IDL could send the visitor in a circle
+/// until the stack runs out. Well above any program's, and it has to fit the
+/// smallest stack a codec is built on: a main thread's 1 MiB in a debug build.
+pub const MAX_TYPE_DEPTH: usize = 64;
+
+/// How many type nodes one codec may visit. Without a circle, types that each
+/// name the next one twice still double the work at every level.
+pub const MAX_TYPE_NODES: usize = 1 << 13;
 
 /// Builds [`Codec`]s from Codama type nodes.
 ///
@@ -22,11 +34,30 @@ use codama_visitors_core::{DynamicError as CodamaError, DynamicResult as CodamaR
 pub struct CodecVisitor<'a> {
     linkables: &'a LinkableDictionary,
     stack: NodeStack,
+    /// Type nodes open now.
+    depth: usize,
+    /// Type nodes visited so far.
+    visited: usize,
+    empty_items: Rc<Cell<usize>>,
 }
 
 impl<'a> CodecVisitor<'a> {
     pub fn new(linkables: &'a LinkableDictionary, stack: NodeStack) -> Self {
-        Self { linkables, stack }
+        Self {
+            linkables,
+            stack,
+            depth: 0,
+            visited: 0,
+            empty_items: Rc::default(),
+        }
+    }
+
+    /// `item`, counted as an item of one of this codec's lists.
+    fn list_item(&self, item: Box<dyn Codec>) -> Box<dyn Codec> {
+        Box::new(ListItemCodec {
+            item,
+            empty_items: self.empty_items.clone(),
+        })
     }
 
     fn nested_codec<T: TypeNodeTrait>(
@@ -84,6 +115,22 @@ fn pascal_case(s: &str) -> String {
 }
 
 impl Visitor<Box<dyn Codec>> for CodecVisitor<'_> {
+    fn enter_type(&mut self) -> CodamaResult<()> {
+        if self.depth >= MAX_TYPE_DEPTH {
+            return Err(CodamaError::TypeTooDeep(MAX_TYPE_DEPTH));
+        }
+        if self.visited >= MAX_TYPE_NODES {
+            return Err(CodamaError::TypeTooLarge(MAX_TYPE_NODES));
+        }
+        self.depth += 1;
+        self.visited += 1;
+        Ok(())
+    }
+
+    fn leave_type(&mut self) {
+        self.depth -= 1;
+    }
+
     // ----- Containers -----
     fn visit_account(&mut self, node: &AccountNode) -> CodamaResult<Box<dyn Codec>> {
         self.nested_codec(&node.data)
@@ -170,7 +217,7 @@ impl Visitor<Box<dyn Codec>> for CodecVisitor<'_> {
         let item = node.item.accept(self)?;
         let count = self.count_to_codec(&node.count)?;
         Ok(Box::new(ArrayCodec {
-            item,
+            item: self.list_item(item),
             count,
             as_set: false,
         }))
@@ -179,7 +226,7 @@ impl Visitor<Box<dyn Codec>> for CodecVisitor<'_> {
         let item = node.item.accept(self)?;
         let count = self.count_to_codec(&node.count)?;
         Ok(Box::new(ArrayCodec {
-            item,
+            item: self.list_item(item),
             count,
             as_set: true,
         }))
@@ -324,7 +371,11 @@ impl Visitor<Box<dyn Codec>> for CodecVisitor<'_> {
         let key = node.key.accept(self)?;
         let value = node.value.accept(self)?;
         let count = self.count_to_codec(&node.count)?;
-        Ok(Box::new(MapCodec { key, value, count }))
+        Ok(Box::new(MapCodec {
+            key: self.list_item(key),
+            value,
+            count,
+        }))
     }
 }
 

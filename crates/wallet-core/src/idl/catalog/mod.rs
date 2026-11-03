@@ -605,6 +605,39 @@ fn inspect_idl(bytes: &[u8], program_id: Option<Pubkey>) -> Result<Inspected, Id
     })
 }
 
+/// How deep an IDL's JSON may nest. The deepest that ships is 14 levels. The
+/// JSON reader stops at 128, but reading a Codama tree takes so much stack per
+/// level that 120 overflows a main thread's in a debug build.
+const MAX_IDL_DEPTH: usize = 32;
+
+/// Whether `text` nests no deeper than `limit`, strings aside.
+fn nests_within(text: &str, limit: usize) -> bool {
+    let (mut depth, mut in_string, mut escaped) = (0usize, false, false);
+    for byte in text.bytes() {
+        if in_string {
+            match byte {
+                _ if escaped => escaped = false,
+                b'\\' => escaped = true,
+                b'"' => in_string = false,
+                _ => {}
+            }
+            continue;
+        }
+        match byte {
+            b'"' => in_string = true,
+            b'{' | b'[' => {
+                depth += 1;
+                if depth > limit {
+                    return false;
+                }
+            }
+            b'}' | b']' => depth = depth.saturating_sub(1),
+            _ => {}
+        }
+    }
+    true
+}
+
 fn open_client(
     bytes: &[u8],
     program_id: Option<Pubkey>,
@@ -613,6 +646,11 @@ fn open_client(
         return Err(IdlError::Empty);
     }
     let text = std::str::from_utf8(bytes).map_err(|_| IdlError::NotJson)?;
+    if !nests_within(text, MAX_IDL_DEPTH) {
+        return Err(IdlError::Invalid(format!(
+            "IDL nests more than {MAX_IDL_DEPTH} levels deep"
+        )));
+    }
     let value: serde_json::Value = serde_json::from_str(text).map_err(|_| IdlError::NotJson)?;
     let digest = sha256(bytes);
     if value.get("kind").and_then(serde_json::Value::as_str) == Some("rootNode") {

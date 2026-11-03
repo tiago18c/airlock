@@ -10,6 +10,15 @@ use codama_nodes::{
 use codama_visitors_core::NodePath;
 use codama_visitors_core::{DynamicError as CodamaError, DynamicResult as CodamaResult};
 
+/// How many discriminators whose type links elsewhere one identification may
+/// read. Each copies the whole tree, and an IDL could give one to each of
+/// thousands of instructions.
+const MAX_LINKED_DISCRIMINATORS: usize = 64;
+
+/// What one identification has spent on discriminators so far.
+#[derive(Default)]
+pub(crate) struct LinkedDiscriminators(usize);
+
 /// Whether `bytes` match *every* discriminator. Returns `false` when there are
 /// no discriminators (an undiscriminated node can never be identified by bytes).
 ///
@@ -20,12 +29,13 @@ pub(crate) fn match_discriminators(
     discriminators: &[DiscriminatorNode],
     struct_type: Option<&StructTypeNode>,
     root: &RootNode,
+    linked: &mut LinkedDiscriminators,
 ) -> CodamaResult<bool> {
     if discriminators.is_empty() {
         return Ok(false);
     }
     for discriminator in discriminators {
-        if !match_discriminator(bytes, discriminator, struct_type, root)? {
+        if !match_discriminator(bytes, discriminator, struct_type, root, linked)? {
             return Ok(false);
         }
     }
@@ -37,10 +47,15 @@ fn match_discriminator(
     discriminator: &DiscriminatorNode,
     struct_type: Option<&StructTypeNode>,
     root: &RootNode,
+    linked: &mut LinkedDiscriminators,
 ) -> CodamaResult<bool> {
     match discriminator {
-        DiscriminatorNode::Constant(node) => match_constant_discriminator(bytes, node, root),
-        DiscriminatorNode::Field(node) => match_field_discriminator(bytes, node, struct_type, root),
+        DiscriminatorNode::Constant(node) => {
+            match_constant_discriminator(bytes, node, root, linked)
+        }
+        DiscriminatorNode::Field(node) => {
+            match_field_discriminator(bytes, node, struct_type, root, linked)
+        }
         DiscriminatorNode::Size(node) => Ok(bytes.len() as u64 == node.size),
     }
 }
@@ -49,8 +64,9 @@ fn match_constant_discriminator(
     bytes: &[u8],
     discriminator: &ConstantDiscriminatorNode,
     root: &RootNode,
+    linked: &mut LinkedDiscriminators,
 ) -> CodamaResult<bool> {
-    let to_match = encode_constant(root, &discriminator.constant)?;
+    let to_match = encode_constant(root, &discriminator.constant, linked)?;
     Ok(contains_bytes(
         bytes,
         &to_match,
@@ -63,9 +79,10 @@ fn match_field_discriminator(
     discriminator: &FieldDiscriminatorNode,
     struct_type: Option<&StructTypeNode>,
     root: &RootNode,
+    linked: &mut LinkedDiscriminators,
 ) -> CodamaResult<bool> {
     let constant = field_discriminator_to_constant(discriminator, struct_type)?;
-    match_constant_discriminator(bytes, &constant, root)
+    match_constant_discriminator(bytes, &constant, root, linked)
 }
 
 /// Resolves a field discriminator to the equivalent constant discriminator, by
@@ -93,12 +110,20 @@ fn field_discriminator_to_constant(
 
 /// Encodes a constant value to its bytes, resolving any defined-type links in
 /// the constant's type against the program at the head of the tree.
-fn encode_constant(root: &RootNode, constant: &ConstantValueNode) -> CodamaResult<Vec<u8>> {
+fn encode_constant(
+    root: &RootNode,
+    constant: &ConstantValueNode,
+    linked: &mut LinkedDiscriminators,
+) -> CodamaResult<Vec<u8>> {
     let value = get_value(constant.value.as_ref())?;
     // A discriminator is nearly always plain bytes or a number. Only a type
     // that links elsewhere needs the tree, and a path to it copies the tree.
     if let Ok(codec) = get_type_codec(&constant.r#type) {
         return codec.encode_to_vec(&value);
+    }
+    linked.0 += 1;
+    if linked.0 > MAX_LINKED_DISCRIMINATORS {
+        return Err(CodamaError::TypeTooLarge(MAX_LINKED_DISCRIMINATORS));
     }
     let path = NodePath::new()
         .extended(root.clone())
@@ -143,13 +168,17 @@ fn discriminator_to_filter(
     match discriminator {
         DiscriminatorNode::Constant(node) => Ok(DataFilter::Memcmp {
             offset: node.offset as usize,
-            bytes: encode_constant(root, &node.constant)?,
+            bytes: encode_constant(root, &node.constant, &mut LinkedDiscriminators::default())?,
         }),
         DiscriminatorNode::Field(node) => {
             let constant = field_discriminator_to_constant(node, struct_type)?;
             Ok(DataFilter::Memcmp {
                 offset: constant.offset as usize,
-                bytes: encode_constant(root, &constant.constant)?,
+                bytes: encode_constant(
+                    root,
+                    &constant.constant,
+                    &mut LinkedDiscriminators::default(),
+                )?,
             })
         }
         DiscriminatorNode::Size(node) => Ok(DataFilter::DataSize(node.size as usize)),
