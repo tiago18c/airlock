@@ -7,4 +7,5 @@ mod old_files;
 mod public;
 mod publishing;
 mod saving;
+mod split_files;
 mod vault_file;

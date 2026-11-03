@@ -156,7 +156,6 @@ pub fn use_session(core: CopyValue<Core>, online: OnlineHooks, submitter: Submit
     keep_tests_off_the_data_folder();
     let (idls, idl_pack) = use_idls(pump.network);
     let idl_misses = use_hook(|| CopyValue::new(std::collections::HashSet::new()));
-    let leaf_marks = use_signal(crate::platform::storage::open_leaf_marks);
     let xmss_retries = use_signal(wallet_core::vector::XmssRetryCache::default);
     let tab = use_signal(|| Tab::Wallets);
     let forms = use_forms();
@@ -192,7 +191,6 @@ pub fn use_session(core: CopyValue<Core>, online: OnlineHooks, submitter: Submit
             idls,
             idl_pack,
             idl_misses,
-            leaf_marks,
             xmss_retries,
             tab,
             forms,

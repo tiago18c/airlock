@@ -231,12 +231,11 @@ impl Session {
         known: &[wallet_core::relay::VectorContext],
         floors: wallet_core::vector::FloorsFrom,
     ) -> Result<Vec<wallet_core::vector::VectorKey>, wallet_core::SignError> {
-        let mut marks = self.leaf_marks;
         let keys = self.command(|core| {
-            core.with_vault_mut(|vault| {
+            core.with_vault_and_marks(|vault, marks| {
                 wallet_core::vector::keys_to_sign_with(
                     vault,
-                    &mut *marks.write(),
+                    marks,
                     &self.xmss_retries.peek(),
                     wire,
                     signers,
@@ -255,10 +254,9 @@ impl Session {
         &self,
         id: WalletId,
     ) -> Result<wallet_core::protocol::KeyRotation, String> {
-        let mut marks = self.leaf_marks;
         self.command(|core| {
-            core.with_vault_mut(|vault| {
-                wallet_core::vector::sign_rotation(vault, &mut *marks.write(), id)
+            core.with_vault_and_marks(|vault, marks| {
+                wallet_core::vector::sign_rotation(vault, marks, id)
             })
         })
         .map_err(|err| err.to_string())
@@ -272,10 +270,9 @@ impl Session {
         &self,
         state: wallet_core::protocol::AccountState,
     ) -> Result<wallet_core::vector::Adopted, String> {
-        let mut marks = self.leaf_marks;
         self.command(|core| {
-            core.with_vault_mut(|vault| {
-                wallet_core::vector::adopt_account_state(vault, &mut *marks.write(), &state)
+            core.with_vault_and_marks(|vault, marks| {
+                wallet_core::vector::adopt_account_state(vault, marks, &state)
             })
         })
         .map_err(|err| err.to_string())
@@ -284,7 +281,11 @@ impl Session {
     /// The key a rotation signed here moves the account at `address` to,
     /// while it may not have landed.
     pub fn pending_rotation(&self, address: &Pubkey) -> Option<Vec<u8>> {
-        self.leaf_marks.read().pending_rotation(address)
+        (self.wallets)()
+            .pending_rotations
+            .iter()
+            .find(|(account, _)| account == address)
+            .map(|(_, next_key)| next_key.clone())
     }
 
     /// Sign `message` as a wallet of the vault, for a site. Only a key the

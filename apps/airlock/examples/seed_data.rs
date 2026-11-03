@@ -105,7 +105,11 @@ fn write_fixture(dir: &Path) -> Result<(), String> {
         .filter_map(|wallet| Some((wallet.address()?, wallet.label.clone())))
         .collect();
 
-    let mut workspace = WorkspaceStore::open(FileStore::new(dir.join("workspace.json")));
+    let mut workspace = WorkspaceStore::open(
+        FileStore::new(dir.join("workspace.json")),
+        FileStore::new(dir.join("grants.json")),
+        FileStore::new(dir.join("chain-cache.json")),
+    );
     workspace
         .change(|ws| {
             ws.cluster = Cluster::Devnet;
@@ -194,7 +198,11 @@ fn verify_fixture(dir: &Path) -> Result<(), String> {
             "expected 5 hot / 5 offline / 10 contract, got {hot}/{offline}/{contracts}"
         ));
     }
-    let workspace = WorkspaceStore::open(FileStore::new(dir.join("workspace.json")));
+    let workspace = WorkspaceStore::open(
+        FileStore::new(dir.join("workspace.json")),
+        FileStore::new(dir.join("grants.json")),
+        FileStore::new(dir.join("chain-cache.json")),
+    );
     let contacts = workspace
         .data()
         .book

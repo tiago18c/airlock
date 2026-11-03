@@ -70,7 +70,11 @@ mod tests {
             let mut vault = Vault::new(vault_file.clone());
             vault.create("pw").unwrap();
             Self {
-                workspace: WorkspaceStore::open(book_file.clone()),
+                workspace: WorkspaceStore::open(
+                    book_file.clone(),
+                    Arc::new(MemoryStore::new()),
+                    Arc::new(MemoryStore::new()),
+                ),
                 vault,
                 vault_file,
                 book_file,
@@ -102,7 +106,11 @@ mod tests {
             vault.unlock("pw").unwrap();
             (
                 vault.data().unwrap().clone(),
-                WorkspaceStore::open(self.book_file.clone()),
+                WorkspaceStore::open(
+                    self.book_file.clone(),
+                    Arc::new(MemoryStore::new()),
+                    Arc::new(MemoryStore::new()),
+                ),
             )
         }
     }

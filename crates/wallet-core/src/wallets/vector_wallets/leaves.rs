@@ -274,6 +274,19 @@ impl<S: VaultStore> LeafMarks<S> {
         hex::decode(&rotation.next_key).ok()
     }
 
+    /// Each rotation signed here that may not have landed: the account, and the key
+    /// it moves to.
+    pub fn pending_rotations(&self) -> Vec<(Pubkey, Vec<u8>)> {
+        self.marks
+            .rotations
+            .iter()
+            .filter_map(|(account, rotation)| {
+                let account = account.parse().ok()?;
+                Some((account, hex::decode(&rotation.next_key).ok()?))
+            })
+            .collect()
+    }
+
     /// `account`'s key signed `digest` at `nonce`. Saved before it signs.
     pub(super) fn note_signed(
         &mut self,

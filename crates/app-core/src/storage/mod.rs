@@ -35,9 +35,13 @@ pub const VAULT_FILE: &str = "vault.json";
 /// The vault's wallets without their secrets, shown while it is locked.
 pub const WALLETS_FILE: &str = "wallets.json";
 pub const WORKSPACE_FILE: &str = "workspace.json";
+/// Which sites were given what.
+pub const GRANTS_FILE: &str = "grants.json";
+/// What a node said about the addresses in the book.
+pub const CHAIN_CACHE_FILE: &str = "chain-cache.json";
 pub const HOLDINGS_FILE: &str = "holdings.json";
 pub const NOTICES_FILE: &str = "notices.json";
-const LEAF_MARKS_FILE: &str = "vector-leaves.json";
+pub const LEAF_MARKS_FILE: &str = "vector-leaves.json";
 
 pub struct BoxedStore(pub Box<dyn VaultStore>);
 
@@ -108,7 +112,17 @@ pub fn open_wallet_list_in(storage: &dyn Storage) -> AppWalletList {
 }
 
 pub fn open_workspace_in(storage: &dyn Storage) -> AppWorkspace {
-    WorkspaceStore::open(BoxedStore(storage.open(WORKSPACE_FILE)))
+    WorkspaceStore::open(
+        BoxedStore(storage.open(WORKSPACE_FILE)),
+        BoxedStore(storage.open(GRANTS_FILE)),
+        BoxedStore(storage.open(CHAIN_CACHE_FILE)),
+    )
+}
+
+/// What a hash-based key has signed with. On [`Storage::open_record`], since a
+/// loss of it could let a key sign twice.
+pub fn open_leaf_marks_in(storage: &dyn Storage) -> AppLeafMarks {
+    LeafMarks::open(BoxedStore(storage.open_record(LEAF_MARKS_FILE)))
 }
 
 pub fn open_holdings_in(storage: &dyn Storage) -> AppHoldings {
@@ -125,10 +139,6 @@ pub fn open_vault() -> AppVault {
 
 /// High-water marks for XMSS leaves, outside the vault so a restore of only
 /// the vault cannot reuse a spent leaf.
-pub fn open_leaf_marks() -> AppLeafMarks {
-    LeafMarks::open(BoxedStore(platform_storage().open_record(LEAF_MARKS_FILE)))
-}
-
 pub fn open_workspace() -> AppWorkspace {
     open_workspace_in(&*platform_storage())
 }

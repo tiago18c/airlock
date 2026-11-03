@@ -118,3 +118,36 @@ fn rename_changes_only_the_imported_group() {
     assert_eq!(place[0].group_label, "Office");
     assert!(book.place(&alice).is_some_and(|found| !found.imported));
 }
+
+#[test]
+fn what_was_read_goes_out_and_comes_back_for_each_group_and_only_for_what_is_still_there() {
+    let mut book = AddressBook::new();
+    let (alice, bob) = (
+        Pubkey::new_from_array([1; 32]),
+        Pubkey::new_from_array([2; 32]),
+    );
+    book.insert_contact(alice, "Alice");
+    book.insert_contact(bob, "Bob");
+    book.set_lamports(&alice, 7);
+    let state = book.chain_state();
+    assert_eq!(state.len(), 1, "a group with nothing read says nothing");
+    assert_eq!(
+        state[LOCAL_ID].len(),
+        1,
+        "an address with nothing read says nothing"
+    );
+
+    let mut emptied = book.clone();
+    emptied.clear_chain_state();
+    assert_eq!(emptied.get(&alice).unwrap().lamports, None);
+    assert!(emptied.chain_state().is_empty());
+    emptied.restore_chain_state(&state);
+    assert_eq!(emptied, book);
+
+    // An address no longer in the book is not put back.
+    emptied.clear_chain_state();
+    emptied.remove(&alice);
+    emptied.restore_chain_state(&state);
+    assert!(emptied.get(&alice).is_none());
+    assert!(emptied.chain_state().is_empty());
+}
