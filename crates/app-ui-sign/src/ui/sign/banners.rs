@@ -113,6 +113,7 @@ fn SignerRow(line: wallet_core::SignerLine, inspect: bool) -> Element {
                         SignerState::Signed => rsx! { span { class: "chip ok", "signed" } },
                         SignerState::Invalid => rsx! { span { class: "chip danger", "invalid signature" } },
                         SignerState::Local => rsx! { span { class: "chip info", "on this device · not signed" } },
+                        SignerState::Device => rsx! { span { class: "chip info", "on a hardware wallet · not signed" } },
                         SignerState::Missing => rsx! { span { class: "chip warn", "needed from elsewhere" } },
                     }
                 }

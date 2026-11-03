@@ -2,6 +2,7 @@
 //! after it is added.
 
 use crate::ids::WalletId;
+use crate::wallets::hardware::{DeviceSeen, HardwareVendor};
 use crate::wallets::record::{
     KeyPhrase, OfflinePath, Protocol, VectorSettings, WalletClass, WalletKind,
 };
@@ -14,11 +15,40 @@ impl WalletKind {
         matches!(self, Self::Keypair { .. } | Self::Seed { .. })
     }
 
-    /// Whether this wallet can pay fees for another: it is a key, here or
-    /// on another device. An offline payer's signature is brought in like
-    /// any other signature made elsewhere.
+    /// Whether this wallet can pay fees for another: it is a key, here, on
+    /// a hardware wallet or on another device. An offline payer's signature
+    /// is brought in like any other signature made elsewhere.
     pub fn can_pay(&self) -> bool {
-        self.can_sign() || matches!(self, Self::Offline { .. })
+        self.can_sign() || matches!(self, Self::Offline { .. } | Self::Hardware { .. })
+    }
+
+    /// A device connected here signs for this wallet: a hardware wallet.
+    pub fn signs_on_device(&self) -> bool {
+        matches!(self, Self::Hardware { .. })
+    }
+
+    /// The vendor of a hardware wallet.
+    pub fn hardware_vendor(&self) -> Option<HardwareVendor> {
+        match self {
+            Self::Hardware { vendor, .. } => Some(*vendor),
+            _ => None,
+        }
+    }
+
+    /// What was last seen of a hardware wallet's device.
+    pub fn device_seen(&self) -> Option<&DeviceSeen> {
+        match self {
+            Self::Hardware { seen, .. } => Some(seen),
+            _ => None,
+        }
+    }
+
+    /// Record what a hardware wallet's device reported on connecting. Does
+    /// nothing for any other wallet.
+    pub fn set_device_seen(&mut self, value: DeviceSeen) {
+        if let Self::Hardware { seen, .. } = self {
+            *seen = value;
+        }
     }
 
     pub fn class(&self) -> WalletClass {
@@ -35,6 +65,7 @@ impl WalletKind {
     pub fn fee_payer(&self) -> Option<WalletId> {
         match self {
             Self::Offline { fee_payer, .. }
+            | Self::Hardware { fee_payer, .. }
             | Self::Programmatic { fee_payer, .. }
             | Self::Squads { fee_payer, .. } => *fee_payer,
             _ => None,
@@ -44,6 +75,7 @@ impl WalletKind {
     /// Set the fee payer. Does nothing for a wallet that pays its own fees.
     pub fn set_fee_payer(&mut self, wallet: Option<WalletId>) {
         if let Self::Offline { fee_payer, .. }
+        | Self::Hardware { fee_payer, .. }
         | Self::Programmatic { fee_payer, .. }
         | Self::Squads { fee_payer, .. } = self
         {
@@ -115,32 +147,36 @@ impl WalletKind {
         }
     }
 
-    /// The durable nonce account of an offline wallet.
+    /// The durable nonce account of an offline or hardware wallet.
     pub fn durable_nonce(&self) -> Option<Pubkey> {
         match self {
-            Self::Offline { durable_nonce, .. } => *durable_nonce,
+            Self::Offline { durable_nonce, .. } | Self::Hardware { durable_nonce, .. } => {
+                *durable_nonce
+            }
             _ => None,
         }
     }
 
     /// Set the durable nonce account. Does nothing for any other wallet.
     pub fn set_durable_nonce(&mut self, account: Option<Pubkey>) {
-        if let Self::Offline { durable_nonce, .. } = self {
+        if let Self::Offline { durable_nonce, .. } | Self::Hardware { durable_nonce, .. } = self {
             *durable_nonce = account;
         }
     }
 
-    /// Which path an offline wallet takes when it is chosen.
+    /// Which path an offline or hardware wallet takes when it is chosen.
     pub fn default_path(&self) -> Option<OfflinePath> {
         match self {
-            Self::Offline { default_path, .. } => *default_path,
+            Self::Offline { default_path, .. } | Self::Hardware { default_path, .. } => {
+                *default_path
+            }
             _ => None,
         }
     }
 
     /// Choose the default path. Does nothing for any other wallet.
     pub fn set_default_path(&mut self, path: Option<OfflinePath>) {
-        if let Self::Offline { default_path, .. } = self {
+        if let Self::Offline { default_path, .. } | Self::Hardware { default_path, .. } = self {
             *default_path = path;
         }
     }

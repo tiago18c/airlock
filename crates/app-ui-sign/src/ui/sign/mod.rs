@@ -271,6 +271,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     let local = LocalKeys {
         keys: &session.local_signer_pubkeys(),
         vector: &vector_here,
+        devices: &[],
     };
     let ctx = AuthContext { vector: &known };
     let status = signing_status_in(tx.as_ref(), &local, &ctx);

@@ -84,6 +84,7 @@ pub fn wants_fresh_blockhash(tx: &DecodedTx, local: &[Pubkey]) -> bool {
     let local = LocalKeys {
         keys: local,
         vector: &[],
+        devices: &[],
     };
     fresh_blockhash_for(tx, &local, &AuthContext::default())
 }
@@ -142,6 +143,7 @@ pub async fn sign_with(
     let local = LocalKeys {
         keys: &keys,
         vector: &held,
+        devices: &[],
     };
     if let Some(tx) = &decoded {
         let stale = signing_status_in(tx, &local, &ctx)

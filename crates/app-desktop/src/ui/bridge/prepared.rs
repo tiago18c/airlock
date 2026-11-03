@@ -297,6 +297,7 @@ pub(in crate::ui) fn use_prepared_request(
     let local = wallet_core::LocalKeys {
         keys: &local_keys,
         vector: &vector_here,
+        devices: &[],
     };
     let ctx = wallet_core::relay::AuthContext {
         vector: &vector_known,

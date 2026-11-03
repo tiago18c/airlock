@@ -17,7 +17,7 @@ A wallet record (`wallet_core::wallets::record::WalletKind`) says where the key 
 | Programmatic signer | Nowhere. The address is derived from an authority key | The authority, over an *authorization message* inside the transaction | The wallet set as its fee payer |
 | Vector wallet | Held in the record, a hot wallet of this device, or elsewhere | The authority, over a *digest* of the relay transaction's instructions (an `Advance` slot) | The wallet set as its fee payer |
 | Squads multisig | Nowhere. The vault is a program-derived address | A member, by creating, approving and executing a *proposal* | The wallet set as its fee payer |
-| Hardware | On the device | Not supported yet. Routing refuses it | |
+| Hardware (`Hardware`) | On a Ledger, Trezor or Keystone the user holds | The device, over the transaction, once the user confirms on it (`RouteStep::DeviceKey`). Nothing can add one yet: see [plan-hardware-wallets.md](plan-hardware-wallets.md) | The wallet itself, or the wallet set as its fee payer |
 
 A Vector wallet and an Ed25519 programmatic signer share `WalletKind::Programmatic`; the protocol field says which. Settings turns Vector wallets on. Schemes, the program deployment and the decisions behind them are in [vector-fork.md](vector-fork.md).
 

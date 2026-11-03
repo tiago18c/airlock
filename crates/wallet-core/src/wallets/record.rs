@@ -1,5 +1,6 @@
 use crate::ids::WalletId;
 use crate::keys::signer::{KeypairSigner, WalletSigner};
+use crate::wallets::hardware::{DeviceSeen, HardwareVendor};
 use crate::wallets::squads::{Squad, SquadsProgram};
 use crate::wallets::vector::SchemeId;
 use base64::Engine;
@@ -7,12 +8,6 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use solana_pubkey::Pubkey;
 use std::collections::BTreeSet;
 use wallet_vault::{SecretBytes, SecretString};
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum HardwareVendor {
-    Ledger,
-}
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -61,10 +56,31 @@ pub enum WalletKind {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         pubkey: Option<Pubkey>,
     },
+    /// A hardware wallet: the key is on a Ledger, Trezor or Keystone the
+    /// user holds, which signs once the user confirms on it. Nothing here
+    /// is secret.
     Hardware {
         vendor: HardwareVendor,
+        /// The key at `path`, read from the device when the wallet was added.
+        pubkey: Pubkey,
+        /// Concrete path, such as `m/44'/501'/0'/0'`.
+        path: String,
+        /// What names the device beyond the key: a Trezor's device id, or a
+        /// Keystone's master fingerprint. A Ledger has none.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        device: Option<String>,
+        /// The model and version last seen.
         #[serde(default)]
-        paths: Vec<String>,
+        seen: DeviceSeen,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        fee_payer: Option<WalletId>,
+        /// As for an offline wallet: for a Keystone round trip, or several
+        /// devices one after another.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        durable_nonce: Option<Pubkey>,
+        /// As for an offline wallet: which path acts when this key is chosen.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        default_path: Option<OfflinePath>,
     },
     /// A programmatic signer: an address with no key of its own, that a
     /// program lets an authority key act for. The authority signs an
@@ -282,6 +298,31 @@ impl WalletRecord {
         }
     }
 
+    /// A hardware wallet: `pubkey` is the key at `path` on a device of
+    /// `vendor`, as read from it.
+    pub fn hardware(
+        label: impl Into<String>,
+        vendor: HardwareVendor,
+        pubkey: Pubkey,
+        path: impl Into<String>,
+    ) -> Self {
+        Self {
+            id: WalletId::new(),
+            label: label.into(),
+            tags: BTreeSet::new(),
+            kind: WalletKind::Hardware {
+                vendor,
+                pubkey,
+                path: path.into(),
+                device: None,
+                seen: DeviceSeen::default(),
+                fee_payer: None,
+                durable_nonce: None,
+                default_path: None,
+            },
+        }
+    }
+
     pub fn from_keypair_seed(label: impl Into<String>, secret_seed: [u8; 32]) -> Self {
         let pubkey = KeypairSigner::from_seed(&secret_seed)
             .ok()
@@ -412,7 +453,9 @@ impl WalletRecord {
                     format!("seed · {path}")
                 }
             }
-            WalletKind::Hardware { .. } => "hardware".into(),
+            WalletKind::Hardware { vendor, path, .. } => {
+                format!("{} · {path}", vendor.label())
+            }
             WalletKind::Programmatic {
                 protocol: Protocol::Ed25519Signer { .. },
                 ..

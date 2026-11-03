@@ -8,6 +8,7 @@
 //! after this device's own, since it shares the transaction once signed.
 
 use super::{SignerKey, SignerLine, SignerRole, SignerState, SigningStatus};
+use crate::wallets::hardware::HardwareVendor;
 use crate::wallets::relay::AuthorityId;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -23,6 +24,11 @@ pub enum SignStepKind {
     Simulate,
     /// Sign the transaction with keys on this device.
     SignTransaction,
+    /// Sign the transaction on hardware wallets connected here, each once
+    /// the user confirms on it. `vendor` when they are all of one vendor.
+    SignOnDevice {
+        vendor: Option<HardwareVendor>,
+    },
     /// Add signatures made on other devices.
     CollectSignatures,
     Submit,
@@ -151,6 +157,8 @@ pub fn sign_steps(status: &SigningStatus, inputs: &SignStepInputs) -> Vec<SignSt
         let authority = |line: &&SignerLine| matches!(line.role, SignerRole::Authority { .. });
         let outer = |line: &&SignerLine| !matches!(line.role, SignerRole::Authority { .. });
         let here = |line: &&SignerLine| line.held_here;
+        let vault = |line: &&SignerLine| line.held_here && line.on_device.is_none();
+        let device = |line: &&SignerLine| line.on_device.is_some();
         let away = |line: &&SignerLine| !line.held_here;
         let lines = &status.lines;
 
@@ -173,8 +181,17 @@ pub fn sign_steps(status: &SigningStatus, inputs: &SignStepInputs) -> Vec<SignSt
         planned.extend(auth_steps.into_iter().flatten());
         planned.push(Planned::plain(SignStepKind::Simulate, false));
 
-        if let Some(count) = tally(lines.iter().filter(outer).filter(here)) {
+        if let Some(count) = tally(lines.iter().filter(outer).filter(vault)) {
             planned.push(Planned::counted(SignStepKind::SignTransaction, count));
+        }
+        if let Some(count) = tally(lines.iter().filter(outer).filter(device)) {
+            let mut vendors = lines.iter().filter(outer).filter_map(|line| line.on_device);
+            let first = vendors.next();
+            let vendor = first.filter(|first| vendors.all(|other| other == *first));
+            planned.push(Planned::counted(
+                SignStepKind::SignOnDevice { vendor },
+                count,
+            ));
         }
         // The site's own signatures come after it has the transaction back.
         let collected = tally(lines.iter().filter(outer).filter(away))
@@ -231,18 +248,21 @@ pub fn sign_steps(status: &SigningStatus, inputs: &SignStepInputs) -> Vec<SignSt
 /// Which steps there are does not change as they pass, so a screen that hides
 /// them does not jump. Sharing is kept: an offline device has to act on it.
 pub fn only_simulate_and_sign(steps: &[SignStep]) -> bool {
-    steps
-        .iter()
-        .any(|step| step.kind == SignStepKind::SignTransaction)
-        && steps.iter().all(|step| {
-            matches!(
-                step.kind,
-                SignStepKind::Simulate
-                    | SignStepKind::SignTransaction
-                    | SignStepKind::Submit
-                    | SignStepKind::ReturnToSite
-            )
-        })
+    steps.iter().any(|step| {
+        matches!(
+            step.kind,
+            SignStepKind::SignTransaction | SignStepKind::SignOnDevice { .. }
+        )
+    }) && steps.iter().all(|step| {
+        matches!(
+            step.kind,
+            SignStepKind::Simulate
+                | SignStepKind::SignTransaction
+                | SignStepKind::SignOnDevice { .. }
+                | SignStepKind::Submit
+                | SignStepKind::ReturnToSite
+        )
+    })
 }
 
 /// The steps of a batch a site sent: one for each transaction, in the order
@@ -283,7 +303,9 @@ fn tally<'a>(lines: impl Iterator<Item = &'a SignerLine>) -> Option<(usize, usiz
 fn held_up_by_expiry(kind: SignStepKind, inputs: &SignStepInputs) -> bool {
     inputs.expired
         && match kind {
-            SignStepKind::SignTransaction => !inputs.refreshes_on_sign,
+            SignStepKind::SignTransaction | SignStepKind::SignOnDevice { .. } => {
+                !inputs.refreshes_on_sign
+            }
             SignStepKind::CollectSignatures
             | SignStepKind::Submit
             | SignStepKind::ReturnToSite
@@ -308,6 +330,7 @@ mod tests {
             role,
             state,
             held_here,
+            on_device: None,
         }
     }
 
