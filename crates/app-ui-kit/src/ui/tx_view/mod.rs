@@ -11,9 +11,9 @@ use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use std::collections::{HashMap, HashSet};
 use wallet_core::{
-    display_note, explain_with_note, ContextPinMatch, DecodedTx, ExplainedIx, IdlExplanation,
-    IdlOrigin, IdlPinStatus, InnerKind, InnerMessage, IntentBody, IntentSpan, IntentValue, NextKey,
-    ScaleSource, COMPUTE_BUDGET_PROGRAM_ID, MAX_TRANSACTION_SIZE,
+    display_note, explain_with_note, ContextPinMatch, DecodedTx, ExplainedIx, ExplainedTx,
+    IdlExplanation, IdlOrigin, IdlPinStatus, InnerKind, InnerMessage, IntentBody, IntentSpan,
+    IntentValue, NextKey, ScaleSource, COMPUTE_BUDGET_PROGRAM_ID, MAX_TRANSACTION_SIZE,
 };
 
 mod facts;
@@ -25,7 +25,7 @@ pub use instruction::*;
 /// What a transaction does that hands over control of something, however well
 /// it reads.
 #[component]
-pub fn RiskNotice(explained: wallet_core::ExplainedTx) -> Element {
+pub fn RiskNotice(explained: ExplainedTx) -> Element {
     let risks = wallet_core::risks_in(&explained);
     rsx! {
         for risk in risks {
@@ -56,19 +56,10 @@ pub fn SimulatedDeltas(
     rsx! { {children} }
 }
 
-/// `signers` are the addresses the screen lists under its signatures, inside
-/// the same [`SimulatedDeltas`]. Their changes are drawn there, so Summary
-/// does not repeat them. `children` sit beside the heading.
-#[component]
-pub fn TxView(
-    tx: DecodedTx,
-    inspect: bool,
-    #[props(default)] signers: Vec<Pubkey>,
-    children: Element,
-) -> Element {
+/// How the Sign screen reads `tx`.
+pub fn use_explained(tx: DecodedTx) -> ExplainedTx {
     let session = use_context::<Session>();
     let stored = (session.forms.sign.context)();
-    let shown = tx.clone();
     // Decoding against the IDL catalog is the expensive part of this screen.
     // Redo it only when the transaction, the note or the catalog changes.
     // What an Advance does to a hash-based key is read with the accounts'
@@ -76,12 +67,27 @@ pub fn TxView(
     // vault. A pasted or scanned transaction brings only the wallets'.
     let vector = (session.forms.sign.vector)();
     let wallets = (session.wallets)().summaries.clone();
-    let explained = use_memo(use_reactive!(|(tx, stored, vector, wallets)| {
+    use_memo(use_reactive!(|(tx, stored, vector, wallets)| {
         let note = display_note(&tx, stored.as_ref())
             .with_vector_schemes(&vector)
             .with_wallet_schemes(&wallets);
         explain_with_note(&*session.idls.read(), &tx, &note)
-    }))();
+    }))()
+}
+
+/// `explained` is [`use_explained`] of `tx`. `signers` are the addresses the
+/// screen lists under its signatures, inside the same [`SimulatedDeltas`]. Their
+/// changes are drawn there, so Summary does not repeat them. `children` sit
+/// beside the heading.
+#[component]
+pub fn TxView(
+    tx: DecodedTx,
+    explained: ExplainedTx,
+    inspect: bool,
+    #[props(default)] signers: Vec<Pubkey>,
+    children: Element,
+) -> Element {
+    let shown = tx.clone();
     // Summary names only some accounts. One that changes and is neither
     // named nor a signer gets a line of its own; Inspect lists every account.
     let deltas = try_use_context::<BalanceDeltas>();

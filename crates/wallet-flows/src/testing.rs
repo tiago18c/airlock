@@ -211,6 +211,7 @@ impl SolanaRpc for FakeRpc {
             return Ok(Vec::new());
         }
         self.count()?;
+        self.gate.pass().await;
         Ok(pubkeys
             .iter()
             .map(|pubkey| self.accounts.get(pubkey).cloned())

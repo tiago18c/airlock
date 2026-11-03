@@ -99,6 +99,9 @@ pub struct ButtonFacts {
     pub blockhash: BlockhashPlan,
     /// A site that has it back may be sending it, or it has landed.
     pub site_holds: bool,
+    /// It says yes to something it does not hold, and that is not settled:
+    /// see [`blind_offer`].
+    pub blind_holds: bool,
 }
 
 /// Whether Sign can be pressed. An expired blockhash holds it back only if the
@@ -107,6 +110,7 @@ pub fn may_sign(facts: ButtonFacts) -> bool {
     facts.signable > 0
         && !facts.needs_rebuild
         && !facts.busy
+        && !facts.blind_holds
         && (facts.step == NextSignature::Authorization
             || !facts.blockhash.expired
             || facts.refreshes_on_sign
@@ -121,6 +125,39 @@ pub fn may_submit(facts: ButtonFacts) -> bool {
         && !facts.busy
         && !facts.blockhash.expired
         && !facts.site_holds
+}
+
+/// Where the instructions of a transaction that say yes to something it does
+/// not hold stand: see `wallet_core::blind_in`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct BlindFacts {
+    pub approvals: usize,
+    /// How many of them a node has said what they say yes to. What another
+    /// device said does not count: a device that cannot ask cannot check it.
+    pub read: usize,
+    /// A node is still being asked.
+    pub reading: bool,
+    /// The user said they have checked what this message says yes to.
+    pub checked: bool,
+}
+
+/// What those instructions ask of the Sign screen.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct BlindOffer {
+    /// Ask the user to say they have checked it somewhere they trust.
+    pub ask: bool,
+    pub holds_sign: bool,
+}
+
+/// Sign waits for a node that is being asked. When no node has said what one of
+/// them says yes to, which is always so on a device with no network, it waits
+/// for the user's word that they have checked it somewhere they trust.
+pub fn blind_offer(facts: BlindFacts) -> BlindOffer {
+    let ask = !facts.reading && facts.read < facts.approvals;
+    BlindOffer {
+        ask,
+        holds_sign: facts.reading || (ask && !facts.checked),
+    }
 }
 
 /// Where one transaction of a batch stands on the Sign screen.
@@ -455,13 +492,77 @@ mod tests {
             refreshes_on_sign: false,
             blockhash: keep(),
             site_holds: false,
+            blind_holds: false,
         }
+    }
+
+    #[test]
+    fn saying_yes_to_what_is_not_held_waits_for_a_node_or_the_users_word() {
+        let facts = |approvals, read, reading, checked| BlindFacts {
+            approvals,
+            read,
+            reading,
+            checked,
+        };
+        // Nothing of the kind on screen.
+        assert_eq!(
+            blind_offer(facts(0, 0, false, false)),
+            BlindOffer::default()
+        );
+        // With no network nothing can be read: only the user can settle it.
+        assert_eq!(
+            blind_offer(facts(1, 0, false, false)),
+            BlindOffer {
+                ask: true,
+                holds_sign: true
+            }
+        );
+        assert_eq!(
+            blind_offer(facts(1, 0, false, true)),
+            BlindOffer {
+                ask: true,
+                holds_sign: false
+            }
+        );
+        // A node being asked holds Sign and asks nothing yet, even if ticked.
+        for checked in [false, true] {
+            assert_eq!(
+                blind_offer(facts(1, 0, true, checked)),
+                BlindOffer {
+                    ask: false,
+                    holds_sign: true
+                }
+            );
+        }
+        // A node said for all of them: there is nothing to ask.
+        assert_eq!(
+            blind_offer(facts(2, 2, false, false)),
+            BlindOffer::default()
+        );
+        // For only some of them: the rest still need the user.
+        assert_eq!(
+            blind_offer(facts(2, 1, false, false)),
+            BlindOffer {
+                ask: true,
+                holds_sign: true
+            }
+        );
     }
 
     #[test]
     fn sign_needs_something_to_sign_and_nothing_in_the_way() {
         assert!(may_sign(ready()));
         for held in [
+            // Held even for the authorization, which is a signature too.
+            ButtonFacts {
+                blind_holds: true,
+                ..ready()
+            },
+            ButtonFacts {
+                blind_holds: true,
+                step: Authorization,
+                ..ready()
+            },
             ButtonFacts {
                 signable: 0,
                 ..ready()

@@ -218,7 +218,7 @@ sequenceDiagram
   A->>N: sendTransaction
 ```
 
-- The offline device decides on its own reading of the transaction. The context note only says which IDLs the online device used.
+- The offline device decides on its own reading of the transaction. The context note only says which IDLs the online device used, and what a node said is stored behind what the transaction approves. See [What a transaction does not hold](#what-a-transaction-does-not-hold).
 - Transaction signatures can be added in any order, so the fee payer may sign before or after the offline key.
 - With a recent blockhash, the whole round trip has to fit in about 30 seconds. Use a durable nonce for anything slower.
 
@@ -232,6 +232,16 @@ An offline wallet's row offers two paths, side by side, and either can be its de
 The first path set up becomes the default, and **Make default** switches. **Use** on the row follows the default: with the programmatic signer as default it selects the signer. A default whose target is gone (the signer was removed) is cleared, and the key acts as itself on a fresh blockhash.
 
 The nonce holds one value at a time. Two transactions made on it are both valid until one lands; the other is then void. Nothing tracks a transaction that was prepared but not sent, so the row and the Sign screen say this instead.
+
+#### What a transaction does not hold
+
+Approving a Squads proposal, running one, and voting on a Realms proposal sign the address of something stored on chain. What it would do is in another account, so nothing in the signed bytes says what it is, and a device with no network cannot go and look (`wallet_core::review::blind`). Anything the same list of instructions stores and opens is not one of these: the transaction then holds what it approves. Only these programs are known. Another program can keep what it approves elsewhere too.
+
+- The request modal and the Sign screen say so, and the modal does not offer Sign for it.
+- Online, the Sign screen asks the node what the proposal holds and shows it as what the node says. Sign waits for the answer.
+- The online device passes that on in the context note, as the raw account. The offline device checks that the account fits the proposal being approved and shows it as what the other device says. It cannot check that this is what the chain holds, since anything can be written for an address, so it never takes the place of the checkbox below.
+- When no node has said what it holds, which is always so on a device with no network, Sign waits until the user ticks that they have checked what it does somewhere they trust. That is for one message, and a new note unticks it.
+- What is stored for a config change, a batch or a Realms proposal is not read. Those get the warning and the checkbox with nothing to show.
 
 ### Programmatic signer
 
@@ -502,7 +512,7 @@ flowchart TD
 - A **legacy or v0** request is signed as is when every unsigned signature slot belongs to a hot key on this device and no programmatic signer or Squads vault is asked. A slot left for an account the transaction creates, such as a new mint, does not count: the site signs it after this device (see [Keys the site made for one transaction](#keys-the-site-made-for-one-transaction)). Otherwise it is converted to v1 (accounts inlined, site's blockhash kept); a filled signature from a key this device does not know refuses the conversion, unless it is a one-time key. The ComputeBudget instructions move into the v1 header, and the site's price per compute unit is kept. When online, the compute and loaded-accounts limits are what a simulation of the rewrite used plus 10%, even if the site filled them in; the probe asks for the highest of each (1,400,000 units and 64 MiB) so the simulation is not cut short. Offline, or when the simulation fails, the site's limits are kept when it set them, otherwise what the runtime gives a transaction that sets none (3,000 units per built-in instruction, 200,000 per other; 64 MiB of loaded account data). The notice says which.
 - **Sign** is offered when this device can add every missing signature (`wallet_core::review::quick_sign`). It is the primary button when every instruction, at any depth, was put in words by an IDL that ships with the app or that the user imported. Otherwise it is amber, and the modal says which instructions it could not put in words or put in words with an IDL read from the chain, which whoever controls the program wrote. Review stays the primary button then, the way to see everything in it.
 - **The modal simulates** what it shows, and Sign waits for the answer. If the node says it would fail, or cannot say, Sign stays offered but turns amber, and the modal says why. A simulation can be fooled, since a program can behave differently when it really runs, so this only ever holds Sign back. One with an authorization to sign first simulates on Review, once that is signed.
-- **What hands over control** gets no Sign in the modal, however well it reads: a token approval or change of authority, giving an account to a program, handing over a durable nonce or a stake account, changing a stake lockup, or changing a program or who can upgrade it (`wallet_core::review::risk`). It is told from the program and the instruction's bytes, at any depth the app can open, and not from an IDL, which says what its author wants said. The modal and the Sign screen both say what it does, and it is signed from Review. A call a program makes by itself shows only when it runs.
+- **What hands over control** gets no Sign in the modal, however well it reads: a token approval or change of authority, giving an account to a program, handing over a durable nonce or a stake account, changing a stake lockup, changing a program or who can upgrade it (`wallet_core::review::risk`), or saying yes to [what the transaction does not hold](#what-a-transaction-does-not-hold). It is told from the program and the instruction's bytes, at any depth the app can open, and not from an IDL, which says what its author wants said. The modal and the Sign screen both say what it does, and it is signed from Review. A call a program makes by itself shows only when it runs.
 - **Review** opens the transaction on the Sign screen, with simulation, Inspect and the QR handoff (v1 only; Share is hidden for an as-is legacy or v0 load).
 - **Not now** folds the request into a bar at the top of the app. The request keeps waiting.
 - The site always gets back the transaction that was reviewed. When that differs from what it sent, the modal and the Sign screen say so: that includes moving it onto an offline key's durable nonce, and on the Sign screen, setting its compute limits from a simulation. A v0 transaction signed as it came shows its lookup-table accounts as the chain has them now, and the modal says how many there are.

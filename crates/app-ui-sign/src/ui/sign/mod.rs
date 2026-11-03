@@ -22,7 +22,7 @@ use crate::state::use_network;
 use crate::ui::clock::BlockhashCountdown;
 use crate::ui::transfer::receive::QrScanner;
 use crate::ui::transfer::send::{PayloadShare, QrCarousel};
-use crate::ui::tx_view::{FeeLine, InstructionList, SimulatedDeltas, TxView};
+use crate::ui::tx_view::{use_explained, FeeLine, InstructionList, SimulatedDeltas, TxView};
 use crate::ui::{Address, AddressRow, CopyButton};
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
@@ -48,10 +48,13 @@ use wallet_flows::offer::{
 use wallet_flows::sign::wants_fresh_blockhash;
 
 mod banners;
+mod blind;
 mod inbox;
 mod share;
 mod simulation;
 mod steps;
+
+use blind::{offer_on_screen, use_stored_behind, BlindApprovals};
 
 pub(in crate::ui) use banners::*;
 pub(in crate::ui) use inbox::*;
@@ -281,6 +284,10 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     let needs_rebuild = plan.is_some();
     let relayed = !authority_slots_in(tx.as_ref(), &ctx).is_empty();
     let online = use_network().is_some();
+    let explained = use_explained(tx.as_ref().clone());
+    let approvals = wallet_core::blind_in(&explained);
+    let reading_stored = use_stored_behind(&approvals, online);
+    let blind = offer_on_screen(session, tx.as_ref(), &approvals, reading_stored);
     let busy = use_signal(|| false);
     let mut share_open = use_signal(|| false);
     let source = (form.source)();
@@ -430,7 +437,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         PersonalSignBox { tx: tx.clone(), status: status.clone() }
 
         SimulatedDeltas {
-            TxView { tx: tx.as_ref().clone(), inspect, signers: signer_rows,
+            TxView { tx: tx.as_ref().clone(), explained, inspect, signers: signer_rows,
                 if let Some(source) = source.clone() {
                     SourceChip { source }
                 }
@@ -450,11 +457,23 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
 
         SimulationStrip { tx: tx.clone(), inspect }
 
+        if !approvals.is_empty() {
+            BlindApprovals {
+                tx: tx.clone(),
+                approvals,
+                offer: blind,
+                reading: reading_stored,
+                online,
+                inspect,
+            }
+        }
+
         SignActions {
             status: status.clone(),
             step,
             online,
             busy,
+            blind_holds: blind.holds_sign,
             needs_rebuild,
             refreshes_on_sign,
             blockhash,
@@ -575,6 +594,8 @@ fn SignActions(
     online: bool,
     busy: Signal<bool>,
     needs_rebuild: bool,
+    /// It says yes to something it does not hold, and that is not settled.
+    blind_holds: bool,
     refreshes_on_sign: bool,
     blockhash: BlockhashPlan,
     site_blockhash: bool,
@@ -602,6 +623,7 @@ fn SignActions(
         // Submit waits while the site may be sending it, and stays off once
         // it has landed.
         site_holds: matches!(site_send, Some((SiteSend::Watching | SiteSend::Landed, _))),
+        blind_holds,
     };
     let can_sign = may_sign(buttons);
     let can_submit = may_submit(buttons);

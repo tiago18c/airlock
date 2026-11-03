@@ -3,12 +3,9 @@
 //! passes. Read from the instruction's own bytes in spl-governance's layout,
 //! so it does not wait on the IDL pack.
 
+use crate::ids::REALMS_GOVERNANCE_PROGRAM_ID;
 use solana_instruction::{AccountMeta, Instruction};
 use solana_pubkey::Pubkey;
-
-/// The SPL Governance program Realms runs, on mainnet and devnet.
-const REALMS_GOVERNANCE_PROGRAM_ID: Pubkey =
-    Pubkey::from_str_const("GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw");
 
 const INSERT_TRANSACTION: u8 = 9;
 

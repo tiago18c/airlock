@@ -12008,6 +12008,7 @@ name = "wallet-flows"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "hex",
  "pollster",
  "serde_json",
  "solana-hash",

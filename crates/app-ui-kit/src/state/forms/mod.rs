@@ -88,6 +88,8 @@ pub fn use_forms() -> Forms {
             source: use_signal(|| None::<TxSource>),
             flow: use_signal(|| None::<u64>),
             context: use_signal(|| None),
+            stored_behind: use_signal(|| None),
+            blind_checked: use_signal(|| None),
             vector: use_signal(Vec::new),
             import: use_signal(String::new),
             error: use_signal(|| None::<String>),

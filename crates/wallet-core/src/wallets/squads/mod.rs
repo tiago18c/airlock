@@ -44,7 +44,7 @@ mod state;
 mod values;
 
 #[cfg(test)]
-mod tests;
+pub(crate) mod tests;
 
 pub use message::*;
 pub use program::*;

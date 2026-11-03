@@ -22,5 +22,6 @@ thiserror.workspace = true
 wallet-core.workspace = true
 
 [dev-dependencies]
+hex.workspace = true
 pollster.workspace = true
 serde_json.workspace = true

@@ -167,6 +167,33 @@ mod tests {
     }
 
     #[test]
+    fn saying_yes_to_what_is_not_held_is_counted_however_well_it_reads() {
+        let payer = pk(1);
+        let squad = Squad::v4(&pk(50));
+        let vault = squad.vault(0);
+        let vote = squad.approve(4, &payer);
+        let payment = [transfer(vault, pk(2), 5)];
+
+        let wire = compile(payer, vec![vote.clone()]).wire;
+        let verdict = judge(&wire, &[payer]);
+        assert_eq!((verdict.unread, verdict.risky), (0, 1));
+
+        // One this very transaction stores and opens is held, so it is only read.
+        let wire = compile(
+            payer,
+            vec![
+                squad
+                    .create_transaction(4, 0, &payment, &payer, &payer)
+                    .unwrap(),
+                squad.create_proposal(4, &payer, &payer),
+                vote,
+            ],
+        )
+        .wire;
+        assert_eq!(judge(&wire, &[payer]).risky, 0);
+    }
+
+    #[test]
     fn what_hands_over_control_is_counted_however_well_it_reads() {
         let key = KeypairSigner::new_random();
         // A token approval, which the IDL that ships with the app reads in full.
