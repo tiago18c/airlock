@@ -14,6 +14,7 @@ mod error;
 pub mod idl;
 pub mod lookup;
 pub mod market;
+pub mod offer;
 pub mod offline_nonce;
 pub mod programmatic;
 pub mod refresh;
