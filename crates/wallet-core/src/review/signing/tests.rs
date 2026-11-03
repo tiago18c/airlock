@@ -315,3 +315,49 @@ fn tx_lifetime_names_a_durable_nonce_account() {
         TxLifetime::DurableNonce { account: nonce }
     );
 }
+
+#[test]
+fn only_the_keys_a_transaction_asks_for_are_asked_for() {
+    // Two signers, one of them not the payer.
+    let wire = compile(pk(1), vec![transfer(pk(2), pk(3), 5)]).wire;
+    assert_eq!(keys_asked_for(&wire).unwrap(), [pk(1), pk(2)]);
+
+    // Unreadable bytes ask for nothing.
+    assert!(keys_asked_for(b"not a transaction").is_err());
+
+    // A `Submit`'s authority signs an authorization, and is not among the
+    // transaction's signers.
+    let payer = KeypairSigner::new_random();
+    let authority = KeypairSigner::new_random();
+    let address = programmatic_signer_address(&authority.pubkey());
+    let inner = compile(payer.pubkey(), vec![transfer(address, pk(2), 5)]).wire;
+    let wrapped = wrap_for_programmatic(
+        &decode_v1_transaction(&inner).unwrap(),
+        &[authority.pubkey()],
+        ExecutorNonce {
+            account: pk(9),
+            authority: address,
+            value: blockhash(3),
+        },
+        payer.pubkey(),
+        blockhash(1),
+    )
+    .unwrap();
+    let asked = keys_asked_for(&wrapped).unwrap();
+    assert!(asked.contains(&payer.pubkey()), "{asked:?}");
+    assert!(asked.contains(&authority.pubkey()), "{asked:?}");
+    assert!(!asked.contains(&address), "{asked:?}");
+
+    // What is built from them signs what every key on the device would have.
+    let unrelated = KeypairSigner::new_random();
+    let every: [&dyn WalletSigner; 3] = [&payer, &authority, &unrelated];
+    let only: Vec<&dyn WalletSigner> = every
+        .iter()
+        .copied()
+        .filter(|key| asked.contains(&key.pubkey()))
+        .collect();
+    assert_eq!(only.len(), 2);
+    let with_all = sign_locally(&wrapped, &every).unwrap();
+    let with_only = sign_locally(&wrapped, &only).unwrap();
+    assert_eq!(with_all, with_only);
+}

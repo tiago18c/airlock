@@ -928,7 +928,7 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
             busy.set(false);
             return;
         }
-        let signers = session.local_signers();
+        let signers = session.local_signers_for(&wire);
         let signers: Vec<&dyn WalletSigner> = signers
             .iter()
             .map(|signer| signer as &dyn WalletSigner)

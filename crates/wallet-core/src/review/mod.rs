@@ -27,7 +27,7 @@ pub use explain::{
 pub use quick_sign::{quick_sign, quick_sign_in, QuickSign};
 pub use risk::risks_in;
 pub use signing::{
-    batch_steps, next_step, only_simulate_and_sign, sign_locally, sign_locally_in,
+    batch_steps, keys_asked_for, next_step, only_simulate_and_sign, sign_locally, sign_locally_in,
     sign_locally_in_with, sign_steps, signing_status, signing_status_in, tx_lifetime, LocalKeys,
     LocalSigning, NextSignature, SignFinish, SignStep, SignStepInputs, SignStepKind, SignStepState,
     SignerKey, SignerLine, SignerRole, SignerState, SigningStatus, SimulationStage, TxLifetime,
