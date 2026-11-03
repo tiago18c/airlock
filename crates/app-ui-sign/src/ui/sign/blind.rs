@@ -2,12 +2,9 @@
 //! and the user's word that they have checked it when nothing here can say.
 
 use super::*;
-use crate::ui::tx_view::RiskNotice;
 use std::collections::HashMap;
 use wallet_core::squads::VaultTransaction;
-use wallet_core::{
-    display_note, explain_instructions, stored_in, BlindApproval, ExplainedTx, StoredTarget,
-};
+use wallet_core::{display_note, stored_in, BlindApproval, StoredTarget};
 use wallet_flows::offer::{blind_offer, BlindFacts, BlindOffer};
 
 /// Ask a node what is stored behind `approvals`, for each transaction put on the
@@ -149,16 +146,8 @@ fn StoredBehind(
 
 #[component]
 fn StoredInstructions(stored: VaultTransaction, said: &'static str, inspect: bool) -> Element {
-    let session = use_context::<Session>();
-    let explained = use_memo(use_reactive!(|stored| {
-        ExplainedTx {
-            programs: Vec::new(),
-            instructions: explain_instructions(&*session.idls.read(), &stored.instructions),
-        }
-    }))();
     rsx! {
         p { class: "hint", "{said}" }
-        RiskNotice { explained: explained.clone() }
-        InstructionList { instructions: explained.instructions, inspect }
+        ReadInstructions { instructions: stored.instructions, inspect, risks: true }
     }
 }

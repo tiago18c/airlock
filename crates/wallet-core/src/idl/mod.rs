@@ -23,11 +23,11 @@ pub use catalog::sha256_bytes;
 pub use catalog::DirIdlBodies;
 pub use catalog::{
     anchor_idl_account_data, anchor_idl_address, idl_bytes_from_anchor_account,
-    idl_bytes_from_program_metadata, outline_idl, pretty_idl, program_metadata_account_data,
-    program_metadata_idl_address, IdlAccountUse, IdlArgOutline, IdlBodies, IdlBundleReport,
-    IdlCatalog, IdlChainSource, IdlCheck, IdlError, IdlErrorOutline, IdlIxOutline, IdlNamed,
-    IdlOrigin, IdlOutline, IdlPdaOutline, IdlRecord, IdlSpec, IdlStore, MemoryBodies,
-    MAX_IDL_BYTES,
+    idl_bytes_from_program_metadata, inspect_idl, outline_idl, pretty_idl,
+    program_metadata_account_data, program_metadata_idl_address, CatalogView, IdlAccountUse,
+    IdlArgOutline, IdlBodies, IdlBundleReport, IdlCatalog, IdlChainSource, IdlCheck, IdlError,
+    IdlErrorOutline, IdlIxOutline, IdlNamed, IdlOrigin, IdlOutline, IdlPdaOutline, IdlRecord,
+    IdlSpec, IdlStore, InspectedIdl, MemoryBodies, NoIdls, MAX_IDL_BYTES,
 };
 pub use draft::IdlDraft;
 pub use network::IdlNetwork;

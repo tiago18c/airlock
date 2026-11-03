@@ -68,6 +68,10 @@ pub(in crate::ui) struct PreparedRequest {
     pub offered: Option<PaidHere>,
     pub shown: Option<wallet_core::DecodedTx>,
     pub explained: Option<wallet_core::ExplainedTx>,
+    /// It is still being read.
+    pub reading: bool,
+    /// Reading it took too long.
+    pub gave_up: bool,
     pub locked: bool,
     pub can_review: bool,
     pub can_sign: bool,
@@ -277,13 +281,14 @@ pub(in crate::ui) fn use_prepared_request(
         .as_ref()
         .map(|adapted| adapted.context.clone())
         .unwrap_or_default();
-    let schemes = vector_known.clone();
-    let explained = use_memo(use_reactive!(|(tx, schemes)| {
-        tx.as_ref().map(|tx| {
-            let note = wallet_core::DisplayNote::default().with_vector_schemes(&schemes);
-            wallet_core::explain_with_note(&*session.idls.read(), tx, &note)
-        })
-    }))();
+    let reading = use_explained_for_site(tx.clone(), vector_known.clone());
+    let reading_waits = reading.as_ref().is_some_and(|reading| reading.unsettled());
+    let reading_gave_up = reading.as_ref().is_some_and(|reading| reading.gave_up);
+    // Nothing is offered on a reading that has not come, or that an IDL came
+    // after. One it gave up on says none of it in words, and is offered as that.
+    let explained = reading
+        .filter(|reading| !reading.unsettled())
+        .map(|reading| reading.explained);
     // Preparing may rebuild the request around a wallet's keys, so nothing
     // goes further until the vault is open.
     let locked = session.is_initialized() && !session.is_unlocked();
@@ -412,6 +417,8 @@ pub(in crate::ui) fn use_prepared_request(
         offered,
         shown,
         explained,
+        reading: reading_waits,
+        gave_up: reading_gave_up,
         locked,
         can_review: modal.review,
         can_sign: modal.sign,

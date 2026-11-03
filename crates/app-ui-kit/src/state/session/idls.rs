@@ -65,6 +65,21 @@ impl Session {
         self.note_idl(imported)
     }
 
+    /// Store a file already found good, without reading it again.
+    pub fn import_inspected_idl(
+        &self,
+        bytes: &[u8],
+        inspected: wallet_core::InspectedIdl,
+        origin: wallet_core::IdlOrigin,
+    ) -> Result<IdlRecord, IdlError> {
+        let imported = {
+            let mut idls = self.idls;
+            let imported = idls.write().import_inspected(bytes, inspected, origin);
+            imported
+        };
+        self.note_idl(imported)
+    }
+
     /// Import every program named by `index.json`. Missing bodies are reported
     /// and skipped.
     pub fn import_idl_bundle(&self, files: &[(&str, &[u8])]) -> Result<IdlBundleReport, IdlError> {

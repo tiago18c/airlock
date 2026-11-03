@@ -4,6 +4,7 @@
 //! An IDL is only ever read from its on-chain accounts: the program-metadata
 //! account, or the legacy Anchor IDL account. Nothing here fetches a URL.
 
+use crate::rt::off_the_window;
 use crate::state::session::Session;
 use dioxus::prelude::{ReadableExt, WritableExt};
 use solana_pubkey::Pubkey;
@@ -96,7 +97,16 @@ pub async fn fetch_missing_idls(session: &Session, program_ids: &[Pubkey]) -> Me
                 } else {
                     "program metadata"
                 };
-                match session.import_idl_with_origin(&bytes, Some(*program_id), origin) {
+                // Reading a large file takes a while, and a site can have named it.
+                let program = *program_id;
+                let (bytes, inspected) = off_the_window(move || {
+                    let inspected = wallet_core::inspect_idl(&bytes, Some(program));
+                    (bytes, inspected)
+                })
+                .await;
+                let stored = inspected
+                    .and_then(|inspected| session.import_inspected_idl(&bytes, inspected, origin));
+                match stored {
                     Ok(record) => imported.push(format!("{} ({source})", record.name)),
                     Err(err) => errors.push(err.to_string()),
                 }

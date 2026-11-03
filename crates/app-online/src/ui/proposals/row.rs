@@ -26,7 +26,6 @@ pub(in crate::ui) fn ProposalRow(
     on_toggle: EventHandler<u64>,
     on_act: EventHandler<(ProposalEntry, ProposalRequest, Pubkey)>,
 ) -> Element {
-    let session = use_context::<Session>();
     let index = entry.index;
     let (chip_class, chip_text) = status_chip(&entry);
     let approved = entry
@@ -78,8 +77,8 @@ pub(in crate::ui) fn ProposalRow(
                                 span { class: "muted", "stored by" }
                                 Address { pubkey: tx.creator }
                             }
-                            InstructionList {
-                                instructions: explain_instructions(&*session.idls.read(), &tx.instructions),
+                            ReadInstructions {
+                                instructions: tx.instructions.clone(),
                                 inspect: false,
                             }
                         },

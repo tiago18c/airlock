@@ -764,3 +764,174 @@ fn an_embedded_idl_that_claims_a_core_program_is_refused() {
     store.set_network(IdlNetwork::Mainnet);
     assert!(record(&store, pk(7)).is_none());
 }
+
+fn numbered(n: u32) -> Pubkey {
+    let mut bytes = [7u8; 32];
+    bytes[..4].copy_from_slice(&n.to_le_bytes());
+    Pubkey::new_from_array(bytes)
+}
+
+#[test]
+fn a_view_reads_what_the_catalog_reads_and_can_go_to_another_thread() {
+    fn sends<T: Send + Sync + 'static>(_: &T) {}
+    let mut store = open();
+    let program = pk(4);
+    store.import(&codama(program, "0.1.0"), None).unwrap();
+
+    let view = store.view();
+    sends(&view);
+    assert_eq!(view.records(), store.records());
+    let from_view = std::thread::spawn(move || view.program_client(&program).unwrap())
+        .join()
+        .unwrap();
+    // What it parsed is there for the catalog.
+    let from_store = store.program_client(&program).unwrap();
+    assert!(Arc::ptr_eq(&from_view, &from_store));
+    assert!(NoIdls.records().is_empty());
+    assert!(NoIdls.program_client(&program).is_none());
+}
+
+#[test]
+fn a_view_made_before_a_change_cannot_put_the_old_idl_back() {
+    let mut store = open();
+    let program = pk(4);
+    store.import(&codama(program, "0.1.0"), None).unwrap();
+    let late = store.view();
+
+    store.import(&codama(program, "0.2.0"), None).unwrap();
+    // It reads what it was made with, and leaves that in the shared cache.
+    let old = late.program_client(&program).unwrap();
+    assert_eq!(
+        old.root().program.version.as_str(),
+        "0.1.0",
+        "a view keeps what it was made with"
+    );
+    let new = store.program_client(&program).unwrap();
+    assert_eq!(new.root().program.version.as_str(), "0.2.0");
+}
+
+#[test]
+fn a_view_is_not_changed_by_what_comes_after_it() {
+    let mut store = open();
+    let view = store.view();
+    store.import(&codama(pk(4), "0.1.0"), None).unwrap();
+    assert!(view.records().is_empty());
+    assert!(view.program_client(&pk(4)).is_none());
+}
+
+#[test]
+fn inspecting_and_storing_is_importing_and_is_not_read_twice() {
+    let program = pk(4);
+    let bytes = codama(program, "0.1.0");
+    let inspected = inspect_idl(&bytes, None).unwrap();
+    let parsed = inspected.client.clone();
+
+    let mut store = open();
+    let record = store
+        .import_inspected(&bytes, inspected, IdlOrigin::Anchor)
+        .unwrap();
+    assert_eq!(record.program_id, program);
+    assert_eq!(record.origin, IdlOrigin::Anchor);
+    assert_eq!(store.body(&program), Some(bytes.as_slice()));
+    assert!(Arc::ptr_eq(
+        &store.program_client(&program).unwrap(),
+        &parsed
+    ));
+
+    // What is not an IDL is told before there is anything to store.
+    assert!(inspect_idl(b"not json", None).is_err());
+    assert!(inspect_idl(&bytes, Some(pk(5))).is_err());
+
+    let again = IdlStore::open(store.index_store, store.bodies);
+    assert_eq!(again.records().len(), 1);
+    assert_eq!(again.body(&program), Some(bytes.as_slice()));
+}
+
+#[test]
+fn what_is_read_from_the_chain_is_a_cache_and_the_oldest_goes_first() {
+    let mut store = open();
+    let read = |store: &mut IdlStore<MemoryStore, MemoryBodies>, n: u32| {
+        let program = numbered(n);
+        store
+            .import_with_origin(&codama(program, "0.1.0"), None, IdlOrigin::ProgramMetadata)
+            .unwrap();
+        program
+    };
+    // A file the user imported, older than all of them.
+    let imported = pk(200);
+    store.import(&codama(imported, "0.1.0"), None).unwrap();
+
+    let first = read(&mut store, 0);
+    for n in 1..MAX_READ_FROM_CHAIN as u32 {
+        read(&mut store, n);
+    }
+    assert!(store.body(&first).is_some());
+    assert_eq!(store.records().len(), MAX_READ_FROM_CHAIN + 1);
+
+    // One more, and the oldest read goes, and only that.
+    let last = read(&mut store, MAX_READ_FROM_CHAIN as u32);
+    assert!(store.body(&first).is_none());
+    assert!(store.body(&numbered(1)).is_some());
+    assert!(store.body(&last).is_some());
+    assert!(store.body(&imported).is_some());
+    assert_eq!(store.records().len(), MAX_READ_FROM_CHAIN + 1);
+
+    // Read again, it is the newest.
+    let again = read(&mut store, 1);
+    assert_eq!(again, numbered(1));
+    read(&mut store, 1000);
+    assert!(store.body(&numbered(1)).is_some());
+    assert!(store.body(&numbered(2)).is_none());
+
+    // What was let go is gone from the file, and the rest stays after a restart.
+    let reopened = IdlStore::open(store.index_store, store.bodies);
+    assert!(reopened.body(&first).is_none());
+    assert!(reopened.body(&imported).is_some());
+    assert_eq!(reopened.records().len(), MAX_READ_FROM_CHAIN + 1);
+}
+
+#[test]
+fn what_is_read_from_the_chain_is_held_to_a_size_as_well() {
+    let mut store = open();
+    let big = |program: Pubkey| -> Vec<u8> {
+        let text = String::from_utf8(codama(program, "0.1.0")).unwrap();
+        let padding = " ".repeat(MAX_READ_FROM_CHAIN_BYTES / 4);
+        format!("{text}{padding}").into_bytes()
+    };
+    let (a, b, c, d) = (pk(1), pk(2), pk(3), pk(4));
+    for program in [a, b, c] {
+        store
+            .import_with_origin(&big(program), None, IdlOrigin::Anchor)
+            .unwrap();
+    }
+    assert!(store.body(&a).is_some());
+    store
+        .import_with_origin(&big(d), None, IdlOrigin::Anchor)
+        .unwrap();
+    assert!(store.body(&a).is_none());
+    assert!(store.body(&d).is_some());
+}
+
+#[test]
+fn a_file_of_its_own_is_never_let_go_however_many_there_are() {
+    let mut store = open();
+    for n in 0..MAX_READ_FROM_CHAIN as u32 + 5 {
+        store.import(&codama(numbered(n), "0.1.0"), None).unwrap();
+    }
+    assert_eq!(store.records().len(), MAX_READ_FROM_CHAIN + 5);
+}
+
+#[test]
+fn a_record_from_before_turns_were_kept_reads_as_the_oldest() {
+    let record: IdlRecord = serde_json::from_value(serde_json::json!({
+        "programId": pk(1).to_string(),
+        "name": "old",
+        "sha256": hex::encode([1u8; 32]),
+        "spec": "codama",
+        "origin": "anchor",
+    }))
+    .unwrap();
+    assert_eq!(record.read_turn, 0);
+    let written = serde_json::to_value(&record).unwrap();
+    assert!(written.get("readTurn").is_none());
+}

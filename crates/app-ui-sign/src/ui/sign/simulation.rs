@@ -90,21 +90,19 @@ pub(in crate::ui) fn SimulationDetails(
     limit: Option<u32>,
     inspect: bool,
 ) -> Element {
-    let session = use_context::<Session>();
     let logs = simulation.logs.join("\n");
-    let calls: Vec<(usize, Vec<wallet_core::ExplainedIx>)> = simulation
+    let calls: Vec<(usize, Vec<wallet_core::Instruction>)> = simulation
         .inner
         .iter()
         .filter(|group| !group.calls.is_empty())
         .map(|group| {
-            let instructions: Vec<wallet_core::Instruction> = group
-                .calls
-                .iter()
-                .map(|call| call.instruction.clone())
-                .collect();
             (
                 group.instruction,
-                explain_instructions(&*session.idls.read(), &instructions),
+                group
+                    .calls
+                    .iter()
+                    .map(|call| call.instruction.clone())
+                    .collect(),
             )
         })
         .collect();
@@ -122,7 +120,7 @@ pub(in crate::ui) fn SimulationDetails(
             for (index, instructions) in calls {
                 div { class: "stack", key: "{index}",
                     h4 { "Calls made by instruction {index + 1}" }
-                    InstructionList { instructions, inspect }
+                    ReadInstructions { instructions, inspect }
                 }
             }
             if let Some((program, data)) = simulation.return_data.clone() {

@@ -14,7 +14,7 @@
 
 use crate::actions::proposals::{load_page, open_request};
 use app_ui_kit::actions::unix_now;
-use app_ui_kit::ui::tx_view::InstructionList;
+use app_ui_kit::ui::tx_view::ReadInstructions;
 use app_ui_kit::{Address, Session};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
@@ -23,7 +23,7 @@ use wallet_core::proposals::{
     ProposalRequest, Stored,
 };
 use wallet_core::squads::{ProposalStatus, Squad, SquadState};
-use wallet_core::{explain_instructions, RouteStep, WalletId};
+use wallet_core::{RouteStep, WalletId};
 
 mod host;
 mod row;

@@ -394,6 +394,7 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
                     }
                 }
             }
+            ReadingNote { waiting: prep.reading, gave_up: prep.gave_up }
             if let (Some(tx), Some(explained), Some(verdict)) = (prep.shown.clone(), prep.explained.clone(), prep.verdict) {
                 if verdict.risky > 0 {
                     RiskNotice { explained: explained.clone() }
@@ -446,7 +447,7 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
                 } else if verdict.signable == 0 {
                     p { class: "hint", "Nothing in this transaction is left for this device to sign." }
                 }
-            } else {
+            } else if !prep.reading {
                 p { class: "error", "The transaction could not be read." }
             }
         },

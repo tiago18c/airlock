@@ -37,3 +37,23 @@ pub async fn off_the_window<T: Send + 'static>(work: impl FnOnce() -> T + Send +
         work()
     }
 }
+
+/// [`off_the_window`], waiting `deadline` at most: `None` when that passed. The work
+/// goes on to its end, since a thread cannot be stopped. A page has no other thread
+/// to run it on, so there it waits for as long as it takes.
+pub async fn off_the_window_within<T: Send + 'static>(
+    deadline: Duration,
+    work: impl FnOnce() -> T + Send + 'static,
+) -> Option<T> {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        tokio::time::timeout(deadline, off_the_window(work))
+            .await
+            .ok()
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = deadline;
+        Some(off_the_window(work).await)
+    }
+}

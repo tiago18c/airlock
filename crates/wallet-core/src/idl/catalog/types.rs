@@ -21,6 +21,13 @@ pub enum IdlOrigin {
     Anchor,
 }
 
+impl IdlOrigin {
+    /// Read from the chain, and so a cache: see `IdlStore::import_inspected`.
+    pub fn is_read_from_chain(self) -> bool {
+        matches!(self, Self::ProgramMetadata | Self::Anchor)
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IdlCheck {
@@ -79,6 +86,14 @@ pub struct IdlRecord {
     /// Never written to the index: it comes with the app.
     #[serde(skip)]
     pub source: Option<IdlChainSource>,
+    /// When it was read from the chain, among the others: the lowest goes first.
+    /// Zero for anything else.
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub read_turn: u64,
+}
+
+fn is_zero(turn: &u64) -> bool {
+    *turn == 0
 }
 
 impl IdlRecord {
