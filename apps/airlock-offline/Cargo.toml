@@ -18,6 +18,7 @@ app-core.workspace = true
 app-desktop.workspace = true
 app-ui.workspace = true
 dioxus.workspace = true
+hw-transport.workspace = true
 
 [features]
 default = ["desktop"]

@@ -38,6 +38,7 @@ pub fn kit_on(storage: MemoryStorage) -> Kit {
         notifier: notifier.clone(),
         storage: Arc::new(storage.clone()),
         links: links.clone(),
+        devices: None,
     });
     Kit {
         core,

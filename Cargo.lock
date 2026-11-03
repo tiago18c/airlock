@@ -201,6 +201,7 @@ dependencies = [
  "app-online",
  "app-ui",
  "dioxus",
+ "hw-transport",
  "solana-hash",
  "solana-message",
  "solana-pubkey 4.3.0",
@@ -221,6 +222,7 @@ dependencies = [
  "app-desktop",
  "app-ui",
  "dioxus",
+ "hw-transport",
 ]
 
 [[package]]
@@ -328,6 +330,7 @@ dependencies = [
  "bridge-protocol",
  "gloo-timers 0.2.6",
  "hex",
+ "hw-protocol",
  "js-sys",
  "serde",
  "serde_json",
@@ -896,6 +899,26 @@ dependencies = [
  "futures-lite",
  "pin-project-lite",
  "slab",
+]
+
+[[package]]
+name = "async-hid"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f70c6f427f9dc3942b5863b2677a34dfcdd5ec46fe3c21a57883c50403269c5"
+dependencies = [
+ "async-io",
+ "atomic-waker",
+ "block2",
+ "crossbeam-queue",
+ "dispatch2",
+ "futures-lite",
+ "log",
+ "nix 0.29.0",
+ "objc2-core-foundation",
+ "objc2-io-kit",
+ "static_assertions",
+ "windows 0.61.3",
 ]
 
 [[package]]
@@ -4749,6 +4772,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "hw-transport"
+version = "0.1.0"
+dependencies = [
+ "async-hid",
+ "futures-lite",
+ "hw-protocol",
+]
+
+[[package]]
 name = "hybrid-array"
 version = "0.4.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6007,6 +6039,19 @@ checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
 
 [[package]]
 name = "nix"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "71e2746dc3a24dd78b3cfcb7be93368c6de9963d30f43a6a73998a9cf4b17b46"
+dependencies = [
+ "bitflags 2.13.2",
+ "cfg-if",
+ "cfg_aliases",
+ "libc",
+ "memoffset",
+]
+
+[[package]]
+name = "nix"
 version = "0.31.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf20d2fde8ff38632c426f1165ed7436270b44f199fc55284c38276f9db47c3d"
@@ -6263,7 +6308,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2a180dd8642fa45cdb7dd721cd4c11b1cadd4929ce112ebd8b9f5803cc79d536"
 dependencies = [
  "bitflags 2.13.2",
+ "block2",
  "dispatch2",
+ "libc",
  "objc2",
 ]
 
@@ -6300,6 +6347,20 @@ checksum = "e3e0adef53c21f888deb4fa59fc59f7eb17404926ee8a6f59f5df0fd7f9f3272"
 dependencies = [
  "bitflags 2.13.2",
  "block2",
+ "libc",
+ "objc2",
+ "objc2-core-foundation",
+]
+
+[[package]]
+name = "objc2-io-kit"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "33fafba39597d6dc1fb709123dfa8289d39406734be322956a69f0931c73bb15"
+dependencies = [
+ "bitflags 2.13.2",
+ "block2",
+ "dispatch2",
  "libc",
  "objc2",
  "objc2-core-foundation",
@@ -9331,7 +9392,7 @@ dependencies = [
  "dashmap",
  "itertools 0.14.0",
  "log",
- "nix",
+ "nix 0.31.3",
  "rand 0.9.5",
  "serde",
  "socket2",
@@ -9436,7 +9497,7 @@ dependencies = [
  "caps",
  "libc",
  "log",
- "nix",
+ "nix 0.31.3",
  "num_cpus",
  "rand 0.9.5",
  "rayon",
@@ -10124,7 +10185,7 @@ dependencies = [
  "itertools 0.14.0",
  "libc",
  "log",
- "nix",
+ "nix 0.31.3",
  "num_cpus",
  "pem",
  "rand 0.9.5",
@@ -10987,6 +11048,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
 
 [[package]]
+name = "static_assertions"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
 name = "string_cache"
 version = "0.8.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -11214,7 +11281,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.3.4",
+ "getrandom 0.4.3",
  "once_cell",
  "rustix",
  "windows-sys 0.61.2",
@@ -12024,6 +12091,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "hex",
+ "hw-protocol",
  "pollster",
  "serde_json",
  "solana-hash",

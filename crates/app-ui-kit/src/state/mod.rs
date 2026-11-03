@@ -16,20 +16,21 @@ pub use submit::{SiteSendFut, SubmitFut, SubmitHandle, TxSubmit};
 
 use std::sync::Arc;
 
-use app_core::{Core, NoNotifier, Notifier, Ports};
+use app_core::{Core, DeviceHub, NoNotifier, Notifier, Ports};
 use dioxus::prelude::*;
 
 use crate::state::forms::use_forms;
 use crate::state::session::{OnlineHooks, Session, Tab};
 
 /// Open the core on this platform's files, with tokio or the browser to run
-/// its tasks. Call it inside the shell's runtime (Dioxus desktop provides one).
-pub fn open_core() -> Core {
-    open_core_with(Arc::new(NoNotifier))
+/// its tasks, and `devices` to open hardware wallets with. Call it inside
+/// the shell's runtime (Dioxus desktop provides one).
+pub fn open_core(devices: Option<Arc<dyn DeviceHub>>) -> Core {
+    open_core_with(Arc::new(NoNotifier), devices)
 }
 
 /// Like [`open_core`], but with a platform [`Notifier`] (OS toasts on desktop).
-pub fn open_core_with(notifier: Arc<dyn Notifier>) -> Core {
+pub fn open_core_with(notifier: Arc<dyn Notifier>, devices: Option<Arc<dyn DeviceHub>>) -> Core {
     #[cfg(not(target_arch = "wasm32"))]
     let ports = Ports {
         spawner: Arc::new(app_core::runtime::TokioSpawner::current()),
@@ -37,6 +38,7 @@ pub fn open_core_with(notifier: Arc<dyn Notifier>) -> Core {
         notifier,
         storage: Arc::from(app_core::storage::platform_storage()),
         links: Arc::new(app_core::runtime::NativeLinks),
+        devices,
     };
     #[cfg(target_arch = "wasm32")]
     let ports = Ports {
@@ -45,6 +47,7 @@ pub fn open_core_with(notifier: Arc<dyn Notifier>) -> Core {
         notifier,
         storage: Arc::from(app_core::storage::platform_storage()),
         links: Arc::new(app_core::runtime::WebLinks),
+        devices,
     };
     Core::open(ports)
 }

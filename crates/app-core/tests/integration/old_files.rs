@@ -32,6 +32,7 @@ async fn old_files_load() {
         notifier: Arc::new(NoNotifier),
         storage: Arc::new(FileStorage::new(dir.path())),
         links: Arc::new(NoLinks),
+        devices: None,
     });
     let slices = core.slices();
 

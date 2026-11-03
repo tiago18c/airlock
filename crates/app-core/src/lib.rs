@@ -24,6 +24,8 @@ pub mod testing;
 
 pub use crate::commands::{Core, SAVE_INTERVAL};
 pub use events::Event;
+/// The port a shell opens hardware wallets through, and what it sees.
+pub use hw_protocol::link::{Connected, DeviceHub, DeviceKind};
 pub use lock::{LockPolicy, LockReason};
 pub use notices::{
     notice_row_text, BridgeRequestOutcome, FlowId, Notice, NoticeId, NoticeKind, Notices,

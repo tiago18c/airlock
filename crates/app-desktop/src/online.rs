@@ -4,7 +4,7 @@
 
 use std::sync::Arc;
 
-use app_core::Core;
+use app_core::{Core, DeviceHub};
 use app_ui_kit::Session;
 use dioxus::prelude::*;
 use tokio::sync::watch;
@@ -14,15 +14,15 @@ use crate::notifier::{DesktopNotifier, ToastClick};
 use crate::shell::{run_hidden_notifier, toast_click_action, ToastClickAction};
 use crate::window::reveal;
 
-/// Open the core with OS toasts, attach the [`Bridge`] `main` provided, and
-/// start the rule that turns core events into toasts while the window is
-/// hidden. Returns the core and the clicks on its toasts. Call once, from the
-/// root.
-pub fn use_online_core() -> (Core, watch::Receiver<ToastClick>) {
+/// Open the core with OS toasts and the shell's `devices`, attach the
+/// [`Bridge`] `main` provided, and start the rule that turns core events
+/// into toasts while the window is hidden. Returns the core and the clicks
+/// on its toasts. Call once, from the root.
+pub fn use_online_core(devices: Option<Arc<dyn DeviceHub>>) -> (Core, watch::Receiver<ToastClick>) {
     let bridge = use_context::<Bridge>();
     use_hook(|| {
         let (notifier, clicks) = DesktopNotifier::pair();
-        let core = app_ui_kit::open_core_with(Arc::new(notifier));
+        let core = app_ui_kit::open_core_with(Arc::new(notifier), devices.clone());
         bridge.attach(core.public());
         let public = core.public();
         core.ports()

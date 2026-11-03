@@ -131,6 +131,7 @@ async fn a_deferred_save_can_start_on_a_thread_with_no_runtime() {
         notifier: testing.notifier.clone(),
         storage: std::sync::Arc::new(MemoryStorage::default()),
         links: testing.links.clone(),
+        devices: None,
     });
     let public = core.public();
     // How a request that expires reaches the notices, on the bridge's thread.
