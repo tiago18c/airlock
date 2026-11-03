@@ -1,0 +1,12 @@
+[package]
+name = "ur-codec"
+version.workspace = true
+edition.workspace = true
+description = "Uniform Resources (BC-UR): bytewords, fountain codes and the CBOR they carry, with no dependencies"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
