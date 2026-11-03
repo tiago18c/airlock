@@ -886,9 +886,9 @@ dependencies = [
 
 [[package]]
 name = "async-executor"
-version = "1.14.0"
+version = "1.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c96bf972d85afc50bf5ab8fe2d54d1586b4e0b46c97c50a0c9e71e2f7bcd812a"
+checksum = "497c00e0fd83a72a79a39fcbd8e3e2f055d6f6c7e025f3b3d91f4f8e76527fb8"
 dependencies = [
  "async-task",
  "concurrent-queue",
@@ -1907,7 +1907,7 @@ dependencies = [
 name = "codama-dynamic-codecs"
 version = "0.1.0"
 dependencies = [
- "base64 0.22.1",
+ "base64 0.23.1",
  "bs58",
  "codama-errors",
  "codama-nodes",
@@ -1931,7 +1931,7 @@ dependencies = [
  "pretty_assertions",
  "serde",
  "serde_json",
- "solana-instruction 3.5.1",
+ "solana-instruction 4.0.0",
  "solana-pubkey 4.3.0",
 ]
 
@@ -1944,7 +1944,7 @@ dependencies = [
  "codama-nodes",
  "codama-visitors-core",
  "pretty_assertions",
- "solana-instruction 3.5.1",
+ "solana-instruction 4.0.0",
  "solana-pubkey 4.3.0",
 ]
 
@@ -2011,7 +2011,7 @@ dependencies = [
  "codama-nodes",
  "hex",
  "serde_json",
- "sha2 0.10.9",
+ "sha2 0.11.1",
  "solana-pubkey 4.3.0",
  "thiserror 2.0.21",
 ]

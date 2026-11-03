@@ -11,7 +11,7 @@ codama-errors = "0.13.2"
 codama-nodes = "0.13.2"
 codama-dynamic-codecs = { path = "../codama-dynamic-codecs" }
 codama-visitors-core = { path = "../codama-visitors-core" }
-solana-instruction = { version = "3", default-features = false, features = ["std"] }
+solana-instruction = { version = "4", default-features = false, features = ["std"] }
 
 [dev-dependencies]
 pretty_assertions = "1.4.1"
