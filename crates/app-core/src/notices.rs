@@ -11,7 +11,8 @@ use crate::lock::LockReason;
 
 /// How long a notice is kept on disk (and in memory after a load).
 pub const RETENTION_SECS: i64 = 30 * 24 * 60 * 60;
-/// Hard cap; the oldest notice is dropped when a push would exceed it.
+/// A push that would pass this drops a notice that matters less
+/// ([`Notices::push`]).
 pub const MAX_NOTICES: usize = 500;
 
 pub type NoticeId = u64;
@@ -198,6 +199,8 @@ impl Notices {
     }
 
     /// Append a notice (newest first), trim to [`MAX_NOTICES`], return its id.
+    /// Goes over when all that is left is transactions still
+    /// [`TxStatus::Sent`], so that their status updates have somewhere to land.
     pub fn push(&mut self, kind: NoticeKind, now: i64) -> NoticeId {
         let id = self.next_id;
         self.next_id = self.next_id.saturating_add(1);
@@ -213,9 +216,24 @@ impl Notices {
             },
         );
         while self.items.len() > MAX_NOTICES {
-            self.items.pop();
+            let Some(index) = self.next_to_drop() else {
+                break;
+            };
+            self.items.remove(index);
         }
         id
+    }
+
+    /// The oldest notice that can make room, never the one just pushed. A
+    /// browser request goes first: a site can make as many as it likes, and
+    /// must not be able to push out the record of a transaction.
+    fn next_to_drop(&self) -> Option<usize> {
+        let older = self.items.get(1..)?;
+        older
+            .iter()
+            .rposition(|n| matches!(n.kind, NoticeKind::BridgeRequest { .. }))
+            .or_else(|| older.iter().rposition(|n| !n.pinned()))
+            .map(|index| index + 1)
     }
 
     /// Move a transaction notice's status forward. Returns a clone of the

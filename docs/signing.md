@@ -408,7 +408,7 @@ A key made on the airgap device reaches the online device by its public key alon
 
 Desktop only. The extension registers a Wallet Standard wallet in the page, the service worker stamps the origin from the browser, `bridge-host` relays over a per-user local socket, and the app queues the request. The extension holds no keys and decides nothing. The protocol and the threat model are in [browser-bridge.md](browser-bridge.md).
 
-The app answers `connect`, a `signTransaction`, `signAndSendTransaction` or `signAndSendAllTransactions` with one to 16 transactions, legacy, v0 or v1, `signMessage` and `signIn`. Anything else returns `not_implemented`. A locked vault asks for the password in the modal. A request nobody answers expires after ten minutes.
+The app answers `connect`, a `signTransaction`, `signAndSendTransaction` or `signAndSendAllTransactions` with one to 16 transactions, legacy, v0 or v1, `signMessage` and `signIn`. Anything else returns `not_implemented`. A locked vault asks for the password in the modal. A request nobody answers expires after ten minutes, and one whose page closes leaves at once.
 
 ### Connect
 

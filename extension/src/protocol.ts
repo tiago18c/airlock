@@ -6,9 +6,27 @@ export const EXTENSION_SOURCE = "airlock-extension";
 
 export const REQUEST_TTL_MS = 10 * 60 * 1000;
 
+/** How long a request nobody has to decide may take. */
+export const QUICK_TTL_MS = 15 * 1000;
+
 /** The most transactions one signTransaction may carry, as the desktop app
  * allows (`bridge_protocol::MAX_TRANSACTIONS`). */
 export const MAX_TRANSACTIONS = 16;
+
+/** The most requests one site, and every site together, may have waiting for
+ * the user, as the desktop app allows (`bridge_protocol::MAX_PENDING_PER_ORIGIN`
+ * and `MAX_PENDING`). */
+export const MAX_PENDING_PER_ORIGIN = 8;
+export const MAX_PENDING = 32;
+
+/** How much one site may ask: this many requests in each window. */
+export const RATE_LIMIT = 30;
+export const RATE_WINDOW_MS = 10 * 1000;
+
+/** The most bytes of JSON a request may take. Sixteen of the largest
+ * transactions take about 90 KiB. It has to stay under the 1 MiB the host reads
+ * (`bridge_protocol::frame`), which ends on anything larger. */
+export const MAX_REQUEST_BYTES = 256 * 1024;
 
 /** What the desktop app answers today. Add a method here only with its desktop handler. */
 export const METHODS = ["status", "connect", "disconnect", "signTransaction", "signAndSendTransaction", "signAndSendAllTransactions", "signMessage", "signIn"] as const;
@@ -67,6 +85,33 @@ export function shortCode(id: string): string {
 
 export function isRequestId(id: unknown): id is string {
   return typeof id === "string" && /^[A-Za-z0-9-]{1,80}$/.test(id);
+}
+
+/** A connect that may only ask whether the site is connected already. The
+ * desktop app reads `silent` the same way. */
+function isSilentConnect(method: unknown, params: unknown): boolean {
+  return method === "connect" && (params as { silent?: unknown } | null | undefined)?.silent === true;
+}
+
+/** Whether this can put a modal in front of the user from a site with no
+ * connection. A page has to have been used before it may do that. */
+export function needsUserGesture(method: unknown, params: unknown): boolean {
+  return method === "signIn" || (method === "connect" && !isSilentConnect(method, params));
+}
+
+/** Whether the desktop app asks the user before answering this. */
+export function waitsForUser(method: string, params: unknown): boolean {
+  return method !== "status" && method !== "disconnect" && !isSilentConnect(method, params);
+}
+
+/** The bytes `value` takes as JSON. What cannot be written as JSON has no size
+ * that fits. */
+export function jsonBytes(value: unknown): number {
+  try {
+    return new TextEncoder().encode(JSON.stringify(value) ?? "").length;
+  } catch {
+    return Infinity;
+  }
 }
 
 /** Request ids for the page↔extension bridge. Prefer crypto.randomUUID when the

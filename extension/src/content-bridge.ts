@@ -1,4 +1,4 @@
-import { EXTENSION_SOURCE, PAGE_SOURCE } from "./protocol";
+import { EXTENSION_SOURCE, MAX_REQUEST_BYTES, PAGE_SOURCE, isRequestId, jsonBytes, needsUserGesture } from "./protocol";
 
 interface PageReply {
   result?: unknown;
@@ -40,13 +40,32 @@ openPort();
 
 window.addEventListener("message", (event: MessageEvent) => {
   if (event.source !== window) return;
-  const data = event.data as { source?: string; id?: string; method?: string; params?: unknown } | null;
-  if (!data || data.source !== PAGE_SOURCE || typeof data.id !== "string") return;
-  pending.set(data.id, (reply) => {
+  const data = event.data as { source?: string; id?: unknown; method?: unknown; params?: unknown } | null;
+  if (!data || data.source !== PAGE_SOURCE || !isRequestId(data.id)) return;
+  const id = data.id;
+  const answer = (reply: PageReply) => {
     window.postMessage(
-      { source: EXTENSION_SOURCE, id: data.id, result: reply.result, error: reply.error },
+      { source: EXTENSION_SOURCE, id, result: reply.result, error: reply.error },
       window.location.origin,
     );
-  });
-  openPort().postMessage({ id: data.id, method: data.method, params: data.params });
+  };
+  // Read here because this world's view of it is the browser's. A page's own
+  // script could say whatever it liked.
+  if (needsUserGesture(data.method, data.params) && navigator.userActivation?.hasBeenActive === false) {
+    answer({ error: { code: "no_user_gesture", message: "A site can ask this only after you have used its page." } });
+    return;
+  }
+  // The service worker checks too. This keeps a huge request from reaching it.
+  if (jsonBytes(data.params) > MAX_REQUEST_BYTES) {
+    answer({ error: { code: "bad_request", message: "The request is too large." } });
+    return;
+  }
+  pending.set(id, answer);
+  try {
+    openPort().postMessage({ id, method: data.method, params: data.params });
+  } catch (err) {
+    pending.delete(id);
+    const message = err instanceof Error ? err.message : "The request could not be sent.";
+    answer({ error: { code: "bad_request", message } });
+  }
 });

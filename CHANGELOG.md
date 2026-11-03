@@ -46,6 +46,8 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - Share opens on Everything, now its first tab. Its Signatures tab has tabs of its own: Local, which it opens on, puts the signatures made by keys on this device in one transfer; All puts every signature in one transfer; Individual shows a code for each.
 
 ### Fixed
+- A request's modal now closes by itself when the page that asked closes, or the browser does. Before, it stayed for up to ten minutes. Approving it answered nobody, and a transaction to send still went out.
+- When Airlock closes, a site waiting on it hears straight away. Before, it could wait out the full ten minutes.
 - A damaged `vault.json` no longer locks you out while a good copy sits beside it. Unlocking opens the copy kept before the last save, keeps the damaged file as `vault.json.unreadable`, and tells you the last change to the vault may be missing.
 - A request waiting in the app no longer holds up other requests from the same browser. A site reloading while a modal was open, for one, waited until that modal was answered.
 - A browser request that expired unanswered could stop that browser's connection to the app.
@@ -57,6 +59,11 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - A transaction that went back to a site from Review and Sign is not sent twice. The site may send it itself, so Submit waits up to 10 seconds while the app watches for it on chain. If it lands, a toast says the site sent it and follows it to confirmed, and Submit stays off. If it does not, a toast says the site did not send it, and Submit turns on. In a batch, each transaction is watched for on its own.
 
 ### Security
+- A site can no longer flood Airlock with requests. One site can ask at most 30 times every 10 seconds and keep 8 requests waiting, and 32 can wait in all. A page you have not used yet can no longer open a connect or sign-in modal.
+- One oversized request from a site could leave the extension unable to reach Airlock, for every site, until the browser or Airlock restarted. The extension now refuses a request that large, and if the bridge ever does stop, the next request starts it again.
+- A sandboxed frame can no longer ask in the name of the site that hosts it. It was given that site's origin, and with it the site's connection.
+- A site's request id no longer reaches the app, so a site can no longer choose the code shown beside its request.
+- However many requests a site makes, they can no longer push a transaction out of the notifications, whether it has ended or is still being watched.
 - The record of used signing leaves (`vector-leaves.json`) is written so that a power cut on Windows cannot undo it after a leaf has signed. It also keeps no older copy, which could have been read in its place and let a leaf sign twice. Every other file's save is flushed the same way.
 - A context note can no longer use up an XMSS key's leaves by naming a high floor. The device that holds the key refuses a floor above its own count, and says to scan the account state if the other device is right.
 - A site can no longer get a Vector authorization by asking for a signed message. A message of exactly 32 bytes was refused only if it did not read as text, and a site that builds the transaction can vary it until the digest does. Now every 32-byte message is refused, unless it is all hex digits, as a nonce often is.

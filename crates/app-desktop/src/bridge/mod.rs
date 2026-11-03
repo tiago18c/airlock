@@ -14,10 +14,12 @@ use std::sync::mpsc;
 use std::sync::{Arc, Mutex, OnceLock, PoisonError};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use app_core::bridge::{BridgeQueue, BridgeRequest, SiteConnect, SiteSign, SEND, SEND_ALL};
+use app_core::bridge::{
+    BridgeQueue, BridgeRefused, BridgeRequest, SiteConnect, SiteSign, SEND, SEND_ALL,
+};
 use app_core::PublicCore;
 use base64::Engine;
-use bridge_host::relay::{Connection, FrameSender};
+use bridge_host::relay::{Answer, Connection, FrameSender};
 use bridge_protocol::reply;
 use serde_json::{json, Value};
 use solana_pubkey::Pubkey;
@@ -58,6 +60,10 @@ struct PeerLink {
     /// The origins with a page open in this browser.
     pages: BTreeSet<String>,
 }
+
+/// The requests from one connection that went into the core's queue and have
+/// not been replied to.
+type Waiting = Arc<Mutex<BTreeSet<String>>>;
 
 /// Result of claiming the bridge socket before the UI starts.
 pub enum Bootstrap {
@@ -174,11 +180,14 @@ impl Bridge {
         self.shared.extension.subscribe()
     }
 
-    /// The reply to one frame from the native host.
-    fn answer(&self, message: &[u8]) -> Vec<u8> {
+    /// What becomes of one frame from the native host. A request that goes to
+    /// the user joins `waiting`.
+    fn answer(&self, message: &[u8], waiting: &Waiting) -> Answer {
         let value: Value = match serde_json::from_slice(message) {
             Ok(value) => value,
-            Err(_) => return reply::error("", "bad_request", "The request is not JSON."),
+            Err(_) => {
+                return Answer::Now(reply::error("", "bad_request", "The request is not JSON."))
+            }
         };
         let id = value
             .get("id")
@@ -186,11 +195,15 @@ impl Bridge {
             .unwrap_or("")
             .to_owned();
         if value.get("v").and_then(Value::as_u64) != Some(1) {
-            return reply::error(&id, "bad_request", "Unsupported bridge version.");
+            return Answer::Now(reply::error(
+                &id,
+                "bad_request",
+                "Unsupported bridge version.",
+            ));
         }
         if let Some(expires) = value.get("expiresAt").and_then(Value::as_u64) {
             if expires < now_secs() {
-                return reply::error(&id, "expired", "The request expired.");
+                return Answer::Now(reply::error(&id, "expired", "The request expired."));
             }
         }
         let method = value.get("method").and_then(Value::as_str).unwrap_or("");
@@ -206,10 +219,10 @@ impl Bridge {
             method == "connect" && params.get("silent").and_then(Value::as_bool) == Some(true);
         // A silent connect never gets an error: the site just stays out.
         if silent && core.is_none() {
-            return reply::result(&id, json!({ "accounts": [] }));
+            return Answer::Now(reply::result(&id, json!({ "accounts": [] })));
         }
         if waits_for_user(method) && core.is_none() {
-            return reply::error(&id, "busy", "Airlock is starting.");
+            return Answer::Now(reply::error(&id, "busy", "Airlock is starting."));
         }
 
         let code = request_code(&id);
@@ -222,36 +235,42 @@ impl Bridge {
         );
 
         match (method, core) {
-            ("status", _) => reply::result(&id, json!({ "ready": true, "role": "desktop" })),
-            // The connection took it in already: it knows which browser this is.
-            ("pages", _) => reply::result(&id, json!({})),
+            ("status", _) => Answer::Now(reply::result(
+                &id,
+                json!({ "ready": true, "role": "desktop" }),
+            )),
+            // The connection took these in already: it knows which browser
+            // this is, and which requests are its own.
+            ("pages" | "cancel", _) => Answer::Now(reply::result(&id, json!({}))),
             ("show", _) => {
                 self.shared.show.send_modify(|n| *n = n.wrapping_add(1));
-                reply::result(&id, json!({}))
+                Answer::Now(reply::result(&id, json!({})))
             }
             ("disconnect", core) => {
                 if let Some(core) = core {
                     core.site_disconnected(&origin);
                 }
-                reply::result(&id, json!({}))
+                Answer::Now(reply::result(&id, json!({})))
             }
-            (SEND | SEND_ALL, _) if !every_chain_named(&params) => {
-                reply::error(&id, "bad_request", "A transaction names no network.")
-            }
-            (TRANSACTION_METHODS!(), _) if transaction_count(&params) == 0 => {
-                reply::error(&id, "bad_request", "No transaction was included.")
-            }
+            (SEND | SEND_ALL, _) if !every_chain_named(&params) => Answer::Now(reply::error(
+                &id,
+                "bad_request",
+                "A transaction names no network.",
+            )),
+            (TRANSACTION_METHODS!(), _) if transaction_count(&params) == 0 => Answer::Now(
+                reply::error(&id, "bad_request", "No transaction was included."),
+            ),
             (TRANSACTION_METHODS!(), _) if transaction_count(&params) > MAX_TRANSACTIONS => {
-                reply::error(
+                Answer::Now(reply::error(
                     &id,
                     "not_implemented",
                     &format!("Airlock signs at most {MAX_TRANSACTIONS} transactions per request."),
-                )
+                ))
             }
             ("connect", Some(core)) => match core.site_connect(&origin, silent) {
-                SiteConnect::Allowed(accounts) => reply::connected(&id, &accounts),
-                _ if silent => reply::result(&id, json!({ "accounts": [] })),
-                SiteConnect::Blocked => blocked(&id),
+                SiteConnect::Allowed(accounts) => Answer::Now(reply::connected(&id, &accounts)),
+                _ if silent => Answer::Now(reply::result(&id, json!({ "accounts": [] }))),
+                SiteConnect::Blocked => Answer::Now(blocked(&id)),
                 SiteConnect::Undecided => wait_for_user(
                     core,
                     BridgeRequest {
@@ -261,6 +280,7 @@ impl Bridge {
                         params,
                     },
                     DECISION_TIMEOUT,
+                    waiting,
                 ),
             },
             ("signMessage", Some(core)) => {
@@ -275,8 +295,9 @@ impl Bridge {
                             params,
                         },
                         DECISION_TIMEOUT,
+                        waiting,
                     ),
-                    Err(message) => reply::error(&id, "rejected", &message),
+                    Err(message) => Answer::Now(reply::error(&id, "rejected", &message)),
                 }
             }
             ("signIn", Some(core)) => {
@@ -291,14 +312,15 @@ impl Bridge {
                             params,
                         },
                         DECISION_TIMEOUT,
+                        waiting,
                     ),
-                    Err(message) => reply::error(&id, "rejected", &message),
+                    Err(message) => Answer::Now(reply::error(&id, "rejected", &message)),
                 }
             }
             (TRANSACTION_METHODS!(), Some(core)) => {
                 let accounts = requested_accounts(&params);
                 match core.site_sign(&origin, &accounts) {
-                    SiteSign::Blocked => blocked(&id),
+                    SiteSign::Blocked => Answer::Now(blocked(&id)),
                     SiteSign::Allowed if accounts.len() == transaction_count(&params) => {
                         wait_for_user(
                             core,
@@ -309,18 +331,19 @@ impl Bridge {
                                 params,
                             },
                             DECISION_TIMEOUT,
+                            waiting,
                         )
                     }
                     // A transaction that names no account is not for one the
                     // site was given.
-                    _ => reply::error(&id, "rejected", NOT_CONNECTED),
+                    _ => Answer::Now(reply::error(&id, "rejected", NOT_CONNECTED)),
                 }
             }
-            _ => reply::error(
+            _ => Answer::Now(reply::error(
                 &id,
                 "not_implemented",
                 "Airlock does not know this request.",
-            ),
+            )),
         }
     }
 }
@@ -412,9 +435,17 @@ impl Shared {
     /// Send `frame` to every browser. The extension passes it only to pages
     /// of the origin it names.
     fn push(&self, frame: &[u8]) {
-        let peers = self.peers.lock().unwrap_or_else(PoisonError::into_inner);
-        for peer in peers.values() {
-            let _ = peer.sender.send(frame);
+        // Written with the list let go: a browser that stopped reading can hold
+        // up a write, and must not hold up every other connection with it.
+        let senders: Vec<FrameSender> = self
+            .peers
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .values()
+            .map(|peer| peer.sender.clone())
+            .collect();
+        for sender in senders {
+            let _ = sender.send(frame);
         }
     }
 
@@ -441,6 +472,7 @@ struct Peer {
     bridge: Bridge,
     id: u64,
     counted: AtomicBool,
+    waiting: Waiting,
 }
 
 impl Peer {
@@ -462,6 +494,28 @@ impl Peer {
             bridge,
             id,
             counted: AtomicBool::new(false),
+            waiting: Waiting::default(),
+        }
+    }
+
+    /// The extension's word that nobody is waiting on one of its requests any
+    /// more. Another connection's request is not its to end.
+    fn cancel(&self, message: &[u8]) {
+        let value = serde_json::from_slice::<Value>(message).unwrap_or(Value::Null);
+        let Some(id) = value
+            .get("params")
+            .and_then(|params| params.get("id"))
+            .and_then(Value::as_str)
+        else {
+            return;
+        };
+        let ours = self
+            .waiting
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .contains(id);
+        if let (true, Some(core)) = (ours, self.bridge.shared.core.get()) {
+            core.bridge_expire(id);
         }
     }
 
@@ -494,18 +548,29 @@ impl Peer {
 }
 
 impl Connection for Peer {
-    fn answer(&self, message: &[u8]) -> Vec<u8> {
+    fn answer(&self, message: &[u8]) -> Answer {
         if !is_show(message) && !self.counted.swap(true, Ordering::SeqCst) {
             self.bridge.shared.extension.send_modify(|n| *n += 1);
         }
-        if method_of(message).as_deref() == Some("pages") {
-            self.set_pages(message);
+        match method_of(message).as_deref() {
+            Some("pages") => self.set_pages(message),
+            Some("cancel") => self.cancel(message),
+            _ => {}
         }
-        self.bridge.answer(message)
+        self.bridge.answer(message, &self.waiting)
     }
 
     fn closed(&self) {
         let shared = &self.bridge.shared;
+        // Nobody is left to hear what the user decides, so the user is not
+        // asked. A send already approved left the queue, and goes on.
+        if let Some(core) = shared.core.get() {
+            let waiting =
+                std::mem::take(&mut *self.waiting.lock().unwrap_or_else(PoisonError::into_inner));
+            for id in waiting {
+                core.bridge_expire(&id);
+            }
+        }
         if self.counted.swap(false, Ordering::SeqCst) {
             shared.extension.send_modify(|n| *n = n.saturating_sub(1));
         }
@@ -539,9 +604,15 @@ fn waits_for_user(method: &str) -> bool {
     )
 }
 
-/// Queue `request` in the core and wait for the window's answer, at most
-/// `timeout`.
-fn wait_for_user(core: &PublicCore, request: BridgeRequest, timeout: Duration) -> Vec<u8> {
+/// Queue `request` in the core, with the wait for the window's answer, at most
+/// `timeout`, as the way to its reply. The queue's limits are what limit the
+/// threads these waits get.
+fn wait_for_user(
+    core: &PublicCore,
+    request: BridgeRequest,
+    timeout: Duration,
+    waiting: &Waiting,
+) -> Answer {
     let id = request.id.clone();
     tracing::debug!(
         target: "airlock::bridge",
@@ -551,23 +622,64 @@ fn wait_for_user(core: &PublicCore, request: BridgeRequest, timeout: Duration) -
         "request queued"
     );
     let (tx, rx) = mpsc::channel();
-    core.bridge_push(
+    let pushed = core.bridge_push(
         request,
         Box::new(move |bytes| {
             let _ = tx.send(bytes);
         }),
     );
+    match pushed {
+        Ok(()) => {}
+        Err(BridgeRefused::Full) => {
+            return Answer::Now(reply::error(
+                &id,
+                "too_many_requests",
+                "Too many requests are waiting in Airlock.",
+            ))
+        }
+        Err(BridgeRefused::SameId) => {
+            return Answer::Now(reply::error(
+                &id,
+                "bad_request",
+                "A request with this id is already waiting.",
+            ))
+        }
+    }
+    waiting
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .insert(id.clone());
+    let core = core.clone();
+    let waiting = waiting.clone();
+    Answer::Later(Box::new(move || {
+        let bytes = wait_for_decision(&core, &id, &rx, timeout);
+        waiting
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .remove(&id);
+        bytes
+    }))
+}
+
+/// The reply to request `id` once its answer arrives, it is dropped, or
+/// `timeout` passes.
+fn wait_for_decision(
+    core: &PublicCore,
+    id: &str,
+    rx: &mpsc::Receiver<Vec<u8>>,
+    timeout: Duration,
+) -> Vec<u8> {
     if let Ok(bytes) = rx.recv_timeout(timeout) {
         return bytes;
     }
     // Nobody decided. An answer that lands while the request is being
     // dropped still wins.
-    if !core.bridge_expire(&id) {
+    if !core.bridge_expire(id) {
         if let Ok(bytes) = rx.try_recv() {
             return bytes;
         }
     }
-    reply::error(&id, "expired", "No decision arrived.")
+    reply::error(id, "expired", "No decision arrived.")
 }
 
 fn ask_running_to_show() -> std::io::Result<()> {

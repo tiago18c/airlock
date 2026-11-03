@@ -3,7 +3,7 @@
 
 use std::sync::mpsc;
 
-use app_core::bridge::{BridgeAnswer, BridgeReply, BridgeRequest};
+use app_core::bridge::{BridgeAnswer, BridgeRefused, BridgeReply, BridgeRequest};
 use app_core::testing::{kit, kit_on, settle, MemoryStorage};
 use app_core::{BridgeRequestOutcome, Event, NoticeKind};
 use serde_json::Value;
@@ -57,7 +57,9 @@ async fn a_service_queues_requests_through_public_core() {
     let mut queue = kit.core.slices().bridge.subscribe();
 
     let (send, _answer) = reply();
-    public.bridge_push(request("7f3ac0de-11", "connect"), send);
+    public
+        .bridge_push(request("7f3ac0de-11", "connect"), send)
+        .unwrap();
 
     assert!(queue.has_changed().unwrap());
     let queue = queue.borrow_and_update().clone();
@@ -77,7 +79,8 @@ async fn an_answer_reaches_the_site_and_leaves_the_queue() {
     let (send, answer) = reply();
     kit.core
         .public()
-        .bridge_push(request("c1", "connect"), send);
+        .bridge_push(request("c1", "connect"), send)
+        .unwrap();
 
     assert!(kit.core.bridge_answer(
         "c1",
@@ -137,7 +140,10 @@ fn approve(
     remember: bool,
 ) -> Value {
     let (send, answer) = reply();
-    kit.core.public().bridge_push(request(id, "connect"), send);
+    kit.core
+        .public()
+        .bridge_push(request(id, "connect"), send)
+        .unwrap();
     assert!(kit.core.bridge_connect(id, accounts, remember));
     read(&answer.try_recv().unwrap())
 }
@@ -163,7 +169,10 @@ fn sign_in(
     remember: bool,
 ) -> Value {
     let (send, answer) = reply();
-    kit.core.public().bridge_push(request(id, "signIn"), send);
+    kit.core
+        .public()
+        .bridge_push(request(id, "signIn"), send)
+        .unwrap();
     assert!(kit
         .core
         .bridge_sign_in(id, signer.pubkey, b"signed".to_vec(), [9; 64], remember));
@@ -207,7 +216,10 @@ async fn signing_in_without_remembering_lasts_this_run() {
 async fn a_message_answer_fits_only_its_method() {
     let kit = kit();
     let (send, answer) = reply();
-    kit.core.public().bridge_push(request("c", "connect"), send);
+    kit.core
+        .public()
+        .bridge_push(request("c", "connect"), send)
+        .unwrap();
     let signed = BridgeAnswer::SignedMessage {
         signed: b"hi".to_vec(),
         signature: [1; 64],
@@ -219,7 +231,8 @@ async fn a_message_answer_fits_only_its_method() {
     let (send, answer) = reply();
     kit.core
         .public()
-        .bridge_push(request("m", "signMessage"), send);
+        .bridge_push(request("m", "signMessage"), send)
+        .unwrap();
     assert!(kit.core.bridge_answer("m", &signed));
     let reply = read(&answer.try_recv().unwrap());
     assert_eq!(reply["result"]["signedMessage"], "aGk=");
@@ -290,7 +303,8 @@ async fn an_answer_must_fit_the_request() {
     let (send, answer) = reply();
     kit.core
         .public()
-        .bridge_push(request("s1", "connect"), send);
+        .bridge_push(request("s1", "connect"), send)
+        .unwrap();
 
     // A signed transaction does not answer a connect.
     assert!(!kit
@@ -315,7 +329,7 @@ async fn a_batch_goes_back_only_whole() {
     batch.params = serde_json::json!({
         "transactions": [{ "transaction": "gQ==" }, { "transaction": "gQ==" }, { "transaction": "gQ==" }]
     });
-    kit.core.public().bridge_push(batch, send);
+    kit.core.public().bridge_push(batch, send).unwrap();
     assert_eq!(
         kit.core
             .slices()
@@ -342,12 +356,99 @@ async fn a_batch_goes_back_only_whole() {
     assert_eq!(outcome_of(&kit, "b1"), Some(BridgeRequestOutcome::Answered));
 }
 
+fn from_site(id: &str, origin: &str) -> BridgeRequest {
+    BridgeRequest {
+        origin: origin.into(),
+        ..request(id, "connect")
+    }
+}
+
+#[tokio::test]
+async fn the_queue_limits_a_site_and_every_site_together() {
+    use bridge_protocol::{MAX_PENDING, MAX_PENDING_PER_ORIGIN};
+    let kit = kit();
+    let public = kit.core.public();
+    let mut replies = Vec::new();
+    let mut push = |id: String, origin: &str| {
+        let (send, answer) = reply();
+        replies.push(answer);
+        public.bridge_push(from_site(&id, origin), send)
+    };
+
+    for n in 0..MAX_PENDING_PER_ORIGIN {
+        push(format!("a{n}"), "https://a.test").unwrap();
+    }
+    assert_eq!(
+        push("a-over".into(), "https://a.test"),
+        Err(BridgeRefused::Full)
+    );
+    // Sites that have room take the queue up to its own limit.
+    let mut queued = MAX_PENDING_PER_ORIGIN;
+    let mut site = 0;
+    while queued < MAX_PENDING {
+        for n in 0..MAX_PENDING_PER_ORIGIN.min(MAX_PENDING - queued) {
+            push(format!("s{site}-{n}"), &format!("https://s{site}.test")).unwrap();
+            queued += 1;
+        }
+        site += 1;
+    }
+    assert_eq!(
+        push("late".into(), "https://new.test"),
+        Err(BridgeRefused::Full)
+    );
+    assert_eq!(kit.core.slices().bridge.get().len(), MAX_PENDING);
+
+    // Room again once one is answered, for its site or any other.
+    assert!(kit.core.bridge_answer("a0", &BridgeAnswer::Rejected));
+    push("a-next".into(), "https://a.test").unwrap();
+}
+
+#[tokio::test]
+async fn an_id_already_waiting_is_refused_and_keeps_its_reply() {
+    let kit = kit();
+    let public = kit.core.public();
+    let (send, first) = reply();
+    public
+        .bridge_push(request("same", "connect"), send)
+        .unwrap();
+    let (send, _second) = reply();
+    assert_eq!(
+        public.bridge_push(from_site("same", "https://other.test"), send),
+        Err(BridgeRefused::SameId)
+    );
+    assert_eq!(kit.core.slices().bridge.get().len(), 1);
+
+    assert!(kit.core.bridge_answer("same", &BridgeAnswer::Rejected));
+    assert_eq!(
+        read(&first.try_recv().unwrap())["error"]["code"],
+        "rejected"
+    );
+}
+
+#[tokio::test]
+async fn the_published_queue_shares_each_request() {
+    let kit = kit();
+    let public = kit.core.public();
+    let (send, _first) = reply();
+    public.bridge_push(request("a", "connect"), send).unwrap();
+    let before = kit.core.slices().bridge.get();
+    let (send, _second) = reply();
+    public.bridge_push(request("b", "connect"), send).unwrap();
+    let after = kit.core.slices().bridge.get();
+    assert!(std::sync::Arc::ptr_eq(
+        &before.pending()[0],
+        &after.pending()[0]
+    ));
+}
+
 #[tokio::test]
 async fn the_transport_expires_a_request_from_its_own_thread() {
     let kit = kit();
     let public = kit.core.public();
     let (send, answer) = reply();
-    public.bridge_push(request("late", "signTransaction"), send);
+    public
+        .bridge_push(request("late", "signTransaction"), send)
+        .unwrap();
 
     // The bridge serves its socket on a plain thread, outside the runtime.
     // Expiring records a notice, which schedules a save on the spawner.

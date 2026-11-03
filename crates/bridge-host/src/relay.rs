@@ -2,7 +2,9 @@
 //!
 //! The browser keeps this process alive for the whole native-messaging port. If the
 //! desktop app is not listening, each request gets `app_not_running` and the next
-//! request tries again.
+//! request tries again. Once connected it lives only as long as both sides: the
+//! browser sees it exit, tells whoever was waiting, and starts a new one for the
+//! next request.
 
 use std::{
     io::{self, Read, Write},
@@ -25,9 +27,7 @@ pub fn relay_stdio() -> io::Result<()> {
         match endpoint::connect(&endpoint.name) {
             Ok(stream) => {
                 tracing::info!(target: "airlock::bridge", "connected to the desktop app");
-                duplex(stream)?;
-                tracing::info!(target: "airlock::bridge", "desktop app disconnected");
-                process::exit(0);
+                duplex(stream);
             }
             Err(_) => {
                 let message = {
@@ -52,17 +52,20 @@ pub fn relay_stdio() -> io::Result<()> {
     }
 }
 
-fn duplex(stream: interprocess::local_socket::Stream) -> io::Result<()> {
+/// Relay frames both ways until either side stops, then exit. Nothing here can
+/// wait for the other direction: a port with a dead host looks alive to the
+/// browser, and every request sent to it would wait out its whole timeout.
+fn duplex(stream: interprocess::local_socket::Stream) -> ! {
     let (mut reader, mut writer) = stream.split();
-    let stdout_thread = thread::spawn(move || -> io::Result<()> {
+    thread::spawn(move || {
         let mut output = io::stdout().lock();
-        loop {
-            match read_frame(&mut reader) {
-                Ok(Some(message)) => write_frame(&mut output, &message)?,
-                Ok(None) => return Ok(()),
-                Err(err) => return Err(err),
+        while let Ok(Some(message)) = read_frame(&mut reader) {
+            if write_frame(&mut output, &message).is_err() {
+                process::exit(0);
             }
         }
+        tracing::info!(target: "airlock::bridge", "desktop app disconnected");
+        process::exit(0);
     });
 
     let mut input = io::stdin().lock();
@@ -73,13 +76,15 @@ fn duplex(stream: interprocess::local_socket::Stream) -> io::Result<()> {
                     process::exit(0);
                 }
             }
-            Ok(None) => break,
-            Err(_) => break,
+            Ok(None) => process::exit(0),
+            // The length that failed says where the next frame starts, so
+            // the stream cannot be read past it.
+            Err(err) => {
+                tracing::warn!(target: "airlock::bridge", error = %err, "unreadable frame");
+                process::exit(1);
+            }
         }
     }
-    drop(writer);
-    let _ = stdout_thread.join();
-    Ok(())
 }
 
 pub fn reject_until_eof(input: &mut impl Read, output: &mut impl Write) -> io::Result<()> {
@@ -112,22 +117,32 @@ pub fn serve_app(on_message: Handler) -> io::Result<()> {
 pub fn serve_listener(listener: endpoint::Listener, on_message: Handler) -> io::Result<()> {
     struct Plain(Handler);
     impl Connection for Plain {
-        fn answer(&self, message: &[u8]) -> Vec<u8> {
-            (self.0)(message)
+        fn answer(&self, message: &[u8]) -> Answer {
+            Answer::Now((self.0)(message))
         }
     }
     serve_connections(listener, move |_| Arc::new(Plain(on_message.clone())))
 }
 
+/// What becomes of one frame.
+pub enum Answer {
+    /// The reply, ready now.
+    Now(Vec<u8>),
+    /// A reply that waits for someone. It gets a thread of its own, so it holds
+    /// up nothing else: match replies by their id.
+    Later(Box<dyn FnOnce() -> Vec<u8> + Send>),
+}
+
 /// One open connection to the socket.
 pub trait Connection: Send + Sync {
-    /// The reply to one frame. Frames are answered at the same time, so a
-    /// request waiting for the user holds up nothing else: match replies by
-    /// their id.
-    fn answer(&self, message: &[u8]) -> Vec<u8>;
+    /// Take in one frame. Frames come here one at a time, in the order they
+    /// were sent, so whatever a frame refers to has been taken in. Anything
+    /// that has to wait belongs in [`Answer::Later`]. There is a thread for
+    /// each of those, so what makes one must be limited.
+    fn answer(&self, message: &[u8]) -> Answer;
 
-    /// The other end went away. A request still waiting may yet be answered,
-    /// into nothing.
+    /// The other end went away, after every frame it sent was taken in. A
+    /// reply still waiting goes nowhere.
     fn closed(&self) {}
 }
 
@@ -155,11 +170,17 @@ pub fn serve_connections(
         let connection = accept(sender.clone());
         thread::spawn(move || {
             while let Ok(Some(message)) = read_frame(&mut reader) {
-                let connection = connection.clone();
-                let sender = sender.clone();
-                thread::spawn(move || {
-                    let _ = sender.send(&connection.answer(&message));
-                });
+                match connection.answer(&message) {
+                    Answer::Now(reply) => {
+                        let _ = sender.send(&reply);
+                    }
+                    Answer::Later(wait) => {
+                        let sender = sender.clone();
+                        thread::spawn(move || {
+                            let _ = sender.send(&wait());
+                        });
+                    }
+                }
             }
             connection.closed();
         });
@@ -242,5 +263,69 @@ mod tests {
         let value: Value = serde_json::from_slice(&reply).unwrap();
         assert_eq!(value["result"]["role"], "dev-stub");
         server.join().unwrap();
+    }
+
+    /// Answers "wait" later and everything else now, and notes what it took in.
+    struct Recording {
+        release: Mutex<Option<std::sync::mpsc::Receiver<()>>>,
+        seen: Arc<Mutex<Vec<String>>>,
+    }
+
+    impl Connection for Recording {
+        fn answer(&self, message: &[u8]) -> Answer {
+            let text = String::from_utf8(message.to_vec()).unwrap();
+            self.seen.lock().unwrap().push(text.clone());
+            if text != "wait" {
+                return Answer::Now(text.into_bytes());
+            }
+            let release = self.release.lock().unwrap().take().unwrap();
+            Answer::Later(Box::new(move || {
+                release.recv().unwrap();
+                b"waited".to_vec()
+            }))
+        }
+
+        fn closed(&self) {
+            self.seen.lock().unwrap().push("closed".into());
+        }
+    }
+
+    #[test]
+    fn a_reply_that_waits_holds_up_nothing_and_frames_stay_in_order() {
+        let endpoint = endpoint::test_endpoint("waiting").unwrap();
+        prepare_directory(&endpoint).unwrap();
+        let listener = endpoint::bind(&endpoint.name).unwrap();
+        let (release, released) = std::sync::mpsc::channel();
+        let released = Mutex::new(Some(released));
+        let seen = Arc::new(Mutex::new(Vec::new()));
+        let recording = seen.clone();
+        thread::spawn(move || {
+            serve_connections(listener, move |_| {
+                Arc::new(Recording {
+                    release: Mutex::new(released.lock().unwrap().take()),
+                    seen: recording.clone(),
+                })
+            })
+        });
+
+        let mut client = endpoint::connect(&endpoint.name).unwrap();
+        for frame in [&b"first"[..], b"wait", b"after"] {
+            write_frame(&mut client, frame).unwrap();
+        }
+        assert_eq!(read_frame(&mut client).unwrap().unwrap(), b"first");
+        assert_eq!(read_frame(&mut client).unwrap().unwrap(), b"after");
+        release.send(()).unwrap();
+        assert_eq!(read_frame(&mut client).unwrap().unwrap(), b"waited");
+
+        drop(client);
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
+        while seen.lock().unwrap().len() < 4 {
+            assert!(std::time::Instant::now() < deadline, "never closed");
+            thread::yield_now();
+        }
+        assert_eq!(
+            *seen.lock().unwrap(),
+            ["first", "wait", "after", "closed"].map(str::to_owned)
+        );
     }
 }

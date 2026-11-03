@@ -6,7 +6,7 @@ use solana_signature::Signature;
 use tokio::sync::broadcast;
 use wallet_core::{Holdings, Workspace};
 
-use crate::bridge::{BridgeReply, BridgeRequest, SiteConnect, SiteSign};
+use crate::bridge::{BridgeRefused, BridgeReply, BridgeRequest, SiteConnect, SiteSign};
 use crate::commands::Inner;
 use crate::events::Event;
 use crate::notices::{BridgeRequestOutcome, NoticeId, NoticeKind, TxStatus};
@@ -161,8 +161,12 @@ impl PublicCore {
     /// Queue a browser request and send `RequestArrived`. `reply` sends the
     /// user's answer back to the site; the window answers through
     /// [`Core::bridge_answer`](crate::Core::bridge_answer), never a service.
-    pub fn bridge_push(&self, request: BridgeRequest, reply: BridgeReply) {
-        self.inner.bridge_push(request, reply);
+    pub fn bridge_push(
+        &self,
+        request: BridgeRequest,
+        reply: BridgeReply,
+    ) -> Result<(), BridgeRefused> {
+        self.inner.bridge_push(request, reply)
     }
 
     /// What a `connect` from `origin` gets before anyone is asked. Only
