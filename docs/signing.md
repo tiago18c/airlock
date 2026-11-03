@@ -170,7 +170,7 @@ The Transaction tab's text is the wire alone in base64, as other tools read one.
 The same binary plays every role. Settings decides which.
 
 - **Online.** Reads the chain, rebuilds, simulates, submits, and answers the browser bridge.
-- **Offline (airgap).** Opens no connection. It decodes and explains the transaction with its own IDLs, signs with its own keys, and exports signatures. It cannot rebuild, simulate or submit, and it has no browser bridge.
+- **Offline (airgap).** Opens no connection of its own, and only the device having no network makes that certain. It decodes and explains the transaction with its own IDLs, signs with its own keys, and exports signatures. It cannot rebuild, simulate or submit, and it has no browser bridge.
 
 An offline wallet record on the online device holds only the pubkey. The secret lives in the vault of the offline device, as a hot wallet there.
 
@@ -670,6 +670,7 @@ Rebuilding refuses, with the reason shown, when:
 | --- | --- |
 | Site, extension, browser | Nothing. They propose transactions and report the origin. |
 | Online app | Whether to sign with its own keys, and how to rebuild. For a key on another device its reading is advisory. |
+| The node | Nothing. What it says shapes what a person sees online, and it can lie: see [the threat model](browser-bridge.md#a-node-that-lies). |
 | Offline app | Whether to sign with its keys, from its own decoding and its own IDLs. |
 | Chain programs | Whether an authorization, a proposal approval or an execution is valid. |
 
@@ -680,8 +681,11 @@ A summary on either device is only as good as the IDLs it was read with. IDLs fe
 - **A browser request completed from another device is never answered.** See [Offline wallet](#offline-wallet-1). The fix is to return the transaction to the site whenever an inserted signature completes it, not only after a local Sign.
 - **A site's blockhash outlives no QR round trip** unless the offline key has a durable nonce and is the only signer missing. A request that also waits on another outside key, or that a site already signed, stays on its blockhash.
 - **Transactions prepared on one durable nonce are not tracked.** Only the first to land is valid. Nothing warns before a second is made on the same nonce.
-- **A site can ask any hot wallet to sign, including ones it was never shown.** Connect grants are not remembered.
-- **Not implemented:** `signAndSendTransaction`, `signMessage`, `signIn`, hardware wallets.
+- **Not implemented:** hardware wallets.
+- **A node can lie, and the online device cannot tell.** See [the threat model](browser-bridge.md#a-node-that-lies).
+- **Code that ran in the window could still get something out**, through the default browser or WebRTC. What the screens show does not run as code, and a policy holds the rest. See [the threat model](browser-bridge.md#threats).
+- **An approval on an offline device is taken on trust.** It signs a proposal's address, and what the proposal holds can only be what the other device says. See [What a transaction does not hold](#what-a-transaction-does-not-hold).
+- **A site on many subdomains counts as many sites** for the [limits](browser-bridge.md#limits) on what it may have waiting, though the total is capped.
 - **A batch waits on its slowest transaction.** The site's blockhash is the same clock for all of them, so a batch that needs a QR round trip for one transaction usually expires before it can go back.
 - **Vector is on devnet only.** The program binary is not yet reproducible from this tree. See [vector-fork.md](vector-fork.md).
 - **A seed replaced too early cannot be put back from the screens**, for an XMSS key not made from a phrase. It is kept in the record. No screen makes such a key now.

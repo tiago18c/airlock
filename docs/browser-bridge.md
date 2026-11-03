@@ -2,7 +2,7 @@
 
 How a site reaches Airlock: a browser extension that holds no keys, a native messaging host, and the online desktop app, which reviews and signs. How each kind of wallet signs a site's request is in [signing.md](signing.md#flows-that-start-in-a-browser).
 
-The bridge answers `status`, `connect`, `disconnect` and `signTransaction` with one to 16 transactions (legacy, v0 or v1), which go back together once every one is signed. Every other method returns `not_implemented`. It is desktop only, and only in the online app: Airlock Offline does not link it.
+The bridge answers `status`, `connect`, `disconnect`, `signTransaction`, `signAndSendTransaction`, `signAndSendAllTransactions`, `signMessage` and `signIn`. One request holds one to 16 transactions (legacy, v0 or v1), which go back together once every one is signed. Every other method returns `not_implemented`. It is desktop only, and only in the online app: Airlock Offline does not link it.
 
 ## Components
 
@@ -174,6 +174,7 @@ The **request code** is the first four letters or digits of `id`, upper-cased (`
 | Extension, browser | Relaying, and reporting the origin |
 | `bridge-host`, the online app | Review and signing with the online app's keys; an advisory reading for keys elsewhere |
 | The offline device | The final decision for its keys |
+| The node | What it says the chain holds, for the online device. Never what is signed |
 
 The assets are the private keys, the user's intent, the link between addresses and sites, and the integrity of what the offline screen shows.
 
@@ -195,7 +196,32 @@ The extension has no keys and approves nothing. A malicious update, a hijacked s
 - **A compromised online app.** It can produce a malicious rebuild. The offline device reads the transaction on its own, so its review must stay complete.
 - **The bridge on the offline device.** Airlock Offline does not link the bridge, and no installer runs `install`.
 - **Stale requests.** Each request carries an expiry, and one nobody answers leaves the queue after ten minutes, or as soon as its page or browser goes away. A signature brought back from another device is verified against the transaction on screen before it is written in.
-- **Privacy.** A site sees only the accounts ticked for it. The injected wallet reveals that Airlock is installed, as any wallet does.
+- **Privacy.** A site sees only the accounts ticked for it. The injected wallet reveals that Airlock is installed, as any wallet does. The service worker tells the app every origin with a page open in the browser, so that what a closed page asked goes away. That stays on this device.
+- **Something that gets into the page.** A wallet's window shows what strangers wrote. The screens write it as text, and nothing handed to `eval` is built from it. Behind that is a Content Security Policy (`app_desktop::window`). Once the page's own scripts have been read, no inline script, handler or `javascript:` address runs, so markup that got in runs nothing. The page loads only the app's own files, makes no ordinary request to anywhere else, and cannot be replaced by another page. `eval` stays allowed, because Dioxus is built on it.
+
+  That is not a seal. Code that did run in the page would still have these ways out:
+
+  - **The default browser.** It can open any address, with what it read in that address. Dioxus does this for any http, https or mailto navigation and for a message from the page, and has no setting to stop it. The user sees a browser open, after the fact.
+  - **WebRTC.** It can send packets to any address. No directive this WebView knows governs that, and nothing shows.
+  - **Preconnect.** `<link rel="preconnect">` connects to any host, so the name it looks up can carry something. Nothing shows.
+  - **The loopback.** It can open a websocket to anything listening on this device, since Dioxus picks its port at launch and the policy cannot name it.
+
+### A node that lies
+
+The node is whatever the user chose, and it may be run by anyone. It never decides what is signed, since a signature is made here over bytes it did not write, and the offline device does not talk to it at all. But online, much of what a person sees is what it said:
+
+| It can | So |
+| --- | --- |
+| Say a transaction would succeed, or how much would move | A simulation only ever holds Sign back, and never vouches for anything |
+| Say what a proposal holds | That is shown as what the node says. On an offline device it arrives as what the other device says, and has to be vouched for |
+| Serve a program's IDL, written to say anything | An IDL read from the chain never makes Sign the primary button, and the modal says it was read from the chain. Words are only as good as the IDL, and IDLs that ship are pinned by checksum |
+| Say what a lookup table holds | A v0 transaction names a table and a place in it, and what is signed does not name the address there. The modal says how many accounts come from tables, and Inspect marks each one. Rebuilding as v1 removes the question |
+| Say what balances and token accounts are | They are shown as they are, and a read that fails says so |
+| Say a transaction landed, or did not, or drop it | A send it gave no clear answer about is followed by its signature, and told apart from one that failed. A node can still say nothing happened to something that did |
+| Give an old blockhash or a wrong one | The transaction fails to land. It cannot make one land that should not |
+| See every address asked about, and when | Nothing here hides that from it. Use a node you trust, or run one |
+
+It cannot produce a signature, change what the screens read from the transaction's own bytes, or see a key. Whether a node's URL or API key should be protected at rest is an open question: both are in `workspace.json` in plain text.
 
 ## Development
 

@@ -26,6 +26,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - The program-metadata program's IDL ships with the app, for mainnet and devnet. Review reads the calls that publish or change a program's IDL and other metadata, such as creating, writing, closing or making it immutable, in words, and Build can make them.
 
 ### Changed
+- Inspect marks each account that comes from a lookup table, since what is signed names only the table and a place in it.
 - Your settings and address book, the sites you connected, and the balances read from the chain are now kept in separate files, so a sync no longer rewrites the first, and damage to one file loses only what it holds. If the list of connected sites is damaged, sites ask again and you are told. Files from an earlier version are moved the first time they are saved.
 - IDLs read from the chain are now a cache: at most 64, or 32 MiB, for each network. The oldest goes first, and is read again when something needs it. A file you imported is never let go.
 - A large address book is read a part at a time, so a public node is not asked for more than it allows: about 40 requests every 30 seconds rather than two for every address. Your wallets come first and more often, every address still comes around, and Refresh still reads them all.
@@ -78,6 +79,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - A transaction that went back to a site from Review and Sign is not sent twice. The site may send it itself, so Submit waits up to 10 seconds while the app watches for it on chain. If it lands, a toast says the site sent it and follows it to confirmed, and Submit stays off. If it does not, a toast says the site did not send it, and Submit turns on. In a batch, each transaction is watched for on its own.
 
 ### Security
+- The app's window now loads only the app's own files, runs no script written into its page, and cannot be replaced by another page. It also blocks the usual ways a page sends something out, though not all of them: `docs/browser-bridge.md` lists what is left.
 - The password of a vault is far more expensive to guess from a copy of its file: deriving its key now takes 256 MiB and three passes, rather than 19 MiB and two. A vault you already have moves to the new cost the next time you unlock it, and so does the backup beside it. A copy made before then stays at the old cost.
 - A new vault or a new password has to be at least 12 characters, and cannot be made of common words or patterns. A password you already have keeps working.
 - Approving or running a Squads proposal, or voting on a Realms proposal, signs something stored on chain rather than what it does. Airlock now says so, and the request modal no longer offers one-click Sign for it. Online, Review and Sign shows what the node says the proposal holds. On a device with no network, Sign waits until you tick that you have checked it somewhere you trust, and any contents the other device sends in the context note are marked as something it cannot check.

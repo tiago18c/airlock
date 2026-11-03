@@ -15,9 +15,13 @@
 //! - A fee payer the site named, whose key is not here and which no
 //!   instruction uses, can be replaced by a hot wallet of this device. That
 //!   is offered only after the replaced transaction simulated successfully.
-//! - Sign is offered only when every instruction was put in words and this
-//!   device can add every missing signature (`wallet_core::quick_sign`).
-//!   Otherwise the only way forward is Review, on the Sign screen.
+//! - Sign is offered when this device can add every missing signature
+//!   (`wallet_core::quick_sign`). It is the primary button only when every
+//!   instruction was put in words by an IDL that ships with the app or that the user
+//!   imported, and the node expects it to succeed. Otherwise it is amber and says
+//!   why. What hands over control, or says yes to what the transaction does not hold,
+//!   gets no Sign here at all: the only way forward is Review, on the Sign screen.
+//!   `wallet_flows::offer::modal_offer` decides.
 
 use crate::bridge::BridgePrompt;
 use app_core::bridge::{BridgeAnswer, SendPlan, SiteCall};

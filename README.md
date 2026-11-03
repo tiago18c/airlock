@@ -8,8 +8,8 @@ A Solana wallet that keeps preparing a transaction apart from signing it. An onl
 
 - **Solana transactions:** browser requests and Sign-screen paste accept legacy, v0 and v1. A hot-only request can be signed as is; anything else is converted to v1 (wire prefix `0x81`, SIMD-0385). The QR handoff (QRS1) stays v1 only; scanning a non-v1 QR is refused.
 - **Wallet kinds:** hot (private key or seed phrase), offline (the key is on another device), Ed25519 programmatic signer, and Squads multisig (v4 and smart account). Hardware wallets are not supported yet.
-- **Two builds:** the online app, and `airlock-offline`, which links no network code: it opens no connection, and cannot simulate or submit.
-- **Browser bridge:** desktop only. It answers `connect` and `signTransaction` with one to 16 transactions, which go back together. Every other method returns `not_implemented`.
+- **Two builds:** the online app, and `airlock-offline`, which opens no connection of its own, and cannot simulate or submit. That is what it does, not something it is unable to do: its window is a WebView, and its UI library brings network code along. Keeping it on a device with no network is what keeps it offline.
+- **Browser bridge:** desktop only. It answers `connect`, `disconnect`, `signTransaction`, `signAndSendTransaction`, `signAndSendAllTransactions`, `signMessage` and `signIn`. One request holds one to 16 transactions, which go back together. Every other method returns `not_implemented`.
 
 How each kind of wallet signs, from the app and from a site, is in [docs/signing.md](docs/signing.md).
 
@@ -20,7 +20,7 @@ Four things run, on up to two devices and a browser:
 | App | Where it runs | What it does |
 | --- | --- | --- |
 | **Airlock** (`apps/airlock`) | Desktop or browser, online | Holds a vault, builds, reviews, rebuilds and submits transactions, and answers the browser extension (desktop only) |
-| **Airlock Offline** (`apps/airlock-offline`) | Desktop, offline | Holds its own vault, reviews and signs. It links no network code, so it cannot simulate or submit |
+| **Airlock Offline** (`apps/airlock-offline`) | Desktop, offline | Holds its own vault, reviews and signs. It opens no connection of its own, so it cannot simulate or submit |
 | **Airlock Extension** (`extension`) | The browser | Shows sites a Wallet Standard wallet and forwards their requests. It holds no keys and approves nothing |
 | **bridge-host** (`crates/bridge-host`) | Started by the browser | Relays between the extension and the running desktop app |
 
@@ -48,7 +48,7 @@ flowchart LR
 
 A transaction starts on the online app: built there, or sent by a site through the extension and `bridge-host`. The online app reviews it and signs with its own keys. For a key on the offline device, it shows the transaction as QR codes (or text to paste). The offline app reads them, reviews the transaction on its own and signs, and its signatures go back the same way. The online app then submits, or returns the signed transaction to the site.
 
-The site, the extension and the browser are trusted for nothing except reporting the origin. The online app decides for its own keys. For a key on the offline device, the offline app decides from its own reading of the transaction. The bridge's threat model is in [docs/browser-bridge.md](docs/browser-bridge.md).
+The site, the extension and the browser are trusted for nothing except reporting the origin. The online app decides for its own keys. For a key on the offline device, the offline app decides from its own reading of the transaction. The node is trusted for what it says the chain holds, and never for what is signed. The threat model is in [docs/browser-bridge.md](docs/browser-bridge.md#threat-model).
 
 ## Running it
 
@@ -173,7 +173,7 @@ QRS1 carries a payload of one to 64 typed objects, written with wincode, as one 
 | Path | What it is |
 | --- | --- |
 | `apps/airlock` | The online app (desktop and web), with its `Dioxus.toml` and icons |
-| `apps/airlock-offline` | The airgap desktop app, which links no network code |
+| `apps/airlock-offline` | The airgap desktop app, which opens no connection of its own |
 | `crates/app-ui` | The shared shell: navigation, settings, notices and toasts |
 | `crates/app-ui-wallets`, `app-ui-book`, `app-ui-build`, `app-ui-sign` | Screens: wallets; address book and programs; build; sign and QR transfer |
 | `crates/app-ui-kit` | Actions, the session and each screen's form, platform glue (files, camera, QR drawing), CSS and shared widgets such as the lock dialog |
