@@ -46,6 +46,9 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - Share opens on Everything, now its first tab. Its Signatures tab has tabs of its own: Local, which it opens on, puts the signatures made by keys on this device in one transfer; All puts every signature in one transfer; Individual shows a code for each.
 
 ### Fixed
+- A transaction is no longer reported as rejected, to you or to a site, when the node simply did not answer. It may have gone through, and a site told it had failed could have sent the same thing again. Airlock now keeps following it, and its toast says what became of it. A site gets the signature if it is seen within 90 seconds, and otherwise a new `send_unknown` error. Sign says it may still land, and keeps the transaction on screen so that you can send it again, which is safe.
+- A send approved near the end of the ten minutes a request waits is no longer reported to the site as expired while it is going out. The site now gets its result, however long that takes.
+- When a node stops answering while a site's send waits for the commitment it asked for, the wait now ends after about 90 seconds. Before, a read that timed out counted as one second of the wait, and the site was told the request had expired.
 - A request's modal now closes by itself when the page that asked closes, or the browser does. Before, it stayed for up to ten minutes. Approving it answered nobody, and a transaction to send still went out.
 - When Airlock closes, a site waiting on it hears straight away. Before, it could wait out the full ten minutes.
 - A damaged `vault.json` no longer locks you out while a good copy sits beside it. Unlocking opens the copy kept before the last save, keeps the damaged file as `vault.json.unreadable`, and tells you the last change to the vault may be missing.
@@ -59,6 +62,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - A transaction that went back to a site from Review and Sign is not sent twice. The site may send it itself, so Submit waits up to 10 seconds while the app watches for it on chain. If it lands, a toast says the site sent it and follows it to confirmed, and Submit stays off. If it does not, a toast says the site did not send it, and Submit turns on. In a batch, each transaction is watched for on its own.
 
 ### Security
+- An error from your node no longer tells a site the address of the node, which can hold an API key. A send that failed for want of a connection could hand it over. It no longer reaches the notices or the logs either.
 - A site can no longer flood Airlock with requests. One site can ask at most 30 times every 10 seconds and keep 8 requests waiting, and 32 can wait in all. A page you have not used yet can no longer open a connect or sign-in modal.
 - One oversized request from a site could leave the extension unable to reach Airlock, for every site, until the browser or Airlock restarted. The extension now refuses a request that large, and if the bridge ever does stop, the next request starts it again.
 - A sandboxed frame can no longer ask in the name of the site that hosts it. It was given that site's origin, and with it the site's connection.

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { bytesToBase64 } from "../src/protocol";
+import { BridgeError, bytesToBase64 } from "../src/protocol";
 import { AirlockWallet } from "../src/wallet";
 
 const KEY = bytesToBase64(new Uint8Array(32).fill(7));
@@ -170,6 +170,21 @@ test("sending all settles each transaction on its own, in the mode asked", async
   assert.equal((calls.at(-1)!.params as { mode: string }).mode, "serial");
   assert.deepEqual(await sendAll(wallet, []), []);
   await assert.rejects(sendAll(wallet, Array.from({ length: 17 }, () => input)), /at most 16/);
+});
+
+test("a send that may still land is not reported as a plain failure", async () => {
+  const { wallet } = walletWith((method) => {
+    if (method === "connect") return { accounts: [{ publicKey: KEY }] };
+    throw new BridgeError("send_unknown", "It may still land.");
+  });
+  const { accounts } = await connect(wallet);
+  const send = wallet.features["solana:signAndSendTransaction"] as {
+    signAndSendTransaction: (...inputs: unknown[]) => Promise<unknown>;
+  };
+  await assert.rejects(
+    send.signAndSendTransaction({ account: accounts[0], transaction: new Uint8Array([1]), chain: "solana:devnet" }),
+    (err: BridgeError) => err.code === "send_unknown",
+  );
 });
 
 test("a key that is not 32 bytes is refused", async () => {

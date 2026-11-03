@@ -2,6 +2,7 @@ use super::*;
 use app_core::bridge::BridgeAnswer;
 use app_core::testing::{kit, Kit};
 use app_core::{BridgeRequestOutcome, NoticeKind};
+use bridge_protocol::reply::SendError;
 use wallet_core::WalletSigner;
 
 /// A bridge attached to a test core.
@@ -804,11 +805,77 @@ async fn a_failed_send_tells_the_site_why() {
     let (kit, bridge) = attached_bridge();
     let asking = waiting_send(&kit, &bridge, SEND);
     let sending = kit.core.bridge_begin_send("send", 1).unwrap();
-    kit.core
-        .bridge_send_finished(sending, vec![Err("the node said no".into())]);
+    kit.core.bridge_send_finished(
+        sending,
+        vec![Err(SendError::Failed("the node said no".into()))],
+    );
     let value = asking.join().unwrap();
     assert_eq!(value["error"]["code"], "send_failed");
     assert_eq!(value["error"]["message"], "the node said no");
+}
+
+#[tokio::test]
+async fn a_send_that_may_still_land_is_not_called_a_failure() {
+    let (kit, bridge) = attached_bridge();
+    let asking = waiting_send(&kit, &bridge, SEND);
+    let sending = kit.core.bridge_begin_send("send", 1).unwrap();
+    kit.core.bridge_send_finished(
+        sending,
+        vec![Err(SendError::Unknown("it may still land".into()))],
+    );
+    let value = asking.join().unwrap();
+    assert_eq!(value["error"]["code"], "send_unknown");
+    assert_eq!(value["error"]["message"], "it may still land");
+}
+
+#[tokio::test]
+async fn a_send_approved_as_time_runs_out_answers_with_its_result() {
+    let (kit, bridge) = attached_bridge();
+    connected(&kit, &bridge, false);
+    let public = kit.core.public();
+    let request = BridgeRequest {
+        id: "late".into(),
+        origin: ORIGIN.into(),
+        method: SEND.into(),
+        params: send_request("late", SEND, Some("solana:devnet"))["params"].clone(),
+    };
+    let waiting = wait_for_user(
+        &public,
+        request,
+        Duration::from_millis(50),
+        &Waiting::default(),
+    );
+    let sending = kit.core.bridge_begin_send("late", 1).unwrap();
+
+    // The time runs out with the send still going.
+    let answer = std::thread::spawn(move || read(&settled(waiting)));
+    std::thread::sleep(Duration::from_millis(300));
+    assert!(!answer.is_finished());
+
+    kit.core.bridge_send_finished(sending, vec![Ok([1; 64])]);
+    let reply = answer.join().unwrap();
+    assert!(reply.get("error").is_none(), "{reply}");
+    assert_eq!(reply["result"]["signatures"].as_array().unwrap().len(), 1);
+}
+
+#[tokio::test]
+async fn a_send_dropped_without_a_result_does_not_wait_for_ever() {
+    let (kit, bridge) = attached_bridge();
+    connected(&kit, &bridge, false);
+    let request = BridgeRequest {
+        id: "lost".into(),
+        origin: ORIGIN.into(),
+        method: SEND.into(),
+        params: send_request("lost", SEND, Some("solana:devnet"))["params"].clone(),
+    };
+    let waiting = wait_for_user(
+        &kit.core.public(),
+        request,
+        Duration::from_millis(10),
+        &Waiting::default(),
+    );
+    drop(kit.core.bridge_begin_send("lost", 1).unwrap());
+    assert_eq!(read(&settled(waiting))["error"]["code"], "expired");
 }
 
 #[tokio::test]
@@ -818,7 +885,7 @@ async fn send_all_answers_for_each_transaction() {
     assert!(kit.core.bridge_begin_send("send", 2).is_none());
     let sending = kit.core.bridge_begin_send("send", 1).unwrap();
     kit.core
-        .bridge_send_finished(sending, vec![Err("failed".into())]);
+        .bridge_send_finished(sending, vec![Err(SendError::Failed("failed".into()))]);
     let value = asking.join().unwrap();
     assert_eq!(value["result"]["results"][0]["error"]["message"], "failed");
 }

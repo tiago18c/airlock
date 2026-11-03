@@ -77,6 +77,11 @@ impl<'a> TxLog<'a> {
     pub fn log_rejected(self, error: &str) {
         log_stage!(self, "rejected", error = %error);
     }
+
+    /// The node gave no answer, so it may have taken it.
+    pub fn log_unanswered(self, signature: &str, error: &str) {
+        log_stage!(self, "unanswered", signature = %signature, error = %error);
+    }
 }
 
 /// A tracker (or any status update) logs the outcome under `airlock::tx`.

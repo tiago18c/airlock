@@ -8,7 +8,7 @@
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::sync::Arc;
 
-use bridge_protocol::reply::SiteAccount;
+use bridge_protocol::reply::{SendError, SiteAccount};
 use bridge_protocol::{MAX_PENDING, MAX_PENDING_PER_ORIGIN};
 use serde_json::Value;
 use solana_pubkey::Pubkey;
@@ -29,7 +29,7 @@ pub enum BridgeAnswer {
     Signed(Vec<Vec<u8>>),
     /// A `signAndSendTransaction` or `signAndSendAllTransactions`, with what
     /// became of each transaction, in the order the site sent them.
-    Sent(Vec<Result<[u8; 64], String>>),
+    Sent(Vec<Result<[u8; 64], SendError>>),
     /// A `signMessage`, with the bytes signed and the signature.
     SignedMessage {
         signed: Vec<u8>,
@@ -77,9 +77,14 @@ impl BridgeAnswer {
                 BridgeRequestOutcome::Answered,
             ),
             Self::Sent(results) => {
-                // All of them, or why not: the first failure says what happened.
-                let frame = match results.iter().find_map(|one| one.as_ref().err()) {
-                    Some(message) => bridge_protocol::reply::send_failed(id, message),
+                // All of them, or why not: the first failure says what happened,
+                // unless one may still land, which a site must hear about.
+                let failures = || results.iter().filter_map(|one| one.as_ref().err());
+                let why = failures()
+                    .find(|why| matches!(why, SendError::Unknown(_)))
+                    .or_else(|| failures().next());
+                let frame = match why {
+                    Some(why) => bridge_protocol::reply::send_error(id, why),
                     None => {
                         let signatures: Vec<[u8; 64]> =
                             results.iter().filter_map(|one| one.clone().ok()).collect();

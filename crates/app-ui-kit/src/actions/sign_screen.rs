@@ -23,6 +23,7 @@ use wallet_flows::adapt::rebuilt_note;
 use wallet_flows::request::{
     accounts_created, one_time_signers, replaceable_signers, reshape_unsupported,
 };
+use wallet_flows::send::SendFailure;
 use wallet_flows::sign::VectorSigning;
 
 /// Rebuild the transaction on Sign for the keyless wallet it asks to sign:
@@ -951,13 +952,20 @@ pub fn submit_loaded(session: Session, mut busy: Signal<bool>) {
                     .submit(rpc, &wire, flow, "Sign", &cluster, last_valid_height)
                     .await
             }
-            Err(err) => Err(err),
+            Err(err) => Err(SendFailure::Failed(err.to_string())),
         };
         match submitted {
             // The toast follows the transaction from here.
             Ok(signature) => {
                 last.set(Some(signature.to_string()));
                 form.clear();
+            }
+            // Kept on screen: if the node never got it, this is how to send it.
+            Err(unknown @ SendFailure::Unknown { .. }) => {
+                error.set(Some(format!(
+                    "{} Its toast will say what became of it. Sending it again is safe, because one transaction cannot land twice.",
+                    sentence(unknown)
+                )));
             }
             Err(err) => {
                 error.set(Some(sentence(err)));

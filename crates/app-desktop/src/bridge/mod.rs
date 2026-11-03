@@ -662,7 +662,7 @@ fn wait_for_user(
 }
 
 /// The reply to request `id` once its answer arrives, it is dropped, or
-/// `timeout` passes.
+/// `timeout` passes with nobody having decided.
 fn wait_for_decision(
     core: &PublicCore,
     id: &str,
@@ -672,10 +672,11 @@ fn wait_for_decision(
     if let Ok(bytes) = rx.recv_timeout(timeout) {
         return bytes;
     }
-    // Nobody decided. An answer that lands while the request is being
-    // dropped still wins.
+    // Nobody decided, unless it left the queue just now, or a send was
+    // approved and is going out. Then the answer is still to come, however
+    // long the send takes: a site told "expired" could send it all again.
     if !core.bridge_expire(id) {
-        if let Ok(bytes) = rx.try_recv() {
+        if let Ok(bytes) = rx.recv() {
             return bytes;
         }
     }

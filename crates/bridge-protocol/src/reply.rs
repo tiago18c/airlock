@@ -62,22 +62,47 @@ pub fn sent(id: &str, signatures: &[[u8; 64]]) -> Vec<u8> {
     result(id, json!({ "signatures": signatures }))
 }
 
+/// Why a site gets no signature for a transaction it asked to have sent.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum SendError {
+    /// It did not go out, the node refused it, or it landed and failed.
+    Failed(String),
+    /// It may still land, so sending it again as a new transaction could do the
+    /// same thing twice.
+    Unknown(String),
+}
+
+impl SendError {
+    fn code(&self) -> &'static str {
+        match self {
+            Self::Failed(_) => "send_failed",
+            Self::Unknown(_) => "send_unknown",
+        }
+    }
+
+    fn message(&self) -> &str {
+        match self {
+            Self::Failed(message) | Self::Unknown(message) => message,
+        }
+    }
+}
+
 /// A `signAndSendAllTransactions` answered, one result for each transaction:
-/// its signature, or why it did not go through.
-pub fn sent_each(id: &str, results: &[Result<[u8; 64], String>]) -> Vec<u8> {
+/// its signature, or why there is none.
+pub fn sent_each(id: &str, results: &[Result<[u8; 64], SendError>]) -> Vec<u8> {
     let results: Vec<Value> = results
         .iter()
         .map(|one| match one {
             Ok(signature) => json!({ "signature": base64(signature) }),
-            Err(message) => json!({ "error": { "code": "send_failed", "message": message } }),
+            Err(why) => json!({ "error": { "code": why.code(), "message": why.message() } }),
         })
         .collect();
     result(id, json!({ "results": results }))
 }
 
-/// The user approved sending, and it did not go through.
-pub fn send_failed(id: &str, message: &str) -> Vec<u8> {
-    error(id, "send_failed", message)
+/// The user approved sending, and there is no signature to give back.
+pub fn send_error(id: &str, why: &SendError) -> Vec<u8> {
+    error(id, why.code(), why.message())
 }
 
 /// A `signMessage` answered: the bytes signed, and the signature over them.
@@ -143,6 +168,27 @@ mod tests {
 
     fn read(bytes: &[u8]) -> Value {
         serde_json::from_slice(bytes).unwrap()
+    }
+
+    #[test]
+    fn a_send_that_may_still_land_is_told_from_one_that_failed() {
+        let failed = SendError::Failed("no".into());
+        let unknown = SendError::Unknown("perhaps".into());
+        assert_eq!(
+            read(&send_error("a", &failed))["error"]["code"],
+            "send_failed"
+        );
+        let reply = read(&send_error("a", &unknown));
+        assert_eq!(reply["error"]["code"], "send_unknown");
+        assert_eq!(reply["error"]["message"], "perhaps");
+
+        let each = read(&sent_each("a", &[Ok([1; 64]), Err(failed), Err(unknown)]));
+        assert!(each["result"]["results"][0]["signature"].is_string());
+        assert_eq!(each["result"]["results"][1]["error"]["code"], "send_failed");
+        assert_eq!(
+            each["result"]["results"][2]["error"]["code"],
+            "send_unknown"
+        );
     }
 
     #[test]

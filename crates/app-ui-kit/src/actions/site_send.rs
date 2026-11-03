@@ -4,9 +4,13 @@
 
 use app_core::bridge::SendPlan;
 use app_core::FlowId;
+use bridge_protocol::reply::SendError;
 use dioxus::prelude::*;
+use solana_signature::Signature;
 use wallet_core::parse_wire;
-use wallet_flows::send::{send_each, wait_for_commitment, COMMITMENT_POLL, COMMITMENT_TIMEOUT};
+use wallet_flows::send::{
+    send_each, wait_for_commitment, SendFailure, COMMITMENT_POLL, COMMITMENT_TIMEOUT,
+};
 
 use super::{sentence, spawn_app_task};
 use crate::state::session::Session;
@@ -23,6 +27,15 @@ fn missing_signature(wires: &[(Vec<u8>, FlowId)]) -> Option<String> {
             )
         })
     })
+}
+
+/// What the site hears about one transaction.
+fn site_result(result: Result<Signature, SendFailure>) -> Result<[u8; 64], SendError> {
+    match result {
+        Ok(signature) => Ok(signature.into()),
+        Err(why @ SendFailure::Failed(_)) => Err(SendError::Failed(sentence(why))),
+        Err(why @ SendFailure::Unknown { .. }) => Err(SendError::Unknown(sentence(why))),
+    }
 }
 
 /// Send `items`, each a finished transaction with its flow, for request `id`,
@@ -74,8 +87,7 @@ pub fn send_for_site(
             &commitments,
             |index| {
                 let (wire, flow) = &items[index];
-                let sent = submitter.submit(rpc.clone(), wire, *flow, &label, &cluster, None);
-                async move { sent.await.map_err(sentence) }
+                submitter.submit(rpc.clone(), wire, *flow, &label, &cluster, None)
             },
             |signature, level| {
                 let rpc = rpc.clone();
@@ -87,6 +99,7 @@ pub fn send_for_site(
                         level,
                         COMMITMENT_TIMEOUT,
                         COMMITMENT_POLL,
+                        || clock.now_ms(),
                         |every| clock.sleep(every),
                     )
                     .await
@@ -94,10 +107,7 @@ pub fn send_for_site(
             },
         )
         .await;
-        let results = results
-            .into_iter()
-            .map(|result| result.map(<[u8; 64]>::from))
-            .collect();
+        let results = results.into_iter().map(site_result).collect();
         session.command(|core| core.bridge_send_finished(sending, results));
     });
     Ok(())
@@ -107,6 +117,23 @@ pub fn send_for_site(
 mod tests {
     use super::*;
     use wallet_core::WalletSigner;
+
+    #[test]
+    fn a_send_that_may_still_land_reaches_the_site_as_that() {
+        let signature = Signature::from([1; 64]);
+        assert_eq!(site_result(Ok(signature)), Ok([1; 64]));
+        assert_eq!(
+            site_result(Err(SendFailure::Failed("the node said no".into()))),
+            Err(SendError::Failed("The node said no.".into()))
+        );
+        assert_eq!(
+            site_result(Err(SendFailure::Unknown {
+                signature,
+                why: "it may still land".into(),
+            })),
+            Err(SendError::Unknown("It may still land.".into()))
+        );
+    }
 
     #[test]
     fn a_transaction_goes_out_only_with_every_signature() {

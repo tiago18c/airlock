@@ -4,6 +4,7 @@ export const HOST_NAME = "dev.airlock.bridge";
 export const PAGE_SOURCE = "airlock-page";
 export const EXTENSION_SOURCE = "airlock-extension";
 
+/** How long the user has to decide, as the desktop app allows. */
 export const REQUEST_TTL_MS = 10 * 60 * 1000;
 
 /** How long a request nobody has to decide may take. */
@@ -12,6 +13,14 @@ export const QUICK_TTL_MS = 15 * 1000;
 /** The most transactions one signTransaction may carry, as the desktop app
  * allows (`bridge_protocol::MAX_TRANSACTIONS`). */
 export const MAX_TRANSACTIONS = 16;
+
+/** The longest a send can take once approved: for each transaction, 30 seconds
+ * for the node to take it, 90 for the commitment asked for, and 30 for the last
+ * read of it (`RPC_TIMEOUT` and `COMMITMENT_TIMEOUT` in the desktop app). */
+const SEND_MS = MAX_TRANSACTIONS * 150 * 1000;
+
+/** The desktop app has the last word, so this only comes into it if it stops. */
+const REPLY_GRACE_MS = 5 * 1000;
 
 /** The most requests one site, and every site together, may have waiting for
  * the user, as the desktop app allows (`bridge_protocol::MAX_PENDING_PER_ORIGIN`
@@ -102,6 +111,15 @@ export function needsUserGesture(method: unknown, params: unknown): boolean {
 /** Whether the desktop app asks the user before answering this. */
 export function waitsForUser(method: string, params: unknown): boolean {
   return method !== "status" && method !== "disconnect" && !isSilentConnect(method, params);
+}
+
+/** How long to wait for the desktop app's reply before giving up on it. A send
+ * can go on long after the user approved it, and a site told it had expired
+ * could send it all again. */
+export function replyWindowMs(method: string, params: unknown): number {
+  if (!waitsForUser(method, params)) return QUICK_TTL_MS;
+  const sends = method === "signAndSendTransaction" || method === "signAndSendAllTransactions";
+  return REQUEST_TTL_MS + (sends ? SEND_MS : 0) + REPLY_GRACE_MS;
 }
 
 /** The bytes `value` takes as JSON. What cannot be written as JSON has no size

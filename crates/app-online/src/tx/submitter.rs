@@ -7,8 +7,8 @@ use app_core::{FlowId, NoticeKind, PublicCore, TxStatus};
 use app_ui_kit::{SiteSendFut, SubmitFut, TxSubmit};
 use solana_signature::Signature;
 use tokio::sync::oneshot;
-use wallet_core::{parse_wire, Cluster, RpcError, SolanaRpc};
-use wallet_flows::send;
+use wallet_core::{parse_wire, Cluster, SolanaRpc};
+use wallet_flows::send::{self, SendFailure};
 use wallet_flows::track::{watch_landed, SITE_SEND_POLL, SITE_SEND_WINDOW};
 
 use super::tracker::Tracker;
@@ -25,8 +25,9 @@ impl Submitter {
         Self { core, tracker }
     }
 
-    /// Submit `wire` on `rpc`. On success (or reject with a signature in the
-    /// wire), pushes a transaction notice and tracks a successful send.
+    /// Submit `wire` on `rpc`, with a transaction notice for it. One the node
+    /// took is tracked. So is one the node gave no answer about, which may
+    /// still land, and whose outcome is unknown until it does or cannot.
     pub async fn send(
         &self,
         rpc: Arc<dyn SolanaRpc>,
@@ -35,49 +36,88 @@ impl Submitter {
         label: &str,
         cluster: &Cluster,
         last_valid_height: Option<u64>,
-    ) -> Result<Signature, RpcError> {
-        match send::submit(rpc.as_ref(), wire).await {
+    ) -> Result<Signature, SendFailure> {
+        let log = TxLog {
+            flow,
+            wire,
+            cluster: Some(cluster),
+        };
+        let sent = send::submit(rpc.as_ref(), wire).await;
+        let err = match sent {
             Ok(signature) => {
-                TxLog {
-                    flow,
-                    wire,
-                    cluster: Some(cluster),
-                }
-                .log_sent(&signature.to_string());
-                self.core.notices_push(NoticeKind::Transaction {
-                    flow,
-                    signature,
-                    cluster: cluster.clone(),
-                    label: label.to_string(),
-                    status: TxStatus::Sent,
-                });
-                let deadline = self.tracker.fresh_deadline();
-                self.tracker
-                    .follow(rpc, cluster, signature, last_valid_height, deadline);
-                Ok(signature)
+                log.log_sent(&signature.to_string());
+                self.follow_sent(rpc, flow, signature, label, cluster, last_valid_height);
+                return Ok(signature);
             }
-            Err(err) => {
-                let text = err.to_string();
-                TxLog {
-                    flow,
-                    wire,
-                    cluster: Some(cluster),
-                }
-                .log_rejected(&text);
-                if let Some(signature) = first_signature(wire) {
-                    self.core.notices_push(NoticeKind::Transaction {
-                        flow,
-                        signature,
-                        cluster: cluster.clone(),
-                        label: label.to_string(),
-                        status: TxStatus::Rejected {
-                            error: text.clone(),
-                        },
-                    });
-                }
-                Err(err)
-            }
+            Err(err) => err,
+        };
+        let text = err.to_string();
+        let signature = first_signature(wire);
+        if let (true, Some(signature)) = (err.may_have_gone_out(), signature) {
+            log.log_unanswered(&signature.to_string(), &text);
+            self.follow_sent(rpc, flow, signature, label, cluster, last_valid_height);
+            return Err(SendFailure::Unknown {
+                signature,
+                why: format!("Transaction {signature} may still land: {text}"),
+            });
         }
+        log.log_rejected(&text);
+        // One already followed stays so: a node that refuses it now, as already
+        // processed or for a blockhash it has lost, says nothing of the first try.
+        if let Some(signature) = signature.filter(|signature| !self.is_followed(signature)) {
+            self.core.notices_push(NoticeKind::Transaction {
+                flow,
+                signature,
+                cluster: cluster.clone(),
+                label: label.to_string(),
+                status: TxStatus::Rejected {
+                    error: text.clone(),
+                },
+            });
+        }
+        Err(SendFailure::Failed(text))
+    }
+
+    /// Whether a notice is waiting for what becomes of `signature`.
+    fn is_followed(&self, signature: &Signature) -> bool {
+        self.core
+            .slices()
+            .notices
+            .get()
+            .items()
+            .iter()
+            .any(|notice| {
+                matches!(
+                    &notice.kind,
+                    NoticeKind::Transaction { signature: known, status: TxStatus::Sent, .. }
+                        if known == signature
+                )
+            })
+    }
+
+    /// A notice for `signature`, unless this is the same one sent again, and
+    /// the tracker on it.
+    fn follow_sent(
+        &self,
+        rpc: Arc<dyn SolanaRpc>,
+        flow: FlowId,
+        signature: Signature,
+        label: &str,
+        cluster: &Cluster,
+        last_valid_height: Option<u64>,
+    ) {
+        if !self.is_followed(&signature) {
+            self.core.notices_push(NoticeKind::Transaction {
+                flow,
+                signature,
+                cluster: cluster.clone(),
+                label: label.to_string(),
+                status: TxStatus::Sent,
+            });
+        }
+        let deadline = self.tracker.fresh_deadline();
+        self.tracker
+            .follow(rpc, cluster, signature, last_valid_height, deadline);
     }
 }
 
@@ -161,7 +201,7 @@ impl TxSubmit for Submitter {
         Box::pin(async move {
             answer
                 .await
-                .unwrap_or_else(|_| Err(RpcError::Message("the submit task stopped".into())))
+                .unwrap_or_else(|_| Err(SendFailure::Failed("the submit task stopped".into())))
         })
     }
 

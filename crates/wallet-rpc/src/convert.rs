@@ -41,8 +41,9 @@ pub fn signature_status(
     }
 }
 
-/// An error a client only gives as text. A timeout and a request that never
-/// reached the node are told apart from an answer the node gave.
+/// An error a client only gives as text. A timeout, a request that never
+/// reached the node and one that got no answer are told apart from an answer
+/// the node gave.
 pub fn rpc_error(err: impl ToString) -> RpcError {
     let message = err.to_string();
     let lower = message.to_ascii_lowercase();
@@ -50,17 +51,16 @@ pub fn rpc_error(err: impl ToString) -> RpcError {
         RpcError::Timeout
     } else if lower.contains("minimum context slot has not been reached") {
         RpcError::Behind
-    } else if [
-        "error sending request",
-        "failed to fetch",
-        "networkerror",
-        "connection refused",
-        "dns error",
-    ]
-    .iter()
-    .any(|words| lower.contains(words))
+    } else if ["connection refused", "dns error", "error trying to connect"]
+        .iter()
+        .any(|words| lower.contains(words))
     {
         RpcError::Unreachable(message)
+    } else if ["error sending request", "failed to fetch", "networkerror"]
+        .iter()
+        .any(|words| lower.contains(words))
+    {
+        RpcError::NoAnswer(message)
     } else {
         RpcError::Message(message)
     }
@@ -233,6 +233,20 @@ mod tests {
             RpcError::Timeout
         ));
         assert!(matches!(rpc_error("HTTP 403"), RpcError::Message(_)));
+    }
+
+    #[test]
+    fn a_request_that_never_left_is_told_from_one_that_got_no_answer() {
+        for never_left in ["connection refused", "dns error: no such host"] {
+            assert!(matches!(rpc_error(never_left), RpcError::Unreachable(_)));
+        }
+        for no_answer in [
+            "error sending request for url (http://node/)",
+            "TypeError: Failed to fetch",
+            "NetworkError when attempting to fetch resource.",
+        ] {
+            assert!(matches!(rpc_error(no_answer), RpcError::NoAnswer(_)));
+        }
     }
 
     #[test]
