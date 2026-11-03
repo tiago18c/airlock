@@ -76,7 +76,7 @@ v1 has been live on mainnet since epoch 1035 (15 Sep 2026, feature `txv1aq4pp281
 
 ### Ledger: the Solana app over USB HID
 
-**Finding the device.** USB vendor `0x2C97`. Outside the bootloader, the product id's high byte is the model: `0x40` Nano X, `0x50` Nano S Plus, `0x60` Stax, `0x70` Flex, `0x80` Nano Gen5. Bootloader ids are `0x0004` to `0x0008`. A device has several HID interfaces. APDUs go to interface 0 (vendor usage page `0xFF00`), not to the FIDO one.
+**Finding the device.** USB vendor `0x2C97`. Outside the bootloader, the product id's high byte is the model: `0x40` Nano X, `0x50` Nano S Plus, `0x60` Stax, `0x70` Flex, `0x80` Nano Gen5. Bootloader ids are `0x0004` to `0x0008`. A device has several HID interfaces. APDUs go to interface 0 (usage page `0xFFA0`), not to the FIDO one.
 
 **Framing.** 64-byte HID reports, written with a leading report id `0x00` through hidapi. Each report starts with the channel, `0x0101` (u16, big-endian), the tag `0x05`, and the packet index (u16 BE, from 0). The first report then carries the APDU's length (u16 BE). The reply comes back the same way and ends with a two-byte status word. BLE uses the same framing without the channel.
 
@@ -143,7 +143,7 @@ A chunk carries at most 255 bytes. P2 bit `0x01` (EXTEND) says the chunk continu
 
 **What the device shows.** Known programs in words. An unknown program gets a blind-signing warning, then its program id, accounts and data, a screen per instruction. A pending change lets the Safe 5 and Safe 7 skip that review, so a long transaction does not time out the host (`7918.added`). A transaction with more than one required signer gets a "requires N signers" screen first.
 
-**Licences.** `common/protob` is LGPL-3.0, so its `.proto` files are not copied. The thirty-odd messages are written by hand as `prost` structs ([D5](#decisions)). `trezor-client` (CC0) has Solana bindings, but it needs `rusb`, which builds libusb.
+**Licences.** `common/protob` is LGPL-3.0, so its `.proto` files are not copied. The dozen-odd messages are written by hand, over a small protobuf codec of our own ([D5](#decisions)). `trezor-client` (CC0) has Solana bindings, but it needs `rusb`, which builds libusb.
 
 ### Keystone: UR over QR
 
@@ -186,7 +186,7 @@ The firmware reads the payload itself (`classify_payload` in `rust/apps/solana/s
 
 **USB**, optional and later. `1209:3001`, once Air-Gap mode is off in the device's settings. 64-byte packets: CLA `00`, the command (u16 BE), the packet count (u16), the packet index (u16), a request id (u16), then up to 55 bytes. Commands: echo `1`, resolve UR `2`, lock status `3`, export address `4`, device version `5`, USB public key `6`. Resolve UR carries the same UR text as the QR codes (`KeystoneHQ/keystone-sdk-usb`, `hw-app-sol` and `hw-transport-usb`).
 
-**Libraries.** Keystone's `ur-registry` 1.0.9 (MIT) has these types. It also brings `minicbor` 0.19, `prost` 0.11 (Trezor's messages use 0.14), `libflate` pinned at 2.2.2, and every chain's types. The `ur` crate 0.5.2 (MIT) has UR, bytewords and fountain codes, and needs `minicbor` 2. `minicbor` is BlueOak-1.0.0, which is not on `deny.toml`'s list. The UR layer is small, so it becomes an `ur-codec` crate of our own, as `qr-codec` is ([D6](#decisions)).
+**Libraries.** Keystone's `ur-registry` 1.0.9 (MIT) has these types. It also brings `minicbor` 0.19, `prost` 0.11, `libflate` pinned at 2.2.2, and every chain's types. The `ur` crate 0.5.2 (MIT) has UR, bytewords and fountain codes, and needs `minicbor` 2. `minicbor` is BlueOak-1.0.0, which is not on `deny.toml`'s list. The UR layer is small, so it becomes an `ur-codec` crate of our own, as `qr-codec` is ([D6](#decisions)).
 
 ### Off-chain messages (OCMS v1)
 
@@ -210,7 +210,6 @@ The signature covers all of it. A transaction message can never start with `0xff
 | [`hidapi`](https://crates.io/crates/hidapi) | the alternative (C, built with `cc`); what Agave uses | 2.6.7, MIT |
 | [`nusb`](https://crates.io/crates/nusb) | Trezor and Keystone USB: pure Rust on Windows, macOS and Linux, and WebUSB in the browser | 0.2.9, MIT or Apache-2.0 |
 | [`trezor-thp`](https://crates.io/crates/trezor-thp), `trezor-noise-protocol`, `trezor-noise-rust-crypto` | THP for the Safe 7 | 0.1.1 MIT or Apache-2.0; 0.2.1 and 0.6.2 Unlicense |
-| [`prost`](https://crates.io/crates/prost) | Trezor's messages, as hand-written structs | 0.14, Apache-2.0 |
 | [`btleplug`](https://crates.io/crates/btleplug) | Bluetooth, later | 0.13, MIT, Apache-2.0 or BSD-3-Clause |
 | WebHID (`navigator.hid`), WebUSB (`navigator.usb`) | the web build; Chromium only, secure context, a click before `requestDevice` | `web-sys` behind `--cfg=web_sys_unstable_apis` |
 
@@ -417,7 +416,7 @@ flowchart TD
 | Crate | Holds | Does I/O |
 | --- | --- | --- |
 | `ur-codec` (new) | BC-UR: bytewords, CRC32, the Xoshiro256** fountain encoder and decoder, and a CBOR subset (uint, bytes, text, array, map, tag). No dependencies, as `qr-codec` has none | no |
-| `hw-protocol` (new) | `ledger`: APDUs, HID framing, status words. `trezor`: Codec v1 framing, the messages (hand-written `prost` structs), THP through `trezor-thp`, the session's state machine (button and passphrase requests). `keystone`: `sol-sign-request`, `sol-signature`, `crypto-multi-accounts`, `qr-hardware-call`, the USB framing. The `Link` traits a transport implements: `exchange(apdu)` for Ledger, 64-byte `write` and `read` for Trezor and Keystone. It knows bytes, not Solana | no |
+| `hw-protocol` (new) | `ledger`: APDUs, HID framing, status words. `trezor`: Codec v1 framing, the messages (written by hand over a small protobuf codec), THP through `trezor-thp`, the session's state machine (button and passphrase requests). `keystone`: `sol-sign-request`, `sol-signature`, `crypto-multi-accounts`, `qr-hardware-call`, the USB framing. Framing in both directions, so a transport only moves 64-byte packets. It knows bytes, not Solana | no |
 | `hw-transport` (new) | The only crate that opens a device. Native: Ledger through `async-hid` ([D8](#decisions)), Trezor and Keystone through `nusb`. Web: WebHID through `web-sys`, WebUSB through `nusb`. Listing and hot-plug. A Speculos link (TCP 9999) and a Trezor emulator link (UDP 21324) behind `emulators`, and a scripted fake behind `fake` | USB, HID |
 | `wallet-core` | `wallets/hardware.rs`: `HardwareVendor`, `DeviceSeen`, the minimum versions, `expected_display`, the path presets. The record, `RouteStep::DeviceKey`, `SignerState::Device` and the step. The OCMS v1 writer beside `site_message` | no |
 | `wallet-flows` | `device.rs`: open the Solana app, check the key at a path, sign a message or an off-chain message, read keys for discovery, each over a `Link` and tested with the fake. `discover.rs`: balances and history for discovery, over `SolanaRpc` | through the link |
@@ -579,7 +578,7 @@ D1, D3, D4, D6, D7, D9 and D12 were decided on 2026-11-03. The others are propos
 2. **D2. The Ledger hash is shown on screen**, and the dialog says before sending when the device will sign blind. Proposed.
 3. **D3. Legacy is an optional TODO, for later**: building it for devices that read no v1, and carrying it over QRS1. Whether it is needed at all is decided once Ledger's and Trezor's v1 releases are out. Solana means to retire legacy and v0 at some point. **Decided: later** ([H8](#h8-later-todo)).
 4. **D4. A Ledger or Trezor `signMessage` returns the whole OCMS v1 message as `signedMessage`, and their `signIn` is refused.** A site that already sends an OCMS v1 message for the account gets it signed as it is. **Decided.**
-5. **D5. Trezor's messages are hand-written `prost` structs**, not generated from the LGPL `.proto` files. Proposed.
+5. **D5. Trezor's messages are written by hand**, over a small protobuf codec in `hw-protocol`, not generated from the LGPL `.proto` files and with no `prost`. Done in H1.
 6. **D6. `ur-codec` is ours**, rather than Keystone's `ur-registry` or the `ur` crate. It needs no dependency, and `deny.toml` stays as it is. **Decided.**
 7. **D7. No vendor backends: Airlock does its own.** No Ledger trusted names, token descriptors or transaction checks, and no Trezor token definitions. Names and checks are Airlock's own, in its review. The devices show token accounts by address. **Decided.**
 8. **D8. Ledger HID through `async-hid`** (pure Rust) rather than `hidapi` (C, and what Agave uses). Pick after trying both on the three OSes. Proposed.

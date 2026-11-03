@@ -188,41 +188,6 @@ pub const PATH_SCHEMES: &[PathScheme] = &[
     },
 ];
 
-/// The indices of a path such as `m/44'/501'/0'/0'`, hardened ones with the
-/// top bit set, as Ledger and Trezor take them. Only paths under
-/// `44'/501'`, of two to five indices, are accepted: the Solana apps derive
-/// nothing else.
-pub fn parse_path(path: &str) -> Result<Vec<u32>, BadPath> {
-    let bad = || BadPath(path.to_string());
-    let rest = path.trim().strip_prefix("m/").ok_or_else(bad)?;
-    let indices = rest
-        .split('/')
-        .map(|part| {
-            let (number, hardened) = match part.strip_suffix(['\'', 'h', 'H']) {
-                Some(number) => (number, true),
-                None => (part, false),
-            };
-            let index = number.parse::<u32>().map_err(|_| bad())?;
-            if index >= HARDENED {
-                return Err(bad());
-            }
-            Ok(if hardened { index | HARDENED } else { index })
-        })
-        .collect::<Result<Vec<u32>, BadPath>>()?;
-    let solana = [44 | HARDENED, 501 | HARDENED];
-    if !(2..=5).contains(&indices.len()) || indices[..2] != solana {
-        return Err(bad());
-    }
-    Ok(indices)
-}
-
-/// The bit that marks a hardened index.
-pub const HARDENED: u32 = 0x8000_0000;
-
-#[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
-#[error("\"{0}\" is not a Solana path. It starts with m/44'/501' and has at most five parts.")]
-pub struct BadPath(String);
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -263,15 +228,8 @@ mod tests {
     }
 
     #[test]
-    fn only_solana_paths_are_taken() {
-        assert_eq!(
-            parse_path("m/44'/501'/3'/0'"),
-            Ok(vec![44 | HARDENED, 501 | HARDENED, 3 | HARDENED, HARDENED])
-        );
-        assert_eq!(parse_path("m/44'/501'").map(|path| path.len()), Ok(2));
-        assert!(parse_path("m/44'/60'/0'").is_err());
-        assert!(parse_path("44'/501'/0'").is_err());
-        assert!(parse_path("m/44'/501'/0'/0'/0'/0'").is_err());
+    fn a_scheme_numbers_its_accounts() {
         assert_eq!(PATH_SCHEMES[0].path(2), "m/44'/501'/2'/0'");
+        assert_eq!(PATH_SCHEMES[2].path(7), "m/44'/501'");
     }
 }

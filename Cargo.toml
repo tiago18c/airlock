@@ -19,6 +19,7 @@ members = [
   "crates/qr-codec",
   "crates/qr-codec-wasm",
   "crates/ur-codec",
+  "crates/hw-protocol",
   "crates/wallet-vault",
   "crates/wallet-flows",
   "crates/tokens-api",
@@ -54,6 +55,7 @@ bridge-protocol = { path = "crates/bridge-protocol" }
 idl-pack = { path = "crates/idl-pack" }
 qr-codec = { path = "crates/qr-codec" }
 ur-codec = { path = "crates/ur-codec" }
+hw-protocol = { path = "crates/hw-protocol" }
 wallet-core = { path = "crates/wallet-core" }
 wallet-flows = { path = "crates/wallet-flows" }
 wallet-vault = { path = "crates/wallet-vault" }

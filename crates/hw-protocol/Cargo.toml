@@ -1,0 +1,17 @@
+[package]
+name = "hw-protocol"
+version.workspace = true
+edition.workspace = true
+description = "What Ledger, Trezor and Keystone devices say, as bytes: APDUs, Trezor messages, Keystone UR types and their framing. No I/O"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ur-codec.workspace = true
+
+[features]
+# A scripted device for tests and screenshots. Release builds never turn it on.
+fake = []

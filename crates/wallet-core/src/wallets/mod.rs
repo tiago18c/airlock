@@ -25,10 +25,7 @@ pub mod vector;
 mod vector_wallets;
 
 pub use enroll::{enroll, EnrollError};
-pub use hardware::{
-    parse_path, BadPath, BadVersion, DeviceSeen, HardwareVendor, PathScheme, Version, HARDENED,
-    PATH_SCHEMES,
-};
+pub use hardware::{BadVersion, DeviceSeen, HardwareVendor, PathScheme, Version, PATH_SCHEMES};
 pub use import::NewSigner;
 pub use listing::WalletListStore;
 pub use record::{

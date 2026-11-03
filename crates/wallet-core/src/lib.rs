@@ -95,7 +95,7 @@ pub use wallets::{
     ShareableAccount, SigningRoute, Vault, VaultData, VectorSettings, WalletClass, WalletKind,
     WalletListStore, WalletRecord, WalletSummary,
 };
-pub use wallets::{parse_path, BadPath, BadVersion, PathScheme, Version, HARDENED, PATH_SCHEMES};
+pub use wallets::{BadVersion, PathScheme, Version, PATH_SCHEMES};
 
 pub use chain::{
     parse_nonce_account, ChainSnapshot, ConfirmationLevel, DiscoveredNonce, DiscoveredTokenAccount,
