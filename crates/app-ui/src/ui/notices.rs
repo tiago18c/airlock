@@ -36,6 +36,7 @@ impl NoticeFilter {
             Self::Other => matches!(
                 kind,
                 NoticeKind::VaultLocked { .. }
+                    | NoticeKind::VaultRecovered
                     | NoticeKind::SyncFailed { .. }
                     | NoticeKind::SaveFailed { .. }
             ),
@@ -319,6 +320,7 @@ fn NoticeKindDetail(notice: Notice) -> Element {
             }
         }
         NoticeKind::VaultLocked { .. }
+        | NoticeKind::VaultRecovered
         | NoticeKind::SyncFailed { .. }
         | NoticeKind::SaveFailed { .. } => rsx! {},
         NoticeKind::Transaction { .. } => rsx! {},

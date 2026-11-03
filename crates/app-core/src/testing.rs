@@ -120,6 +120,7 @@ struct Shared {
     files: Mutex<HashMap<String, Vec<u8>>>,
     writes: Mutex<HashMap<String, usize>>,
     refusing: Mutex<bool>,
+    refusing_reads: Mutex<bool>,
 }
 
 impl MemoryStorage {
@@ -160,6 +161,15 @@ impl MemoryStorage {
             .lock()
             .unwrap_or_else(PoisonError::into_inner) = refuse;
     }
+
+    /// Fail every read from now on, or stop failing them.
+    pub fn refuse_reads(&self, refuse: bool) {
+        *self
+            .shared
+            .refusing_reads
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner) = refuse;
+    }
 }
 
 impl Storage for MemoryStorage {
@@ -176,14 +186,32 @@ struct MemoryFile {
     shared: Arc<Shared>,
 }
 
-impl VaultStore for MemoryFile {
-    fn load(&self) -> Result<Option<Vec<u8>>, VaultError> {
+impl MemoryFile {
+    fn backup_name(&self) -> String {
+        format!("{}.bak", self.name)
+    }
+
+    fn read(&self, name: &str) -> Result<Option<Vec<u8>>, VaultError> {
+        if *self
+            .shared
+            .refusing_reads
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+        {
+            return Err(VaultError::Io("the store refused the read".into()));
+        }
         let files = self
             .shared
             .files
             .lock()
             .unwrap_or_else(PoisonError::into_inner);
-        Ok(files.get(&self.name).cloned())
+        Ok(files.get(name).cloned())
+    }
+}
+
+impl VaultStore for MemoryFile {
+    fn load(&self) -> Result<Option<Vec<u8>>, VaultError> {
+        self.read(&self.name)
     }
 
     fn save(&self, bytes: &[u8]) -> Result<(), VaultError> {
@@ -200,7 +228,9 @@ impl VaultStore for MemoryFile {
             .files
             .lock()
             .unwrap_or_else(PoisonError::into_inner);
-        files.insert(self.name.clone(), bytes.to_vec());
+        if let Some(previous) = files.insert(self.name.clone(), bytes.to_vec()) {
+            files.insert(self.backup_name(), previous);
+        }
         let mut writes = self
             .shared
             .writes
@@ -217,6 +247,20 @@ impl VaultStore for MemoryFile {
             .lock()
             .unwrap_or_else(PoisonError::into_inner);
         files.insert(format!("{}.unreadable", self.name), bytes.to_vec());
+        Ok(())
+    }
+
+    fn load_backup(&self) -> Result<Option<Vec<u8>>, VaultError> {
+        self.read(&self.backup_name())
+    }
+
+    fn discard_backup(&self) -> Result<(), VaultError> {
+        let mut files = self
+            .shared
+            .files
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner);
+        files.remove(&self.backup_name());
         Ok(())
     }
 }

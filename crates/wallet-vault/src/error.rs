@@ -10,6 +10,10 @@ pub enum VaultError {
     UnlockFailed,
     #[error("vault is not initialized")]
     NotInitialized,
+    #[error(
+        "A vault is already stored here, so no new one was made. The file has not been changed."
+    )]
+    AlreadyExists,
     #[error("unsupported vault version")]
     UnsupportedVersion,
     #[error("This vault was written by another build of the app (format {found}; this build reads format {expected}) and cannot be opened here. The file has not been changed. Open it with the build that made it, or move it aside to start a new vault.")]

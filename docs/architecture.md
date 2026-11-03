@@ -50,7 +50,7 @@ Each app is a thin `main.rs`: it picks its tabs and services and hands them to `
 | `book` | The address book |
 | `holdings` | Token accounts, balances and market data |
 | `network` | Cluster, mode, the airgap choice, probing, the RPC URL |
-| `vault` | Uninitialized, locked or unlocked, never secrets |
+| `vault` | Uninitialized, locked, unlocked, or unreadable, never secrets |
 | `settings` | Vector offered, the auto-lock timeout, close-to-tray, the tokens API key |
 | `bridge` | Pending browser requests (`BridgeQueue`) |
 | `notices` | What happened, newest first. Saved deferred to `notices.json` |
@@ -72,7 +72,7 @@ Each app is a thin `main.rs`: it picks its tabs and services and hands them to `
 | `Notifier` | OS toasts (`app-desktop`) | none | a recorder |
 | `Links` (open a URL outside the app) | the system browser | `window.open` with `noopener` | a recorder |
 
-Storage is `app_core::storage`: files under the data directory on desktop, `localStorage` on the web. Every file is JSON, kept as text in both places. `vault.json` is the encrypted vault: a header naming the key derivation (Argon2id, its cost and salt) and the cipher (XChaCha20-Poly1305, its nonce), and the ciphertext, all as `wallet_vault`'s seal writes them. The header is the cipher's associated data, so it cannot be changed without the password. Airlock Offline keeps its own data directory (`airlock-offline`), apart from the online app's. `AIRLOCK_DATA_DIR` (`AIRLOCK_OFFLINE_DATA_DIR` for Airlock Offline) overrides it, so tests and smoke runs never touch the real one. Futures on wasm are not `Send`, so core futures are bounded by `MaybeSend` (`Send` on native, nothing on wasm).
+Storage is `app_core::storage`: files under the data directory on desktop, `localStorage` on the web. Every file is JSON, kept as text in both places. `vault.json` is the encrypted vault: a header naming the key derivation (Argon2id, its cost and salt) and the cipher (XChaCha20-Poly1305, its nonce), and the ciphertext, all as `wallet_vault`'s seal writes them. The header is the cipher's associated data, so it cannot be changed without the password. A file that cannot be read says nothing of what it holds, so the vault counts as unreadable and no new one can be made over it: `Vault::create` refuses a store that holds anything or cannot be read, and unlocking tries the file again. A file that turns out damaged is opened from the `.bak` of the save before, set aside as `.unreadable`, and written whole again, with a notice. Whether a vault is stored is read once and kept, not read on every call. Airlock Offline keeps its own data directory (`airlock-offline`), apart from the online app's. `AIRLOCK_DATA_DIR` (`AIRLOCK_OFFLINE_DATA_DIR` for Airlock Offline) overrides it, so tests and smoke runs never touch the real one. Futures on wasm are not `Send`, so core futures are bounded by `MaybeSend` (`Send` on native, nothing on wasm).
 
 **Secrets stay behind a narrow handle.** The vault, unlocking and locking it, and signing are core commands. Services get a `PublicCore` handle that can read the published slices and run deferred commands. Its type has no way to reach key material, so a sync job could not touch a key even through a bug.
 

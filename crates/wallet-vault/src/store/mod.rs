@@ -23,6 +23,12 @@ pub trait VaultStore: Send + Sync {
         Err(VaultError::Io("this store cannot keep a copy".into()))
     }
 
+    /// What was saved before the last save, when the store keeps it, for when
+    /// what `load` gives turns out to be damaged.
+    fn load_backup(&self) -> Result<Option<Vec<u8>>, VaultError> {
+        Ok(None)
+    }
+
     /// Delete any copy of what was saved before the last save, such as the
     /// backup a file keeps. A store that keeps none has nothing to do.
     fn discard_backup(&self) -> Result<(), VaultError> {
@@ -42,6 +48,10 @@ impl<S: VaultStore + ?Sized> VaultStore for std::sync::Arc<S> {
 
     fn set_aside(&self, bytes: &[u8]) -> Result<(), VaultError> {
         (**self).set_aside(bytes)
+    }
+
+    fn load_backup(&self) -> Result<Option<Vec<u8>>, VaultError> {
+        (**self).load_backup()
     }
 
     fn discard_backup(&self) -> Result<(), VaultError> {
