@@ -131,6 +131,7 @@ The native services:
 | `airlock::vault` | unlock, lock (with the reason), never anything inside the vault |
 | `airlock::network` | probes, cluster corrections, mode changes |
 | `airlock::bridge` | requests in and out, by request code, method and origin |
+| `airlock::device` | a hardware wallet ready (vendor, model, app version), a signature made (path, pubkey), a refusal and why; never a key it does not show |
 | `airlock::tx` | every transaction stage, with its wire and signatures |
 | `airlock::sync` | job start, end, backoff, cancellation |
 | `airlock::ui` | UI-side errors that are not shown to the user |
@@ -184,10 +185,11 @@ Settings has **Open log folder** (desktop) and **Copy diagnostics**: the version
 The rules behind the table:
 
 1. `app-core` and the UI crates never depend on `wallet-rpc`, `bridge-host`, `interprocess` or an HTTP or websocket crate. CI checks this with `scripts/check-airgap-deps.sh` on `airlock-offline`.
-2. Logic that asks a node something belongs in `wallet-flows` over `SolanaRpc`. `app-online` schedules it, and the UI calls it through `Network`.
-3. Background work runs in the core's `Spawner`, never in a Dioxus scope. `spawn_app_task` is only for UI follow-up work that must not stop when a screen is left.
-4. Only the pump writes slice signals. Services change state through commands.
-5. Services get `PublicCore`. Only UI actions the user started reach the vault's secrets.
-6. A cache that can be fetched again is saved deferred. Anything only the user can recreate is saved checked.
-7. Everything logs through `tracing` under the rules above, and every transaction stage is logged under `airlock::tx`.
-8. Transactions are sent only through `tx::Submitter`.
+2. `app-core` and the UI crates never depend on `hw-transport`, the only crate that opens a device. Each shell hands `hw_transport::hub()` to `open_core`, and the core keeps it in `Ports::devices`. The jobs on a device are in `app-ui-kit`'s `actions::device`, over `wallet_flows::device`, and show in one dialog the shell mounts (`ui::DeviceDialog`).
+3. Logic that asks a node something belongs in `wallet-flows` over `SolanaRpc`. `app-online` schedules it, and the UI calls it through `Network`.
+4. Background work runs in the core's `Spawner`, never in a Dioxus scope. `spawn_app_task` is only for UI follow-up work that must not stop when a screen is left.
+5. Only the pump writes slice signals. Services change state through commands.
+6. Services get `PublicCore`. Only UI actions the user started reach the vault's secrets.
+7. A cache that can be fetched again is saved deferred. Anything only the user can recreate is saved checked.
+8. Everything logs through `tracing` under the rules above, and every transaction stage is logged under `airlock::tx`.
+9. Transactions are sent only through `tx::Submitter`.

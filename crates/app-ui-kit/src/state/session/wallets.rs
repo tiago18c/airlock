@@ -25,6 +25,13 @@ impl Session {
         self.core().with_workspace(wallet_core::vector::offered)
     }
 
+    /// The hardware wallet vendors Add wallet offers. Settings turns on the
+    /// ones whose v1 support is a pre-release build.
+    pub fn hardware_offered(&self) -> Vec<wallet_core::HardwareVendor> {
+        let _ = self.settings.read();
+        self.core().with_workspace(wallet_core::hardware::offered)
+    }
+
     /// Whether `tx` asks a programmatic signer or a Squads vault of this
     /// vault to sign, and how to rebuild it if so. Before there is a vault
     /// there are no wallets, so it finds nothing.
@@ -167,6 +174,12 @@ impl Session {
         );
         keys.extend(self.made_here_pubkeys());
         keys
+    }
+
+    /// Keys on hardware wallets of this vault, with their vendor, locked or
+    /// not. They sign on the device.
+    pub fn local_device_keys(&self) -> Vec<(Pubkey, wallet_core::HardwareVendor)> {
+        (self.wallets)().local_device_keys.clone()
     }
 
     /// Every wallet address this device knows, including offline ones.
@@ -575,6 +588,22 @@ impl Session {
             "add_offline_wallet",
             |data| data.add_offline_wallet(label.clone(), pubkey, fee_payer),
             |book, _| wallet_core::name_offline_wallet(book, pubkey, label.clone()),
+        )
+    }
+
+    /// Store hardware wallets, each a key read from its device, and name
+    /// each address in the book. All of them, or none.
+    pub fn add_hardware_wallets(&self, wallets: Vec<WalletRecord>) -> Result<(), EnrollError> {
+        self.enroll(
+            "add_hardware_wallets",
+            |data| data.add_hardware_wallets(&wallets),
+            |book, _| {
+                for wallet in &wallets {
+                    if let Some(address) = wallet.address() {
+                        wallet_core::name_offline_wallet(book, address, wallet.label.clone());
+                    }
+                }
+            },
         )
     }
 

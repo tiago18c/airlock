@@ -876,3 +876,283 @@ async fn each_replacement_is_a_new_generation_and_a_signature_is_not() {
         assert!(!form.still_on_screen(again));
     });
 }
+
+/// A Ledger made of software: the Solana app 1.18 open, one key at every
+/// path, and it signs whatever it is sent, as a user who confirms would.
+mod soft_ledger {
+    use super::*;
+    use hw_protocol::ledger::{frame, Unframer};
+    use hw_protocol::link::{Connected, DeviceHub, DeviceKind, LinkError, LinkFuture, PacketLink};
+    use std::collections::VecDeque;
+    use std::sync::Mutex;
+    use wallet_core::{KeypairSigner, WalletSigner};
+
+    pub struct SoftLedger {
+        key: KeypairSigner,
+        reject: bool,
+        unframer: Unframer,
+        outgoing: VecDeque<[u8; 64]>,
+        signing: Vec<u8>,
+    }
+
+    impl SoftLedger {
+        fn answer(&mut self, apdu: &[u8]) -> Vec<u8> {
+            let (head, data) = apdu.split_at(5);
+            let ok = |mut data: Vec<u8>| {
+                data.extend_from_slice(&[0x90, 0x00]);
+                data
+            };
+            match (head[0], head[1]) {
+                (0xb0, 0x01) => {
+                    let mut out = vec![1, 6];
+                    out.extend_from_slice(b"Solana");
+                    out.push(6);
+                    out.extend_from_slice(b"1.18.0");
+                    ok(out)
+                }
+                (0xe0, 0x04) => ok(vec![1, 0, 1, 18, 0]),
+                (0xe0, 0x05) => ok(self.key.pubkey().to_bytes().to_vec()),
+                (0xe0, 0x06 | 0x07) => {
+                    self.signing.extend_from_slice(data);
+                    // More chunks follow.
+                    if head[3] & 0x02 != 0 {
+                        return ok(Vec::new());
+                    }
+                    if self.reject {
+                        return vec![0x69, 0x85];
+                    }
+                    let whole = std::mem::take(&mut self.signing);
+                    let indices = usize::from(whole[1]);
+                    let message = &whole[2 + 4 * indices..];
+                    let signature = self.key.try_sign_message(message).unwrap();
+                    ok(signature.as_ref().to_vec())
+                }
+                _ => vec![0x6d, 0x00],
+            }
+        }
+    }
+
+    impl PacketLink for SoftLedger {
+        fn write(&mut self, packet: [u8; 64]) -> LinkFuture<'_, Result<(), LinkError>> {
+            Box::pin(async move {
+                if let Some(apdu) = self.unframer.push(&packet).unwrap() {
+                    self.unframer = Unframer::default();
+                    let reply = self.answer(&apdu);
+                    self.outgoing.extend(frame(&reply));
+                }
+                Ok(())
+            })
+        }
+
+        fn read(&mut self) -> LinkFuture<'_, Result<[u8; 64], LinkError>> {
+            Box::pin(async move { self.outgoing.pop_front().ok_or(LinkError::Disconnected) })
+        }
+    }
+
+    /// One soft Ledger, plugged in.
+    pub struct SoftHub {
+        pub seed: [u8; 32],
+        pub reject: bool,
+        pub opened: Mutex<usize>,
+    }
+
+    impl DeviceHub for SoftHub {
+        fn list(&self) -> LinkFuture<'_, Result<Vec<Connected>, LinkError>> {
+            Box::pin(async {
+                Ok(vec![Connected {
+                    id: "soft".into(),
+                    kind: DeviceKind::Ledger,
+                    model: Some("Nano S Plus".into()),
+                }])
+            })
+        }
+
+        fn open<'a>(
+            &'a self,
+            _id: &'a str,
+        ) -> LinkFuture<'a, Result<Box<dyn PacketLink>, LinkError>> {
+            *self.opened.lock().unwrap() += 1;
+            let ledger = SoftLedger {
+                key: KeypairSigner::from_seed(&self.seed).unwrap(),
+                reject: self.reject,
+                unframer: Unframer::default(),
+                outgoing: VecDeque::new(),
+                signing: Vec::new(),
+            };
+            Box::pin(async move { Ok(Box::new(ledger) as Box<dyn PacketLink>) })
+        }
+    }
+}
+
+/// A window whose vault holds one Ledger wallet, on a soft Ledger.
+async fn ledger_screen(reject: bool) -> (Screen, Arc<soft_ledger::SoftHub>) {
+    let hub = Arc::new(soft_ledger::SoftHub {
+        seed: SEED,
+        reject,
+        opened: std::sync::Mutex::new(0),
+    });
+    let kit = app_core::testing::kit_with_devices(hub.clone());
+    kit.core.create_vault("pw").unwrap();
+    let key = wallet_core::KeypairSigner::from_seed(&SEED).unwrap();
+    let key = wallet_core::WalletSigner::pubkey(&key);
+    let ledger = wallet_core::WalletRecord::hardware(
+        "Ledger",
+        HardwareVendor::Ledger,
+        key,
+        "m/44'/501'/0'/0'",
+    );
+    kit.core
+        .enroll(
+            "add_hardware_wallets",
+            |data| data.add_hardware_wallets(std::slice::from_ref(&ledger)),
+            |book, _| wallet_core::name_offline_wallet(book, key, "Ledger"),
+        )
+        .unwrap();
+    let rpc = Arc::new(good_node());
+    let session = Rc::new(Cell::new(None));
+    let mut dom = VirtualDom::new_with_props(
+        app,
+        Held {
+            core: kit.core.clone(),
+            rpc: rpc.clone(),
+            submit: SubmitHandle::none(),
+            session: session.clone(),
+        },
+    );
+    dom.rebuild_in_place();
+    let session = session.get().unwrap();
+    let mut screen = Screen {
+        kit,
+        dom,
+        session,
+        rpc,
+        key,
+    };
+    screen.settle().await;
+    (screen, hub)
+}
+
+#[tokio::test]
+async fn sign_asks_the_ledger_and_writes_in_its_checked_signature() {
+    let (mut screen, hub) = ledger_screen(false).await;
+    let wire = screen.transfer(1);
+    screen.load(&wire, TxSource::Pasted);
+
+    let busy = screen.busy();
+    screen.act(|| sign_loaded(screen.session, busy, BlockhashOnSign::Keep));
+    screen.settle().await;
+
+    assert!(is_signed(&screen.wire().unwrap()));
+    assert_eq!(*hub.opened.lock().unwrap(), 1);
+    // The dialog closed once the signature was in.
+    screen.act(|| assert!(screen.session.device.peek().is_none()));
+    screen.act(|| assert!(!*busy.peek()));
+}
+
+#[tokio::test]
+async fn a_rejection_on_the_ledger_signs_nothing_and_says_so() {
+    let (mut screen, _hub) = ledger_screen(true).await;
+    let wire = screen.transfer(1);
+    screen.load(&wire, TxSource::Pasted);
+
+    let busy = screen.busy();
+    screen.act(|| sign_loaded(screen.session, busy, BlockhashOnSign::Keep));
+    screen.settle().await;
+
+    assert_eq!(screen.wire().unwrap(), wire);
+    let error = screen.act(|| screen.form().error.peek().clone()).unwrap();
+    assert!(error.contains("rejected"), "{error}");
+    let stage = screen.act(|| screen.session.device.peek().clone().map(|run| run.stage));
+    assert!(matches!(
+        stage,
+        Some(crate::state::device::DeviceStage::Failed(_))
+    ));
+}
+
+#[tokio::test]
+async fn closing_the_dialog_stops_waiting_for_a_ledger_and_says_nothing() {
+    // No Ledger answers, so the dialog waits on the first step.
+    let hub = Arc::new(NoLedger);
+    let kit = app_core::testing::kit_with_devices(hub);
+    kit.core.create_vault("pw").unwrap();
+    let key =
+        wallet_core::WalletSigner::pubkey(&wallet_core::KeypairSigner::from_seed(&SEED).unwrap());
+    let ledger = wallet_core::WalletRecord::hardware(
+        "Ledger",
+        HardwareVendor::Ledger,
+        key,
+        "m/44'/501'/0'/0'",
+    );
+    kit.core
+        .enroll(
+            "add_hardware_wallets",
+            |data| data.add_hardware_wallets(std::slice::from_ref(&ledger)),
+            |book, _| wallet_core::name_offline_wallet(book, key, "Ledger"),
+        )
+        .unwrap();
+    let rpc = Arc::new(good_node());
+    let session = Rc::new(Cell::new(None));
+    let mut dom = VirtualDom::new_with_props(
+        app,
+        Held {
+            core: kit.core.clone(),
+            rpc: rpc.clone(),
+            submit: SubmitHandle::none(),
+            session: session.clone(),
+        },
+    );
+    dom.rebuild_in_place();
+    let session = session.get().unwrap();
+    let mut screen = Screen {
+        kit,
+        dom,
+        session,
+        rpc,
+        key,
+    };
+    screen.settle().await;
+    let wire = screen.transfer(1);
+    screen.load(&wire, TxSource::Pasted);
+
+    let busy = screen.busy();
+    screen.act(|| sign_loaded(screen.session, busy, BlockhashOnSign::Keep));
+    screen.settle().await;
+    let stage = screen.act(|| screen.session.device.peek().clone().map(|run| run.stage));
+    assert!(matches!(
+        stage,
+        Some(crate::state::device::DeviceStage::Find(_))
+    ));
+
+    screen.act(|| crate::actions::device::cancel(screen.session));
+    // The job sees it at its next look for the device.
+    tokio::time::sleep(Duration::from_millis(1000)).await;
+    screen.settle().await;
+    screen.act(|| assert!(screen.session.device.peek().is_none()));
+    screen.act(|| assert!(!*busy.peek()));
+    screen.act(|| assert_eq!(*screen.form().error.peek(), None));
+    assert_eq!(screen.wire().unwrap(), wire);
+}
+
+/// A machine with no Ledger plugged in.
+struct NoLedger;
+
+impl hw_protocol::link::DeviceHub for NoLedger {
+    fn list(
+        &self,
+    ) -> hw_protocol::link::LinkFuture<
+        '_,
+        Result<Vec<hw_protocol::link::Connected>, hw_protocol::link::LinkError>,
+    > {
+        Box::pin(async { Ok(Vec::new()) })
+    }
+
+    fn open<'a>(
+        &'a self,
+        _id: &'a str,
+    ) -> hw_protocol::link::LinkFuture<
+        'a,
+        Result<Box<dyn hw_protocol::link::PacketLink>, hw_protocol::link::LinkError>,
+    > {
+        Box::pin(async { Err(hw_protocol::link::LinkError::Disconnected) })
+    }
+}

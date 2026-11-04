@@ -15,6 +15,7 @@ base64.workspace = true
 bridge-protocol.workspace = true
 dioxus.workspace = true
 hex.workspace = true
+hw-protocol.workspace = true
 qr-codec.workspace = true
 serde.workspace = true
 serde_json = "1"

@@ -27,8 +27,18 @@ pub fn kit() -> Kit {
     kit_on(MemoryStorage::default())
 }
 
+/// A core on empty memory storage that opens hardware wallets through
+/// `devices`, a fake one in a test.
+pub fn kit_with_devices(devices: Arc<dyn hw_protocol::link::DeviceHub>) -> Kit {
+    kit_from(MemoryStorage::default(), Some(devices))
+}
+
 /// A core on `storage`, which may already hold files.
 pub fn kit_on(storage: MemoryStorage) -> Kit {
+    kit_from(storage, None)
+}
+
+fn kit_from(storage: MemoryStorage, devices: Option<Arc<dyn hw_protocol::link::DeviceHub>>) -> Kit {
     let clock = Arc::new(ManualClock::default());
     let notifier = Arc::new(RecordingNotifier::default());
     let links = Arc::new(RecordingLinks::default());
@@ -38,7 +48,7 @@ pub fn kit_on(storage: MemoryStorage) -> Kit {
         notifier: notifier.clone(),
         storage: Arc::new(storage.clone()),
         links: links.clone(),
-        devices: None,
+        devices,
     });
     Kit {
         core,

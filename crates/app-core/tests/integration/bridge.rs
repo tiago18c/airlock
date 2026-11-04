@@ -150,6 +150,7 @@ fn account(byte: u8) -> wallet_core::ShareableAccount {
         label: format!("Wallet {byte}"),
         contract: false,
         summary: String::new(),
+        on_device: None,
     }
 }
 

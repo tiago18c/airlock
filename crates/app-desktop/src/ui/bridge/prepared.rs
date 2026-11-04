@@ -81,6 +81,8 @@ pub(in crate::ui) struct PreparedRequest {
     pub simulation: Signal<SimState>,
     /// Who signs if this device signs it now.
     pub signs_with: Vec<Pubkey>,
+    /// The vendor of the hardware wallet Sign asks first, when one does.
+    pub on_device: Option<wallet_core::HardwareVendor>,
     /// It was moved onto an offline key's durable nonce on the way here.
     pub onto_nonce: bool,
     pub verdict: Option<wallet_core::QuickSign>,
@@ -294,10 +296,11 @@ pub(in crate::ui) fn use_prepared_request(
     let locked = session.is_initialized() && !session.is_unlocked();
     let vector_here = session.local_vector_accounts();
     let local_keys = session.local_signer_pubkeys();
+    let devices = session.local_device_keys();
     let local = wallet_core::LocalKeys {
         keys: &local_keys,
         vector: &vector_here,
-        devices: &[],
+        devices: &devices,
     };
     let ctx = wallet_core::relay::AuthContext {
         vector: &vector_known,
@@ -322,10 +325,20 @@ pub(in crate::ui) fn use_prepared_request(
     let mut signs_with: Vec<Pubkey> = status
         .iter()
         .flat_map(|status| &status.lines)
-        .filter(|line| line.state == wallet_core::SignerState::Local)
+        .filter(|line| {
+            matches!(
+                line.state,
+                wallet_core::SignerState::Local | wallet_core::SignerState::Device
+            )
+        })
         .map(|line| line.authority_chip())
         .collect();
     signs_with.dedup();
+    let on_device = status
+        .iter()
+        .flat_map(|status| &status.lines)
+        .find(|line| line.state == wallet_core::SignerState::Device)
+        .and_then(|line| line.on_device);
     let lifetime = shown.as_ref().map(wallet_core::tx_lifetime);
     // The modal's own countdown. A blockhash this app chose (a rebuild) has
     // an exact expiry. A site's is estimated from when the request arrived,
@@ -426,6 +439,7 @@ pub(in crate::ui) fn use_prepared_request(
         cautious_sign: modal.cautious_sign,
         simulation,
         signs_with,
+        on_device,
         onto_nonce: ready.as_ref().is_some_and(|ready| ready.onto_nonce),
         verdict,
         step,

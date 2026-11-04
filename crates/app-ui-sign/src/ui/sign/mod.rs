@@ -268,13 +268,28 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     let inspect = (form.view)() == SignView::Inspect;
     let known = (form.vector)();
     let vector_here = session.local_vector_accounts();
+    let devices = session.local_device_keys();
     let local = LocalKeys {
         keys: &session.local_signer_pubkeys(),
         vector: &vector_here,
-        devices: &[],
+        devices: &devices,
     };
     let ctx = AuthContext { vector: &known };
     let status = signing_status_in(tx.as_ref(), &local, &ctx);
+    // Keys on a hardware wallet of this vault that Sign asks next, once
+    // every authorization is in.
+    let on_device = if next_step(&status) == NextSignature::Transaction {
+        device_lines(tx.as_ref(), &known, &devices)
+    } else {
+        Vec::new()
+    };
+    let device_vendor = on_device.first().and_then(|key| {
+        devices
+            .iter()
+            .find(|(held, _)| held == key)
+            .map(|(_, vendor)| *vendor)
+    });
+    let signable_here = status.signable + on_device.len();
     // A programmatic signer or a Squads vault among the signers. No key
     // signs as either, so the transaction has to be rebuilt first.
     let plan = session
@@ -300,8 +315,15 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
 
     // Sign moves a relayed transaction to a fresh blockhash by itself, so an
     // expired one does not hold Sign back. Vector keys are not transaction
-    // signers, so wants_fresh_blockhash only needs the hot keys.
-    let refreshes_on_sign = online && wants_fresh_blockhash(tx.as_ref(), local.keys);
+    // signers, so wants_fresh_blockhash only needs the keys that sign it,
+    // here and on a device.
+    let signing_keys: Vec<Pubkey> = local
+        .keys
+        .iter()
+        .copied()
+        .chain(on_device.iter().copied())
+        .collect();
+    let refreshes_on_sign = online && wants_fresh_blockhash(tx.as_ref(), &signing_keys);
     let from_browser = matches!(source, Some(TxSource::Browser { .. }));
     let app_built = matches!(
         source,
@@ -324,7 +346,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         refreshes_on_sign,
         clock_expired: clock_expired(),
         step,
-        signable: status.signable,
+        signable: signable_here,
         untouched: !tx.signers.iter().any(|slot| slot.valid),
         relayed,
         from_browser,
@@ -373,7 +395,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         in_batch: batch.is_some(),
         already_kept: batch_signed,
         site_waiting,
-        signable: status.signable,
+        signable: signable_here,
         needs_rebuild,
         waiting_for_authority: status.waiting_for_authority,
         step,
@@ -470,6 +492,8 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
 
         SignActions {
             status: status.clone(),
+            on_device: on_device.len(),
+            device_vendor,
             step,
             online,
             busy,
@@ -549,6 +573,11 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     }
 }
 
+/// A job on a hardware wallet is on screen.
+fn device_busy(session: Session) -> bool {
+    crate::actions::device::busy(session)
+}
+
 /// Where the simulation stands, for the steps.
 fn simulation_stage(state: &SimState, online: bool) -> SimulationStage {
     match state {
@@ -591,6 +620,10 @@ fn SignModal(title: &'static str, mut open: Signal<bool>, children: Element) -> 
 #[component]
 fn SignActions(
     status: SigningStatus,
+    /// Signatures a hardware wallet of this vault adds on this press.
+    on_device: usize,
+    /// The vendor of the first of them.
+    device_vendor: Option<wallet_core::HardwareVendor>,
     step: NextSignature,
     online: bool,
     busy: Signal<bool>,
@@ -617,9 +650,9 @@ fn SignActions(
     let buttons = ButtonFacts {
         online,
         needs_rebuild,
-        busy: busy(),
+        busy: busy() || device_busy(session),
         step,
-        signable: status.signable,
+        signable: status.signable + on_device,
         complete: status.complete(),
         refreshes_on_sign,
         blockhash,
@@ -643,13 +676,16 @@ fn SignActions(
                 "Sign authorization".into()
             }
         }
-        NextSignature::Transaction => {
-            if status.signable > 1 {
-                format!("Sign transaction ({})", status.signable)
-            } else {
-                "Sign transaction".into()
+        NextSignature::Transaction => match (status.signable, on_device, device_vendor) {
+            (0, 1, Some(vendor)) => format!("Sign on {}", vendor.label()),
+            (0, count, Some(vendor)) if count > 1 => {
+                format!("Sign on {} ({count})", vendor.label())
             }
-        }
+            (here, device, _) if here + device > 1 => {
+                format!("Sign transaction ({})", here + device)
+            }
+            _ => "Sign transaction".into(),
+        },
         NextSignature::Nothing => "Sign".into(),
     };
 
@@ -701,6 +737,10 @@ fn SignActions(
         } else if elsewhere > 0 && elsewhere == site_signs && status.signable == 0 {
             p { class: "hint",
                 "{elsewhere} signature(s) are the site's: it signs for the account(s) it creates, such as a new mint, once it has the transaction back."
+            }
+        } else if on_device > 0 && status.signable == 0 && !status.complete() {
+            p { class: "hint",
+                "Sign asks your hardware wallet for its signature. Keep it connected and unlocked, with the Solana app open."
             }
         } else if elsewhere > 0 && status.signable == 0 {
             p { class: "hint",

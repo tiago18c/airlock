@@ -1,6 +1,7 @@
 //! What the app holds while it runs: the core and its pumped slices, and what
 //! each screen's forms contain.
 
+pub mod device;
 pub mod forms;
 pub mod online;
 pub mod proposals;
@@ -165,6 +166,7 @@ pub fn use_session(core: CopyValue<Core>, online: OnlineHooks, submitter: Submit
     use_forgetting_on_lock(core, forms);
     let gate = use_signal(|| true);
     let unlock_prompt = use_signal(|| None);
+    let device = use_signal(|| None);
     let save_error = use_signal(|| None::<String>);
     use_save_failures(core, save_error);
     let proposals = use_signal(|| None::<ProposalsOpen>);
@@ -200,6 +202,7 @@ pub fn use_session(core: CopyValue<Core>, online: OnlineHooks, submitter: Submit
             save_error,
             gate,
             unlock_prompt,
+            device,
             online,
             submitter,
             proposals,

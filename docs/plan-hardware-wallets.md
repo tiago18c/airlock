@@ -59,6 +59,8 @@ v1 has been live on mainnet since epoch 1035 (15 Sep 2026, feature `txv1aq4pp281
 
 ## Where things stand
 
+Done so far (H0, H1, most of H2): the record and routing, `ur-codec`, `hw-protocol`, `hw-transport` for a Ledger over HID, `wallet_flows::device`, the device dialog, Add wallet → Hardware → Ledger, Show on device, signing on the Sign screen and in the request modal, messages as OCMS v1 with sign-in refused, the Settings switch (D13) and the Linux udev rule. Left in H2: Speculos in CI, the notarized macOS check, and the device checklist. What follows is how things stood before H0.
+
 - `crates/wallet-core/src/wallets/record.rs` has `HardwareVendor { Ledger }` and `WalletKind::Hardware { vendor, paths }`, with no pubkey. `WalletRecord::address()` is `None` for it (`record_keys.rs`), so `signing_route` refuses it with `RouteError::Hardware` ("Hardware wallets are not supported yet."). `can_sign` and `can_pay` are false. `adapt::plan` and `proposals::combined` skip it, and `shared_keys` gives it nothing. The screens cannot make one, so the shape can change without a migration; only `proposals/tests/combined.rs` builds one.
 - `WalletClass::Hardware`, `WalletSort::Hardware` and `Glyph::Device` exist. Wallets shows an empty "Hardware wallets" group that says they are not supported, and Add wallet has a Hardware tab that says import is not available yet (`app-ui-wallets/src/ui/wallets/add_modal.rs`, `mod.rs`).
 - Everything this app builds is v1 (`tx::builder::compile_v1`, `compile_v1_budget`), and so is every rebuild (`wallet_flows::adapt`). A site's legacy or v0 transaction is signed as it is only when every unsigned slot is a hot key here (`wallet_flows::request::route_created`). Otherwise it is converted to v1 (`tx::convert::to_v1`).

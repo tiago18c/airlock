@@ -2,8 +2,8 @@ use super::lock::VaultUnlock;
 use crate::state::forms::{AddWalletMode, SendOpen, WalletForm};
 use crate::state::session::{Session, WalletSummary};
 use crate::ui::wallets::kinds::{
-    payers, ContractWalletRow, CurrentChip, ExportKeyButton, ExportKeysModal, KeyImportForm,
-    OfflineForm, ProgrammaticForm, SquadsForm, VectorForm,
+    payers, ContractWalletRow, CurrentChip, ExportKeyButton, ExportKeysModal, HardwareForm,
+    KeyImportForm, OfflineForm, ProgrammaticForm, SquadsForm, VectorForm,
 };
 use crate::ui::{
     format_sol, Address, AddressHeader, CopyButton, Glyph, HelpTip, Icon, WalletPicker,
@@ -56,6 +56,7 @@ pub fn WalletsPanel() -> Element {
     };
     let hot = of_class(WalletClass::Hot);
     let offline = of_class(WalletClass::Offline);
+    let hardware = of_class(WalletClass::Hardware);
     let contracts = of_class(WalletClass::SmartContract);
 
     rsx! {
@@ -126,7 +127,20 @@ pub fn WalletsPanel() -> Element {
                     "Hardware wallets"
                     HelpTip { text: "A hardware wallet keeps its key on a separate signing device that is plugged in or paired when it is time to sign." }
                 }
-                p { class: "note", "Hardware wallets are not supported yet." }
+                if hardware.is_empty() {
+                    p { class: "note",
+                        if session.hardware_offered().is_empty() {
+                            "None yet. A Ledger is offered once Pre-release hardware wallets is on in Settings, until Ledger releases the Solana app 1.18."
+                        } else {
+                            "None yet. Add one with Add wallet, Hardware."
+                        }
+                    }
+                }
+                ul { class: "tree",
+                    for wallet in hardware {
+                        WalletRow { key: "{wallet.id}", current: current == Some(wallet.id), wallet }
+                    }
+                }
 
                 h3 { class: "group-title",
                     "Smart contract wallets"

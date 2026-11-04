@@ -17,7 +17,7 @@ A wallet record (`wallet_core::wallets::record::WalletKind`) says where the key 
 | Programmatic signer | Nowhere. The address is derived from an authority key | The authority, over an *authorization message* inside the transaction | The wallet set as its fee payer |
 | Vector wallet | Held in the record, a hot wallet of this device, or elsewhere | The authority, over a *digest* of the relay transaction's instructions (an `Advance` slot) | The wallet set as its fee payer |
 | Squads multisig | Nowhere. The vault is a program-derived address | A member, by creating, approving and executing a *proposal* | The wallet set as its fee payer |
-| Hardware (`Hardware`) | On a Ledger, Trezor or Keystone the user holds | The device, over the transaction, once the user confirms on it (`RouteStep::DeviceKey`). Nothing can add one yet: see [plan-hardware-wallets.md](plan-hardware-wallets.md) | The wallet itself, or the wallet set as its fee payer |
+| Hardware (`Hardware`) | On a Ledger the user holds. Trezor and Keystone are planned: see [plan-hardware-wallets.md](plan-hardware-wallets.md) | The device, over the transaction, once the user confirms on it (`RouteStep::DeviceKey`) | The wallet itself, or the wallet set as its fee payer |
 
 A Vector wallet and an Ed25519 programmatic signer share `WalletKind::Programmatic`; the protocol field says which. Settings turns Vector wallets on. Schemes, the program deployment and the decisions behind them are in [vector-fork.md](vector-fork.md).
 
@@ -242,6 +242,14 @@ Approving a Squads proposal, running one, and voting on a Realms proposal sign t
 - The online device passes that on in the context note, as the raw account. The offline device checks that the account fits the proposal being approved and shows it as what the other device says. It cannot check that this is what the chain holds, since anything can be written for an address, so it never takes the place of the checkbox below.
 - When no node has said what it holds, which is always so on a device with no network, Sign waits until the user ticks that they have checked what it does somewhere they trust. That is for one message, and a new note unticks it.
 - What is stored for a config change, a batch or a Realms proposal is not read. Those get the warning and the checkbox with nothing to show.
+
+### Hardware wallet
+
+Add wallet → Hardware reads the keys of a path scheme from the device, ten at a time, and stores the ticked ones with their paths. **Check on device**, and **Show on device** on the row, show the address on the device to compare with the screen. A Ledger is offered while **Pre-release hardware wallets** is on in Settings: Airlock needs its Solana app 1.18, the first that reads v1, which is only a developer build so far.
+
+On Sign, the vault's keys sign first. Then each key on a device that has not signed is asked in turn, fee payer first, in the device dialog: connect and unlock the Ledger, open the Solana app (Airlock asks the Ledger to open it), check that the key at the path is this wallet's, then confirm on the device. The dialog shows the hash a Ledger shows when it signs blind. The signature is checked against the key and the message before it goes in. A rejection, a locked device, another app holding it or an app below 1.18 each stop the press with their own sentence, and nothing the device did not sign is changed. Sign reads **Sign on Ledger** when only the device signs.
+
+A message from a site is signed inside an offchain message, version 1, that names the account (`site_message::device_message`), and the site gets that whole message back as `signedMessage`. The Ledger signs only text. A Ledger account cannot sign in: a site would read the header as the sign-in's text, so the bridge refuses a sign-in for it and the sign-in modal does not list it.
 
 ### Programmatic signer
 
@@ -681,7 +689,7 @@ A summary on either device is only as good as the IDLs it was read with. IDLs fe
 - **A browser request completed from another device is never answered.** See [Offline wallet](#offline-wallet-1). The fix is to return the transaction to the site whenever an inserted signature completes it, not only after a local Sign.
 - **A site's blockhash outlives no QR round trip** unless the offline key has a durable nonce and is the only signer missing. A request that also waits on another outside key, or that a site already signed, stays on its blockhash.
 - **Transactions prepared on one durable nonce are not tracked.** Only the first to land is valid. Nothing warns before a second is made on the same nonce.
-- **Not implemented:** hardware wallets.
+- **Hardware wallets are Ledger only.** Trezor and Keystone, a hardware key as a programmatic signer's authority, and the web build are still to come ([plan-hardware-wallets.md](plan-hardware-wallets.md)). A Ledger's signature made on Airlock Offline goes out over QRS1 as any other.
 - **A node can lie, and the online device cannot tell.** See [the threat model](browser-bridge.md#a-node-that-lies).
 - **Code that ran in the window could still get something out**, through the default browser or WebRTC. What the screens show does not run as code, and a policy holds the rest. See [the threat model](browser-bridge.md#threats).
 - **An approval on an offline device is taken on trust.** It signs a proposal's address, and what the proposal holds can only be what the other device says. See [What a transaction does not hold](#what-a-transaction-does-not-hold).

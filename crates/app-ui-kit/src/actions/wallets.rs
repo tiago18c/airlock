@@ -383,6 +383,7 @@ mod tests {
             derivation_path: None,
             durable_nonce: None,
             default_path: None,
+            on_device: None,
         }
     }
 

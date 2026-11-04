@@ -24,6 +24,11 @@ pub struct Workspace {
     /// until it is turned on in Settings. See `vector::offered`.
     #[serde(default)]
     pub vector_wallets: bool,
+    /// Offer the hardware wallets whose v1 support is only in a pre-release
+    /// build so far. Off until it is turned on in Settings. See
+    /// `hardware::offered`.
+    #[serde(default)]
+    pub prerelease_devices: bool,
     /// Seconds the vault may stay unlocked while the window is hidden, or
     /// idle while visible. Missing in old files → five minutes.
     #[serde(default = "default_auto_lock_secs")]
@@ -55,6 +60,7 @@ impl Default for Workspace {
             cluster: Cluster::default(),
             custom_cluster: None,
             vector_wallets: false,
+            prerelease_devices: false,
             auto_lock_secs: DEFAULT_AUTO_LOCK_SECS,
             close_to_tray: false,
             tokens_api_key: None,

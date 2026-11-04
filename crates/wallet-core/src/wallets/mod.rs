@@ -3,7 +3,7 @@
 
 pub mod adapt;
 pub(crate) mod enroll;
-pub(crate) mod hardware;
+pub mod hardware;
 pub(crate) mod import;
 pub(crate) mod listing;
 pub mod offline_nonce;

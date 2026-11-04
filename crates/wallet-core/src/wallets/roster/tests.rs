@@ -1,6 +1,7 @@
 use super::*;
 use crate::fixtures::pk;
 use crate::keys::signer::{KeypairSigner, WalletSigner};
+use crate::wallets::hardware::HardwareVendor;
 use crate::wallets::programmatic::programmatic_signer_address;
 use crate::wallets::squads::{Squad, SquadsProgram};
 
@@ -439,4 +440,63 @@ fn a_summary_of_an_offline_wallet_carries_its_nonce_and_its_default_path() {
     assert_eq!(summary.durable_nonce, Some(pk(4)));
     assert_eq!(summary.default_path, Some(OfflinePath::DurableNonce));
     assert_eq!(summary.contract, None);
+}
+
+#[test]
+fn hardware_wallets_are_added_together_and_are_shown_to_sites_as_device_keys() {
+    let mut data = VaultData::default();
+    let waiting = WalletRecord::programmatic("Waiting", pk(1), None);
+    let waiting_id = waiting.id;
+    data.add_contract_wallet(waiting).unwrap();
+    let first = WalletRecord::hardware(
+        "Ledger 1",
+        HardwareVendor::Ledger,
+        pk(1),
+        "m/44'/501'/0'/0'",
+    );
+    let second = WalletRecord::hardware(
+        "Ledger 2",
+        HardwareVendor::Ledger,
+        pk(2),
+        "m/44'/501'/1'/0'",
+    );
+
+    // One listed twice, or one that is not a hardware wallet, stores none.
+    let twice = data.add_hardware_wallets(&[first.clone(), first.clone()]);
+    assert_eq!(twice, Err(RosterError::DuplicateWallet(pk(1))));
+    let cold = WalletRecord::offline("Cold", pk(3));
+    assert_eq!(
+        data.add_hardware_wallets(&[second.clone(), cold]),
+        Err(RosterError::NotHardware)
+    );
+    assert_eq!(data.wallets.len(), 1);
+
+    data.add_hardware_wallets(&[first.clone(), second]).unwrap();
+    assert_eq!(
+        data.local_device_keys(),
+        [
+            (pk(1), HardwareVendor::Ledger),
+            (pk(2), HardwareVendor::Ledger)
+        ]
+    );
+    assert!(
+        data.local_signer_pubkeys().is_empty(),
+        "no vault key signs for them"
+    );
+    let signer = data.wallets.iter().find(|w| w.id == waiting_id).unwrap();
+    assert!(matches!(
+        &signer.kind,
+        WalletKind::Programmatic { authority, .. } if authority.wallet() == Some(first.id)
+    ));
+    let summary = &data.summaries()[1];
+    assert_eq!(summary.on_device, Some(HardwareVendor::Ledger));
+    assert_eq!(summary.derivation_path.as_deref(), Some("m/44'/501'/0'/0'"));
+
+    let shown = shareable_accounts(Some(&data), &Workspace::default());
+    let ledger = shown
+        .iter()
+        .find(|account| account.pubkey == pk(1))
+        .unwrap();
+    assert_eq!(ledger.on_device, Some(HardwareVendor::Ledger));
+    assert!(!ledger.contract);
 }

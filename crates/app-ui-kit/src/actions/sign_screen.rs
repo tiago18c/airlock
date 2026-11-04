@@ -12,12 +12,13 @@ use solana_pubkey::Pubkey;
 use wallet_core::protocol::{QrObject, Signed, TxContext};
 use wallet_core::relay::{
     accept_signature_in, authority_signature_objects, authority_slots_in, insert_personal_sign,
-    overlay_note, vector_signature_objects, AuthContext, SignatureUse,
+    overlay_note, vector_signature_objects, AuthContext, SignatureUse, VectorContext,
 };
 use wallet_core::vector::FloorsFrom;
 use wallet_core::{
-    decode_transaction, decode_v1_transaction, parse_wire, renew, sha256_bytes, Converted,
-    DecodeError, DecodedTx, KeypairSigner, LookupTables, Phrase, TxFormat, WalletSigner,
+    decode_transaction, decode_v1_transaction, parse_wire, renew, sha256_bytes, signing_status_in,
+    Converted, DecodeError, DecodedTx, HardwareVendor, KeypairSigner, LocalKeys, LookupTables,
+    Phrase, SignerRole, SignerState, TxFormat, WalletSigner,
 };
 use wallet_flows::adapt::rebuilt_note;
 pub use wallet_flows::offer::BlockhashOnSign;
@@ -25,7 +26,7 @@ use wallet_flows::request::{
     accounts_created, one_time_signers, replaceable_signers, reshape_unsupported,
 };
 use wallet_flows::send::SendFailure;
-use wallet_flows::sign::VectorSigning;
+use wallet_flows::sign::{Signed as SignedTx, VectorSigning};
 
 #[cfg(test)]
 mod tests;
@@ -954,12 +955,45 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
             known_is_current,
         };
         let node = rpc.as_deref();
-        match wallet_flows::sign::sign_with(node, &wire, &signers, &mut vector).await {
+        let devices = session.local_device_keys();
+        // Only keys on a device are left to sign: no vault key signs, so
+        // nothing is signed before the device is asked.
+        let hot_signs = decode_on_sign(&wire, &tables).is_ok_and(|tx| {
+            let keys: Vec<Pubkey> = signers.iter().map(|signer| signer.pubkey()).collect();
+            let held: Vec<Pubkey> = vector_keys.iter().map(|key| key.account).collect();
+            let local = LocalKeys {
+                keys: &keys,
+                vector: &held,
+                devices: &devices,
+            };
+            signing_status_in(&tx, &local, &AuthContext { vector: &known }).signable > 0
+        });
+        let signed = if hot_signs || devices.is_empty() {
+            wallet_flows::sign::sign_with(node, &wire, &signers, &mut vector).await
+        } else {
+            Ok(device_only(session, &wire, &tables, &known, &devices, moved.is_some()).await)
+        };
+        match signed {
             Ok(mut done) => {
                 session.xmss_retries.set(cache);
                 done.refreshed |= moved.is_some();
+                let hot_signatures = done.signatures;
+                // Then the keys on hardware wallets, one after another, unless
+                // an authorization signed now holds the transaction back.
+                let mut device_error = None;
+                if !done.transaction_next && form.still_on_screen(generation) {
+                    match sign_on_devices(session, &done.wire, &tables, &known, &devices).await {
+                        Ok((wire, count)) => {
+                            done.wire = wire;
+                            done.signatures += count;
+                        }
+                        Err(why) => device_error = Some(why),
+                    }
+                }
                 let cluster = session.cluster();
-                let by = if done.authorizations > 0 && done.signatures == 0 {
+                let by = if done.signatures > hot_signatures {
+                    "ledger"
+                } else if done.authorizations > 0 && done.signatures == 0 {
                     "Vector key"
                 } else {
                     "hot key"
@@ -979,7 +1013,22 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
                     busy.set(false);
                     return;
                 }
-                let text = done.note();
+                // Nothing was signed: the device said no, or was not ready.
+                if let Some(why) = device_error
+                    .as_ref()
+                    .filter(|_| done.signatures == 0 && done.authorizations == 0)
+                {
+                    // Closed by the user: nothing to say.
+                    if why != crate::actions::device::CANCELLED {
+                        form.report(generation, why.clone());
+                    }
+                    busy.set(false);
+                    return;
+                }
+                let mut text = done.note();
+                if let Some(why) = device_error {
+                    text.push_str(&format!(" The hardware wallet did not sign: {why}"));
+                }
                 let moved_to = moved.as_ref().map(|(_, _, height)| *height);
                 if let Some(height) = done.last_valid_height.or(moved_to) {
                     form.set_exact_blockhash_height(Some(height));
@@ -1036,6 +1085,96 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
         }
         busy.set(false);
     });
+}
+
+/// What a press that only keys on a device sign starts from: nothing signed
+/// yet, on a fresh blockhash when this app relays it and nobody has signed.
+async fn device_only(
+    session: Session,
+    wire: &[u8],
+    tables: &LookupTables,
+    known: &[VectorContext],
+    devices: &[(Pubkey, HardwareVendor)],
+    moved: bool,
+) -> SignedTx {
+    let mut wire = wire.to_vec();
+    let mut refreshed = false;
+    let mut last_valid_height = None;
+    let keys: Vec<Pubkey> = devices.iter().map(|(key, _)| *key).collect();
+    let relayed = decode_on_sign(&wire, tables)
+        .is_ok_and(|tx| wallet_flows::sign::wants_fresh_blockhash(&tx, &keys));
+    if relayed && !moved {
+        if let Ok(fresh) = refresh_blockhash(session, &wire).await {
+            refreshed = fresh.wire != wire;
+            last_valid_height = Some(fresh.last_valid_height);
+            wire = fresh.wire;
+        }
+    }
+    let authorized = decode_on_sign(&wire, tables).is_ok_and(|tx| {
+        tx.format != TxFormat::V1
+            || authority_slots_in(&tx, &AuthContext { vector: known })
+                .iter()
+                .all(|slot| slot.signed)
+    });
+    SignedTx {
+        wire,
+        authorizations: 0,
+        signatures: 0,
+        dropped: 0,
+        refreshed,
+        last_valid_height,
+        authorized,
+        transaction_next: false,
+    }
+}
+
+/// Sign `wire` with each key a hardware wallet of this vault holds for it,
+/// fee payer first, through the device dialog. Answers the wire with their
+/// signatures in, and how many there are.
+pub async fn sign_on_devices(
+    session: Session,
+    wire: &[u8],
+    tables: &LookupTables,
+    known: &[VectorContext],
+    devices: &[(Pubkey, HardwareVendor)],
+) -> Result<(Vec<u8>, usize), String> {
+    let Ok(tx) = decode_on_sign(wire, tables) else {
+        return Ok((wire.to_vec(), 0));
+    };
+    let accounts = device_lines(&tx, known, devices);
+    if accounts.is_empty() {
+        return Ok((wire.to_vec(), 0));
+    }
+    let signed =
+        crate::actions::device::sign_message_bytes(session, &accounts, &tx.message).await?;
+    let mut wire = wire.to_vec();
+    for (account, signature) in &signed {
+        wire = wallet_core::insert_signature(&wire, account, signature).map_err(sentence)?;
+    }
+    Ok((wire, signed.len()))
+}
+
+/// The transaction's signers a hardware wallet of this vault holds and that
+/// have not signed, in the transaction's order, fee payer first.
+pub fn device_lines(
+    tx: &DecodedTx,
+    known: &[VectorContext],
+    devices: &[(Pubkey, HardwareVendor)],
+) -> Vec<Pubkey> {
+    let local = LocalKeys {
+        keys: &[],
+        vector: &[],
+        devices,
+    };
+    signing_status_in(tx, &local, &AuthContext { vector: known })
+        .lines
+        .iter()
+        .filter(|line| {
+            line.state == SignerState::Device
+                && matches!(line.role, SignerRole::FeePayer | SignerRole::Signer)
+        })
+        .map(|line| line.key.shown_as())
+        .collect()
 }
 
 /// Send what is on screen. The toast follows it from then on, whatever the screen

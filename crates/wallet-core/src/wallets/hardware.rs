@@ -7,6 +7,7 @@
 //! 2.13.1 and Keystone 3.0.6. Each of them also signs off-chain messages in
 //! the v1 format. See `docs/plan-hardware-wallets.md`.
 
+use crate::book::workspace::Workspace;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::str::FromStr;
@@ -48,6 +49,31 @@ impl HardwareVendor {
         }
     }
 
+    /// A site's message is signed inside an offchain message naming the
+    /// account, never as its bare bytes, and so a sign-in is refused: the
+    /// site would read the header as the sign-in's text.
+    pub fn wraps_messages(self) -> bool {
+        match self {
+            Self::Ledger | Self::Trezor => true,
+            Self::Keystone => false,
+        }
+    }
+
+    /// Whether this build can talk to the vendor's devices yet. The others
+    /// are not offered at all.
+    pub fn built(self) -> bool {
+        matches!(self, Self::Ledger)
+    }
+
+    /// The vendor's first version that reads v1 is only a pre-release
+    /// build so far, so the vendor is offered only when Settings says so.
+    pub fn prerelease(self) -> bool {
+        match self {
+            Self::Ledger | Self::Trezor => true,
+            Self::Keystone => false,
+        }
+    }
+
     /// The first version that reads v1 transactions.
     pub fn minimum(self) -> Version {
         match self {
@@ -74,6 +100,24 @@ impl HardwareVendor {
             )
         })
     }
+}
+
+/// The vendors Add wallet offers: the ones this build talks to, and of
+/// those, the ones whose v1 support is only a pre-release build when
+/// Settings turns them on.
+pub fn offered(workspace: &Workspace) -> Vec<HardwareVendor> {
+    HardwareVendor::ALL
+        .into_iter()
+        .filter(|vendor| vendor.built())
+        .filter(|vendor| !vendor.prerelease() || workspace.prerelease_devices)
+        .collect()
+}
+
+/// What a Ledger shows as **Message Hash** when it signs blind: the SHA-256
+/// of the message, in base58. The same hash on screen and on the device
+/// shows that the device signs what this screen shows.
+pub fn message_hash(message: &[u8]) -> String {
+    bs58::encode(crate::sha256_bytes(message)).into_string()
 }
 
 /// A `major.minor.patch` version, as devices report them. A pre-release
@@ -225,6 +269,23 @@ mod tests {
         let json = serde_json::to_string(&seen).unwrap();
         assert_eq!(json, r#"{"model":"Safe 5","firmware":"2.13.1"}"#);
         assert_eq!(serde_json::from_str::<DeviceSeen>(&json).unwrap(), seen);
+    }
+
+    #[test]
+    fn a_vendor_on_a_prerelease_build_waits_for_the_setting() {
+        let mut workspace = Workspace::default();
+        assert!(offered(&workspace).is_empty());
+        workspace.prerelease_devices = true;
+        assert_eq!(offered(&workspace), vec![HardwareVendor::Ledger]);
+    }
+
+    #[test]
+    fn the_message_hash_is_base58_of_its_sha256() {
+        // SHA-256 of nothing, in base58.
+        assert_eq!(
+            message_hash(b""),
+            "GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"
+        );
     }
 
     #[test]

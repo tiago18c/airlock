@@ -47,19 +47,46 @@ pub(in crate::ui) fn MessageRequest(current: BridgePrompt, on_close: EventHandle
     let (account, bytes) = (*account, message.clone());
     let session = use_context::<Session>();
     let mut error = use_signal(|| None::<String>);
-    let unlocked = session.is_unlocked();
-    let armed = use_armed(unlocked);
+    let mut busy = use_signal(|| false);
+    // A Ledger signs the text inside an offchain message naming the
+    // account, and that whole message goes back to the site.
+    let device = session
+        .local_device_keys()
+        .into_iter()
+        .find(|(key, _)| *key == account)
+        .map(|(_, vendor)| vendor)
+        .filter(|vendor| vendor.wraps_messages());
+    let wrapped = device.map(|vendor| {
+        wallet_core::site_message::device_message(&bytes, &current.origin, &account, vendor.label())
+            .map_err(|err| err.to_string())
+    });
+    // No vault key signs for a device, so the vault may stay locked.
+    let unlocked = session.is_unlocked() || device.is_some();
+    let armed = use_armed(unlocked && !matches!(wrapped, Some(Err(_))));
     let reject_id = current.id.clone();
     let sign_id = current.id.clone();
     let to_sign = bytes.clone();
+    // What the site sent, as it is, when it is already an offchain message.
+    let shown = wallet_core::site_message::read_offchain_v1(&bytes)
+        .filter(|_| device.is_some())
+        .map(|(_, text)| text.to_vec())
+        .unwrap_or(bytes.clone());
 
     rsx! {
         RequestHead { current: current.clone(), title: "Sign message".to_string(), on_close }
         div { class: "request-body",
             AddressRow { pubkey: account, no_copy: true }
-            MessageBody { bytes }
+            MessageBody { bytes: shown }
             p { class: "hint",
                 "Signing costs nothing, but a site or a program can act on what you sign. Sign only what you understand."
+            }
+            if let Some(vendor) = device {
+                p { class: "hint",
+                    "Your {vendor.label()} signs this text inside an offchain message that names this account, and the site gets that message back with the signature."
+                }
+            }
+            if let Some(Err(why)) = wrapped.clone() {
+                p { class: "warn", "{why}" }
             }
             if !unlocked {
                 UnlockFirst {}
@@ -77,8 +104,30 @@ pub(in crate::ui) fn MessageRequest(current: BridgePrompt, on_close: EventHandle
             }
             button {
                 class: "primary",
-                disabled: !armed,
+                disabled: !armed || busy(),
                 onclick: move |_| {
+                    error.set(None);
+                    if let Some(Ok(ocms)) = wrapped.clone() {
+                        busy.set(true);
+                        let sign_id = sign_id.clone();
+                        spawn(async move {
+                            match app_ui_kit::actions::device::sign_offchain(session, account, &ocms).await {
+                                Ok(signature) => {
+                                    let answer = BridgeAnswer::SignedMessage {
+                                        signed: ocms,
+                                        signature,
+                                    };
+                                    if !session.bridge_answer(&sign_id, answer) {
+                                        error.set(Some("The site stopped waiting for this request.".into()));
+                                    }
+                                }
+                                Err(message) if message == app_ui_kit::actions::device::CANCELLED => {}
+                                Err(message) => error.set(Some(message)),
+                            }
+                            busy.set(false);
+                        });
+                        return;
+                    }
                     match session.sign_site_message(account, &to_sign) {
                         Ok(signature) => {
                             let answer = BridgeAnswer::SignedMessage {
@@ -92,17 +141,27 @@ pub(in crate::ui) fn MessageRequest(current: BridgePrompt, on_close: EventHandle
                         Err(message) => error.set(Some(message)),
                     }
                 },
-                "Sign"
+                match device {
+                    Some(vendor) => rsx! { "Sign on {vendor.label()}" },
+                    None => rsx! { "Sign" },
+                }
             }
         }
     }
 }
 
-/// The accounts a sign-in can use: those with a key here, or the one it named.
+/// The accounts a sign-in can use: those with a key here, or the one it
+/// named. A Ledger or a Trezor cannot sign in: it signs a header with the
+/// text, which the site would not read as a sign-in.
 fn sign_in_accounts(accounts: Vec<ShareableAccount>, sign_in: &SignIn) -> Vec<ShareableAccount> {
     accounts
         .into_iter()
         .filter(|account| !account.contract)
+        .filter(|account| {
+            !account
+                .on_device
+                .is_some_and(|vendor| vendor.wraps_messages())
+        })
         .filter(|account| {
             sign_in
                 .address
