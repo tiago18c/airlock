@@ -1156,3 +1156,66 @@ impl hw_protocol::link::DeviceHub for NoLedger {
         Box::pin(async { Err(hw_protocol::link::LinkError::Disconnected) })
     }
 }
+
+#[tokio::test]
+async fn a_ledger_authority_signs_its_authorization_then_the_payer_signs_the_relay() {
+    let (mut screen, _hub) = ledger_screen(false).await;
+    // A hot wallet relays and pays.
+    let payer = wallet_core::WalletRecord::from_keypair_seed("Payer", [8; 32]);
+    let payer_key = payer.address().unwrap();
+    let signers = vec![wallet_core::NewSigner {
+        pubkey: payer_key,
+        label: payer.label.clone(),
+        origin: wallet_core::Origin::Imported,
+        wallet: payer,
+    }];
+    screen
+        .kit
+        .core
+        .enroll(
+            "add_signers",
+            |data| data.add_signers(&signers),
+            |book, _| wallet_core::name_signers(book, &signers),
+        )
+        .unwrap();
+    screen.settle().await;
+    let address = wallet_core::programmatic::programmatic_signer_address(&screen.key);
+    let plain = compile_v1(
+        payer_key,
+        vec![transfer_instruction(address, pk(2))],
+        None,
+        Some(solana_hash::Hash::new_from_array([3; 32])),
+    )
+    .unwrap()
+    .wire;
+    let wrapped = wallet_core::relay::wrap_for_programmatic(
+        &decode_v1_transaction(&plain).unwrap(),
+        &[screen.key],
+        wallet_core::programmatic::ExecutorNonce {
+            account: pk(9),
+            authority: address,
+            value: solana_hash::Hash::new_from_array([4; 32]),
+        },
+        payer_key,
+        solana_hash::Hash::new_from_array([3; 32]),
+    )
+    .unwrap();
+    screen.load(&wrapped, TxSource::Pasted);
+
+    let busy = screen.busy();
+    screen.act(|| sign_loaded(screen.session, busy, BlockhashOnSign::Keep));
+    screen.settle().await;
+    let after_first = decode_v1_transaction(&screen.wire().unwrap()).unwrap();
+    assert!(wallet_core::relay::authority_slots(&after_first)
+        .iter()
+        .all(|slot| slot.signed));
+    assert!(
+        !is_signed(&screen.wire().unwrap()),
+        "the relay waits for the next press"
+    );
+
+    screen.act(|| sign_loaded(screen.session, busy, BlockhashOnSign::Keep));
+    screen.settle().await;
+    assert!(is_signed(&screen.wire().unwrap()));
+    screen.act(|| assert_eq!(*screen.form().error.peek(), None));
+}

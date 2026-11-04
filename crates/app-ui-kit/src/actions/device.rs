@@ -334,12 +334,39 @@ pub async fn sign_message_bytes(
                 of: (total > 1).then_some((at + 1, total)),
                 hash: Some(wallet_core::hardware::message_hash(message)),
                 message: false,
+                authorization: false,
             },
         );
         let signature = sign_one(run, &held, account, message, false).await?;
         out.push((*account, signature));
     }
     Ok(out)
+}
+
+/// Sign a programmatic signer's authorization, `bytes`, with the Ledger that
+/// holds `authority`. It is a v1 message with no blockhash, signed blind:
+/// what runs is inside it, so the Ledger shows only its hash.
+pub async fn sign_authorization(
+    session: Session,
+    authority: Pubkey,
+    bytes: &[u8],
+    of: Option<(usize, usize)>,
+) -> Result<[u8; 64], String> {
+    let held = on_device(session, &authority)?;
+    only_ledger(held.vendor)?;
+    let run = Run::start(
+        session,
+        held.vendor,
+        DeviceAsk::Sign {
+            account: authority,
+            path: held.path.clone(),
+            of,
+            hash: Some(wallet_core::hardware::message_hash(bytes)),
+            message: false,
+            authorization: true,
+        },
+    );
+    sign_one(run, &held, &authority, bytes, false).await
 }
 
 /// Sign a site's message with the Ledger that holds `account`: `ocms` is the
@@ -360,6 +387,7 @@ pub async fn sign_offchain(
             of: None,
             hash: None,
             message: true,
+            authorization: false,
         },
     );
     sign_one(run, &held, &account, ocms, true).await

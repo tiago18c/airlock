@@ -958,6 +958,9 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
         let devices = session.local_device_keys();
         // Only keys on a device are left to sign: no vault key signs, so
         // nothing is signed before the device is asked.
+        // An authorization a device signs holds the transaction for the
+        // next press, so the vault's keys sign this one only if they
+        // authorize too.
         let hot_signs = decode_on_sign(&wire, &tables).is_ok_and(|tx| {
             let keys: Vec<Pubkey> = signers.iter().map(|signer| signer.pubkey()).collect();
             let held: Vec<Pubkey> = vector_keys.iter().map(|key| key.account).collect();
@@ -966,7 +969,9 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
                 vector: &held,
                 devices: &devices,
             };
-            signing_status_in(&tx, &local, &AuthContext { vector: &known }).signable > 0
+            let status = signing_status_in(&tx, &local, &AuthContext { vector: &known });
+            let device_authorizes = !device_authorities(&tx, &known, &devices).is_empty();
+            status.authorizations_here() > 0 || (!device_authorizes && status.signable > 0)
         });
         let signed = if hot_signs || devices.is_empty() {
             wallet_flows::sign::sign_with(node, &wire, &signers, &mut vector).await
@@ -981,7 +986,33 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
                 // Then the keys on hardware wallets, one after another, unless
                 // an authorization signed now holds the transaction back.
                 let mut device_error = None;
-                if !done.transaction_next && form.still_on_screen(generation) {
+                // The authorities whose keys are on a device, when no vault
+                // key authorized on this press.
+                if done.authorizations == 0 && form.still_on_screen(generation) {
+                    match authorize_on_devices(session, &done.wire, &tables, &known, &devices).await
+                    {
+                        Ok((wire, count)) if count > 0 => {
+                            done.wire = wire;
+                            done.authorizations += count;
+                            let tx = decode_on_sign(&done.wire, &tables).ok();
+                            let ctx = AuthContext { vector: &known };
+                            done.authorized = tx.as_ref().is_some_and(|tx| {
+                                authority_slots_in(tx, &ctx).iter().all(|slot| slot.signed)
+                            });
+                            // The transaction is signed on the next press, once
+                            // it has been simulated with the authorization in.
+                            done.transaction_next = tx
+                                .as_ref()
+                                .is_some_and(|tx| tx.signers.iter().any(|slot| !slot.valid));
+                        }
+                        Ok(_) => {}
+                        Err(why) => device_error = Some(why),
+                    }
+                }
+                if !done.transaction_next
+                    && device_error.is_none()
+                    && form.still_on_screen(generation)
+                {
                     match sign_on_devices(session, &done.wire, &tables, &known, &devices).await {
                         Ok((wire, count)) => {
                             done.wire = wire;
@@ -1152,6 +1183,68 @@ pub async fn sign_on_devices(
         wire = wallet_core::insert_signature(&wire, account, signature).map_err(sentence)?;
     }
     Ok((wire, signed.len()))
+}
+
+/// Sign each authorization whose authority's key is on a hardware wallet of
+/// this vault, through the device dialog. A device signs it as a v1
+/// message, blind. Answers the wire with the signatures in, and how many.
+pub async fn authorize_on_devices(
+    session: Session,
+    wire: &[u8],
+    tables: &LookupTables,
+    known: &[VectorContext],
+    devices: &[(Pubkey, HardwareVendor)],
+) -> Result<(Vec<u8>, usize), String> {
+    let Ok(tx) = decode_on_sign(wire, tables) else {
+        return Ok((wire.to_vec(), 0));
+    };
+    let authorities = device_authorities(&tx, known, devices);
+    let mut wire = wire.to_vec();
+    let total = authorities.len();
+    for (at, authority) in authorities.iter().enumerate() {
+        let tx = decode_on_sign(&wire, tables).map_err(sentence)?;
+        let Some(bytes) = wallet_core::relay::authorization_to_sign(&tx, authority) else {
+            continue;
+        };
+        let signature = crate::actions::device::sign_authorization(
+            session,
+            *authority,
+            &bytes,
+            (total > 1).then_some((at + 1, total)),
+        )
+        .await?;
+        let ctx = AuthContext { vector: known };
+        wire =
+            wallet_core::relay::insert_authority_signature_in(&wire, authority, &signature, &ctx)
+                .map_err(sentence)?
+                .wire;
+    }
+    Ok((wire, total))
+}
+
+/// The programmatic signers' authorities a hardware wallet of this vault
+/// holds and that have not signed their authorization.
+pub fn device_authorities(
+    tx: &DecodedTx,
+    known: &[VectorContext],
+    devices: &[(Pubkey, HardwareVendor)],
+) -> Vec<Pubkey> {
+    let local = LocalKeys {
+        keys: &[],
+        vector: &[],
+        devices,
+    };
+    signing_status_in(tx, &local, &AuthContext { vector: known })
+        .lines
+        .iter()
+        .filter(|line| line.state == SignerState::Device)
+        .filter_map(|line| match line.key {
+            wallet_core::SignerKey::Authority(wallet_core::relay::AuthorityId::Ed25519(key)) => {
+                Some(key)
+            }
+            _ => None,
+        })
+        .collect()
 }
 
 /// The transaction's signers a hardware wallet of this vault holds and that

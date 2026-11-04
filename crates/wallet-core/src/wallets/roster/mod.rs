@@ -315,9 +315,9 @@ pub fn signer_of(wallets: &[WalletRecord], key: Pubkey) -> Option<&WalletRecord>
         .find(|wallet| wallet.kind.signer_authority() == Some(key))
 }
 
-/// The wallet that acts when `id` is chosen. An offline wallet whose
-/// default path is its programmatic signer hands over to that signer, a
-/// wallet of its own at another address. Any other wallet acts as itself.
+/// The wallet that acts when `id` is chosen. An offline or hardware wallet
+/// whose default path is its programmatic signer hands over to that signer,
+/// a wallet of its own at another address. Any other wallet acts as itself.
 pub fn acting_wallet(wallets: &[WalletRecord], id: WalletId) -> WalletId {
     let Some(wallet) = wallets.iter().find(|wallet| wallet.id == id) else {
         return id;
@@ -325,6 +325,10 @@ pub fn acting_wallet(wallets: &[WalletRecord], id: WalletId) -> WalletId {
     match (&wallet.kind, wallet.address()) {
         (
             WalletKind::Offline {
+                default_path: Some(OfflinePath::Programmatic),
+                ..
+            }
+            | WalletKind::Hardware {
                 default_path: Some(OfflinePath::Programmatic),
                 ..
             },

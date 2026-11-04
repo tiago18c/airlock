@@ -278,10 +278,10 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     let status = signing_status_in(tx.as_ref(), &local, &ctx);
     // Keys on a hardware wallet of this vault that Sign asks next, once
     // every authorization is in.
-    let on_device = if next_step(&status) == NextSignature::Transaction {
-        device_lines(tx.as_ref(), &known, &devices)
-    } else {
-        Vec::new()
+    let on_device = match next_step(&status) {
+        NextSignature::Transaction => device_lines(tx.as_ref(), &known, &devices),
+        NextSignature::Authorization => device_authorities(tx.as_ref(), &known, &devices),
+        NextSignature::Nothing => Vec::new(),
     };
     let device_vendor = on_device.first().and_then(|key| {
         devices
@@ -670,7 +670,9 @@ fn SignActions(
         // The authorizations go on a press of their own.
         NextSignature::Authorization => {
             let here = status.authorizations_here();
-            if here > 1 {
+            if let (0, Some(vendor)) = (here, device_vendor.filter(|_| on_device > 0)) {
+                format!("Sign authorization on {}", vendor.label())
+            } else if here > 1 {
                 format!("Sign authorization ({here})")
             } else {
                 "Sign authorization".into()

@@ -130,6 +130,22 @@ fn ConfirmStep(ask: DeviceAsk, vendor: &'static str) -> Element {
         DeviceAsk::Sign { message: true, .. } => rsx! {
             span { "Read the message on your {vendor}, then sign it there." }
         },
+        DeviceAsk::Sign {
+            authorization: true,
+            hash,
+            ..
+        } => rsx! {
+            span {
+                "Your {vendor} signs this authorization blind: what it lets the programmatic signer do is inside it, and this screen is where you read that. Blind signing has to be on in the Solana app."
+            }
+            if let Some(hash) = hash {
+                span { class: "hint",
+                    " It shows a Message Hash, which must be "
+                    code { class: "mono", "{hash}" }
+                    ". The fee payer it names pays nothing: the authorization is never sent on its own."
+                }
+            }
+        },
         DeviceAsk::Sign { hash, .. } => rsx! {
             span { "Check what your {vendor} shows against this screen, then sign it there." }
             if let Some(hash) = hash {

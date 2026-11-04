@@ -31,6 +31,9 @@ pub enum DeviceAsk {
         /// What a Ledger shows when it signs blind.
         hash: Option<String>,
         message: bool,
+        /// A programmatic signer's authorization, which every device signs
+        /// blind.
+        authorization: bool,
     },
     /// Show `account` on the device, to compare with the screen.
     Show { account: Pubkey, path: String },
@@ -56,6 +59,10 @@ impl DeviceRun {
         let vendor = self.vendor.label();
         match &self.ask {
             DeviceAsk::Sign { message: true, .. } => format!("Sign the message on your {vendor}"),
+            DeviceAsk::Sign {
+                authorization: true,
+                ..
+            } => format!("Sign the authorization on your {vendor}"),
             DeviceAsk::Sign {
                 of: Some((at, of)), ..
             } => {

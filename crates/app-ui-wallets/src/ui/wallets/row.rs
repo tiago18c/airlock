@@ -160,7 +160,6 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                         code { class: "mono", "{path}" }
                     }
                 }
-                if on_device.is_none() {
                 p { class: "wallet-fact",
                     span { class: "muted", "Programmatic signer" }
                     match signer {
@@ -208,9 +207,8 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                 }
                 if durable_nonce.is_some() {
                     p { class: "hint",
-                        "A transaction this key signs for itself lives on the durable nonce, so it stays valid however long the trip to the offline device takes. One transaction at a time: the first to land voids any other made on the same nonce."
+                        "A transaction this key signs for itself lives on the durable nonce, so it stays valid however long the trip to the other device, or the confirmation on it, takes. One transaction at a time: the first to land voids any other made on the same nonce."
                     }
-                }
                 }
                 if lost_default {
                     p { class: "warn",
