@@ -50,18 +50,16 @@ pub(in crate::ui) fn MessageRequest(current: BridgePrompt, on_close: EventHandle
     let mut busy = use_signal(|| false);
     // A Ledger signs the text inside an offchain message naming the
     // account, and that whole message goes back to the site.
-    let device = session
-        .local_device_keys()
-        .into_iter()
-        .find(|(key, _)| *key == account)
-        .map(|(_, vendor)| vendor)
-        .filter(|vendor| vendor.wraps_messages());
+    let held_on = hardware_vendor_of(session, account);
+    let device = held_on.filter(|vendor| vendor.wraps_messages());
+    // A Keystone signs the bytes as they are, as a hot key does.
+    let keystone = held_on.filter(|vendor| !vendor.wraps_messages());
     let wrapped = device.map(|vendor| {
         wallet_core::site_message::device_message(&bytes, &current.origin, &account, vendor.label())
             .map_err(|err| err.to_string())
     });
     // No vault key signs for a device, so the vault may stay locked.
-    let unlocked = session.is_unlocked() || device.is_some();
+    let unlocked = session.is_unlocked() || held_on.is_some();
     let armed = use_armed(unlocked && !matches!(wrapped, Some(Err(_))));
     let reject_id = current.id.clone();
     let sign_id = current.id.clone();
@@ -128,6 +126,27 @@ pub(in crate::ui) fn MessageRequest(current: BridgePrompt, on_close: EventHandle
                         });
                         return;
                     }
+                    if keystone.is_some() {
+                        busy.set(true);
+                        let (sign_id, to_sign) = (sign_id.clone(), to_sign.clone());
+                        spawn(async move {
+                            match app_ui_kit::actions::device::sign_message_as_is(session, account, &to_sign).await {
+                                Ok(signature) => {
+                                    let answer = BridgeAnswer::SignedMessage {
+                                        signed: to_sign,
+                                        signature,
+                                    };
+                                    if !session.bridge_answer(&sign_id, answer) {
+                                        error.set(Some("The site stopped waiting for this request.".into()));
+                                    }
+                                }
+                                Err(message) if message == app_ui_kit::actions::device::CANCELLED => {}
+                                Err(message) => error.set(Some(message)),
+                            }
+                            busy.set(false);
+                        });
+                        return;
+                    }
                     match session.sign_site_message(account, &to_sign) {
                         Ok(signature) => {
                             let answer = BridgeAnswer::SignedMessage {
@@ -141,13 +160,22 @@ pub(in crate::ui) fn MessageRequest(current: BridgePrompt, on_close: EventHandle
                         Err(message) => error.set(Some(message)),
                     }
                 },
-                match device {
+                match held_on {
                     Some(vendor) => rsx! { "Sign on {vendor.label()}" },
                     None => rsx! { "Sign" },
                 }
             }
         }
     }
+}
+
+/// The hardware wallet of this vault that holds `account`, if one does.
+fn hardware_vendor_of(session: Session, account: Pubkey) -> Option<wallet_core::HardwareVendor> {
+    session
+        .local_device_keys()
+        .into_iter()
+        .find(|(key, _)| *key == account)
+        .map(|(_, vendor)| vendor)
 }
 
 /// The accounts a sign-in can use: those with a key here, or the one it
@@ -192,7 +220,12 @@ pub(in crate::ui) fn SignInRequest(current: BridgePrompt, on_close: EventHandler
     let mut chosen = use_signal(|| first);
     let mut remember = use_signal(|| start.remembered);
     let mut error = use_signal(|| None::<String>);
-    let unlocked = session.is_unlocked();
+    let mut busy = use_signal(|| false);
+    // A Keystone signs in as a hot key does, on its own screen.
+    let on_keystone = chosen()
+        .and_then(|key| hardware_vendor_of(session, key))
+        .is_some();
+    let unlocked = session.is_unlocked() || on_keystone;
     let elsewhere = sign_in.uri_elsewhere(&origin);
     let message = chosen().map(|key| sign_in.message(&origin, &key.to_string()));
     let to_sign = message.clone();
@@ -266,11 +299,30 @@ pub(in crate::ui) fn SignInRequest(current: BridgePrompt, on_close: EventHandler
             }
             button {
                 class: "primary",
-                disabled: !armed,
+                disabled: !armed || busy(),
                 onclick: move |_| {
                     let (Some(account), Some(text)) = (chosen(), to_sign.clone()) else {
                         return;
                     };
+                    if hardware_vendor_of(session, account).is_some() {
+                        busy.set(true);
+                        let sign_id = sign_id.clone();
+                        let remember = remember();
+                        spawn(async move {
+                            match app_ui_kit::actions::device::sign_message_as_is(session, account, text.as_bytes()).await {
+                                Ok(signature) => {
+                                    let waiting = session.bridge_sign_in(&sign_id, account, text.into_bytes(), signature, remember);
+                                    if !waiting {
+                                        error.set(Some("The site stopped waiting for this request.".into()));
+                                    }
+                                }
+                                Err(message) if message == app_ui_kit::actions::device::CANCELLED => {}
+                                Err(message) => error.set(Some(message)),
+                            }
+                            busy.set(false);
+                        });
+                        return;
+                    }
                     match session.sign_site_message(account, text.as_bytes()) {
                         Ok(signature) => {
                             let waiting = session.bridge_sign_in(

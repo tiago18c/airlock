@@ -584,7 +584,7 @@ sequenceDiagram
 
 This flow is not finished:
 
-- The transaction is returned to the site only from the local Sign action. When the offline device makes the last signature, the inserted signature completes the transaction but the request is never answered, and it expires after ten minutes. If a hot wallet of this device also signs, signing it after inserting the offline signature returns the transaction.
+- The transaction goes back to the site once it is complete, whichever signature completes it: a local Sign, or a signature from the offline device, scanned or pasted on Sign.
 - The site's blockhash usually expires before a QR round trip completes. When the offline key is the only signer missing, nothing has signed yet, and its wallet has a durable nonce, the request is moved onto that nonce before review (`onto_nonce`): `AdvanceNonce` first, the same instructions, limits and fees, with room for the advance. Otherwise it stays on the site's blockhash. There is one nonce per key, not a pool, so of two requests moved onto the same nonce only the first to land is valid.
 
 ### Programmatic signer
@@ -686,7 +686,6 @@ A summary on either device is only as good as the IDLs it was read with. IDLs fe
 
 ## Known gaps
 
-- **A browser request completed from another device is never answered.** See [Offline wallet](#offline-wallet-1). The fix is to return the transaction to the site whenever an inserted signature completes it, not only after a local Sign.
 - **A site's blockhash outlives no QR round trip** unless the offline key has a durable nonce and is the only signer missing. A request that also waits on another outside key, or that a site already signed, stays on its blockhash.
 - **Transactions prepared on one durable nonce are not tracked.** Only the first to land is valid. Nothing warns before a second is made on the same nonce.
 - **Hardware wallets are Ledger only.** Trezor and Keystone, a hardware key as a programmatic signer's authority, and the web build are still to come ([plan-hardware-wallets.md](plan-hardware-wallets.md)). A Ledger's signature made on Airlock Offline goes out over QRS1 as any other.

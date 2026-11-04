@@ -62,16 +62,15 @@ impl HardwareVendor {
     /// Whether this build can talk to the vendor's devices yet. The others
     /// are not offered at all.
     pub fn built(self) -> bool {
-        matches!(self, Self::Ledger)
+        matches!(self, Self::Ledger | Self::Keystone)
     }
 
-    /// The vendor's first version that reads v1 is only a pre-release
-    /// build so far, so the vendor is offered only when Settings says so.
+    /// Offered only when Settings says so: the vendor's first version that
+    /// reads v1 is only a pre-release build so far (Ledger, Trezor), or this
+    /// build's support has not been through its device checklist yet
+    /// (Keystone).
     pub fn prerelease(self) -> bool {
-        match self {
-            Self::Ledger | Self::Trezor => true,
-            Self::Keystone => false,
-        }
+        true
     }
 
     /// The first version that reads v1 transactions.
@@ -276,7 +275,10 @@ mod tests {
         let mut workspace = Workspace::default();
         assert!(offered(&workspace).is_empty());
         workspace.prerelease_devices = true;
-        assert_eq!(offered(&workspace), vec![HardwareVendor::Ledger]);
+        assert_eq!(
+            offered(&workspace),
+            vec![HardwareVendor::Ledger, HardwareVendor::Keystone]
+        );
     }
 
     #[test]

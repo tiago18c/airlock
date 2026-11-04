@@ -329,9 +329,20 @@ pub fn accept(session: Session, object: QrObject, from: TxSource) {
                         cluster: Some(&cluster),
                     }
                     .log_signed("imported");
-                    wire.set(Some(next));
+                    wire.set(Some(next.clone()));
                     import.set(String::new());
-                    note.set(Some(match used {
+                    // The signature that completes a site's transaction sends
+                    // it back, however it arrived.
+                    let complete = decode_v1_transaction(&next).is_ok_and(|tx| {
+                        tx.signers.iter().all(|slot| slot.valid)
+                            && authority_slots_in(&tx, &ctx).iter().all(|slot| slot.signed)
+                    });
+                    let handed = if complete {
+                        return_to_browser(&session, &next)
+                    } else {
+                        HandBack::Nothing
+                    };
+                    let mut said = match used {
                         SignatureUse::Transaction => {
                             Phrase::default().t("Added the signature of ").a(who).t(".")
                         }
@@ -345,7 +356,11 @@ pub fn accept(session: Session, object: QrObject, from: TxSource) {
                             .t(format!(
                                 ". That changed the transaction, so {dropped} signature(s) made over it earlier were removed and have to be made again."
                             )),
-                    }));
+                    };
+                    if let Some(text) = handed.note() {
+                        said = said.t(format!(" {text}"));
+                    }
+                    note.set(Some(said));
                 }
                 Err(err) => error.set(Some(sentence(err))),
             }

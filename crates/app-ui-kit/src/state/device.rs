@@ -41,6 +41,20 @@ pub enum DeviceAsk {
     Read { scheme: String },
 }
 
+/// A Keystone's side of a job: the codes it is shown, and what it answers
+/// through its own screen.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct KeystoneTrip {
+    /// The `sol-sign-request`, as CBOR.
+    pub request: Vec<u8>,
+    /// Ties the signature it answers to this request.
+    pub id: [u8; 16],
+    /// The signature scanned, once it answers this request.
+    pub answer: Option<[u8; 64]>,
+    /// Why the last code scanned was not used.
+    pub problem: Option<String>,
+}
+
 /// The job on screen.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct DeviceRun {
@@ -51,6 +65,8 @@ pub struct DeviceRun {
     pub stage: DeviceStage,
     /// The model, once the device answered.
     pub model: Option<String>,
+    /// A Keystone's codes, once the request is made.
+    pub keystone: Option<KeystoneTrip>,
 }
 
 impl DeviceRun {

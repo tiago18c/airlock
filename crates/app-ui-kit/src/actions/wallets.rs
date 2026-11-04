@@ -384,6 +384,7 @@ mod tests {
             durable_nonce: None,
             default_path: None,
             on_device: None,
+            device: None,
         }
     }
 

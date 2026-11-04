@@ -36,6 +36,9 @@ pub struct WalletSummary {
     pub default_path: Option<OfflinePath>,
     /// A hardware wallet's vendor. Its path is in `derivation_path`.
     pub on_device: Option<HardwareVendor>,
+    /// What names a hardware wallet's device: a Keystone's master
+    /// fingerprint, a Trezor's device id.
+    pub device: Option<String>,
 }
 
 /// An account a site can be shown.
@@ -148,6 +151,7 @@ impl VaultData {
                 durable_nonce: wallet.kind.durable_nonce(),
                 default_path: wallet.kind.default_path(),
                 on_device: wallet.kind.hardware_vendor(),
+                device: wallet.kind.hardware_device().map(str::to_string),
             })
             .collect()
     }

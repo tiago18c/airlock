@@ -35,6 +35,21 @@ impl WalletKind {
         }
     }
 
+    /// What names a hardware wallet's device beyond its key: a Keystone's
+    /// master fingerprint, a Trezor's device id.
+    pub fn hardware_device(&self) -> Option<&str> {
+        match self {
+            Self::Hardware { device, .. } => device.as_deref(),
+            _ => None,
+        }
+    }
+
+    pub fn set_hardware_device(&mut self, value: Option<String>) {
+        if let Self::Hardware { device, .. } = self {
+            *device = value;
+        }
+    }
+
     /// What was last seen of a hardware wallet's device.
     pub fn device_seen(&self) -> Option<&DeviceSeen> {
         match self {

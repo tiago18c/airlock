@@ -1,7 +1,8 @@
 //! Add-wallet form: keys read from a hardware wallet.
 
 use super::*;
-use crate::actions::device::{read_keys, show_address, DeviceKey, DeviceKeys};
+use crate::actions::device::{keystone_export, read_keys, show_address, DeviceKey, DeviceKeys};
+use crate::ui::transfer::receive::QrScanner;
 use wallet_core::{HardwareVendor, PATH_SCHEMES};
 
 /// How many keys a press of Read reads.
@@ -23,11 +24,13 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
     let mut label = use_signal(String::new);
     let mut error = use_signal(|| None::<String>);
     let mut reading = use_signal(|| false);
+    // A Keystone's master fingerprint, from its export.
+    let mut fingerprint = use_signal(|| None::<String>);
 
     let Some(&first) = offered.first() else {
         return rsx! {
             p { class: "note",
-                "Airlock signs with a Ledger once its Solana app is 1.18 or later, the first that reads v1 transactions. Until Ledger releases it, only its developer builds do, so Ledger is offered when Pre-release hardware wallets is on in Settings."
+                "Hardware wallets are offered when Pre-release hardware wallets is on in Settings. Airlock signs with a Ledger once its Solana app is 1.18, the first that reads v1 transactions, which is only a developer build so far. Its support for Keystone has not been checked on a device yet."
             }
         };
     };
@@ -114,6 +117,9 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
                 let mut record =
                     WalletRecord::hardware(label, found.vendor, key.pubkey, key.path.clone());
                 record.kind.set_device_seen(found.seen.clone());
+                if found.vendor == HardwareVendor::Keystone {
+                    record.kind.set_hardware_device(fingerprint());
+                }
                 record
             })
             .collect();
@@ -149,6 +155,33 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
                 }
             }
         }
+        if chosen == HardwareVendor::Keystone {
+            if keys.is_empty() {
+                p { class: "hint",
+                    "On your Keystone, firmware {chosen.minimum()} or later, open Connect Software Wallet, choose Solflare and pick the accounts' path there. Then scan the codes it shows."
+                }
+                QrScanner {
+                    on_payload: move |_| {},
+                    on_ur: move |(ur_type, message): (String, Vec<u8>)| {
+                        match keystone_export(&ur_type, &message) {
+                            Ok((found, print)) => {
+                                error.set(None);
+                                let here = session.known_wallet_pubkeys();
+                                let first_new = found
+                                    .keys
+                                    .iter()
+                                    .find(|key| !here.contains(&key.pubkey))
+                                    .map(|key| key.index);
+                                ticked.set(first_new.into_iter().collect());
+                                fingerprint.set(Some(print));
+                                read.set(Some(found));
+                            }
+                            Err(why) => error.set(Some(why)),
+                        }
+                    },
+                }
+            }
+        } else {
         p { class: "hint",
             "Connect your {chosen.label()}, unlock it and open the Solana app, version {chosen.minimum()} or later."
         }
@@ -170,7 +203,8 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
                 }
             }
         }
-        if keys.is_empty() {
+        }
+        if keys.is_empty() && chosen != HardwareVendor::Keystone {
             div { class: "btn-row",
                 button {
                     disabled: reading(),
@@ -178,7 +212,7 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
                     if reading() { "Reading…" } else { "Read accounts" }
                 }
             }
-        } else {
+        } else if !keys.is_empty() {
             ul { class: "derive-list",
                 for key in keys {
                     DeviceKeyRow {
@@ -200,7 +234,7 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
                     }
                 }
             }
-            if numbered {
+            if numbered && chosen != HardwareVendor::Keystone {
                 div { class: "btn-row",
                     button {
                         disabled: reading(),
@@ -269,10 +303,12 @@ fn DeviceKeyRow(
                     span { class: "muted", " {crate::ui::format_sol(lamports)}" }
                 }
             }
-            button { class: "sm ghost",
-                title: "Show this address on the device, to check it is the one on this screen",
-                onclick: move |_| show_address(session, vendor, check_path.clone(), pubkey, None),
-                "Check on device"
+            if vendor != HardwareVendor::Keystone {
+                button { class: "sm ghost",
+                    title: "Show this address on the device, to check it is the one on this screen",
+                    onclick: move |_| show_address(session, vendor, check_path.clone(), pubkey, None),
+                    "Check on device"
+                }
             }
         }
     }

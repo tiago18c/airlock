@@ -6,9 +6,10 @@
 //! used: the key at the path against the record, the signature against the
 //! key and the bytes (`wallet_flows::device`).
 
-use crate::state::device::{DeviceAsk, DeviceRun, DeviceStage};
+use crate::state::device::{DeviceAsk, DeviceRun, DeviceStage, KeystoneTrip};
 use crate::state::session::Session;
 use dioxus::prelude::*;
+use hw_protocol::keystone::{KeyPath, SignType, SolSignRequest, SolSignature, SOL_SIGNATURE};
 use hw_protocol::ledger::{AppConfiguration, LedgerError};
 use hw_protocol::link::{DeviceHub, DeviceKind, ExchangeError, LinkError, PacketLink};
 use solana_pubkey::Pubkey;
@@ -50,6 +51,7 @@ impl Run {
             ask,
             stage: DeviceStage::Find(format!("Connect your {} and unlock it.", vendor.label())),
             model: None,
+            keystone: None,
         }));
         Self { session, id }
     }
@@ -275,6 +277,8 @@ struct OnDevice {
     wallet: WalletId,
     vendor: HardwareVendor,
     path: String,
+    /// What names the device: a Keystone's master fingerprint.
+    device: Option<String>,
 }
 
 fn on_device(session: Session, account: &Pubkey) -> Result<OnDevice, String> {
@@ -287,9 +291,22 @@ fn on_device(session: Session, account: &Pubkey) -> Result<OnDevice, String> {
                 wallet: wallet.id,
                 vendor: wallet.on_device?,
                 path: wallet.derivation_path.clone()?,
+                device: wallet.device.clone(),
             })
         })
         .ok_or_else(|| format!("No hardware wallet of this vault holds {account}."))
+}
+
+/// The vendors this build signs with.
+fn signs_with(vendor: HardwareVendor) -> Result<(), String> {
+    if matches!(vendor, HardwareVendor::Ledger | HardwareVendor::Keystone) {
+        Ok(())
+    } else {
+        Err(format!(
+            "This build of Airlock does not sign with a {} yet.",
+            vendor.label()
+        ))
+    }
 }
 
 fn only_ledger(vendor: HardwareVendor) -> Result<(), String> {
@@ -324,7 +341,7 @@ pub async fn sign_message_bytes(
     let total = accounts.len();
     for (at, account) in accounts.iter().enumerate() {
         let held = on_device(session, account)?;
-        only_ledger(held.vendor)?;
+        signs_with(held.vendor)?;
         let run = Run::start(
             session,
             held.vendor,
@@ -337,7 +354,12 @@ pub async fn sign_message_bytes(
                 authorization: false,
             },
         );
-        let signature = sign_one(run, &held, account, message, false).await?;
+        let signature = match held.vendor {
+            HardwareVendor::Keystone => {
+                sign_keystone(run, &held, account, message, SignType::Transaction).await?
+            }
+            _ => sign_one(run, &held, account, message, false).await?,
+        };
         out.push((*account, signature));
     }
     Ok(out)
@@ -353,7 +375,7 @@ pub async fn sign_authorization(
     of: Option<(usize, usize)>,
 ) -> Result<[u8; 64], String> {
     let held = on_device(session, &authority)?;
-    only_ledger(held.vendor)?;
+    signs_with(held.vendor)?;
     let run = Run::start(
         session,
         held.vendor,
@@ -366,7 +388,159 @@ pub async fn sign_authorization(
             authorization: true,
         },
     );
-    sign_one(run, &held, &authority, bytes, false).await
+    match held.vendor {
+        // A Keystone reads an authorization as the v1 message it is.
+        HardwareVendor::Keystone => {
+            sign_keystone(run, &held, &authority, bytes, SignType::Transaction).await
+        }
+        _ => sign_one(run, &held, &authority, bytes, false).await,
+    }
+}
+
+/// Sign a site's message, `bytes` as the site sent them, with the Keystone
+/// that holds `account`. A Keystone signs a message as a hot key does: the
+/// bytes as they are, after `check_message`.
+pub async fn sign_message_as_is(
+    session: Session,
+    account: Pubkey,
+    bytes: &[u8],
+) -> Result<[u8; 64], String> {
+    let held = on_device(session, &account)?;
+    if held.vendor != HardwareVendor::Keystone {
+        return Err(format!(
+            "A {} signs messages inside an offchain message, not as they are.",
+            held.vendor.label()
+        ));
+    }
+    let run = Run::start(
+        session,
+        held.vendor,
+        DeviceAsk::Sign {
+            account,
+            path: held.path.clone(),
+            of: None,
+            hash: None,
+            message: true,
+            authorization: false,
+        },
+    );
+    sign_keystone(run, &held, &account, bytes, SignType::Message).await
+}
+
+/// How often the job looks for the signature the dialog scanned.
+const SCAN_POLL: Duration = Duration::from_millis(250);
+
+/// Show a Keystone the `sol-sign-request` for `bytes`, and wait for the
+/// user to scan the signature it answers with. The request id must match
+/// and the signature must verify.
+async fn sign_keystone(
+    run: Run,
+    held: &OnDevice,
+    account: &Pubkey,
+    bytes: &[u8],
+    sign_type: SignType,
+) -> Result<[u8; 64], String> {
+    let outcome = async {
+        let indices = hw_protocol::parse_path(&held.path).map_err(|error| error.to_string())?;
+        let source_fingerprint = held
+            .device
+            .as_deref()
+            .and_then(|hex| u32::from_str_radix(hex, 16).ok());
+        // A request id that is this request's: its bytes and this job.
+        let mut seed = bytes.to_vec();
+        seed.extend_from_slice(&run.id.to_le_bytes());
+        let digest = wallet_core::sha256_bytes(&seed);
+        let mut id = [0u8; 16];
+        id.copy_from_slice(&digest[..16]);
+        let request = SolSignRequest {
+            request_id: id,
+            sign_data: bytes.to_vec(),
+            path: KeyPath {
+                indices,
+                source_fingerprint,
+            },
+            address: None,
+            origin: Some("Airlock".into()),
+            sign_type,
+        };
+        run.update(|shown| {
+            shown.keystone = Some(KeystoneTrip {
+                request: request.to_cbor(),
+                id,
+                answer: None,
+                problem: None,
+            });
+        });
+        run.stage(DeviceStage::Confirm);
+        loop {
+            if run.cancelled() {
+                return Err(CANCELLED.to_string());
+            }
+            let answer = run
+                .session
+                .device
+                .peek()
+                .as_ref()
+                .and_then(|shown| shown.keystone.as_ref()?.answer);
+            if let Some(signature) = answer {
+                let checked = solana_signature::Signature::from(signature);
+                if checked.verify(account.as_ref(), bytes) {
+                    tracing::info!(
+                        target: "airlock::device",
+                        vendor = "keystone",
+                        path = %held.path,
+                        pubkey = %account,
+                        "signed"
+                    );
+                    return Ok(signature);
+                }
+                run.update(|shown| {
+                    if let Some(trip) = shown.keystone.as_mut() {
+                        trip.answer = None;
+                        trip.problem = Some(format!(
+                            "That signature is not {account}'s over this request. Is the Keystone the one this wallet was added from, with the same passphrase?"
+                        ));
+                    }
+                });
+            }
+            crate::rt::sleep(SCAN_POLL).await;
+        }
+    }
+    .await;
+    match &outcome {
+        Ok(_) => run.close(),
+        Err(why) if why == CANCELLED => run.close(),
+        Err(why) => run.fail(why),
+    }
+    outcome
+}
+
+/// The dialog scanned a UR while a Keystone job waits for its answer.
+/// Only a `sol-signature` for this request is taken.
+pub fn keystone_scanned(session: Session, ur_type: &str, message: &[u8]) {
+    let mut shown = session.device;
+    let mut run = shown.write();
+    let Some(trip) = run.as_mut().and_then(|run| run.keystone.as_mut()) else {
+        return;
+    };
+    if ur_type != SOL_SIGNATURE {
+        trip.problem = Some(format!(
+            "That code is a {ur_type}, not the signature. On the Keystone, sign the request, then scan the code it shows."
+        ));
+        return;
+    }
+    match SolSignature::from_cbor(message) {
+        Ok(signature) if signature.request_id.is_none_or(|id| id == trip.id) => {
+            trip.problem = None;
+            trip.answer = Some(signature.signature);
+        }
+        Ok(_) => {
+            trip.problem = Some(
+                "That signature answers another request. Scan the one for this request.".into(),
+            );
+        }
+        Err(_) => trip.problem = Some("That code could not be read as a signature.".into()),
+    }
 }
 
 /// Sign a site's message with the Ledger that holds `account`: `ocms` is the
@@ -493,6 +667,12 @@ pub fn show_address(
             path: path.clone(),
         },
     );
+    // A Keystone shows an address on its own Receive screen: the dialog
+    // says where to look.
+    if vendor == HardwareVendor::Keystone {
+        run.stage(DeviceStage::Done);
+        return;
+    }
     if let Err(why) = only_ledger(vendor) {
         run.fail(&why);
         return;
@@ -539,6 +719,62 @@ pub struct DeviceKeys {
     pub vendor: HardwareVendor,
     pub keys: Vec<DeviceKey>,
     pub seen: DeviceSeen,
+}
+
+/// The accounts in a Keystone's `crypto-multi-accounts` export, and its
+/// master fingerprint, in hex. Only Ed25519 keys under `44'/501'` are taken.
+/// A firmware below the first that reads v1 is refused.
+pub fn keystone_export(ur_type: &str, message: &[u8]) -> Result<(DeviceKeys, String), String> {
+    if ur_type != hw_protocol::keystone::CRYPTO_MULTI_ACCOUNTS {
+        return Err(format!(
+            "That code is a {ur_type}. On your Keystone, open Connect Software Wallet and choose Solflare, then scan the codes it shows."
+        ));
+    }
+    let export = hw_protocol::keystone::MultiAccounts::from_cbor(message)
+        .map_err(|_| "That export could not be read.".to_string())?;
+    let firmware = export
+        .firmware
+        .as_deref()
+        .and_then(|text| text.parse::<Version>().ok());
+    if let Some(refusal) = firmware.and_then(|version| HardwareVendor::Keystone.refusal(version)) {
+        return Err(refusal);
+    }
+    let keys: Vec<DeviceKey> = export
+        .keys
+        .iter()
+        .filter_map(|key| {
+            // Some exports put a zero byte before an Ed25519 key.
+            let bytes = match key.key.as_slice() {
+                [0, rest @ ..] if rest.len() == 32 => rest,
+                bytes => bytes,
+            };
+            let pubkey = Pubkey::new_from_array(<[u8; 32]>::try_from(bytes).ok()?);
+            let indices = &key.path.as_ref()?.indices;
+            let path = hw_protocol::format_path(indices);
+            hw_protocol::parse_path(&path).ok()?;
+            Some((pubkey, path))
+        })
+        .enumerate()
+        .map(|(index, (pubkey, path))| DeviceKey {
+            index: index as u32,
+            path,
+            pubkey,
+        })
+        .collect();
+    if keys.is_empty() {
+        return Err("That export holds no Solana account. Choose Solflare on the Keystone, then scan again.".into());
+    }
+    Ok((
+        DeviceKeys {
+            vendor: HardwareVendor::Keystone,
+            keys,
+            seen: DeviceSeen {
+                model: export.device.clone(),
+                firmware,
+            },
+        },
+        format!("{:08x}", export.master_fingerprint),
+    ))
 }
 
 /// Read the keys `start..start + count` of `scheme` from a hardware wallet

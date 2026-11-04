@@ -1219,3 +1219,149 @@ async fn a_ledger_authority_signs_its_authorization_then_the_payer_signs_the_rel
     assert!(is_signed(&screen.wire().unwrap()));
     screen.act(|| assert_eq!(*screen.form().error.peek(), None));
 }
+
+/// A window whose vault holds one Keystone wallet, at `SEED`'s key.
+async fn keystone_screen() -> Screen {
+    let kit = kit();
+    kit.core.create_vault("pw").unwrap();
+    let key =
+        wallet_core::WalletSigner::pubkey(&wallet_core::KeypairSigner::from_seed(&SEED).unwrap());
+    let mut keystone = wallet_core::WalletRecord::hardware(
+        "Keystone",
+        HardwareVendor::Keystone,
+        key,
+        "m/44'/501'/0'/0'",
+    );
+    keystone.kind.set_hardware_device(Some("e9181cf3".into()));
+    kit.core
+        .enroll(
+            "add_hardware_wallets",
+            |data| data.add_hardware_wallets(std::slice::from_ref(&keystone)),
+            |book, _| wallet_core::name_offline_wallet(book, key, "Keystone"),
+        )
+        .unwrap();
+    let rpc = Arc::new(good_node());
+    let session = Rc::new(Cell::new(None));
+    let mut dom = VirtualDom::new_with_props(
+        app,
+        Held {
+            core: kit.core.clone(),
+            rpc: rpc.clone(),
+            submit: SubmitHandle::none(),
+            session: session.clone(),
+        },
+    );
+    dom.rebuild_in_place();
+    let session = session.get().unwrap();
+    let mut screen = Screen {
+        kit,
+        dom,
+        session,
+        rpc,
+        key,
+    };
+    screen.settle().await;
+    screen
+}
+
+#[tokio::test]
+async fn a_keystone_is_shown_the_request_and_its_scanned_signature_goes_in() {
+    use hw_protocol::keystone::{SolSignature, SOL_SIGNATURE};
+    let mut screen = keystone_screen().await;
+    let wire = screen.transfer(1);
+    screen.load(&wire, TxSource::Pasted);
+
+    let busy = screen.busy();
+    screen.act(|| sign_loaded(screen.session, busy, BlockhashOnSign::Keep));
+    screen.settle().await;
+    let trip = screen
+        .act(|| screen.session.device.peek().clone())
+        .and_then(|run| run.keystone)
+        .expect("the dialog shows the request");
+    let message = decode_v1_transaction(&wire).unwrap().message;
+    let key = KeypairSigner::from_seed(&SEED).unwrap();
+
+    // A signature of another request is not taken.
+    let other = SolSignature {
+        request_id: Some([1; 16]),
+        signature: key.try_sign_message(&message).unwrap().into(),
+    };
+    screen.act(|| {
+        crate::actions::device::keystone_scanned(screen.session, SOL_SIGNATURE, &other.to_cbor())
+    });
+    let problem = screen.act(|| {
+        screen
+            .session
+            .device
+            .peek()
+            .clone()
+            .and_then(|run| run.keystone?.problem)
+    });
+    assert!(problem.unwrap().contains("another request"));
+
+    let answer = SolSignature {
+        request_id: Some(trip.id),
+        signature: key.try_sign_message(&message).unwrap().into(),
+    };
+    screen.act(|| {
+        crate::actions::device::keystone_scanned(screen.session, SOL_SIGNATURE, &answer.to_cbor())
+    });
+    tokio::time::sleep(Duration::from_millis(400)).await;
+    screen.settle().await;
+    assert!(is_signed(&screen.wire().unwrap()));
+    screen.act(|| assert!(screen.session.device.peek().is_none()));
+}
+
+#[test]
+fn a_keystone_export_gives_its_solana_accounts_and_fingerprint() {
+    use ur_codec::Value;
+    let key = |byte: u8, account: u64| {
+        let path = Value::Tag(
+            304,
+            Box::new(Value::Map(vec![(
+                Value::Uint(1),
+                Value::Array(vec![
+                    Value::Uint(44),
+                    Value::Bool(true),
+                    Value::Uint(501),
+                    Value::Bool(true),
+                    Value::Uint(account),
+                    Value::Bool(true),
+                    Value::Uint(0),
+                    Value::Bool(true),
+                ]),
+            )])),
+        );
+        Value::Tag(
+            303,
+            Box::new(Value::Map(vec![
+                (Value::Uint(3), Value::Bytes(vec![byte; 32])),
+                (Value::Uint(6), path),
+            ])),
+        )
+    };
+    let export = Value::Map(vec![
+        (Value::Uint(1), Value::Uint(0xe918_1cf3)),
+        (Value::Uint(2), Value::Array(vec![key(5, 0), key(6, 1)])),
+        (Value::Uint(3), Value::Text("Keystone 3 Pro".into())),
+        (Value::Uint(5), Value::Text("3.2.0".into())),
+    ])
+    .encode();
+    let (found, fingerprint) =
+        crate::actions::device::keystone_export("crypto-multi-accounts", &export).unwrap();
+    assert_eq!(fingerprint, "e9181cf3");
+    assert_eq!(found.keys.len(), 2);
+    assert_eq!(found.keys[1].path, "m/44'/501'/1'/0'");
+    assert_eq!(found.keys[0].pubkey, Pubkey::new_from_array([5; 32]));
+
+    // Firmware that reads no v1 is refused.
+    let old = Value::Map(vec![
+        (Value::Uint(1), Value::Uint(1)),
+        (Value::Uint(2), Value::Array(vec![key(5, 0)])),
+        (Value::Uint(5), Value::Text("2.9.0".into())),
+    ])
+    .encode();
+    let refused = crate::actions::device::keystone_export("crypto-multi-accounts", &old);
+    assert!(refused.unwrap_err().contains("3.0.6"));
+    assert!(crate::actions::device::keystone_export("sol-signature", &export).is_err());
+}

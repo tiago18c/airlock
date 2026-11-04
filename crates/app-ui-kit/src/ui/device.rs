@@ -2,10 +2,13 @@
 //! does on it. Mounted once, by the shell, above the other dialogs, so the
 //! Sign screen, the request modal and Add wallet all show their jobs here.
 
-use crate::actions::device::cancel;
+use crate::actions::device::{cancel, keystone_scanned};
 use crate::state::device::{DeviceAsk, DeviceRun, DeviceStage};
 use crate::state::session::Session;
+use crate::ui::transfer::receive::QrScanner;
+use crate::ui::transfer::ur::UrCarousel;
 use dioxus::prelude::*;
+use wallet_core::HardwareVendor;
 
 #[component]
 pub fn DeviceDialog() -> Element {
@@ -26,7 +29,7 @@ pub fn DeviceDialog() -> Element {
 
     rsx! {
         div { class: "modal-backdrop device-backdrop",
-            div { class: "modal device-dialog",
+            div { class: if run.vendor == HardwareVendor::Keystone { "modal wide device-dialog" } else { "modal device-dialog" },
                 role: "dialog",
                 aria_label: "{title}",
                 onclick: move |evt| evt.stop_propagation(),
@@ -35,7 +38,11 @@ pub fn DeviceDialog() -> Element {
                     if let Some(model) = run.model.as_ref() {
                         p { class: "muted", "{vendor} {model}" }
                     }
-                    DeviceSteps { run: run.clone() }
+                    if run.vendor == HardwareVendor::Keystone {
+                        KeystoneSteps { run: run.clone() }
+                    } else {
+                        DeviceSteps { run: run.clone() }
+                    }
                     div { class: "btn-row",
                         button {
                             class: if ended { "primary" } else { "ghost" },
@@ -157,5 +164,67 @@ fn ConfirmStep(ask: DeviceAsk, vendor: &'static str) -> Element {
             }
         },
         DeviceAsk::Read { .. } => rsx! {},
+    }
+}
+
+/// A Keystone's job: it reads the request from codes on this screen, and
+/// answers with codes on its own, which this screen scans.
+#[component]
+fn KeystoneSteps(run: DeviceRun) -> Element {
+    let session = use_context::<Session>();
+    let mut scanning = use_signal(|| false);
+    if let DeviceAsk::Show { account, .. } = &run.ask {
+        return rsx! {
+            p { "On your Keystone, open this account's Receive screen, and check that it shows this address." }
+            pre { class: "mono device-address", "{account}" }
+        };
+    }
+    let what = match &run.ask {
+        DeviceAsk::Sign { message: true, .. } => "the message",
+        DeviceAsk::Sign {
+            authorization: true,
+            ..
+        } => "the authorization",
+        _ => "the transaction",
+    };
+    let Some(trip) = run.keystone.clone() else {
+        return match &run.stage {
+            DeviceStage::Failed(why) => rsx! { p { class: "error", role: "alert", "{why}" } },
+            _ => rsx! { p { class: "muted", role: "status", "Preparing the request…" } },
+        };
+    };
+    rsx! {
+        ol { class: "device-steps",
+            li { class: if scanning() { "device-step done" } else { "device-step now" },
+                "On your Keystone, scan these codes, read {what} there, and sign it."
+            }
+            li { class: if scanning() { "device-step now" } else { "device-step later" },
+                "Then scan the signature your Keystone shows."
+            }
+        }
+        if scanning() {
+            QrScanner {
+                on_payload: move |_| {},
+                on_ur: move |(ur_type, message): (String, Vec<u8>)| keystone_scanned(session, &ur_type, &message),
+            }
+        } else {
+            UrCarousel {
+                ur_type: hw_protocol::keystone::SOL_SIGN_REQUEST.to_string(),
+                message: trip.request.clone(),
+            }
+        }
+        if let Some(problem) = trip.problem.clone() {
+            p { class: "warn", role: "alert", "{problem}" }
+        }
+        if let DeviceStage::Failed(why) = &run.stage {
+            p { class: "error", role: "alert", "{why}" }
+        }
+        div { class: "btn-row",
+            button {
+                class: if scanning() { "" } else { "primary" },
+                onclick: move |_| scanning.set(!scanning()),
+                if scanning() { "Show the request again" } else { "Scan the signature" }
+            }
+        }
     }
 }

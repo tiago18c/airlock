@@ -465,6 +465,7 @@ dependencies = [
  "time",
  "tokio",
  "tracing",
+ "ur-codec",
  "wallet-core",
  "wallet-flows",
  "wallet-vault",

@@ -531,8 +531,14 @@ impl Session {
                 .wallets
                 .iter()
                 .find(|wallet| {
-                    matches!(wallet.kind, WalletKind::Offline { .. })
-                        && wallet.address() == Some(key)
+                    matches!(
+                        wallet.kind,
+                        WalletKind::Offline { .. }
+                            | WalletKind::Hardware {
+                                vendor: wallet_core::HardwareVendor::Keystone,
+                                ..
+                            }
+                    ) && wallet.address() == Some(key)
                 })?
                 .kind
                 .durable_nonce()?;
