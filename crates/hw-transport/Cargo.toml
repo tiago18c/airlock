@@ -16,6 +16,9 @@ nusb = "0.2.9"
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 async-hid = "0.5.3"
 futures-lite = "2"
+# On desktop nusb's listing and opening are blocking calls, run on tokio's
+# blocking threads: without a runtime feature, awaiting them panics.
+nusb = { version = "0.2.9", features = ["tokio"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 js-sys.workspace = true
@@ -37,4 +40,4 @@ web-sys = { workspace = true, features = [
 fake = []
 
 [dev-dependencies]
-futures-lite = "2"
+tokio = { workspace = true, features = ["rt", "macros"] }

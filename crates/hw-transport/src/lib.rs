@@ -68,3 +68,15 @@ impl DeviceHub for FakeHub {
         })
     }
 }
+
+#[cfg(all(test, not(target_arch = "wasm32")))]
+mod tests {
+    /// Listing runs on the app's runtime. nusb's blocking calls panic when
+    /// awaited without one of its runtime features turned on.
+    #[tokio::test]
+    async fn listing_devices_on_the_apps_runtime_does_not_panic() {
+        let hub = super::hub().expect("a hub on desktop");
+        // A machine without a USB or HID stack may refuse; it must not panic.
+        let _ = hub.list().await;
+    }
+}

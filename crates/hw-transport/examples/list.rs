@@ -10,7 +10,12 @@ fn main() {
         println!("No device hub in this build.");
         return;
     };
-    futures_lite::future::block_on(async {
+    // nusb runs its blocking calls on tokio, as the app does.
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .expect("a runtime");
+    runtime.block_on(async {
         let devices = match hub.list().await {
             Ok(devices) => devices,
             Err(error) => return println!("Listing failed: {error}"),
