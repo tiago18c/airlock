@@ -1668,7 +1668,9 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   background: var(--media-bg);
 }
 .video-wrap.live { border-color: var(--ok-solid); }
-#qr-scan-canvas { display: block; z-index: 1; pointer-events: none; }
+/* Where frames are read when WebCodecs cannot hand them over. Nothing draws
+   on it otherwise, so shown it would hide the video. */
+#qr-scan-canvas { display: none; }
 .video-mask {
   grid-area: 1 / 1;
   z-index: 2;

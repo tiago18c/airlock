@@ -55,6 +55,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - Share opens on Everything, now its first tab. Its Signatures tab has tabs of its own: Local, which it opens on, puts the signatures made by keys on this device in one transfer; All puts every signature in one transfer; Individual shows a code for each.
 
 ### Fixed
+- The camera preview on Windows is no longer black. With WebView2 156 the camera stopped as soon as it started, and a scanner canvas hid the video. On macOS, a window without a camera now says why rather than asking you to open the app in a browser.
 - A site's request that names a program with a large IDL no longer freezes the window while it is read. Reading now happens away from the window, and says so. If it takes more than 4 seconds, the transaction is shown as its programs and bytes rather than in words, and Sign is offered only as it is for anything unread.
 - A node that says it is getting too many requests now stops the background read, and the sync status and notices say so. Before, Airlock went on asking and showed "Synced". What was read before it stopped is kept, and the next read goes on from there.
 - Addresses a node refuses to read are now reported, in a notice and on Refresh, rather than quietly left as they were.
