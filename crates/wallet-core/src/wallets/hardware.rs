@@ -62,7 +62,7 @@ impl HardwareVendor {
     /// Whether this build can talk to the vendor's devices yet. The others
     /// are not offered at all.
     pub fn built(self) -> bool {
-        matches!(self, Self::Ledger | Self::Keystone)
+        true
     }
 
     /// Offered only when Settings says so: the vendor's first version that
@@ -275,10 +275,7 @@ mod tests {
         let mut workspace = Workspace::default();
         assert!(offered(&workspace).is_empty());
         workspace.prerelease_devices = true;
-        assert_eq!(
-            offered(&workspace),
-            vec![HardwareVendor::Ledger, HardwareVendor::Keystone]
-        );
+        assert_eq!(offered(&workspace), HardwareVendor::ALL);
     }
 
     #[test]

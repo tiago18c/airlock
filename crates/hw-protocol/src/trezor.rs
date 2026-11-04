@@ -42,7 +42,7 @@ pub struct Message {
 }
 
 impl Message {
-    fn new(kind: u16, body: Vec<u8>) -> Self {
+    pub fn new(kind: u16, body: Vec<u8>) -> Self {
         Self { kind, body }
     }
 }

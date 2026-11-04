@@ -250,10 +250,190 @@ async fn ready_ledger(run: Run) -> Result<ReadyLedger, String> {
     )
 }
 
+/// Find a Trezor and start a session on it, waiting while the user connects
+/// it and Trezor Suite lets go of it.
+async fn ready_trezor(run: Run) -> Result<Ready, String> {
+    let hub = hub(run.session)?;
+    let mut link_errors = 0;
+    for _ in 0..PATIENCE {
+        if run.cancelled() {
+            return Err(CANCELLED.into());
+        }
+        let found = hub.list().await.map_err(|error| error.to_string())?;
+        let Some(trezor) = found
+            .into_iter()
+            .find(|device| device.kind == DeviceKind::Trezor)
+        else {
+            run.stage(DeviceStage::Find("Connect your Trezor.".into()));
+            crate::rt::sleep(POLL).await;
+            continue;
+        };
+        let mut link = match hub.open(&trezor.id).await {
+            Ok(link) => link,
+            Err(LinkError::Busy) => {
+                run.stage(DeviceStage::Find(
+                    "Another app is using your Trezor. Close Trezor Suite, then try again.".into(),
+                ));
+                crate::rt::sleep(POLL).await;
+                continue;
+            }
+            Err(denied @ LinkError::Denied(_)) => return Err(denied_sentence(&denied)),
+            Err(error) => {
+                link_errors += 1;
+                if link_errors >= LINK_ERRORS_SHOWN {
+                    run.stage(DeviceStage::Find(format!(
+                        "{error} Unplug your Trezor and plug it in again."
+                    )));
+                }
+                crate::rt::sleep(POLL).await;
+                continue;
+            }
+        };
+        let Some(answer) = within(ANSWER, device::trezor_ready(link.as_mut())).await else {
+            run.stage(DeviceStage::Find(
+                "Your Trezor does not answer. Unplug it and plug it in again.".into(),
+            ));
+            drop(link);
+            crate::rt::sleep(POLL).await;
+            continue;
+        };
+        match answer {
+            Ok(ready) => {
+                let seen = DeviceSeen {
+                    model: ready.features.model.clone().map(|model| model_name(&model)),
+                    firmware: Some(ready.version),
+                };
+                run.update(|shown| shown.model = seen.model.clone());
+                tracing::info!(
+                    target: "airlock::device",
+                    vendor = "trezor",
+                    model = seen.model.as_deref().unwrap_or("unknown"),
+                    firmware = %ready.version,
+                    "ready"
+                );
+                return Ok(Ready::Trezor {
+                    link,
+                    seen,
+                    device_id: ready.features.device_id,
+                });
+            }
+            Err(DeviceError::Exchange(ExchangeError::Link(_))) => {
+                link_errors += 1;
+                crate::rt::sleep(POLL).await;
+            }
+            Err(other) => return Err(said(&other)),
+        }
+    }
+    Err("No Trezor was ready. Connect it, then try again.".into())
+}
+
+/// A Trezor's model as people call it: Features says `T`, `Safe 3`.
+fn model_name(model: &str) -> String {
+    match model {
+        "T" | "1" => format!("Model {model}"),
+        other => other.to_string(),
+    }
+}
+
+/// A device ready for a job: the link, and what it is.
+enum Ready {
+    Ledger(ReadyLedger),
+    Trezor {
+        link: Box<dyn PacketLink>,
+        seen: DeviceSeen,
+        /// What names this Trezor, kept on its wallets.
+        device_id: Option<String>,
+    },
+}
+
+impl Ready {
+    fn seen(&self) -> &DeviceSeen {
+        match self {
+            Self::Ledger(ready) => &ready.seen,
+            Self::Trezor { seen, .. } => seen,
+        }
+    }
+
+    fn vendor(&self) -> &'static str {
+        match self {
+            Self::Ledger(_) => "Ledger",
+            Self::Trezor { .. } => "Trezor",
+        }
+    }
+
+    async fn pubkey(&mut self, path: &str, show: bool) -> Result<Pubkey, String> {
+        match self {
+            Self::Ledger(ready) => device::ledger_pubkey(ready.link.as_mut(), path, show).await,
+            Self::Trezor { link, .. } => device::trezor_pubkey(link.as_mut(), path, show).await,
+        }
+        .map_err(|error| said(&error))
+    }
+
+    async fn check_key(&mut self, path: &str, account: &Pubkey) -> Result<(), String> {
+        match self {
+            Self::Ledger(ready) => {
+                device::ledger_check_key(ready.link.as_mut(), path, account).await
+            }
+            Self::Trezor { link, .. } => {
+                device::trezor_check_key(link.as_mut(), path, account).await
+            }
+        }
+        .map_err(|error| said(&error))
+    }
+
+    /// Sign `bytes`: a transaction's message, or with `offchain` the whole
+    /// offchain message.
+    async fn sign(
+        &mut self,
+        path: &str,
+        account: &Pubkey,
+        bytes: &[u8],
+        offchain: bool,
+    ) -> Result<solana_signature::Signature, String> {
+        match self {
+            Self::Ledger(ready) => {
+                let signed = if offchain {
+                    device::ledger_sign_offchain(ready.link.as_mut(), path, account, bytes).await
+                } else {
+                    device::ledger_sign(ready.link.as_mut(), path, account, bytes).await
+                };
+                signed.map_err(|error| {
+                    if matches!(
+                        error,
+                        DeviceError::Exchange(ExchangeError::Ledger(LedgerError::NotSupported))
+                    ) && !ready.config.blind_signing
+                    {
+                        "Your Ledger signs this only with Blind signing on. Turn it on in the Solana app's settings, sign, then turn it off again.".to_string()
+                    } else {
+                        said(&error)
+                    }
+                })
+            }
+            Self::Trezor { link, .. } => {
+                let signed = if offchain {
+                    device::trezor_sign_offchain(link.as_mut(), path, account, bytes).await
+                } else {
+                    device::trezor_sign(link.as_mut(), path, account, bytes).await
+                };
+                signed.map_err(|error| said(&error))
+            }
+        }
+    }
+}
+
+/// Get a device of `vendor` ready, over its cable.
+async fn ready(run: Run, vendor: HardwareVendor) -> Result<Ready, String> {
+    match vendor {
+        HardwareVendor::Ledger => ready_ledger(run).await.map(Ready::Ledger),
+        HardwareVendor::Trezor => ready_trezor(run).await,
+        HardwareVendor::Keystone => Err("A Keystone answers through QR codes.".into()),
+    }
+}
+
 fn denied_sentence(denied: &LinkError) -> String {
     let mut text = denied.to_string();
     if cfg!(target_os = "linux") {
-        text.push_str(" On Linux, install Airlock's udev rules for Ledger first: see the README.");
+        text.push_str(" On Linux, install Airlock's udev rules first: see the README.");
     }
     text
 }
@@ -299,7 +479,7 @@ fn on_device(session: Session, account: &Pubkey) -> Result<OnDevice, String> {
 
 /// The vendors this build signs with.
 fn signs_with(vendor: HardwareVendor) -> Result<(), String> {
-    if matches!(vendor, HardwareVendor::Ledger | HardwareVendor::Keystone) {
+    if vendor.built() {
         Ok(())
     } else {
         Err(format!(
@@ -309,14 +489,11 @@ fn signs_with(vendor: HardwareVendor) -> Result<(), String> {
     }
 }
 
-fn only_ledger(vendor: HardwareVendor) -> Result<(), String> {
-    if vendor == HardwareVendor::Ledger {
-        Ok(())
-    } else {
-        Err(format!(
-            "This build of Airlock does not sign with a {} yet.",
-            vendor.label()
-        ))
+/// The vendors whose devices answer over a cable.
+fn over_cable(vendor: HardwareVendor) -> Result<(), String> {
+    match vendor {
+        HardwareVendor::Ledger | HardwareVendor::Trezor => Ok(()),
+        HardwareVendor::Keystone => Err("A Keystone answers through QR codes.".into()),
     }
 }
 
@@ -358,7 +535,9 @@ pub async fn sign_message_bytes(
             HardwareVendor::Keystone => {
                 sign_keystone(run, &held, account, message, SignType::Transaction).await?
             }
-            _ => sign_one(run, &held, account, message, false).await?,
+            HardwareVendor::Ledger | HardwareVendor::Trezor => {
+                sign_one(run, &held, account, message, false).await?
+            }
         };
         out.push((*account, signature));
     }
@@ -393,7 +572,9 @@ pub async fn sign_authorization(
         HardwareVendor::Keystone => {
             sign_keystone(run, &held, &authority, bytes, SignType::Transaction).await
         }
-        _ => sign_one(run, &held, &authority, bytes, false).await,
+        HardwareVendor::Ledger | HardwareVendor::Trezor => {
+            sign_one(run, &held, &authority, bytes, false).await
+        }
     }
 }
 
@@ -543,15 +724,16 @@ pub fn keystone_scanned(session: Session, ur_type: &str, message: &[u8]) {
     }
 }
 
-/// Sign a site's message with the Ledger that holds `account`: `ocms` is the
-/// whole offchain message, header and text, which the site gets back.
+/// Sign a site's message with the Ledger or Trezor that holds `account`:
+/// `ocms` is the whole offchain message, header and text, which the site
+/// gets back.
 pub async fn sign_offchain(
     session: Session,
     account: Pubkey,
     ocms: &[u8],
 ) -> Result<[u8; 64], String> {
     let held = on_device(session, &account)?;
-    only_ledger(held.vendor)?;
+    over_cable(held.vendor)?;
     let run = Run::start(
         session,
         held.vendor,
@@ -575,39 +757,22 @@ async fn sign_one(
     offchain: bool,
 ) -> Result<[u8; 64], String> {
     let outcome = async {
-        let mut ready = ready_ledger(run).await?;
-        remember_seen(run.session, held.wallet, &ready.seen);
+        let mut ready = ready(run, held.vendor).await?;
+        remember_seen(run.session, held.wallet, ready.seen());
         run.stage(DeviceStage::Account);
-        device::ledger_check_key(ready.link.as_mut(), &held.path, account)
-            .await
-            .map_err(|error| said(&error))?;
+        ready.check_key(&held.path, account).await?;
         if run.cancelled() {
             return Err(CANCELLED.to_string());
         }
         run.stage(DeviceStage::Confirm);
-        let signed = if offchain {
-            device::ledger_sign_offchain(ready.link.as_mut(), &held.path, account, bytes).await
-        } else {
-            device::ledger_sign(ready.link.as_mut(), &held.path, account, bytes).await
-        };
-        let signature = signed.map_err(|error| {
-            if matches!(
-                error,
-                DeviceError::Exchange(ExchangeError::Ledger(LedgerError::NotSupported))
-            ) && !ready.config.blind_signing
-            {
-                "Your Ledger signs this only with Blind signing on. Turn it on in the Solana app's settings, sign, then turn it off again.".to_string()
-            } else {
-                said(&error)
-            }
-        })?;
+        let signature = ready.sign(&held.path, account, bytes, offchain).await?;
         // Closed while the device was showing it: the user did not wait for it.
         if run.cancelled() {
             return Err(CANCELLED.to_string());
         }
         tracing::info!(
             target: "airlock::device",
-            vendor = "ledger",
+            vendor = ready.vendor(),
             path = %held.path,
             pubkey = %account,
             offchain,
@@ -620,7 +785,7 @@ async fn sign_one(
         Ok(_) => run.close(),
         Err(why) if why == CANCELLED => run.close(),
         Err(why) => {
-            tracing::info!(target: "airlock::device", vendor = "ledger", reason = %why, "refused");
+            tracing::info!(target: "airlock::device", vendor = held.vendor.label(), reason = %why, "refused");
             run.fail(why);
         }
     }
@@ -673,23 +838,21 @@ pub fn show_address(
         run.stage(DeviceStage::Done);
         return;
     }
-    if let Err(why) = only_ledger(vendor) {
+    if let Err(why) = over_cable(vendor).and(signs_with(vendor)) {
         run.fail(&why);
         return;
     }
     crate::actions::spawn_app_task(async move {
         let outcome = async {
-            let mut ready = ready_ledger(run).await?;
+            let mut ready = ready(run, vendor).await?;
             if let Some(wallet) = wallet {
-                remember_seen(session, wallet, &ready.seen);
+                remember_seen(session, wallet, ready.seen());
             }
             run.stage(DeviceStage::Confirm);
-            let shown = device::ledger_pubkey(ready.link.as_mut(), &path, true)
-                .await
-                .map_err(|error| said(&error))?;
+            let shown = ready.pubkey(&path, true).await?;
             if shown != account {
                 return Err(said(&DeviceError::WrongKey {
-                    vendor: "Ledger",
+                    vendor: ready.vendor(),
                     expected: account,
                     path: path.clone(),
                 }));
@@ -719,12 +882,16 @@ pub struct DeviceKeys {
     pub vendor: HardwareVendor,
     pub keys: Vec<DeviceKey>,
     pub seen: DeviceSeen,
+    /// What names the device, kept on its wallets: a Trezor's device id, a
+    /// Keystone's master fingerprint.
+    pub device: Option<String>,
 }
 
-/// The accounts in a Keystone's `crypto-multi-accounts` export, and its
-/// master fingerprint, in hex. Only Ed25519 keys under `44'/501'` are taken.
+/// The accounts in a Keystone's `crypto-multi-accounts` export, with its
+/// master fingerprint, in hex, as the device. Only Ed25519 keys under
+/// `44'/501'` are taken.
 /// A firmware below the first that reads v1 is refused.
-pub fn keystone_export(ur_type: &str, message: &[u8]) -> Result<(DeviceKeys, String), String> {
+pub fn keystone_export(ur_type: &str, message: &[u8]) -> Result<DeviceKeys, String> {
     if ur_type != hw_protocol::keystone::CRYPTO_MULTI_ACCOUNTS {
         return Err(format!(
             "That code is a {ur_type}. On your Keystone, open Connect Software Wallet and choose Solflare, then scan the codes it shows."
@@ -764,17 +931,15 @@ pub fn keystone_export(ur_type: &str, message: &[u8]) -> Result<(DeviceKeys, Str
     if keys.is_empty() {
         return Err("That export holds no Solana account. Choose Solflare on the Keystone, then scan again.".into());
     }
-    Ok((
-        DeviceKeys {
-            vendor: HardwareVendor::Keystone,
-            keys,
-            seen: DeviceSeen {
-                model: export.device.clone(),
-                firmware,
-            },
+    Ok(DeviceKeys {
+        vendor: HardwareVendor::Keystone,
+        keys,
+        seen: DeviceSeen {
+            model: export.device.clone(),
+            firmware,
         },
-        format!("{:08x}", export.master_fingerprint),
-    ))
+        device: Some(format!("{:08x}", export.master_fingerprint)),
+    })
 }
 
 /// Read the keys `start..start + count` of `scheme` from a hardware wallet
@@ -793,12 +958,12 @@ pub async fn read_keys(
             scheme: scheme.template.to_string(),
         },
     );
-    if let Err(why) = only_ledger(vendor) {
+    if let Err(why) = over_cable(vendor).and(signs_with(vendor)) {
         run.fail(&why);
         return Err(why);
     }
     let outcome = async {
-        let mut ready = ready_ledger(run).await?;
+        let mut ready = ready(run, vendor).await?;
         run.stage(DeviceStage::Account);
         // A scheme without an index has one account.
         let indices = if scheme.template.contains('*') {
@@ -812,19 +977,22 @@ pub async fn read_keys(
                 return Err(CANCELLED.to_string());
             }
             let path = scheme.path(index);
-            let pubkey = device::ledger_pubkey(ready.link.as_mut(), &path, false)
-                .await
-                .map_err(|error| said(&error))?;
+            let pubkey = ready.pubkey(&path, false).await?;
             keys.push(DeviceKey {
                 index,
                 path,
                 pubkey,
             });
         }
+        let device = match &ready {
+            Ready::Trezor { device_id, .. } => device_id.clone(),
+            Ready::Ledger(_) => None,
+        };
         Ok(DeviceKeys {
             vendor,
             keys,
-            seen: ready.seen,
+            seen: ready.seen().clone(),
+            device,
         })
     }
     .await;

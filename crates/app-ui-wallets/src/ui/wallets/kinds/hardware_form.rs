@@ -24,13 +24,11 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
     let mut label = use_signal(String::new);
     let mut error = use_signal(|| None::<String>);
     let mut reading = use_signal(|| false);
-    // A Keystone's master fingerprint, from its export.
-    let mut fingerprint = use_signal(|| None::<String>);
 
     let Some(&first) = offered.first() else {
         return rsx! {
             p { class: "note",
-                "Hardware wallets are offered when Pre-release hardware wallets is on in Settings. Airlock signs with a Ledger once its Solana app is 1.18, the first that reads v1 transactions, which is only a developer build so far. Its support for Keystone has not been checked on a device yet."
+                "Hardware wallets are offered when Pre-release hardware wallets is on in Settings. Ledger reads v1 transactions from its Solana app 1.18, and Trezor from its next firmware, both only pre-release builds so far. Airlock's support for Keystone has not been checked on a device yet."
             }
         };
     };
@@ -117,9 +115,7 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
                 let mut record =
                     WalletRecord::hardware(label, found.vendor, key.pubkey, key.path.clone());
                 record.kind.set_device_seen(found.seen.clone());
-                if found.vendor == HardwareVendor::Keystone {
-                    record.kind.set_hardware_device(fingerprint());
-                }
+                record.kind.set_hardware_device(found.device.clone());
                 record
             })
             .collect();
@@ -164,7 +160,7 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
                     on_payload: move |_| {},
                     on_ur: move |(ur_type, message): (String, Vec<u8>)| {
                         match keystone_export(&ur_type, &message) {
-                            Ok((found, print)) => {
+                            Ok(found) => {
                                 error.set(None);
                                 let here = session.known_wallet_pubkeys();
                                 let first_new = found
@@ -173,7 +169,6 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
                                     .find(|key| !here.contains(&key.pubkey))
                                     .map(|key| key.index);
                                 ticked.set(first_new.into_iter().collect());
-                                fingerprint.set(Some(print));
                                 read.set(Some(found));
                             }
                             Err(why) => error.set(Some(why)),
@@ -183,7 +178,11 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
             }
         } else {
         p { class: "hint",
-            "Connect your {chosen.label()}, unlock it and open the Solana app, version {chosen.minimum()} or later."
+            if chosen == HardwareVendor::Ledger {
+                "Connect your Ledger, unlock it and open the Solana app, version {chosen.minimum()} or later."
+            } else {
+                "Connect your {chosen.label()} and unlock it. It needs firmware {chosen.minimum()} or later. Close Trezor Suite first: it holds the device while it runs."
+            }
         }
         label { "Accounts"
             select {

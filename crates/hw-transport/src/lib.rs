@@ -4,7 +4,7 @@
 //!
 //! On desktop a Ledger is a HID device, through `async-hid`: pure Rust over
 //! each OS's own HID API, so nothing is built from C and no driver is
-//! installed.
+//! installed. A Trezor is a USB device, through `nusb`, also pure Rust.
 
 use hw_protocol::link::DeviceHub;
 #[cfg(feature = "fake")]
@@ -12,6 +12,8 @@ use hw_protocol::link::{Connected, LinkError, LinkFuture, PacketLink};
 
 #[cfg(not(target_arch = "wasm32"))]
 mod hid;
+#[cfg(not(target_arch = "wasm32"))]
+mod usb;
 
 /// The hub this build opens devices with. In a browser, none yet: WebHID
 /// and WebUSB come with the web build.

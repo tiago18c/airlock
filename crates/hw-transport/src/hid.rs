@@ -1,4 +1,5 @@
-//! Ledger over HID on Windows, macOS and Linux.
+//! Ledger over HID on Windows, macOS and Linux, and the hub that also
+//! lists the Trezors `usb` opens.
 
 use async_hid::{AsyncHidRead, AsyncHidWrite, DeviceReaderWriter, HidBackend, HidError};
 use hw_protocol::ledger;
@@ -38,7 +39,7 @@ fn is_ledger_apdu(device: &async_hid::DeviceInfo) -> bool {
 }
 
 fn id_text(device: &async_hid::DeviceInfo) -> String {
-    format!("{:?}", device.id)
+    format!("hid:{:?}", device.id)
 }
 
 impl DeviceHub for NativeHub {
@@ -52,7 +53,7 @@ impl DeviceHub for NativeHub {
                 .map_err(link_error)?
                 .collect()
                 .await;
-            Ok(devices
+            let mut found: Vec<Connected> = devices
                 .iter()
                 .filter(|device| is_ledger_apdu(device))
                 .map(|device| Connected {
@@ -60,13 +61,21 @@ impl DeviceHub for NativeHub {
                     kind: DeviceKind::Ledger,
                     model: ledger::model(device.product_id).map(str::to_string),
                 })
-                .collect())
+                .collect();
+            // A machine whose USB stack cannot be listed still has its Ledgers.
+            if let Ok(trezors) = crate::usb::list().await {
+                found.extend(trezors);
+            }
+            Ok(found)
         })
     }
 
     fn open<'a>(&'a self, id: &'a str) -> LinkFuture<'a, Result<Box<dyn PacketLink>, LinkError>> {
         Box::pin(async move {
             use futures_lite::StreamExt;
+            if id.starts_with("usb:") {
+                return crate::usb::open(id).await;
+            }
             let device = self
                 .backend
                 .enumerate()

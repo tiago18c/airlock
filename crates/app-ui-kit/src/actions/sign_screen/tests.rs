@@ -1347,9 +1347,8 @@ fn a_keystone_export_gives_its_solana_accounts_and_fingerprint() {
         (Value::Uint(5), Value::Text("3.2.0".into())),
     ])
     .encode();
-    let (found, fingerprint) =
-        crate::actions::device::keystone_export("crypto-multi-accounts", &export).unwrap();
-    assert_eq!(fingerprint, "e9181cf3");
+    let found = crate::actions::device::keystone_export("crypto-multi-accounts", &export).unwrap();
+    assert_eq!(found.device.as_deref(), Some("e9181cf3"));
     assert_eq!(found.keys.len(), 2);
     assert_eq!(found.keys[1].path, "m/44'/501'/1'/0'");
     assert_eq!(found.keys[0].pubkey, Pubkey::new_from_array([5; 32]));
@@ -1364,4 +1363,184 @@ fn a_keystone_export_gives_its_solana_accounts_and_fingerprint() {
     let refused = crate::actions::device::keystone_export("crypto-multi-accounts", &old);
     assert!(refused.unwrap_err().contains("3.0.6"));
     assert!(crate::actions::device::keystone_export("sol-signature", &export).is_err());
+}
+
+/// A Trezor made of software: firmware 2.13.1, one key at every path. It
+/// asks for a button before it signs, and signs what it is sent.
+mod soft_trezor {
+    use hw_protocol::link::{Connected, DeviceHub, DeviceKind, LinkError, LinkFuture, PacketLink};
+    use hw_protocol::trezor::{frame, Message, Unframer};
+    use std::collections::VecDeque;
+    use wallet_core::{KeypairSigner, WalletSigner};
+
+    struct SoftTrezor {
+        key: KeypairSigner,
+        unframer: Unframer,
+        outgoing: VecDeque<[u8; 64]>,
+        /// The message a button press is waited on for.
+        waiting: Option<Vec<u8>>,
+    }
+
+    fn varint(bytes: &[u8], at: &mut usize) -> u64 {
+        let mut value = 0u64;
+        let mut shift = 0;
+        loop {
+            let byte = bytes[*at];
+            *at += 1;
+            value |= u64::from(byte & 0x7f) << shift;
+            if byte & 0x80 == 0 {
+                return value;
+            }
+            shift += 7;
+        }
+    }
+
+    /// Field 2, the bytes a `SolanaSignTx` signs.
+    fn field_two(body: &[u8]) -> Vec<u8> {
+        let mut at = 0;
+        while at < body.len() {
+            let key = varint(body, &mut at);
+            match key & 7 {
+                0 => {
+                    varint(body, &mut at);
+                }
+                _ => {
+                    let len = varint(body, &mut at) as usize;
+                    if key >> 3 == 2 {
+                        return body[at..at + len].to_vec();
+                    }
+                    at += len;
+                }
+            }
+        }
+        Vec::new()
+    }
+
+    fn with_bytes(kind: u16, bytes: &[u8]) -> Message {
+        let mut body = vec![(1 << 3) | 2, bytes.len() as u8];
+        body.extend_from_slice(bytes);
+        Message::new(kind, body)
+    }
+
+    impl SoftTrezor {
+        fn answer(&mut self, message: Message) -> Message {
+            match message.kind {
+                // Features: 2.13.1, a Safe 5.
+                0 => {
+                    let mut body = vec![2 << 3, 2, 3 << 3, 13, 4 << 3, 1, 0xe2, 0x02, 4];
+                    body.extend_from_slice(b"T3T1");
+                    Message::new(17, body)
+                }
+                900 => with_bytes(901, &self.key.pubkey().to_bytes()),
+                904 => {
+                    self.waiting = Some(field_two(&message.body));
+                    Message::new(26, Vec::new())
+                }
+                27 => {
+                    let signed = self.waiting.take().unwrap_or_default();
+                    let signature = self.key.try_sign_message(&signed).unwrap();
+                    with_bytes(905, signature.as_ref())
+                }
+                _ => Message::new(3, Vec::new()),
+            }
+        }
+    }
+
+    impl PacketLink for SoftTrezor {
+        fn write(&mut self, packet: [u8; 64]) -> LinkFuture<'_, Result<(), LinkError>> {
+            Box::pin(async move {
+                if let Some(message) = self.unframer.push(&packet).unwrap() {
+                    self.unframer = Unframer::default();
+                    let reply = self.answer(message);
+                    self.outgoing.extend(frame(&reply));
+                }
+                Ok(())
+            })
+        }
+
+        fn read(&mut self) -> LinkFuture<'_, Result<[u8; 64], LinkError>> {
+            Box::pin(async move { self.outgoing.pop_front().ok_or(LinkError::Disconnected) })
+        }
+    }
+
+    pub struct SoftHub {
+        pub seed: [u8; 32],
+    }
+
+    impl DeviceHub for SoftHub {
+        fn list(&self) -> LinkFuture<'_, Result<Vec<Connected>, LinkError>> {
+            Box::pin(async {
+                Ok(vec![Connected {
+                    id: "usb:soft".into(),
+                    kind: DeviceKind::Trezor,
+                    model: None,
+                }])
+            })
+        }
+
+        fn open<'a>(
+            &'a self,
+            _id: &'a str,
+        ) -> LinkFuture<'a, Result<Box<dyn PacketLink>, LinkError>> {
+            let trezor = SoftTrezor {
+                key: KeypairSigner::from_seed(&self.seed).unwrap(),
+                unframer: Unframer::default(),
+                outgoing: VecDeque::new(),
+                waiting: None,
+            };
+            Box::pin(async move { Ok(Box::new(trezor) as Box<dyn PacketLink>) })
+        }
+    }
+}
+
+#[tokio::test]
+async fn sign_asks_the_trezor_answers_its_button_and_writes_in_its_signature() {
+    let hub = Arc::new(soft_trezor::SoftHub { seed: SEED });
+    let kit = app_core::testing::kit_with_devices(hub);
+    kit.core.create_vault("pw").unwrap();
+    let key =
+        wallet_core::WalletSigner::pubkey(&wallet_core::KeypairSigner::from_seed(&SEED).unwrap());
+    let trezor = wallet_core::WalletRecord::hardware(
+        "Trezor",
+        HardwareVendor::Trezor,
+        key,
+        "m/44'/501'/0'/0'",
+    );
+    kit.core
+        .enroll(
+            "add_hardware_wallets",
+            |data| data.add_hardware_wallets(std::slice::from_ref(&trezor)),
+            |book, _| wallet_core::name_offline_wallet(book, key, "Trezor"),
+        )
+        .unwrap();
+    let rpc = Arc::new(good_node());
+    let session = Rc::new(Cell::new(None));
+    let mut dom = VirtualDom::new_with_props(
+        app,
+        Held {
+            core: kit.core.clone(),
+            rpc: rpc.clone(),
+            submit: SubmitHandle::none(),
+            session: session.clone(),
+        },
+    );
+    dom.rebuild_in_place();
+    let session = session.get().unwrap();
+    let mut screen = Screen {
+        kit,
+        dom,
+        session,
+        rpc,
+        key,
+    };
+    screen.settle().await;
+    let wire = screen.transfer(1);
+    screen.load(&wire, TxSource::Pasted);
+
+    let busy = screen.busy();
+    screen.act(|| sign_loaded(screen.session, busy, BlockhashOnSign::Keep));
+    screen.settle().await;
+    assert!(is_signed(&screen.wire().unwrap()));
+    screen.act(|| assert!(screen.session.device.peek().is_none()));
+    screen.act(|| assert_eq!(*screen.form().error.peek(), None));
 }
