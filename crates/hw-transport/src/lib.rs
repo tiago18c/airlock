@@ -14,9 +14,12 @@ use hw_protocol::link::{Connected, LinkError, LinkFuture, PacketLink};
 mod hid;
 #[cfg(not(target_arch = "wasm32"))]
 mod usb;
+#[cfg(target_arch = "wasm32")]
+mod web;
 
-/// The hub this build opens devices with. In a browser, none yet: WebHID
-/// and WebUSB come with the web build.
+/// The hub this build opens devices with. In a browser, WebHID for Ledger
+/// and WebUSB for Trezor, where the browser has them (Chromium, on a secure
+/// page); none elsewhere.
 pub fn hub() -> Option<std::sync::Arc<dyn DeviceHub>> {
     #[cfg(not(target_arch = "wasm32"))]
     {
@@ -24,7 +27,7 @@ pub fn hub() -> Option<std::sync::Arc<dyn DeviceHub>> {
     }
     #[cfg(target_arch = "wasm32")]
     {
-        None
+        web::available().then(|| std::sync::Arc::new(web::WebHub) as std::sync::Arc<dyn DeviceHub>)
     }
 }
 

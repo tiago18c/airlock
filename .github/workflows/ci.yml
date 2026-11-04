@@ -40,7 +40,7 @@ jobs:
       - name: Clippy (desktop)
         run: cargo clippy --locked --no-deps ${{ env.OWN_CRATES }} --all-targets -- -D warnings
       - name: Clippy (web)
-        run: cargo clippy --locked --no-deps -p airlock -p wallet-rpc -p tokens-api -p app-ui-kit -p app-ui -p app-ui-book -p app-ui-build -p app-ui-sign -p app-ui-wallets -p app-online --target wasm32-unknown-unknown --no-default-features --features web -- -D warnings
+        run: cargo clippy --locked --no-deps -p airlock -p wallet-rpc -p tokens-api -p app-ui-kit -p app-ui -p app-ui-book -p app-ui-build -p app-ui-sign -p app-ui-wallets -p app-online -p hw-transport --target wasm32-unknown-unknown --no-default-features --features web -- -D warnings
       - name: Test
         run: cargo test --locked ${{ env.OWN_CRATES }}
       - name: Build airgap desktop shell

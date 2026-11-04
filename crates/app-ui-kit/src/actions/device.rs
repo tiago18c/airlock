@@ -125,7 +125,13 @@ fn hub(session: Session) -> Result<Arc<dyn DeviceHub>, String> {
         .ports()
         .devices
         .clone()
-        .ok_or_else(|| "This build of Airlock cannot open hardware wallets.".to_string())
+        .ok_or_else(|| {
+            if cfg!(target_arch = "wasm32") {
+                "This browser cannot open a Ledger or a Trezor. Use Chrome, Edge or Brave, on a secure page. A Keystone works in any browser with a camera.".to_string()
+            } else {
+                "This build of Airlock cannot open hardware wallets.".to_string()
+            }
+        })
 }
 
 /// What the dialog says for an error of the device.
@@ -495,6 +501,30 @@ fn over_cable(vendor: HardwareVendor) -> Result<(), String> {
         HardwareVendor::Ledger | HardwareVendor::Trezor => Ok(()),
         HardwareVendor::Keystone => Err("A Keystone answers through QR codes.".into()),
     }
+}
+
+/// This build opens a device only once the user chose it for the page.
+pub fn needs_request(session: Session) -> bool {
+    hub(session).is_ok_and(|hub| hub.needs_request())
+}
+
+/// Ask the browser to let this page open a device of `vendor`. Runs from
+/// the click on the dialog's button; the job waiting for the device finds
+/// it on its next look.
+pub fn request_device(session: Session, vendor: HardwareVendor) {
+    let Ok(hub) = hub(session) else {
+        return;
+    };
+    let kind = match vendor {
+        HardwareVendor::Ledger => DeviceKind::Ledger,
+        HardwareVendor::Trezor => DeviceKind::Trezor,
+        HardwareVendor::Keystone => return,
+    };
+    spawn(async move {
+        if let Err(error) = hub.request(kind).await {
+            tracing::info!(target: "airlock::device", %error, "not chosen");
+        }
+    });
 }
 
 /// A device job is on screen, so another one waits.

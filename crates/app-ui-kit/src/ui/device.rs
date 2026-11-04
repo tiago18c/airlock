@@ -59,7 +59,12 @@ pub fn DeviceDialog() -> Element {
 /// The steps of the job, each one marked as it passes.
 #[component]
 fn DeviceSteps(run: DeviceRun) -> Element {
+    let session = use_context::<Session>();
     let vendor = run.vendor.label();
+    let device_vendor = run.vendor;
+    // A page sees a device only once the user chose it, from a click.
+    let choose =
+        matches!(run.stage, DeviceStage::Find(_)) && crate::actions::device::needs_request(session);
     let order = |stage: &DeviceStage| match stage {
         DeviceStage::Find(_) => 0,
         DeviceStage::Account => 1,
@@ -94,7 +99,20 @@ fn DeviceSteps(run: DeviceRun) -> Element {
 
     rsx! {
         ol { class: "device-steps",
-            li { class: mark(0), role: if at == 0 { "status" } else { "" }, "{find_text}" }
+            li { class: mark(0), role: if at == 0 { "status" } else { "" },
+                "{find_text}"
+                if choose {
+                    div { class: "btn-row",
+                        button { class: "primary sm",
+                            onclick: move |_| crate::actions::device::request_device(session, device_vendor),
+                            "Choose your {vendor}"
+                        }
+                    }
+                    span { class: "hint",
+                        " The browser lists the devices it sees. Choose yours once, and this page can open it from then on."
+                    }
+                }
+            }
             if shows_account {
                 li { class: mark(1), "{account_text}" }
             }

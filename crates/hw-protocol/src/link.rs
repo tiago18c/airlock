@@ -218,4 +218,17 @@ pub struct Connected {
 pub trait DeviceHub: Send + Sync {
     fn list(&self) -> LinkFuture<'_, Result<Vec<Connected>, LinkError>>;
     fn open<'a>(&'a self, id: &'a str) -> LinkFuture<'a, Result<Box<dyn PacketLink>, LinkError>>;
+
+    /// A page sees a device only once the user chose it for the page, from
+    /// a click: [`Self::request`]. A desktop sees every device.
+    fn needs_request(&self) -> bool {
+        false
+    }
+
+    /// Ask the user to choose a device of `kind` for this page. Call it from
+    /// a click. Answers whether one was chosen.
+    fn request<'a>(&'a self, kind: DeviceKind) -> LinkFuture<'a, Result<bool, LinkError>> {
+        let _ = kind;
+        Box::pin(async { Ok(true) })
+    }
 }
