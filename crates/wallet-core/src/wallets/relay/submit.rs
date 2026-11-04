@@ -152,6 +152,18 @@ pub fn insert_authority_signature_in(
     })
 }
 
+/// What `authority` signs for the first authorization in `tx` still
+/// waiting for it: a v1 message, which a hardware wallet signs as a
+/// transaction. `None` when nothing waits for it.
+pub fn authorization_to_sign(tx: &DecodedTx, authority: &Pubkey) -> Option<Vec<u8>> {
+    submissions(tx).find_map(|(_, submission)| {
+        submission
+            .authorities()
+            .any(|(key, done)| key == *authority && !done)
+            .then(|| submission.signing_bytes.clone())
+    })
+}
+
 /// One object per authorization signature in `tx`. Each says it signs an
 /// authorization, so the device that receives it does not have to guess.
 pub fn authority_signature_objects(tx: &DecodedTx) -> Vec<SignatureObject> {

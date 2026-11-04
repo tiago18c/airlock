@@ -19,6 +19,7 @@ use wallet_core::{
 
 mod checklist;
 mod contract_row;
+mod hardware_form;
 mod key_share;
 mod offline_form;
 mod programmatic_form;
@@ -30,6 +31,7 @@ mod vector_row;
 
 pub(in crate::ui) use checklist::*;
 pub use contract_row::*;
+pub use hardware_form::*;
 pub use key_share::*;
 pub use offline_form::*;
 pub use programmatic_form::*;

@@ -84,4 +84,7 @@ pub struct Ports {
     pub notifier: Arc<dyn Notifier>,
     pub storage: Arc<dyn Storage>,
     pub links: Arc<dyn Links>,
+    /// Hardware wallets this build can open, when it can: the shell hands in
+    /// `hw_transport::hub()`. The core never opens a device itself.
+    pub devices: Option<Arc<dyn hw_protocol::link::DeviceHub>>,
 }

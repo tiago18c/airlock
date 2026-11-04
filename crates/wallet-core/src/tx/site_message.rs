@@ -6,6 +6,7 @@
 //! site are refused, whatever the site says they are.
 
 use serde::Deserialize;
+use solana_pubkey::Pubkey;
 use solana_transaction::versioned::VersionedTransaction;
 
 use super::decode::parse_wire;
@@ -14,6 +15,8 @@ const SIGNATURE_BYTES: usize = 64;
 const DIGEST_BYTES: usize = 32;
 /// How a message in Solana's offchain format starts.
 const OFFCHAIN_DOMAIN: &[u8] = b"\xffsolana offchain";
+/// The version of the offchain format a Ledger and a Trezor sign.
+const OFFCHAIN_V1: u8 = 1;
 const SIGN_IN_LINE: &str = " wants you to sign in with your Solana account:\n";
 
 /// Why a message or a sign-in is refused.
@@ -39,6 +42,12 @@ pub enum SiteMessageError {
     HiddenText(&'static str),
     #[error("The sign-in has no site address to name.")]
     NoDomain,
+    #[error("A {0} signs only text messages, and this message is not text.")]
+    NotText(&'static str),
+    #[error(
+        "This offchain message is not version 1 for this account alone, so a {0} does not sign it."
+    )]
+    OtherOffchain(&'static str),
 }
 
 /// Whether `bytes` may be signed as a message for the site at `origin`.
@@ -257,11 +266,92 @@ fn filled(value: &Option<String>) -> Option<&str> {
     value.as_deref().filter(|value| !value.is_empty())
 }
 
+/// What a Ledger or a Trezor signs for a site's message, `bytes`: Solana's
+/// offchain message, version 1, naming `account` as its one signer, with the
+/// site's text after it. The site gets these bytes back as `signedMessage`,
+/// as the Wallet Standard allows. `device` names the vendor in a refusal.
+///
+/// A site that sends a version 1 offchain message for this account alone
+/// gets it signed as it is. Whatever [`check_message`] refuses is refused
+/// here too, and so is a message that is not text: those devices sign only
+/// text.
+pub fn device_message(
+    bytes: &[u8],
+    origin: &str,
+    account: &Pubkey,
+    device: &'static str,
+) -> Result<Vec<u8>, SiteMessageError> {
+    if bytes.starts_with(OFFCHAIN_DOMAIN) {
+        let (signers, text) =
+            read_offchain_v1(bytes).ok_or(SiteMessageError::OtherOffchain(device))?;
+        if signers != [*account] {
+            return Err(SiteMessageError::OtherOffchain(device));
+        }
+        check_device_text(text, origin, device)?;
+        return Ok(bytes.to_vec());
+    }
+    check_device_text(bytes, origin, device)?;
+    Ok(offchain_v1(&[*account], bytes))
+}
+
+fn check_device_text(
+    text: &[u8],
+    origin: &str,
+    device: &'static str,
+) -> Result<(), SiteMessageError> {
+    check_message(text, origin)?;
+    if message_text(text).is_none() {
+        return Err(SiteMessageError::NotText(device));
+    }
+    Ok(())
+}
+
+/// An offchain message, version 1: the domain, the version, the signers in
+/// ascending order with no repeats, then `text` with no length before it.
+pub fn offchain_v1(signers: &[Pubkey], text: &[u8]) -> Vec<u8> {
+    let mut signers = signers.to_vec();
+    signers.sort();
+    signers.dedup();
+    let mut out = OFFCHAIN_DOMAIN.to_vec();
+    out.push(OFFCHAIN_V1);
+    out.push(u8::try_from(signers.len()).unwrap_or(u8::MAX));
+    for signer in signers.iter().take(usize::from(u8::MAX)) {
+        out.extend_from_slice(signer.as_ref());
+    }
+    out.extend_from_slice(text);
+    out
+}
+
+/// The signers and the text of a version 1 offchain message, or `None`
+/// when `bytes` is not one: another version, no signer, signers out of
+/// order or repeated, or no text.
+pub fn read_offchain_v1(bytes: &[u8]) -> Option<(Vec<Pubkey>, &[u8])> {
+    let rest = bytes.strip_prefix(OFFCHAIN_DOMAIN)?;
+    let (&[version, count], rest) = rest.split_first_chunk::<2>()?;
+    if version != OFFCHAIN_V1 || count == 0 {
+        return None;
+    }
+    let keys_len = usize::from(count) * 32;
+    if rest.len() <= keys_len {
+        return None;
+    }
+    let (keys, text) = rest.split_at(keys_len);
+    let signers: Vec<Pubkey> = keys
+        .as_chunks::<32>()
+        .0
+        .iter()
+        .map(|key| Pubkey::new_from_array(*key))
+        .collect();
+    if !signers.windows(2).all(|pair| pair[0] < pair[1]) {
+        return None;
+    }
+    Some((signers, text))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use solana_message::{Message, VersionedMessage};
-    use solana_pubkey::Pubkey;
     use solana_signature::Signature;
 
     const ORIGIN: &str = "https://app.example:8080";
@@ -564,5 +654,75 @@ mod tests {
             serde_json::from_str(r#"{"chainId":"mainnet","issuedAt":"t","other":1}"#).unwrap();
         assert_eq!(parsed.chain_id.as_deref(), Some("mainnet"));
         assert_eq!(parsed.issued_at.as_deref(), Some("t"));
+    }
+
+    #[test]
+    fn a_device_signs_the_text_inside_an_offchain_message_for_the_account() {
+        let account = Pubkey::new_from_array([7; 32]);
+        let signed = device_message(b"Hello", ORIGIN, &account, "Ledger").unwrap();
+        assert_eq!(&signed[..16], OFFCHAIN_DOMAIN);
+        assert_eq!(signed[16..18], [1, 1]);
+        assert_eq!(&signed[18..50], account.as_ref());
+        assert_eq!(&signed[50..], b"Hello");
+        assert_eq!(
+            read_offchain_v1(&signed),
+            Some((vec![account], &b"Hello"[..]))
+        );
+        // A site that sent it already in this shape gets it signed as it is.
+        assert_eq!(
+            device_message(&signed, ORIGIN, &account, "Ledger"),
+            Ok(signed.clone())
+        );
+    }
+
+    #[test]
+    fn a_device_refuses_what_it_cannot_show_or_another_accounts_message() {
+        let account = Pubkey::new_from_array([7; 32]);
+        let other = Pubkey::new_from_array([8; 32]);
+        assert_eq!(
+            device_message(&[0x00, 0x01, 0xfe], ORIGIN, &account, "Ledger"),
+            Err(SiteMessageError::NotText("Ledger"))
+        );
+        let theirs = offchain_v1(&[other], b"Hello");
+        assert_eq!(
+            device_message(&theirs, ORIGIN, &account, "Ledger"),
+            Err(SiteMessageError::OtherOffchain("Ledger"))
+        );
+        let both = offchain_v1(&[other, account], b"Hello");
+        assert_eq!(
+            device_message(&both, ORIGIN, &account, "Ledger"),
+            Err(SiteMessageError::OtherOffchain("Ledger"))
+        );
+        let tx = VersionedMessage::Legacy(legacy_message()).serialize();
+        assert_eq!(
+            device_message(&tx, ORIGIN, &account, "Ledger"),
+            Err(SiteMessageError::Transaction)
+        );
+        let inside = offchain_v1(&[account], &tx);
+        assert_eq!(
+            device_message(&inside, ORIGIN, &account, "Ledger"),
+            Err(SiteMessageError::Transaction)
+        );
+    }
+
+    #[test]
+    fn signers_go_in_ascending_order_once_each() {
+        let low = Pubkey::new_from_array([1; 32]);
+        let high = Pubkey::new_from_array([9; 32]);
+        let message = offchain_v1(&[high, low, high], b"x");
+        assert_eq!(message[17], 2);
+        assert_eq!(
+            read_offchain_v1(&message),
+            Some((vec![low, high], &b"x"[..]))
+        );
+        let mut reversed = message.clone();
+        reversed[18..50].copy_from_slice(high.as_ref());
+        reversed[50..82].copy_from_slice(low.as_ref());
+        assert_eq!(read_offchain_v1(&reversed), None);
+        // No text, or another version, is not a version 1 message.
+        assert_eq!(read_offchain_v1(&offchain_v1(&[low], b"")), None);
+        let mut v0 = message;
+        v0[16] = 0;
+        assert_eq!(read_offchain_v1(&v0), None);
     }
 }

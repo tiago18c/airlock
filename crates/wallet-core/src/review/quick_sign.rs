@@ -81,6 +81,7 @@ pub fn quick_sign(tx: &DecodedTx, local: &[Pubkey], explained: &ExplainedTx) -> 
         &LocalKeys {
             keys: local,
             vector: &[],
+            devices: &[],
         },
         &AuthContext::default(),
         explained,
@@ -110,7 +111,9 @@ pub fn quick_sign_in(
         unread: reading.unread,
         unvetted: reading.unvetted,
         elsewhere: status.missing_elsewhere(),
-        signable: status.signable,
+        // A hardware wallet here adds its signature from the same press,
+        // once the user confirms on the device.
+        signable: status.signable + status.on_devices(),
         risky: risks_in(explained).len(),
     }
 }
@@ -442,6 +445,7 @@ mod tests {
         let local = LocalKeys {
             keys: &[payer.pubkey()],
             vector: &[account],
+            devices: &[],
         };
         let ctx = AuthContext { vector: &known };
         let verdict = quick_sign_in(&tx, &local, &ctx, &explained);

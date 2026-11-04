@@ -401,13 +401,20 @@ fn send_waits_for_network(session: Session, current: &BridgePrompt) -> bool {
             .any(|chain| cluster.differs_from_chain(chain))
 }
 
-/// How a request's Sign reads.
-fn sign_label(current: &BridgePrompt, count: Option<usize>) -> String {
-    match (current.sends, count) {
-        (true, Some(count)) => format!("Sign and send all {count}"),
-        (true, None) => "Sign and send".to_string(),
-        (false, Some(count)) => format!("Sign all {count}"),
-        (false, None) => "Sign".to_string(),
+/// How a request's Sign reads. `device` is the hardware wallet a single
+/// transaction is signed on.
+fn sign_label(
+    current: &BridgePrompt,
+    count: Option<usize>,
+    device: Option<wallet_core::HardwareVendor>,
+) -> String {
+    match (current.sends, count, device) {
+        (true, Some(count), _) => format!("Sign and send all {count}"),
+        (true, None, Some(vendor)) => format!("Sign on {} and send", vendor.label()),
+        (true, None, None) => "Sign and send".to_string(),
+        (false, Some(count), _) => format!("Sign all {count}"),
+        (false, None, Some(vendor)) => format!("Sign on {}", vendor.label()),
+        (false, None, None) => "Sign".to_string(),
     }
 }
 

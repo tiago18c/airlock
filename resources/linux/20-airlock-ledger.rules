@@ -1,0 +1,5 @@
+# Lets the user signed in open a Ledger, for Airlock to read its keys and ask
+# it to sign. Ledger's vendor id is 2c97. See the README, "Hardware wallets
+# on Linux".
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="2c97", MODE="0660", TAG+="uaccess"
+KERNEL=="hidraw*", ATTRS{idVendor}=="2c97", MODE="0660", TAG+="uaccess"

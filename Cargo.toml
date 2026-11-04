@@ -18,6 +18,9 @@ members = [
   "crates/qr-protocol",
   "crates/qr-codec",
   "crates/qr-codec-wasm",
+  "crates/ur-codec",
+  "crates/hw-protocol",
+  "crates/hw-transport",
   "crates/wallet-vault",
   "crates/wallet-flows",
   "crates/tokens-api",
@@ -52,6 +55,9 @@ app-ui-kit = { path = "crates/app-ui-kit", default-features = false }
 bridge-protocol = { path = "crates/bridge-protocol" }
 idl-pack = { path = "crates/idl-pack" }
 qr-codec = { path = "crates/qr-codec" }
+ur-codec = { path = "crates/ur-codec" }
+hw-protocol = { path = "crates/hw-protocol" }
+hw-transport = { path = "crates/hw-transport" }
 wallet-core = { path = "crates/wallet-core" }
 wallet-flows = { path = "crates/wallet-flows" }
 wallet-vault = { path = "crates/wallet-vault" }
@@ -88,6 +94,7 @@ tokio = "1"
 tracing = "0.1"
 tracing-appender = "0.2"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 web-sys = "0.3"
 wincode = "0.6"

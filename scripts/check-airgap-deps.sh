@@ -44,4 +44,11 @@ for pkg in $VIA_DIOXUS; do
   fi
 done
 
+# Hardware wallets are opened through hw-transport, which is no network code.
+# Its scripted fake is for tests: a release must never turn it on.
+if cargo tree --locked -p airlock-offline -e features -i hw-transport 2>/dev/null | grep -E 'hw-transport feature "fake"'; then
+  echo "::error::airlock-offline turns on hw-transport's fake device"
+  exit 1
+fi
+
 echo "airlock-offline normal deps are clean of network and bridge crates."

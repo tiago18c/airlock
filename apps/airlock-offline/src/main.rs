@@ -55,7 +55,7 @@ fn main() {
 
 #[component]
 fn App() -> Element {
-    let core = use_hook(app_ui::open_core);
+    let core = use_hook(|| app_ui::open_core(hw_transport::hub()));
     let core = use_hook(move || CopyValue::new(core));
     // Provides the session context AppShell reads; the value is unused here.
     let _session = app_ui::use_session(core, OnlineHooks::none(), SubmitHandle::none());

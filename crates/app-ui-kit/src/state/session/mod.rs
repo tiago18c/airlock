@@ -119,6 +119,9 @@ pub struct Session {
     /// Something waits for the vault to be unlocked; the shell asks for the
     /// password. See [`Session::when_unlocked`].
     pub unlock_prompt: Signal<Option<UnlockRequest>>,
+    /// The job on a hardware wallet the device dialog shows. See
+    /// `actions::device`.
+    pub device: Signal<Option<crate::state::device::DeviceRun>>,
     /// Probes and the shared RPC client, provided by the online shell.
     online: CopyValue<OnlineHooks>,
     /// Sends and tracks transactions. The online shell plugs in the submitter.
@@ -171,6 +174,7 @@ impl Session {
         save_error: Signal<Option<String>>,
         gate: Signal<bool>,
         unlock_prompt: Signal<Option<UnlockRequest>>,
+        device: Signal<Option<crate::state::device::DeviceRun>>,
         online: CopyValue<OnlineHooks>,
         submitter: CopyValue<SubmitHandle>,
         proposals: Signal<Option<ProposalsOpen>>,
@@ -190,6 +194,7 @@ impl Session {
             save_error,
             gate,
             unlock_prompt,
+            device,
             online,
             submitter,
             proposals,

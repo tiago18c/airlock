@@ -13,6 +13,7 @@ use crate::error::SignError;
 use crate::keys::signer::WalletSigner;
 use crate::tx::decode::{decode_v1_transaction, parse_wire, DecodedTx, TxFormat};
 use crate::tx::signatures::apply_local_signatures;
+use crate::wallets::hardware::HardwareVendor;
 use crate::wallets::relay::{
     authority_slots_in, sign_authorizations_in, sign_vector_authorizations_in, AuthContext,
     AuthorityId,
@@ -104,6 +105,10 @@ pub enum SignerState {
     Invalid,
     /// Not signed, and this device holds the key.
     Local,
+    /// Not signed, and a hardware wallet of this device holds the key: it
+    /// signs on the device once the user confirms there. No vault key
+    /// signs it, and no other device has to bring it.
+    Device,
     /// Not signed, and the key is somewhere else.
     Missing,
 }
@@ -137,8 +142,11 @@ pub struct SignerLine {
     pub signing_as: Option<Pubkey>,
     pub role: SignerRole,
     pub state: SignerState,
-    /// This device holds the key, whether or not it has signed yet.
+    /// This device holds the key, in its vault or on a hardware wallet,
+    /// whether or not it has signed yet.
     pub held_here: bool,
+    /// A hardware wallet of this device holds the key, and signs on it.
+    pub on_device: Option<HardwareVendor>,
 }
 
 impl SignerLine {
@@ -178,6 +186,12 @@ impl SigningStatus {
     /// Nothing is left to sign: the transaction can be submitted.
     pub fn complete(&self) -> bool {
         self.signed() == self.total()
+    }
+
+    /// Signatures a hardware wallet connected here adds, once the user
+    /// confirms on it.
+    pub fn on_devices(&self) -> usize {
+        self.count(|state| state == SignerState::Device)
     }
 
     /// Signatures only another device can add.
@@ -221,6 +235,21 @@ pub struct LocalKeys<'a> {
     pub keys: &'a [Pubkey],
     /// Vector accounts whose key is on this device.
     pub vector: &'a [Pubkey],
+    /// Keys on hardware wallets of this device, with their vendor.
+    pub devices: &'a [(Pubkey, HardwareVendor)],
+}
+
+impl LocalKeys<'_> {
+    fn on_device(&self, pubkey: &Pubkey) -> bool {
+        self.vendor_of(pubkey).is_some()
+    }
+
+    fn vendor_of(&self, pubkey: &Pubkey) -> Option<HardwareVendor> {
+        self.devices
+            .iter()
+            .find(|(key, _)| key == pubkey)
+            .map(|(_, vendor)| *vendor)
+    }
 }
 
 /// Who has to sign `tx`, who has, and what this device, holding the keys
@@ -231,6 +260,7 @@ pub fn signing_status(tx: &DecodedTx, local: &[Pubkey]) -> SigningStatus {
         &LocalKeys {
             keys: local,
             vector: &[],
+            devices: &[],
         },
         &AuthContext::default(),
     )
@@ -240,11 +270,13 @@ pub fn signing_status(tx: &DecodedTx, local: &[Pubkey]) -> SigningStatus {
 /// with what `ctx` says of those accounts.
 pub fn signing_status_in(tx: &DecodedTx, local: &LocalKeys, ctx: &AuthContext) -> SigningStatus {
     let keys = local.keys;
-    let open = |signed: bool, invalid: bool, here: bool| {
+    let open = |signed: bool, invalid: bool, here: bool, device: bool| {
         if signed {
             SignerState::Signed
         } else if here {
             SignerState::Local
+        } else if device {
+            SignerState::Device
         } else if invalid {
             SignerState::Invalid
         } else {
@@ -271,6 +303,10 @@ pub fn signing_status_in(tx: &DecodedTx, local: &LocalKeys, ctx: &AuthContext) -
                     slot.place.is_some() && local.vector.contains(&account)
                 }
             };
+            let device = match slot.authority {
+                AuthorityId::Ed25519(pubkey) => local.on_device(&pubkey),
+                AuthorityId::Vector(_) => false,
+            };
             let signing_as = match slot.authority {
                 AuthorityId::Vector(account) => {
                     ctx.of(&account).and_then(|known| known.signing_pubkey())
@@ -286,9 +322,13 @@ pub fn signing_status_in(tx: &DecodedTx, local: &LocalKeys, ctx: &AuthContext) -
                 state: if slot.verified == Some(false) {
                     SignerState::Invalid
                 } else {
-                    open(slot.signed, false, here)
+                    open(slot.signed, false, here, device)
                 },
-                held_here: here,
+                held_here: here || device,
+                on_device: match slot.authority {
+                    AuthorityId::Ed25519(pubkey) if !here => local.vendor_of(&pubkey),
+                    _ => None,
+                },
             }
         })
         .collect();
@@ -338,8 +378,18 @@ pub fn signing_status_in(tx: &DecodedTx, local: &LocalKeys, ctx: &AuthContext) -
                 } else {
                     SignerRole::Signer
                 },
-                state: open(slot.valid, slot.filled, keys.contains(&slot.pubkey)),
-                held_here: keys.contains(&slot.pubkey),
+                state: open(
+                    slot.valid,
+                    slot.filled,
+                    keys.contains(&slot.pubkey),
+                    local.on_device(&slot.pubkey),
+                ),
+                held_here: keys.contains(&slot.pubkey) || local.on_device(&slot.pubkey),
+                on_device: if keys.contains(&slot.pubkey) {
+                    None
+                } else {
+                    local.vendor_of(&slot.pubkey)
+                },
             }),
     );
     let outer_local = lines[authorities..]

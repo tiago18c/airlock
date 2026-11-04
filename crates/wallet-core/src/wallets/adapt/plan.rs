@@ -194,7 +194,7 @@ pub fn plan_adaptation_with(
 }
 
 /// The acting member of `multisig` first, then its `approves_with`, as
-/// [`PlannedMember`]s. Hardware wallets and nested multisigs are skipped.
+/// [`PlannedMember`]s. Nested multisigs are skipped.
 fn planned_members(
     wallets: &[WalletRecord],
     multisig: &WalletRecord,
@@ -261,7 +261,16 @@ fn planned_members(
                 programmatic: None,
                 nonce: None,
             },
-            WalletKind::Hardware { .. } | WalletKind::Squads { .. } => return Ok(None),
+            WalletKind::Hardware { vendor, .. } => PlannedMember {
+                wallet: id,
+                label: wallet.label.clone(),
+                address,
+                kind: MemberKind::of_device(*vendor),
+                vector: None,
+                programmatic: None,
+                nonce: None,
+            },
+            WalletKind::Squads { .. } => return Ok(None),
         }))
     };
     let Some(acting) = member_wallet.map(resolve).transpose()?.flatten() else {
