@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  The macOS bundle's Info.plist, which `dx bundle` copies as is
+  ([bundle.macos] info_plist_path in Dioxus.toml). The one dx writes itself
+  leaves out NSCameraUsageDescription, and without it WKWebView has no
+  navigator.mediaDevices, so the scanner cannot start. These are the keys dx
+  writes, with that one added. The version follows the workspace's:
+  scripts/release-check.mjs fails a release when it does not.
+-->
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleDisplayName</key>
+	<string>AirlockOffline</string>
+	<key>CFBundleExecutable</key>
+	<string>airlock-offline</string>
+	<key>CFBundleIconFile</key>
+	<string>AirlockOffline.icns</string>
+	<key>CFBundleIdentifier</key>
+	<string>dev.airlock.offline</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>AirlockOffline</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1.0</string>
+	<key>CFBundleVersion</key>
+	<string>0.1.0</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>10.15</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Airlock uses the camera to scan QR codes.</string>
+</dict>
+</plist>
