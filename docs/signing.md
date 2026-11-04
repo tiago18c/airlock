@@ -17,7 +17,7 @@ A wallet record (`wallet_core::wallets::record::WalletKind`) says where the key 
 | Programmatic signer | Nowhere. The address is derived from an authority key | The authority, over an *authorization message* inside the transaction | The wallet set as its fee payer |
 | Vector wallet | Held in the record, a hot wallet of this device, or elsewhere | The authority, over a *digest* of the relay transaction's instructions (an `Advance` slot) | The wallet set as its fee payer |
 | Squads multisig | Nowhere. The vault is a program-derived address | A member, by creating, approving and executing a *proposal* | The wallet set as its fee payer |
-| Hardware (`Hardware`) | On a Ledger the user holds. Trezor and Keystone are planned: see [plan-hardware-wallets.md](plan-hardware-wallets.md) | The device, over the transaction, once the user confirms on it (`RouteStep::DeviceKey`) | The wallet itself, or the wallet set as its fee payer |
+| Hardware (`Hardware`) | On a Ledger, Trezor or Keystone the user holds. See [plan-hardware-wallets.md](plan-hardware-wallets.md) | The device, over the transaction, once the user confirms on it (`RouteStep::DeviceKey`) | The wallet itself, or the wallet set as its fee payer |
 
 A Vector wallet and an Ed25519 programmatic signer share `WalletKind::Programmatic`; the protocol field says which. Settings turns Vector wallets on. Schemes, the program deployment and the decisions behind them are in [vector-fork.md](vector-fork.md).
 
@@ -245,11 +245,23 @@ Approving a Squads proposal, running one, and voting on a Realms proposal sign t
 
 ### Hardware wallet
 
-Add wallet → Hardware reads the keys of a path scheme from the device, ten at a time, and stores the ticked ones with their paths. **Check on device**, and **Show on device** on the row, show the address on the device to compare with the screen. A Ledger is offered while **Pre-release hardware wallets** is on in Settings: Airlock needs its Solana app 1.18, the first that reads v1, which is only a developer build so far.
+Hardware wallets are offered while **Pre-release hardware wallets** is on in Settings. Ledger's Solana app reads v1 from 1.18 and Trezor from its next firmware, both pre-release builds so far. Keystone reads it from 3.0.6, but Airlock's support for it has not been checked on a device yet.
 
-On Sign, the vault's keys sign first. Then each key on a device that has not signed is asked in turn, fee payer first, in the device dialog: connect and unlock the Ledger, open the Solana app (Airlock asks the Ledger to open it), check that the key at the path is this wallet's, then confirm on the device. The dialog shows the hash a Ledger shows when it signs blind. The signature is checked against the key and the message before it goes in. A rejection, a locked device, another app holding it or an app below 1.18 each stop the press with their own sentence, and nothing the device did not sign is changed. Sign reads **Sign on Ledger** when only the device signs.
+**Adding.** Add wallet → Hardware reads a Ledger's or a Trezor's keys for a path scheme, ten at a time, and stores the ticked ones with their paths. **Check on device**, and **Show on device** on the row, show the address on the device to compare with the screen. A Keystone's accounts come from its `crypto-multi-accounts` export (Connect Software Wallet, Solflare), scanned with the camera; its master fingerprint goes on the record. Its Show on device says to open the account's Receive screen.
 
-A message from a site is signed inside an offchain message, version 1, that names the account (`site_message::device_message`), and the site gets that whole message back as `signedMessage`. The Ledger signs only text. A Ledger account cannot sign in: a site would read the header as the sign-in's text, so the bridge refuses a sign-in for it and the sign-in modal does not list it.
+**Signing.** On Sign, the vault's keys sign first. Then each key on a device that has not signed is asked in turn, fee payer first, in the device dialog:
+
+- A Ledger: connect and unlock it, open the Solana app (Airlock asks the Ledger to open it), check that the key at the path is this wallet's, confirm on the device. The dialog shows the hash a Ledger shows when it signs blind.
+- A Trezor: the same over a session that answers each button and the passphrase on the device. Close Trezor Suite first, since it holds the device. A Safe 7 speaks THP, and is refused.
+- A Keystone: the dialog shows the `sol-sign-request` codes, the Keystone signs, and the dialog scans the `sol-signature` back. Its request id must match.
+
+The signature is checked against the key and the message before it goes in. A rejection, a locked device, another app holding it or a version below the minimum each stop the press with their own sentence, and nothing the device did not sign is changed. Sign reads **Sign on Ledger** (or Trezor, or Keystone) when only the device signs. A Keystone wallet with a durable nonce takes a site's request as an offline wallet does.
+
+**An authority.** A key on a device can be a programmatic signer's authority. The Authorization press asks the device to sign `relay::authorization_to_sign`, a v1 message with no blockhash, blind, and the relay transaction is signed on the next press. A hardware row has **Set up** for its programmatic signer, a durable nonce, and the default path.
+
+**Messages.** A Ledger or Trezor signs a site's message inside an offchain message, version 1, that names the account (`site_message::device_message`), and the site gets that whole message back as `signedMessage`. They sign only text, and cannot sign in: a site would read the header as the sign-in's text, so the bridge refuses a sign-in for them and the sign-in modal does not list them. A Keystone signs a message, and a sign-in, as a hot key does: the bytes as they are.
+
+**In a browser.** The web build opens a Ledger over WebHID and a Trezor over WebUSB, in Chromium on a secure page. The page sees a device only once the user chose it, from **Choose your Ledger** in the dialog. A Keystone works in any browser with a camera.
 
 ### Programmatic signer
 
@@ -688,7 +700,7 @@ A summary on either device is only as good as the IDLs it was read with. IDLs fe
 
 - **A site's blockhash outlives no QR round trip** unless the offline key has a durable nonce and is the only signer missing. A request that also waits on another outside key, or that a site already signed, stays on its blockhash.
 - **Transactions prepared on one durable nonce are not tracked.** Only the first to land is valid. Nothing warns before a second is made on the same nonce.
-- **Hardware wallets are Ledger only.** Trezor and Keystone, a hardware key as a programmatic signer's authority, and the web build are still to come ([plan-hardware-wallets.md](plan-hardware-wallets.md)). A Ledger's signature made on Airlock Offline goes out over QRS1 as any other.
+- **Hardware wallets are not checked on devices yet**, and a Trezor Safe 7, which speaks THP, is refused ([plan-hardware-wallets.md](plan-hardware-wallets.md)). A hardware signature made on Airlock Offline goes out over QRS1 as any other.
 - **A node can lie, and the online device cannot tell.** See [the threat model](browser-bridge.md#a-node-that-lies).
 - **Code that ran in the window could still get something out**, through the default browser or WebRTC. What the screens show does not run as code, and a policy holds the rest. See [the threat model](browser-bridge.md#threats).
 - **An approval on an offline device is taken on trust.** It signs a proposal's address, and what the proposal holds can only be what the other device says. See [What a transaction does not hold](#what-a-transaction-does-not-hold).

@@ -59,7 +59,22 @@ v1 has been live on mainnet since epoch 1035 (15 Sep 2026, feature `txv1aq4pp281
 
 ## Where things stand
 
-Done so far (H0, H1, most of H2): the record and routing, `ur-codec`, `hw-protocol`, `hw-transport` for a Ledger over HID, `wallet_flows::device`, the device dialog, Add wallet → Hardware → Ledger, Show on device, signing on the Sign screen and in the request modal, messages as OCMS v1 with sign-in refused, the Settings switch (D13) and the Linux udev rule. Left in H2: Speculos in CI, the notarized macOS check, and the device checklist. What follows is how things stood before H0.
+Done so far: H0, H1, H3, H4, H6 and H7, and most of H2.
+
+- H2: Ledger over HID, the device dialog, Add wallet, Show on device, signing on the Sign screen and in the request modal, messages as OCMS v1 with sign-in refused, the Settings switch (D13), the Linux udev rule.
+- H3: Keystone over QR, and a request returned whenever an inserted signature completes it.
+- H4: Trezor over Codec v1, through `nusb`.
+- H6: a hardware key as a programmatic signer's authority.
+- H7: WebHID and WebUSB in the web build.
+
+Left:
+
+- Speculos and the Trezor emulator in CI (`hw-tests`), the notarized macOS check, and the device checklist for each vendor.
+- Qr-codec's alphanumeric segment. UR codes go out in byte mode, which every reader takes; alphanumeric would make them smaller.
+- Trezor's `token_accounts_infos`. Token accounts are shown by address.
+- H5, the Safe 7 over THP. A real Safe 7 pairs by Code Entry (CPace), QR or NFC, and `trezor-thp` 0.1.1 implements none of them. It needs that pairing written and checked against the emulator (a T3W1 build) before it ships. Until then a Safe 7 is refused with a sentence.
+
+What follows is how things stood before H0.
 
 - `crates/wallet-core/src/wallets/record.rs` has `HardwareVendor { Ledger }` and `WalletKind::Hardware { vendor, paths }`, with no pubkey. `WalletRecord::address()` is `None` for it (`record_keys.rs`), so `signing_route` refuses it with `RouteError::Hardware` ("Hardware wallets are not supported yet."). `can_sign` and `can_pay` are false. `adapt::plan` and `proposals::combined` skip it, and `shared_keys` gives it nothing. The screens cannot make one, so the shape can change without a migration; only `proposals/tests/combined.rs` builds one.
 - `WalletClass::Hardware`, `WalletSort::Hardware` and `Glyph::Device` exist. Wallets shows an empty "Hardware wallets" group that says they are not supported, and Add wallet has a Hardware tab that says import is not available yet (`app-ui-wallets/src/ui/wallets/add_modal.rs`, `mod.rs`).
