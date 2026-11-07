@@ -5,10 +5,12 @@
 //! in use, and those of every other address. The activity feed listens on
 //! the node's WebSocket for each wallet's balance, shown as it changes, and
 //! for transactions that mention a wallet, which have the balances job read
-//! again. So does a transaction the app sent landing.
+//! again. So does a transaction the app sent landing. Both list the wallets'
+//! transaction history again too, and a fourth job reads what is new of it.
 
 mod activity;
 mod balances;
+mod history;
 mod prices;
 mod scheduler;
 mod tokens;
@@ -22,13 +24,14 @@ pub use balances::{
     refresh_targets, register_balances, wallet_addresses, BALANCES_INTERVAL, BEHIND_TRIES,
     BEHIND_WAIT, FEED_UP_BALANCES_INTERVAL,
 };
+pub use history::{load_older, register_history, run_history, watch_wallets, HISTORY_INTERVAL};
 pub use prices::{
     portfolio_addresses, register_prices, register_prices_with, SourceFn, PRICES_INTERVAL,
     PRICES_JOB,
 };
 pub use scheduler::{
     Cancelled, JobCtx, JobFn, JobOk, JobResult, Scheduler, Trigger, BALANCES_JOB,
-    CURRENT_TOKENS_JOB, INITIAL_BACKOFF, MAX_BACKOFF, TOKENS_JOB,
+    CURRENT_TOKENS_JOB, HISTORY_JOB, INITIAL_BACKOFF, MAX_BACKOFF, TOKENS_JOB,
 };
 pub use tokens::{register_tokens, watch_selection, CURRENT_TOKENS_INTERVAL, TOKENS_INTERVAL};
 

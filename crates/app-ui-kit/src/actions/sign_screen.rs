@@ -4,7 +4,7 @@
 use crate::actions::sentence;
 use crate::actions::sign::{prepare_request, rebuild_for_wallets, ReceivedMeta, ONTO_NONCE_NOTE};
 use crate::diagnostics::{next_flow_id, source_name, TxLog};
-use crate::state::forms::{BlockhashExpiry, SignLoad, SimState, SiteSend, TxSource};
+use crate::state::forms::{BlockhashExpiry, SignLoad, SimState, SiteSend, Submission, TxSource};
 use crate::state::session::Session;
 use app_core::bridge::BridgeAnswer;
 use dioxus::prelude::*;
@@ -1286,11 +1286,14 @@ pub fn device_lines(
 }
 
 /// Send what is on screen. The toast follows it from then on, whatever the screen
-/// does: only the transaction that was sent is cleared off it.
+/// does. The screen says what became of it ([`Submission`]) and keeps the
+/// transaction until the user moves on: to History, to a clear screen, or
+/// back to it when it did not land.
 pub fn submit_loaded(session: Session, mut busy: Signal<bool>) {
     let form = session.forms.sign;
     let mut error = form.error;
     let mut last = form.last_signature;
+    let mut submission = form.submission;
     let Some(wire) = form.wire.peek().clone() else {
         return;
     };
@@ -1312,6 +1315,7 @@ pub fn submit_loaded(session: Session, mut busy: Signal<bool>) {
         .map(|expiry| expiry.last_valid_height);
     error.set(None);
     busy.set(true);
+    submission.set(Some(Submission::Sending));
     let rpc = session.rpc();
     let submitter = session.submitter();
     spawn(async move {
@@ -1328,20 +1332,19 @@ pub fn submit_loaded(session: Session, mut busy: Signal<bool>) {
             return;
         }
         match submitted {
-            // The toast follows the transaction from here.
+            // Its notice follows the transaction from here, and the screen
+            // with it.
             Ok(signature) => {
                 last.set(Some(signature.to_string()));
-                form.clear();
+                submission.set(Some(Submission::Sent(signature)));
             }
-            // Kept on screen: if the node never got it, this is how to send it.
-            Err(unknown @ SendFailure::Unknown { .. }) => {
-                error.set(Some(format!(
-                    "{} Its toast will say what became of it. Sending it again is safe, because one transaction cannot land twice.",
-                    sentence(unknown)
-                )));
+            // It may still land, and its notice will say. If the node never
+            // got it, sending it again is how to send it.
+            Err(SendFailure::Unknown { signature, .. }) => {
+                submission.set(Some(Submission::Sent(signature)));
             }
             Err(err) => {
-                error.set(Some(sentence(err)));
+                submission.set(Some(Submission::Refused(sentence(err))));
             }
         }
     });

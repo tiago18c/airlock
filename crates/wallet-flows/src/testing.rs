@@ -16,8 +16,9 @@ use std::task::{Poll, Waker};
 use wallet_core::simulate::{SimulationReply, SimulationRequest};
 use wallet_core::stake::{EpochInfo, StakeReward};
 use wallet_core::{
-    compile_v1, decode_v1_transaction, DecodedTx, DiscoveredTokenAccount, RawAccount, RpcError,
-    SignatureStatus, SolanaRpc, STAKE_PROGRAM_ID, SYSTEM_PROGRAM_ID,
+    compile_v1, decode_v1_transaction, AddressSignature, DecodedTx, DiscoveredTokenAccount,
+    LandedTx, RawAccount, RpcError, SignatureStatus, SolanaRpc, STAKE_PROGRAM_ID,
+    SYSTEM_PROGRAM_ID,
 };
 
 pub fn pk(byte: u8) -> Pubkey {
@@ -85,6 +86,12 @@ pub struct FakeRpc {
     pub simulation: Option<SimulationReply>,
     /// Addresses that were used on chain. Every other one has no history.
     pub used: Vec<Pubkey>,
+    /// What each address's history lists, newest first.
+    pub history: HashMap<Pubkey, Vec<AddressSignature>>,
+    /// Landed transactions by signature. Any other is not found.
+    pub landed: HashMap<Signature, LandedTx>,
+    /// The signatures whose transaction was read, in order.
+    pub landed_asked: Mutex<Vec<Signature>>,
     pub rewards: Vec<StakeReward>,
     /// Statuses returned by [`SolanaRpc::get_signature_statuses`].
     pub signature_statuses: Mutex<HashMap<Signature, Option<SignatureStatus>>>,
@@ -360,6 +367,37 @@ impl SolanaRpc for FakeRpc {
         } else {
             Vec::new()
         })
+    }
+
+    async fn get_address_history(
+        &self,
+        address: &Pubkey,
+        limit: usize,
+        before: Option<&Signature>,
+    ) -> Result<Vec<AddressSignature>, RpcError> {
+        self.count()?;
+        let mut listed = self.history.get(address).cloned().unwrap_or_default();
+        if let Some(before) = before {
+            let after = listed
+                .iter()
+                .position(|item| item.signature == *before)
+                .map_or(listed.len(), |at| at + 1);
+            listed.drain(..after);
+        }
+        listed.truncate(limit);
+        Ok(listed)
+    }
+
+    async fn get_landed_transaction(
+        &self,
+        signature: &Signature,
+    ) -> Result<Option<LandedTx>, RpcError> {
+        self.count()?;
+        self.landed_asked
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .push(*signature);
+        Ok(self.landed.get(signature).cloned())
     }
 
     async fn simulate(&self, _request: &SimulationRequest) -> Result<SimulationReply, RpcError> {

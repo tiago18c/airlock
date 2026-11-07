@@ -172,6 +172,66 @@ pub struct SignatureStatus {
     pub confirmation: Option<ConfirmationLevel>,
 }
 
+/// One transaction that named an address, as a node lists them: newest
+/// first.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct AddressSignature {
+    pub signature: Signature,
+    pub slot: u64,
+    /// When its block was made, in unix seconds, if the node knows.
+    pub block_time: Option<i64>,
+    /// The on-chain failure, as text. `None` when it succeeded.
+    pub err: Option<String>,
+}
+
+/// A transaction that landed, as a node keeps it: its bytes, and what
+/// running it did. Kept on disk, so it is read from the node once.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LandedTx {
+    pub slot: u64,
+    #[serde(default)]
+    pub block_time: Option<i64>,
+    #[serde(with = "crate::ids::bytes_base64")]
+    pub wire: Vec<u8>,
+    /// The on-chain failure, as text. `None` when it succeeded.
+    #[serde(default)]
+    pub err: Option<String>,
+    pub fee: u64,
+    /// What its lookup tables loaded: every table's writable addresses,
+    /// then every table's readonly ones, as the runtime orders them.
+    #[serde(default, with = "crate::ids::pubkey_strings")]
+    pub loaded_writable: Vec<Pubkey>,
+    #[serde(default, with = "crate::ids::pubkey_strings")]
+    pub loaded_readonly: Vec<Pubkey>,
+    /// Lamports of each account before and after, in account order.
+    #[serde(default)]
+    pub pre_balances: Vec<u64>,
+    #[serde(default)]
+    pub post_balances: Vec<u64>,
+    /// Token accounts whose balance it read or changed.
+    #[serde(default)]
+    pub token_balances: Vec<TokenBalanceChange>,
+    #[serde(default)]
+    pub logs: Vec<String>,
+}
+
+/// A token account's balance before and after a landed transaction.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TokenBalanceChange {
+    /// The token account, by its index among the transaction's accounts.
+    pub account_index: u8,
+    #[serde(with = "crate::ids::pubkey_string")]
+    pub mint: Pubkey,
+    #[serde(default, with = "crate::ids::option_pubkey_string")]
+    pub owner: Option<Pubkey>,
+    pub decimals: u8,
+    /// Raw amounts. An account that did not exist on one side holds 0.
+    pub pre: u64,
+    pub post: u64,
+}
+
 /// Chain access, one request per method. What is done with the answers is in
 /// the `wallet-flows` crate.
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
@@ -254,6 +314,29 @@ pub trait SolanaRpc: Send + Sync {
     ) -> Result<Vec<Signature>, RpcError> {
         Err(RpcError::Message(
             "This node cannot list the transactions of an address.".into(),
+        ))
+    }
+    /// [`get_signatures_for_address`](Self::get_signatures_for_address),
+    /// with the slot, time and outcome of each. With `before`, the ones that
+    /// came before that transaction, newest first.
+    async fn get_address_history(
+        &self,
+        _address: &Pubkey,
+        _limit: usize,
+        _before: Option<&Signature>,
+    ) -> Result<Vec<AddressSignature>, RpcError> {
+        Err(RpcError::Message(
+            "This node cannot list the transactions of an address.".into(),
+        ))
+    }
+    /// A landed transaction, with what running it did. `None` when the node
+    /// does not have it, or not yet.
+    async fn get_landed_transaction(
+        &self,
+        _signature: &Signature,
+    ) -> Result<Option<LandedTx>, RpcError> {
+        Err(RpcError::Message(
+            "This node cannot read a landed transaction.".into(),
         ))
     }
     /// What `request` would do if it were sent now. Nothing is sent.

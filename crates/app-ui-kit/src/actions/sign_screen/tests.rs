@@ -2,7 +2,7 @@
 //! and the real actions, on a node whose answers a test holds back.
 
 use super::*;
-use crate::state::forms::SignForm;
+use crate::state::forms::{SignForm, Submission};
 use crate::state::session::OnlineHooks;
 use crate::state::submit::{SiteSendFut, SubmitFut, SubmitHandle, TxSubmit};
 use crate::state::use_session;
@@ -662,18 +662,52 @@ impl TxSubmit for HeldSubmit {
 }
 
 #[tokio::test]
-async fn a_submit_clears_what_it_sent() {
+async fn a_submit_keeps_what_it_sent_on_screen_and_says_it_went() {
     let gate = Arc::new(Gate::default());
-    let mut screen = Screen::submitting(SubmitHandle::new(HeldSubmit(gate))).await;
+    let mut screen = Screen::submitting(SubmitHandle::new(HeldSubmit(gate.clone()))).await;
     let wire = screen.transfer(1);
     screen.load(&wire, TxSource::Pasted);
     let busy = screen.busy();
+    let form = screen.form();
+
+    gate.hold();
+    screen.act(|| submit_loaded(screen.session, busy));
+    screen.settle().await;
+    screen.act(|| assert_eq!(*form.submission.peek(), Some(Submission::Sending)));
+
+    gate.open();
+    screen.settle().await;
+    // The user goes on from there: to History, a clear screen, or back.
+    assert_eq!(screen.wire().unwrap(), wire);
+    screen.act(|| {
+        assert!(form.last_signature.peek().is_some());
+        assert_eq!(
+            *form.submission.peek(),
+            Some(Submission::Sent(Signature::from([1; 64])))
+        );
+    });
+    screen.act(|| form.clear());
+    screen.act(|| assert_eq!(*form.submission.peek(), None));
+}
+
+#[tokio::test]
+async fn a_refused_submit_keeps_the_transaction_for_another_try() {
+    let mut screen = Screen::new().await;
+    let wire = screen.transfer(1);
+    screen.load(&wire, TxSource::Pasted);
+    let busy = screen.busy();
+    let form = screen.form();
     screen.act(|| submit_loaded(screen.session, busy));
     screen.settle().await;
 
-    assert_eq!(screen.wire(), None);
-    let form = screen.form();
-    screen.act(|| assert!(form.last_signature.peek().is_some()));
+    assert_eq!(screen.wire().unwrap(), wire);
+    screen.act(|| {
+        assert!(matches!(
+            &*form.submission.peek(),
+            Some(Submission::Refused(_))
+        ));
+        assert!(!*busy.peek());
+    });
 }
 
 #[tokio::test]

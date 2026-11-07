@@ -8,6 +8,7 @@
 pub mod bridge;
 pub mod diagnostics;
 pub mod events;
+pub mod history;
 pub mod lock;
 pub mod notices;
 pub mod ports;
@@ -24,6 +25,7 @@ pub mod testing;
 
 pub use crate::commands::{Core, SAVE_INTERVAL};
 pub use events::Event;
+pub use history::{History, HistoryEntry, Outcome};
 /// The port a shell opens hardware wallets through, and what it sees.
 pub use hw_protocol::link::{Connected, DeviceHub, DeviceKind};
 pub use lock::{LockPolicy, LockReason};

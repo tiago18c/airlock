@@ -2548,3 +2548,99 @@ textarea.short { min-height: 64px; }
   .pf-line-main > .pf-price,
   .pf-line-main > .pf-change { display: none; }
 }
+
+/* ---------- History ---------- */
+
+.history-list { display: grid; gap: var(--space-2); }
+.history-item { display: grid; gap: var(--space-2); }
+.history-day {
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-3);
+}
+.history-item:first-child .history-day { margin-top: 0; }
+.history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  width: 100%;
+  height: auto;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  white-space: normal;
+  cursor: pointer;
+}
+.history-row:hover { background: var(--surface-2); border-color: var(--border-strong); }
+.history-row-main { display: grid; gap: var(--space-1); min-width: 0; flex: 1; }
+.history-row-text { font-weight: var(--weight-medium); overflow-wrap: anywhere; }
+.history-row-sub { font-size: var(--text-sm); }
+.history-row-side {
+  display: grid;
+  justify-items: end;
+  gap: var(--space-1);
+  flex: 0 0 auto;
+}
+.history-amount {
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+}
+.history-amount.gain { color: var(--ok-text); }
+.history-back { justify-self: start; gap: var(--space-1); }
+.history-meta {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+}
+.history-meta dt { color: var(--text-3); font-size: var(--text-sm); }
+.history-meta dd { display: grid; gap: var(--space-1); margin: 0; min-width: 0; }
+.history-sig { display: flex !important; align-items: center; gap: var(--space-2); }
+.history-logs {
+  margin: 0;
+  max-height: 24rem;
+  overflow: auto;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  font-size: var(--text-sm);
+  white-space: pre-wrap;
+}
+
+/* ---------- Submit progress ---------- */
+
+.submit-stage {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  text-align: center;
+}
+.submit-title { font-size: var(--text-lg); font-weight: var(--weight-semibold); }
+.submit-sig { font-size: var(--text-sm); color: var(--text-3); }
+.submit-spin {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--info-line);
+  border-top-color: var(--info-solid);
+  border-radius: 50%;
+  animation: toast-spin 0.8s linear infinite;
+}
+.submit-mark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+}
+.submit-mark .icon { width: 24px; height: 24px; }
+.submit-mark.ok { background: var(--ok-soft); color: var(--ok-text); }
+.submit-mark.danger { background: var(--danger-soft); color: var(--danger-text); }
+.submit-stage .btn-row { justify-content: center; }
+.submit-stage .error { justify-self: stretch; text-align: left; overflow-wrap: anywhere; }

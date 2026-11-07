@@ -25,6 +25,16 @@ pub struct ProgramForm {
     pub parsed: Signal<bool>,
 }
 
+/// The History screen: which wallet it shows, and the transaction open.
+#[derive(Clone, Copy)]
+pub struct HistoryForm {
+    /// Only this wallet's transactions. `None` shows every wallet's.
+    pub wallet: Signal<Option<Pubkey>>,
+    /// The transaction open in detail.
+    pub selected: Signal<Option<solana_signature::Signature>>,
+    pub view: Signal<SignView>,
+}
+
 #[derive(Clone, Copy)]
 pub struct Forms {
     pub wallet: WalletForm,
@@ -34,6 +44,7 @@ pub struct Forms {
     pub stake: StakeForm,
     pub send: SendForm,
     pub program: ProgramForm,
+    pub history: HistoryForm,
 }
 
 pub fn use_forms() -> Forms {
@@ -101,6 +112,7 @@ pub fn use_forms() -> Forms {
             tables: use_signal(wallet_core::LookupTables::new),
             clock: use_blockhash_clock_state(),
             last_signature: use_signal(|| None::<String>),
+            submission: use_signal(|| None::<Submission>),
             rebuilding: use_signal(|| false),
             auto_rebuilt_for: use_signal(|| None::<[u8; 32]>),
             rebuilt: use_signal(|| false),
@@ -126,6 +138,11 @@ pub fn use_forms() -> Forms {
         program: ProgramForm {
             selected: use_signal(|| None::<Pubkey>),
             parsed: use_signal(|| true),
+        },
+        history: HistoryForm {
+            wallet: use_signal(|| None::<Pubkey>),
+            selected: use_signal(|| None),
+            view: use_signal(|| SignView::Summary),
         },
     }
 }

@@ -72,6 +72,9 @@ pub fn use_online_window(
                 match toast_click_action(&core.peek().public(), click.notice_id) {
                     ToastClickAction::OpenRequestModal => request_modal.show(),
                     ToastClickAction::OpenNotices { focus } => session.open_notices(focus),
+                    ToastClickAction::ShowInHistory { signature } => {
+                        session.open_in_history(signature)
+                    }
                 }
             }
         }

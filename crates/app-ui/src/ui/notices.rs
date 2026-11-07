@@ -261,6 +261,8 @@ fn TxNoticeDetail(notice: Notice) -> Element {
     let (chip_class, chip_label, spinning) = tx_status_chip(status);
     let cluster_name = cluster.name().to_string();
     let flow_id = *flow;
+    let in_history = shows_in_history(&session, signature);
+    let signature = *signature;
 
     rsx! {
         div { class: "notice-detail",
@@ -276,6 +278,17 @@ fn TxNoticeDetail(notice: Notice) -> Element {
             }
             code { class: "mono notice-sig", "{sig}" }
             div { class: "btn-row",
+                if in_history {
+                    button {
+                        class: "sm",
+                        r#type: "button",
+                        onclick: move |_| {
+                            session.close_notices();
+                            session.open_in_history(signature);
+                        },
+                        "View transaction"
+                    }
+                }
                 if let Some(url) = explorer_url.clone() {
                     button {
                         class: "ghost sm",
@@ -302,6 +315,12 @@ fn TxNoticeDetail(notice: Notice) -> Element {
             }
         }
     }
+}
+
+/// Whether History has `signature`, which ran on chain, to open. A build
+/// without History lists none.
+pub(crate) fn shows_in_history(session: &Session, signature: &solana_signature::Signature) -> bool {
+    session.history.read().get(signature).is_some()
 }
 
 #[component]

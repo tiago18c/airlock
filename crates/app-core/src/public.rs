@@ -111,6 +111,15 @@ impl PublicCore {
         self.inner.holdings_deferred(name, f);
     }
 
+    /// Change the transaction history. `f` says whether it changed anything.
+    pub fn history_deferred(
+        &self,
+        name: &'static str,
+        f: impl FnOnce(&mut crate::history::History) -> bool,
+    ) {
+        self.inner.history_deferred(name, f);
+    }
+
     pub fn notices_push(&self, kind: NoticeKind) -> NoticeId {
         self.inner.notices_push(kind)
     }
