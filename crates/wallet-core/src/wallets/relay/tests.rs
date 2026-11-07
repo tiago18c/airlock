@@ -521,3 +521,26 @@ fn a_programmatic_wrap_keeps_the_order_of_the_instructions() {
         .iter()
         .any(|slot| slot.pubkey == other.pubkey()));
 }
+
+#[test]
+fn a_device_is_given_the_authorization_its_key_signs_and_its_signature_goes_in() {
+    let s = setup();
+    let wrapped = s.wrapped();
+    let tx = decode_v1_transaction(&wrapped).unwrap();
+    let bytes = authorization_to_sign(&tx, &s.authority.pubkey()).unwrap();
+    // A v1 message, which a hardware wallet signs as a transaction.
+    assert_eq!(bytes[0], 0x81);
+    assert_eq!(authorization_to_sign(&tx, &pk(40)), None);
+
+    let signature = s.authority.try_sign_message(&bytes).unwrap();
+    let done = insert_authority_signature_in(
+        &wrapped,
+        &s.authority.pubkey(),
+        &signature.into(),
+        &AuthContext::default(),
+    )
+    .unwrap();
+    let signed = decode_v1_transaction(&done.wire).unwrap();
+    assert!(authority_slots(&signed).iter().all(|slot| slot.signed));
+    assert_eq!(authorization_to_sign(&signed, &s.authority.pubkey()), None);
+}

@@ -3,8 +3,8 @@
 use super::*;
 use crate::ids::WalletId;
 use crate::keys::signer::KeypairSigner;
-use crate::wallets::record::{HardwareVendor, WalletKind, WalletRecord};
-use std::collections::BTreeSet;
+use crate::wallets::hardware::HardwareVendor;
+use crate::wallets::record::WalletRecord;
 
 const HOT: MemberKind = MemberKind::HotKey;
 const OFFLINE: MemberKind = MemberKind::Offline;
@@ -48,15 +48,7 @@ fn hot_wallet(label: &str) -> WalletRecord {
 }
 
 fn hardware_wallet() -> WalletRecord {
-    WalletRecord {
-        id: WalletId::new(),
-        label: "Ledger".into(),
-        tags: BTreeSet::new(),
-        kind: WalletKind::Hardware {
-            vendor: HardwareVendor::Ledger,
-            paths: Vec::new(),
-        },
-    }
+    WalletRecord::hardware("Ledger", HardwareVendor::Ledger, pk(22), "m/44'/501'/0'/0'")
 }
 
 /// A multisig wallet acted on by `acting`, with `others` approving together.
@@ -98,6 +90,8 @@ fn the_chosen_members_are_the_acting_one_and_then_the_rows_list_as_the_chain_kno
     let want = vec![
         expected(&acting, PERMISSION_ALL, HOT),
         expected(&cold, PERMISSION_VOTE, OFFLINE),
+        // A Ledger answers over a cable, so it votes as a hot key does.
+        expected(&ledger, 0, HOT),
         expected(&signer, PERMISSION_EXECUTE, SIGNER_WITHOUT_NONCE),
         // The chain does not list it, so it has no permissions.
         expected(&stranger, 0, HOT),
@@ -115,7 +109,7 @@ fn the_chosen_members_are_the_acting_one_and_then_the_rows_list_as_the_chain_kno
     // A nonce account on the signer is seen.
     signer.kind.set_executor_nonce(Some(pk(30)));
     wallets[1] = signer.clone();
-    assert_eq!(chosen_members(&wallets, team_id, &on_chain)[2].kind, SIGNER);
+    assert_eq!(chosen_members(&wallets, team_id, &on_chain)[3].kind, SIGNER);
 
     // A Vector wallet takes part. Its key is wherever its record says.
     let vector = WalletRecord::vector(
@@ -137,9 +131,25 @@ fn the_chosen_members_are_the_acting_one_and_then_the_rows_list_as_the_chain_kno
         vec![(acting.id, HOT), (vector.id, VECTOR), (cold.id, OFFLINE)]
     );
 
+    // A Keystone answers through QR codes, so it votes as an offline key does.
+    let keystone = WalletRecord::hardware(
+        "Keystone",
+        HardwareVendor::Keystone,
+        pk(23),
+        "m/44'/501'/0'",
+    );
+    let team = multisig(Some(acting.id), vec![keystone.id]);
+    let id = team.id;
+    wallets.extend([keystone.clone(), team]);
+    let chosen: Vec<(WalletId, MemberKind)> = chosen_members(&wallets, id, &on_chain)
+        .iter()
+        .map(|member| (member.wallet, member.kind))
+        .collect();
+    assert_eq!(chosen, vec![(acting.id, HOT), (keystone.id, OFFLINE)]);
+
     // Nobody is chosen without an acting member, or when it is a wallet that
-    // cannot take part.
-    for acting in [None, Some(ledger.id)] {
+    // cannot take part: a multisig.
+    for acting in [None, Some(team_id)] {
         let team = multisig(acting, vec![cold.id]);
         let id = team.id;
         wallets.push(team);

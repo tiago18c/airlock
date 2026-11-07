@@ -39,10 +39,12 @@ impl WalletRecord {
     }
 
     /// The address this wallet is known by: where its funds are and what a
-    /// program sees acting. A hardware wallet has none until it is read.
+    /// program sees acting.
     pub fn address(&self) -> Option<Pubkey> {
         match &self.kind {
-            WalletKind::Offline { pubkey, .. } => Some(*pubkey),
+            WalletKind::Offline { pubkey, .. } | WalletKind::Hardware { pubkey, .. } => {
+                Some(*pubkey)
+            }
             WalletKind::Squads { vault, .. } => Some(*vault),
             WalletKind::Programmatic { protocol, .. } => match protocol {
                 Protocol::Ed25519Signer { authority, .. } => {
@@ -58,7 +60,6 @@ impl WalletRecord {
             WalletKind::Keypair { pubkey, .. } | WalletKind::Seed { pubkey, .. } => {
                 pubkey.or_else(|| self.signer().ok().map(|signer| signer.pubkey()))
             }
-            WalletKind::Hardware { .. } => None,
         }
     }
 
@@ -138,7 +139,13 @@ impl WalletRecord {
             }
             | WalletKind::Hardware {
                 vendor: _,
-                paths: _,
+                pubkey: _,
+                path: _,
+                device: _,
+                seen: _,
+                fee_payer: _,
+                durable_nonce: _,
+                default_path: _,
             }
             | WalletKind::Squads {
                 program: _,

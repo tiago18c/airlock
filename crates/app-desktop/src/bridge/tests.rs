@@ -249,6 +249,7 @@ fn shareable(pubkey: Pubkey) -> wallet_core::ShareableAccount {
         label: "Main".into(),
         contract: false,
         summary: String::new(),
+        on_device: None,
     }
 }
 
@@ -1292,4 +1293,53 @@ fn a_second_launch_asking_to_show_is_not_the_extension() {
     assert_eq!(*extension.borrow(), 0);
     drop(launch);
     assert_eq!(*extension.borrow(), 0);
+}
+
+/// A vault with a Ledger wallet at `key`, connected to the test origin.
+fn ledger_connected(kit: &Kit, bridge: &Bridge, key: Pubkey) {
+    kit.core.create_vault("pw").unwrap();
+    let ledger = wallet_core::WalletRecord::hardware(
+        "Ledger",
+        wallet_core::HardwareVendor::Ledger,
+        key,
+        "m/44'/501'/0'/0'",
+    );
+    kit.core
+        .enroll(
+            "add_hardware_wallets",
+            |data| data.add_hardware_wallets(std::slice::from_ref(&ledger)),
+            |book, _| wallet_core::name_offline_wallet(book, key, "Ledger"),
+        )
+        .unwrap();
+    connected_as(kit, bridge, key, false);
+}
+
+#[tokio::test]
+async fn a_ledger_signs_messages_as_text_and_never_signs_in() {
+    let (kit, bridge) = attached_bridge();
+    let key = Pubkey::new_from_array([42; 32]);
+    ledger_connected(&kit, &bridge, key);
+
+    // Text reaches the user; bytes the Ledger cannot show do not.
+    let peer = Peer::new(bridge.clone(), None);
+    let waiting = sent(&peer, sign_message("m", key, b"hello there"));
+    assert!(matches!(waiting, Answer::Later(_)));
+    peer.closed();
+    let binary = ask(&bridge, sign_message("b", key, &[0x00, 0x01, 0xfe]));
+    assert_eq!(binary["error"]["code"], "rejected");
+    assert!(binary["error"]["message"]
+        .as_str()
+        .unwrap()
+        .contains("only text"));
+
+    // A sign-in for the Ledger's account is refused before the user sees it.
+    let sign_in = ask(
+        &bridge,
+        sign_in_ask("s", json!({ "address": key.to_string() })),
+    );
+    assert_eq!(sign_in["error"]["code"], "rejected");
+    assert!(sign_in["error"]["message"]
+        .as_str()
+        .unwrap()
+        .contains("cannot sign in"));
 }

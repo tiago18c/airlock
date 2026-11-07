@@ -1,7 +1,8 @@
 //! From a wallet to the key that signs for it, and who pays.
 //!
-//! A hot wallet signs for itself. An offline wallet is signed for on another
-//! device. A programmatic signer is signed for by its authority key, which is
+//! A hot wallet signs for itself. A hardware wallet is signed for on a device
+//! connected here, once the user confirms on it. An offline wallet is signed
+//! for on another device. A programmatic signer is signed for by its authority key, which is
 //! a wallet of its own or, for a Vector account, may be kept in the signer's
 //! record. A Squads multisig is acted on by one of its members, which may
 //! itself be a programmatic signer. So the longest chain is
@@ -14,6 +15,7 @@
 //! may hold no funds at all.
 
 use crate::ids::WalletId;
+use crate::wallets::hardware::HardwareVendor;
 use crate::wallets::programmatic::programmatic_signer_address;
 use crate::wallets::record::{Authority, Protocol, WalletKind, WalletRecord};
 use crate::wallets::squads::Squad;
@@ -49,6 +51,13 @@ pub enum RouteStep {
     },
     /// A key in this vault.
     Key { wallet: WalletId, pubkey: Pubkey },
+    /// A key on a hardware wallet of this vault: a device connected here
+    /// signs once the user confirms on it.
+    DeviceKey {
+        wallet: WalletId,
+        pubkey: Pubkey,
+        vendor: HardwareVendor,
+    },
     /// A key in this vault that is no wallet of its own: it is kept in the
     /// record of the one account it controls, and has no address.
     HeldKey { wallet: WalletId },
@@ -79,7 +88,9 @@ impl SigningRoute {
     /// The key at the end of the chain.
     pub fn signing_key(&self) -> Option<Pubkey> {
         match self.steps.last()? {
-            RouteStep::Key { pubkey, .. } | RouteStep::OutsideKey { pubkey } => Some(*pubkey),
+            RouteStep::Key { pubkey, .. }
+            | RouteStep::DeviceKey { pubkey, .. }
+            | RouteStep::OutsideKey { pubkey } => Some(*pubkey),
             _ => None,
         }
     }
@@ -88,7 +99,7 @@ impl SigningRoute {
     pub fn is_local(&self) -> bool {
         matches!(
             self.steps.last(),
-            Some(RouteStep::Key { .. } | RouteStep::HeldKey { .. })
+            Some(RouteStep::Key { .. } | RouteStep::DeviceKey { .. } | RouteStep::HeldKey { .. })
         )
     }
 }
@@ -97,15 +108,13 @@ impl SigningRoute {
 pub enum RouteError {
     #[error("That wallet is no longer in the vault.")]
     UnknownWallet,
-    #[error("Hardware wallets are not supported yet.")]
-    Hardware,
     #[error("Choose which wallet acts as a member of {0}.")]
     NoMember(String),
     #[error("{member} is not a member of {squad}.")]
     NotAMember { squad: String, member: String },
     #[error("A multisig cannot be the member of a multisig here. Pick a hot wallet or a programmatic signer.")]
     NestedSquads,
-    #[error("{0} is set as a fee payer but is not a key. Pick a hot or offline wallet.")]
+    #[error("{0} is set as a fee payer but is not a key. Pick a hot, hardware or offline wallet.")]
     FeePayerNotAKey(String),
     #[error("These wallets refer to each other in a loop.")]
     Loop,
@@ -126,7 +135,7 @@ pub fn signing_route(wallets: &[WalletRecord], id: WalletId) -> Result<SigningRo
     };
 
     let first = find(id)?;
-    let address = first.address().ok_or(RouteError::Hardware)?;
+    let address = first.address().ok_or(RouteError::UnknownWallet)?;
     let mut steps = Vec::new();
     let mut chosen_payer = None;
     let mut current = first;
@@ -150,7 +159,14 @@ pub fn signing_route(wallets: &[WalletRecord], id: WalletId) -> Result<SigningRo
                 steps.push(RouteStep::OutsideKey { pubkey: *pubkey });
                 break;
             }
-            WalletKind::Hardware { .. } => return Err(RouteError::Hardware),
+            WalletKind::Hardware { pubkey, vendor, .. } => {
+                steps.push(RouteStep::DeviceKey {
+                    wallet: current.id,
+                    pubkey: *pubkey,
+                    vendor: *vendor,
+                });
+                break;
+            }
             WalletKind::Programmatic {
                 protocol: Protocol::Ed25519Signer { authority, nonce },
                 authority: held_by,
@@ -206,7 +222,7 @@ pub fn signing_route(wallets: &[WalletRecord], id: WalletId) -> Result<SigningRo
                 let member_wallet =
                     member_wallet.ok_or_else(|| RouteError::NoMember(current.label.clone()))?;
                 let next = find(member_wallet)?;
-                let member = next.address().ok_or(RouteError::Hardware)?;
+                let member = next.address().ok_or(RouteError::UnknownWallet)?;
                 // An empty list means the members were never read from the chain.
                 if !members.is_empty() && !members.contains(&member) {
                     return Err(RouteError::NotAMember {
@@ -234,14 +250,16 @@ pub fn signing_route(wallets: &[WalletRecord], id: WalletId) -> Result<SigningRo
             wallet.address().map(|pubkey| (wallet.id, pubkey))
         }
         None => match steps.last() {
-            Some(RouteStep::Key { wallet, pubkey }) => Some((*wallet, *pubkey)),
+            Some(
+                RouteStep::Key { wallet, pubkey } | RouteStep::DeviceKey { wallet, pubkey, .. },
+            ) => Some((*wallet, *pubkey)),
             _ => None,
         },
     };
 
     // Only a key that signs the transaction itself advances its nonce.
     let durable_nonce = match steps.as_slice() {
-        [RouteStep::OutsideKey { .. }] => first.kind.durable_nonce(),
+        [RouteStep::OutsideKey { .. } | RouteStep::DeviceKey { .. }] => first.kind.durable_nonce(),
         _ => None,
     };
 

@@ -5,6 +5,7 @@
 pub mod address;
 mod address_picker;
 pub mod clock;
+pub mod device;
 mod icons;
 pub mod local_time;
 pub mod lock;
@@ -18,6 +19,7 @@ pub use address::{
     BalanceDeltas, CategoryIcon, PhraseView,
 };
 pub use address_picker::AddressPicker;
+pub use device::DeviceDialog;
 pub use icons::{Glyph, Icon};
 pub use lock::{LockScreen, UnlockPrompt, VaultUnlock};
 pub use theme::ThemeToggle;

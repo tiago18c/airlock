@@ -88,13 +88,14 @@ pub use tx::{
     LOOKUP_TABLE_META_SIZE,
 };
 pub use wallets::{
-    acting_wallet, adapt, enroll, name_offline_wallet, name_signers, offline_nonce, programmatic,
-    proposals, refresh_targets, relay, shareable_accounts, shared_keys, signer_of, signing_route,
-    squads, stake, vector, Authority, EnrollError, HardwareVendor, KeyPhrase, NewSigner,
-    OfflinePath, Protocol, PublicBytes, RosterError, RouteError, RouteStep, ShareableAccount,
-    SigningRoute, Vault, VaultData, VectorSettings, WalletClass, WalletKind, WalletListStore,
-    WalletRecord, WalletSummary,
+    acting_wallet, adapt, enroll, hardware, name_offline_wallet, name_signers, offline_nonce,
+    programmatic, proposals, refresh_targets, relay, shareable_accounts, shared_keys, signer_of,
+    signing_route, squads, stake, vector, Authority, DeviceSeen, EnrollError, HardwareVendor,
+    KeyPhrase, NewSigner, OfflinePath, Protocol, PublicBytes, RosterError, RouteError, RouteStep,
+    ShareableAccount, SigningRoute, Vault, VaultData, VectorSettings, WalletClass, WalletKind,
+    WalletListStore, WalletRecord, WalletSummary,
 };
+pub use wallets::{BadVersion, PathScheme, Version, PATH_SCHEMES};
 
 pub use chain::{
     parse_nonce_account, ChainSnapshot, ConfirmationLevel, DiscoveredNonce, DiscoveredTokenAccount,

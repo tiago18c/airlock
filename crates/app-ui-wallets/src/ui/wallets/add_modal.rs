@@ -133,7 +133,7 @@ pub(in crate::ui) fn AddWalletModal() -> Element {
 
                     div { class: "add-wallet-body",
                     if kind == AddWalletMode::Hardware {
-                        p { class: "hint", "Import from a hardware wallet is not available yet." }
+                        HardwareForm { on_done: move |_| modal_open.set(false) }
                     } else if kind == AddWalletMode::Offline {
                         OfflineForm { on_done: move |_| modal_open.set(false) }
                     } else if kind == AddWalletMode::FromDevice {
@@ -177,7 +177,7 @@ pub(in crate::ui) fn AddWalletModal() -> Element {
                         p { class: "error", "{err}" }
                     }
                     }
-                    if kind.imports_a_key() || kind == AddWalletMode::Hardware {
+                    if kind.imports_a_key() {
                     div { class: "btn-row",
                         if kind.imports_a_key() {
                             button { class: "primary",

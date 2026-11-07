@@ -1,0 +1,4 @@
+# Lets the user signed in open a Trezor, for Airlock to read its keys and
+# ask it to sign: its firmware (53c1) and its bootloader (53c0). See the
+# README, "Hardware wallets on Linux".
+SUBSYSTEM=="usb", ATTR{idVendor}=="1209", ATTR{idProduct}=="53c[01]", MODE="0660", TAG+="uaccess"

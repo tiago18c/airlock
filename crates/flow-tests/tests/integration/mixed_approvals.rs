@@ -341,6 +341,7 @@ fn the_vector_key_waits_for_the_programmatic_authority() {
         &wallet_core::LocalKeys {
             keys: &[desk.payer.pubkey(), vector.key.pubkey()],
             vector: &[vector.address],
+            devices: &[],
         },
         &wallet_core::relay::AuthContext {
             vector: &adapted.context,

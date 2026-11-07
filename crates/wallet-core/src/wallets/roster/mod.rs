@@ -4,6 +4,7 @@
 use crate::book::address_book::{AddressBook, AddressKind, Origin, LOCAL_GROUP_ID};
 use crate::book::workspace::Workspace;
 use crate::ids::WalletId;
+use crate::wallets::hardware::HardwareVendor;
 use crate::wallets::import::NewSigner;
 use crate::wallets::record::{
     Authority, OfflinePath, Protocol, WalletClass, WalletKind, WalletRecord,
@@ -33,6 +34,11 @@ pub struct WalletSummary {
     pub durable_nonce: Option<Pubkey>,
     /// Which path an offline wallet takes when it is chosen.
     pub default_path: Option<OfflinePath>,
+    /// A hardware wallet's vendor. Its path is in `derivation_path`.
+    pub on_device: Option<HardwareVendor>,
+    /// What names a hardware wallet's device: a Keystone's master
+    /// fingerprint, a Trezor's device id.
+    pub device: Option<String>,
 }
 
 /// An account a site can be shown.
@@ -46,6 +52,8 @@ pub struct ShareableAccount {
     /// "seed · m/44'/501'/0'/0'", "Squads v4 · 2 of 3", and so on. Empty
     /// for an account the address book names before there is a vault.
     pub summary: String,
+    /// A hardware wallet of this vault holds the key.
+    pub on_device: Option<HardwareVendor>,
 }
 
 /// Why a wallet may not be added.
@@ -61,6 +69,8 @@ pub enum RosterError {
     NoLabel,
     #[error("{0}")]
     BadKey(String),
+    #[error("Only a hardware wallet is added this way.")]
+    NotHardware,
 }
 
 impl VaultData {
@@ -101,6 +111,18 @@ impl VaultData {
             .collect()
     }
 
+    /// Keys on hardware wallets of this vault, with their vendor. They sign
+    /// on the device, never with a vault key.
+    pub fn local_device_keys(&self) -> Vec<(Pubkey, HardwareVendor)> {
+        self.wallets
+            .iter()
+            .filter_map(|wallet| match &wallet.kind {
+                WalletKind::Hardware { vendor, pubkey, .. } => Some((*pubkey, *vendor)),
+                _ => None,
+            })
+            .collect()
+    }
+
     /// Every wallet, as the screens list it.
     pub fn summaries(&self) -> Vec<WalletSummary> {
         self.wallets
@@ -119,11 +141,17 @@ impl VaultData {
                 .then(|| wallet.without_secrets().kind),
                 fee_payer: wallet.kind.fee_payer(),
                 derivation_path: match &wallet.kind {
-                    WalletKind::Seed { path, .. } if !path.is_empty() => Some(path.clone()),
+                    WalletKind::Seed { path, .. } | WalletKind::Hardware { path, .. }
+                        if !path.is_empty() =>
+                    {
+                        Some(path.clone())
+                    }
                     _ => None,
                 },
                 durable_nonce: wallet.kind.durable_nonce(),
                 default_path: wallet.kind.default_path(),
+                on_device: wallet.kind.hardware_vendor(),
+                device: wallet.kind.hardware_device().map(str::to_string),
             })
             .collect()
     }
@@ -184,6 +212,43 @@ impl VaultData {
         let mut wallet = WalletRecord::offline(label, pubkey);
         wallet.kind.set_fee_payer(fee_payer);
         let id = wallet.id;
+        self.tie_authority(id, pubkey, true);
+        self.wallets.push(wallet);
+        Ok(id)
+    }
+
+    /// Store hardware wallets, each a key read from its device. All of them,
+    /// or none when one is already here, is listed twice or is not a
+    /// hardware wallet. A programmatic signer already here for one of the
+    /// keys is tied to it, as for an offline wallet.
+    pub fn add_hardware_wallets(&mut self, wallets: &[WalletRecord]) -> Result<(), RosterError> {
+        for (i, wallet) in wallets.iter().enumerate() {
+            let WalletKind::Hardware { pubkey, .. } = &wallet.kind else {
+                return Err(RosterError::NotHardware);
+            };
+            if wallet.label.trim().is_empty() {
+                return Err(RosterError::NoLabel);
+            }
+            let repeated = wallets[..i]
+                .iter()
+                .any(|other| other.address() == Some(*pubkey));
+            if repeated || self.holds(pubkey) {
+                return Err(RosterError::DuplicateWallet(*pubkey));
+            }
+        }
+        for wallet in wallets {
+            if let Some(pubkey) = wallet.address() {
+                self.tie_authority(wallet.id, pubkey, false);
+            }
+            self.wallets.push(wallet.clone());
+        }
+        Ok(())
+    }
+
+    /// Tie each programmatic signer whose authority is `pubkey`, and is not
+    /// a wallet here yet, to the wallet `id` that holds that key. A key on a
+    /// device signs no Vector digest, so `vector` is false for one.
+    fn tie_authority(&mut self, id: WalletId, pubkey: Pubkey, vector: bool) {
         for other in &mut self.wallets {
             let WalletKind::Programmatic {
                 protocol,
@@ -197,15 +262,13 @@ impl VaultData {
             let signs_for = match protocol {
                 Protocol::Ed25519Signer { authority, .. } => *authority == pubkey,
                 Protocol::Vector { scheme, key, .. } => {
-                    *scheme == SchemeId::Ed25519 && key.0 == pubkey.to_bytes()
+                    vector && *scheme == SchemeId::Ed25519 && key.0 == pubkey.to_bytes()
                 }
             };
             if signs_for && *authority == Authority::Outside {
                 *authority = Authority::Wallet { wallet: id };
             }
         }
-        self.wallets.push(wallet);
-        Ok(id)
     }
 
     /// Remove a wallet, and clear every setting of another wallet that pointed at it.
@@ -256,9 +319,9 @@ pub fn signer_of(wallets: &[WalletRecord], key: Pubkey) -> Option<&WalletRecord>
         .find(|wallet| wallet.kind.signer_authority() == Some(key))
 }
 
-/// The wallet that acts when `id` is chosen. An offline wallet whose
-/// default path is its programmatic signer hands over to that signer, a
-/// wallet of its own at another address. Any other wallet acts as itself.
+/// The wallet that acts when `id` is chosen. An offline or hardware wallet
+/// whose default path is its programmatic signer hands over to that signer,
+/// a wallet of its own at another address. Any other wallet acts as itself.
 pub fn acting_wallet(wallets: &[WalletRecord], id: WalletId) -> WalletId {
     let Some(wallet) = wallets.iter().find(|wallet| wallet.id == id) else {
         return id;
@@ -266,6 +329,10 @@ pub fn acting_wallet(wallets: &[WalletRecord], id: WalletId) -> WalletId {
     match (&wallet.kind, wallet.address()) {
         (
             WalletKind::Offline {
+                default_path: Some(OfflinePath::Programmatic),
+                ..
+            }
+            | WalletKind::Hardware {
                 default_path: Some(OfflinePath::Programmatic),
                 ..
             },
@@ -311,7 +378,8 @@ pub fn shareable_accounts(
         .unwrap_or_default()
     {
         let contract = wallet.kind.class() == WalletClass::SmartContract;
-        if !wallet.kind.can_sign() && !contract {
+        let on_device = wallet.kind.hardware_vendor();
+        if !wallet.kind.can_sign() && !contract && on_device.is_none() {
             continue;
         }
         if wallet.kind.vector_settings().is_some() && !vector::offered(workspace) {
@@ -324,6 +392,7 @@ pub fn shareable_accounts(
                     label: wallet.label.clone(),
                     contract,
                     summary: wallet.summary(),
+                    on_device,
                 });
             }
         }
@@ -338,6 +407,7 @@ pub fn shareable_accounts(
                 label: row.entry.label,
                 contract: false,
                 summary: String::new(),
+                on_device: None,
             });
         }
     }

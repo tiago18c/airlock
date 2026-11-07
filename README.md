@@ -78,6 +78,17 @@ dx serve -p airlock-offline --desktop
 
 It keeps its own data folder (`airlock-offline`), so both apps can run on one machine with different vaults.
 
+### Hardware wallets on Linux
+
+A Ledger is opened through `hidraw`, and a Trezor through USB, which Linux lets only root open until a udev rule says otherwise. Install the rules once, then unplug the device and plug it in again:
+
+```bash
+sudo cp resources/linux/*.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```
+
+Windows and macOS need nothing. A Keystone is read through the camera, and needs nothing either. Hardware wallets are offered once **Pre-release hardware wallets** is on in Settings: Ledger's Solana app 1.18 and Trezor's next firmware, the first to read v1 transactions, are pre-release builds so far.
+
 ### Extension and bridge-host (desktop only)
 
 ```bash

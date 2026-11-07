@@ -88,6 +88,8 @@ pub struct WalletsView {
     pub summaries: Vec<WalletSummary>,
     pub selected: Option<WalletId>,
     pub local_signer_pubkeys: Vec<Pubkey>,
+    /// Keys on hardware wallets of this vault, which sign on the device.
+    pub local_device_keys: Vec<(Pubkey, wallet_core::HardwareVendor)>,
     pub local_vector_accounts: Vec<Pubkey>,
     /// Rotations signed here that may not have landed: the account, and the key it
     /// moves to.
@@ -152,6 +154,8 @@ pub enum VaultState {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Settings {
     pub vector_wallets: bool,
+    /// Offer hardware wallets whose v1 support is a pre-release build.
+    pub prerelease_devices: bool,
     /// How long the vault stays unlocked while the window is hidden, or idle
     /// while visible.
     pub auto_lock: Duration,
@@ -180,6 +184,7 @@ impl Default for Settings {
     fn default() -> Self {
         Self {
             vector_wallets: false,
+            prerelease_devices: false,
             auto_lock: Self::DEFAULT_AUTO_LOCK,
             close_to_tray: false,
             tokens_api_key: None,
@@ -197,6 +202,7 @@ pub fn settings_from(workspace: &AppWorkspace) -> Arc<Settings> {
     };
     Arc::new(Settings {
         vector_wallets: data.vector_wallets,
+        prerelease_devices: data.prerelease_devices,
         auto_lock: Duration::from_secs(secs),
         close_to_tray: data.close_to_tray,
         tokens_api_key: data
@@ -226,6 +232,7 @@ pub fn wallets_view_from(data: Option<&VaultData>, marks: &AppLeafMarks) -> Arc<
         summaries: data.summaries(),
         selected: data.acting_wallet(),
         local_signer_pubkeys: data.local_signer_pubkeys(),
+        local_device_keys: data.local_device_keys(),
         local_vector_accounts: wallet_core::vector::held_vector_accounts(&data.wallets),
         pending_rotations: marks.pending_rotations(),
     })

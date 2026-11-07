@@ -1,6 +1,7 @@
 use super::*;
 use crate::fixtures::pk;
 use crate::keys::signer::{KeypairSigner, WalletSigner};
+use crate::wallets::hardware::{DeviceSeen, HardwareVendor};
 use crate::wallets::squads::Squad;
 
 fn hot(label: &str) -> (WalletRecord, Pubkey) {
@@ -303,4 +304,95 @@ fn an_offline_key_lives_on_its_durable_nonce_and_a_chain_through_it_does_not() {
     // what orders it.
     let through = signing_route(&wallets, signer.id).unwrap();
     assert_eq!(through.durable_nonce, None);
+}
+
+fn ledger(label: &str, key: u8) -> WalletRecord {
+    WalletRecord::hardware(label, HardwareVendor::Ledger, pk(key), "m/44'/501'/0'/0'")
+}
+
+#[test]
+fn a_hardware_wallet_signs_on_its_device_and_pays_for_itself() {
+    let wallet = ledger("Ledger", 40);
+    let route = signing_route(std::slice::from_ref(&wallet), wallet.id).unwrap();
+    assert_eq!(route.address, pk(40));
+    assert_eq!(
+        route.steps,
+        vec![RouteStep::DeviceKey {
+            wallet: wallet.id,
+            pubkey: pk(40),
+            vendor: HardwareVendor::Ledger,
+        }]
+    );
+    assert_eq!(route.signing_key(), Some(pk(40)));
+    assert_eq!(route.fee_payer, Some((wallet.id, pk(40))));
+    assert!(route.is_local());
+    assert!(wallet.kind.can_pay() && !wallet.kind.can_sign());
+    assert!(wallet.kind.signs_on_device());
+}
+
+#[test]
+fn a_hardware_wallet_pays_for_another_and_lives_on_its_durable_nonce() {
+    let payer = ledger("Fees", 41);
+    let mut cold = WalletRecord::offline("Cold", pk(42));
+    cold.kind.set_fee_payer(Some(payer.id));
+    let wallets = vec![payer.clone(), cold.clone()];
+    let route = signing_route(&wallets, cold.id).unwrap();
+    assert_eq!(route.fee_payer, Some((payer.id, pk(41))));
+
+    let mut keystone = WalletRecord::hardware(
+        "Keystone",
+        HardwareVendor::Keystone,
+        pk(43),
+        "m/44'/501'/0'",
+    );
+    keystone.kind.set_durable_nonce(Some(pk(44)));
+    let route = signing_route(std::slice::from_ref(&keystone), keystone.id).unwrap();
+    assert_eq!(route.durable_nonce, Some(pk(44)));
+}
+
+#[test]
+fn a_hardware_wallet_is_a_programmatic_authority_and_a_multisig_member() {
+    let device = ledger("Ledger", 45);
+    let signer = WalletRecord::programmatic("Signer", pk(45), Some(device.id));
+    let address = programmatic_signer_address(&pk(45));
+    let wallets = vec![device.clone(), signer.clone()];
+    let route = signing_route(&wallets, signer.id).unwrap();
+    assert_eq!(
+        route.steps,
+        vec![
+            RouteStep::Programmatic {
+                wallet: signer.id,
+                authority: pk(45),
+                address,
+                nonce: None,
+            },
+            RouteStep::DeviceKey {
+                wallet: device.id,
+                pubkey: pk(45),
+                vendor: HardwareVendor::Ledger,
+            },
+        ]
+    );
+
+    let squad = Squad::v4(&pk(46));
+    let mut team = WalletRecord::squads("Team", squad, vec![pk(45)], 1);
+    team.kind.set_member_wallet(Some(device.id));
+    let wallets = vec![device.clone(), team.clone()];
+    let route = signing_route(&wallets, team.id).unwrap();
+    assert_eq!(route.steps.len(), 2);
+    assert_eq!(route.fee_payer, Some((device.id, pk(45))));
+}
+
+#[test]
+fn a_hardware_wallet_is_stored_without_secrets_as_it_is() {
+    let mut wallet = ledger("Ledger", 47);
+    wallet.kind.set_device_seen(DeviceSeen {
+        model: Some("Nano S Plus".into()),
+        firmware: Some(crate::wallets::hardware::Version::new(1, 18, 0)),
+    });
+    assert_eq!(wallet.without_secrets(), wallet);
+    let json = serde_json::to_string(&wallet).unwrap();
+    let back: WalletRecord = serde_json::from_str(&json).unwrap();
+    assert_eq!(back, wallet);
+    assert_eq!(wallet.summary(), "Ledger · m/44'/501'/0'/0'");
 }

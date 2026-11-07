@@ -5,13 +5,19 @@ use crate::platform::camera::{
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
 use dioxus::prelude::*;
+use ur_codec::UrDecoder;
 use wallet_core::protocol::{hex_id, Collected, Collector, FrameSeen, MAX_PAYLOAD};
 
 // TODO: Revisit how objects move between devices. QR is optional, so this
 // pane should also accept a pasted base64 transaction or signature, and the
 // camera should start only when someone chooses to scan.
+/// Scans QRS1 frames into a payload. With `on_ur`, it also reads UR codes,
+/// a Keystone's, and hands over each whole one as its type and message.
 #[component]
-pub fn QrScanner(on_payload: EventHandler<Vec<u8>>) -> Element {
+pub fn QrScanner(
+    on_payload: EventHandler<Vec<u8>>,
+    #[props(default)] on_ur: Option<EventHandler<(String, Vec<u8>)>>,
+) -> Element {
     use_drop(stop_scanner);
     let mut cameras = use_signal(Vec::<CameraDevice>::new);
     let mut selected = use_signal(String::new);
@@ -19,6 +25,7 @@ pub fn QrScanner(on_payload: EventHandler<Vec<u8>>) -> Element {
     let mut status = use_signal(|| "Start scanning to turn the camera on.".to_string());
     let mut error = use_signal(|| None::<String>);
     let mut collector = use_signal(Collector::new);
+    let mut ur = use_signal(UrDecoder::default);
     let mut have = use_signal(Vec::<bool>::new);
     let mut payload = use_signal(|| None::<Vec<u8>>);
     let mut last_frame = use_signal(|| None::<String>);
@@ -76,10 +83,16 @@ pub fn QrScanner(on_payload: EventHandler<Vec<u8>>) -> Element {
         div { class: "scanner",
             div { class: "panel-copy",
                 h3 { "Camera" }
-                p { class: "lede",
-                    "Point this at a QRS1 code. The scanner waits until it has every "
-                    code { "x of n" }
-                    " frame, then hands the object to this pane."
+                if on_ur.is_some() {
+                    p { class: "lede",
+                        "Point this at the codes your Keystone shows. The scanner waits until it has read enough of them."
+                    }
+                } else {
+                    p { class: "lede",
+                        "Point this at a QRS1 code. The scanner waits until it has every "
+                        code { "x of n" }
+                        " frame, then hands the object to this pane."
+                    }
                 }
                 if let Some(hint) = insecure_hint() {
                     p { class: "error", "{hint}" }
@@ -102,6 +115,7 @@ pub fn QrScanner(on_payload: EventHandler<Vec<u8>>) -> Element {
                                 error.set(None);
                                 payload.set(None);
                                 collector.write().reset();
+                                ur.set(UrDecoder::default());
                                 have.set(Vec::new());
                                 last_frame.set(None);
                                 scanning.set(true);
@@ -144,6 +158,41 @@ pub fn QrScanner(on_payload: EventHandler<Vec<u8>>) -> Element {
                                                         continue;
                                                     }
                                                 };
+                                                // A UR, which only a screen that reads
+                                                // them takes.
+                                                if let Some(text) = std::str::from_utf8(&bytes)
+                                                    .ok()
+                                                    .filter(|text| ur_codec::is_ur(text))
+                                                {
+                                                    let Some(on_ur) = on_ur else {
+                                                        status.set("This is a UR code, which this screen does not read.".into());
+                                                        continue;
+                                                    };
+                                                    let received = ur.write().receive(text.trim());
+                                                    if let Err(e) = received {
+                                                        ur.set(UrDecoder::default());
+                                                        error.set(Some(e.to_string()));
+                                                        continue;
+                                                    }
+                                                    error.set(None);
+                                                    if let Some((known, all)) = ur.read().progress() {
+                                                        status.set(format!("Reading the codes… {known} of {all} parts"));
+                                                    }
+                                                    let whole = ur.read().result();
+                                                    match whole {
+                                                        Ok(Some(found)) => {
+                                                            ur.set(UrDecoder::default());
+                                                            status.set("Read the code.".into());
+                                                            on_ur.call(found);
+                                                        }
+                                                        Ok(None) => {}
+                                                        Err(e) => {
+                                                            ur.set(UrDecoder::default());
+                                                            error.set(Some(e.to_string()));
+                                                        }
+                                                    }
+                                                    continue;
+                                                }
                                                 let step = collector.write().push(&bytes);
                                                 match step {
                                                     // Unrelated codes in view, and a finished

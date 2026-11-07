@@ -3,7 +3,7 @@
 
 use super::*;
 use crate::ui::{Glyph, Icon};
-use wallet_core::{only_simulate_and_sign, SignStep, SignStepKind, SignStepState};
+use wallet_core::{only_simulate_and_sign, HardwareVendor, SignStep, SignStepKind, SignStepState};
 
 /// The row of steps above the transaction: behind ones green, the one the
 /// user is on marked, the rest still to come.
@@ -138,6 +138,12 @@ fn label(kind: SignStepKind) -> &'static str {
         SignStepKind::CollectAuthorizations => "Collect authorizations",
         SignStepKind::Simulate => "Simulate",
         SignStepKind::SignTransaction => "Sign transaction",
+        SignStepKind::SignOnDevice { vendor } => match vendor {
+            Some(HardwareVendor::Ledger) => "Sign on Ledger",
+            Some(HardwareVendor::Trezor) => "Sign on Trezor",
+            Some(HardwareVendor::Keystone) => "Sign on Keystone",
+            None => "Sign on the devices",
+        },
         SignStepKind::CollectSignatures => "Collect signatures",
         SignStepKind::Submit => "Submit",
         SignStepKind::ReturnToSite => "Return to site",

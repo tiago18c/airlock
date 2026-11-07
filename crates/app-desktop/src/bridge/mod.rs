@@ -399,7 +399,14 @@ fn read_message_request(
         .and_then(Value::as_str)
         .and_then(|text| base64::engine::general_purpose::STANDARD.decode(text).ok())
         .ok_or("The message was not valid base64.")?;
-    wallet_core::site_message::check_message(&message, origin).map_err(|err| err.to_string())?;
+    match device_of(core, &account).filter(|vendor| vendor.wraps_messages()) {
+        Some(vendor) => {
+            wallet_core::site_message::device_message(&message, origin, &account, vendor.label())
+                .map(|_| ())
+        }
+        None => wallet_core::site_message::check_message(&message, origin),
+    }
+    .map_err(|err| err.to_string())?;
     Ok(SiteCall::SignMessage { account, message })
 }
 
@@ -426,8 +433,25 @@ fn read_sign_in_request(core: &PublicCore, origin: &str, params: &Value) -> Resu
         if !held {
             return Err("No key on this device signs as the account this site asked for.".into());
         }
+        if let Some(vendor) = asked
+            .parse()
+            .ok()
+            .and_then(|account| device_of(core, &account))
+            .filter(|vendor| vendor.wraps_messages())
+        {
+            return Err(sign_in_refused(vendor));
+        }
     }
     Ok(sign_in)
+}
+
+/// Why a Ledger or a Trezor does not sign in: it signs a message inside an
+/// offchain header, which a site would read as the sign-in's text.
+pub(crate) fn sign_in_refused(vendor: wallet_core::HardwareVendor) -> String {
+    format!(
+        "A {} cannot sign in to a site: it signs messages inside a header that the site would not read as a sign-in. Sign in with another wallet.",
+        vendor.label()
+    )
 }
 
 /// Whether a key of the vault signs as `account`, locked or not.
@@ -437,6 +461,18 @@ fn holds_key(core: &PublicCore, account: &Pubkey) -> bool {
         .get()
         .local_signer_pubkeys
         .contains(account)
+        || device_of(core, account).is_some()
+}
+
+/// The vendor of the hardware wallet of the vault that holds `account`.
+fn device_of(core: &PublicCore, account: &Pubkey) -> Option<wallet_core::HardwareVendor> {
+    core.slices()
+        .wallets
+        .get()
+        .local_device_keys
+        .iter()
+        .find(|(key, _)| key == account)
+        .map(|(_, vendor)| *vendor)
 }
 
 /// The frames that tell sites what changed from `told` to `now`.
