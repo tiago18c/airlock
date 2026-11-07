@@ -3,6 +3,7 @@ use crate::fixtures::{blockhash, compile, pk, transfer};
 use crate::keys::signer::KeypairSigner;
 use crate::tx::builder::compile_v1;
 use crate::tx::decode::decode_v1_transaction;
+use crate::wallets::hardware::HardwareVendor;
 use crate::wallets::programmatic::{programmatic_signer_address, ExecutorNonce};
 use crate::wallets::relay::wrap_for_programmatic;
 
@@ -281,6 +282,7 @@ fn a_vector_authority_row_names_the_key_then_the_account() {
         &LocalKeys {
             keys: &[payer.pubkey()],
             vector: &[account],
+            devices: &[],
         },
         &AuthContext { vector: &known },
     );
@@ -360,4 +362,103 @@ fn only_the_keys_a_transaction_asks_for_are_asked_for() {
     let with_all = sign_locally(&wrapped, &every).unwrap();
     let with_only = sign_locally(&wrapped, &only).unwrap();
     assert_eq!(with_all, with_only);
+}
+
+#[test]
+fn a_key_on_a_hardware_wallet_here_signs_on_the_device_after_the_vault() {
+    let payer = KeypairSigner::new_random();
+    let ledger = KeypairSigner::new_random();
+    let away = KeypairSigner::new_random();
+    let wire = compile(
+        payer.pubkey(),
+        vec![
+            transfer(ledger.pubkey(), pk(2), 5),
+            transfer(away.pubkey(), pk(2), 5),
+        ],
+    )
+    .wire;
+    let tx = decode_v1_transaction(&wire).unwrap();
+    let devices = [(ledger.pubkey(), HardwareVendor::Ledger)];
+    let local = LocalKeys {
+        keys: &[payer.pubkey()],
+        vector: &[],
+        devices: &devices,
+    };
+    let status = signing_status_in(&tx, &local, &AuthContext::default());
+    let line_of = |key: Pubkey| {
+        status
+            .lines
+            .iter()
+            .find(|line| line.key == SignerKey::Key(key))
+            .unwrap()
+    };
+    assert_eq!(line_of(payer.pubkey()).state, SignerState::Local);
+    assert_eq!(line_of(away.pubkey()).state, SignerState::Missing);
+    let on_ledger = line_of(ledger.pubkey());
+    assert_eq!(on_ledger.state, SignerState::Device);
+    assert_eq!(on_ledger.on_device, Some(HardwareVendor::Ledger));
+    assert!(on_ledger.held_here);
+    // The vault signs one, the device one, and one comes from elsewhere.
+    assert_eq!(status.signable, 1);
+    assert_eq!(status.on_devices(), 1);
+    assert_eq!(status.missing_elsewhere(), 1);
+
+    let steps = sign_steps(
+        &status,
+        &SignStepInputs {
+            needs_rebuild: false,
+            rebuilt: false,
+            simulation: SimulationStage::Succeeded,
+            finish: SignFinish::Submit,
+            finished: false,
+            expired: false,
+            refreshes_on_sign: false,
+            left_for_site: 0,
+        },
+    );
+    let kinds: Vec<SignStepKind> = steps.iter().map(|step| step.kind).collect();
+    assert_eq!(
+        kinds,
+        vec![
+            SignStepKind::Simulate,
+            SignStepKind::SignTransaction,
+            SignStepKind::SignOnDevice {
+                vendor: Some(HardwareVendor::Ledger)
+            },
+            SignStepKind::CollectSignatures,
+            SignStepKind::Submit,
+        ]
+    );
+}
+
+#[test]
+fn a_hardware_wallet_alone_hides_the_steps_as_a_hot_key_does() {
+    let ledger = KeypairSigner::new_random();
+    let wire = compile(ledger.pubkey(), vec![transfer(ledger.pubkey(), pk(2), 5)]).wire;
+    let tx = decode_v1_transaction(&wire).unwrap();
+    let devices = [(ledger.pubkey(), HardwareVendor::Trezor)];
+    let status = signing_status_in(
+        &tx,
+        &LocalKeys {
+            keys: &[],
+            vector: &[],
+            devices: &devices,
+        },
+        &AuthContext::default(),
+    );
+    let steps = sign_steps(
+        &status,
+        &SignStepInputs {
+            needs_rebuild: false,
+            rebuilt: false,
+            simulation: SimulationStage::Succeeded,
+            finish: SignFinish::Submit,
+            finished: false,
+            expired: false,
+            refreshes_on_sign: false,
+            left_for_site: 0,
+        },
+    );
+    assert!(only_simulate_and_sign(&steps));
+    assert_eq!(status.missing_elsewhere(), 0);
 }

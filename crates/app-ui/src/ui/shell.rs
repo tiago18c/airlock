@@ -5,8 +5,8 @@
 
 use crate::state::session::{Session, Tab};
 use crate::ui::{
-    AddressBookPanel, BuildPanel, Glyph, Icon, LockScreen, ProgramsPanel, SettingsPanel, SignPanel,
-    ThemeToggle, UnlockPrompt, WalletSwitcher, WalletsPanel,
+    AddressBookPanel, BuildPanel, DeviceDialog, Glyph, Icon, LockScreen, ProgramsPanel,
+    SettingsPanel, SignPanel, ThemeToggle, UnlockPrompt, WalletSwitcher, WalletsPanel,
 };
 use crate::{MAIN_CSS, TOKENS_CSS};
 use dioxus::prelude::*;
@@ -123,6 +123,7 @@ pub fn AppShell(
             }
             {overlays}
             UnlockPrompt {}
+            DeviceDialog {}
         }
     }
 }

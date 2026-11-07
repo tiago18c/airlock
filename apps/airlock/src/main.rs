@@ -77,9 +77,9 @@ fn App() -> Element {
     use_effect(keep_single_app_root);
 
     #[cfg(all(feature = "desktop", not(target_arch = "wasm32")))]
-    let (core, toast_clicks) = app_desktop::use_online_core();
+    let (core, toast_clicks) = app_desktop::use_online_core(hw_transport::hub());
     #[cfg(not(all(feature = "desktop", not(target_arch = "wasm32"))))]
-    let core = use_hook(app_ui::open_core);
+    let core = use_hook(|| app_ui::open_core(hw_transport::hub()));
     let core = use_hook(move || CopyValue::new(core));
 
     let (online, submitter) = app_online::use_online(core);

@@ -40,7 +40,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
     } else {
         "Sign a transaction"
     };
-    let label = sign_label(&current, None);
+    let label = sign_label(&current, None, prep.on_device);
 
     rsx! {
         BlockhashCountdown {
@@ -123,28 +123,33 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                     };
                     error.set(None);
                     busy.set(true);
-                    match sign_for_site(session, &sign, &site_signs) {
-                        Ok(wire) if sends => {
-                            if let Some(paid) = &taken_for_sign {
-                                paid.log_taken(session);
+                    let (site_signs, taken_for_sign) = (site_signs.clone(), taken_for_sign.clone());
+                    let (sign_id, origin_for_sign) = (sign_id.clone(), origin_for_sign.clone());
+                    spawn(async move {
+                        match sign_for_site(session, &sign, &site_signs).await {
+                            Ok(wire) if sends => {
+                                if let Some(paid) = &taken_for_sign {
+                                    paid.log_taken(session);
+                                }
+                                let items = vec![(wire, sign.flow)];
+                                if let Err(why) = send_for_site(&session, &sign_id, &origin_for_sign, items) {
+                                    error.set(Some(why));
+                                }
                             }
-                            let items = vec![(wire, sign.flow)];
-                            if let Err(why) = send_for_site(&session, &sign_id, &origin_for_sign, items) {
-                                error.set(Some(why));
+                            Ok(wire) => {
+                                if let Some(paid) = &taken_for_sign {
+                                    paid.log_taken(session);
+                                }
+                                log_returned(session, sign.flow, &wire, &origin_for_sign, &sign_id);
+                                if !session.bridge_answer(&sign_id, BridgeAnswer::Signed(vec![wire])) {
+                                    error.set(Some("The site stopped waiting for this request.".into()));
+                                }
                             }
+                            Err(err) if err == app_ui_kit::actions::device::CANCELLED => {}
+                            Err(err) => error.set(Some(err)),
                         }
-                        Ok(wire) => {
-                            if let Some(paid) = &taken_for_sign {
-                                paid.log_taken(session);
-                            }
-                            log_returned(session, sign.flow, &wire, &origin_for_sign, &sign_id);
-                            if !session.bridge_answer(&sign_id, BridgeAnswer::Signed(vec![wire])) {
-                                error.set(Some("The site stopped waiting for this request.".into()));
-                            }
-                        }
-                        Err(err) => error.set(Some(err)),
-                    }
-                    busy.set(false);
+                        busy.set(false);
+                    });
                 },
                 "{label}"
             }
@@ -239,9 +244,10 @@ fn review_note(rebuilt: bool, replaced_payer: bool, onto_nonce: bool) -> String 
     }
 }
 
-/// Sign a prepared transaction with this device's keys. Answers the signed
-/// wire only when nothing but the site's own signatures is left in it.
-fn sign_for_site(
+/// Sign a prepared transaction with this device's keys: the vault's, then
+/// each hardware wallet's in the device dialog. Answers the signed wire only
+/// when nothing but the site's own signatures is left in it.
+async fn sign_for_site(
     session: Session,
     SignWire {
         wire,
@@ -251,9 +257,30 @@ fn sign_for_site(
     }: &SignWire,
     site_signs: &[Pubkey],
 ) -> Result<Vec<u8>, String> {
-    let done = session.sign_locally(wire, known).map_err(sentence)?;
+    let devices = session.local_device_keys();
+    let only_devices = wallet_core::decode_transaction(wire, tables).is_ok_and(|tx| {
+        let local = wallet_core::LocalKeys {
+            keys: &session.local_signer_pubkeys(),
+            vector: &session.local_vector_accounts(),
+            devices: &devices,
+        };
+        let ctx = wallet_core::relay::AuthContext { vector: known };
+        let status = wallet_core::signing_status_in(&tx, &local, &ctx);
+        status.signable == 0 && status.on_devices() > 0
+    });
+    let (hot_wire, by) = if only_devices {
+        (wire.clone(), "ledger")
+    } else {
+        let done = session.sign_locally(wire, known).map_err(sentence)?;
+        (done.wire, "hot key")
+    };
+    let (signed_wire, on_devices) = app_ui_kit::actions::sign_screen::sign_on_devices(
+        session, &hot_wire, tables, known, &devices,
+    )
+    .await?;
+    let by = if on_devices > 0 { "ledger" } else { by };
     let ctx = wallet_core::relay::AuthContext { vector: known };
-    let complete = wallet_core::decode_transaction(&done.wire, tables).is_ok_and(|tx| {
+    let complete = wallet_core::decode_transaction(&signed_wire, tables).is_ok_and(|tx| {
         // The site adds what is left for it.
         tx.signers
             .iter()
@@ -269,11 +296,11 @@ fn sign_for_site(
     let cluster = session.cluster();
     app_core::diagnostics::TxLog {
         flow: *flow,
-        wire: &done.wire,
+        wire: &signed_wire,
         cluster: Some(&cluster),
     }
-    .log_signed("hot key");
-    Ok(done.wire)
+    .log_signed(by);
+    Ok(signed_wire)
 }
 
 /// Log that `wire` goes back to the site of request `id`.
@@ -504,7 +531,7 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
         SendPlan::Independent => "Each goes out whatever becomes of the others.",
         SendPlan::InOrder => "A rejected one stops the rest.",
     };
-    let label = sign_label(&current, Some(count));
+    let label = sign_label(&current, Some(count), None);
     let cautious_sign = can_sign
         && ready
             .as_ref()
@@ -606,14 +633,17 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                     };
                     error.set(None);
                     busy.set(true);
-                    // Every one is signed before any goes back.
+                    let (sign_id, origin_for_sign) = (sign_id.clone(), origin_for_sign.clone());
+                    spawn(async move {
+                    // Every one is signed before any goes back. A hardware
+                    // wallet confirms them one at a time, in order.
                     let mut signed = Vec::with_capacity(reports.len());
                     for (index, report) in reports.iter().enumerate() {
                         let Some(sign) = &report.sign else {
                             busy.set(false);
                             return;
                         };
-                        match sign_for_site(session, sign, &report.site_signs) {
+                        match sign_for_site(session, sign, &report.site_signs).await {
                             Ok(wire) => signed.push((sign.flow, wire)),
                             Err(err) => {
                                 error.set(Some(format!(
@@ -644,6 +674,7 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                         error.set(Some("The site stopped waiting for this request.".into()));
                     }
                     busy.set(false);
+                    });
                 },
                 "{label}"
             }

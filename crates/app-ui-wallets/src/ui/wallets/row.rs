@@ -1,8 +1,8 @@
-//! One hot or offline wallet on the Wallets pane.
+//! One hot, offline or hardware wallet on the Wallets pane.
 
 use super::*;
 
-/// One hot or offline wallet on the Wallets pane.
+/// One hot, offline or hardware wallet on the Wallets pane.
 #[component]
 pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element {
     let session = use_context::<Session>();
@@ -17,6 +17,8 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
         .then(|| pubkey.and_then(|pk| (session.book)().get(&pk).and_then(|e| e.lamports)))
         .flatten();
     let durable_nonce = wallet.durable_nonce;
+    let on_device = wallet.on_device;
+    let device_path = wallet.derivation_path.clone();
     let default_path = wallet.default_path;
     let mut confirm_open = use_signal(|| false);
     let mut error = use_signal(|| None::<String>);
@@ -117,6 +119,15 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                             "Use"
                         }
                     }
+                    if on_device.is_some() {
+                        if let Some(address) = pubkey {
+                            button { class: "sm",
+                                title: "Show this address on the device, to check it against the one on this screen",
+                                onclick: move |_| crate::actions::device::show_on_device(session, address),
+                                "Show on device"
+                            }
+                        }
+                    }
                     ExportKeyButton { id }
                     button { class: "danger sm",
                         onclick: move |_| {
@@ -135,12 +146,18 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                             .filter(|other| other.id != id)
                             .collect::<Vec<_>>(),
                         selected: fee_payer,
-                        none_label: "The offline wallet itself",
+                        none_label: if on_device.is_some() { "The hardware wallet itself" } else { "The offline wallet itself" },
                         on_change: move |choice| {
                             session.when_unlocked(CHANGE_WALLET, move || {
                                 let _ = session.update_wallet(id, |kind| kind.set_fee_payer(choice));
                             });
                         },
+                    }
+                }
+                if let (Some(vendor), Some(path)) = (on_device, device_path.clone()) {
+                    p { class: "wallet-fact",
+                        span { class: "muted", "{vendor.label()}" }
+                        code { class: "mono", "{path}" }
                     }
                 }
                 p { class: "wallet-fact",
@@ -190,7 +207,7 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                 }
                 if durable_nonce.is_some() {
                     p { class: "hint",
-                        "A transaction this key signs for itself lives on the durable nonce, so it stays valid however long the trip to the offline device takes. One transaction at a time: the first to land voids any other made on the same nonce."
+                        "A transaction this key signs for itself lives on the durable nonce, so it stays valid however long the trip to the other device, or the confirmation on it, takes. One transaction at a time: the first to land voids any other made on the same nonce."
                     }
                 }
                 if lost_default {

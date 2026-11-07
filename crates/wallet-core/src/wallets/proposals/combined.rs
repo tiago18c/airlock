@@ -8,15 +8,18 @@
 
 use super::*;
 use crate::ids::WalletId;
+use crate::wallets::hardware::HardwareVendor;
 use crate::wallets::record::{Protocol, WalletKind, WalletRecord};
 
 /// How a member's signature is obtained.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MemberKind {
-    /// A key in this vault. It signs the transaction.
+    /// A key in this vault, or on a Ledger or Trezor connected here. It
+    /// signs the transaction.
     HotKey,
-    /// A plain key on another device. It signs the transaction, so it can
-    /// vote only on the multisig's durable nonce.
+    /// A plain key on another device, or on a Keystone. It signs the
+    /// transaction after a QR round trip, so it can vote only on the
+    /// multisig's durable nonce.
     Offline,
     /// A programmatic signer. Its authority signs the authorization.
     Programmatic {
@@ -29,6 +32,16 @@ pub enum MemberKind {
 }
 
 impl MemberKind {
+    /// How a hardware wallet votes: as a hot key when its device answers
+    /// over a cable, as an offline key when it answers through QR codes.
+    pub(crate) fn of_device(vendor: HardwareVendor) -> Self {
+        if vendor.answers_in_time() {
+            Self::HotKey
+        } else {
+            Self::Offline
+        }
+    }
+
     /// Which authorization it signs through, for a member without a key of
     /// its own: `Some(false)` a `Submit`, `Some(true)` an `Advance`.
     pub(crate) fn advances(self) -> Option<bool> {
@@ -76,6 +89,7 @@ pub fn chosen_members(
         let kind = match &wallet.kind {
             WalletKind::Keypair { .. } | WalletKind::Seed { .. } => MemberKind::HotKey,
             WalletKind::Offline { .. } => MemberKind::Offline,
+            WalletKind::Hardware { vendor, .. } => MemberKind::of_device(*vendor),
             WalletKind::Programmatic {
                 protocol: Protocol::Ed25519Signer { nonce, .. },
                 ..
@@ -86,7 +100,7 @@ pub fn chosen_members(
                 protocol: Protocol::Vector { .. },
                 ..
             } => MemberKind::Vector,
-            WalletKind::Hardware { .. } | WalletKind::Squads { .. } => return None,
+            WalletKind::Squads { .. } => return None,
         };
         let address = wallet.address()?;
         // Membership is what the chain says, not what the wallet remembers.

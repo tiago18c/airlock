@@ -3,6 +3,7 @@
 
 pub mod adapt;
 pub(crate) mod enroll;
+pub mod hardware;
 pub(crate) mod import;
 pub(crate) mod listing;
 pub mod offline_nonce;
@@ -24,11 +25,12 @@ pub mod vector;
 mod vector_wallets;
 
 pub use enroll::{enroll, EnrollError};
+pub use hardware::{BadVersion, DeviceSeen, HardwareVendor, PathScheme, Version, PATH_SCHEMES};
 pub use import::NewSigner;
 pub use listing::WalletListStore;
 pub use record::{
-    Authority, HardwareVendor, KeyPhrase, OfflinePath, Protocol, PublicBytes, VectorSettings,
-    WalletClass, WalletKind, WalletRecord,
+    Authority, KeyPhrase, OfflinePath, Protocol, PublicBytes, VectorSettings, WalletClass,
+    WalletKind, WalletRecord,
 };
 pub use roster::{
     acting_wallet, name_offline_wallet, name_signers, refresh_targets, shareable_accounts,

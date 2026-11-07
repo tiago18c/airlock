@@ -58,6 +58,7 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
     let settings = (session.settings)();
     let auto_lock_secs = settings.auto_lock.as_secs();
     let close_to_tray = settings.close_to_tray;
+    let prerelease_devices = settings.prerelease_devices;
     let unlocked = (session.vault_state)() == VaultState::Unlocked;
 
     rsx! {
@@ -146,6 +147,25 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                 h3 { "Appearance" }
                 ThemeToggle { labels: true }
                 p { class: "hint", "System follows the light or dark setting of this device." }
+            }
+
+            div { class: "card",
+                h3 { "Pre-release hardware wallets" }
+                div { class: "segmented",
+                    button {
+                        class: if prerelease_devices { "tab" } else { "tab on" },
+                        onclick: move |_| session.edit_workspace(|ws| ws.prerelease_devices = false),
+                        "Off"
+                    }
+                    button {
+                        class: if prerelease_devices { "tab on" } else { "tab" },
+                        onclick: move |_| session.edit_workspace(|ws| ws.prerelease_devices = true),
+                        "On"
+                    }
+                }
+                p { class: "hint",
+                    "Airlock signs v1 transactions, and a hardware wallet has to read them. Ledger's Solana app reads them from 1.18, which is only a developer build so far. Keystone reads them from firmware 3.0.6, and Airlock's support for it has not been checked on a device yet. On, Add wallet offers both, for testing. A device on an older version is refused. Hardware wallets already added stay listed and sign either way."
+                }
             }
 
             div { class: "card",

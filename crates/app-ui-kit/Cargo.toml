@@ -15,6 +15,7 @@ base64.workspace = true
 bridge-protocol.workspace = true
 dioxus.workspace = true
 hex.workspace = true
+hw-protocol.workspace = true
 qr-codec.workspace = true
 serde.workspace = true
 serde_json = "1"
@@ -25,6 +26,7 @@ thiserror.workspace = true
 tokio = { workspace = true, features = ["sync"] }
 time = { version = "0.3", features = ["local-offset"] }
 tracing.workspace = true
+ur-codec.workspace = true
 wallet-core.workspace = true
 wallet-flows.workspace = true
 zeroize.workspace = true
@@ -51,6 +53,7 @@ solana-signature.workspace = true
 solana-system-interface.workspace = true
 solana-transaction.workspace = true
 tempfile.workspace = true
+hw-protocol = { workspace = true, features = ["fake"] }
 tokio = { workspace = true, features = ["sync", "rt", "time", "macros"] }
 wincode.workspace = true
 wallet-vault = { workspace = true, features = ["test-hook"] }

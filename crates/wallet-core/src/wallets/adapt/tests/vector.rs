@@ -84,6 +84,7 @@ fn a_transaction_for_a_vector_wallet_is_wrapped_with_the_account_as_read() {
     let local = LocalKeys {
         keys: &[d.payer.pubkey()],
         vector: &[],
+        devices: &[],
     };
     let status = signing_status_in(&rebuilt, &local, &ctx);
     assert_eq!(status.authorizations_elsewhere(), 1);
