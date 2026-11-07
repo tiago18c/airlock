@@ -9,9 +9,10 @@ use tokio::sync::watch;
 use wallet_core::{AddressBook, Cluster, Holdings, Vault, VaultData, WalletId, WalletSummary};
 
 use crate::bridge::{BridgeQueue, SitesView};
+use crate::history::History;
 use crate::notices::Notices;
 use crate::storage::{
-    AppHoldings, AppLeafMarks, AppNotices, AppVault, AppWalletList, AppWorkspace,
+    AppHistory, AppHoldings, AppLeafMarks, AppNotices, AppVault, AppWalletList, AppWorkspace,
 };
 
 /// One published value.
@@ -76,6 +77,8 @@ pub struct Slices {
     /// Sites connected, remembered and blocked.
     pub sites: Slice<SitesView>,
     pub notices: Slice<Notices>,
+    /// What the wallets did on chain, newest first.
+    pub history: Slice<History>,
     /// Background sync jobs. Empty until the online scheduler registers them.
     pub sync: Slice<SyncStatus>,
 }
@@ -248,6 +251,10 @@ pub fn holdings_from(holdings: &AppHoldings) -> Arc<Holdings> {
 
 pub fn notices_from(notices: &AppNotices) -> Arc<Notices> {
     Arc::new(notices.data().clone())
+}
+
+pub fn history_from(history: &AppHistory) -> Arc<History> {
+    Arc::new(history.data().clone())
 }
 
 pub fn vault_state_from(vault: &AppVault) -> VaultState {

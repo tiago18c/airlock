@@ -6,12 +6,17 @@ use base64::Engine;
 use solana_account_decoder_client_types::token::TokenAccountType;
 use solana_account_decoder_client_types::{UiAccount, UiAccountData};
 use solana_pubkey::Pubkey;
+use solana_signature::Signature;
 use solana_transaction_status_client_types::{
-    TransactionConfirmationStatus, UiInnerInstructions, UiInstruction,
+    EncodedConfirmedTransactionWithStatusMeta, EncodedTransaction, TransactionBinaryEncoding,
+    TransactionConfirmationStatus, UiInnerInstructions, UiInstruction, UiTransactionTokenBalance,
 };
 use wallet_core::simulate::{CompiledCall, InnerReply, SimulationReply};
 use wallet_core::stake::StakeReward;
-use wallet_core::{ConfirmationLevel, DiscoveredTokenAccount, RpcError, SignatureStatus};
+use wallet_core::{
+    AddressSignature, ConfirmationLevel, DiscoveredTokenAccount, LandedTx, RpcError,
+    SignatureStatus, TokenBalanceChange,
+};
 
 /// From either client's signature status into the app's.
 pub fn signature_status(
@@ -175,6 +180,135 @@ pub fn stake_reward(
         post_balance,
         commission,
     })
+}
+
+/// One entry of `getSignaturesForAddress`, from either client.
+pub fn address_signature(
+    signature: &str,
+    slot: u64,
+    block_time: Option<i64>,
+    err: Option<String>,
+) -> Result<AddressSignature, RpcError> {
+    let signature: Signature = signature
+        .parse()
+        .map_err(|_| RpcError::Message("The node returned an unreadable signature.".into()))?;
+    Ok(AddressSignature {
+        signature,
+        slot,
+        block_time,
+        err,
+    })
+}
+
+/// A `getTransaction` answer in base64, from either client.
+pub fn landed_tx(answer: EncodedConfirmedTransactionWithStatusMeta) -> Result<LandedTx, RpcError> {
+    let unreadable = || RpcError::Message("The node returned a transaction it cannot read.".into());
+    let wire = match &answer.transaction.transaction {
+        EncodedTransaction::Binary(blob, TransactionBinaryEncoding::Base64) => {
+            STANDARD.decode(blob).map_err(|_| unreadable())?
+        }
+        EncodedTransaction::Binary(blob, TransactionBinaryEncoding::Base58)
+        | EncodedTransaction::LegacyBinary(blob) => {
+            bs58::decode(blob).into_vec().map_err(|_| unreadable())?
+        }
+        _ => return Err(unreadable()),
+    };
+    let Some(meta) = answer.transaction.meta else {
+        return Ok(LandedTx {
+            slot: answer.slot,
+            block_time: answer.block_time,
+            wire,
+            err: None,
+            fee: 0,
+            loaded_writable: Vec::new(),
+            loaded_readonly: Vec::new(),
+            pre_balances: Vec::new(),
+            post_balances: Vec::new(),
+            token_balances: Vec::new(),
+            logs: Vec::new(),
+        });
+    };
+    let keys = |list: &[String]| -> Result<Vec<Pubkey>, RpcError> {
+        list.iter()
+            .map(|key| key.parse().map_err(|_| unreadable()))
+            .collect()
+    };
+    let (loaded_writable, loaded_readonly) = match meta
+        .loaded_addresses
+        .as_ref()
+        .map(|loaded| Ok::<_, RpcError>((keys(&loaded.writable)?, keys(&loaded.readonly)?)))
+    {
+        Some(loaded) => loaded?,
+        None => (Vec::new(), Vec::new()),
+    };
+    let pre = meta.pre_token_balances.map(|list| list).unwrap_or_default();
+    let post = meta
+        .post_token_balances
+        .map(|list| list)
+        .unwrap_or_default();
+    Ok(LandedTx {
+        slot: answer.slot,
+        block_time: answer.block_time,
+        wire,
+        err: meta.err.map(|err| err.to_string()),
+        fee: meta.fee,
+        loaded_writable,
+        loaded_readonly,
+        pre_balances: meta.pre_balances,
+        post_balances: meta.post_balances,
+        token_balances: token_changes(&pre, &post),
+        logs: meta.log_messages.map(|logs| logs).unwrap_or_default(),
+    })
+}
+
+/// Each token account's balance before and after, by its index. One that is
+/// on one side only held nothing on the other.
+fn token_changes(
+    pre: &[UiTransactionTokenBalance],
+    post: &[UiTransactionTokenBalance],
+) -> Vec<TokenBalanceChange> {
+    let amount = |balance: &UiTransactionTokenBalance| {
+        balance.ui_token_amount.amount.parse::<u64>().unwrap_or(0)
+    };
+    let mut out: Vec<TokenBalanceChange> = Vec::new();
+    for (is_pre, list) in [(true, pre), (false, post)] {
+        for balance in list {
+            let Ok(mint) = balance.mint.parse::<Pubkey>() else {
+                continue;
+            };
+            let at = match out
+                .iter()
+                .position(|known| known.account_index == balance.account_index)
+            {
+                Some(at) => at,
+                None => {
+                    out.push(TokenBalanceChange {
+                        account_index: balance.account_index,
+                        mint,
+                        owner: None,
+                        decimals: balance.ui_token_amount.decimals,
+                        pre: 0,
+                        post: 0,
+                    });
+                    out.len() - 1
+                }
+            };
+            let entry = &mut out[at];
+            if entry.owner.is_none() {
+                entry.owner = balance
+                    .owner
+                    .as_ref()
+                    .map(|owner| owner.parse().ok())
+                    .flatten();
+            }
+            if is_pre {
+                entry.pre = amount(balance);
+            } else {
+                entry.post = amount(balance);
+            }
+        }
+    }
+    out
 }
 
 #[cfg(test)]

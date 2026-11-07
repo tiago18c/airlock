@@ -80,13 +80,14 @@ pub use transport::{protocol, signature_objects, SignatureObject};
 pub use tx::site_message;
 pub use tx::{
     apply_local_signatures, compile_draft, compile_probe, compile_v1, compile_v1_budget,
-    decode_transaction, decode_v1_transaction, insert_signature, lookup_tables_needed, onto_nonce,
-    parse_lookup_table_addresses, parse_wire, renew, runtime_default_cu_limit, simulate,
-    sol_transfer, to_v1, to_v1_swapping, to_v1_with, CompiledTx, ComputeBudgetSpec, ConvertError,
-    Converted, DecodedAccount, DecodedSigner, DecodedTx, LimitFrom, Limits, LookupTables,
-    NonceSpec, RawInstruction, TxBudget, TxFormat, TxSettings, WireView, LAMPORTS_PER_SIGNATURE,
-    LOOKUP_TABLE_META_SIZE,
+    decode_landed, decode_transaction, decode_v1_transaction, insert_signature,
+    lookup_tables_needed, onto_nonce, parse_lookup_table_addresses, parse_wire, renew,
+    runtime_default_cu_limit, simulate, sol_transfer, tables_from_loaded, to_v1, to_v1_swapping,
+    to_v1_with, CompiledTx, ComputeBudgetSpec, ConvertError, Converted, DecodedAccount,
+    DecodedSigner, DecodedTx, LimitFrom, Limits, LookupTables, NonceSpec, RawInstruction, TxBudget,
+    TxFormat, TxSettings, WireView, LAMPORTS_PER_SIGNATURE, LOOKUP_TABLE_META_SIZE,
 };
+pub use tx::{change_for, landed_accounts, landed_balances, LandedChange, TokenDelta};
 pub use wallets::{
     acting_wallet, adapt, enroll, name_offline_wallet, name_signers, offline_nonce, programmatic,
     proposals, refresh_targets, relay, shareable_accounts, shared_keys, signer_of, signing_route,
@@ -97,8 +98,9 @@ pub use wallets::{
 };
 
 pub use chain::{
-    parse_nonce_account, ChainSnapshot, ConfirmationLevel, DiscoveredNonce, DiscoveredTokenAccount,
-    Lifetime, RawAccount, SignatureStatus, SolanaRpc,
+    parse_nonce_account, AddressSignature, ChainSnapshot, ConfirmationLevel, DiscoveredNonce,
+    DiscoveredTokenAccount, LandedTx, Lifetime, RawAccount, SignatureStatus, SolanaRpc,
+    TokenBalanceChange,
 };
 pub use codama_dynamic_client::{IntentBody, IntentSpan, IntentValue, ScaleSource};
 pub use error::{

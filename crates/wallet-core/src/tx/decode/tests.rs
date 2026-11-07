@@ -389,6 +389,30 @@ fn v0_loads_writable_accounts_of_every_table_before_readonly_ones() {
     tables.insert(first, vec![first_writable, first_readonly]);
     tables.insert(second, vec![second_writable]);
     let decoded = decode_transaction(&wire, &tables).unwrap();
+    // A node says what the tables loaded, writable then readonly, and that
+    // reads the same without the tables.
+    let landed = LandedTx {
+        slot: 1,
+        block_time: None,
+        wire: wire.clone(),
+        err: None,
+        fee: 5_000,
+        loaded_writable: vec![first_writable, second_writable],
+        loaded_readonly: vec![first_readonly],
+        pre_balances: Vec::new(),
+        post_balances: Vec::new(),
+        token_balances: Vec::new(),
+        logs: Vec::new(),
+    };
+    assert_eq!(decode_landed(&landed).unwrap(), decoded);
+    let short = LandedTx {
+        loaded_readonly: Vec::new(),
+        ..landed
+    };
+    assert_eq!(
+        decode_landed(&short).unwrap_err(),
+        DecodeError::MissingLookupTable(first)
+    );
     assert_eq!(
         decoded.instructions[0].accounts,
         vec![first_writable, second_writable, first_readonly]

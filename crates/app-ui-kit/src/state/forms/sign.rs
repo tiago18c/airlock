@@ -36,6 +36,18 @@ pub enum ShareTab {
     Context,
 }
 
+/// What came of pressing Submit, shown over the transaction until the user
+/// moves on.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Submission {
+    /// Being handed to the node.
+    Sending,
+    /// The node took it, or may have. Its notice says what became of it.
+    Sent(solana_signature::Signature),
+    /// The node refused it, so it went nowhere.
+    Refused(String),
+}
+
 #[derive(Clone, PartialEq)]
 pub enum SimState {
     /// Not asked: offline, or nothing loaded.
@@ -230,6 +242,8 @@ pub struct SignForm {
     pub tables: Signal<wallet_core::LookupTables>,
     pub clock: BlockhashClock,
     pub last_signature: Signal<Option<String>>,
+    /// What came of the last press of Submit, while it is on screen.
+    pub submission: Signal<Option<Submission>>,
     /// A rebuild for a keyless wallet is running.
     pub rebuilding: Signal<bool>,
     /// Checksum of the message last rebuilt without being asked, so a
@@ -554,6 +568,7 @@ impl SignForm {
         this.rebuilt.set(false);
         this.returned.set(false);
         this.batch.set(None);
+        this.submission.set(None);
     }
 }
 

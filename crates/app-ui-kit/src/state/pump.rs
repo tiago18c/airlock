@@ -14,7 +14,7 @@ use std::sync::Arc;
 
 use app_core::bridge::{BridgeQueue, SitesView};
 use app_core::slices::{NetworkStatus, Settings, SyncStatus, VaultState, WalletsView};
-use app_core::{Core, Notices, Slice, Slices};
+use app_core::{Core, History, Notices, Slice, Slices};
 use dioxus::prelude::*;
 use wallet_core::{AddressBook, Holdings};
 
@@ -34,6 +34,8 @@ pub struct Pump {
     pub settings: ReadSignal<Arc<Settings>>,
     /// Notices for toasts and (later) the notification center.
     pub notices: ReadSignal<Arc<Notices>>,
+    /// What the wallets did on chain, newest first.
+    pub history: ReadSignal<Arc<History>>,
     /// Background sync job status (online shell).
     pub sync: ReadSignal<Arc<SyncStatus>>,
     /// Browser requests waiting for the user (desktop shell).
@@ -54,6 +56,7 @@ struct Writes {
     network: Signal<Arc<NetworkStatus>>,
     settings: Signal<Arc<Settings>>,
     notices: Signal<Arc<Notices>>,
+    history: Signal<Arc<History>>,
     sync: Signal<Arc<SyncStatus>>,
     bridge: Signal<Arc<BridgeQueue>>,
     sites: Signal<Arc<SitesView>>,
@@ -69,6 +72,7 @@ pub fn use_core(core: Core) -> Pump {
         network: use_slice(&core, |slices| &slices.network),
         settings: use_slice(&core, |slices| &slices.settings),
         notices: use_slice(&core, |slices| &slices.notices),
+        history: use_slice(&core, |slices| &slices.history),
         sync: use_slice(&core, |slices| &slices.sync),
         bridge: use_slice(&core, |slices| &slices.bridge),
         sites: use_slice(&core, |slices| &slices.sites),
@@ -83,6 +87,7 @@ pub fn use_core(core: Core) -> Pump {
         network: writes.network.into(),
         settings: writes.settings.into(),
         notices: writes.notices.into(),
+        history: writes.history.into(),
         sync: writes.sync.into(),
         bridge: writes.bridge.into(),
         sites: writes.sites.into(),
@@ -102,6 +107,7 @@ impl Pump {
         write_if_new(&mut writes.network, slices.network.get());
         write_if_new(&mut writes.settings, slices.settings.get());
         write_if_new(&mut writes.notices, slices.notices.get());
+        write_if_new(&mut writes.history, slices.history.get());
         write_if_new(&mut writes.sync, slices.sync.get());
         write_if_new(&mut writes.bridge, slices.bridge.get());
         write_if_new(&mut writes.sites, slices.sites.get());

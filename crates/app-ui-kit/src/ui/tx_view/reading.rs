@@ -167,6 +167,27 @@ pub fn use_explained(tx: DecodedTx) -> TxReading {
     TxReading::of(answer, bare)
 }
 
+/// How History reads `tx`, a transaction that already ran: with what the
+/// wallets say of their own accounts, and nothing a context note brought.
+pub fn use_explained_landed(tx: DecodedTx) -> TxReading {
+    let session = use_context::<Session>();
+    let wallets = (session.wallets)().summaries.clone();
+    let for_bare = tx.clone();
+    let bare = use_memo(use_reactive!(|(for_bare)| {
+        explain_transaction(&NoIdls, &for_bare)
+    }))();
+    let answer = use_worked_out::<(DecodedTx, Vec<WalletSummary>), ExplainedTx>(
+        (tx, wallets),
+        READING_DEADLINE,
+        |asked, now| asked.0.message == now.0.message,
+        |view, (tx, wallets)| {
+            let note = wallet_core::DisplayNote::default().with_wallet_schemes(wallets);
+            explain_with_note(view, tx, &note)
+        },
+    );
+    TxReading::of(answer, bare)
+}
+
 /// How the request modal reads `tx`, with what a rebuild knew of its Vector
 /// accounts. `None` with no transaction.
 pub fn use_explained_for_site(

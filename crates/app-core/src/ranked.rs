@@ -17,6 +17,7 @@ pub(crate) enum Rank {
     Workspace,
     Holdings,
     Notices,
+    History,
     Bridge,
     Reach,
 }

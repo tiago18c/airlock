@@ -102,6 +102,10 @@ pub enum ToastClickAction {
     OpenRequestModal,
     /// Open the notification center on this notice (or the list if unknown).
     OpenNotices { focus: Option<NoticeId> },
+    /// Open a transaction that ran on chain in History.
+    ShowInHistory {
+        signature: solana_signature::Signature,
+    },
 }
 
 /// Decide where a toast click should land.
@@ -123,6 +127,14 @@ pub fn toast_click_action(core: &PublicCore, notice_id: NoticeId) -> ToastClickA
                 ToastClickAction::OpenNotices {
                     focus: Some(notice_id),
                 }
+            }
+        }
+        // One that ran, failed or not, is in History, with what it did.
+        NoticeKind::Transaction { signature, .. }
+            if core.slices().history.get().get(signature).is_some() =>
+        {
+            ToastClickAction::ShowInHistory {
+                signature: *signature,
             }
         }
         _ => ToastClickAction::OpenNotices {
@@ -182,6 +194,62 @@ mod tests {
         assert_eq!(
             toast_click_action(&public, id),
             ToastClickAction::OpenNotices { focus: Some(id) }
+        );
+
+        // Once History has it, the click opens it there.
+        public.history_deferred("sent", |history| {
+            history.record_sent(signature, &Cluster::Devnet, &[1], Vec::new(), "Transfer", 1);
+            true
+        });
+        assert_eq!(
+            toast_click_action(&public, id),
+            ToastClickAction::ShowInHistory { signature }
+        );
+
+        // So does one that ran and failed: what it did is in History too.
+        let failed = Signature::from([7; 64]);
+        let failed_id = public.notices_push(NoticeKind::Transaction {
+            flow: 2,
+            signature: failed,
+            cluster: Cluster::Devnet,
+            label: "Transfer".into(),
+            status: TxStatus::Sent,
+        });
+        public.history_deferred("sent", |history| {
+            history.record_sent(failed, &Cluster::Devnet, &[1], Vec::new(), "Transfer", 1);
+            true
+        });
+        public.notices_set_tx_status(
+            failed,
+            TxStatus::Failed {
+                error: "custom program error: 0x1".into(),
+            },
+        );
+        assert!(matches!(
+            public.slices().history.get().get(&failed).unwrap().outcome,
+            app_core::Outcome::Failed { .. }
+        ));
+        assert_eq!(
+            toast_click_action(&public, failed_id),
+            ToastClickAction::ShowInHistory { signature: failed }
+        );
+
+        // One the node refused never ran, so the notification center opens.
+        let refused = Signature::from([8; 64]);
+        let refused_id = public.notices_push(NoticeKind::Transaction {
+            flow: 3,
+            signature: refused,
+            cluster: Cluster::Devnet,
+            label: "Transfer".into(),
+            status: TxStatus::Rejected {
+                error: "insufficient lamports".into(),
+            },
+        });
+        assert_eq!(
+            toast_click_action(&public, refused_id),
+            ToastClickAction::OpenNotices {
+                focus: Some(refused_id)
+            }
         );
 
         let rejected = public.notices_push(NoticeKind::BridgeRequest {

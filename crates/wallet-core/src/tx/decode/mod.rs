@@ -1,5 +1,6 @@
 //! Reading a transaction wire in any Solana format: legacy, v0 or v1.
 
+use crate::chain::LandedTx;
 use crate::error::DecodeError;
 use crate::ids::{COMPUTE_BUDGET_PROGRAM_ID, SYSTEM_PROGRAM_ID};
 use crate::tx::builder::{
@@ -481,6 +482,59 @@ pub fn decode_transaction(wire: &[u8], tables: &LookupTables) -> Result<DecodedT
         instructions,
         signers,
     })
+}
+
+/// A transaction that landed, read with the addresses its lookup tables
+/// loaded then, so no table has to be fetched, and one closed since reads too.
+pub fn decode_landed(landed: &LandedTx) -> Result<DecodedTx, DecodeError> {
+    let tables = tables_from_loaded(
+        &landed.wire,
+        &landed.loaded_writable,
+        &landed.loaded_readonly,
+    )?;
+    decode_transaction(&landed.wire, &tables)
+}
+
+/// The lookup tables of a v0 `wire`, as far as `writable` and `readonly`, the
+/// addresses a node says they loaded, tell them. Each table holds the addresses
+/// at the indexes the message names, and the default address in between.
+pub fn tables_from_loaded(
+    wire: &[u8],
+    writable: &[Pubkey],
+    readonly: &[Pubkey],
+) -> Result<LookupTables, DecodeError> {
+    let read = read_wire(wire)?;
+    let mut tables = LookupTables::new();
+    let VersionedMessage::V0(message) = &read.tx.message else {
+        return Ok(tables);
+    };
+    let mut filled: HashMap<Pubkey, Vec<Pubkey>> = HashMap::new();
+    for (is_writable, loaded) in [(true, writable), (false, readonly)] {
+        let mut loaded = loaded.iter();
+        for lookup in &message.address_table_lookups {
+            let table = Pubkey::new_from_array(lookup.account_key.to_bytes());
+            let indexes = if is_writable {
+                &lookup.writable_indexes
+            } else {
+                &lookup.readonly_indexes
+            };
+            let addresses = filled.entry(table).or_default();
+            for &index in indexes {
+                let address = loaded
+                    .next()
+                    .ok_or(DecodeError::MissingLookupTable(table))?;
+                let at = usize::from(index);
+                if addresses.len() <= at {
+                    addresses.resize(at + 1, Pubkey::default());
+                }
+                addresses[at] = *address;
+            }
+        }
+    }
+    for (table, addresses) in filled {
+        tables.insert(table, addresses);
+    }
+    Ok(tables)
 }
 
 /// Strict v1 decode. The offline device, QRS1 handoff and transport stay on this.

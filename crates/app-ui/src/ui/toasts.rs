@@ -104,6 +104,8 @@ fn ToastCard(notice: Notice) -> Element {
     let (chip_class, chip_label, spinning) = tx_status_chip(status);
     let is_failure = matches!(status, TxStatus::Failed { .. } | TxStatus::Rejected { .. });
     let role = if is_failure { "alert" } else { "status" };
+    let in_history = crate::ui::notices::shows_in_history(&session, signature);
+    let signature = *signature;
 
     rsx! {
         div { class: "toast", role: "{role}",
@@ -126,6 +128,17 @@ fn ToastCard(notice: Notice) -> Element {
                     "{chip_label}"
                 }
                 div { class: "btn-row toast-actions",
+                    if in_history {
+                        button {
+                            class: "ghost sm",
+                            r#type: "button",
+                            onclick: move |_| {
+                                session.dismiss_toast(id);
+                                session.open_in_history(signature);
+                            },
+                            "View"
+                        }
+                    }
                     if let Some(url) = explorer_url.clone() {
                         button {
                             class: "ghost sm",

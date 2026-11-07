@@ -14,20 +14,28 @@ pub use sync::{
     Scheduler, BALANCES_JOB, PRICES_JOB,
 };
 pub use tx::{Submitter, Tracker};
-pub use ui::{NetworkChip, PortfolioPanel, ProposalsHost, SendHost, StakePanel};
+pub use ui::{HistoryPanel, NetworkChip, PortfolioPanel, ProposalsHost, SendHost, StakePanel};
 
 use std::sync::Arc;
 
-use app_core::Core;
+use app_core::{Core, PublicCore};
 use app_ui_kit::{OnlineHooks, SubmitHandle};
 use dioxus::prelude::*;
 
+/// The sync scheduler, for a pane that asks a job to run now, and the core
+/// it writes through, for one that reads more than a job does.
+#[derive(Clone)]
+pub struct Jobs {
+    pub scheduler: Scheduler,
+    pub core: PublicCore,
+}
+
 /// The online services over `core`: the network monitor, the sync scheduler
-/// with its balances job, and the submitter with its tracker, which picks up
-/// transactions still being followed. Returns what the shell hands
-/// [`app_ui_kit::use_session`]. Call once, from the root.
+/// with its balances and history jobs, and the submitter with its tracker,
+/// which picks up transactions still being followed. Returns what the shell
+/// hands [`app_ui_kit::use_session`]. Call once, from the root.
 pub fn use_online(core: CopyValue<Core>) -> (OnlineHooks, SubmitHandle) {
-    use_hook(|| {
+    let (hooks, submitter, jobs) = use_hook(|| {
         let public = core.peek().public();
         let monitor = Monitor::new(public.clone());
         let scheduler = Scheduler::new(public.clone());
@@ -37,11 +45,13 @@ pub fn use_online(core: CopyValue<Core>) -> (OnlineHooks, SubmitHandle) {
         };
         let moved = sync::Moved::default();
         register_balances(&scheduler, rpc.clone(), moved.clone());
-        register_tokens(&scheduler, rpc);
+        register_tokens(&scheduler, rpc.clone());
+        sync::register_history(&scheduler, rpc);
         register_prices(&scheduler);
         kick_after_probe(&monitor, &scheduler);
         scheduler.start();
         sync::watch_selection(public.clone(), scheduler.clone());
+        sync::watch_wallets(public.clone(), scheduler.clone());
         sync::start_activity_feed(
             public.clone(),
             scheduler.clone(),
@@ -56,7 +66,7 @@ pub fn use_online(core: CopyValue<Core>) -> (OnlineHooks, SubmitHandle) {
             moved,
         ));
         tracker.resume(rpc_for_cluster);
-        let submitter = SubmitHandle::new(Submitter::new(public, tracker));
+        let submitter = SubmitHandle::new(Submitter::new(public.clone(), tracker));
 
         let hooks = OnlineHooks::new(
             {
@@ -70,15 +80,24 @@ pub fn use_online(core: CopyValue<Core>) -> (OnlineHooks, SubmitHandle) {
             move || monitor.start_refresh(),
             refresh_from_chain_fn(scheduler.clone()),
         )
-        .with_refresh_prices(move || {
+        .with_refresh_prices({
             let scheduler = scheduler.clone();
-            Box::pin(async move {
-                scheduler
-                    .run_now(PRICES_JOB)
-                    .await
-                    .map(|ok| ok.note.unwrap_or_default())
-            })
+            move || {
+                let scheduler = scheduler.clone();
+                Box::pin(async move {
+                    scheduler
+                        .run_now(PRICES_JOB)
+                        .await
+                        .map(|ok| ok.note.unwrap_or_default())
+                })
+            }
         });
-        (hooks, submitter)
-    })
+        let jobs = Jobs {
+            scheduler,
+            core: public,
+        };
+        (hooks, submitter, jobs)
+    });
+    use_context_provider(|| jobs);
+    (hooks, submitter)
 }

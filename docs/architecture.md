@@ -54,12 +54,13 @@ Each app is a thin `main.rs`: it picks its tabs and services and hands them to `
 | `settings` | Vector offered, the auto-lock timeout, close-to-tray, the tokens API key |
 | `bridge` | Pending browser requests (`BridgeQueue`) |
 | `notices` | What happened, newest first. Saved deferred to `notices.json` |
+| `history` | The wallets' transactions, newest first, each read in full once. Saved deferred to `history.json` |
 | `sync` | Each background job's last success, error and next retry |
 
 **Commands change state.** Each command mutates under the slice's owner, publishes the new snapshot, and saves with one of two policies:
 
 - **Checked** (user edits to the vault, the book and settings): save now, roll back and return the error if it fails.
-- **Deferred** (caches that can be fetched again: holdings, balances, notices): mark the slice dirty. A saver task writes it at most once a second, off the UI thread, and reports a failure as an event without rolling back.
+- **Deferred** (caches that can be fetched again: holdings, balances, notices, history): mark the slice dirty. A saver task writes it at most once a second, off the UI thread, and reports a failure as an event without rolling back.
 
 **Events are for things that happen once** (`app_core::events::Event`): `SaveFailed`, `SyncFailed`, `VaultLocked`, `RequestArrived`, `TxStatusChanged`. They go out on `tokio::sync::broadcast`.
 
@@ -105,9 +106,10 @@ Native and wasm:
 - **`wallet-rpc` as the `SolanaRpc` implementation.**
 - **`network::Monitor`:** probes the node, corrects the cluster, and publishes the network status.
 - **`tx::Submitter` and `tx::Tracker`:** the only way a transaction is sent. Submitting logs it, adds a notice and hands the signature to the tracker, which follows it to the end on the cluster it was sent to.
-- **`sync::Scheduler`:** jobs with an interval, backoff and a cancellation token (SOL balances, the token accounts of the wallet in use, those of every other address, prices). A cluster change, a new RPC URL or the app going offline cancels and restarts them. Each job reads public slices and writes through deferred commands.
+- **`sync::Scheduler`:** jobs with an interval, backoff and a cancellation token (SOL balances, the token accounts of the wallet in use, those of every other address, prices, transaction history). A cluster change, a new RPC URL or the app going offline cancels and restarts them. Each job reads public slices and writes through deferred commands.
 - **The activity feed** (`sync::activity`): one WebSocket to the node, with an account and a logs subscription per wallet. A pushed balance is shown at once. A transaction that mentions a wallet, or one the app sent landing, has the balances job read again from a node that has seen its slot. While the feed is up, the balances job runs only now and then, in case it missed something.
-- **Online-only panes:** Portfolio, Stake and Proposals.
+- **Transaction history** (`sync::history`): the latest transactions of each wallet (`getSignaturesForAddress`), merged into the `history` slice, then those not yet read in full (`getTransaction`), newest first and a few at a time. What is read is kept, so a transaction is read from a node once, and one the node does not have is asked for only a few times. The activity feed, a transaction landing and a new wallet run it at once. Older pages are the History pane's to ask for (`sync::load_older`): each wallet's next page before the oldest it keeps, read in full at once. A page shorter than asked marks where that wallet's history starts, so nothing older is asked for. The submitter puts what it sends in the history as it sends it, read from its own bytes, and the tracker's last word settles it: kept with its outcome once it lands, dropped if it never did.
+- **Online-only panes:** Portfolio, Stake, History and Proposals. History opens a transaction as Review and Sign shows one, with what it did to each balance. Submit on Review and Sign waits on screen for the transaction to land, then offers History or a clear screen, or the same transaction again when it did not land.
 
 ## app-desktop
 
@@ -172,7 +174,7 @@ Settings has **Open log folder** (desktop) and **Copy diagnostics**: the version
 | Feature | Lives in |
 | --- | --- |
 | Data kept fresh in the background | an `app-online::sync` job writing through deferred commands |
-| Transaction history | a store and slice in `app-core`, filled by an `app-online::sync` job, so the airgap build can show what it signed |
+| Transaction history | the `history` store and slice in `app-core` (`app_core::history`), filled by the `history` job in `app-online::sync` and by `tx::Submitter`, shown by the History pane in `app-online` |
 | A new kind of notice | a `NoticeKind` variant in `app-core`, pushed by whoever knows it happened |
 | Sending a transaction from a new place | `app-online::tx::Submitter`, never `send_transaction` directly, so every send is logged, noticed and tracked |
 | OS notifications for anything | a notice or event in `app-core`, a rule in the app, the toast in `app-desktop` |

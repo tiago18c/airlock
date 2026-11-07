@@ -27,6 +27,7 @@ pub enum Glyph {
     Device,
     Safe,
     Hourglass,
+    History,
     Server,
     Coin,
     Pie,
@@ -141,6 +142,11 @@ impl Glyph {
                 "M7 3c0 5 5 6 5 9s-5 4-5 9",
                 "M17 3c0 5-5 6-5 9s5 4 5 9",
                 "M9.5 18.5h5",
+            ],
+            Glyph::History => &[
+                "M3 12a9 9 0 1 0 3-6.7L3 8",
+                "M3 3v5h5",
+                "M12 7v5l3.5 2",
             ],
             Glyph::Server => &[
                 "M4 4h16v6H4z",
