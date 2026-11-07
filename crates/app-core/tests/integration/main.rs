@@ -1,5 +1,6 @@
 mod bridge;
 mod enroll;
+mod history;
 mod lock;
 mod locked_wallets;
 mod notices;

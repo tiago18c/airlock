@@ -52,6 +52,7 @@ mod inbox;
 mod share;
 mod simulation;
 mod steps;
+mod submit;
 
 use blind::{offer_on_screen, use_stored_behind, BlindApprovals};
 
@@ -60,6 +61,7 @@ pub(in crate::ui) use inbox::*;
 pub(in crate::ui) use share::*;
 pub(in crate::ui) use simulation::*;
 pub(in crate::ui) use steps::*;
+use submit::SubmitProgress;
 
 #[component]
 pub fn SignPanel() -> Element {
@@ -257,6 +259,7 @@ pub fn SignPanel() -> Element {
                 }
             }
         }
+        SubmitProgress {}
     }
 }
 

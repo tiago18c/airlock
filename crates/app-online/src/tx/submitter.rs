@@ -12,6 +12,7 @@ use wallet_flows::send::{self, SendFailure};
 use wallet_flows::track::{watch_landed, SITE_SEND_POLL, SITE_SEND_WINDOW};
 
 use super::tracker::Tracker;
+use crate::sync::wallet_addresses;
 
 /// Sends a wire, logs it, pushes a notice, and hands the signature to the tracker.
 #[derive(Clone)]
@@ -46,7 +47,15 @@ impl Submitter {
         let err = match sent {
             Ok(signature) => {
                 log.log_sent(&signature.to_string());
-                self.follow_sent(rpc, flow, signature, label, cluster, last_valid_height);
+                self.follow_sent(
+                    rpc,
+                    flow,
+                    signature,
+                    wire,
+                    label,
+                    cluster,
+                    last_valid_height,
+                );
                 return Ok(signature);
             }
             Err(err) => err,
@@ -55,7 +64,15 @@ impl Submitter {
         let signature = first_signature(wire);
         if let (true, Some(signature)) = (err.may_have_gone_out(), signature) {
             log.log_unanswered(&signature.to_string(), &text);
-            self.follow_sent(rpc, flow, signature, label, cluster, last_valid_height);
+            self.follow_sent(
+                rpc,
+                flow,
+                signature,
+                wire,
+                label,
+                cluster,
+                last_valid_height,
+            );
             return Err(SendFailure::Unknown {
                 signature,
                 why: format!("Transaction {signature} may still land: {text}"),
@@ -95,17 +112,20 @@ impl Submitter {
             })
     }
 
-    /// A notice for `signature`, unless this is the same one sent again, and
-    /// the tracker on it.
+    /// A notice for `signature`, unless this is the same one sent again, its
+    /// place in the history, and the tracker on it.
+    #[allow(clippy::too_many_arguments)]
     fn follow_sent(
         &self,
         rpc: Arc<dyn SolanaRpc>,
         flow: FlowId,
         signature: Signature,
+        wire: &[u8],
         label: &str,
         cluster: &Cluster,
         last_valid_height: Option<u64>,
     ) {
+        self.record_in_history(signature, wire, label, cluster);
         if !self.is_followed(&signature) {
             self.core.notices_push(NoticeKind::Transaction {
                 flow,
@@ -168,12 +188,32 @@ impl Submitter {
                 status,
             });
             if landed {
+                self.record_in_history(signature, wire, &format!("Sent by {origin}"), cluster);
                 let deadline = self.tracker.fresh_deadline();
                 self.tracker
                     .follow(rpc.clone(), cluster, signature, None, deadline);
             }
         }
         signatures.into_iter().zip(landed).collect()
+    }
+}
+
+impl Submitter {
+    /// Put a transaction sent from here in the history at once, read from
+    /// `wire`, under the wallets it names. The tracker settles its outcome.
+    fn record_in_history(&self, signature: Signature, wire: &[u8], label: &str, cluster: &Cluster) {
+        let named = parse_wire(wire)
+            .map(|view| view.static_keys)
+            .unwrap_or_default();
+        let addresses: Vec<_> = wallet_addresses(&self.core.slices().wallets.get())
+            .into_iter()
+            .filter(|address| named.contains(address))
+            .collect();
+        let now = (self.core.ports().clock.now_ms() / 1000) as i64;
+        self.core.history_deferred("history_sent", |history| {
+            history.record_sent(signature, cluster, wire, addresses, label, now);
+            true
+        });
     }
 }
 

@@ -11,6 +11,7 @@
 pub mod adapt;
 pub mod compile;
 mod error;
+pub mod history;
 pub mod idl;
 pub mod lookup;
 pub mod market;

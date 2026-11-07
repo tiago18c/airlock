@@ -19,7 +19,7 @@ use wallet_rpc::Activity;
 use super::balances::{
     apply_snapshot, wallet_addresses, BALANCES_INTERVAL, FEED_UP_BALANCES_INTERVAL,
 };
-use super::scheduler::{Scheduler, BALANCES_JOB};
+use super::scheduler::{Scheduler, BALANCES_JOB, HISTORY_JOB};
 
 const SYNC: &str = "airlock::sync";
 
@@ -309,6 +309,7 @@ impl Feed {
                 debug!(target: SYNC, %address, %signature, failed, slot, "activity");
                 self.moved.mark(address);
                 self.scheduler.kick(BALANCES_JOB);
+                self.scheduler.kick(HISTORY_JOB);
             }
             Activity::Balance {
                 address,

@@ -93,6 +93,7 @@ pub enum Tab {
     Stake,
     Build,
     Sign,
+    History,
     Settings,
 }
 
@@ -138,6 +139,8 @@ pub struct Session {
     pub settings: ReadSignal<Arc<Settings>>,
     /// Notices for toasts and the notification center.
     pub notices: ReadSignal<Arc<Notices>>,
+    /// What the wallets did on chain, newest first.
+    pub history: ReadSignal<Arc<app_core::History>>,
     /// Background sync job status.
     pub sync: ReadSignal<Arc<SyncStatus>>,
     /// Browser requests waiting for the user. Empty without the bridge.
@@ -199,6 +202,7 @@ impl Session {
             holdings_view: pump.holdings,
             settings: pump.settings,
             notices: pump.notices,
+            history: pump.history,
             sync: pump.sync,
             bridge: pump.bridge,
             sites: pump.sites,
@@ -458,6 +462,51 @@ impl Session {
     pub fn open_in_sign(&self, load: SignLoad) {
         self.forms.sign.load(load);
         self.goto(Tab::Sign);
+    }
+
+    /// Open `signature` on the History screen and go there.
+    pub fn open_in_history(&self, signature: solana_signature::Signature) {
+        let form = self.forms.history;
+        let (mut selected, mut view, mut wallet) = (form.selected, form.view, form.wallet);
+        selected.set(Some(signature));
+        view.set(crate::state::forms::SignView::Summary);
+        // A filter that hides it would hide it.
+        let shown = wallet.peek().is_none_or(|only| {
+            self.history
+                .peek()
+                .get(&signature)
+                .is_none_or(|entry| entry.addresses.contains(&only))
+        });
+        if !shown {
+            wallet.set(None);
+        }
+        self.goto(Tab::History);
+    }
+
+    /// Change the transaction history: a transaction a screen read from the
+    /// node. `f` says whether it changed anything.
+    pub fn history_deferred(
+        &self,
+        name: &'static str,
+        f: impl FnOnce(&mut app_core::History) -> bool,
+    ) {
+        self.command(|core| core.history_deferred(name, f));
+    }
+
+    /// What the notices say became of `signature`, sent from here.
+    pub fn tx_status(&self, signature: &solana_signature::Signature) -> Option<app_core::TxStatus> {
+        self.notices
+            .read()
+            .items()
+            .iter()
+            .find_map(|notice| match &notice.kind {
+                app_core::NoticeKind::Transaction {
+                    signature: known,
+                    status,
+                    ..
+                } if known == signature => Some(status.clone()),
+                _ => None,
+            })
     }
 
     /// Hand a site's batch to Sign, on its transaction `batch.current`, and

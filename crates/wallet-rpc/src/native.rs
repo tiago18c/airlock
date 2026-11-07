@@ -1,7 +1,8 @@
 //! The desktop backend: Agave's `solana-client`.
 
 use crate::convert::{
-    rpc_error, signature_status, simulation_reply, stake_reward, token_account, SimulationParts,
+    address_signature, landed_tx, rpc_error, signature_status, simulation_reply, stake_reward,
+    token_account, SimulationParts,
 };
 use serde_json::json;
 use solana_account_decoder_client_types::{UiAccountEncoding, UiDataSliceConfig};
@@ -19,11 +20,15 @@ use solana_hash::Hash;
 use solana_pubkey::Pubkey;
 use solana_signature::Signature;
 use solana_transaction::versioned::VersionedTransaction;
-use solana_transaction_status_client_types::UiTransactionEncoding;
+use solana_transaction_status_client_types::{
+    EncodedConfirmedTransactionWithStatusMeta, UiTransactionEncoding,
+};
 use std::time::Duration;
 use wallet_core::simulate::{SimulationReply, SimulationRequest};
 use wallet_core::stake::{EpochInfo, StakeReward};
-use wallet_core::{DiscoveredTokenAccount, RawAccount, RpcError, SignatureStatus};
+use wallet_core::{
+    AddressSignature, DiscoveredTokenAccount, LandedTx, RawAccount, RpcError, SignatureStatus,
+};
 
 pub struct Backend {
     client: RpcClient,
@@ -299,6 +304,57 @@ impl Backend {
                 })
             })
             .collect()
+    }
+
+    pub async fn address_history(
+        &self,
+        address: &Pubkey,
+        limit: usize,
+        before: Option<&Signature>,
+    ) -> Result<Vec<AddressSignature>, RpcError> {
+        let config = solana_client::rpc_client::GetConfirmedSignaturesForAddress2Config {
+            limit: Some(limit),
+            before: before.copied(),
+            ..Default::default()
+        };
+        self.client
+            .get_signatures_for_address_with_config(address, config)
+            .await
+            .map_err(client_error)?
+            .into_iter()
+            .map(|entry| {
+                address_signature(
+                    &entry.signature,
+                    entry.slot,
+                    entry.block_time,
+                    entry.err.map(|err| err.to_string()),
+                )
+            })
+            .collect()
+    }
+
+    /// The client's own call cannot tell a transaction the node does not have
+    /// from an answer it cannot read, so this asks directly.
+    pub async fn landed_transaction(
+        &self,
+        signature: &Signature,
+    ) -> Result<Option<LandedTx>, RpcError> {
+        let answer: Option<EncodedConfirmedTransactionWithStatusMeta> = self
+            .client
+            .send(
+                RpcRequest::GetTransaction,
+                json!([
+                    signature.to_string(),
+                    {
+                        "encoding": "base64",
+                        "commitment": self.client.commitment().commitment,
+                        "maxSupportedTransactionVersion": 1,
+                    }
+                ]),
+            )
+            .await
+            .map_err(client_error)?;
+        answer.map(landed_tx).transpose()
     }
 
     pub async fn simulate(&self, request: &SimulationRequest) -> Result<SimulationReply, RpcError> {

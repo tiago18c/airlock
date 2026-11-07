@@ -32,6 +32,8 @@ pub fn AppShell(
     stake: Option<Element>,
     /// The Portfolio pane. A build without it lists no [`Tab::Portfolio`].
     portfolio: Option<Element>,
+    /// The History pane. A build without it lists no [`Tab::History`].
+    history: Option<Element>,
     /// Top bar items between the wallet switcher and the theme toggle: the
     /// cluster, status chips and the notification bell.
     top_bar_extra: Option<Element>,
@@ -115,6 +117,7 @@ pub fn AppShell(
                                 Tab::Programs => rsx! { ProgramsPanel {} },
                                 Tab::Build => rsx! { BuildPanel {} },
                                 Tab::Sign => rsx! { SignPanel {} },
+                                Tab::History => history.unwrap_or_else(|| rsx! { SignPanel {} }),
                                 Tab::Settings => rsx! { SettingsPanel { extra: settings_extra.clone() } },
                             }
                         }
@@ -150,6 +153,7 @@ fn tab_entry(tab: Tab) -> (&'static str, Glyph) {
         Tab::Programs => ("Programs", Glyph::Code),
         Tab::Build => ("Build", Glyph::Layers),
         Tab::Sign => ("Review and Sign", Glyph::Pen),
+        Tab::History => ("History", Glyph::History),
         Tab::Settings => ("Settings", Glyph::Sliders),
     }
 }

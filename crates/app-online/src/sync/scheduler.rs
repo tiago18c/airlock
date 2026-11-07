@@ -22,6 +22,9 @@ pub const CURRENT_TOKENS_JOB: &str = "tokens-current";
 /// Job id for the token accounts of every other address read.
 pub const TOKENS_JOB: &str = "tokens";
 
+/// Job id for the wallets' transaction history.
+pub const HISTORY_JOB: &str = "history";
+
 /// First wait after a failure before retrying.
 pub const INITIAL_BACKOFF: Duration = Duration::from_secs(1);
 

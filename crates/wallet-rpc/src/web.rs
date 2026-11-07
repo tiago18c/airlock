@@ -1,12 +1,13 @@
 //! The browser backend: the vendored `solana-client-wasm`.
 
 use crate::convert::{
-    rpc_error, signature_status, simulation_reply, stake_reward, token_account, SimulationParts,
+    address_signature, landed_tx, rpc_error, signature_status, simulation_reply, stake_reward,
+    token_account, SimulationParts,
 };
 use solana_account_decoder_client_types::{UiAccountEncoding, UiDataSliceConfig};
 use solana_client_wasm::utils::rpc_config::{
     RpcAccountInfoConfig, RpcProgramAccountsConfig, RpcSimulateTransactionAccountsConfig,
-    RpcSimulateTransactionConfig,
+    RpcSimulateTransactionConfig, RpcTransactionConfig,
 };
 use solana_client_wasm::utils::rpc_filter::{
     Memcmp, MemcmpEncodedBytes, RpcFilterType, TokenAccountsFilter,
@@ -19,7 +20,9 @@ use solana_transaction_status_client_types::UiTransactionEncoding;
 use std::time::Duration;
 use wallet_core::simulate::{SimulationReply, SimulationRequest};
 use wallet_core::stake::{EpochInfo, StakeReward};
-use wallet_core::{DiscoveredTokenAccount, RawAccount, RpcError, SignatureStatus};
+use wallet_core::{
+    AddressSignature, DiscoveredTokenAccount, LandedTx, RawAccount, RpcError, SignatureStatus,
+};
 
 pub struct Backend {
     client: WasmClient,
@@ -209,6 +212,55 @@ impl Backend {
                 })
             })
             .collect()
+    }
+
+    pub async fn address_history(
+        &self,
+        address: &Pubkey,
+        limit: usize,
+        before: Option<&Signature>,
+    ) -> Result<Vec<AddressSignature>, RpcError> {
+        let config =
+            solana_client_wasm::utils::rpc_config::GetConfirmedSignaturesForAddress2Config {
+                limit: Some(limit),
+                before: before.copied(),
+                ..Default::default()
+            };
+        self.client
+            .get_signatures_for_address_with_config(address, config)
+            .await
+            .map_err(rpc_error)?
+            .into_iter()
+            .map(|entry| {
+                address_signature(
+                    &entry.signature,
+                    entry.slot,
+                    entry.block_time,
+                    entry.err.map(|err| err.to_string()),
+                )
+            })
+            .collect()
+    }
+
+    pub async fn landed_transaction(
+        &self,
+        signature: &Signature,
+    ) -> Result<Option<LandedTx>, RpcError> {
+        let config = RpcTransactionConfig {
+            encoding: Some(UiTransactionEncoding::Base64),
+            commitment: Some(self.client.commitment_config()),
+            max_supported_transaction_version: Some(1),
+        };
+        match self
+            .client
+            .get_transaction_with_config(signature, config)
+            .await
+        {
+            Ok(answer) => landed_tx(answer).map(Some),
+            // The client says so for a transaction the node does not have.
+            Err(err) if err.to_string().contains("not found") => Ok(None),
+            Err(err) => Err(rpc_error(err)),
+        }
     }
 
     pub async fn simulate(&self, request: &SimulationRequest) -> Result<SimulationReply, RpcError> {

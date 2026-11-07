@@ -41,6 +41,44 @@ pub(crate) mod pubkey_string {
     }
 }
 
+/// A list of addresses, each as its base58 text.
+pub(crate) mod pubkey_strings {
+    use super::pubkey_string;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use solana_pubkey::Pubkey;
+
+    #[derive(Serialize, Deserialize)]
+    #[serde(transparent)]
+    struct Key(#[serde(with = "pubkey_string")] Pubkey);
+
+    pub fn serialize<S: Serializer>(keys: &[Pubkey], serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.collect_seq(keys.iter().map(|key| Key(*key)))
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<Vec<Pubkey>, D::Error> {
+        let keys = Vec::<Key>::deserialize(deserializer)?;
+        Ok(keys.into_iter().map(|key| key.0).collect())
+    }
+}
+
+/// Bytes, as base64 text.
+pub(crate) mod bytes_base64 {
+    use base64::engine::general_purpose::STANDARD;
+    use base64::Engine;
+    use serde::{Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S: Serializer>(bytes: &[u8], serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&STANDARD.encode(bytes))
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Vec<u8>, D::Error> {
+        let text = String::deserialize(deserializer)?;
+        STANDARD.decode(text).map_err(serde::de::Error::custom)
+    }
+}
+
 pub(crate) mod option_pubkey_string {
     use serde::{Deserialize, Deserializer, Serializer};
     use solana_pubkey::Pubkey;

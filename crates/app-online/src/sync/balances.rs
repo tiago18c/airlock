@@ -16,7 +16,7 @@ use crate::network::Monitor;
 
 use super::activity::Moved;
 use super::scheduler::{
-    Cancelled, JobCtx, JobFn, JobOk, JobResult, Scheduler, Trigger, BALANCES_JOB,
+    Cancelled, JobCtx, JobFn, JobOk, JobResult, Scheduler, Trigger, BALANCES_JOB, HISTORY_JOB,
 };
 
 /// How often balances are read while the activity feed is down, so nothing
@@ -251,7 +251,8 @@ pub fn refresh_from_chain_fn(
 
 /// What the tracker runs when a transaction it follows lands. On the
 /// cluster in use, the balances job reads again from a node that has seen
-/// the transaction, with the token accounts of the wallet in use.
+/// the transaction, with the token accounts of the wallet in use, and the
+/// history job reads it in full.
 pub fn read_after_landing(
     core: PublicCore,
     scheduler: Scheduler,
@@ -268,6 +269,7 @@ pub fn read_after_landing(
             moved.mark(owner);
         }
         scheduler.kick(BALANCES_JOB);
+        scheduler.kick(HISTORY_JOB);
     }
 }
 
