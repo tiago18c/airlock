@@ -8,7 +8,7 @@
 use serde::{Deserialize, Serialize};
 use solana_pubkey::Pubkey;
 
-use crate::ids::pubkey_string;
+use crate::ids::pubkey_strings;
 
 /// Sites the user chose to remember, and sites they blocked.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -26,7 +26,7 @@ pub struct Connections {
 #[serde(rename_all = "camelCase")]
 pub struct SiteGrant {
     pub origin: String,
-    #[serde(with = "pubkeys")]
+    #[serde(with = "pubkey_strings")]
     pub accounts: Vec<Pubkey>,
     /// The site disconnected. The grant stays, but a silent connect gets
     /// nothing until the site asks to connect again.
@@ -151,26 +151,6 @@ pub fn connect_choice(
         ticked,
         current,
         current_is_new,
-    }
-}
-
-mod pubkeys {
-    use super::*;
-    use serde::{Deserializer, Serializer};
-
-    #[derive(Serialize, Deserialize)]
-    #[serde(transparent)]
-    struct Key(#[serde(with = "pubkey_string")] Pubkey);
-
-    pub fn serialize<S: Serializer>(keys: &[Pubkey], serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.collect_seq(keys.iter().map(|key| Key(*key)))
-    }
-
-    pub fn deserialize<'de, D: Deserializer<'de>>(
-        deserializer: D,
-    ) -> Result<Vec<Pubkey>, D::Error> {
-        let keys = Vec::<Key>::deserialize(deserializer)?;
-        Ok(keys.into_iter().map(|key| key.0).collect())
     }
 }
 

@@ -32,19 +32,20 @@ use crate::bridge::{
 };
 use crate::diagnostics::log_status;
 use crate::events::Event;
+use crate::history::History;
 use crate::lock::{LockPolicy, LockReason};
 use crate::notices::{BridgeRequestOutcome, NoticeId, NoticeKind, TxStatus};
 use crate::ports::Ports;
 use crate::public::PublicCore;
 use crate::ranked::{Rank, Ranked, RankedGuard};
 use crate::slices::{
-    book_from, holdings_from, network_from, notices_from, settings_from, shown_wallets,
-    vault_state_from, wallets_view_from, Reach, Slice, Slices,
+    book_from, history_from, holdings_from, network_from, notices_from, settings_from,
+    shown_wallets, vault_state_from, wallets_view_from, Reach, Slice, Slices,
 };
 use crate::storage::{
-    open_holdings_in, open_leaf_marks_in, open_notices_in, open_vault_in, open_wallet_list_in,
-    open_workspace_in, AppHoldings, AppLeafMarks, AppNotices, AppVault, AppWalletList,
-    AppWorkspace,
+    open_history_in, open_holdings_in, open_leaf_marks_in, open_notices_in, open_vault_in,
+    open_wallet_list_in, open_workspace_in, AppHistory, AppHoldings, AppLeafMarks, AppNotices,
+    AppVault, AppWalletList, AppWorkspace,
 };
 
 /// How often a deferred store is written at most.
@@ -59,14 +60,23 @@ enum Store {
     Workspace,
     Holdings,
     Notices,
+    History,
 }
 
 impl Store {
+    const ALL: [Store; 4] = [
+        Self::Workspace,
+        Self::Holdings,
+        Self::Notices,
+        Self::History,
+    ];
+
     fn name(self) -> &'static str {
         match self {
             Self::Workspace => "workspace",
             Self::Holdings => "holdings",
             Self::Notices => "notices",
+            Self::History => "history",
         }
     }
 }
@@ -97,6 +107,7 @@ pub(crate) struct Inner {
     workspace: Ranked<AppWorkspace>,
     holdings: Ranked<AppHoldings>,
     notices: Ranked<AppNotices>,
+    history: Ranked<AppHistory>,
     bridge: Ranked<BridgeState>,
     slices: Slices,
     events: broadcast::Sender<Event>,
@@ -106,6 +117,7 @@ pub(crate) struct Inner {
     workspace_saver: Saver,
     holdings_saver: Saver,
     notices_saver: Saver,
+    history_saver: Saver,
 }
 
 fn locked<T>(mutex: &Ranked<T>) -> RankedGuard<'_, T> {
@@ -128,6 +140,10 @@ impl Core {
         let workspace = open_workspace_in(&*ports.storage);
         let holdings = open_holdings_in(&*ports.storage);
         let mut notices = open_notices_in(&*ports.storage);
+        let history = open_history_in(&*ports.storage);
+        if let Some(problem) = history.load_problem() {
+            warn!(target: CORE, store = "history", problem = %problem.message(), "load problem");
+        }
         if let Some(problem) = workspace.load_problem() {
             warn!(target: CORE, store = "workspace", problem = %problem.message(), "load problem");
         }
@@ -157,6 +173,7 @@ impl Core {
             bridge: Slice::new(Arc::default()),
             sites: Slice::new(Arc::new(sites_view(&workspace, &BridgeState::default()))),
             notices: Slice::new(notices_from(&notices)),
+            history: Slice::new(history_from(&history)),
             sync: Slice::new(Arc::new(crate::slices::SyncStatus::default())),
         };
         let inner = Arc::new(Inner {
@@ -167,6 +184,7 @@ impl Core {
             workspace: Ranked::new(Rank::Workspace, workspace),
             holdings: Ranked::new(Rank::Holdings, holdings),
             notices: Ranked::new(Rank::Notices, notices),
+            history: Ranked::new(Rank::History, history),
             bridge: Ranked::new(Rank::Bridge, BridgeState::default()),
             slices,
             events: broadcast::channel(EVENT_BACKLOG).0,
@@ -176,6 +194,7 @@ impl Core {
             workspace_saver: Saver::default(),
             holdings_saver: Saver::default(),
             notices_saver: Saver::default(),
+            history_saver: Saver::default(),
         });
         if notices_pruned {
             inner.mark_dirty(Store::Notices);
@@ -257,6 +276,11 @@ impl Core {
 
     pub fn holdings_deferred(&self, name: &'static str, f: impl FnOnce(&mut Holdings)) {
         self.inner.holdings_deferred(name, f);
+    }
+
+    /// Change the transaction history. `f` says whether it changed anything.
+    pub fn history_deferred(&self, name: &'static str, f: impl FnOnce(&mut History) -> bool) {
+        self.inner.history_deferred(name, f);
     }
 
     /// Push a notice and save deferred.
@@ -555,6 +579,9 @@ impl Core {
         if let Some(problem) = locked(&self.inner.notices).load_problem() {
             out.push(problem.message().to_string());
         }
+        if let Some(problem) = locked(&self.inner.history).load_problem() {
+            out.push(problem.message().to_string());
+        }
         out
     }
 }
@@ -607,6 +634,10 @@ impl Inner {
 
     fn publish_notices(&self, notices: &AppNotices) {
         self.slices.notices.publish_copy(notices.data());
+    }
+
+    fn publish_history(&self, history: &AppHistory) {
+        self.slices.history.publish_copy(history.data());
     }
 
     /// Publish the vault, and while it is open keep its wallets without
@@ -702,6 +733,24 @@ impl Inner {
         debug!(target: CORE, outcome = "ok", "command");
     }
 
+    pub(crate) fn history_deferred(
+        self: &Arc<Self>,
+        name: &'static str,
+        f: impl FnOnce(&mut History) -> bool,
+    ) {
+        let _span = debug_span!(target: CORE, "command", name).entered();
+        {
+            let mut history = locked(&self.history);
+            if !f(history.data_mut()) {
+                debug!(target: CORE, outcome = "unchanged", "command");
+                return;
+            }
+            self.publish_history(&history);
+        }
+        self.mark_dirty(Store::History);
+        debug!(target: CORE, outcome = "ok", "command");
+    }
+
     pub(crate) fn notices_push(self: &Arc<Self>, kind: NoticeKind) -> NoticeId {
         let _span = debug_span!(target: CORE, "command", name = "notices_push").entered();
         let now = self.now_secs();
@@ -740,6 +789,11 @@ impl Inner {
             }
         };
         log_status(flow, &signature, &status);
+        // History is what happened on chain: one that landed is kept, with its
+        // outcome, and one that did not goes.
+        self.history_deferred("history_status", |history| {
+            history.set_status(&signature, &status)
+        });
         let _ = self
             .events
             .send(Event::TxStatusChanged { signature, status });
@@ -1504,6 +1558,7 @@ impl Inner {
             Store::Workspace => &self.workspace_saver,
             Store::Holdings => &self.holdings_saver,
             Store::Notices => &self.notices_saver,
+            Store::History => &self.history_saver,
         }
     }
 
@@ -1533,11 +1588,7 @@ impl Inner {
         if !saver.dirty.swap(false, Ordering::SeqCst) {
             return;
         }
-        let saved = match store {
-            Store::Workspace => locked(&self.workspace).save(),
-            Store::Holdings => locked(&self.holdings).save(),
-            Store::Notices => locked(&self.notices).save(),
-        };
+        let saved = self.save_store(store);
         match saved {
             Ok(()) => {
                 debug!(target: CORE, store = store.name(), policy = "deferred", result = "ok", "save");
@@ -1569,25 +1620,30 @@ impl Inner {
         }
     }
 
+    fn save_store(&self, store: Store) -> Result<(), VaultError> {
+        match store {
+            Store::Workspace => locked(&self.workspace).save(),
+            Store::Holdings => locked(&self.holdings).save(),
+            Store::Notices => locked(&self.notices).save(),
+            Store::History => locked(&self.history).save(),
+        }
+    }
+
     fn flush_all(self: &Arc<Self>) {
-        self.write_if_dirty(Store::Workspace);
-        self.write_if_dirty(Store::Holdings);
-        self.write_if_dirty(Store::Notices);
+        for store in Store::ALL {
+            self.write_if_dirty(store);
+        }
     }
 
     /// Flush without Arc (Drop). Save failures still emit events, not notices.
     fn flush_all_dropping(&self) {
-        for store in [Store::Workspace, Store::Holdings, Store::Notices] {
+        for store in Store::ALL {
             let saver = self.saver(store);
             saver.scheduled.store(false, Ordering::SeqCst);
             if !saver.dirty.swap(false, Ordering::SeqCst) {
                 continue;
             }
-            let saved = match store {
-                Store::Workspace => locked(&self.workspace).save(),
-                Store::Holdings => locked(&self.holdings).save(),
-                Store::Notices => locked(&self.notices).save(),
-            };
+            let saved = self.save_store(store);
             match saved {
                 Ok(()) => {
                     debug!(target: CORE, store = store.name(), policy = "deferred", result = "ok", "save");

@@ -18,6 +18,7 @@ use wallet_core::{
     HoldingsStore, IdlStore, Vault, VaultError, VaultStore, WalletListStore, WorkspaceStore,
 };
 
+use crate::history::HistoryStore;
 use crate::notices::NoticesStore;
 
 /// A place that opens one named file, or one browser key, at a time.
@@ -41,6 +42,8 @@ pub const GRANTS_FILE: &str = "grants.json";
 pub const CHAIN_CACHE_FILE: &str = "chain-cache.json";
 pub const HOLDINGS_FILE: &str = "holdings.json";
 pub const NOTICES_FILE: &str = "notices.json";
+/// What the wallets did on chain, as read from nodes and sent from here.
+pub const HISTORY_FILE: &str = "history.json";
 pub const LEAF_MARKS_FILE: &str = "vector-leaves.json";
 
 pub struct BoxedStore(pub Box<dyn VaultStore>);
@@ -72,6 +75,7 @@ pub type AppWalletList = WalletListStore<BoxedStore>;
 pub type AppWorkspace = WorkspaceStore<BoxedStore>;
 pub type AppHoldings = HoldingsStore<BoxedStore>;
 pub type AppNotices = NoticesStore<BoxedStore>;
+pub type AppHistory = HistoryStore<BoxedStore>;
 pub type AppLeafMarks = LeafMarks<BoxedStore>;
 #[cfg(not(target_arch = "wasm32"))]
 pub type AppIdls = IdlStore<BoxedStore, wallet_core::DirIdlBodies>;
@@ -131,6 +135,10 @@ pub fn open_holdings_in(storage: &dyn Storage) -> AppHoldings {
 
 pub fn open_notices_in(storage: &dyn Storage) -> AppNotices {
     NoticesStore::open(BoxedStore(storage.open(NOTICES_FILE)))
+}
+
+pub fn open_history_in(storage: &dyn Storage) -> AppHistory {
+    HistoryStore::open(BoxedStore(storage.open(HISTORY_FILE)))
 }
 
 pub fn open_vault() -> AppVault {

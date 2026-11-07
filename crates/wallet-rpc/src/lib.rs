@@ -32,8 +32,8 @@ use std::time::Duration;
 use wallet_core::simulate::{SimulationReply, SimulationRequest};
 use wallet_core::stake::{EpochInfo, StakeReward};
 use wallet_core::{
-    DiscoveredTokenAccount, RawAccount, RpcError, SignatureStatus, SolanaRpc,
-    TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID,
+    AddressSignature, DiscoveredTokenAccount, LandedTx, RawAccount, RpcError, SignatureStatus,
+    SolanaRpc, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID,
 };
 
 /// How long the probe that decides online or offline may take.
@@ -211,6 +211,22 @@ impl SolanaRpc for Rpc {
         limit: usize,
     ) -> Result<Vec<Signature>, RpcError> {
         self.backend.signatures_for_address(address, limit).await
+    }
+
+    async fn get_address_history(
+        &self,
+        address: &Pubkey,
+        limit: usize,
+        before: Option<&Signature>,
+    ) -> Result<Vec<AddressSignature>, RpcError> {
+        self.backend.address_history(address, limit, before).await
+    }
+
+    async fn get_landed_transaction(
+        &self,
+        signature: &Signature,
+    ) -> Result<Option<LandedTx>, RpcError> {
+        self.backend.landed_transaction(signature).await
     }
 
     async fn simulate(&self, request: &SimulationRequest) -> Result<SimulationReply, RpcError> {

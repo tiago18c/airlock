@@ -347,12 +347,22 @@ async fn a_send_with_no_answer_is_followed_and_can_still_land() {
         ));
         settle().await;
         assert_eq!(status_of(&kit, signature), Some(TxStatus::Sent));
+        // History has it at once, read from what was sent, waiting.
+        let history = kit.core.slices().history.get();
+        let entry = history.get(&signature).unwrap();
+        assert_eq!(entry.outcome, app_core::Outcome::Pending);
+        assert_eq!(entry.wire(), Some(wire.as_slice()));
 
         rpc.set_signature_status(signature, confirmed());
         advance_polls(&kit.clock, 2).await;
         assert_eq!(
             status_of(&kit, signature),
             Some(TxStatus::Confirmed { slot: 9 })
+        );
+        let history = kit.core.slices().history.get();
+        assert_eq!(
+            history.get(&signature).unwrap().outcome,
+            app_core::Outcome::Succeeded
         );
     }
 }
@@ -380,6 +390,8 @@ async fn a_send_that_never_left_or_was_refused_is_final() {
             status_of(&kit, signature),
             Some(TxStatus::Rejected { .. })
         ));
+        // It never left, so it is not history.
+        assert!(kit.core.slices().history.get().get(&signature).is_none());
     }
 }
 

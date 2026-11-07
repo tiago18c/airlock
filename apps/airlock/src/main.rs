@@ -6,7 +6,7 @@
 
 #[cfg(all(feature = "desktop", not(target_arch = "wasm32")))]
 use app_desktop::bridge::{Bootstrap, Bridge};
-use app_online::{NetworkChip, PortfolioPanel, ProposalsHost, SendHost, StakePanel};
+use app_online::{HistoryPanel, NetworkChip, PortfolioPanel, ProposalsHost, SendHost, StakePanel};
 use app_ui::{AppBrand, AppShell, Network, NoticeBell, Tab, ToastHost};
 use dioxus::prelude::*;
 
@@ -29,6 +29,7 @@ const TABS: &[Tab] = &[
     Tab::Programs,
     Tab::Build,
     Tab::Sign,
+    Tab::History,
     Tab::Settings,
 ];
 
@@ -100,6 +101,7 @@ fn App() -> Element {
             tabs: TABS,
             stake: rsx! { StakePanel {} },
             portfolio: rsx! { PortfolioPanel {} },
+            history: rsx! { HistoryPanel {} },
             top_bar_extra: rsx! { NoticeBell {} },
             sidebar_status: rsx! {
                 NetworkChip {}

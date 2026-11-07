@@ -1217,3 +1217,123 @@ async fn refresh_says_which_addresses_it_could_not_read_and_reads_the_rest() {
         "Refreshed 3 owners, 2 token accounts. The node would not read the token accounts of 1 address(es): token accounts are not served"
     );
 }
+
+// ---- History.
+
+fn history_scheduler(kit: &app_core::testing::Kit, rpc: Arc<FakeRpc>) -> Scheduler {
+    let scheduler = Scheduler::new(kit.core.public());
+    super::register_history(
+        &scheduler,
+        Arc::new(move || Ok(rpc.clone() as Arc<dyn SolanaRpc>)),
+    );
+    scheduler.start();
+    scheduler
+}
+
+fn listed(byte: u8, slot: u64) -> wallet_core::AddressSignature {
+    wallet_core::AddressSignature {
+        signature: Signature::from([byte; 64]),
+        slot,
+        block_time: Some(1_700_000_000),
+        err: None,
+    }
+}
+
+#[tokio::test]
+async fn history_reads_each_transaction_in_full_once() {
+    let kit = kit();
+    kit.core.create_vault("pw").unwrap();
+    add_wallet(&kit, pk(1));
+    let mut fake = FakeRpc::default();
+    fake.history
+        .insert(pk(1), vec![listed(2, 20), listed(1, 10)]);
+    fake.landed.insert(
+        Signature::from([2; 64]),
+        wallet_core::LandedTx {
+            slot: 20,
+            block_time: Some(1_700_000_000),
+            wire: vec![1, 2, 3],
+            err: None,
+            fee: 5_000,
+            loaded_writable: Vec::new(),
+            loaded_readonly: Vec::new(),
+            pre_balances: Vec::new(),
+            post_balances: Vec::new(),
+            token_balances: Vec::new(),
+            logs: Vec::new(),
+        },
+    );
+    let rpc = Arc::new(fake);
+    let scheduler = history_scheduler(&kit, rpc.clone());
+    settle().await;
+
+    scheduler.run_now(super::HISTORY_JOB).await.unwrap();
+    let history = kit.core.slices().history.get();
+    let shown: Vec<_> = history
+        .on(&Cluster::Devnet)
+        .map(|entry| entry.signature)
+        .collect();
+    assert_eq!(
+        shown,
+        vec![Signature::from([2; 64]), Signature::from([1; 64])]
+    );
+    assert!(history
+        .get(&Signature::from([2; 64]))
+        .unwrap()
+        .landed
+        .is_some());
+
+    // Again: the one kept is not asked for; the one the node lacked is.
+    rpc.landed_asked.lock().unwrap().clear();
+    scheduler.run_now(super::HISTORY_JOB).await.unwrap();
+    assert_eq!(
+        *rpc.landed_asked.lock().unwrap(),
+        vec![Signature::from([1; 64])]
+    );
+}
+
+#[tokio::test]
+async fn older_transactions_load_a_page_at_a_time_until_the_first() {
+    let kit = kit();
+    kit.core.create_vault("pw").unwrap();
+    add_wallet(&kit, pk(1));
+    // Sixty transactions, newest first: the newest page, then two older.
+    let mut fake = FakeRpc::default();
+    let all: Vec<_> = (1..=60u8).rev().map(|n| listed(n, u64::from(n))).collect();
+    fake.history.insert(pk(1), all);
+    let rpc = Arc::new(fake);
+    let scheduler = history_scheduler(&kit, rpc.clone());
+    settle().await;
+    scheduler.run_now(super::HISTORY_JOB).await.unwrap();
+    let kept = || kit.core.slices().history.get().on(&Cluster::Devnet).count();
+    assert_eq!(kept(), wallet_flows::history::HISTORY_PAGE);
+
+    let core = kit.core.public();
+    let node: Arc<dyn SolanaRpc> = rpc.clone();
+    assert_eq!(
+        super::load_older(&core, node.clone(), &[pk(1)]).await,
+        Ok(25)
+    );
+    assert_eq!(kept(), 50);
+    assert!(!kit
+        .core
+        .slices()
+        .history
+        .get()
+        .reached_start(&Cluster::Devnet, &pk(1)));
+    assert_eq!(
+        super::load_older(&core, node.clone(), &[pk(1)]).await,
+        Ok(10)
+    );
+    assert_eq!(kept(), 60);
+    assert!(kit
+        .core
+        .slices()
+        .history
+        .get()
+        .reached_start(&Cluster::Devnet, &pk(1)));
+    // Nothing is older, so the node is not asked again.
+    let asked = rpc.asked();
+    assert_eq!(super::load_older(&core, node, &[pk(1)]).await, Ok(0));
+    assert_eq!(rpc.asked(), asked);
+}

@@ -412,6 +412,7 @@ dependencies = [
  "app-ui-wallets",
  "bridge-protocol",
  "dioxus",
+ "solana-signature",
  "wallet-core",
  "zeroize",
 ]
@@ -478,11 +479,13 @@ dependencies = [
 name = "app-ui-sign"
 version = "0.1.0"
 dependencies = [
+ "app-core",
  "app-ui-kit",
  "base64 0.22.1",
  "dioxus",
  "hex",
  "solana-pubkey 4.3.0",
+ "solana-signature",
  "wallet-core",
  "wallet-flows",
 ]

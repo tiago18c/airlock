@@ -18,6 +18,7 @@ app-ui-sign = { path = "../app-ui-sign", default-features = false }
 app-ui-wallets = { path = "../app-ui-wallets", default-features = false }
 bridge-protocol.workspace = true
 dioxus.workspace = true
+solana-signature.workspace = true
 wallet-core.workspace = true
 zeroize.workspace = true
 
