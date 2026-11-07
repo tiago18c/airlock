@@ -22,10 +22,11 @@ gh attestation verify airlock-1.2.3-windows-x64-setup.exe --repo <owner>/airlock
 
 ## Versions
 
-One version number for everything. It is written in three places, and the release refuses to build unless they agree:
+One version number for everything. It is written in five files, and the release refuses to build unless they agree:
 
 - `Cargo.toml`, under `[workspace.package]`. Every crate inherits it with `version.workspace = true`; `release-check.mjs` also checks that the apps, `wallet-*`, `qr-protocol` and `bridge-host` still do.
 - `extension/package.json`, `extension/manifest.json`
+- `apps/airlock/Info.plist`, `apps/airlock-offline/Info.plist`, as `CFBundleShortVersionString` and `CFBundleVersion`. `dx bundle` copies them into the macOS apps: the plist dx writes itself leaves out the camera description.
 
 Versions follow semantic versioning. While the version is below 1.0, a change that breaks a stored file, the QR protocol or the bridge protocol raises the minor number.
 
@@ -40,7 +41,7 @@ Commit messages are not parsed. They can stay as full sentences.
 ## Steps
 
 1. **Prepare.** On a branch:
-   - Set the new version in the three files above, then run `cargo check` so `Cargo.lock` follows.
+   - Set the new version in the files above, then run `cargo check` so `Cargo.lock` follows.
    - In `CHANGELOG.md`, rename `## [Unreleased]` to `## [1.2.3] - YYYY-MM-DD` and add a new empty `## [Unreleased]` above it.
    - Run `node scripts/release-check.mjs 1.2.3`. It prints the release notes, or says what is inconsistent.
 2. **Merge** that pull request once CI and the security checks pass.

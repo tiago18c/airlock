@@ -64,7 +64,14 @@ pub fn QrScanner(
                 .get("hasMedia")
                 .and_then(|v| v.as_bool())
                 .unwrap_or(false);
-            if !secure || !has_media {
+            // The desktop window is served from dioxus://index.html on macOS
+            // and Linux, and from http://dioxus.index.html on Windows.
+            let desktop = href.starts_with("dioxus://") || href.contains("://dioxus.index.html");
+            if desktop && !has_media {
+                insecure_hint.set(Some(format!(
+                    "This window has no camera (page {href}, secure context: {secure}). On macOS the camera needs the app's Info.plist, so start Airlock from a bundle made by dx serve or dx bundle, not cargo run, and allow it under Privacy & Security, Camera."
+                )));
+            } else if !secure || !has_media {
                 insecure_hint.set(Some(format!(
                     "This page is not a secure camera origin ({href}). On this computer open http://127.0.0.1 (same port). On a phone open the HTTPS URL for this host and accept the certificate warning."
                 )));

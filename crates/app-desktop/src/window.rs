@@ -86,9 +86,14 @@ pub fn desktop_config(title: &str, icon: &[u8]) -> dioxus::desktop::Config {
     // Setting any arguments replaces the WebView's defaults, so the first
     // line repeats them. The camera prompt is answered by
     // `camera::allow_windows_camera`, not by a blanket media flag.
+    // MediaFoundationD3D11VideoCapture: from WebView2 156 every camera track
+    // ends as soon as it starts, so the preview stays black and nothing is
+    // scanned. Its feature has to share the one `--disable-features`: only
+    // the last is read.
     #[cfg(windows)]
     let cfg = cfg.with_windows_browser_args(concat!(
-        "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection ",
+        "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection,",
+        "MediaFoundationD3D11VideoCapture ",
         "--unsafely-treat-insecure-origin-as-secure=",
         "http://dioxus.index.html,http://dioxus.localhost ",
         "--autoplay-policy=no-user-gesture-required"

@@ -20,9 +20,14 @@ short_description = "QR payload transfer for online/offline signing"
 icon = ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.png", "icons/icon.ico"]
 
 [permissions]
-# macOS: dx writes this into Info.plist as NSCameraUsageDescription. Without
-# it WKWebView hides navigator.mediaDevices and the scanner cannot start.
+# macOS: dx serve and dx build write this into Info.plist as
+# NSCameraUsageDescription. Without it WKWebView hides navigator.mediaDevices
+# and the scanner cannot start. dx bundle writes an Info.plist of its own that
+# leaves it out, so [bundle.macos] gives it ours.
 camera = { description = "Airlock uses the camera to scan QR codes." }
+
+[bundle.macos]
+info_plist_path = "Info.plist"
 
 [bundle.windows]
 # Options: "DownloadBootstrapper", "OfflineInstaller", or "Embed"

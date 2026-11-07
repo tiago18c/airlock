@@ -1,7 +1,7 @@
 // node --test scripts/
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { cargoVersion, changelogSection, check, workspaceVersion } from "./release-check.mjs";
+import { cargoVersion, changelogSection, check, plistVersion, workspaceVersion } from "./release-check.mjs";
 
 const changelog = `# Changelog
 
@@ -68,4 +68,17 @@ test("every mismatch is reported", () => {
   assert.match(problems[2], /no date/);
   assert.match(problems[3], /empty/);
   assert.match(check("v2", sources({})).problems[0], /not a version/);
+});
+
+test("an Info.plist has a version only when both of its version keys agree", () => {
+  const plist = (short, build) =>
+    `<dict>
+	<key>CFBundleShortVersionString</key>
+	<string>${short}</string>
+	<key>CFBundleVersion</key>
+	<string>${build}</string>
+</dict>`;
+  assert.equal(plistVersion(plist("0.2.0", "0.2.0")), "0.2.0");
+  assert.equal(plistVersion(plist("0.2.0", "0.1.0")), undefined);
+  assert.equal(plistVersion("<dict></dict>"), undefined);
 });

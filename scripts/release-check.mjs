@@ -63,6 +63,13 @@ export function check(version, sources = versionSources()) {
   return { problems, notes: section?.body ?? "" };
 }
 
+/** The `CFBundleShortVersionString` of an Info.plist, when `CFBundleVersion` says the same. */
+export function plistVersion(plist) {
+  const value = (key) => plist.match(new RegExp(`<key>${key}</key>\\s*<string>([^<]*)</string>`))?.[1];
+  const short = value("CFBundleShortVersionString");
+  return short === value("CFBundleVersion") ? short : undefined;
+}
+
 function versionSources() {
   const workspace = workspaceVersion(read("Cargo.toml"));
   const crate = (path) => cargoVersion(read(path), workspace);
@@ -77,6 +84,8 @@ function versionSources() {
       "crates/wallet-vault/Cargo.toml": crate("crates/wallet-vault/Cargo.toml"),
       "crates/qr-protocol/Cargo.toml": crate("crates/qr-protocol/Cargo.toml"),
       "crates/bridge-host/Cargo.toml": crate("crates/bridge-host/Cargo.toml"),
+      "apps/airlock/Info.plist": plistVersion(read("apps/airlock/Info.plist")),
+      "apps/airlock-offline/Info.plist": plistVersion(read("apps/airlock-offline/Info.plist")),
       "extension/package.json": JSON.parse(read("extension/package.json")).version,
       "extension/manifest.json": JSON.parse(read("extension/manifest.json")).version,
     },
