@@ -1,6 +1,6 @@
 //! The vault: one encrypted document, held open in memory while unlocked.
 
-use crate::seal::{open as unseal, open_or_backup, SealKey};
+use crate::seal::{open as unseal, open_or_backup, open_with_key, SealKey};
 use crate::store::VaultStore;
 use crate::VaultError;
 use serde::de::DeserializeOwned;
@@ -117,6 +117,25 @@ impl<D: Document> Unlocking<D> {
     }
 }
 
+impl<D: Document> Unlocking<D> {
+    /// Open what was read with the key of an earlier unlock, as
+    /// [`Vault::seal_key_bytes`] gave it and a platform's secure hardware kept
+    /// it. No key is derived, so it takes no time. A damaged file is not
+    /// opened from its backup, and a vault below the current cost is not
+    /// raised: both wait for the password.
+    pub fn open_with_key(self, key: &SealKey) -> Result<Unlocked<D>, VaultError> {
+        let mut unsealed = open_with_key(key, &self.file)?;
+        let opened = open::<D>(&unsealed.plaintext);
+        unsealed.plaintext.zeroize();
+        Ok(Unlocked {
+            data: opened?,
+            key: unsealed.key,
+            stronger: None,
+            damaged: None,
+        })
+    }
+}
+
 /// A vault opened by [`Unlocking::open`], for [`Vault::finish_unlock`].
 pub struct Unlocked<D> {
     data: D,
@@ -199,6 +218,16 @@ impl<S: VaultStore, D: Document> Vault<S, D> {
         self.open
             .as_mut()
             .map(|open| &mut open.data)
+            .ok_or(VaultError::Locked)
+    }
+
+    /// The key the open vault is sealed under, as bytes, for a platform to
+    /// keep behind the user's fingerprint ([`SealKey::to_bytes`]). Locked, there
+    /// is none.
+    pub fn seal_key_bytes(&self) -> Result<zeroize::Zeroizing<Vec<u8>>, VaultError> {
+        self.open
+            .as_ref()
+            .map(|open| open.key.to_bytes())
             .ok_or(VaultError::Locked)
     }
 
@@ -883,5 +912,66 @@ mod tests {
         let mut vault: Vault<_, Notes> = Vault::new(FileStore::new(&path));
         vault.unlock("disk").unwrap();
         assert_eq!(vault.data().unwrap().lines, vec!["Desk".to_string()]);
+    }
+
+    /// What a platform keeps behind a fingerprint opens the vault, without
+    /// the password and with no derivation, while the vault is sealed under it.
+    #[test]
+    fn the_key_kept_from_an_unlock_opens_the_vault_until_its_password_changes() {
+        let store = std::sync::Arc::new(MemoryStore::new());
+        let mut vault: Vault<_, Notes> = Vault::new(store.clone());
+        assert!(matches!(vault.seal_key_bytes(), Err(VaultError::Locked)));
+        vault.create("pw").unwrap();
+        vault.data_mut().unwrap().lines.push("Kept".into());
+        vault.save().unwrap();
+        let kept = vault.seal_key_bytes().unwrap();
+        vault.lock();
+        assert!(matches!(vault.seal_key_bytes(), Err(VaultError::Locked)));
+
+        let key = SealKey::from_bytes(&kept).unwrap();
+        let opened = vault.begin_unlock().unwrap().open_with_key(&key).unwrap();
+        assert!(vault.finish_unlock(opened));
+        assert_eq!(vault.data().unwrap().lines, ["Kept"]);
+
+        // A save under the same key leaves it opening the vault.
+        vault.data_mut().unwrap().lines.push("Again".into());
+        vault.save().unwrap();
+        vault.lock();
+        let key = SealKey::from_bytes(&kept).unwrap();
+        assert!(vault.begin_unlock().unwrap().open_with_key(&key).is_ok());
+
+        // A new password seals under a new salt: the kept key opens nothing.
+        vault.unlock("pw").unwrap();
+        vault.change_password("pw", "new pw").unwrap();
+        vault.lock();
+        let key = SealKey::from_bytes(&kept).unwrap();
+        assert!(matches!(
+            vault.begin_unlock().unwrap().open_with_key(&key),
+            Err(VaultError::UnlockFailed)
+        ));
+        vault.unlock("new pw").unwrap();
+    }
+
+    #[test]
+    fn kept_key_bytes_that_were_changed_open_nothing() {
+        let store = std::sync::Arc::new(MemoryStore::new());
+        let mut vault: Vault<_, Notes> = Vault::new(store.clone());
+        vault.create("pw").unwrap();
+        let kept = vault.seal_key_bytes().unwrap();
+        vault.lock();
+
+        let mut flipped = kept.to_vec();
+        let last = flipped.len() - 1;
+        flipped[last] ^= 1;
+        let key = SealKey::from_bytes(&flipped).unwrap();
+        assert!(matches!(
+            vault.begin_unlock().unwrap().open_with_key(&key),
+            Err(VaultError::UnlockFailed)
+        ));
+        assert!(SealKey::from_bytes(&kept[..kept.len() - 1]).is_err());
+        let mut retagged = kept.to_vec();
+        retagged[0] = b'X';
+        assert!(SealKey::from_bytes(&retagged).is_err());
+        assert!(!vault.is_unlocked());
     }
 }

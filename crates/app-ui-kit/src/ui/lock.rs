@@ -105,6 +105,40 @@ pub fn VaultUnlock(
             }
         });
     };
+    // Fingerprint unlock, where the phone keeps the vault's key behind one.
+    let guard =
+        crate::state::key_guard::use_key_guard().filter(|guard| initialized && guard.enrolled());
+    let fingerprint_offered = guard.is_some();
+    let fingerprint = use_callback(move |()| {
+        let Some(guard) = guard.clone() else {
+            return;
+        };
+        if *working.peek() {
+            return;
+        }
+        error.set(None);
+        working.set(true);
+        spawn(async move {
+            let result = crate::state::key_guard::unlock_with_fingerprint(session, guard).await;
+            working.set(false);
+            match result {
+                Ok(()) => {
+                    crate::actions::network::start_refresh(session);
+                    if let Some(done) = on_unlocked {
+                        done.call(());
+                    }
+                }
+                Err(Some(why)) => error.set(Some(why)),
+                Err(None) => {}
+            }
+        });
+    });
+    // Asked once, as the form appears; the button asks again.
+    use_hook(move || {
+        if fingerprint_offered {
+            spawn(async move { fingerprint.call(()) });
+        }
+    });
     let on_enter = move |e: KeyboardEvent| {
         if e.key() == Key::Enter {
             e.prevent_default();
@@ -155,6 +189,13 @@ pub fn VaultUnlock(
                             (true, true) => "Unlocking…",
                             (false, false) => "Create vault",
                             (false, true) => "Creating…",
+                        }
+                    }
+                    if fingerprint_offered {
+                        button {
+                            disabled: working(),
+                            onclick: move |_| fingerprint.call(()),
+                            "Use fingerprint"
                         }
                     }
                     if show_skip {

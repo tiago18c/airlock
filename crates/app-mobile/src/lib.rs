@@ -10,6 +10,7 @@
 #[allow(unsafe_code)] // JNI: the VM and activity pointers ndk-context hands over.
 mod android;
 
+pub mod key_guard;
 pub mod mode;
 pub mod seed_vault;
 

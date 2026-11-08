@@ -70,16 +70,27 @@ What the app keeps, and where:
 
 | What | Where now | Could be |
 | --- | --- | --- |
-| Keys and seed phrases of hot wallets | `vault.json`, sealed with XChaCha20-Poly1305 under an Argon2id key from the password | Unchanged, with a hardware-held key added to unlock it (below) |
+| Keys and seed phrases of hot wallets | `vault.json`, sealed with XChaCha20-Poly1305 under an Argon2id key from the password. With fingerprint unlock on, that key is also kept sealed by a Keystore key behind the fingerprint (below) | Unchanged |
 | Seed Vault accounts | The phone's Seed Vault. The vault keeps the auth token and path | Already the strongest place the phone has |
 | An RPC URL with an API key, the Tokens API key | `workspace.json`, in plain text, so prices refresh while locked | Encrypted under an Android Keystore key that needs no user, so a copy of the folder does not hold them |
 | Hash-based key state (XMSS leaves) | The vault and its record file | Unchanged: it has to survive the app, and a lost record risks reusing a leaf |
 | The password while typed | The WebView, then zeroized in Rust | Unchanged |
 
-**Unlocking with the hardware.** Every recent Android phone has a Keystore backed by its TEE, and many have StrongBox, a separate secure chip: Samsung's Knox Vault on the Galaxy S series (S26 included), Google's Titan M2 on Pixels. A StrongBox AES-256-GCM key made with `setUserAuthenticationRequired(true)` and `setInvalidatedByBiometricEnrollment(true)` never leaves the chip, and is usable only after a fresh fingerprint or face check (`BiometricPrompt`). Sealing the vault's key with it would let the vault open with a fingerprint, with the password kept as the way back when the biometric key is invalidated. A copied `vault.json` would then still need the password: the StrongBox key does not leave the phone. This is the change worth making next on Android; it needs a small Kotlin piece beside `SeedVaultBridge`.
+**Fingerprint unlock** (Settings → Vault). Every recent Android phone has a Keystore backed by its TEE, and many have StrongBox, a separate secure chip: Samsung's Knox Vault on the Galaxy S series (S26 included), Google's Titan M2 on Pixels.
+
+| Step | What happens |
+| --- | --- |
+| Turn it on | With the vault unlocked, `Vault::seal_key_bytes` gives the key the vault is sealed under (the Argon2id output with its salt and cost, never the password). `KeyGuardBridge` makes an AES-256-GCM key in StrongBox (the TEE where there is none) with `setUserAuthenticationRequired(true)`, per-use `AUTH_BIOMETRIC_STRONG` and `setInvalidatedByBiometricEnrollment(true)`, asks for the fingerprint (`BiometricPrompt` with a `CryptoObject`), and seals the bytes. The IV and ciphertext are kept in the mode's folder (`fingerprint-unlock.txt`); on their own they open nothing. |
+| Unlock | The lock screen asks for the fingerprint as it opens, and has **Use fingerprint**. The Keystore key opens what was sealed, the bytes cross JNI as a byte array that is wiped once copied, and `Unlocking::open_with_key` opens the vault with no derivation. |
+| The key changes | A new password, or the vault raised to a higher cost, seals under a new key: the kept one stops opening it (`open_with_key` refuses another salt or cost), fingerprint unlock turns itself off, and the lock screen says to use the password. Changing the password turns it off at once. |
+| The fingerprints change | Android destroys the Keystore key (`KeyPermanentlyInvalidatedException`); fingerprint unlock turns itself off and says why. |
+
+A copied `vault.json`, or the whole folder, still needs the password: the Keystore key never leaves the phone's hardware. Each mode has its own Keystore key (`airlock-vault-<folder>`), as it has its own vault. `adb` cannot screenshot the system's fingerprint prompt.
 
 **Signing in the hardware.** Android's Keystore signs Ed25519 from KeyMint 200 (Android 13 and later), but only in the TEE: StrongBox chips are not expected to support Curve25519, and Keystore keys cannot be imported from or exported to a seed phrase. A Keystore key could be a fresh, phone-bound signer (for a programmatic signer's authority, say), not a home for existing wallets. On a Solana Mobile phone, the Seed Vault is that home.
 
 **Samsung Blockchain Keystore.** Samsung's own wallet keystore, in its TrustZone, on some Galaxy phones. Its SDK (last released December 2023) lists no Solana support, so it is no option for now.
+
+**Signing on a device without the vault.** When every signature a transaction still needs is a device's (the Seed Vault, or a hardware wallet), Sign does not ask for the vault's password: none of its keys would sign, and the device asks the user itself (`SigningStatus::needs_vault`).
 
 **Screens that show secrets.** `FLAG_SECURE` on the activity would keep a seed phrase or private key out of screenshots, screen recordings and the recents thumbnail. It applies to the whole window, so it would be set while such a screen is open (Android 15 also tells an app when it is being recorded, `addScreenRecordingCallback`). Not done yet.

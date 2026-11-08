@@ -59,6 +59,25 @@ impl Session {
         Ok(())
     }
 
+    /// Open the vault with `key`, the bytes of an earlier unlock's key that a
+    /// [`KeyGuard`](app_core::KeyGuard) kept behind the user's fingerprint. No
+    /// key is derived, so it takes no time.
+    pub async fn unlock_with_key(&self, key: Zeroizing<Vec<u8>>) -> Result<(), VaultError> {
+        let key = SealKey::from_bytes(&key)?;
+        let opened = self
+            .command(|core| core.begin_unlock())
+            .and_then(|reading| reading.open_with_key(&key));
+        self.command(|core| core.finish_unlock(opened))?;
+        self.report_save(Ok(()))?;
+        self.dismiss_gate();
+        Ok(())
+    }
+
+    /// The unlocked vault's key, to turn fingerprint unlock on with.
+    pub fn vault_key_bytes(&self) -> Result<Zeroizing<Vec<u8>>, VaultError> {
+        self.command(|core| core.vault_key_bytes())
+    }
+
     /// Seal the vault under `new`, once `current` opens it.
     pub async fn change_password(
         &self,

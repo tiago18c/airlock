@@ -224,6 +224,7 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                 p { class: "hint wordy",
                     "Locks the vault after this time while the window is hidden, or after the same time with no input while it is open. Default is 5 minutes."
                 }
+                FingerprintUnlock {}
                 if unlocked {
                     PasswordChange {}
                 }
@@ -266,6 +267,8 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
 /// Change the vault's password: the current one, then the new one twice.
 #[component]
 fn PasswordChange() -> Element {
+    let guard = crate::state::key_guard::use_key_guard();
+    let guard = use_hook(move || CopyValue::new(guard));
     let session = use_context::<Session>();
     let mut current = use_signal(String::new);
     let mut new = use_signal(String::new);
@@ -299,6 +302,17 @@ fn PasswordChange() -> Element {
             let changed = session.change_password(old, next).await;
             working.set(false);
             match changed {
+                // The vault is sealed under a new key, which fingerprint
+                // unlock does not have.
+                Ok(()) if guard.peek().as_ref().is_some_and(|guard| guard.enrolled()) => {
+                    if let Some(guard) = guard.peek().as_ref() {
+                        guard.forget();
+                    }
+                    note.set(Some(
+                        "Password changed. The vault is sealed under it, and the copy kept from before is deleted. Turn fingerprint unlock on again to use it."
+                            .into(),
+                    ))
+                }
                 Ok(()) => note.set(Some(
                     "Password changed. The vault is sealed under it, and the copy kept from before is deleted."
                         .into(),
@@ -484,4 +498,75 @@ fn open_log_folder_button(mut copy_note: Signal<Option<String>>) -> Element {
 #[cfg(any(target_arch = "wasm32", target_os = "android"))]
 fn open_log_folder_button(_copy_note: Signal<Option<String>>) -> Element {
     rsx! {}
+}
+
+/// Settings → Vault: unlock with a fingerprint, where the phone keeps the
+/// vault's key behind one. Turning it on asks for the fingerprint, with the
+/// vault unlocked.
+#[component]
+fn FingerprintUnlock() -> Element {
+    let session = use_context::<Session>();
+    let Some(guard) = crate::state::key_guard::use_key_guard() else {
+        return rsx! {};
+    };
+    let mut on = use_signal({
+        let guard = guard.clone();
+        move || guard.enrolled()
+    });
+    let mut error = use_signal(|| None::<String>);
+    let mut working = use_signal(|| false);
+    let turn_on = {
+        let guard = guard.clone();
+        move |_| {
+            if working() || on() {
+                return;
+            }
+            error.set(None);
+            let guard = guard.clone();
+            session.when_unlocked(
+                "Unlock the vault to keep its key behind your fingerprint.",
+                move || {
+                    working.set(true);
+                    spawn(async move {
+                        let result = crate::state::key_guard::turn_on(session, guard).await;
+                        working.set(false);
+                        match result {
+                            Ok(()) => on.set(true),
+                            Err(Some(why)) => error.set(Some(why)),
+                            Err(None) => {}
+                        }
+                    });
+                },
+            );
+        }
+    };
+    let turn_off = {
+        let guard = guard.clone();
+        move |_| {
+            guard.forget();
+            on.set(false);
+        }
+    };
+    rsx! {
+        label { "Fingerprint unlock" }
+        div { class: "segmented",
+            button {
+                class: if on() { "tab" } else { "tab on" },
+                onclick: turn_off,
+                "Off"
+            }
+            button {
+                class: if on() { "tab on" } else { "tab" },
+                disabled: working(),
+                onclick: turn_on,
+                "On"
+            }
+        }
+        p { class: "hint wordy",
+            "The vault's key is kept by this phone's secure hardware, and only your fingerprint lets the app use it. The password still unlocks the vault, and is asked for again if the phone's fingerprints change."
+        }
+        if let Some(err) = error() {
+            p { class: "error", "{err}" }
+        }
+    }
 }

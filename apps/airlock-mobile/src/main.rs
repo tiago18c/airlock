@@ -60,6 +60,11 @@ fn App() -> Element {
     });
     let core = use_hook(move || CopyValue::new(core));
     app_mobile::use_lifecycle(core);
+    // Fingerprint unlock, where the phone has a strong biometric.
+    let guard = use_hook(app_mobile::key_guard::key_guard);
+    if let Some(guard) = guard {
+        use_context_provider(move || app_ui::state::key_guard::KeyGuardHandle(guard));
+    }
 
     match mode {
         Mode::Online => rsx! { Online { core } },

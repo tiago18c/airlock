@@ -41,6 +41,9 @@ const CIPHER: &str = "xchacha20-poly1305";
 const SALT_LEN: usize = 16;
 const NONCE_LEN: usize = 24;
 const KEY_LEN: usize = 32;
+/// What [`SealKey::to_bytes`] starts with: the layout's name and version.
+const KEY_BYTES_TAG: &[u8] = b"AVK1";
+const KEY_BYTES_LEN: usize = 4 + 12 + SALT_LEN + KEY_LEN;
 
 /// Argon2id cost stored in the header so a later change can still open this vault.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -238,6 +241,49 @@ impl SealKey {
         Ok(Self { params, salt, key })
     }
 
+    /// The key as bytes, for a platform to keep under a key of its own
+    /// secure hardware: Android's Keystore, behind a fingerprint. Whoever
+    /// holds these bytes opens the vault without the password, for as long as
+    /// it stays sealed under this key: a new password, or a raised cost, seals
+    /// under another, and these stop opening it.
+    ///
+    /// `tag, memoryKib, iterations, parallelism, salt, key`, little-endian.
+    pub fn to_bytes(&self) -> Zeroizing<Vec<u8>> {
+        let mut bytes = Zeroizing::new(Vec::with_capacity(KEY_BYTES_LEN));
+        bytes.extend_from_slice(KEY_BYTES_TAG);
+        bytes.extend_from_slice(&self.params.m_kib.to_le_bytes());
+        bytes.extend_from_slice(&self.params.t.to_le_bytes());
+        bytes.extend_from_slice(&self.params.p.to_le_bytes());
+        bytes.extend_from_slice(&self.salt);
+        bytes.extend_from_slice(self.key.as_ref());
+        bytes
+    }
+
+    /// The key [`to_bytes`](Self::to_bytes) wrote. Refuses bytes of another
+    /// length or tag, and a cost this build would not derive at.
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, VaultError> {
+        if bytes.len() != KEY_BYTES_LEN || !bytes.starts_with(KEY_BYTES_TAG) {
+            return Err(VaultError::UnlockFailed);
+        }
+        let word = |at: usize| {
+            let mut four = [0u8; 4];
+            four.copy_from_slice(&bytes[at..at + 4]);
+            u32::from_le_bytes(four)
+        };
+        let at = KEY_BYTES_TAG.len();
+        let params = KdfParams {
+            m_kib: word(at),
+            t: word(at + 4),
+            p: word(at + 8),
+        }
+        .checked()?;
+        let mut salt = [0u8; SALT_LEN];
+        salt.copy_from_slice(&bytes[at + 12..at + 12 + SALT_LEN]);
+        let mut key = Zeroizing::new([0u8; KEY_LEN]);
+        key.copy_from_slice(&bytes[at + 12 + SALT_LEN..]);
+        Ok(Self { params, salt, key })
+    }
+
     /// The sealed file of `plaintext`, under a fresh nonce.
     pub(crate) fn seal(&self, plaintext: &[u8]) -> Result<Vec<u8>, VaultError> {
         let mut nonce = [0u8; NONCE_LEN];
@@ -379,6 +425,19 @@ pub(crate) struct Opened {
     pub plaintext: Vec<u8>,
     /// The file was damaged, and this is what its backup holds.
     pub from_backup: bool,
+}
+
+/// Open a sealed file with a key kept from an earlier unlock, and no
+/// derivation. Only the file is tried: a damaged one waits for the password,
+/// which also opens its backup. A file sealed under another salt or cost (a
+/// new password, a raised cost) is refused as a wrong password is.
+pub(crate) fn open_with_key(key: &SealKey, file: &[u8]) -> Result<Opened, VaultError> {
+    let sealed = Sealed::read(file).map_err(VaultError::from)?;
+    if sealed.salt != key.salt || sealed.params != key.params {
+        return Err(VaultError::UnlockFailed);
+    }
+    let plaintext = sealed.decrypt(&key.key)?;
+    Ok(sealed.opened(Zeroizing::new(*key.key), plaintext, false))
 }
 
 /// Open a sealed file with its password.
