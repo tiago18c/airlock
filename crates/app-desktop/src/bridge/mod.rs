@@ -33,6 +33,10 @@ use wallet_core::site_message::SignIn;
 use wallet_core::{ConfirmationLevel, TxFormat};
 use wallet_flows::request::wallets_asked;
 
+mod apps;
+
+pub use apps::{AppAnswer, AppCall, AppClaim, AppIdentity, AppSession, SignedIn};
+
 #[cfg(test)]
 mod tests;
 
@@ -66,6 +70,10 @@ struct Shared {
     next_peer: AtomicU64,
     /// Why this app has no socket, for the user. Sites cannot reach it.
     unavailable: OnceLock<String>,
+    /// The site of each app session open now, by a number of its own.
+    apps: Mutex<BTreeMap<u64, String>>,
+    /// Who the app behind each of its requests waiting now says it is.
+    claims: Mutex<BTreeMap<String, AppClaim>>,
 }
 
 /// What the app knows about one open connection.
@@ -98,6 +106,8 @@ impl Bridge {
                 peers: Mutex::new(BTreeMap::new()),
                 next_peer: AtomicU64::new(0),
                 unavailable: OnceLock::new(),
+                apps: Mutex::new(BTreeMap::new()),
+                claims: Mutex::new(BTreeMap::new()),
             }),
         }
     }
@@ -518,13 +528,16 @@ impl Shared {
         let Some(core) = self.core.get() else {
             return;
         };
-        let pages: BTreeSet<String> = self
+        let mut pages: BTreeSet<String> = self
             .peers
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
             .values()
             .flat_map(|peer| peer.pages.iter().cloned())
             .collect();
+        pages.extend(apps::open_origins(
+            &self.apps.lock().unwrap_or_else(PoisonError::into_inner),
+        ));
         core.site_pages(pages);
     }
 }

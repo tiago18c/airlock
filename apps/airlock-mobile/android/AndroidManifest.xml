@@ -16,6 +16,8 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- Fingerprint unlock: BiometricPrompt over a Keystore key. -->
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <!-- Back to the app that asked, when a Mobile Wallet Adapter session ends. -->
+    <uses-permission android:name="android.permission.REORDER_TASKS" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <!-- A Ledger or Trezor on the USB-C port. -->
     <uses-feature android:name="android.hardware.usb.host" android:required="false" />
@@ -28,7 +30,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:networkSecurityConfig="@xml/network_security_config">
+        <!--
+          singleTask: one MainActivity, ever. wry starts the app's Rust from
+          it, and cannot start it twice in one process, so a launch that would
+          make a second one (another app's intent, a launcher intent that does
+          not match how the task began) brings this one forward instead.
+        -->
         <activity android:configChanges="orientation|screenLayout|screenSize|keyboardHidden|uiMode" android:exported="true"
+            android:launchMode="singleTask"
             android:label="Airlock" android:name="dev.dioxus.main.MainActivity">
             <meta-data android:name="android.app.lib_name" android:value="main" />
             <meta-data android:name="android.app.func_name" android:value="ANativeActivity_onCreate" />
@@ -37,5 +46,31 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!--
+          Mobile Wallet Adapter: other apps and Chrome's pages open a
+          solana-wallet: link to ask Airlock to connect and sign. Off here;
+          Airlock turns it on only in online mode, with Settings → Apps on
+          this phone on (MwaBridge.setEnabled). It has no window: it runs the
+          session in the asking app's task and brings Airlock forward.
+        -->
+        <activity android:name="dev.dioxus.main.MwaActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:taskAffinity=""
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="solana-wallet" />
+            </intent-filter>
+        </activity>
+        <!-- Starts Airlock again after Settings → Mode; see RestartActivity. -->
+        <activity android:name="dev.dioxus.main.RestartActivity"
+            android:process=":restart"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
     </application>
 </manifest>

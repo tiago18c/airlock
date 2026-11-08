@@ -219,6 +219,7 @@ name = "airlock-mobile"
 version = "0.1.0"
 dependencies = [
  "app-core",
+ "app-desktop",
  "app-mobile",
  "app-online",
  "app-ui",
@@ -397,6 +398,7 @@ name = "app-mobile"
 version = "0.1.0"
 dependencies = [
  "app-core",
+ "app-desktop",
  "app-ui-kit",
  "base64 0.22.1",
  "dioxus",
@@ -404,6 +406,8 @@ dependencies = [
  "hw-transport",
  "jni 0.21.1",
  "ndk-context",
+ "serde",
+ "serde_json",
  "tokio",
  "tracing",
  "zeroize",

@@ -56,6 +56,6 @@ mod ui;
 
 #[cfg(all(feature = "bridge", not(target_arch = "wasm32")))]
 pub use ui::{
-    use_request_modal, BridgeRequests, ConnectionsCard, ConnectionsHost, ExtensionChip,
-    RequestModal, RequestToast,
+    use_request_modal, BridgeRequests, ConnectionsCard, ConnectionsHost, ConnectionsModal,
+    ExtensionChip, RequestModal, RequestToast,
 };

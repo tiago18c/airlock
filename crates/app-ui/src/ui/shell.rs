@@ -54,6 +54,10 @@ pub fn AppShell(
     /// Only a desktop window without the native frame passes them; the
     /// shell then keeps the top bar in place and scrolls the pane under it.
     window_controls: Option<Element>,
+    /// Shown in place of the lock screen while the vault is locked: on a
+    /// phone's first launch, how the app is to be used, before its vault is
+    /// created.
+    setup: Option<Element>,
 ) -> Element {
     use_context_provider(|| brand);
     let session = use_context::<Session>();
@@ -119,7 +123,11 @@ pub fn AppShell(
                         {above_panes}
 
                         if gated {
-                            LockScreen {}
+                            if let Some(setup) = setup {
+                                {setup}
+                            } else {
+                                LockScreen {}
+                            }
                         } else {
                             match session.current_tab() {
                                 Tab::Portfolio => portfolio.unwrap_or_else(|| rsx! { WalletsPanel {} }),
