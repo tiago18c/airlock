@@ -401,6 +401,7 @@ dependencies = [
  "base64 0.22.1",
  "dioxus",
  "hw-protocol",
+ "hw-transport",
  "jni 0.21.1",
  "ndk-context",
  "tokio",
