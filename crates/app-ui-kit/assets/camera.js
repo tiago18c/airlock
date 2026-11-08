@@ -87,7 +87,11 @@ function sendFocus() {
   dioxus.send({
     op: "focus",
     modes: caps.focusMode || [],
-    range: d && d.max > d.min ? { min: d.min, max: d.max, step: d.step || (d.max - d.min) / 100 } : null,
+    // A phone's camera can give its far end as Infinity, which JSON has no
+    // number for: 1000 m is as good as infinity to a lens.
+    range: d && d.max > d.min
+      ? { min: d.min, max: Math.min(d.max, 1000), step: d.step || (Math.min(d.max, 1000) - d.min) / 100 }
+      : null,
     mode: s.focusMode || null,
     distance: typeof s.focusDistance === "number" ? s.focusDistance : null,
   });
@@ -284,7 +288,7 @@ try {
         height: { ideal: 1080 },
       }
     : {
-        facingMode: { ideal: "environment" },
+        facingMode: { ideal: cfg.facing || "environment" },
         width: { ideal: 1920 },
         height: { ideal: 1080 },
       };
@@ -330,7 +334,7 @@ try {
     return;
   }
 
-  dioxus.send({ op: "started", backend: "qr-codec" });
+  dioxus.send({ op: "started" });
 
   track = stream.getVideoTracks()[0] || null;
   if (track) {

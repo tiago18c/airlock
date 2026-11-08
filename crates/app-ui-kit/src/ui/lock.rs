@@ -34,6 +34,63 @@ pub fn UnlockPrompt() -> Element {
     }
 }
 
+/// Asked once, right after a new vault is made, where the phone can keep
+/// its key behind a fingerprint: whether to unlock it that way too. Mounted
+/// once, by the shell.
+#[component]
+pub fn FingerprintOffer() -> Element {
+    use crate::state::key_guard::{turn_on, use_key_guard, OFFER_FINGERPRINT};
+    let session = use_context::<Session>();
+    let mut error = use_signal(|| None::<String>);
+    let mut working = use_signal(|| false);
+    let guard = use_key_guard().filter(|guard| !guard.enrolled());
+    if !OFFER_FINGERPRINT() {
+        return rsx! {};
+    }
+    let Some(guard) = guard else {
+        return rsx! {};
+    };
+    let mut close = move || {
+        *OFFER_FINGERPRINT.write() = false;
+        error.set(None);
+    };
+    rsx! {
+        div { class: "modal-backdrop",
+            div { class: "modal", role: "dialog", "aria-label": "Fingerprint unlock",
+                h3 { "Unlock with your fingerprint?" }
+                p { class: "muted", "The password still works, and you can change this in Settings." }
+                if let Some(err) = error() {
+                    p { class: "error", "{err}" }
+                }
+                div { class: "btn-row",
+                    button {
+                        class: "primary",
+                        disabled: working(),
+                        onclick: move |_| {
+                            let guard = guard.clone();
+                            working.set(true);
+                            error.set(None);
+                            spawn(async move {
+                                let result = turn_on(session, guard).await;
+                                working.set(false);
+                                match result {
+                                    Ok(()) => close(),
+                                    Err(Some(why)) => error.set(Some(why)),
+                                    // Backed out of the fingerprint prompt:
+                                    // the question stays, with Not now.
+                                    Err(None) => {}
+                                }
+                            });
+                        },
+                        if working() { "Waiting for fingerprint…" } else { "Turn on" }
+                    }
+                    button { disabled: working(), onclick: move |_| close(), "Not now" }
+                }
+            }
+        }
+    }
+}
+
 /// Create or unlock the vault. With a `reason` it is the prompt's form: it
 /// says why the password is asked for, and has Cancel instead of Skip.
 #[component]
@@ -96,6 +153,9 @@ pub fn VaultUnlock(
             working.set(false);
             match result {
                 Ok(()) => {
+                    if !initialized {
+                        *crate::state::key_guard::OFFER_FINGERPRINT.write() = true;
+                    }
                     crate::actions::network::start_refresh(session);
                     if let Some(done) = on_unlocked {
                         done.call(());

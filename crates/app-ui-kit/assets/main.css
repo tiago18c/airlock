@@ -1685,6 +1685,45 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 }
 .video-wrap.live .video-mask { display: none; }
 
+/* The phone's scanner: the preview takes the room, with its controls on it.
+   Start in the middle, Stop top left, the other camera top right, focus
+   along the bottom. */
+.scanner.phone-scanner { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
+.phone-scanner .video-wrap { min-height: 0; height: min(68vh, 560px); }
+.phone-scanner .video-wrap > video,
+.phone-scanner .video-wrap > canvas { height: 100%; }
+.phone-scanner .video-mask { padding: 0; }
+.phone-scanner .scan-start { position: relative; z-index: 3; grid-area: 1 / 1; }
+.scan-overlay {
+  position: absolute;
+  z-index: 3;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+}
+.scan-overlay .icon { width: 22px; height: 22px; }
+.scan-overlay[aria-pressed="true"] { background: rgba(0, 0, 0, 0.7); box-shadow: inset 0 0 0 2px #fff; }
+.scan-stop { top: var(--space-3); left: var(--space-3); }
+.scan-flip { top: var(--space-3); right: var(--space-3); }
+.scan-focus {
+  position: absolute;
+  z-index: 3;
+  left: var(--space-3);
+  right: var(--space-3);
+  bottom: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.scan-focus .scan-overlay { position: static; flex-shrink: 0; }
+.scan-focus input[type="range"] { flex: 1; min-width: 0; accent-color: #fff; }
+
 .dots { display: flex; flex-wrap: wrap; gap: 6px; }
 .dot {
   width: 10px;

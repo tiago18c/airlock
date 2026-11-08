@@ -86,6 +86,29 @@ fn every_key_and_vector_wallet_is_exported_and_lands_at_the_same_address() {
 }
 
 #[test]
+fn a_seed_vault_wallet_exports_its_address_as_an_offline_wallet() {
+    let address = KeypairSigner::new_random().pubkey();
+    let mut phone = VaultData::default();
+    phone.wallets.push(WalletRecord::hardware(
+        "Saga",
+        crate::HardwareVendor::SeedVault,
+        address,
+        "m/44'/501'/0'/0'",
+    ));
+    let exported = exportable(&phone.summaries());
+    assert_eq!(exported.len(), 1);
+    assert_eq!(exported[0].key.role, KeyRole::Address);
+    assert_eq!(exported[0].becomes, "Offline wallet");
+
+    let mut online = VaultData::default();
+    let added = online
+        .add_wallet_keys(&to_add(&[exported[0].key.clone()]), None)
+        .unwrap();
+    assert_eq!(added[0].address, address);
+    assert!(added[0].offline);
+}
+
+#[test]
 fn one_wallet_exports_on_its_own() {
     let (airgap, _) = airgap();
     let exported = exportable(&airgap.summaries());
