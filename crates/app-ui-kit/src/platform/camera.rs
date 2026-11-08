@@ -13,13 +13,50 @@ pub const CAMERA_JS: &str = concat!(
 /// from `crates/qr-codec-wasm`. CI checks it matches its source.
 const QR_CODEC_WASM: &[u8] = include_bytes!("../../assets/qr_codec.wasm");
 
-/// The settings `CAMERA_JS` waits for: the camera, and the decoder module,
-/// which the webview compiles once and keeps.
-pub fn scan_config(device_id: &str) -> serde_json::Value {
+/// The settings `CAMERA_JS` waits for: the camera, by id or else by the way
+/// it faces, and the decoder module, which the webview compiles once and
+/// keeps.
+pub fn scan_config(device_id: &str, facing: Facing) -> serde_json::Value {
     serde_json::json!({
         "deviceId": (!device_id.is_empty()).then_some(device_id),
+        "facing": facing.mode(),
         "codec": STANDARD.encode(QR_CODEC_WASM),
     })
+}
+
+/// Which of a phone's cameras to scan with, when none is chosen by id.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Facing {
+    /// The camera on the back, facing away from the screen.
+    #[default]
+    Back,
+    /// The camera beside the screen.
+    Front,
+}
+
+impl Facing {
+    /// The `facingMode` the browser takes.
+    pub fn mode(self) -> &'static str {
+        match self {
+            Self::Back => "environment",
+            Self::Front => "user",
+        }
+    }
+
+    pub fn other(self) -> Self {
+        match self {
+            Self::Back => Self::Front,
+            Self::Front => Self::Back,
+        }
+    }
+
+    /// What the button that switches to the other camera says.
+    pub fn switch_label(self) -> &'static str {
+        match self {
+            Self::Back => "Use the front camera",
+            Self::Front => "Use the back camera",
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize)]
@@ -34,9 +71,7 @@ pub enum ScanEvent {
     Qr {
         b64: String,
     },
-    Started {
-        backend: String,
-    },
+    Started,
     /// Every camera, by name, once one is open, and the one in use.
     Cameras {
         cameras: Vec<CameraDevice>,

@@ -12,6 +12,7 @@ pub(in crate::ui) const EXISTING_KINDS: &[(AddWalletMode, &str)] = &[
     (AddWalletMode::Seed, "Seed phrase"),
     (AddWalletMode::Offline, "Offline"),
     (AddWalletMode::FromDevice, "From another device"),
+    (AddWalletMode::SeedVault, "Seed Vault"),
     (AddWalletMode::Hardware, "Hardware"),
     (AddWalletMode::Programmatic, "Programmatic signer"),
     (AddWalletMode::Vector, "Vector"),
@@ -25,13 +26,29 @@ pub(in crate::ui) const NEW_KINDS: &[(AddWalletMode, &str)] = &[
     (AddWalletMode::Squads, "Squads"),
 ];
 
-/// The kind tabs for the add-wallet modal. Vector is only offered when the
-/// setting is on.
-fn kinds_for(creating: bool, vector: bool) -> Vec<(AddWalletMode, &'static str)> {
+/// What the add-wallet modal can offer beyond the kinds every build has.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+struct Offered {
+    /// Vector, when the setting is on.
+    vector: bool,
+    /// This phone's Seed Vault.
+    seed_vault: bool,
+    /// The Hardware tab: a Ledger, Trezor or Keystone can be added, or
+    /// Settings can turn them on.
+    hardware: bool,
+}
+
+/// The kind tabs for the add-wallet modal.
+fn kinds_for(creating: bool, offered: Offered) -> Vec<(AddWalletMode, &'static str)> {
     let base = if creating { NEW_KINDS } else { EXISTING_KINDS };
     base.iter()
         .copied()
-        .filter(|(kind, _)| *kind != AddWalletMode::Vector || vector)
+        .filter(|(kind, _)| match kind {
+            AddWalletMode::Vector => offered.vector,
+            AddWalletMode::SeedVault => offered.seed_vault,
+            AddWalletMode::Hardware => offered.hardware,
+            _ => true,
+        })
         .collect()
 }
 
@@ -77,11 +94,26 @@ pub(in crate::ui) fn AddWalletModal() -> Element {
     });
 
     let vector_on = session.vector_offered();
-    let kinds = kinds_for(creating(), vector_on);
-    // Vector was selected, then the setting was turned off. Show another kind
-    // without writing the signal: Settings already stores the switch.
+    let devices = session.hardware_offered();
+    let seed_vault = devices.contains(&wallet_core::HardwareVendor::SeedVault);
+    let offered = Offered {
+        vector: vector_on,
+        seed_vault,
+        // A phone has no Pre-release switch to point to: with nothing to add
+        // there, the tab is left out.
+        hardware: !crate::ui::use_phone_layout()
+            || devices
+                .iter()
+                .any(|vendor| *vendor != wallet_core::HardwareVendor::SeedVault),
+    };
+    let kinds = kinds_for(creating(), offered);
+    // Vector was selected, then the setting was turned off, or a tab this
+    // build does not offer was left selected. Show another kind without
+    // writing the signal: Settings already stores the switch.
     let stored = mode();
-    let kind = if stored == AddWalletMode::Vector && !vector_on {
+    let kind = if !creating() && !kinds.iter().any(|(kind, _)| *kind == stored) {
+        AddWalletMode::PrivateKey
+    } else if stored == AddWalletMode::Vector && !vector_on {
         if creating() {
             AddWalletMode::Seed
         } else {
@@ -133,7 +165,9 @@ pub(in crate::ui) fn AddWalletModal() -> Element {
 
                     div { class: "add-wallet-body",
                     if kind == AddWalletMode::Hardware {
-                        HardwareForm { on_done: move |_| modal_open.set(false) }
+                        HardwareForm { seed_vault: false, on_done: move |_| modal_open.set(false) }
+                    } else if kind == AddWalletMode::SeedVault {
+                        HardwareForm { seed_vault: true, on_done: move |_| modal_open.set(false) }
                     } else if kind == AddWalletMode::Offline {
                         OfflineForm { on_done: move |_| modal_open.set(false) }
                     } else if kind == AddWalletMode::FromDevice {

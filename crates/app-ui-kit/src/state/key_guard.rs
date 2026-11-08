@@ -14,6 +14,10 @@ use crate::state::session::Session;
 #[derive(Clone)]
 pub struct KeyGuardHandle(pub Arc<dyn KeyGuard>);
 
+/// Set once a new vault is made, for [`FingerprintOffer`](crate::ui::FingerprintOffer)
+/// to ask whether it should open with a fingerprint too.
+pub static OFFER_FINGERPRINT: GlobalSignal<bool> = Signal::global(|| false);
+
 /// The shell's key guard, if it has one.
 pub fn use_key_guard() -> Option<Arc<dyn KeyGuard>> {
     try_use_context::<KeyGuardHandle>().map(|handle| handle.0)

@@ -24,9 +24,9 @@ pub struct Exportable {
     pub becomes: String,
 }
 
-/// Every wallet of `wallets` that another device can add: a hot or offline
-/// key as an offline wallet there, and a Vector wallet of an offered scheme
-/// with its key elsewhere. Programmatic signers and multisigs are left out:
+/// Every wallet of `wallets` that another device can add: a hot, offline or
+/// hardware wallet's key (a Seed Vault's included) as an offline wallet
+/// there, and a Vector wallet of an offered scheme with its key elsewhere. Programmatic signers and multisigs are left out:
 /// the other device sets those up from the key.
 pub fn exportable(wallets: &[WalletSummary]) -> Vec<Exportable> {
     wallets.iter().filter_map(exportable_one).collect()
@@ -34,7 +34,7 @@ pub fn exportable(wallets: &[WalletSummary]) -> Vec<Exportable> {
 
 fn exportable_one(wallet: &WalletSummary) -> Option<Exportable> {
     let (role, key, becomes) = match (&wallet.class, &wallet.contract) {
-        (WalletClass::Hot | WalletClass::Offline, _) => (
+        (WalletClass::Hot | WalletClass::Offline | WalletClass::Hardware, _) => (
             KeyRole::Address,
             wallet.address?.to_bytes().to_vec(),
             "Offline wallet".to_string(),
@@ -52,7 +52,7 @@ fn exportable_one(wallet: &WalletSummary) -> Option<Exportable> {
                 format!("Vector wallet · {}", settings.scheme.label()),
             )
         }
-        (WalletClass::SmartContract | WalletClass::Hardware, _) => return None,
+        (WalletClass::SmartContract, _) => return None,
     };
     Some(Exportable {
         id: wallet.id,

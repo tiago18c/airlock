@@ -92,13 +92,26 @@ pub(in crate::ui) fn RefreshBlockhash() -> Element {
 
 #[component]
 fn SignerRow(line: wallet_core::SignerLine, inspect: bool) -> Element {
+    // A phone has no width for the chip beside the address: it goes up
+    // beside the role.
+    let phone = crate::ui::use_phone_layout();
+    let role = match line.role {
+        SignerRole::FeePayer => "Fee payer",
+        SignerRole::Signer => "Signer",
+        SignerRole::Authority { .. } => "Authority",
+    };
+    let state = rsx! { SignerChip { line } };
     rsx! {
-        li { class: "book-row signer-row",
+        li { class: if phone { "book-row signer-row stacked" } else { "book-row signer-row" },
+            if phone {
+                div { class: "chip-row signer-head",
+                    span { class: "signer-role", "{role}" }
+                    {state.clone()}
+                }
+            }
             div { class: "chip-row",
-                match line.role {
-                    SignerRole::FeePayer => rsx! { span { class: "signer-role", "Fee payer" } },
-                    SignerRole::Signer => rsx! { span { class: "signer-role", "Signer" } },
-                    SignerRole::Authority { .. } => rsx! { span { class: "signer-role", "Authority" } },
+                if !phone {
+                    span { class: "signer-role", "{role}" }
                 }
                 AddressRow { pubkey: line.authority_chip(), full: inspect,
                     if let SignerRole::Authority { address } = line.role {
@@ -109,16 +122,32 @@ fn SignerRow(line: wallet_core::SignerLine, inspect: bool) -> Element {
                             Address { pubkey: address }
                         }
                     }
-                    match line.state {
-                        SignerState::Signed => rsx! { span { class: "chip ok", "signed" } },
-                        SignerState::Invalid => rsx! { span { class: "chip danger", "invalid signature" } },
-                        SignerState::Local => rsx! { span { class: "chip info", "on this device · not signed" } },
-                        SignerState::Device => rsx! { span { class: "chip info", "on a hardware wallet · not signed" } },
-                        SignerState::Missing => rsx! { span { class: "chip warn", "needed from elsewhere" } },
+                    if !phone {
+                        {state}
                     }
                 }
             }
         }
+    }
+}
+
+/// Where a signature stands, and for one not made yet, what holds its key.
+#[component]
+fn SignerChip(line: wallet_core::SignerLine) -> Element {
+    match line.state {
+        SignerState::Signed => rsx! { span { class: "chip ok", "signed" } },
+        SignerState::Invalid => rsx! { span { class: "chip danger", "invalid signature" } },
+        SignerState::Local => rsx! { span { class: "chip info", "on this device · not signed" } },
+        SignerState::Device => match line.on_device {
+            Some(wallet_core::HardwareVendor::SeedVault) => rsx! {
+                span { class: "chip kind", "in the Seed Vault · not signed" }
+            },
+            Some(vendor) => rsx! {
+                span { class: "chip info", "on a {vendor.label()} · not signed" }
+            },
+            None => rsx! { span { class: "chip info", "on a hardware wallet · not signed" } },
+        },
+        SignerState::Missing => rsx! { span { class: "chip warn", "needed from elsewhere" } },
     }
 }
 

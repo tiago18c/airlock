@@ -22,7 +22,7 @@ pub use address::{
 pub use address_picker::AddressPicker;
 pub use device::DeviceDialog;
 pub use icons::{Glyph, Icon};
-pub use lock::{LockScreen, UnlockPrompt, VaultUnlock};
+pub use lock::{FingerprintOffer, LockScreen, UnlockPrompt, VaultUnlock};
 pub use phone::{use_phone_layout, PhoneLayout};
 pub use theme::ThemeToggle;
 pub use wallet_picker::WalletPicker;

@@ -38,6 +38,10 @@ pub enum Glyph {
     Alert,
     X,
     More,
+    /// A camera with arrows round it: the other camera.
+    SwitchCamera,
+    /// A viewfinder's corners round a point: autofocus.
+    Focus,
 }
 
 impl Glyph {
@@ -180,6 +184,20 @@ impl Glyph {
             Glyph::Alert => &["M12 4 2.5 20h19L12 4Z", "M12 10v4", "M12 17h.01"],
             Glyph::X => &["M6 6l12 12", "M18 6 6 18"],
             Glyph::More => &["M5 12h.01", "M12 12h.01", "M19 12h.01"],
+            Glyph::SwitchCamera => &[
+                "M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z",
+                "M9 13a3 3 0 0 1 5.3-1.9",
+                "M14.6 9.4v1.9h-1.9",
+                "M15 13a3 3 0 0 1-5.3 1.9",
+                "M9.4 16.6v-1.9h1.9",
+            ],
+            Glyph::Focus => &[
+                "M4 8V5a1 1 0 0 1 1-1h3",
+                "M16 4h3a1 1 0 0 1 1 1v3",
+                "M20 16v3a1 1 0 0 1-1 1h-3",
+                "M8 20H5a1 1 0 0 1-1-1v-3",
+                "M12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z",
+            ],
         }
     }
 }
