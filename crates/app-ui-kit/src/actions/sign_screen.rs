@@ -872,9 +872,11 @@ pub fn apply_personal_sign(session: Session, account: Pubkey, pasted: String) {
 
 /// Sign what is loaded with this device's keys, once the vault is unlocked. The
 /// press was for what is on screen now, so nothing is signed if that has changed
-/// by then.
+/// by then. When every signature left is a device's (a hardware wallet, the
+/// phone's Seed Vault), the vault stays locked: none of its keys would sign,
+/// and the device asks the user itself.
 pub fn sign_loaded(session: Session, busy: Signal<bool>, blockhash: BlockhashOnSign) {
-    if session.is_initialized() && !session.is_unlocked() {
+    if session.is_initialized() && !session.is_unlocked() && needs_vault_keys(session) {
         let form = session.forms.sign;
         let generation = form.generation();
         session.when_unlocked("Unlock the vault to sign with its keys.", move || {
@@ -885,6 +887,33 @@ pub fn sign_loaded(session: Session, busy: Signal<bool>, blockhash: BlockhashOnS
         return;
     }
     sign_unlocked(session, busy, blockhash);
+}
+
+/// Whether signing what is on screen needs the vault open: a key it holds,
+/// or a Vector key kept here, signs or authorizes. False only when devices of
+/// this vault sign and nothing else of this device does.
+fn needs_vault_keys(session: Session) -> bool {
+    let form = session.forms.sign;
+    let Some(wire) = form.wire.peek().clone() else {
+        return true;
+    };
+    let tables = form.tables.peek().clone();
+    let Ok(tx) = decode_on_sign(&wire, &tables) else {
+        return true;
+    };
+    let devices = session.local_device_keys();
+    if devices.is_empty() {
+        return true;
+    }
+    let keys = session.local_signer_pubkeys();
+    let vector = session.local_vector_accounts();
+    let known = form.vector.peek().clone();
+    let local = LocalKeys {
+        keys: &keys,
+        vector: &vector,
+        devices: &devices,
+    };
+    signing_status_in(&tx, &local, &AuthContext { vector: &known }).needs_vault()
 }
 
 /// Sign what is on screen. If another transaction has taken its place by the
@@ -954,13 +983,20 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
         } else {
             FloorsFrom::Note
         };
-        let vector_keys = match session.vector_keys_for_sign(&wire, &signers, &known, floors) {
-            Ok(keys) => keys,
-            Err(err) => {
-                form.report(generation, sentence(err));
-                busy.set(false);
-                return;
+        // Locked, only devices sign (`needs_vault_keys`): no Vector key is
+        // asked, and the vault is not read for one.
+        let vault_open = !session.is_initialized() || session.is_unlocked();
+        let vector_keys = if vault_open {
+            match session.vector_keys_for_sign(&wire, &signers, &known, floors) {
+                Ok(keys) => keys,
+                Err(err) => {
+                    form.report(generation, sentence(err));
+                    busy.set(false);
+                    return;
+                }
             }
+        } else {
+            Vec::new()
         };
         let mut cache = session.xmss_retries.peek().clone();
         let mut vector = VectorSigning {
