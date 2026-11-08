@@ -135,10 +135,26 @@ object SeedVaultBridge {
     fun take(id: Long): String? = results.remove(id)
 
     /// how: 0 pick an existing seed, 1 import a phrase, 2 create one.
+    /// Picking reuses a seed Airlock may already use (authorizations outlive
+    /// a reinstall) when the Seed Vault has no other seed to grant it.
     @JvmStatic
     fun authorize(id: Long, how: Int) = withPermission(id) {
+        val purpose = WalletContractV1.PURPOSE_SIGN_SOLANA_TRANSACTION
+        val a = activity
+        if (how == 0 && a != null) {
+            val granted = authorizedToken(a, purpose)
+            val more = try {
+                Wallet.hasUnauthorizedSeedsForPurpose(a, purpose)
+            } catch (e: Exception) {
+                true
+            }
+            Log.i(TAG, "choose seed: authorized=${granted != null} more=$more")
+            if (granted != null && !more) {
+                results[id] = "ok:$granted"
+                return@withPermission
+            }
+        }
         launch(id, {
-            val purpose = WalletContractV1.PURPOSE_SIGN_SOLANA_TRANSACTION
             when (how) {
                 1 -> Wallet.importSeed(it, purpose)
                 2 -> Wallet.createSeed(it, purpose)
@@ -247,6 +263,26 @@ object SeedVaultBridge {
             Log.w(TAG, "could not open the Seed Vault", e)
             results[id] = "err:failed:${e.message}"
         }
+    }
+
+    /// The auth token of a seed this app may already use for `purpose`.
+    private fun authorizedToken(a: MainActivity, purpose: Int): Long? = try {
+        Wallet.getAuthorizedSeeds(
+            a,
+            arrayOf(
+                WalletContractV1.AUTHORIZED_SEEDS_AUTH_TOKEN,
+                WalletContractV1.AUTHORIZED_SEEDS_AUTH_PURPOSE
+            )
+        )?.use { rows ->
+            var token: Long? = null
+            while (token == null && rows.moveToNext()) {
+                if (rows.getInt(1) == purpose) token = rows.getLong(0)
+            }
+            token
+        }
+    } catch (e: Exception) {
+        Log.w(TAG, "could not read authorized seeds", e)
+        null
     }
 
     /// m/44'/501'/0'/0' as the bip32: URI the Seed Vault takes.
