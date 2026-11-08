@@ -5,8 +5,9 @@
 
 use crate::state::session::{Session, Tab};
 use crate::ui::{
-    AddressBookPanel, BuildPanel, DeviceDialog, Glyph, Icon, LockScreen, ProgramsPanel,
-    SettingsPanel, SignPanel, ThemeToggle, UnlockPrompt, WalletSwitcher, WalletsPanel,
+    AddressBookPanel, BuildPanel, DeviceDialog, Glyph, Icon, LockScreen, PhoneLayout,
+    ProgramsPanel, SettingsPanel, SignPanel, ThemeToggle, UnlockPrompt, WalletSwitcher,
+    WalletsPanel,
 };
 use crate::{MAIN_CSS, TOKENS_CSS};
 use dioxus::prelude::*;
@@ -28,6 +29,10 @@ pub fn AppShell(
     brand: AppBrand,
     /// The navigation, in order. A tab a build lacks is not listed.
     tabs: &'static [Tab],
+    /// A phone's further sections, listed under More at the end of the tab
+    /// bar. A shell that passes them is laid out for a phone: short tab
+    /// labels, and the long hints under the controls left out.
+    more: Option<&'static [Tab]>,
     /// The Stake pane. A build without it lists no [`Tab::Stake`].
     stake: Option<Element>,
     /// The Portfolio pane. A build without it lists no [`Tab::Portfolio`].
@@ -64,12 +69,18 @@ pub fn AppShell(
 
     let gated = (session.gate)();
     let frameless = window_controls.is_some();
-    let class = match (gated, frameless) {
-        (false, false) => "app",
-        (true, false) => "app locked",
-        (false, true) => "app frameless",
-        (true, true) => "app locked frameless",
-    };
+    let phone = more.is_some();
+    use_context_provider(|| PhoneLayout(phone));
+    let mut class = String::from("app");
+    if gated {
+        class.push_str(" locked");
+    }
+    if frameless {
+        class.push_str(" frameless");
+    }
+    if phone {
+        class.push_str(" phone");
+    }
 
     rsx! {
         document::Title { "{brand.name}" }
@@ -82,8 +93,9 @@ pub fn AppShell(
             onmousemove: move |_| session.ui_activity(),
             onkeydown: move |_| session.ui_activity(),
             onclick: move |_| session.ui_activity(),
+            ontouchstart: move |_| session.ui_activity(),
             if !gated {
-                Sidebar { tabs, status: sidebar_status }
+                Sidebar { tabs, more, status: sidebar_status }
             }
             div { class: "main",
                 TopBar { extra: top_bar_extra, controls: window_controls }
@@ -144,6 +156,15 @@ pub fn Brand() -> Element {
     }
 }
 
+/// A tab's label in a phone's tab bar, where a long one would wrap.
+fn short_label(tab: Tab) -> &'static str {
+    match tab {
+        Tab::Sign => "Sign",
+        Tab::AddressBook => "Contacts",
+        other => tab_entry(other).0,
+    }
+}
+
 /// The label and icon of a tab in the sidebar.
 fn tab_entry(tab: Tab) -> (&'static str, Glyph) {
     match tab {
@@ -160,8 +181,16 @@ fn tab_entry(tab: Tab) -> (&'static str, Glyph) {
 }
 
 #[component]
-pub fn Sidebar(tabs: &'static [Tab], status: Option<Element>) -> Element {
+pub fn Sidebar(
+    tabs: &'static [Tab],
+    more: Option<&'static [Tab]>,
+    status: Option<Element>,
+) -> Element {
     let session = use_context::<Session>();
+    let mut more_open = use_signal(|| false);
+    let current = session.current_tab();
+    let in_more = more.is_some_and(|more| more.contains(&current));
+    let phone = more.is_some();
     rsx! {
         aside { class: "sidebar",
             Brand {}
@@ -169,13 +198,52 @@ pub fn Sidebar(tabs: &'static [Tab], status: Option<Element>) -> Element {
                 for &tab in tabs {
                     {
                         let (label, glyph) = tab_entry(tab);
+                        let shown = if phone { short_label(tab) } else { label };
                         rsx! {
                             button {
-                                class: if session.current_tab() == tab { "nav-item on" } else { "nav-item" },
+                                class: if current == tab { "nav-item on" } else { "nav-item" },
                                 key: "{label}",
-                                onclick: move |_| session.goto(tab),
+                                onclick: move |_| {
+                                    more_open.set(false);
+                                    session.goto(tab);
+                                },
                                 Icon { glyph }
-                                span { class: "nav-label", "{label}" }
+                                span { class: "nav-label", "{shown}" }
+                            }
+                        }
+                    }
+                }
+                if let Some(more) = more {
+                    button {
+                        class: if in_more || more_open() { "nav-item on" } else { "nav-item" },
+                        aria_expanded: "{more_open()}",
+                        onclick: move |_| more_open.toggle(),
+                        Icon { glyph: Glyph::More }
+                        span { class: "nav-label", "More" }
+                    }
+                    if more_open() {
+                        div {
+                            class: "more-backdrop",
+                            onclick: move |_| more_open.set(false),
+                        }
+                        div { class: "more-sheet", role: "menu",
+                            for &tab in more {
+                                {
+                                    let (label, glyph) = tab_entry(tab);
+                                    rsx! {
+                                        button {
+                                            class: if current == tab { "more-item on" } else { "more-item" },
+                                            key: "{label}",
+                                            role: "menuitem",
+                                            onclick: move |_| {
+                                                more_open.set(false);
+                                                session.goto(tab);
+                                            },
+                                            Icon { glyph }
+                                            span { "{label}" }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

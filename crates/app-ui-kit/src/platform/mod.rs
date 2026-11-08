@@ -8,6 +8,7 @@ pub mod eval;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod idl_files;
 pub mod idl_pack;
+pub mod page_policy;
 pub mod qr;
 pub mod storage;
 

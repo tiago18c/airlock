@@ -7,7 +7,7 @@ mod file;
 #[cfg(target_arch = "wasm32")]
 mod web;
 
-pub use dirs::{app_dirs, set_app_dirs, AppDirs};
+pub use dirs::{app_dirs, set_app_dirs, set_base_dir, AppDirs};
 #[cfg(not(target_arch = "wasm32"))]
 pub use file::{claim_data_dir, data_dir, logs_dir, DataDirClaim, FileStorage};
 #[cfg(target_arch = "wasm32")]

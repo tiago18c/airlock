@@ -1,0 +1,23 @@
+[package]
+name = "app-mobile"
+version.workspace = true
+edition.workspace = true
+description = "Android services: the app's private folders, the WebView's settings, links, the online or offline choice and the Seed Vault"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+app-core.workspace = true
+app-ui-kit.workspace = true
+base64.workspace = true
+hw-protocol.workspace = true
+dioxus = { workspace = true, features = ["mobile"] }
+tokio = { workspace = true, features = ["time"] }
+tracing.workspace = true
+
+[target.'cfg(target_os = "android")'.dependencies]
+jni = "0.21.1"
+ndk-context = "0.1.1"

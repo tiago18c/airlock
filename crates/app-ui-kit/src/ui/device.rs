@@ -40,6 +40,8 @@ pub fn DeviceDialog() -> Element {
                     }
                     if run.vendor == HardwareVendor::Keystone {
                         KeystoneSteps { run: run.clone() }
+                    } else if run.vendor == HardwareVendor::SeedVault {
+                        SeedVaultSteps { run: run.clone() }
                     } else {
                         DeviceSteps { run: run.clone() }
                     }
@@ -140,6 +142,28 @@ fn DeviceSteps(run: DeviceRun) -> Element {
                 }
             },
             _ => rsx! {},
+        }
+    }
+}
+
+/// A Seed Vault's job: its own screens open over the app, so this says
+/// where to look, and how it went.
+#[component]
+fn SeedVaultSteps(run: DeviceRun) -> Element {
+    rsx! {
+        match (&run.stage, &run.ask) {
+            (DeviceStage::Failed(why), _) => rsx! {
+                p { class: "error", role: "alert", "{why}" }
+            },
+            (DeviceStage::Done, DeviceAsk::Show { .. }) => rsx! {
+                p { role: "status", "The Seed Vault has no screen of its own for an address. This one is read from it." }
+            },
+            (_, DeviceAsk::Read { .. }) => rsx! {
+                p { role: "status", "Continue in the Seed Vault." }
+            },
+            _ => rsx! {
+                p { role: "status", "Check what the Seed Vault shows against this screen, then confirm there." }
+            },
         }
     }
 }

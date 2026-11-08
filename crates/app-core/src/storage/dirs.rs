@@ -32,6 +32,27 @@ impl AppDirs {
 
 static DIRS: OnceLock<AppDirs> = OnceLock::new();
 
+/// The folder the app's own folder goes under, when the platform names one
+/// that is not in the environment: Android's app-private files folder.
+static BASE: OnceLock<std::path::PathBuf> = OnceLock::new();
+
+/// Put the app's folder under `dir` instead of the platform's app data
+/// folder. A mobile shell calls it first thing in `main`, before logging or
+/// any store opens. `<prefix>_DATA_DIR` still wins, so tests stay apart.
+pub fn set_base_dir(dir: std::path::PathBuf) {
+    let chosen = BASE.get_or_init(|| dir.clone());
+    assert_eq!(
+        *chosen, dir,
+        "set_base_dir is called before anything reads the data folder"
+    );
+}
+
+/// The folder [`set_base_dir`] named, if any. The web keeps no files.
+#[cfg(not(target_arch = "wasm32"))]
+pub(crate) fn base_dir() -> Option<&'static std::path::Path> {
+    BASE.get().map(|dir| dir.as_path())
+}
+
 /// Pick this process's folder and variables. A shell other than the online
 /// one calls it first thing in `main`, before logging or any store opens;
 /// without it the process uses [`AppDirs::ONLINE`].

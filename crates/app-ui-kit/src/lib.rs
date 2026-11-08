@@ -16,7 +16,7 @@ pub use state::pump::{use_core, Pump};
 pub use state::session::{OnlineHooks, Session, Tab, WalletSummary};
 pub use state::submit::{SiteSendFut, SubmitFut, SubmitHandle, TxSubmit};
 pub use state::theme::use_theme;
-pub use state::{open_core, open_core_with, use_session};
+pub use state::{open_core, open_core_on, open_core_with, use_session};
 pub use ui::{
     format_sol, format_token_amount, Address, AddressHeader, AddressPicker, AddressRow, Glyph,
     Icon, LockScreen, PhraseView, ThemeToggle, VaultUnlock, WalletPicker,

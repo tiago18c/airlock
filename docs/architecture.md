@@ -36,6 +36,8 @@ apps/airlock
   web:     core + ui + online
 apps/airlock-offline
   desktop: core + ui + desktop (no bridge)
+apps/airlock-mobile
+  android: core + ui + online + mobile (offline mode: core + ui + mobile, no Network)
 ```
 
 Each app is a thin `main.rs`: it picks its tabs and services and hands them to `AppShell` in `app-ui`. `apps/airlock` picks its desktop services with `cfg(target_arch)`, which is the only `cfg` on build flavour the code allows. Each app has its own `Dioxus.toml` and icons, because `dx -p` reads them from the package directory.
@@ -79,7 +81,7 @@ Storage is `app_core::storage`: files under the data directory on desktop, `loca
 
 **Auto-lock lives in the core**, so the airgap build gets it too. The app reports whether the window is visible and pings on input, and `LockPolicy` locks the vault once the window has been hidden for the timeout set in Settings, or has had no input for as long while visible (`reason=hidden` or `idle`). Locking zeroizes the secrets and publishes the locked state. The window follows that state, however the vault locked: a key or phrase being typed or shown on Add wallet is wiped and the modal closes. Two kinds of key stay until the app closes, because a transaction in progress can wait on them across a lock: a keypair Build made for an account, and a key made in place of a site's one-time key. They sign nothing while the vault is locked, and they control only an account the transaction creates.
 
-**The window is held to the app.** A Content Security Policy in the page (`app_desktop::window`) lets it load only the app's own files and make requests only to the loopback websocket Dioxus sends its edits on. A second policy, added once the page's own scripts have been read, stops inline scripts, and a navigation handler keeps another page from replacing it. It is not a seal: [the threat model](browser-bridge.md#threats) has what it leaves.
+**The window is held to the app.** A Content Security Policy in the page (`app_ui_kit::platform::page_policy`, put in by the desktop and Android shells) lets it load only the app's own files and make requests only to the loopback websocket Dioxus sends its edits on. A second policy, added once the page's own scripts have been read, stops inline scripts, and a navigation handler keeps another page from replacing it. It is not a seal: [the threat model](browser-bridge.md#threats) has what it leaves.
 
 **Slow work and the window.** Deriving a key and reading a transaction with its IDLs run away from the window (`app_ui_kit::rt::off_the_window`). The catalog itself stays in a signal on the window's thread, and `IdlStore::view` gives a copy of it that can go to another thread, sharing the clients already parsed. Clients are kept by program and checksum, so a view made before an IDL changed cannot put the old one back.
 
@@ -119,6 +121,15 @@ The native services:
 - **Tray and window.** Close hides the window when close-to-tray is on; the tray menu has Open, Lock now and Quit; the window reports when it is shown or hidden.
 - **Single instance.** Each app locks its data folder (`airlock.lock`, `app_core::storage::claim_data_dir`) before any store opens, and refuses to start when another process holds it: every store keeps its file in memory and writes it whole, so two processes would undo each other's saves, including the record of used XMSS leaves. The online app also binds the bridge's local socket first: a second launch that cannot bind it sends `show` to the running app and exits.
 - **The `Notifier`** (OS toasts). Clicking one shows the window on what it is about.
+
+## app-mobile
+
+The Android services, for `apps/airlock-mobile`. [android.md](android.md) has the whole of it.
+
+- **The private folder.** `prepare()` puts the data folder under `Context.getNoBackupFilesDir()` (`app_core::storage::set_base_dir`) before anything opens, and picks the mode's folder: online and offline each keep their own vault.
+- **Links** open through an Android intent (`AndroidLinks`, handed to `open_core_on`), `https` and `http` only.
+- **The phone's device hub** opens no USB device, and has the phone's Seed Vault when it has one (`DeviceHub::seed_vault`).
+- **Lifecycle.** The app in the background counts as a hidden window for auto-lock.
 
 ## Logging
 

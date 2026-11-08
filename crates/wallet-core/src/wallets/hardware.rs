@@ -1,6 +1,7 @@
 //! Hardware wallets: a key on a Ledger, Trezor or Keystone that the user
-//! holds. The vault keeps no secret of it, only what names the key and the
-//! device, so the record shows and routes while the vault is locked.
+//! holds, or in the Seed Vault of a Solana Mobile phone (Saga, Seeker). The
+//! vault keeps no secret of it, only what names the key and the device, so
+//! the record shows and routes while the vault is locked.
 //!
 //! Airlock builds v1 transactions, so a device has to read v1. The first
 //! versions that do are the minimums here: Ledger's Solana app 1.18, Trezor
@@ -18,16 +19,22 @@ pub enum HardwareVendor {
     Ledger,
     Trezor,
     Keystone,
+    /// The Seed Vault of a Solana Mobile phone: the seed stays in the
+    /// phone's secure hardware, and the phone's own screen confirms each
+    /// signature. The wallet's `device` is the auth token the Seed Vault
+    /// gave Airlock for that seed.
+    SeedVault,
 }
 
 impl HardwareVendor {
-    pub const ALL: [Self; 3] = [Self::Ledger, Self::Trezor, Self::Keystone];
+    pub const ALL: [Self; 4] = [Self::Ledger, Self::Trezor, Self::Keystone, Self::SeedVault];
 
     pub fn label(self) -> &'static str {
         match self {
             Self::Ledger => "Ledger",
             Self::Trezor => "Trezor",
             Self::Keystone => "Keystone",
+            Self::SeedVault => "Seed Vault",
         }
     }
 
@@ -36,27 +43,36 @@ impl HardwareVendor {
         match self {
             Self::Ledger => "Solana app",
             Self::Trezor | Self::Keystone => "firmware",
+            Self::SeedVault => "Seed Vault",
         }
     }
 
     /// The device answers over a cable, within a blockhash's life. A
     /// Keystone answers through QR codes, as another device does, so it
-    /// votes in a multisig the way an offline key does.
+    /// votes in a multisig the way an offline key does. A Seed Vault is in
+    /// the phone the app runs on.
     pub fn answers_in_time(self) -> bool {
         match self {
-            Self::Ledger | Self::Trezor => true,
+            Self::Ledger | Self::Trezor | Self::SeedVault => true,
             Self::Keystone => false,
         }
     }
 
     /// A site's message is signed inside an offchain message naming the
     /// account, never as its bare bytes, and so a sign-in is refused: the
-    /// site would read the header as the sign-in's text.
+    /// site would read the header as the sign-in's text. A Keystone and a
+    /// Seed Vault sign the bytes they are given.
     pub fn wraps_messages(self) -> bool {
         match self {
             Self::Ledger | Self::Trezor => true,
-            Self::Keystone => false,
+            Self::Keystone | Self::SeedVault => false,
         }
+    }
+
+    /// The device is the phone's own Seed Vault, which only a phone that
+    /// has one offers.
+    pub fn on_phone(self) -> bool {
+        self == Self::SeedVault
     }
 
     /// Whether this build can talk to the vendor's devices yet. The others
@@ -70,7 +86,7 @@ impl HardwareVendor {
     /// build's support has not been through its device checklist yet
     /// (Keystone).
     pub fn prerelease(self) -> bool {
-        true
+        !self.on_phone()
     }
 
     /// The first version that reads v1 transactions.
@@ -79,6 +95,8 @@ impl HardwareVendor {
             Self::Ledger => Version::new(1, 18, 0),
             Self::Trezor => Version::new(2, 13, 1),
             Self::Keystone => Version::new(3, 0, 6),
+            // The Seed Vault signs whatever bytes it is given, v1 included.
+            Self::SeedVault => Version::new(0, 0, 0),
         }
     }
 
@@ -272,8 +290,10 @@ mod tests {
 
     #[test]
     fn a_vendor_on_a_prerelease_build_waits_for_the_setting() {
+        // The phone's Seed Vault is no pre-release: a phone that has one
+        // offers it whatever the setting says.
         let mut workspace = Workspace::default();
-        assert!(offered(&workspace).is_empty());
+        assert_eq!(offered(&workspace), [HardwareVendor::SeedVault]);
         workspace.prerelease_devices = true;
         assert_eq!(offered(&workspace), HardwareVendor::ALL);
     }

@@ -9,6 +9,11 @@ use wallet_core::protocol::{
 /// How long each QR frame stays on screen.
 const FRAME_MS: u32 = 450;
 
+/// The chunk of Larger codes: about QR version 12, 65 modules a side, which
+/// a camera reads from a phone's screen across a desk. More frames carry
+/// the same transfer.
+const LARGE_CODES_CHUNK: usize = 256;
+
 pub fn render_previews(payload: &[u8], chunk: usize) -> Result<Vec<QrPreview>, String> {
     let raw = encode_frames(payload, chunk).map_err(|e| e.to_string())?;
     let mut prepared = Vec::with_capacity(raw.len());
@@ -27,10 +32,10 @@ pub fn render_previews(payload: &[u8], chunk: usize) -> Result<Vec<QrPreview>, S
     Ok(prepared)
 }
 
-/// The frames of one transfer carrying `objects`.
-pub fn object_previews(objects: &[QrObject]) -> Result<Vec<QrPreview>, String> {
+/// The frames of one transfer carrying `objects`, `chunk` bytes of it each.
+pub fn object_previews(objects: &[QrObject], chunk: usize) -> Result<Vec<QrPreview>, String> {
     let payload = encode_payload(objects).map_err(|e| e.to_string())?;
-    render_previews(&payload, DEFAULT_CHUNK)
+    render_previews(&payload, chunk)
 }
 
 /// `objects`, one transfer, as QR codes and as text to copy. `children` go
@@ -66,7 +71,17 @@ pub fn PayloadShare(
 /// belong to this component, so both stop when it unmounts.
 #[component]
 pub fn QrCarousel(objects: Vec<QrObject>) -> Element {
-    let frames = use_memo(use_reactive!(|(objects)| object_previews(&objects)));
+    // A phone's screen is small: its codes start large, in more frames.
+    let phone = crate::ui::use_phone_layout();
+    let mut large = use_signal(move || phone);
+    let frames = use_memo(use_reactive!(|(objects)| {
+        let chunk = if large() {
+            LARGE_CODES_CHUNK
+        } else {
+            DEFAULT_CHUNK
+        };
+        object_previews(&objects, chunk)
+    }));
     let mut index = use_signal(|| 0usize);
     let mut playing = use_signal(|| true);
     // A new transfer starts again at the first frame.
@@ -109,6 +124,17 @@ pub fn QrCarousel(objects: Vec<QrObject>) -> Element {
                 strong { "QR {frame.index + 1} of {frame.count}" }
                 span { class: "muted",
                     "v{frame.version} · {frame.modules}×{frame.modules} · {frame.encoded_bytes} bytes · id {frame.transfer_id}"
+                }
+            }
+            div { class: "btn-row",
+                button { class: if large() { "sm on" } else { "sm" },
+                    aria_pressed: "{large()}",
+                    title: "Fewer modules in each code, in more frames, for a camera further away",
+                    onclick: move |_| {
+                        index.set(0);
+                        large.toggle();
+                    },
+                    "Larger codes"
                 }
             }
             if frame_count > 1 {

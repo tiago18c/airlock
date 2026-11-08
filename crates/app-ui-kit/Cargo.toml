@@ -32,8 +32,11 @@ wallet-flows.workspace = true
 zeroize.workspace = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-rfd = "0.17"
 tokio = { workspace = true, features = ["sync", "rt", "time", "macros"] }
+
+# Desktop file dialogs. Android has none for rfd to open.
+[target.'cfg(not(any(target_arch = "wasm32", target_os = "android")))'.dependencies]
+rfd = "0.17"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 # The browser's own time zone, through `Date`.

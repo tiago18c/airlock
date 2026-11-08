@@ -8,6 +8,7 @@
 //!   LGPL-3.0, so they are not copied or compiled here.
 //! - [`keystone`]: the UR types it reads and writes over QR.
 //! - [`link`]: the connection a transport hands over, and exchanges on it.
+//! - [`seed_vault`]: what a Solana Mobile phone's Seed Vault is asked.
 //!
 //! This crate knows bytes and paths, not Solana transactions.
 
@@ -16,6 +17,7 @@ pub mod ledger;
 pub mod link;
 mod path;
 mod proto;
+pub mod seed_vault;
 pub mod trezor;
 
 pub use path::{format_path, parse_path, PathError, HARDENED};

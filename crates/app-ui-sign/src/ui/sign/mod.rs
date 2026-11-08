@@ -69,6 +69,8 @@ pub fn SignPanel() -> Element {
     let form = session.forms.sign;
     let mut view = form.view;
     let online = use_network().is_some();
+    // A phone has no browser requests, and no room to say where loads come from.
+    let phone = crate::ui::use_phone_layout();
     let decoded = use_memo(move || {
         let wire = form.wire.read().clone();
         let tables = form.tables.read().clone();
@@ -239,8 +241,10 @@ pub fn SignPanel() -> Element {
                         div { class: "card",
                             Inbox { loaded: false }
                         }
-                        p { class: "hint",
-                            "Build sends its transactions here on its own. So does Review on a browser request."
+                        if !phone {
+                            p { class: "hint",
+                                "Build sends its transactions here on its own. So does Review on a browser request."
+                            }
                         }
                     },
                     Some(Err(err)) => {
@@ -745,7 +749,7 @@ fn SignActions(
             }
         } else if on_device > 0 && status.signable == 0 && !status.complete() {
             p { class: "hint",
-                "Sign asks your hardware wallet for its signature. Keep it connected and unlocked, with the Solana app open."
+                "Sign asks the device that holds the key for its signature: the Seed Vault on this phone, or a hardware wallet, connected and unlocked with the Solana app open."
             }
         } else if elsewhere > 0 && status.signable == 0 {
             p { class: "hint",

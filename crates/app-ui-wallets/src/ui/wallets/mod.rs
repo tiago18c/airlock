@@ -58,6 +58,8 @@ pub fn WalletsPanel() -> Element {
     let offline = of_class(WalletClass::Offline);
     let hardware = of_class(WalletClass::Hardware);
     let contracts = of_class(WalletClass::SmartContract);
+    // A phone lists only the groups that hold a wallet.
+    let phone = app_ui_kit::ui::use_phone_layout();
 
     rsx! {
         section { class: "page",
@@ -92,7 +94,11 @@ pub fn WalletsPanel() -> Element {
                 if all.is_empty() {
                     div { class: "empty",
                         Icon { glyph: Glyph::Wallet }
-                        p { "No wallets yet. Add one that exists, by its key or its address, or create a new one." }
+                        if phone {
+                            p { "No wallets yet." }
+                        } else {
+                            p { "No wallets yet. Add one that exists, by its key or its address, or create a new one." }
+                        }
                     }
                 }
 
@@ -108,6 +114,7 @@ pub fn WalletsPanel() -> Element {
                     }
                 }
 
+                if !phone || !offline.is_empty() {
                 h3 { class: "group-title",
                     "Offline wallets"
                     HelpTip { text: "An offline wallet is the address of a key kept on another device. This device prepares its transactions and the other one signs them, from a QR code or pasted text. A hot wallet can pay its fees, and a programmatic signer lets it act without signing a transaction itself." }
@@ -122,7 +129,9 @@ pub fn WalletsPanel() -> Element {
                         WalletRow { key: "{wallet.id}", current: current == Some(wallet.id), wallet }
                     }
                 }
+                }
 
+                if !phone || !hardware.is_empty() {
                 h3 { class: "group-title",
                     "Hardware wallets"
                     HelpTip { text: "A hardware wallet keeps its key on a separate signing device that is plugged in or paired when it is time to sign." }
@@ -141,7 +150,9 @@ pub fn WalletsPanel() -> Element {
                         WalletRow { key: "{wallet.id}", current: current == Some(wallet.id), wallet }
                     }
                 }
+                }
 
+                if !phone || !contracts.is_empty() {
                 h3 { class: "group-title",
                     "Smart contract wallets"
                     HelpTip { text: "A smart contract wallet has no key of its own. A program on chain decides who may act: a programmatic signer acts when its authority key signs a message, and a Squads multisig acts when enough of its members approve." }
@@ -155,6 +166,7 @@ pub fn WalletsPanel() -> Element {
                     for wallet in contracts {
                         ContractWalletRow { key: "{wallet.id}", current: current == Some(wallet.id), wallet }
                     }
+                }
                 }
             }
         }

@@ -12,9 +12,12 @@ pub enum IdlFilesError {
     Io(#[from] std::io::Error),
     #[error("That folder has no index.json.")]
     NoIndex,
+    #[error("IDL files can't be picked on this device.")]
+    NoDialog,
 }
 
 /// Ask for one IDL file and read it.
+#[cfg(not(target_os = "android"))]
 pub fn pick_idl_file() -> Option<Result<Vec<u8>, IdlFilesError>> {
     let path = rfd::FileDialog::new()
         .add_filter("IDL", &["json"])
@@ -23,15 +26,35 @@ pub fn pick_idl_file() -> Option<Result<Vec<u8>, IdlFilesError>> {
 }
 
 /// Ask for a bundle folder and read its JSON files.
+#[cfg(not(target_os = "android"))]
 pub fn pick_idl_bundle() -> Option<Result<IdlFiles, IdlFilesError>> {
     let dir = rfd::FileDialog::new().pick_folder()?;
     Some(read_json_dir(&dir))
 }
 
 /// Ask for a folder and write `files` into it. Returns the folder.
+#[cfg(not(target_os = "android"))]
 pub fn save_idl_bundle(files: &[(String, Vec<u8>)]) -> Option<Result<PathBuf, IdlFilesError>> {
     let dir = rfd::FileDialog::new().pick_folder()?;
     Some(write_files(&dir, files).map(|()| dir))
+}
+
+// Android has no file picker for the app: each answers that, should a
+// screen ask anyway (Programs leaves its buttons out there).
+
+#[cfg(target_os = "android")]
+pub fn pick_idl_file() -> Option<Result<Vec<u8>, IdlFilesError>> {
+    Some(Err(IdlFilesError::NoDialog))
+}
+
+#[cfg(target_os = "android")]
+pub fn pick_idl_bundle() -> Option<Result<IdlFiles, IdlFilesError>> {
+    Some(Err(IdlFilesError::NoDialog))
+}
+
+#[cfg(target_os = "android")]
+pub fn save_idl_bundle(_files: &[(String, Vec<u8>)]) -> Option<Result<PathBuf, IdlFilesError>> {
+    Some(Err(IdlFilesError::NoDialog))
 }
 
 /// Every `.json` file directly inside `dir`. A bundle must include `index.json`.

@@ -17,7 +17,7 @@ pub use submit::{SiteSendFut, SubmitFut, SubmitHandle, TxSubmit};
 
 use std::sync::Arc;
 
-use app_core::{Core, DeviceHub, NoNotifier, Notifier, Ports};
+use app_core::{Core, DeviceHub, Links, NoNotifier, Notifier, Ports};
 use dioxus::prelude::*;
 
 use crate::state::forms::use_forms;
@@ -32,13 +32,23 @@ pub fn open_core(devices: Option<Arc<dyn DeviceHub>>) -> Core {
 
 /// Like [`open_core`], but with a platform [`Notifier`] (OS toasts on desktop).
 pub fn open_core_with(notifier: Arc<dyn Notifier>, devices: Option<Arc<dyn DeviceHub>>) -> Core {
+    open_core_on(notifier, None, devices)
+}
+
+/// Like [`open_core_with`], with `links` in place of the platform's own way
+/// of opening a URL: a mobile shell opens them through its activity.
+pub fn open_core_on(
+    notifier: Arc<dyn Notifier>,
+    links: Option<Arc<dyn Links>>,
+    devices: Option<Arc<dyn DeviceHub>>,
+) -> Core {
     #[cfg(not(target_arch = "wasm32"))]
     let ports = Ports {
         spawner: Arc::new(app_core::runtime::TokioSpawner::current()),
         clock: Arc::new(app_core::runtime::TokioClock),
         notifier,
         storage: Arc::from(app_core::storage::platform_storage()),
-        links: Arc::new(app_core::runtime::NativeLinks),
+        links: links.unwrap_or_else(|| Arc::new(app_core::runtime::NativeLinks)),
         devices,
     };
     #[cfg(target_arch = "wasm32")]
@@ -47,7 +57,7 @@ pub fn open_core_with(notifier: Arc<dyn Notifier>, devices: Option<Arc<dyn Devic
         clock: Arc::new(app_core::runtime::WebClock),
         notifier,
         storage: Arc::from(app_core::storage::platform_storage()),
-        links: Arc::new(app_core::runtime::WebLinks),
+        links: links.unwrap_or_else(|| Arc::new(app_core::runtime::WebLinks)),
         devices,
     };
     Core::open(ports)
@@ -83,7 +93,7 @@ fn use_idls(
         store
     });
     let idl_pack = use_signal(|| opened.take().unwrap_or(IdlPackState::Loading));
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(any(target_arch = "wasm32", target_os = "android"))]
     use_hook(move || {
         let (mut idls, mut idl_pack) = (idls, idl_pack);
         spawn(async move {

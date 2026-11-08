@@ -1,0 +1,18 @@
+[package]
+name = "airlock-mobile"
+version.workspace = true
+edition.workspace = true
+description = "Airlock for Android: the online app's panes on a phone, run online or offline"
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+app-core.workspace = true
+app-mobile = { path = "../../crates/app-mobile" }
+app-online = { path = "../../crates/app-online", default-features = false }
+app-ui.workspace = true
+dioxus = { workspace = true, features = ["mobile"] }
+tracing.workspace = true

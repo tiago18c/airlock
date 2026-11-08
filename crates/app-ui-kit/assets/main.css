@@ -2644,3 +2644,96 @@ textarea.short { min-height: 64px; }
 .submit-mark.danger { background: var(--danger-soft); color: var(--danger-text); }
 .submit-stage .btn-row { justify-content: center; }
 .submit-stage .error { justify-self: stretch; text-align: left; overflow-wrap: anywhere; }
+
+/* A toggle button that is on, such as Larger codes under a QR code. */
+button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-text); border-color: var(--brand); }
+
+/* ---------- Phone shell ----------
+   `.app.phone` is the Android build: a bottom tab bar with More, the page
+   drawn under the system bars, and explanations a person can work out from
+   the screen left out. Such text carries `wordy`, as does a subtitle
+   under a pane's heading. */
+
+.app.phone .wordy,
+.app.phone .pane-head p.muted,
+.app.phone .page-head p.muted { display: none; }
+
+.app.phone .topbar { padding-top: env(safe-area-inset-top); }
+.app.phone.locked .content { padding-top: max(var(--space-4), env(safe-area-inset-top)); }
+
+/* More: a sheet above the tab bar, over a backdrop that closes it. */
+.more-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-nav);
+  background: var(--overlay);
+  animation: fade var(--slow) var(--ease);
+}
+.more-sheet {
+  position: fixed;
+  left: var(--space-2);
+  right: var(--space-2);
+  bottom: calc(var(--tabbar-h) + max(var(--space-1), env(safe-area-inset-bottom)) + var(--space-2));
+  z-index: calc(var(--z-nav) + 1);
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  animation: rise var(--slow) var(--ease);
+}
+.more-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-3);
+  min-height: var(--control-lg);
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-weight: var(--weight-medium);
+  text-align: left;
+}
+.more-item.on { background: var(--brand-soft); color: var(--brand-text); font-weight: var(--weight-semibold); }
+.more-item .icon { width: 20px; height: 20px; color: var(--text-2); }
+
+/* The phone's tab bar is always along the bottom, whatever the width. */
+.app.phone { grid-template-columns: minmax(0, 1fr); }
+.app.phone .sidebar {
+  position: fixed;
+  top: auto;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: auto;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0;
+  padding: var(--space-1) var(--space-1) max(var(--space-1), env(safe-area-inset-bottom));
+  border-right: 0;
+  border-top: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+.app.phone .sidebar .brand { display: none; }
+.app.phone .nav { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0; }
+.app.phone .nav-item {
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  height: auto;
+  min-height: calc(var(--tabbar-h) - 8px);
+  padding: 6px 2px;
+  font-size: var(--text-xs);
+  text-align: center;
+}
+.app.phone .nav-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app.phone .content {
+  padding: var(--space-4) var(--space-4) calc(var(--tabbar-h) + var(--space-8) + env(safe-area-inset-bottom));
+}
+/* The theme is in Settings; the top bar keeps its room for the wallet. */
+.app.phone .topbar-tools > .segmented { display: none; }

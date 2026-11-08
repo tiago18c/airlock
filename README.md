@@ -21,6 +21,7 @@ Four things run, on up to two devices and a browser:
 | --- | --- | --- |
 | **Airlock** (`apps/airlock`) | Desktop or browser, online | Holds a vault, builds, reviews, rebuilds and submits transactions, and answers the browser extension (desktop only) |
 | **Airlock Offline** (`apps/airlock-offline`) | Desktop, offline | Holds its own vault, reviews and signs. It opens no connection of its own, so it cannot simulate or submit |
+| **Airlock for Android** (`apps/airlock-mobile`) | Android 14 and later, online or offline | The online app's screens on a phone, with a vault for each mode, the camera for QR codes, and the Seed Vault of a Saga or Seeker. See [docs/android.md](docs/android.md) |
 | **Airlock Extension** (`extension`) | The browser | Shows sites a Wallet Standard wallet and forwards their requests. It holds no keys and approves nothing |
 | **bridge-host** (`crates/bridge-host`) | Started by the browser | Relays between the extension and the running desktop app |
 
@@ -185,11 +186,13 @@ QRS1 carries a payload of one to 64 typed objects, written with wincode, as one 
 | --- | --- |
 | `apps/airlock` | The online app (desktop and web), with its `Dioxus.toml` and icons |
 | `apps/airlock-offline` | The airgap desktop app, which opens no connection of its own |
+| `apps/airlock-mobile` | The Android app, with its `Dioxus.toml`, manifest and activity (the Seed Vault bridge) |
 | `crates/app-ui` | The shared shell: navigation, settings, notices and toasts |
 | `crates/app-ui-wallets`, `app-ui-book`, `app-ui-build`, `app-ui-sign` | Screens: wallets; address book and programs; build; sign and QR transfer |
 | `crates/app-ui-kit` | Actions, the session and each screen's form, platform glue (files, camera, QR drawing), CSS and shared widgets such as the lock dialog |
 | `crates/app-online` | The node monitor, balance sync, submitting and tracking, and the Portfolio, Stake and proposals screens |
 | `crates/app-desktop` | Desktop services: tray, window, OS toasts, and the browser bridge listener and request modals |
+| `crates/app-mobile` | Android services over JNI: the private folder, links, online or offline, and the Seed Vault |
 | `crates/app-core` | The app's state, saving and logging, with no UI and no network |
 | `crates/wallet-core` | Domain. Groups: `book`, `keys`, `tx`, `idl`, `wallets`, `review`, `edit` (a transaction read back into Build's blocks), `transport` |
 | `crates/wallet-flows` | Use cases: refresh, compile, simulate, send, stake, Squads, programmatic signers, Vector wallets, rebuilds for wallets without a key |
