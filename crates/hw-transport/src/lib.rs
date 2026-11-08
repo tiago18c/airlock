@@ -5,12 +5,17 @@
 //! On desktop a Ledger is a HID device, through `async-hid`: pure Rust over
 //! each OS's own HID API, so nothing is built from C and no driver is
 //! installed. A Trezor is a USB device, through `nusb`, also pure Rust.
+//!
+//! On Android the app's own hub lists devices through `UsbManager`, which
+//! asks the user, and hands each open one to [`android::open_fd`].
 
 use hw_protocol::link::DeviceHub;
 #[cfg(feature = "fake")]
 use hw_protocol::link::{Connected, LinkError, LinkFuture, PacketLink};
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(target_os = "android")]
+pub mod android;
+#[cfg(not(any(target_arch = "wasm32", target_os = "android")))]
 mod hid;
 #[cfg(not(target_arch = "wasm32"))]
 mod usb;
@@ -19,11 +24,15 @@ mod web;
 
 /// The hub this build opens devices with. In a browser, WebHID for Ledger
 /// and WebUSB for Trezor, where the browser has them (Chromium, on a secure
-/// page); none elsewhere.
+/// page); none elsewhere. None on Android, whose app brings its own.
 pub fn hub() -> Option<std::sync::Arc<dyn DeviceHub>> {
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(any(target_arch = "wasm32", target_os = "android")))]
     {
         Some(std::sync::Arc::new(hid::NativeHub::new()))
+    }
+    #[cfg(target_os = "android")]
+    {
+        None
     }
     #[cfg(target_arch = "wasm32")]
     {

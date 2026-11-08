@@ -115,6 +115,7 @@ pub(crate) fn relaunch() -> Result<(), String> {
 /// loader: a thread Rust attached sees only the system's.
 const BRIDGE: &str = "dev.dioxus.main.SeedVaultBridge";
 const GUARD: &str = "dev.dioxus.main.KeyGuardBridge";
+const USB: &str = "dev.dioxus.main.UsbBridge";
 
 fn bridge_class<'a>(
     env: &mut JNIEnv<'a>,
@@ -320,5 +321,50 @@ pub(crate) fn guard_forget(alias: &str) -> Result<(), String> {
             &[JValue::Object(&alias)],
         )?;
         Ok(())
+    })
+}
+
+/// The hardware wallets plugged in, one per line: `<name>|<vendor>|<product>`.
+pub(crate) fn usb_list() -> Result<String, String> {
+    with_activity(|env, activity| {
+        let class = app_class(env, activity, USB)?;
+        let result = env
+            .call_static_method(&class, "list", "()Ljava/lang/String;", &[])?
+            .l()?;
+        if result.is_null() {
+            return Ok(String::new());
+        }
+        let text: String = env.get_string(&result.into())?.into();
+        Ok(text)
+    })
+}
+
+/// Start opening the device Android calls `name`, asking the user first
+/// when Airlock may not use it yet.
+pub(crate) fn usb_open(id: i64, name: &str) -> Result<(), String> {
+    with_activity(|env, activity| {
+        let class = app_class(env, activity, USB)?;
+        let name = env.new_string(name)?;
+        env.call_static_method(
+            &class,
+            "open",
+            "(JLjava/lang/String;)V",
+            &[JValue::Long(id), JValue::Object(&name)],
+        )?;
+        Ok(())
+    })
+}
+
+pub(crate) fn usb_take(id: i64) -> Result<Option<String>, String> {
+    with_activity(|env, activity| {
+        let class = app_class(env, activity, USB)?;
+        let result = env
+            .call_static_method(&class, "take", "(J)Ljava/lang/String;", &[JValue::Long(id)])?
+            .l()?;
+        if result.is_null() {
+            return Ok(None);
+        }
+        let text: String = env.get_string(&result.into())?.into();
+        Ok(Some(text))
     })
 }

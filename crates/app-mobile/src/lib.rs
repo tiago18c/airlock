@@ -13,6 +13,7 @@ mod android;
 pub mod key_guard;
 pub mod mode;
 pub mod seed_vault;
+mod usb;
 
 use std::sync::Arc;
 

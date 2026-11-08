@@ -18,6 +18,7 @@ const READ_BATCH: u32 = 10;
 #[component]
 pub fn HardwareForm(seed_vault: bool, on_done: EventHandler<()>) -> Element {
     let session = use_context::<Session>();
+    let phone = crate::ui::use_phone_layout();
     let offered: Vec<HardwareVendor> = session
         .hardware_offered()
         .into_iter()
@@ -204,6 +205,8 @@ pub fn HardwareForm(seed_vault: bool, on_done: EventHandler<()>) -> Element {
         p { class: "hint",
             if chosen == HardwareVendor::Ledger {
                 "Connect your Ledger, unlock it and open the Solana app, version {chosen.minimum()} or later."
+            } else if phone {
+                "Connect your {chosen.label()} and unlock it. It needs firmware {chosen.minimum()} or later."
             } else {
                 "Connect your {chosen.label()} and unlock it. It needs firmware {chosen.minimum()} or later. Close Trezor Suite first: it holds the device while it runs."
             }

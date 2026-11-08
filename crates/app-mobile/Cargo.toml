@@ -2,7 +2,7 @@
 name = "app-mobile"
 version.workspace = true
 edition.workspace = true
-description = "Android services: the app's private folders, the WebView's settings, links, the online or offline choice and the Seed Vault"
+description = "Android services: the app's private folders, the WebView's settings, links, the online or offline choice, the Seed Vault and USB hardware wallets"
 license.workspace = true
 publish.workspace = true
 
@@ -20,5 +20,6 @@ tracing.workspace = true
 zeroize.workspace = true
 
 [target.'cfg(target_os = "android")'.dependencies]
+hw-transport.workspace = true
 jni = "0.21.1"
 ndk-context = "0.1.1"
