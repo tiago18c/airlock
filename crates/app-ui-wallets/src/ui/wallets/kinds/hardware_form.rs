@@ -1,7 +1,10 @@
 //! Add-wallet form: keys read from a hardware wallet.
 
 use super::*;
-use crate::actions::device::{keystone_export, read_keys, show_address, DeviceKey, DeviceKeys};
+use crate::actions::device::{
+    keystone_export, read_keys, read_seed_vault_keys_for, show_address, Authorize, DeviceKey,
+    DeviceKeys,
+};
 use crate::ui::transfer::receive::QrScanner;
 use wallet_core::{HardwareVendor, PATH_SCHEMES};
 
@@ -37,12 +40,20 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
         .unwrap_or(first);
     let here = session.known_wallet_pubkeys();
 
-    let mut read_more = move |start: u32| {
+    // `how`: for a Seed Vault, how to get the use of a seed first. Reading
+    // the next page goes on with the same seed.
+    let mut read_more = move |start: u32, how: Option<Authorize>| {
         error.set(None);
         reading.set(true);
         let picked = PATH_SCHEMES[*scheme.peek()];
         spawn(async move {
-            match read_keys(session, chosen, picked, start, READ_BATCH).await {
+            let found = match how {
+                Some(how) => {
+                    read_seed_vault_keys_for(session, how, picked, start, READ_BATCH).await
+                }
+                None => read_keys(session, chosen, picked, start, READ_BATCH).await,
+            };
+            match found {
                 Ok(found) => {
                     let mut all = read.peek().clone().filter(|_| start > 0);
                     match all.as_mut() {
@@ -133,7 +144,7 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
     let numbered = PATH_SCHEMES[scheme()].template.contains('*');
 
     rsx! {
-        p { class: "note",
+        p { class: "note wordy",
             "A hardware wallet keeps its key on the device, and signs there once you confirm. This device stores only the address and where the key is on the device."
         }
         if offered.len() > 1 {
@@ -177,12 +188,16 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
                 }
             }
         } else {
+        if chosen == HardwareVendor::SeedVault {
+            p { class: "hint", "The seed stays in this phone's Seed Vault, which asks you to confirm each signature." }
+        } else {
         p { class: "hint",
             if chosen == HardwareVendor::Ledger {
                 "Connect your Ledger, unlock it and open the Solana app, version {chosen.minimum()} or later."
             } else {
                 "Connect your {chosen.label()} and unlock it. It needs firmware {chosen.minimum()} or later. Close Trezor Suite first: it holds the device while it runs."
             }
+        }
         }
         label { "Accounts"
             select {
@@ -203,11 +218,29 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
             }
         }
         }
-        if keys.is_empty() && chosen != HardwareVendor::Keystone {
+        if keys.is_empty() && chosen == HardwareVendor::SeedVault {
+            div { class: "btn-row",
+                button { class: "primary",
+                    disabled: reading(),
+                    onclick: move |_| read_more(0, Some(Authorize::Existing)),
+                    "Choose seed"
+                }
+                button {
+                    disabled: reading(),
+                    onclick: move |_| read_more(0, Some(Authorize::Import)),
+                    "Import phrase"
+                }
+                button {
+                    disabled: reading(),
+                    onclick: move |_| read_more(0, Some(Authorize::Create)),
+                    "Create seed"
+                }
+            }
+        } else if keys.is_empty() && chosen != HardwareVendor::Keystone {
             div { class: "btn-row",
                 button {
                     disabled: reading(),
-                    onclick: move |_| read_more(0),
+                    onclick: move |_| read_more(0, None),
                     if reading() { "Reading…" } else { "Read accounts" }
                 }
             }
@@ -237,7 +270,7 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
                 div { class: "btn-row",
                     button {
                         disabled: reading(),
-                        onclick: move |_| read_more(next),
+                        onclick: move |_| read_more(next, None),
                         if reading() { "Reading…" } else { "Read {READ_BATCH} more" }
                     }
                 }
@@ -245,7 +278,7 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
             label { "Label"
                 input {
                     r#type: "text",
-                    placeholder: "Ledger",
+                    placeholder: "{chosen.label()}",
                     value: "{label}",
                     oninput: move |evt| label.set(evt.value()),
                 }
@@ -302,7 +335,7 @@ fn DeviceKeyRow(
                     span { class: "muted", " {crate::ui::format_sol(lamports)}" }
                 }
             }
-            if vendor != HardwareVendor::Keystone {
+            if !matches!(vendor, HardwareVendor::Keystone | HardwareVendor::SeedVault) {
                 button { class: "sm ghost",
                     title: "Show this address on the device, to check it is the one on this screen",
                     onclick: move |_| show_address(session, vendor, check_path.clone(), pubkey, None),

@@ -578,3 +578,32 @@ mod tests {
         assert!(error.to_string().contains("Blind signing"));
     }
 }
+
+/// Sign `bytes` with the key at `path` of the seed `token` names in the
+/// phone's Seed Vault, once the user confirms on the Seed Vault's screen.
+/// The signature is checked against `signer` and the bytes, as a device's.
+pub async fn seed_vault_sign(
+    vault: &dyn hw_protocol::seed_vault::SeedVault,
+    token: u64,
+    path: &str,
+    signer: &Pubkey,
+    bytes: &[u8],
+    kind: hw_protocol::seed_vault::Payload,
+) -> Result<Signature, SeedVaultSignError> {
+    let signature = Signature::from(vault.sign(token, path, bytes, kind).await?);
+    if !signature.verify(signer.as_ref(), bytes) {
+        return Err(SeedVaultSignError::Device(DeviceError::BadSignature(
+            "Seed Vault",
+        )));
+    }
+    Ok(signature)
+}
+
+/// Why a Seed Vault signature is not there: refused, or wrong.
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum SeedVaultSignError {
+    #[error("{0}")]
+    Vault(#[from] hw_protocol::seed_vault::SeedVaultError),
+    #[error("{0}")]
+    Device(#[from] DeviceError),
+}

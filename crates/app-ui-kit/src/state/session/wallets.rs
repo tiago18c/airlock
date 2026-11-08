@@ -28,8 +28,20 @@ impl Session {
     /// The hardware wallet vendors Add wallet offers. Settings turns on the
     /// ones whose v1 support is a pre-release build.
     pub fn hardware_offered(&self) -> Vec<wallet_core::HardwareVendor> {
+        use wallet_core::HardwareVendor;
         let _ = self.settings.read();
-        self.core().with_workspace(wallet_core::hardware::offered)
+        let hub = self.core().ports().devices.clone();
+        let cables = hub.as_ref().is_some_and(|hub| hub.opens_cables());
+        let seed_vault = hub.as_ref().is_some_and(|hub| hub.seed_vault().is_some());
+        self.core()
+            .with_workspace(wallet_core::hardware::offered)
+            .into_iter()
+            .filter(|vendor| match vendor {
+                HardwareVendor::SeedVault => seed_vault,
+                HardwareVendor::Ledger | HardwareVendor::Trezor => cables || hub.is_none(),
+                HardwareVendor::Keystone => true,
+            })
+            .collect()
     }
 
     /// Whether `tx` asks a programmatic signer or a Squads vault of this

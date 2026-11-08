@@ -37,6 +37,7 @@ pub enum Glyph {
     Check,
     Alert,
     X,
+    More,
 }
 
 impl Glyph {
@@ -178,6 +179,7 @@ impl Glyph {
             Glyph::Check => &["M5 12.5l4.5 4.5L19 7.5"],
             Glyph::Alert => &["M12 4 2.5 20h19L12 4Z", "M12 10v4", "M12 17h.01"],
             Glyph::X => &["M6 6l12 12", "M18 6 6 18"],
+            Glyph::More => &["M5 12h.01", "M12 12h.01", "M19 12h.01"],
         }
     }
 }

@@ -18,6 +18,8 @@ pub fn ProgramsPanel() -> Element {
     let note = use_signal(|| None::<String>);
     let error = use_signal(|| None::<String>);
     let records = session.idl_records();
+    // Android has no file picker for the app to open IDL files or folders with.
+    let files = !cfg!(target_os = "android");
 
     rsx! {
         section { class: "page",
@@ -26,18 +28,20 @@ pub fn ProgramsPanel() -> Element {
                     div {
                         h2 { "Programs" }
                     }
-                    div { class: "btn-row",
-                        button { class: "primary",
-                            onclick: move |_| import_one(session, note, error),
-                            "Import IDL"
-                        }
-                        button {
-                            onclick: move |_| import_folder(session, note, error),
-                            "Import bundle"
-                        }
-                        button {
-                            onclick: move |_| export_folder(session, note, error),
-                            "Export"
+                    if files {
+                        div { class: "btn-row",
+                            button { class: "primary",
+                                onclick: move |_| import_one(session, note, error),
+                                "Import IDL"
+                            }
+                            button {
+                                onclick: move |_| import_folder(session, note, error),
+                                "Import bundle"
+                            }
+                            button {
+                                onclick: move |_| export_folder(session, note, error),
+                                "Export"
+                            }
                         }
                     }
                 }

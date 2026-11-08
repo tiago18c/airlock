@@ -1,0 +1,28 @@
+[application]
+name = "airlock-mobile"
+# wry's activity plus the bridge to a Solana Mobile phone's Seed Vault.
+android_main_activity = "android/MainActivity.kt"
+# Backups off: see the comment in the file.
+android_manifest = "android/AndroidManifest.xml"
+
+[bundle]
+identifier = "dev.airlock.mobile"
+publisher = "Airlock"
+short_description = "Solana wallet that keeps preparing a transaction apart from signing it"
+icon = ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.png"]
+
+[permissions]
+# Android: android.permission.CAMERA. The WebView's camera request is answered
+# by wry, which asks for this permission the first time the scanner starts.
+camera = { description = "Airlock uses the camera to scan QR codes." }
+
+[android]
+# Android 14 is the oldest the app supports. Targeting 36 draws the app under
+# the system bars, so the CSS keeps its controls out of them with the
+# safe-area insets.
+min_sdk = 34
+target_sdk = 36
+compile_sdk = 36
+# Solana Mobile's Seed Vault SDK (Saga, Seeker). Its manifest declares the
+# ACCESS_SEED_VAULT permission and the package queries it needs.
+gradle_dependencies = ["com.solanamobile:seedvault-wallet-sdk:0.4.0"]

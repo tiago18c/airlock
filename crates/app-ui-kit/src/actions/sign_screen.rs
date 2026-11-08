@@ -1038,7 +1038,7 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
                 }
                 let cluster = session.cluster();
                 let by = if done.signatures > hot_signatures {
-                    "ledger"
+                    "hardware wallet"
                 } else if done.authorizations > 0 && done.signatures == 0 {
                     "Vector key"
                 } else {

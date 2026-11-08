@@ -42,6 +42,9 @@ pub fn data_dir() -> Option<PathBuf> {
     if let Some(dir) = std::env::var_os(dirs.env_var("DATA_DIR")) {
         return Some(PathBuf::from(dir));
     }
+    if let Some(base) = super::dirs::base_dir() {
+        return Some(base.join(dirs.folder));
+    }
     let mut dir = std::env::var_os("LOCALAPPDATA")
         .or_else(|| std::env::var_os("XDG_DATA_HOME"))
         .or_else(|| std::env::var_os("HOME"))

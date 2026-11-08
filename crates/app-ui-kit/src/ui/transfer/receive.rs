@@ -84,11 +84,11 @@ pub fn QrScanner(
             div { class: "panel-copy",
                 h3 { "Camera" }
                 if on_ur.is_some() {
-                    p { class: "lede",
+                    p { class: "lede wordy",
                         "Point this at the codes your Keystone shows. The scanner waits until it has read enough of them."
                     }
                 } else {
-                    p { class: "lede",
+                    p { class: "lede wordy",
                         "Point this at a QRS1 code. The scanner waits until it has every "
                         code { "x of n" }
                         " frame, then hands the object to this pane."
@@ -307,7 +307,7 @@ pub fn QrScanner(
                         p { "Camera preview appears here while scanning." }
                     }
                 }
-                p { class: "hint",
+                p { class: "hint wordy",
                     "Max payload is {MAX_PAYLOAD} bytes. Point the camera at the cycling QR on the other device."
                 }
             }
@@ -329,7 +329,7 @@ fn FocusControl(state: FocusState) -> Element {
     let Some(range) = range else {
         return rsx! {
             if state.can_auto() {
-                p { class: "muted", "Autofocus is on." }
+                p { class: "muted wordy", "Autofocus is on." }
             }
         };
     };

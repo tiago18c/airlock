@@ -58,16 +58,18 @@ pub fn add_pack<S: VaultStore, B: IdlBodies>(
 }
 
 /// The catalog on `network`, with the pack in it where it can be read now:
-/// on desktop. In a browser the pack comes later, from [`fetch_pack`].
+/// on desktop. In a browser the pack comes later, from [`fetch_pack`], and
+/// on Android too: it is inside the APK, where only Android's asset manager
+/// reads it, not as a file.
 pub fn open_catalog(network: IdlNetwork) -> (AppIdls, IdlPackState) {
     let store = open_idls(network);
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(any(target_arch = "wasm32", target_os = "android")))]
     {
         let mut store = store;
         let state = add_pack(&mut store, read_bundled_pack());
         (store, state)
     }
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(any(target_arch = "wasm32", target_os = "android"))]
     {
         (store, IdlPackState::Loading)
     }
@@ -75,7 +77,7 @@ pub fn open_catalog(network: IdlNetwork) -> (AppIdls, IdlPackState) {
 
 /// Read the pack from the app's bundle, or from the source tree when the
 /// app runs without one.
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(any(target_arch = "wasm32", target_os = "android")))]
 fn read_bundled_pack() -> Result<Vec<EmbeddedIdl>, String> {
     let bytes = dioxus::asset_resolver::asset_path(IDL_PACK)
         .map_err(|err| err.to_string())
@@ -83,7 +85,8 @@ fn read_bundled_pack() -> Result<Vec<EmbeddedIdl>, String> {
     read_pack(bytes)
 }
 
-/// Fetch the pack in a browser, where it is a file of the page.
+/// Fetch the pack in a browser, where it is a file of the page, or on
+/// Android, from the APK's assets.
 pub async fn fetch_pack() -> Result<Vec<EmbeddedIdl>, String> {
     let bytes = dioxus::asset_resolver::read_asset_bytes(&IDL_PACK)
         .await

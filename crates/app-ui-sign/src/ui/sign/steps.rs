@@ -142,6 +142,7 @@ fn label(kind: SignStepKind) -> &'static str {
             Some(HardwareVendor::Ledger) => "Sign on Ledger",
             Some(HardwareVendor::Trezor) => "Sign on Trezor",
             Some(HardwareVendor::Keystone) => "Sign on Keystone",
+            Some(HardwareVendor::SeedVault) => "Sign in Seed Vault",
             None => "Sign on the devices",
         },
         SignStepKind::CollectSignatures => "Collect signatures",

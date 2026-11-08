@@ -231,4 +231,15 @@ pub trait DeviceHub: Send + Sync {
         let _ = kind;
         Box::pin(async { Ok(true) })
     }
+
+    /// Whether it opens Ledgers and Trezors over USB. A phone's hub opens
+    /// only its Seed Vault.
+    fn opens_cables(&self) -> bool {
+        true
+    }
+
+    /// The phone's Seed Vault, on a Solana Mobile phone. None elsewhere.
+    fn seed_vault(&self) -> Option<&dyn crate::seed_vault::SeedVault> {
+        None
+    }
 }

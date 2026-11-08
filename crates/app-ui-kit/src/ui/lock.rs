@@ -45,6 +45,13 @@ pub fn VaultUnlock(
 ) -> Element {
     let session = use_context::<Session>();
     let initialized = session.is_initialized();
+    // Skipping lands on what works without a vault: the address book, or on
+    // a phone, whose bar lists no address book, Review and Sign.
+    let skip_to = if crate::ui::use_phone_layout() {
+        Tab::Sign
+    } else {
+        Tab::AddressBook
+    };
     let mut password = use_signal(String::new);
     let mut confirm = use_signal(String::new);
     let mut error = use_signal(|| None::<String>);
@@ -153,7 +160,7 @@ pub fn VaultUnlock(
                     if show_skip {
                         button { class: "ghost",
                             onclick: move |_| {
-                                session.goto(Tab::AddressBook);
+                                session.goto(skip_to);
                                 session.dismiss_gate();
                             },
                             "Skip"

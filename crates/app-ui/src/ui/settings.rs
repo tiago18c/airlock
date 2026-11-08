@@ -60,6 +60,8 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
     let close_to_tray = settings.close_to_tray;
     let prerelease_devices = settings.prerelease_devices;
     let unlocked = (session.vault_state)() == VaultState::Unlocked;
+    // A phone opens no USB device and has no window to close to a tray.
+    let phone = crate::ui::use_phone_layout();
 
     rsx! {
         section { class: "page",
@@ -130,14 +132,14 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                                 if applied { "In use" } else { "Use this RPC" }
                             }
                         }
-                        p { class: "hint",
+                        p { class: "hint wordy",
                             "Any Solana JSON-RPC endpoint: a provider's URL, or a validator on this machine such as surfpool, which serves a local copy of a public network at {LOCAL_RPC_URL}. Everything the app reads and submits goes to this URL. The URL is stored in the workspace file as typed, including any API key in it."
                         }
                     }
                     if !picking_custom() || cluster.is_custom() {
                         p { class: "muted mono", "{rpc_url}" }
                     }
-                    p { class: "hint",
+                    p { class: "hint wordy",
                         "At launch and on a cluster change the app asks the node for its genesis hash, and may correct the cluster from the reply. A custom RPC is never corrected: it is used as typed, whatever network it reports."
                     }
                 }
@@ -146,9 +148,10 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
             div { class: "card",
                 h3 { "Appearance" }
                 ThemeToggle { labels: true }
-                p { class: "hint", "System follows the light or dark setting of this device." }
+                p { class: "hint wordy", "System follows the light or dark setting of this device." }
             }
 
+            if !phone {
             div { class: "card",
                 h3 { "Pre-release hardware wallets" }
                 div { class: "segmented",
@@ -166,6 +169,7 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                 p { class: "hint",
                     "Airlock signs v1 transactions, and a hardware wallet has to read them. Ledger's Solana app reads them from 1.18, which is only a developer build so far. Keystone reads them from firmware 3.0.6, and Airlock's support for it has not been checked on a device yet. On, Add wallet offers both, for testing. A device on an older version is refused. Hardware wallets already added stay listed and sign either way."
                 }
+            }
             }
 
             div { class: "card",
@@ -193,7 +197,7 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                         "On"
                     }
                 }
-                p { class: "hint",
+                p { class: "hint wordy",
                     "A Vector wallet is an account of the Vector program, controlled by a key of one of several schemes: Ed25519, secp256k1, an Ethereum address, or a post-quantum key. The program is new. Off, the app does not offer Vector wallets to add, does not show them to sites, and does not build transactions for them. Vector wallets already added stay listed, and a transaction that uses one is still explained."
                 }
             }
@@ -217,7 +221,7 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                         }
                     }
                 }
-                p { class: "hint",
+                p { class: "hint wordy",
                     "Locks the vault after this time while the window is hidden, or after the same time with no input while it is open. Default is 5 minutes."
                 }
                 if unlocked {
@@ -227,7 +231,7 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
 
             // Tray and close-to-tray are online desktop only; the airgap
             // shell has no tray and always quits on close.
-            if online {
+            if online && !phone {
                 div { class: "card",
                     h3 { "Window" }
                     div { class: "segmented",
@@ -362,7 +366,7 @@ fn PricesCard() -> Element {
     rsx! {
         div { class: "card",
             h3 { "Prices" }
-            p { class: "hint",
+            p { class: "hint wordy",
                 "The Portfolio values holdings with the Tokens API (tokens.xyz). Only token mints are sent, never an address or an amount. Prices are for mainnet."
             }
             label { if saved { "API key (saved)" } else { "API key" }
@@ -433,7 +437,7 @@ fn DiagnosticsCard() -> Element {
                     "Diagnostic logging"
                 }
             }
-            p { class: "hint",
+            p { class: "hint wordy",
                 "Off keeps the default info level. On raises logging to debug until the app restarts. {log_var} overrides the default when set."
             }
             div { class: "btn-row",
@@ -461,7 +465,8 @@ fn DiagnosticsCard() -> Element {
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+// Android has no file manager to show an app's private folder in.
+#[cfg(not(any(target_arch = "wasm32", target_os = "android")))]
 fn open_log_folder_button(mut copy_note: Signal<Option<String>>) -> Element {
     rsx! {
         button {
@@ -476,7 +481,7 @@ fn open_log_folder_button(mut copy_note: Signal<Option<String>>) -> Element {
     }
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(any(target_arch = "wasm32", target_os = "android"))]
 fn open_log_folder_button(_copy_note: Signal<Option<String>>) -> Element {
     rsx! {}
 }

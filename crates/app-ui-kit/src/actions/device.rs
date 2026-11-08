@@ -12,6 +12,8 @@ use dioxus::prelude::*;
 use hw_protocol::keystone::{KeyPath, SignType, SolSignRequest, SolSignature, SOL_SIGNATURE};
 use hw_protocol::ledger::{AppConfiguration, LedgerError};
 use hw_protocol::link::{DeviceHub, DeviceKind, ExchangeError, LinkError, PacketLink};
+pub use hw_protocol::seed_vault::Authorize;
+use hw_protocol::seed_vault::{Payload, SeedVaultError};
 use solana_pubkey::Pubkey;
 use std::future::Future;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -433,6 +435,7 @@ async fn ready(run: Run, vendor: HardwareVendor) -> Result<Ready, String> {
         HardwareVendor::Ledger => ready_ledger(run).await.map(Ready::Ledger),
         HardwareVendor::Trezor => ready_trezor(run).await,
         HardwareVendor::Keystone => Err("A Keystone answers through QR codes.".into()),
+        HardwareVendor::SeedVault => Err("The Seed Vault is in this phone.".into()),
     }
 }
 
@@ -500,6 +503,7 @@ fn over_cable(vendor: HardwareVendor) -> Result<(), String> {
     match vendor {
         HardwareVendor::Ledger | HardwareVendor::Trezor => Ok(()),
         HardwareVendor::Keystone => Err("A Keystone answers through QR codes.".into()),
+        HardwareVendor::SeedVault => Err("The Seed Vault is in this phone.".into()),
     }
 }
 
@@ -518,7 +522,7 @@ pub fn request_device(session: Session, vendor: HardwareVendor) {
     let kind = match vendor {
         HardwareVendor::Ledger => DeviceKind::Ledger,
         HardwareVendor::Trezor => DeviceKind::Trezor,
-        HardwareVendor::Keystone => return,
+        HardwareVendor::Keystone | HardwareVendor::SeedVault => return,
     };
     spawn(async move {
         if let Err(error) = hub.request(kind).await {
@@ -565,6 +569,9 @@ pub async fn sign_message_bytes(
             HardwareVendor::Keystone => {
                 sign_keystone(run, &held, account, message, SignType::Transaction).await?
             }
+            HardwareVendor::SeedVault => {
+                sign_seed_vault(run, &held, account, message, Payload::Transaction).await?
+            }
             HardwareVendor::Ledger | HardwareVendor::Trezor => {
                 sign_one(run, &held, account, message, false).await?
             }
@@ -601,6 +608,9 @@ pub async fn sign_authorization(
         // A Keystone reads an authorization as the v1 message it is.
         HardwareVendor::Keystone => {
             sign_keystone(run, &held, &authority, bytes, SignType::Transaction).await
+        }
+        HardwareVendor::SeedVault => {
+            sign_seed_vault(run, &held, &authority, bytes, Payload::Transaction).await
         }
         HardwareVendor::Ledger | HardwareVendor::Trezor => {
             sign_one(run, &held, &authority, bytes, false).await
@@ -763,7 +773,9 @@ pub async fn sign_offchain(
     ocms: &[u8],
 ) -> Result<[u8; 64], String> {
     let held = on_device(session, &account)?;
-    over_cable(held.vendor)?;
+    if held.vendor != HardwareVendor::SeedVault {
+        over_cable(held.vendor)?;
+    }
     let run = Run::start(
         session,
         held.vendor,
@@ -776,6 +788,9 @@ pub async fn sign_offchain(
             authorization: false,
         },
     );
+    if held.vendor == HardwareVendor::SeedVault {
+        return sign_seed_vault(run, &held, &account, ocms, Payload::Message).await;
+    }
     sign_one(run, &held, &account, ocms, true).await
 }
 
@@ -864,7 +879,8 @@ pub fn show_address(
     );
     // A Keystone shows an address on its own Receive screen: the dialog
     // says where to look.
-    if vendor == HardwareVendor::Keystone {
+    // A Seed Vault has no screen of its own to show an address on.
+    if matches!(vendor, HardwareVendor::Keystone | HardwareVendor::SeedVault) {
         run.stage(DeviceStage::Done);
         return;
     }
@@ -988,6 +1004,9 @@ pub async fn read_keys(
             scheme: scheme.template.to_string(),
         },
     );
+    if vendor == HardwareVendor::SeedVault {
+        return read_seed_vault_keys(run, Authorize::Existing, scheme, start, count).await;
+    }
     if let Err(why) = over_cable(vendor).and(signs_with(vendor)) {
         run.fail(&why);
         return Err(why);
@@ -1030,6 +1049,200 @@ pub async fn read_keys(
         Ok(_) => run.close(),
         Err(why) if why == CANCELLED => run.close(),
         Err(why) => run.fail(why),
+    }
+    outcome
+}
+
+/// What the dialog says for a Seed Vault error. Backing out of the Seed
+/// Vault's own screen is the user's answer, not an error: the job ends as
+/// a closed dialog does.
+fn vault_said(error: SeedVaultError) -> String {
+    match error {
+        SeedVaultError::Declined => CANCELLED.to_string(),
+        error => error.to_string(),
+    }
+}
+
+/// Whether this phone has a Seed Vault Add wallet can read keys from.
+pub fn has_seed_vault(session: Session) -> bool {
+    hub(session).is_ok_and(|hub| hub.seed_vault().is_some())
+}
+
+/// The seed the last Add wallet read was authorized for, so reading the
+/// next accounts does not ask the user again.
+static SEED_TOKEN: std::sync::Mutex<Option<u64>> = std::sync::Mutex::new(None);
+
+fn remembered_token() -> Option<u64> {
+    SEED_TOKEN.lock().ok().and_then(|token| *token)
+}
+
+fn remember_token(token: Option<u64>) {
+    if let Ok(mut held) = SEED_TOKEN.lock() {
+        *held = token;
+    }
+}
+
+/// Seed Vault keys for Add wallet: get the use of a seed (`how`: pick one,
+/// import a phrase into the Seed Vault, or have it make one), then read the
+/// keys `start..start + count` of `scheme` from it. Reading the next page
+/// asks again only if the Seed Vault no longer knows the seed.
+pub async fn read_seed_vault_keys_for(
+    session: Session,
+    how: Authorize,
+    scheme: PathScheme,
+    start: u32,
+    count: u32,
+) -> Result<DeviceKeys, String> {
+    let run = Run::start(
+        session,
+        HardwareVendor::SeedVault,
+        DeviceAsk::Read {
+            scheme: scheme.template.to_string(),
+        },
+    );
+    read_seed_vault_keys(run, how, scheme, start, count).await
+}
+
+async fn read_seed_vault_keys(
+    run: Run,
+    how: Authorize,
+    scheme: PathScheme,
+    start: u32,
+    count: u32,
+) -> Result<DeviceKeys, String> {
+    let outcome = async {
+        let hub = hub(run.session)?;
+        let vault = hub
+            .seed_vault()
+            .ok_or_else(|| "This phone has no Seed Vault.".to_string())?;
+        let indices = if scheme.template.contains('*') {
+            start..start + count
+        } else {
+            0..1
+        };
+        let paths: Vec<String> = indices.clone().map(|index| scheme.path(index)).collect();
+        let reuse = if how == Authorize::Existing && start > 0 {
+            remembered_token()
+        } else {
+            None
+        };
+        run.stage(DeviceStage::Confirm);
+        let (token, keys) = match reuse {
+            Some(token) => match vault.public_keys(token, &paths).await {
+                Ok(keys) => (token, keys),
+                Err(SeedVaultError::NotAuthorized) => {
+                    let token = vault.authorize(how).await.map_err(vault_said)?;
+                    (
+                        token,
+                        vault.public_keys(token, &paths).await.map_err(vault_said)?,
+                    )
+                }
+                Err(err) => return Err(vault_said(err)),
+            },
+            None => {
+                let token = vault.authorize(how).await.map_err(vault_said)?;
+                (
+                    token,
+                    vault.public_keys(token, &paths).await.map_err(vault_said)?,
+                )
+            }
+        };
+        if run.cancelled() {
+            return Err(CANCELLED.to_string());
+        }
+        remember_token(Some(token));
+        tracing::info!(
+            target: "airlock::device",
+            vendor = "Seed Vault",
+            secure = vault.secure(),
+            keys = keys.len(),
+            "keys read"
+        );
+        Ok(DeviceKeys {
+            vendor: HardwareVendor::SeedVault,
+            keys: indices
+                .zip(paths)
+                .zip(keys)
+                .map(|((index, path), key)| DeviceKey {
+                    index,
+                    path,
+                    pubkey: Pubkey::new_from_array(key),
+                })
+                .collect(),
+            seen: DeviceSeen {
+                model: Some(
+                    if vault.secure() {
+                        "Seed Vault"
+                    } else {
+                        "Seed Vault simulator"
+                    }
+                    .into(),
+                ),
+                firmware: None,
+            },
+            device: Some(token.to_string()),
+        })
+    }
+    .await;
+    match &outcome {
+        Ok(_) => run.close(),
+        Err(why) if why == CANCELLED => run.close(),
+        Err(why) => run.fail(why),
+    }
+    outcome
+}
+
+/// Sign `bytes` with the key a Seed Vault wallet names, on this phone's
+/// Seed Vault. The user confirms on its screen; the signature is checked
+/// against the key before it is answered.
+async fn sign_seed_vault(
+    run: Run,
+    held: &OnDevice,
+    account: &Pubkey,
+    bytes: &[u8],
+    kind: Payload,
+) -> Result<[u8; 64], String> {
+    let outcome = async {
+        let token: u64 = held
+            .device
+            .as_deref()
+            .and_then(|token| token.parse().ok())
+            .ok_or_else(|| {
+                "This wallet does not name its Seed Vault seed. Add it again from Seed Vault."
+                    .to_string()
+            })?;
+        let hub = hub(run.session)?;
+        let vault = hub.seed_vault().ok_or_else(|| {
+            "This wallet's key is in a Seed Vault, and this device has none.".to_string()
+        })?;
+        run.stage(DeviceStage::Confirm);
+        let signature = device::seed_vault_sign(vault, token, &held.path, account, bytes, kind)
+            .await
+            .map_err(|err| match err {
+                device::SeedVaultSignError::Vault(err) => vault_said(err),
+                err => err.to_string(),
+            })?;
+        if run.cancelled() {
+            return Err(CANCELLED.to_string());
+        }
+        tracing::info!(
+            target: "airlock::device",
+            vendor = "Seed Vault",
+            path = %held.path,
+            pubkey = %account,
+            message = kind == Payload::Message,
+            "signed"
+        );
+        Ok(<[u8; 64]>::from(signature))
+    }
+    .await;
+    match &outcome {
+        Ok(_) => run.close(),
+        Err(why) if why == CANCELLED => run.close(),
+        Err(why) => {
+            tracing::info!(target: "airlock::device", vendor = "Seed Vault", reason = %why, "refused");
+            run.fail(why);
+        }
     }
     outcome
 }

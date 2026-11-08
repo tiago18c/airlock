@@ -78,7 +78,14 @@ mod native {
                 .map(|_| ())
                 .map_err(|e| e.to_string())
         }
-        #[cfg(all(unix, not(target_os = "macos")))]
+        // Android has no program to hand a URL to: the mobile shell opens
+        // links through the activity, with its own `Links`.
+        #[cfg(target_os = "android")]
+        {
+            let _ = url;
+            Err("links open through the mobile shell".to_string())
+        }
+        #[cfg(all(unix, not(any(target_os = "macos", target_os = "android"))))]
         {
             std::process::Command::new("xdg-open")
                 .arg(url)

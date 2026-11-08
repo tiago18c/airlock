@@ -215,6 +215,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "airlock-mobile"
+version = "0.1.0"
+dependencies = [
+ "app-core",
+ "app-mobile",
+ "app-online",
+ "app-ui",
+ "dioxus",
+ "tracing",
+]
+
+[[package]]
 name = "airlock-offline"
 version = "0.1.0"
 dependencies = [
@@ -377,6 +389,21 @@ dependencies = [
  "wincode",
  "windows-core 0.61.2",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "app-mobile"
+version = "0.1.0"
+dependencies = [
+ "app-core",
+ "app-ui-kit",
+ "base64 0.22.1",
+ "dioxus",
+ "hw-protocol",
+ "jni 0.21.1",
+ "ndk-context",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]

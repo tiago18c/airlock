@@ -2,6 +2,7 @@
 members = [
   "apps/airlock",
   "apps/airlock-offline",
+  "apps/airlock-mobile",
   "crates/bridge-host",
   "crates/bridge-protocol",
   "crates/app-core",
@@ -13,6 +14,7 @@ members = [
   "crates/app-ui-wallets",
   "crates/app-online",
   "crates/app-desktop",
+  "crates/app-mobile",
   "crates/wallet-core",
   "crates/wallet-rpc",
   "crates/qr-protocol",
