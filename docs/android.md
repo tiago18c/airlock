@@ -32,7 +32,7 @@ A Solana Mobile phone keeps seeds in its Seed Vault, in secure hardware, and sig
 | `MainActivity.kt` | Solana Mobile's `seedvault-wallet-sdk`: asks for the `ACCESS_SEED_VAULT` permission, starts the Seed Vault's screens and keeps each result under its request id until Rust takes it |
 | `app-ui-kit::actions::device` | Add wallet reads keys (`read_seed_vault_keys_for`), Sign signs (`sign_seed_vault`). Each signature is checked against the account before it is used (`wallet_flows::device::seed_vault_sign`) |
 
-Add wallet → Hardware → Seed Vault offers **Choose seed**, **Import phrase** and **Create seed**. The wallet keeps the auth token the Seed Vault gave Airlock for that seed (`device`), and the path. Revoking Airlock's access in the Seed Vault's settings makes signing say so, and the wallet has to be added again.
+Add wallet → Seed Vault, a tab of its own, offers **Choose seed**, **Import phrase** and **Create seed**. The wallet keeps the auth token the Seed Vault gave Airlock for that seed (`device`), and the path. Revoking Airlock's access in the Seed Vault's settings makes signing say so, and the wallet has to be added again.
 
 The Seed Vault signs the bytes it is given: a transaction's message, an authorization, or an off-chain message. It shows no address of its own, so **Show on device** says the address was read from it.
 

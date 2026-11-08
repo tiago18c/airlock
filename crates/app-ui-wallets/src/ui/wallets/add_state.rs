@@ -195,6 +195,7 @@ pub(in crate::ui) fn save_wallet(session: Session, form: WalletForm, derived: &[
         AddWalletMode::Offline
         | AddWalletMode::FromDevice
         | AddWalletMode::Hardware
+        | AddWalletMode::SeedVault
         | AddWalletMode::Programmatic
         | AddWalletMode::Vector
         | AddWalletMode::Squads => {

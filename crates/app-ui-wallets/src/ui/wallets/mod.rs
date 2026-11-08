@@ -141,7 +141,7 @@ pub fn WalletsPanel() -> Element {
                         if session.hardware_offered().is_empty() {
                             "None yet. A Ledger is offered once Pre-release hardware wallets is on in Settings, until Ledger releases the Solana app 1.18."
                         } else {
-                            "None yet. Add one with Add wallet, Hardware."
+                            "None yet. Add one with Add wallet, Hardware or Seed Vault."
                         }
                     }
                 }

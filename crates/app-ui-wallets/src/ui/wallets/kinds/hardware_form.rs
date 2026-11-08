@@ -11,13 +11,18 @@ use wallet_core::{HardwareVendor, PATH_SCHEMES};
 /// How many keys a press of Read reads.
 const READ_BATCH: u32 = 10;
 
-/// Add-wallet form: a hardware wallet. The device is asked for the keys of a
-/// path scheme, the user ticks the ones to add, and can check each on the
-/// device. Nothing secret is stored: the device keeps the keys.
+/// Add-wallet form: a hardware wallet, or with `seed_vault` this phone's
+/// Seed Vault, which has a tab of its own. The device is asked for the keys
+/// of a path scheme, the user ticks the ones to add, and can check each on
+/// the device. Nothing secret is stored: the device keeps the keys.
 #[component]
-pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
+pub fn HardwareForm(seed_vault: bool, on_done: EventHandler<()>) -> Element {
     let session = use_context::<Session>();
-    let offered = session.hardware_offered();
+    let offered: Vec<HardwareVendor> = session
+        .hardware_offered()
+        .into_iter()
+        .filter(|vendor| (*vendor == HardwareVendor::SeedVault) == seed_vault)
+        .collect();
     let online = crate::state::use_network().is_some();
     let mut vendor = use_signal(|| None::<HardwareVendor>);
     let mut scheme = use_signal(|| 0usize);
@@ -29,6 +34,9 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
     let mut reading = use_signal(|| false);
 
     let Some(&first) = offered.first() else {
+        if seed_vault {
+            return rsx! {};
+        }
         return rsx! {
             p { class: "note",
                 "Hardware wallets are offered when Pre-release hardware wallets is on in Settings. Ledger reads v1 transactions from its Solana app 1.18, and Trezor from its next firmware, both only pre-release builds so far. Airlock's support for Keystone has not been checked on a device yet."
@@ -144,8 +152,10 @@ pub fn HardwareForm(on_done: EventHandler<()>) -> Element {
     let numbered = PATH_SCHEMES[scheme()].template.contains('*');
 
     rsx! {
-        p { class: "note wordy",
-            "A hardware wallet keeps its key on the device, and signs there once you confirm. This device stores only the address and where the key is on the device."
+        if !seed_vault {
+            p { class: "note wordy",
+                "A hardware wallet keeps its key on the device, and signs there once you confirm. This device stores only the address and where the key is on the device."
+            }
         }
         if offered.len() > 1 {
             div { class: "segmented",

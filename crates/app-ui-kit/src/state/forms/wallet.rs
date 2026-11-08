@@ -8,6 +8,8 @@ pub enum AddWalletMode {
     Seed,
     Offline,
     Hardware,
+    /// Keys of a seed in this phone's Seed Vault.
+    SeedVault,
     Programmatic,
     Vector,
     Squads,
