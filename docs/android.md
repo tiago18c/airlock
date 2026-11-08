@@ -27,7 +27,7 @@ A Solana Mobile phone keeps seeds in its Seed Vault, in secure hardware, and sig
 | Layer | What it does |
 | --- | --- |
 | `hw-protocol::seed_vault` | The `SeedVault` trait: authorize a seed (pick, import a phrase, create one), read public keys at paths, sign |
-| `DeviceHub::seed_vault()` | How the core reaches it, with the rest of the devices. The phone's hub opens no USB device |
+| `DeviceHub::seed_vault()` | How the core reaches it, with the rest of the devices (the Ledgers and Trezors on the USB-C port, below) |
 | `app-mobile::seed_vault` | The implementation, over JNI to `SeedVaultBridge` in `apps/airlock-mobile/android/MainActivity.kt` |
 | `MainActivity.kt` | Solana Mobile's `seedvault-wallet-sdk`: asks for the `ACCESS_SEED_VAULT` permission, starts the Seed Vault's screens and keeps each result under its request id until Rust takes it |
 | `app-ui-kit::actions::device` | Add wallet reads keys (`read_seed_vault_keys_for`), Sign signs (`sign_seed_vault`). Each signature is checked against the account before it is used (`wallet_flows::device::seed_vault_sign`) |
@@ -40,6 +40,20 @@ The Seed Vault signs the bytes it is given: a transaction's message, an authoriz
 
 - **Emulator.** Build Solana Mobile's simulator from [seed-vault-sdk](https://github.com/solana-mobile/seed-vault-sdk) (`./gradlew :SeedVaultSimulator:assembleDebug`) and install it. The app reports it as `seed_vault="simulator"` in the log, and the keys it reads show the model "Seed Vault simulator". It does not sign securely: development only.
 - **Saga or Seeker.** The real Seed Vault (`com.solanamobile.seedvaultimpl`) is reported as `seed_vault="secure"`. Authorizing a seed and confirming a signature take the owner's fingerprint or PIN on the phone, so that part of a test is done by hand.
+
+## Ledger and Trezor over USB
+
+With **Pre-release hardware wallets** on (Settings), Add wallet → Hardware offers a Ledger or a Trezor on the phone's USB-C port, and Sign signs on it, as on desktop. Keystone needs no cable: its codes go through the camera.
+
+An app cannot list or open the phone's USB devices itself, so the pieces differ from desktop:
+
+| Piece | What it does |
+| --- | --- |
+| `UsbBridge` in `MainActivity.kt` | Lists the Ledgers and Trezors `UsbManager` sees. Opening one asks the user to let Airlock use it (Android's own dialog), opens it, and hands Rust a copy of its file descriptor |
+| `app-mobile::usb` | The phone hub's `list` and `open`, over JNI to `UsbBridge`. A device's id is its kind and Android's name for it (`ledger:/dev/bus/usb/…`) |
+| `hw_transport::android::open_fd` | `nusb` from the file descriptor. A Trezor is opened as on desktop. A Ledger's APDU interface is HID, which Android gives an app no driver for, so it is read as plain USB: the first HID interface with an interrupt endpoint each way, in the same 64-byte packets, without a report id. `async-hid` is not built for Android |
+
+A Ledger that opens its Solana app restarts its USB connection, and Android sees a new device, so it asks again. Bluetooth (Ledger Nano X, Stax and Flex; Trezor Safe 7) is not supported.
 
 ## Building and running
 

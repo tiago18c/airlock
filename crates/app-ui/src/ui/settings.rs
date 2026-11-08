@@ -151,7 +151,6 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                 p { class: "hint wordy", "System follows the light or dark setting of this device." }
             }
 
-            if !phone {
             div { class: "card",
                 h3 { "Pre-release hardware wallets" }
                 div { class: "segmented",
@@ -169,7 +168,6 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                 p { class: "hint",
                     "Airlock signs v1 transactions, and a hardware wallet has to read them. Ledger's Solana app reads them from 1.18, which is only a developer build so far. Keystone reads them from firmware 3.0.6, and Airlock's support for it has not been checked on a device yet. On, Add wallet offers both, for testing. A device on an older version is refused. Hardware wallets already added stay listed and sign either way."
                 }
-            }
             }
 
             div { class: "card",

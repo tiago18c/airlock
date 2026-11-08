@@ -1,5 +1,6 @@
 // Airlock's activity: wry's, plus the bridge to the Seed Vault of a Solana
-// Mobile phone (Saga, Seeker), and fingerprint unlock (KeyGuardBridge). dx writes this file in place of its default
+// Mobile phone (Saga, Seeker), fingerprint unlock (KeyGuardBridge), and
+// Ledgers and Trezors over USB (UsbBridge). dx writes this file in place of its default
 // MainActivity.kt (`android_main_activity` in Dioxus.toml).
 //
 // Rust (`app-mobile`, `seed_vault.rs`) calls SeedVaultBridge's methods over
@@ -8,12 +9,19 @@
 // A result is "ok:<text>" or "err:<code>:<text>".
 package dev.dioxus.main
 
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.hardware.biometrics.BiometricManager
 import android.hardware.biometrics.BiometricPrompt
+import android.hardware.usb.UsbDevice
+import android.hardware.usb.UsbManager
 import android.os.CancellationSignal
+import android.os.ParcelFileDescriptor
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.security.keystore.KeyProperties
@@ -500,4 +508,103 @@ object KeyGuardBridge {
 
     private fun b64(bytes: ByteArray): String = Base64.encodeToString(bytes, Base64.NO_WRAP)
     private fun unb64(text: String): ByteArray = Base64.decode(text, Base64.NO_WRAP)
+}
+
+/// Ledgers and Trezors on the phone's USB-C port. An app cannot list or open
+/// USB devices itself: Rust lists them with list(), and open(id, name) asks
+/// the user to let Airlock use one when it may not yet, opens it, and answers
+/// "ok:<fd>" with a file descriptor that Rust owns from then on, or
+/// "err:denied:", "err:gone:" or "err:failed:<text>".
+object UsbBridge {
+    private const val TAG = "AirlockUsb"
+    private const val ACTION = "dev.airlock.mobile.USB_PERMISSION"
+    private const val LEDGER = 0x2c97
+    private const val TREZOR = 0x1209
+    private const val TREZOR_PRODUCT = 0x53c1
+
+    private val results = ConcurrentHashMap<Long, String>()
+
+    private fun wallet(device: UsbDevice): Boolean =
+        device.vendorId == LEDGER || (device.vendorId == TREZOR && device.productId == TREZOR_PRODUCT)
+
+    /// One line per hardware wallet plugged in: "<name>|<vendor id>|<product id>".
+    @JvmStatic
+    fun list(): String {
+        val a = SeedVaultBridge.activity ?: return ""
+        val manager = a.getSystemService(UsbManager::class.java) ?: return ""
+        return manager.deviceList.values
+            .filter(::wallet)
+            .joinToString("\n") { "${it.deviceName}|${it.vendorId}|${it.productId}" }
+    }
+
+    @JvmStatic
+    fun take(id: Long): String? = results.remove(id)
+
+    @JvmStatic
+    fun open(id: Long, name: String) {
+        val a = SeedVaultBridge.activity
+        if (a == null) {
+            results[id] = "err:failed:the app is not in front"
+            return
+        }
+        a.runOnUiThread {
+            try {
+                val manager = a.getSystemService(UsbManager::class.java)
+                if (manager == null) {
+                    results[id] = "err:failed:this phone has no USB host"
+                    return@runOnUiThread
+                }
+                val device = manager.deviceList[name]
+                if (device == null) {
+                    results[id] = "err:gone:"
+                    return@runOnUiThread
+                }
+                if (manager.hasPermission(device)) {
+                    results[id] = connect(manager, device)
+                    return@runOnUiThread
+                }
+                // Android asks the user, and answers with a broadcast. A
+                // Ledger that opens an app comes back as a new device, and
+                // is asked about again.
+                val receiver = object : BroadcastReceiver() {
+                    override fun onReceive(context: Context, intent: Intent) {
+                        context.unregisterReceiver(this)
+                        val granted = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)
+                        results[id] = try {
+                            if (granted && manager.hasPermission(device)) connect(manager, device) else "err:denied:"
+                        } catch (e: Exception) {
+                            Log.w(TAG, "open after permission", e)
+                            "err:failed:" + (e.message ?: e.javaClass.simpleName)
+                        }
+                    }
+                }
+                a.registerReceiver(receiver, IntentFilter(ACTION), Context.RECEIVER_NOT_EXPORTED)
+                // Mutable, so UsbManager can add whether it was granted; aimed
+                // at this app, as Android 14 wants of a mutable PendingIntent.
+                val pending = PendingIntent.getBroadcast(
+                    a,
+                    (id % 0x10000).toInt(),
+                    Intent(ACTION).setPackage(a.packageName),
+                    PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                )
+                manager.requestPermission(device, pending)
+            } catch (e: Exception) {
+                Log.w(TAG, "open", e)
+                results[id] = "err:failed:" + (e.message ?: e.javaClass.simpleName)
+            }
+        }
+    }
+
+    /// Open `device` and hand over a copy of its file descriptor. The
+    /// connection's own descriptor is closed at once: the copy keeps the
+    /// device open until Rust closes it.
+    private fun connect(manager: UsbManager, device: UsbDevice): String {
+        val connection = manager.openDevice(device) ?: return "err:failed:Android could not open it"
+        return try {
+            val fd = ParcelFileDescriptor.fromFd(connection.fileDescriptor).detachFd()
+            "ok:$fd"
+        } finally {
+            connection.close()
+        }
+    }
 }

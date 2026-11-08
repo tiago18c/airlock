@@ -1,5 +1,6 @@
 //! The phone's Seed Vault, through `SeedVaultBridge` in the app's
-//! `MainActivity.kt`, and the device hub that hands it to the core.
+//! `MainActivity.kt`, and the device hub that hands it to the core with
+//! the Ledgers and Trezors on the USB-C port (`crate::usb`).
 //!
 //! Each request starts a Seed Vault screen over the app and returns at
 //! once with an id; the result is collected by asking the bridge for that
@@ -11,27 +12,20 @@ use std::sync::Arc;
 use hw_protocol::link::{Connected, DeviceHub, LinkError, LinkFuture, PacketLink};
 use hw_protocol::seed_vault::{Authorize, Payload, SeedVault, SeedVaultError};
 
-/// The hub a phone gives the core: no USB devices, and its Seed Vault when
-/// it has one.
+/// The hub a phone gives the core: the Ledgers and Trezors on its USB-C
+/// port, and its Seed Vault when it has one.
 pub struct PhoneHub {
     vault: Option<AndroidSeedVault>,
 }
 
 impl DeviceHub for PhoneHub {
     fn list(&self) -> LinkFuture<'_, Result<Vec<Connected>, LinkError>> {
-        Box::pin(async { Ok(Vec::new()) })
+        Box::pin(async { crate::usb::list() })
     }
 
-    fn open<'a>(&'a self, _id: &'a str) -> LinkFuture<'a, Result<Box<dyn PacketLink>, LinkError>> {
-        Box::pin(async {
-            Err(LinkError::Denied(
-                "this phone does not open USB hardware wallets".into(),
-            ))
-        })
-    }
-
-    fn opens_cables(&self) -> bool {
-        false
+    /// Android asks the user here, the first time Airlock opens the device.
+    fn open<'a>(&'a self, id: &'a str) -> LinkFuture<'a, Result<Box<dyn PacketLink>, LinkError>> {
+        Box::pin(crate::usb::open(id))
     }
 
     fn seed_vault(&self) -> Option<&dyn SeedVault> {
@@ -39,8 +33,8 @@ impl DeviceHub for PhoneHub {
     }
 }
 
-/// The hub for `open_core`: always one, so Add wallet knows this build
-/// opens no USB device, with the Seed Vault when the phone has one.
+/// The hub for `open_core`: the USB-C port, with the Seed Vault when the
+/// phone has one.
 pub fn hub() -> Option<Arc<dyn DeviceHub>> {
     let vault = AndroidSeedVault::detect();
     tracing::info!(
