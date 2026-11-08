@@ -31,7 +31,7 @@ pub(in crate::ui) fn KeyExportModal(keys: Vec<WalletKey>, on_close: EventHandler
             div { class: "modal", onclick: move |evt| evt.stop_propagation(),
                 div { class: "stack",
                     h3 { if many { "Export {keys.len()} public keys" } else { "Export public key" } }
-                    p { class: "lede",
+                    p { class: "lede wordy",
                         "No secret leaves this device. On the online device, open Wallets, Add wallet, From another device, and scan this or paste the text. A Vector wallet is initialized from there."
                     }
                     if count > 1 {
@@ -113,7 +113,7 @@ pub fn ExportKeysModal(on_close: EventHandler<()>) -> Element {
             div { class: "modal", onclick: move |evt| evt.stop_propagation(),
                 div { class: "stack",
                     h3 { "Export public keys" }
-                    p { class: "lede",
+                    p { class: "lede wordy",
                         "Another device adds each key as an offline wallet, or as a Vector wallet whose key is kept here. Programmatic signers and multisigs are set up there from these."
                     }
                     if options.is_empty() {

@@ -188,6 +188,15 @@ impl SigningStatus {
         self.signed() == self.total()
     }
 
+    /// Whether a press of Sign needs the vault open: a key it holds (or a
+    /// Vector key kept here) signs or authorizes, or no device of this vault
+    /// has anything to sign. When only devices sign (a hardware wallet, the
+    /// phone's Seed Vault), the vault's keys take no part, and the device
+    /// asks the user itself.
+    pub fn needs_vault(&self) -> bool {
+        self.signable > 0 || self.authorizations_here() > 0 || self.on_devices() == 0
+    }
+
     /// Signatures a hardware wallet connected here adds, once the user
     /// confirms on it.
     pub fn on_devices(&self) -> usize {

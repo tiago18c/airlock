@@ -112,7 +112,7 @@ pub(in crate::ui) fn AddWalletModal() -> Element {
                                 "Create new"
                             }
                         }
-                        p { class: "lede",
+                        p { class: "lede wordy",
                             if creating() {
                                 "Make a new wallet: a seed phrase generated on this device, or a wallet controlled through a key."
                             } else {

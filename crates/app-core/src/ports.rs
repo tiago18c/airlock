@@ -61,6 +61,47 @@ pub trait Links: Send + Sync {
     fn open(&self, url: &str) -> Result<(), String>;
 }
 
+/// A key the platform keeps in its secure hardware, usable only after a
+/// fresh check of the user's fingerprint or face: Android's Keystore, in
+/// StrongBox where the phone has one (Knox Vault, Titan M2). It keeps the
+/// vault's key sealed ([`wallet_core::SealKey::to_bytes`]), so the vault opens
+/// with a fingerprint. The password stays the way back: a guard is forgotten
+/// when the vault's key changes or the phone's fingerprints do.
+pub trait KeyGuard: Send + Sync {
+    /// A key is kept, and [`open`](Self::open) can be asked.
+    fn enrolled(&self) -> bool;
+    /// Ask for the fingerprint now, and keep `key` sealed behind it.
+    fn enroll(&self, key: zeroize::Zeroizing<Vec<u8>>) -> BoxFuture<Result<(), KeyGuardError>>;
+    /// Ask for the fingerprint, and give back the key kept.
+    fn open(&self) -> BoxFuture<Result<zeroize::Zeroizing<Vec<u8>>, KeyGuardError>>;
+    /// Forget the key kept, and the hardware key that sealed it.
+    fn forget(&self);
+}
+
+/// Why a [`KeyGuard`] gave nothing back.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum KeyGuardError {
+    /// The user backed out of the fingerprint prompt.
+    Declined,
+    /// The phone's fingerprints changed, so the hardware key no longer opens
+    /// anything. The guard has forgotten it.
+    Invalidated,
+    Failed(String),
+}
+
+impl std::fmt::Display for KeyGuardError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Declined => write!(f, "Cancelled."),
+            Self::Invalidated => write!(
+                f,
+                "The fingerprints on this phone changed, so fingerprint unlock is off. Unlock with the password, then turn it on again in Settings."
+            ),
+            Self::Failed(why) => write!(f, "Fingerprint unlock failed: {why}"),
+        }
+    }
+}
+
 /// Ports no one uses do nothing.
 pub struct NoNotifier;
 

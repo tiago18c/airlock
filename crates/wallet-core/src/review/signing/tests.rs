@@ -462,3 +462,33 @@ fn a_hardware_wallet_alone_hides_the_steps_as_a_hot_key_does() {
     assert!(only_simulate_and_sign(&steps));
     assert_eq!(status.missing_elsewhere(), 0);
 }
+
+#[test]
+fn a_seed_vault_alone_signs_without_the_vault() {
+    let phone = KeypairSigner::new_random();
+    let hot = KeypairSigner::new_random();
+    let devices = [(phone.pubkey(), HardwareVendor::SeedVault)];
+    let status_of = |wire: &[u8], keys: &[Pubkey]| {
+        signing_status_in(
+            &decode_v1_transaction(wire).unwrap(),
+            &LocalKeys {
+                keys,
+                vector: &[],
+                devices: &devices,
+            },
+            &AuthContext::default(),
+        )
+    };
+
+    // The Seed Vault pays and signs alone: the vault stays locked.
+    let alone = compile(phone.pubkey(), vec![transfer(phone.pubkey(), pk(2), 5)]).wire;
+    assert!(!status_of(&alone, &[hot.pubkey()]).needs_vault());
+
+    // A key of the vault signs too: it has to open.
+    let with_hot = compile(hot.pubkey(), vec![transfer(phone.pubkey(), pk(2), 5)]).wire;
+    assert!(status_of(&with_hot, &[hot.pubkey()]).needs_vault());
+
+    // Nothing on a device of this vault: as before, it asks for the vault.
+    let elsewhere = compile(pk(9), vec![transfer(pk(9), pk(2), 5)]).wire;
+    assert!(status_of(&elsewhere, &[]).needs_vault());
+}

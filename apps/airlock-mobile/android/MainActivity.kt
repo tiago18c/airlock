@@ -1,5 +1,5 @@
 // Airlock's activity: wry's, plus the bridge to the Seed Vault of a Solana
-// Mobile phone (Saga, Seeker). dx writes this file in place of its default
+// Mobile phone (Saga, Seeker), and fingerprint unlock (KeyGuardBridge). dx writes this file in place of its default
 // MainActivity.kt (`android_main_activity` in Dioxus.toml).
 //
 // Rust (`app-mobile`, `seed_vault.rs`) calls SeedVaultBridge's methods over
@@ -11,6 +11,17 @@ package dev.dioxus.main
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.hardware.biometrics.BiometricManager
+import android.hardware.biometrics.BiometricPrompt
+import android.os.CancellationSignal
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyPermanentlyInvalidatedException
+import android.security.keystore.KeyProperties
+import java.security.KeyStore
+import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+import javax.crypto.spec.GCMParameterSpec
 import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -31,8 +42,10 @@ typealias BuildConfig = dev.airlock.mobile.BuildConfig
 
 class MainActivity : WryActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        // Before super: wry starts the app's Rust from it, which may ask the
+        // bridges for the activity at once.
         SeedVaultBridge.activity = this
+        super.onCreate(savedInstanceState)
         fitSystemBars()
     }
 
@@ -164,7 +177,18 @@ object SeedVaultBridge {
             val token = when (how) {
                 1 -> Wallet.onImportSeedResult(code, data)
                 2 -> Wallet.onCreateSeedResult(code, data)
-                else -> Wallet.onAuthorizeSeedResult(code, data)
+                else -> try {
+                    Wallet.onAuthorizeSeedResult(code, data)
+                } catch (e: Wallet.ActionFailedException) {
+                    // Nothing new to grant: the seed may already be this app's,
+                    // which the provider can fail to say right after a cold start.
+                    val granted = if (code == WalletContractV1.RESULT_NO_AVAILABLE_SEEDS) {
+                        activity?.let { authorizedToken(it, purpose) }
+                    } else {
+                        null
+                    }
+                    granted ?: throw e
+                }
             }
             "ok:$token"
         }
@@ -295,4 +319,185 @@ object SeedVaultBridge {
         }
         return builder.build().toUri()
     }
+}
+
+/// Fingerprint unlock. The vault's key (what `SealKey::to_bytes` writes) is
+/// sealed with an AES-256-GCM key that Android's Keystore makes and keeps:
+/// in StrongBox where the phone has one (Knox Vault, Titan M2), in the TEE
+/// otherwise. The Keystore key works only right after a strong biometric
+/// check (per use), never leaves the hardware, and is destroyed when the
+/// phone's fingerprints change. Rust keeps what it sealed (IV and
+/// ciphertext), which opens nothing without that key.
+///
+/// Requests work as SeedVaultBridge's: an id, then take(id). A result is
+/// "ok:<text>" or "err:<code>:<text>"; an opened key is taken once with
+/// takeSecret(id), and Rust wipes the array after copying it.
+object KeyGuardBridge {
+    private const val TAG = "AirlockKeyGuard"
+    private const val STORE = "AndroidKeyStore"
+    private const val TRANSFORM = "AES/GCM/NoPadding"
+
+    private val results = ConcurrentHashMap<Long, String>()
+    private val secrets = ConcurrentHashMap<Long, ByteArray>()
+
+    /// 0: no strong biometric enrolled. 1: the TEE holds the key. 2: StrongBox.
+    @JvmStatic
+    fun availability(): Int {
+        val a = SeedVaultBridge.activity ?: return 0
+        val biometrics = a.getSystemService(BiometricManager::class.java) ?: return 0
+        if (biometrics.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) !=
+            BiometricManager.BIOMETRIC_SUCCESS
+        ) return 0
+        return if (a.packageManager.hasSystemFeature(PackageManager.FEATURE_STRONGBOX_KEYSTORE)) 2 else 1
+    }
+
+    @JvmStatic
+    fun take(id: Long): String? = results.remove(id)
+
+    @JvmStatic
+    fun takeSecret(id: Long): ByteArray? = secrets.remove(id)
+
+    /// Make a new Keystore key under `alias`, ask for the fingerprint, and seal
+    /// `secret` with it. Answers "ok:<iv>:<sealed>:<StrongBox|TEE>". `secret`
+    /// is wiped either way.
+    @JvmStatic
+    fun enroll(id: Long, alias: String, secret: ByteArray) {
+        val a = SeedVaultBridge.activity
+        if (a == null) {
+            secret.fill(0)
+            results[id] = "err:failed:the app is not in front"
+            return
+        }
+        a.runOnUiThread {
+            try {
+                val (key, where) = newKey(alias)
+                val cipher = Cipher.getInstance(TRANSFORM)
+                cipher.init(Cipher.ENCRYPT_MODE, key)
+                prompt(a, id, "Turn on fingerprint unlock", cipher, onEnd = { secret.fill(0) }) { done ->
+                    val sealed = done.doFinal(secret)
+                    "ok:" + b64(done.iv) + ":" + b64(sealed) + ":" + where
+                }
+            } catch (e: Exception) {
+                secret.fill(0)
+                Log.w(TAG, "could not turn on", e)
+                results[id] = "err:failed:${e.message}"
+            }
+        }
+    }
+
+    /// Ask for the fingerprint and open what enroll sealed. The key is then
+    /// taken with takeSecret(id).
+    @JvmStatic
+    fun open(id: Long, alias: String, iv: String, sealed: String) {
+        val a = SeedVaultBridge.activity
+        if (a == null) {
+            results[id] = "err:failed:the app is not in front"
+            return
+        }
+        a.runOnUiThread {
+            try {
+                val store = KeyStore.getInstance(STORE).apply { load(null) }
+                val key = store.getKey(alias, null) as? SecretKey
+                if (key == null) {
+                    results[id] = "err:invalidated:no key"
+                } else {
+                    val cipher = Cipher.getInstance(TRANSFORM)
+                    cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(128, unb64(iv)))
+                    prompt(a, id, "Unlock the vault", cipher) { done ->
+                        secrets[id] = done.doFinal(unb64(sealed))
+                        "ok:"
+                    }
+                }
+            } catch (e: KeyPermanentlyInvalidatedException) {
+                forget(alias)
+                results[id] = "err:invalidated:${e.message}"
+            } catch (e: Exception) {
+                Log.w(TAG, "could not open", e)
+                results[id] = "err:failed:${e.message}"
+            }
+        }
+    }
+
+    @JvmStatic
+    fun forget(alias: String) {
+        try {
+            KeyStore.getInstance(STORE).apply { load(null) }.deleteEntry(alias)
+        } catch (e: Exception) {
+            Log.w(TAG, "could not delete the key", e)
+        }
+    }
+
+    private fun newKey(alias: String): Pair<SecretKey, String> {
+        fun make(strongBox: Boolean): SecretKey {
+            val spec = KeyGenParameterSpec.Builder(
+                alias,
+                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+            )
+                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                .setKeySize(256)
+                .setUserAuthenticationRequired(true)
+                .setUserAuthenticationParameters(0, KeyProperties.AUTH_BIOMETRIC_STRONG)
+                .setInvalidatedByBiometricEnrollment(true)
+                .setIsStrongBoxBacked(strongBox)
+                .build()
+            val generator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, STORE)
+            generator.init(spec)
+            return generator.generateKey()
+        }
+        return try {
+            Pair(make(true), "StrongBox")
+        } catch (e: Exception) {
+            // No StrongBox, or it refused these settings: the TEE keeps it.
+            Pair(make(false), "TEE")
+        }
+    }
+
+    private fun prompt(
+        a: MainActivity,
+        id: Long,
+        title: String,
+        cipher: Cipher,
+        onEnd: () -> Unit = {},
+        finish: (Cipher) -> String
+    ) {
+        val prompt = BiometricPrompt.Builder(a)
+            .setTitle(title)
+            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
+            .setNegativeButton("Use password", a.mainExecutor) { _, _ ->
+                onEnd()
+                results[id] = "err:declined:"
+            }
+            .build()
+        prompt.authenticate(
+            BiometricPrompt.CryptoObject(cipher),
+            CancellationSignal(),
+            a.mainExecutor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    results[id] = try {
+                        val done = result.cryptoObject?.cipher ?: throw IllegalStateException("no cipher")
+                        finish(done)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "sealing failed", e)
+                        "err:failed:${e.message}"
+                    } finally {
+                        onEnd()
+                    }
+                }
+
+                override fun onAuthenticationError(code: Int, message: CharSequence) {
+                    onEnd()
+                    results[id] = when (code) {
+                        BiometricPrompt.BIOMETRIC_ERROR_USER_CANCELED,
+                        BiometricPrompt.BIOMETRIC_ERROR_CANCELED -> "err:declined:$message"
+                        else -> "err:failed:$message"
+                    }
+                }
+            }
+        )
+    }
+
+    private fun b64(bytes: ByteArray): String = Base64.encodeToString(bytes, Base64.NO_WRAP)
+    private fun unb64(text: String): ByteArray = Base64.decode(text, Base64.NO_WRAP)
 }

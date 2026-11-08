@@ -110,19 +110,28 @@ pub(crate) fn relaunch() -> Result<(), String> {
     })
 }
 
-/// `SeedVaultBridge`, the Kotlin object in the app's MainActivity.kt. App
-/// classes are found through the activity's class loader: a thread Rust
-/// attached sees only the system's.
+/// `SeedVaultBridge` and `KeyGuardBridge`, the Kotlin objects in the app's
+/// MainActivity.kt. App classes are found through the activity's class
+/// loader: a thread Rust attached sees only the system's.
 const BRIDGE: &str = "dev.dioxus.main.SeedVaultBridge";
+const GUARD: &str = "dev.dioxus.main.KeyGuardBridge";
 
 fn bridge_class<'a>(
     env: &mut JNIEnv<'a>,
     activity: &JObject,
 ) -> jni::errors::Result<jni::objects::JClass<'a>> {
+    app_class(env, activity, BRIDGE)
+}
+
+fn app_class<'a>(
+    env: &mut JNIEnv<'a>,
+    activity: &JObject,
+    class: &str,
+) -> jni::errors::Result<jni::objects::JClass<'a>> {
     let loader = env
         .call_method(activity, "getClassLoader", "()Ljava/lang/ClassLoader;", &[])?
         .l()?;
-    let name = env.new_string(BRIDGE)?;
+    let name = env.new_string(class)?;
     let class = env
         .call_method(
             &loader,
@@ -209,6 +218,106 @@ pub(crate) fn bridge_sign(
                 JValue::Object(&payload),
                 JValue::Bool(message.into()),
             ],
+        )?;
+        Ok(())
+    })
+}
+
+pub(crate) fn guard_availability() -> Result<i32, String> {
+    with_activity(|env, activity| {
+        let class = app_class(env, activity, GUARD)?;
+        env.call_static_method(&class, "availability", "()I", &[])?
+            .i()
+    })
+}
+
+pub(crate) fn guard_take(id: i64) -> Result<Option<String>, String> {
+    with_activity(|env, activity| {
+        let class = app_class(env, activity, GUARD)?;
+        let result = env
+            .call_static_method(&class, "take", "(J)Ljava/lang/String;", &[JValue::Long(id)])?
+            .l()?;
+        if result.is_null() {
+            return Ok(None);
+        }
+        let text: String = env.get_string(&result.into())?.into();
+        Ok(Some(text))
+    })
+}
+
+/// The key request `id` opened, copied out, with the Java array wiped.
+pub(crate) fn guard_take_secret(id: i64) -> Result<Option<zeroize::Zeroizing<Vec<u8>>>, String> {
+    with_activity(|env, activity| {
+        let class = app_class(env, activity, GUARD)?;
+        let array = env
+            .call_static_method(&class, "takeSecret", "(J)[B", &[JValue::Long(id)])?
+            .l()?;
+        if array.is_null() {
+            return Ok(None);
+        }
+        let array = jni::objects::JByteArray::from(array);
+        let secret = zeroize::Zeroizing::new(env.convert_byte_array(&array)?);
+        env.call_static_method(
+            "java/util/Arrays",
+            "fill",
+            "([BB)V",
+            &[JValue::Object(&array), JValue::Byte(0)],
+        )?;
+        Ok(Some(secret))
+    })
+}
+
+/// Start sealing `secret` behind the fingerprint. The Java copy is wiped by
+/// the bridge once it is sealed or refused.
+pub(crate) fn guard_enroll(id: i64, alias: &str, secret: &[u8]) -> Result<(), String> {
+    with_activity(|env, activity| {
+        let class = app_class(env, activity, GUARD)?;
+        let alias = env.new_string(alias)?;
+        let secret = env.byte_array_from_slice(secret)?;
+        env.call_static_method(
+            &class,
+            "enroll",
+            "(JLjava/lang/String;[B)V",
+            &[
+                JValue::Long(id),
+                JValue::Object(&alias),
+                JValue::Object(&secret),
+            ],
+        )?;
+        Ok(())
+    })
+}
+
+pub(crate) fn guard_open(id: i64, alias: &str, iv: &str, sealed: &str) -> Result<(), String> {
+    with_activity(|env, activity| {
+        let class = app_class(env, activity, GUARD)?;
+        let alias = env.new_string(alias)?;
+        let iv = env.new_string(iv)?;
+        let sealed = env.new_string(sealed)?;
+        env.call_static_method(
+            &class,
+            "open",
+            "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+            &[
+                JValue::Long(id),
+                JValue::Object(&alias),
+                JValue::Object(&iv),
+                JValue::Object(&sealed),
+            ],
+        )?;
+        Ok(())
+    })
+}
+
+pub(crate) fn guard_forget(alias: &str) -> Result<(), String> {
+    with_activity(|env, activity| {
+        let class = app_class(env, activity, GUARD)?;
+        let alias = env.new_string(alias)?;
+        env.call_static_method(
+            &class,
+            "forget",
+            "(Ljava/lang/String;)V",
+            &[JValue::Object(&alias)],
         )?;
         Ok(())
     })

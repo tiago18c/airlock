@@ -34,8 +34,8 @@ pub use notices::{
     ToastState, TxStatus, MAX_NOTICES, RETENTION_SECS,
 };
 pub use ports::{
-    BoxFuture, Clock, Links, MaybeSend, NoLinks, NoNotifier, Notification, Notifier, Ports,
-    Spawner, Storage,
+    BoxFuture, Clock, KeyGuard, KeyGuardError, Links, MaybeSend, NoLinks, NoNotifier, Notification,
+    Notifier, Ports, Spawner, Storage,
 };
 pub use public::PublicCore;
 pub use slices::{

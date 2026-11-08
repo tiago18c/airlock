@@ -17,6 +17,7 @@ hw-protocol.workspace = true
 dioxus = { workspace = true, features = ["mobile"] }
 tokio = { workspace = true, features = ["time"] }
 tracing.workspace = true
+zeroize.workspace = true
 
 [target.'cfg(target_os = "android")'.dependencies]
 jni = "0.21.1"

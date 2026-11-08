@@ -434,6 +434,13 @@ impl Core {
         self.finish_unlock(opened)
     }
 
+    /// The unlocked vault's key, for a [`KeyGuard`](crate::KeyGuard) to keep
+    /// behind the user's fingerprint. Only an action the user started asks
+    /// for it: turning fingerprint unlock on.
+    pub fn vault_key_bytes(&self) -> Result<zeroize::Zeroizing<Vec<u8>>, VaultError> {
+        locked(&self.inner.vault).seal_key_bytes()
+    }
+
     /// Read what opening the vault needs, for [`Unlocking::open`].
     pub fn begin_unlock(&self) -> Result<Unlocking<VaultData>, VaultError> {
         self.inner.begin_unlock()

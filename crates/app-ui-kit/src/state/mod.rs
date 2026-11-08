@@ -3,6 +3,7 @@
 
 pub mod device;
 pub mod forms;
+pub mod key_guard;
 pub mod online;
 pub mod proposals;
 pub mod pump;

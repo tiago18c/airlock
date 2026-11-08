@@ -358,6 +358,7 @@ dependencies = [
  "wallet-vault",
  "wasm-bindgen-futures",
  "web-sys",
+ "zeroize",
 ]
 
 [[package]]
@@ -404,6 +405,7 @@ dependencies = [
  "ndk-context",
  "tokio",
  "tracing",
+ "zeroize",
 ]
 
 [[package]]
