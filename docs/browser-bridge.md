@@ -2,7 +2,7 @@
 
 How a site reaches Airlock: a browser extension that holds no keys, a native messaging host, and the online desktop app, which reviews and signs. How each kind of wallet signs a site's request is in [signing.md](signing.md#flows-that-start-in-a-browser).
 
-The bridge answers `status`, `connect`, `disconnect`, `signTransaction`, `signAndSendTransaction`, `signAndSendAllTransactions`, `signMessage` and `signIn`. One request holds one to 16 transactions (legacy, v0 or v1), which go back together once every one is signed. Every other method returns `not_implemented`. It is desktop only, and only in the online app: Airlock Offline does not link it.
+The bridge answers `status`, `connect`, `disconnect`, `signTransaction`, `signAndSendTransaction`, `signAndSendAllTransactions`, `signMessage` and `signIn`. One request holds one to 16 transactions (legacy, v0 or v1), which go back together once every one is signed. Every other method returns `not_implemented`. It is desktop only, and only in the online app: Airlock Offline does not link it. On Android, other apps reach the same checks, queue and modals through Mobile Wallet Adapter instead (see [android.md](android.md#requests-from-other-apps-mobile-wallet-adapter)); their origin is only what the app says.
 
 ## Components
 

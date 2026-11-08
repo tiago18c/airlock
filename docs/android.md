@@ -1,6 +1,6 @@
 # Airlock on Android
 
-`apps/airlock-mobile` is Airlock for Android phones: the online app's shell and panes, laid out for a phone, run online or offline as chosen in Settings. It supports Android 14 and later (API 34), and targets API 36.
+`apps/airlock-mobile` is Airlock for Android phones: the online app's shell and panes, laid out for a phone, run online or offline as chosen on the first launch and in Settings. It supports Android 14 and later (API 34), and targets API 36.
 
 ## How it is put together
 
@@ -14,7 +14,7 @@ apps/airlock-mobile   main.rs: the tabs, the mode, the hub   android/: MainActiv
 It is a third app over the same crates, not a branch inside them. The rules in [architecture.md](architecture.md) hold: the shared crates gained no `cfg(target_os = "android")` beyond leaving out what Android cannot do (desktop file dialogs, opening a folder, `xdg-open`).
 
 - **Layout.** `AppShell { more }` lays the shell out for a phone: four sections along a bottom tab bar, the rest under **More**, short tab labels, and the page drawn under the system bars with the safe-area insets. Panes read `use_phone_layout()` to leave out what a phone has no room for or no use for (empty wallet groups, the tray, USB hardware wallets, Open log folder). Text a person can work out from the screen carries the `wordy` class, which a phone hides; what changes with the screen's state stays.
-- **Online or offline.** Settings → Mode. Each mode has its own data folder, so its own vault (`airlock` and `airlock-offline` under the app's folder). Offline lists only what works without a node and provides no `Network`, as Airlock Offline does. Switching restarts the app. Unlike Airlock Offline on desktop, the offline mode is a promise the app keeps, not something Android enforces: the APK still has the network code and the `INTERNET` permission.
+- **Online or offline.** Asked on the first launch, before the vault is created (`app_mobile::Setup`, in the shell's `setup` slot), and changed in Settings → Mode. Each mode has its own data folder, so its own vault (`airlock` and `airlock-offline` under the app's folder). Offline lists only what works without a node and provides no `Network`, as Airlock Offline does. Switching restarts the app. Unlike Airlock Offline on desktop, the offline mode is a promise the app keeps, not something Android enforces: the APK still has the network code and the `INTERNET` permission.
 - **Storage.** Everything is under `Context.getNoBackupFilesDir()`: no other app can read it, and neither Android's cloud backup nor a device-to-device transfer copies it (`allowBackup="false"` in the manifest as well). Moving to a new phone goes through Airlock's export or the seed phrase.
 - **The WebView.** The page policy is the desktop one (`app_ui_kit::platform::page_policy`), and nothing navigates away from the app. wry asks for the camera permission the first time the scanner starts, and grants the page its camera.
 - **Links** open in the phone's browser through an `ACTION_VIEW` intent, `https` and `http` only.
@@ -54,6 +54,28 @@ An app cannot list or open the phone's USB devices itself, so the pieces differ 
 | `hw_transport::android::open_fd` | `nusb` from the file descriptor. A Trezor is opened as on desktop. A Ledger's APDU interface is HID, which Android gives an app no driver for, so it is read as plain USB: the first HID interface with an interrupt endpoint each way, in the same 64-byte packets, without a report id. `async-hid` is not built for Android |
 
 A Ledger that opens its Solana app restarts its USB connection, and Android sees a new device, so it asks again. Bluetooth (Ledger Nano X, Stax and Flex; Trezor Safe 7) is not supported.
+
+## Requests from other apps (Mobile Wallet Adapter)
+
+Online, other apps on the phone, and sites open in Chrome, can ask Airlock to connect and sign, as the extension does on desktop. They find it through [Mobile Wallet Adapter](https://docs.solanamobile.com/mobile-wallet-adapter/overview) (MWA): a `solana-wallet:` link opens Airlock, and they talk over an encrypted local WebSocket. The first launch asks whether to allow this (on by default), and Settings → **Apps on this phone** changes it. Offline, Airlock is never listed as a wallet.
+
+| Piece | What it does |
+| --- | --- |
+| `MwaActivity` in `MainActivity.kt` | What a `solana-wallet:` link opens. It has no window: it starts the session in the asking app's task, brings Airlock forward, and finishes when the session ends, which is what that app waits for. It is off in the manifest, and `MwaBridge.setEnabled` turns it on only in online mode with the setting on, so otherwise no app is offered Airlock |
+| `MwaBridge` in `MainActivity.kt` | Holds each session with Solana Mobile's `walletlib` (2.1.1): the association, its encryption, and the auth tokens it issues and checks. Hands each request to Rust as JSON (`next`), and completes it with Rust's answer (`answer`) |
+| `app-mobile::wallet_adapter` | A thread that takes those events, keeps an app session for each MWA session, and answers each request on a thread of its own. Also the setting |
+| `app_desktop::bridge::AppSession` | Reads each request into the frame the extension would have sent, and puts it through the bridge's own checks, queue and request modal. `app-desktop` is linked with `bridge` only: no socket, tray or OS toasts |
+
+| MWA | What Airlock does |
+| --- | --- |
+| `authorize` | Always asks, in the connect modal, even from a site with a grant: any app can give that site's address. With a sign-in payload, the sign-in modal |
+| `authorize` with an auth token | `walletlib` checks the token. Airlock goes on without asking only while the site still holds a grant it did not end |
+| `sign_transactions` | `signTransaction`, each transaction asked of the granted account that signs it, at most 16 |
+| `sign_and_send_transactions` | `signAndSendAllTransactions`, serial when the app asks each to wait for the one before |
+| `sign_messages` | `signMessage`, one message at a time |
+| `deauthorize` | Ends the site's connection, as a site's `disconnect` does |
+
+Android does not vouch for who an app says it is. The request is filed under the address the app gave (`https://…`), or its package (`android-app://…`) when it gave none, and the modal says the app only says it is that site, with the package Android reported, when it did (an app that started the session; Chrome does not say). A sign-in is still checked against that address. Remote sessions through a reflector server are not offered.
 
 ## Building and running
 

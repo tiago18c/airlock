@@ -11,6 +11,7 @@ workspace = true
 
 [dependencies]
 app-core.workspace = true
+app-desktop = { workspace = true, features = ["bridge"] }
 app-mobile = { path = "../../crates/app-mobile" }
 app-online = { path = "../../crates/app-online", default-features = false }
 app-ui.workspace = true

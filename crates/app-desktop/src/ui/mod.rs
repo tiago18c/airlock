@@ -5,5 +5,5 @@ mod connections;
 mod extension_chip;
 
 pub use bridge::{use_request_modal, BridgeRequests, RequestModal, RequestToast};
-pub use connections::{ConnectionsCard, ConnectionsHost};
+pub use connections::{ConnectionsCard, ConnectionsHost, ConnectionsModal};
 pub use extension_chip::ExtensionChip;

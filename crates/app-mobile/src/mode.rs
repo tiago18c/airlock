@@ -45,6 +45,11 @@ pub fn load() -> Mode {
         .unwrap_or(Mode::Online)
 }
 
+/// Whether a mode was ever chosen, on the first launch or in Settings.
+pub fn chosen() -> bool {
+    path().is_some_and(|path| path.exists())
+}
+
 /// Keep `mode` for the next launch.
 pub fn save(mode: Mode) -> Result<(), String> {
     let path = path().ok_or("no private files folder")?;

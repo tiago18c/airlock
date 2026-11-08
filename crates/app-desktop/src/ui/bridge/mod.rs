@@ -216,6 +216,7 @@ pub fn BridgeRequests() -> Element {
     let session = use_context::<Session>();
     // The core's queue is the only one; an answer leaves it at once.
     let prompt = use_memo(move || BridgePrompt::head_of(&session.bridge.read()));
+    #[cfg(feature = "desktop")]
     let window = dioxus::desktop::use_window();
     let mut announced = use_signal(|| None::<String>);
     let RequestModal { mut open } = use_context::<RequestModal>();
@@ -234,6 +235,7 @@ pub fn BridgeRequests() -> Element {
         );
         announced.set(Some(id));
         open.set(true);
+        #[cfg(feature = "desktop")]
         window.request_user_attention(Some(
             dioxus::desktop::tao::window::UserAttentionType::Critical,
         ));
@@ -333,13 +335,18 @@ fn RequestCard(current: BridgePrompt, on_open: EventHandler<()>) -> Element {
         (SiteCall::SignTransactions(_), _, false) => "asks for a signature".to_string(),
     };
     let id = current.id.clone();
+    let claim = app_claim(&current.id);
     rsx! {
         div { class: "toast request-toast", role: "status",
             div { class: "toast-head",
-                span { class: "toast-label", "Browser request" }
-                span { class: "chip kind",
-                    title: "The extension shows the same code for this request.",
-                    code { "{code}" }
+                if claim.is_some() {
+                    span { class: "toast-label", "App request" }
+                } else {
+                    span { class: "toast-label", "Browser request" }
+                    span { class: "chip kind",
+                        title: "The extension shows the same code for this request.",
+                        code { "{code}" }
+                    }
                 }
             }
             p { class: "bridge-origin", "{current.origin}" }
@@ -418,16 +425,50 @@ fn sign_label(
     }
 }
 
+/// Who the app behind request `id` says it is, for a request from an app on
+/// this phone (Mobile Wallet Adapter). A browser request has none.
+fn app_claim(id: &str) -> Option<crate::bridge::AppClaim> {
+    try_consume_context::<crate::bridge::Bridge>().and_then(|bridge| bridge.app_claim(id))
+}
+
+/// What Android says about an app's request: only the app names the site.
+#[component]
+fn AppClaimNote(claim: crate::bridge::AppClaim) -> Element {
+    let who = claim
+        .name
+        .as_deref()
+        .filter(|name| !name.trim().is_empty())
+        .map_or_else(
+            || "An app on this phone".to_string(),
+            |name| format!("{name}, an app on this phone,"),
+        );
+    rsx! {
+        p { class: "hint app-claim",
+            "{who} says it is this site. Android does not confirm that."
+            if let Some(package) = claim.package {
+                " Opened by "
+                code { "{package}" }
+                "."
+            }
+        }
+    }
+}
+
 #[component]
 fn RequestHead(current: BridgePrompt, title: String, on_close: EventHandler<()>) -> Element {
     let code = crate::bridge::request_code(&current.id);
+    let claim = app_claim(&current.id);
     rsx! {
         div { class: "request-head",
             div { class: "chip-row",
-                span { class: "eyebrow", "Browser request" }
-                span { class: "chip kind",
-                    title: "The extension shows the same code for this request.",
-                    code { "{code}" }
+                if claim.is_some() {
+                    span { class: "eyebrow", "App request" }
+                } else {
+                    span { class: "eyebrow", "Browser request" }
+                    span { class: "chip kind",
+                        title: "The extension shows the same code for this request.",
+                        code { "{code}" }
+                    }
                 }
                 if current.waiting > 0 {
                     span { class: "chip", "{current.waiting} more waiting" }
@@ -441,5 +482,8 @@ fn RequestHead(current: BridgePrompt, title: String, on_close: EventHandler<()>)
         }
         h3 { "{title}" }
         p { class: "bridge-origin", "{current.origin}" }
+        if let Some(claim) = claim {
+            AppClaimNote { claim }
+        }
     }
 }

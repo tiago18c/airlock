@@ -69,43 +69,13 @@ pub(crate) fn open_url(url: &str) -> Result<(), String> {
     })
 }
 
-/// Ask Android to open the app's launcher activity in a new task, which
-/// starts a new process once this one has ended.
+/// Ask `RestartActivity`, in a process of its own, to start the app again
+/// once this process has ended. MainActivity is single-task, so an intent
+/// from this process would only reach the instance about to end.
 pub(crate) fn relaunch() -> Result<(), String> {
     with_activity(|env, activity| {
-        let packages = env
-            .call_method(
-                activity,
-                "getPackageManager",
-                "()Landroid/content/pm/PackageManager;",
-                &[],
-            )?
-            .l()?;
-        let name = env
-            .call_method(activity, "getPackageName", "()Ljava/lang/String;", &[])?
-            .l()?;
-        let intent = env
-            .call_method(
-                &packages,
-                "getLaunchIntentForPackage",
-                "(Ljava/lang/String;)Landroid/content/Intent;",
-                &[JValue::Object(&name)],
-            )?
-            .l()?;
-        // FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_CLEAR_TASK
-        let flags = 0x1000_0000 | 0x0000_8000;
-        env.call_method(
-            &intent,
-            "addFlags",
-            "(I)Landroid/content/Intent;",
-            &[JValue::Int(flags)],
-        )?;
-        env.call_method(
-            activity,
-            "startActivity",
-            "(Landroid/content/Intent;)V",
-            &[JValue::Object(&intent)],
-        )?;
+        let class = app_class(env, activity, RESTART)?;
+        env.call_static_method(&class, "restart", "()V", &[])?;
         Ok(())
     })
 }
@@ -116,6 +86,8 @@ pub(crate) fn relaunch() -> Result<(), String> {
 const BRIDGE: &str = "dev.dioxus.main.SeedVaultBridge";
 const GUARD: &str = "dev.dioxus.main.KeyGuardBridge";
 const USB: &str = "dev.dioxus.main.UsbBridge";
+const MWA: &str = "dev.dioxus.main.MwaBridge";
+const RESTART: &str = "dev.dioxus.main.RestartActivity";
 
 fn bridge_class<'a>(
     env: &mut JNIEnv<'a>,
@@ -366,5 +338,48 @@ pub(crate) fn usb_take(id: i64) -> Result<Option<String>, String> {
         }
         let text: String = env.get_string(&result.into())?.into();
         Ok(Some(text))
+    })
+}
+
+/// Whether other apps find Airlock as a Mobile Wallet Adapter wallet.
+pub(crate) fn mwa_set_enabled(on: bool) -> Result<(), String> {
+    with_activity(|env, activity| {
+        let class = app_class(env, activity, MWA)?;
+        env.call_static_method(&class, "setEnabled", "(Z)V", &[JValue::Bool(on.into())])?;
+        Ok(())
+    })
+}
+
+/// The next MWA event, waiting up to `timeout_ms` for one.
+pub(crate) fn mwa_next(timeout_ms: i64) -> Result<Option<String>, String> {
+    with_activity(|env, activity| {
+        let class = app_class(env, activity, MWA)?;
+        let result = env
+            .call_static_method(
+                &class,
+                "next",
+                "(J)Ljava/lang/String;",
+                &[JValue::Long(timeout_ms)],
+            )?
+            .l()?;
+        if result.is_null() {
+            return Ok(None);
+        }
+        let text: String = env.get_string(&result.into())?.into();
+        Ok(Some(text))
+    })
+}
+
+pub(crate) fn mwa_answer(id: i64, json: &str) -> Result<(), String> {
+    with_activity(|env, activity| {
+        let class = app_class(env, activity, MWA)?;
+        let json = env.new_string(json)?;
+        env.call_static_method(
+            &class,
+            "answer",
+            "(JLjava/lang/String;)V",
+            &[JValue::Long(id), JValue::Object(&json)],
+        )?;
+        Ok(())
     })
 }

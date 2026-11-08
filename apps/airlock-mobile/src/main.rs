@@ -1,10 +1,14 @@
 //! Airlock on Android: the online app's shell and panes, laid out for a
 //! phone, with a bottom tab bar and the rest of the sections under More.
 //!
-//! The app runs online or offline, as chosen in Settings. Each mode keeps
-//! its own vault in its own folder; offline, no node is asked anything and
-//! the online panes are not listed. Switching restarts the app in the other
-//! mode.
+//! The app runs online or offline, as chosen on the first launch and in
+//! Settings. Each mode keeps its own vault in its own folder; offline, no
+//! node is asked anything and the online panes are not listed. Switching
+//! restarts the app in the other mode.
+//!
+//! Online, other apps on the phone and sites in Chrome can ask Airlock to
+//! connect and sign through Mobile Wallet Adapter, answered in the browser
+//! request modal. Offline, Airlock is not listed as a wallet at all.
 
 use app_mobile::Mode;
 use app_online::{HistoryPanel, NetworkChip, PortfolioPanel, ProposalsHost, SendHost, StakePanel};
@@ -65,6 +69,15 @@ fn App() -> Element {
     if let Some(guard) = guard {
         use_context_provider(move || app_ui::state::key_guard::KeyGuardHandle(guard));
     }
+    // Only an online Airlock whose user chose so is a wallet other apps
+    // find. A first launch is listed once its setup says so.
+    use_hook(move || {
+        use app_mobile::wallet_adapter;
+        let setting_up = first_launch(core);
+        wallet_adapter::set_listed(
+            mode == Mode::Online && !setting_up && wallet_adapter::allowed(),
+        );
+    });
 
     match mode {
         Mode::Online => rsx! { Online { core } },
@@ -79,6 +92,19 @@ fn Online(core: CopyValue<app_core::Core>) -> Element {
     use_context_provider(|| Some(Network::new(session)));
     use_hook(|| session.start_detect());
 
+    // Requests from other apps: the browser bridge's queue and modal, with
+    // no socket.
+    let bridge = use_context_provider(app_desktop::bridge::Bridge::for_apps);
+    use_hook(move || {
+        bridge.attach(core.peek().public());
+        app_mobile::wallet_adapter::serve(bridge.clone());
+    });
+    app_desktop::use_request_modal();
+
+    // The first launch asks how the app is to be used before its vault is
+    // created.
+    let mut setting_up = use_signal(move || first_launch(core));
+
     rsx! {
         AppShell {
             brand: BRAND,
@@ -89,12 +115,22 @@ fn Online(core: CopyValue<app_core::Core>) -> Element {
             history: rsx! { HistoryPanel {} },
             top_bar_extra: rsx! { NoticeBell {} },
             sidebar_status: rsx! { NetworkChip {} },
-            settings_extra: rsx! { app_mobile::ModeCard { mode: Mode::Online } },
+            above_panes: rsx! {
+                app_desktop::BridgeRequests {}
+                app_desktop::ConnectionsHost {}
+            },
+            settings_extra: rsx! {
+                app_mobile::ModeCard { mode: Mode::Online }
+                app_mobile::AppsCard {}
+            },
             overlays: rsx! {
-                ToastHost {}
+                ToastHost { pinned: rsx! { app_desktop::RequestToast {} } }
                 ProposalsHost {}
                 SendHost {}
             },
+            setup: setting_up().then(|| rsx! {
+                app_mobile::Setup { on_done: move |_| setting_up.set(false) }
+            }),
         }
     }
 }
@@ -114,4 +150,11 @@ fn Offline(core: CopyValue<app_core::Core>) -> Element {
             settings_extra: rsx! { app_mobile::ModeCard { mode: Mode::Offline } },
         }
     }
+}
+
+/// The first launch: no mode was ever chosen and there is no vault yet. A
+/// vault made before the first launch asked anything counts as chosen.
+fn first_launch(core: CopyValue<app_core::Core>) -> bool {
+    !app_mobile::mode::chosen()
+        && *core.peek().slices().vault.get() == app_core::VaultState::Uninitialized
 }

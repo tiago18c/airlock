@@ -25,9 +25,13 @@ wallet-flows.workspace = true
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 bridge-host = { path = "../bridge-host", optional = true }
 bridge-protocol = { workspace = true, optional = true }
-# OS toasts: online desktop only (`bridge` + `desktop`). Airgap skips this.
-notify-rust = { version = "4", optional = true }
 tokio = { workspace = true, features = ["sync", "rt", "time", "macros"] }
+
+# OS toasts: online desktop only (`bridge` + `desktop`). Airgap skips this,
+# and so does Android, which takes requests from apps on the phone with
+# `bridge` alone.
+[target.'cfg(not(any(target_arch = "wasm32", target_os = "android")))'.dependencies]
+notify-rust = { version = "4", optional = true }
 
 [target.'cfg(windows)'.dependencies]
 webview2-com = "0.38"

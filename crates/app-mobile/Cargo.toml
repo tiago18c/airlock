@@ -2,7 +2,7 @@
 name = "app-mobile"
 version.workspace = true
 edition.workspace = true
-description = "Android services: the app's private folders, the WebView's settings, links, the online or offline choice, the Seed Vault and USB hardware wallets"
+description = "Android services: the app's private folders, the WebView's settings, links, the online or offline choice, the Seed Vault, USB hardware wallets and Mobile Wallet Adapter requests"
 license.workspace = true
 publish.workspace = true
 
@@ -11,9 +11,14 @@ workspace = true
 
 [dependencies]
 app-core.workspace = true
+# The browser bridge's checks, queue and request modal, for requests from
+# other apps (Mobile Wallet Adapter). No socket is opened on Android.
+app-desktop = { workspace = true, features = ["bridge"] }
 app-ui-kit.workspace = true
 base64.workspace = true
 hw-protocol.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 dioxus = { workspace = true, features = ["mobile"] }
 tokio = { workspace = true, features = ["time"] }
 tracing.workspace = true

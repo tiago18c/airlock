@@ -24,5 +24,10 @@ min_sdk = 34
 target_sdk = 36
 compile_sdk = 36
 # Solana Mobile's Seed Vault SDK (Saga, Seeker). Its manifest declares the
-# ACCESS_SEED_VAULT permission and the package queries it needs.
-gradle_dependencies = ["com.solanamobile:seedvault-wallet-sdk:0.4.0"]
+# ACCESS_SEED_VAULT permission and the package queries it needs. And their
+# Mobile Wallet Adapter wallet library, for requests from other apps: 2.1.1,
+# since 2.2.0 needs a newer Kotlin than dx's Gradle project builds with.
+gradle_dependencies = [
+    "com.solanamobile:seedvault-wallet-sdk:0.4.0",
+    "com.solanamobile:mobile-wallet-adapter-walletlib:2.1.1",
+]

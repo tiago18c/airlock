@@ -1,7 +1,9 @@
 // Airlock's activity: wry's, plus the bridge to the Seed Vault of a Solana
-// Mobile phone (Saga, Seeker), fingerprint unlock (KeyGuardBridge), and
-// Ledgers and Trezors over USB (UsbBridge). dx writes this file in place of its default
-// MainActivity.kt (`android_main_activity` in Dioxus.toml).
+// Mobile phone (Saga, Seeker), fingerprint unlock (KeyGuardBridge), Ledgers
+// and Trezors over USB (UsbBridge), Mobile Wallet Adapter requests from
+// other apps (MwaBridge, MwaActivity), and starting the app again after a
+// change of mode (RestartActivity). dx writes this file in place of its
+// default MainActivity.kt (`android_main_activity` in Dioxus.toml).
 //
 // Rust (`app-mobile`, `seed_vault.rs`) calls SeedVaultBridge's methods over
 // JNI. Each request gets an id; the Seed Vault's screen opens over the app,
@@ -9,7 +11,9 @@
 // A result is "ok:<text>" or "err:<code>:<text>".
 package dev.dioxus.main
 
+import android.app.Activity
 import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -44,7 +48,30 @@ import com.solanamobile.seedvault.SeedVault
 import com.solanamobile.seedvault.SigningRequest
 import com.solanamobile.seedvault.Wallet
 import com.solanamobile.seedvault.WalletContractV1
+import com.solana.mobilewalletadapter.common.ProtocolContract
+import com.solana.mobilewalletadapter.common.signin.SignInWithSolana
+import com.solana.mobilewalletadapter.common.util.Base58
+import com.solana.mobilewalletadapter.walletlib.association.AssociationUri
+import com.solana.mobilewalletadapter.walletlib.association.LocalAssociationUri
+import com.solana.mobilewalletadapter.walletlib.authorization.AuthIssuerConfig
+import com.solana.mobilewalletadapter.walletlib.protocol.MobileWalletAdapterConfig
+import com.solana.mobilewalletadapter.walletlib.scenario.AuthorizeRequest
+import com.solana.mobilewalletadapter.walletlib.scenario.AuthorizedAccount
+import com.solana.mobilewalletadapter.walletlib.scenario.DeauthorizedEvent
+import com.solana.mobilewalletadapter.walletlib.scenario.LocalScenario
+import com.solana.mobilewalletadapter.walletlib.scenario.ReauthorizeRequest
+import com.solana.mobilewalletadapter.walletlib.scenario.Scenario
+import com.solana.mobilewalletadapter.walletlib.scenario.SignAndSendTransactionsRequest
+import com.solana.mobilewalletadapter.walletlib.scenario.SignInResult
+import com.solana.mobilewalletadapter.walletlib.scenario.SignMessagesRequest
+import com.solana.mobilewalletadapter.walletlib.scenario.SignPayloadsRequest
+import com.solana.mobilewalletadapter.walletlib.scenario.SignTransactionsRequest
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
+import org.json.JSONArray
+import org.json.JSONObject
 
 typealias BuildConfig = dev.airlock.mobile.BuildConfig
 
@@ -605,6 +632,356 @@ object UsbBridge {
             "ok:$fd"
         } finally {
             connection.close()
+        }
+    }
+}
+
+/// Mobile Wallet Adapter: other apps on the phone, and web pages in Chrome,
+/// ask Airlock to connect and sign through a `solana-wallet:` link, which
+/// opens MwaActivity. Solana Mobile's walletlib holds the session: the local
+/// WebSocket, its encryption, and the auth tokens it issues. Each request is
+/// handed to Rust (`app-mobile`, `mwa.rs`) as JSON through next(); Rust puts
+/// it through the same checks and request modal as a browser request, and
+/// answers with answer(id, json).
+///
+/// MwaActivity is off in the manifest. Rust turns it on only in online mode
+/// with "Apps on this phone" on in Settings, so an offline Airlock is not a
+/// wallet any app can find.
+object MwaBridge {
+    private const val TAG = "AirlockMwa"
+
+    private class Session(val id: Long, val activity: MwaActivity, val pkg: String?) {
+        var scenario: Scenario? = null
+    }
+
+    private class Pending(val session: Long, val request: Any)
+
+    private val events = LinkedBlockingQueue<String>()
+    private val sessions = ConcurrentHashMap<Long, Session>()
+    private val pending = ConcurrentHashMap<Long, Pending>()
+    private val ids = AtomicLong(1)
+
+    /// Whether other apps find Airlock as a wallet.
+    @JvmStatic
+    fun setEnabled(on: Boolean) {
+        val a = SeedVaultBridge.activity ?: return
+        val state = if (on) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+        else PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+        a.packageManager.setComponentEnabledSetting(
+            ComponentName(a, MwaActivity::class.java),
+            state,
+            PackageManager.DONT_KILL_APP
+        )
+        if (!on) sessions.values.forEach { it.scenario?.close() }
+    }
+
+    /// The next event for Rust, waiting up to `timeoutMs` for one.
+    @JvmStatic
+    fun next(timeoutMs: Long): String? = events.poll(timeoutMs, TimeUnit.MILLISECONDS)
+
+    /// Rust's answer to request `id`.
+    @JvmStatic
+    fun answer(id: Long, json: String) {
+        val waiting = pending.remove(id) ?: return
+        try {
+            complete(waiting.request, JSONObject(json))
+        } catch (e: Exception) {
+            Log.w(TAG, "could not answer", e)
+        }
+    }
+
+    fun start(activity: MwaActivity, association: LocalAssociationUri, pkg: String?): Long {
+        val id = ids.getAndIncrement()
+        val session = Session(id, activity, pkg)
+        sessions[id] = session
+        val config = MobileWalletAdapterConfig(
+            16, // transactions per request, as for a browser
+            1, // messages per request
+            arrayOf<Any>(MobileWalletAdapterConfig.LEGACY_TRANSACTION_VERSION, 0),
+            3000L,
+            arrayOf(
+                ProtocolContract.FEATURE_ID_SIGN_TRANSACTIONS,
+                ProtocolContract.FEATURE_ID_SIGN_IN_WITH_SOLANA
+            )
+        )
+        val scenario = association.createScenario(
+            activity.applicationContext, config, AuthIssuerConfig("Airlock"), Callbacks(session)
+        )
+        session.scenario = scenario
+        events.put(JSONObject().put("kind", "open").put("session", id).toString())
+        scenario.startAsync()
+        Log.i(TAG, "session $id from ${pkg ?: "a browser"}")
+        return id
+    }
+
+    /// MwaActivity went away before its session ended: the app gave up.
+    fun activityGone(id: Long) {
+        sessions[id]?.scenario?.close()
+    }
+
+    private fun ended(session: Session) {
+        if (sessions.remove(session.id) == null) return
+        pending.entries.removeIf { it.value.session == session.id }
+        events.put(JSONObject().put("kind", "closed").put("session", session.id).toString())
+        // Back to the app that asked, when Airlock is in front for it: its
+        // task, which MwaActivity is in, comes forward, and MwaActivity
+        // finishes there, which is the app's sign that the session is over.
+        val front = SeedVaultBridge.activity?.hasWindowFocus() == true
+        session.activity.runOnUiThread {
+            if (front) {
+                session.activity.getSystemService(android.app.ActivityManager::class.java)
+                    ?.moveTaskToFront(session.activity.taskId, 0)
+            }
+            session.activity.done()
+        }
+        Log.i(TAG, "session ${session.id} ended")
+    }
+
+    private fun b64(bytes: ByteArray): String = Base64.encodeToString(bytes, Base64.NO_WRAP)
+    private fun unb64(text: String): ByteArray = Base64.decode(text, Base64.NO_WRAP)
+
+    private fun strings(items: Iterable<String>) = JSONArray().apply { items.forEach { put(it) } }
+
+    private fun accounts(list: Array<AuthorizedAccount>) =
+        strings(list.map { Base58.encode(it.publicKey) })
+
+    private fun payloads(list: Array<ByteArray>) = strings(list.map { b64(it) })
+
+    /// Hand a request to Rust with who it comes from.
+    private fun ask(session: Session, request: Any, name: String?, uri: Uri?, call: JSONObject) {
+        val id = ids.getAndIncrement()
+        pending[id] = Pending(session.id, request)
+        val identity = JSONObject()
+            .put("name", name ?: JSONObject.NULL)
+            .put("uri", uri?.toString() ?: JSONObject.NULL)
+            .put("package", session.pkg ?: JSONObject.NULL)
+        events.put(
+            JSONObject()
+                .put("kind", "request")
+                .put("id", id)
+                .put("session", session.id)
+                .put("identity", identity)
+                .put("call", call)
+                .toString()
+        )
+    }
+
+    /// The Wallet Standard's SolanaSignInInput for MWA's sign-in payload.
+    private fun signInInput(p: SignInWithSolana.Payload): JSONObject {
+        val o = JSONObject()
+        p.domain?.let { o.put("domain", it) }
+        p.addressRaw?.let { o.put("address", Base58.encode(it)) }
+        p.statement?.let { o.put("statement", it) }
+        p.uri?.let { o.put("uri", it.toString()) }
+        p.version?.let { o.put("version", it) }
+        p.chainId?.let { o.put("chainId", it) }
+        p.nonce?.let { o.put("nonce", it) }
+        p.issuedAt?.let { o.put("issuedAt", it) }
+        p.expirationTime?.let { o.put("expirationTime", it) }
+        p.notBefore?.let { o.put("notBefore", it) }
+        p.requestId?.let { o.put("requestId", it) }
+        p.resources?.let { list -> o.put("resources", strings(list.map { it.toString() })) }
+        return o
+    }
+
+    private fun complete(request: Any, answer: JSONObject) {
+        val kind = answer.optString("kind")
+        fun array(key: String): Array<ByteArray> {
+            val list = answer.getJSONArray(key)
+            return Array(list.length()) { unb64(list.getString(it)) }
+        }
+        fun flags(): BooleanArray {
+            val list = answer.getJSONArray("valid")
+            return BooleanArray(list.length()) { list.getBoolean(it) }
+        }
+        when (request) {
+            is AuthorizeRequest -> {
+                if (kind != "authorized") return request.completeWithDecline()
+                val list = answer.getJSONArray("accounts")
+                val accounts = Array(list.length()) {
+                    val one = list.getJSONObject(it)
+                    AuthorizedAccount(
+                        unb64(one.getString("publicKey")),
+                        one.optString("label").ifEmpty { null },
+                        null,
+                        arrayOf(request.chain),
+                        null
+                    )
+                }
+                val signIn = answer.optJSONObject("signIn")?.let {
+                    SignInResult(
+                        unb64(it.getString("publicKey")),
+                        unb64(it.getString("signedMessage")),
+                        unb64(it.getString("signature")),
+                        "ed25519"
+                    )
+                }
+                request.completeWithAuthorize(accounts, null, null, signIn)
+            }
+            is ReauthorizeRequest ->
+                if (kind == "reauthorized") request.completeWithReauthorize()
+                else request.completeWithDecline()
+            is SignPayloadsRequest -> when (kind) {
+                "signed" -> request.completeWithSignedPayloads(array("payloads"))
+                "invalid" -> request.completeWithInvalidPayloads(flags())
+                "tooMany" -> request.completeWithTooManyPayloads()
+                "notAuthorized" -> request.completeWithAuthorizationNotValid()
+                else -> request.completeWithDecline()
+            }
+            is SignAndSendTransactionsRequest -> when (kind) {
+                "sent" -> request.completeWithSignatures(array("signatures"))
+                "notSubmitted" -> request.completeWithNotSubmitted(array("signatures"))
+                "invalid" -> request.completeWithInvalidSignatures(flags())
+                "tooMany" -> request.completeWithTooManyPayloads()
+                "notAuthorized" -> request.completeWithAuthorizationNotValid()
+                else -> request.completeWithDecline()
+            }
+            is DeauthorizedEvent -> request.complete()
+        }
+    }
+
+    private class Callbacks(private val session: Session) : LocalScenario.Callbacks {
+        override fun onScenarioReady() {}
+        override fun onScenarioServingClients() {}
+        override fun onScenarioServingComplete() {
+            session.scenario?.close()
+        }
+        override fun onScenarioComplete() {}
+        override fun onScenarioError() = ended(session)
+        override fun onScenarioTeardownComplete() = ended(session)
+        override fun onLowPowerAndNoConnection() {
+            Log.w(TAG, "low power mode, and no connection from the app")
+        }
+
+        override fun onAuthorizeRequest(request: AuthorizeRequest) {
+            val call = JSONObject().put("method", "authorize")
+            request.signInPayload?.let { call.put("signIn", signInInput(it)) }
+            ask(session, request, request.identityName, request.identityUri, call)
+        }
+
+        override fun onReauthorizeRequest(request: ReauthorizeRequest) {
+            // walletlib checked the token; Rust checks the site still has a grant.
+            val call = JSONObject().put("method", "reauthorize")
+            ask(session, request, request.identityName, request.identityUri, call)
+        }
+
+        override fun onSignTransactionsRequest(request: SignTransactionsRequest) {
+            val call = JSONObject()
+                .put("method", "signTransactions")
+                .put("accounts", accounts(request.authorizedAccounts))
+                .put("chain", request.chain)
+                .put("payloads", payloads(request.payloads))
+            ask(session, request, request.identityName, request.identityUri, call)
+        }
+
+        override fun onSignMessagesRequest(request: SignMessagesRequest) {
+            val call = JSONObject()
+                .put("method", "signMessages")
+                .put("addresses", strings(request.addresses.map { Base58.encode(it) }))
+                .put("payloads", payloads(request.payloads))
+            ask(session, request, request.identityName, request.identityUri, call)
+        }
+
+        override fun onSignAndSendTransactionsRequest(request: SignAndSendTransactionsRequest) {
+            val call = JSONObject()
+                .put("method", "signAndSend")
+                .put("accounts", accounts(request.authorizedAccounts))
+                .put("chain", request.chain)
+                .put("payloads", payloads(request.payloads))
+                .put("commitment", request.commitment ?: JSONObject.NULL)
+                .put("serial", request.waitForCommitmentToSendNextTransaction == true)
+            ask(session, request, request.identityName, request.identityUri, call)
+        }
+
+        override fun onDeauthorizedEvent(event: DeauthorizedEvent) {
+            val call = JSONObject().put("method", "deauthorize")
+            ask(session, event, event.identityName, event.identityUri, call)
+        }
+    }
+}
+
+/// What a `solana-wallet:` link opens. It has no window of its own: it
+/// starts the MWA session, brings Airlock forward for the request modal, and
+/// stays behind in the asking app's task until the session ends, when that
+/// app expects it to finish.
+class MwaActivity : Activity() {
+    private var session = 0L
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val association = intent?.data?.let {
+            try {
+                AssociationUri.parse(it)
+            } catch (e: Exception) {
+                null
+            }
+        }
+        if (association !is LocalAssociationUri) {
+            // Sessions through a reflector server are not offered.
+            setResult(RESULT_CANCELED)
+            finish()
+            return
+        }
+        session = MwaBridge.start(this, association, callingPackage)
+        showAirlock()
+    }
+
+    /// Bring Airlock's own task forward. A running Airlock is moved to the
+    /// front as it is: an intent could start a second MainActivity, and with
+    /// it a second app over the same activity reference. Otherwise it is
+    /// started from the launcher.
+    private fun showAirlock() {
+        val tasks = getSystemService(android.app.ActivityManager::class.java)?.appTasks.orEmpty()
+        val running = tasks.firstOrNull {
+            it.taskInfo.baseActivity?.className == MainActivity::class.java.name
+        }
+        if (running != null) {
+            running.moveToFront()
+        } else {
+            packageManager.getLaunchIntentForPackage(packageName)?.let { startActivity(it) }
+        }
+    }
+
+    fun done() {
+        if (!isFinishing) {
+            setResult(RESULT_OK)
+            finish()
+        }
+    }
+
+    override fun onDestroy() {
+        if (session != 0L) MwaBridge.activityGone(session)
+        super.onDestroy()
+    }
+}
+
+/// Starts Airlock again in a new process, as ProcessPhoenix does: Settings →
+/// Mode switches folders, which only a new process can. It runs in a process
+/// of its own (":restart"), ends Airlock's, and opens the launcher activity.
+class RestartActivity : Activity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val pid = intent.getIntExtra(PID, -1)
+        if (pid > 0 && pid != android.os.Process.myPid()) android.os.Process.killProcess(pid)
+        packageManager.getLaunchIntentForPackage(packageName)?.let {
+            it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            startActivity(it)
+        }
+        finish()
+        Runtime.getRuntime().exit(0)
+    }
+
+    companion object {
+        private const val PID = "pid"
+
+        @JvmStatic
+        fun restart() {
+            val a = SeedVaultBridge.activity ?: return
+            a.startActivity(
+                Intent(a, RestartActivity::class.java)
+                    .putExtra(PID, android.os.Process.myPid())
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
         }
     }
 }

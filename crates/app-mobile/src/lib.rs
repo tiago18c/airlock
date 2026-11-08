@@ -1,6 +1,7 @@
 //! Android services for `apps/airlock-mobile`: the app's private folder,
 //! the WebView's settings, opening links, whether the app runs online or
-//! offline, and reporting to the core when the app is out of sight.
+//! offline, requests from other apps ([`wallet_adapter`]), and reporting to
+//! the core when the app is out of sight.
 //!
 //! Everything that calls into Android goes through [`android`], over JNI.
 //! On any other OS this crate builds, so the workspace checks it, but its
@@ -14,6 +15,7 @@ pub mod key_guard;
 pub mod mode;
 pub mod seed_vault;
 mod usb;
+pub mod wallet_adapter;
 
 use std::sync::Arc;
 
@@ -144,7 +146,13 @@ pub fn ModeCard(mode: Mode) -> Element {
             return;
         }
         match mode::save(to) {
-            Ok(()) => restart(),
+            Ok(()) => {
+                // Offline, no app may find Airlock, even before it restarts.
+                if to == Mode::Offline {
+                    wallet_adapter::set_listed(false);
+                }
+                restart()
+            }
             Err(err) => error.set(Some(err)),
         }
     };
@@ -166,6 +174,127 @@ pub fn ModeCard(mode: Mode) -> Element {
             p { class: "hint", "Each mode has its own vault. Switching restarts the app." }
             if let Some(err) = error() {
                 p { class: "error", "{err}" }
+            }
+        }
+    }
+}
+
+/// Settings, online: whether apps on this phone, and sites open in Chrome,
+/// may ask Airlock to connect and sign, and the sites they connected.
+#[component]
+pub fn AppsCard() -> Element {
+    let mut on = use_signal(wallet_adapter::allowed);
+    let mut error = use_signal(|| None::<String>);
+    let manage = use_context::<app_desktop::ConnectionsModal>();
+    let mut set = move |to: bool| match wallet_adapter::set_allowed(to) {
+        Ok(()) => {
+            wallet_adapter::set_listed(to);
+            on.set(to);
+            error.set(None);
+        }
+        Err(err) => error.set(Some(err)),
+    };
+    rsx! {
+        div { class: "card",
+            h3 { "Apps on this phone" }
+            div { class: "segmented",
+                button {
+                    class: if on() { "tab" } else { "tab on" },
+                    onclick: move |_| set(false),
+                    "Off"
+                }
+                button {
+                    class: if on() { "tab on" } else { "tab" },
+                    onclick: move |_| set(true),
+                    "On"
+                }
+            }
+            p { class: "hint",
+                "Other apps, and sites open in Chrome, can ask Airlock to connect and sign through Mobile Wallet Adapter, as the browser extension does on a computer. Each request opens here for you to approve. Off, Airlock is not offered to them as a wallet."
+            }
+            div { class: "btn-row",
+                button {
+                    onclick: move |_| manage.show(),
+                    "Manage connections"
+                }
+            }
+            if let Some(err) = error() {
+                p { class: "error", "{err}" }
+            }
+        }
+    }
+}
+
+/// The first launch, before a vault is created: how Airlock is to be used
+/// on this phone. Online goes on to create its vault here; offline starts
+/// the app again on the offline vault's folder.
+#[component]
+pub fn Setup(on_done: EventHandler<()>) -> Element {
+    let mut mode = use_signal(|| Mode::Online);
+    let mut apps = use_signal(|| true);
+    let mut error = use_signal(|| None::<String>);
+    let go = move |_| {
+        let chosen = mode();
+        let saved = mode::save(chosen).and_then(|()| wallet_adapter::set_allowed(apps()));
+        match (saved, chosen) {
+            (Err(err), _) => error.set(Some(err)),
+            (Ok(()), Mode::Offline) => {
+                wallet_adapter::set_listed(false);
+                restart()
+            }
+            (Ok(()), Mode::Online) => {
+                wallet_adapter::set_listed(apps());
+                on_done.call(());
+            }
+        }
+    };
+    let online = mode() == Mode::Online;
+    rsx! {
+        section { class: "card auth setup",
+            div { class: "stack",
+                h2 { "Set up Airlock" }
+                p { class: "lede", "How will you use it on this phone?" }
+                div { class: "segmented",
+                    button {
+                        class: if online { "tab on" } else { "tab" },
+                        onclick: move |_| mode.set(Mode::Online),
+                        "Online"
+                    }
+                    button {
+                        class: if online { "tab" } else { "tab on" },
+                        onclick: move |_| mode.set(Mode::Offline),
+                        "Offline"
+                    }
+                }
+                if online {
+                    p { class: "hint",
+                        "Balances, history, staking and sending, through the network."
+                    }
+                    label { class: "check",
+                        input {
+                            r#type: "checkbox",
+                            checked: apps(),
+                            onchange: move |e| apps.set(e.checked()),
+                        }
+                        "Let apps on this phone ask Airlock to connect and sign"
+                    }
+                    p { class: "hint",
+                        "Other apps, and sites open in Chrome, find Airlock as a wallet (Mobile Wallet Adapter). You approve each request here."
+                    }
+                } else {
+                    p { class: "hint",
+                        "Airlock never asks the network anything. It signs what you scan, and shows the signatures as QR codes for another device to send. Other apps cannot reach it."
+                    }
+                }
+                p { class: "hint",
+                    "Each mode has its own vault. You can change both in Settings."
+                }
+                if let Some(err) = error() {
+                    p { class: "error", "{err}" }
+                }
+                div { class: "btn-row",
+                    button { class: "primary", onclick: go, "Continue" }
+                }
             }
         }
     }
