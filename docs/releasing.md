@@ -12,13 +12,16 @@ A release is a tag. Pushing `v1.2.3` builds the files and opens a **draft** rele
 | `airlock-offline-<version>-windows-x64-setup.exe` | Airgap desktop installer (opens no connection of its own). Needs WebView2 already installed, as Windows 11 has it |
 | `airlock-offline-<version>-windows-x64-setup-full.exe` | The same, with WebView2's offline installer inside, for a machine that has never been online |
 | `airlock-offline-<version>-windows-x64-portable.zip` | The airgap app without an installer |
+| `airlock-<version>-macos-arm64.dmg` | Online app for Macs with Apple Silicon, ad-hoc signed |
+| `airlock-offline-<version>-macos-arm64.dmg` | Airgap app for Macs with Apple Silicon, ad-hoc signed |
 | `bridge-host-<version>-windows-x64.exe` | Native messaging host for the browser extension |
+| `bridge-host-<version>-macos-arm64.tar.gz` | The same, for macOS |
 | `airlock-mobile-<version>-android-arm64.apk` | Android app, for Android 14 and later on arm64 phones |
 | `airlock-extension-<version>.zip` | Browser extension, ready to load or to upload to a store |
 | `SHA256SUMS.txt` | Checksum of every file above |
 | `airlock-<version>.sigstore.json` | The provenance attestation of every file above, as a Sigstore bundle |
 
-The online app is `apps/airlock`, bundled with `dx bundle -p airlock`. The airgap build is a separate package (`apps/airlock-offline`) bundled with `dx bundle -p airlock-offline`. `scripts/bundle-windows.sh` makes the three Windows files of each: it bundles once with the `webview_install_mode` in `Dioxus.toml` (`OfflineInstaller`), zips the app folder dx leaves (the exe and its `assets`), and bundles again with the small installer's mode. Every variant needs WebView2 at run time; none ships a fixed copy of it, which Windows Update would not patch. The portable app keeps its data where the installed one does, under `%LOCALAPPDATA%`, so the two share a vault, and only one copy runs on it at a time. The Android app is `apps/airlock-mobile`, bundled with `dx bundle -p airlock-mobile --android`; see [Signing the Android app](#signing-the-android-app).
+The online app is `apps/airlock`, bundled with `dx bundle -p airlock`. The airgap build is a separate package (`apps/airlock-offline`) bundled with `dx bundle -p airlock-offline`. `scripts/bundle-windows.sh` makes the three Windows files of each: it bundles once with the `webview_install_mode` in `Dioxus.toml` (`OfflineInstaller`), zips the app folder dx leaves (the exe and its `assets`), and bundles again with the small installer's mode. `scripts/bundle-macos.sh` makes each macOS disk image: see [macOS](#macos). Every Windows variant needs WebView2 at run time; none ships a fixed copy of it, which Windows Update would not patch. The portable app keeps its data where the installed one does, under `%LOCALAPPDATA%`, so the two share a vault, and only one copy runs on it at a time. The Android app is `apps/airlock-mobile`, bundled with `dx bundle -p airlock-mobile --android`; see [Signing the Android app](#signing-the-android-app).
 
 Each file also has a build provenance attestation: a signed statement that it was built by the release workflow from the tagged commit. Check one with:
 
@@ -68,7 +71,7 @@ Commit messages are not parsed. They can stay as full sentences.
    git push origin v1.2.3
    ```
 4. **Wait** for the Release workflow. It re-runs every check, builds the files, and opens the draft.
-5. **Check the draft.** Install the online app from its installer on a clean machine, load the extension zip, and confirm one QR transfer and one browser connect. Optionally install the airgap build and confirm a durable-nonce transfer can be built, signed and shown as QR. Start each portable zip once. Compare a checksum, and verify one file's attestation.
+5. **Check the draft.** Install the online app from its installer on a clean machine, load the extension zip, and confirm one QR transfer and one browser connect. Optionally install the airgap build and confirm a durable-nonce transfer can be built, signed and shown as QR. Start each portable zip once. On a Mac with Apple Silicon, open each disk image, get the app past Gatekeeper, and confirm the scanner gets the camera. Compare a checksum, and verify one file's attestation.
 6. **Publish** the draft.
 
 A version with a suffix, such as `1.2.3-rc.1`, is opened as a pre-release.
@@ -110,12 +113,24 @@ Keep the `.jks` and its passwords somewhere safe outside GitHub as well: a secre
 
 The workflow refuses an APK that is debuggable, and prints its certificate. R8 drops Kotlin that nothing in Kotlin calls, so the bridges in `MainActivity.kt` that Rust finds by name are marked `@Keep`; a new one needs it too.
 
+## macOS
+
+The macOS apps are built for Apple Silicon only. There is no Developer ID, so they are not notarized. `scripts/bundle-macos.sh` has dx bundle the `.app` alone, signs it ad hoc (`codesign --sign -`; Apple Silicon runs nothing unsigned), checks that its `Info.plist` has the camera description, and makes the disk image with `hdiutil`. It leaves dx's own signing alone: given an identity, dx turns on the hardened runtime, under which the camera needs the `com.apple.security.device.camera` entitlement.
+
+What a user sees:
+
+- **The first launch is refused.** macOS 15 and later say Apple could not verify the app is free of malware, and offer only Done and Move to Trash; Control-click → Open no longer gets past it. Open it once, then **System Settings → Privacy & Security → Open Anyway**, and confirm with the password. Or remove the quarantine: `xattr -dr com.apple.quarantine "/Applications/Airlock.app"`.
+- **The camera is asked for again after each update.** macOS ties the permission to the app's signature, and an ad-hoc signature changes with every build.
+- **The native host** comes as a tarball, which keeps its executable bit. A downloaded tarball is quarantined too, so after unpacking it run `xattr -d com.apple.quarantine bridge-host`, then `./bridge-host install`.
+
+A Developer ID (the Apple Developer Program) would remove the first point: sign with the hardened runtime and the camera entitlement, then notarize with `notarytool`. dx does both when `APPLE_CERTIFICATE` and an App Store Connect API key are set.
+
 ## Not automated yet
 
-- **Code signing.** The Windows installer is not signed, so Windows shows a SmartScreen warning. Signing needs a certificate and a decision on where its key lives.
+- **Code signing.** The Windows installer is not signed, so Windows shows a SmartScreen warning. Signing needs a certificate and a decision on where its key lives. The macOS apps are signed ad hoc and not notarized: see [macOS](#macos).
 - **Extension stores.** The zip is built but not uploaded to the Chrome Web Store or Firefox Add-ons. The extension id is pinned by the key in `extension/manifest.json`; a store listing will have its own.
 - **Android.** Only arm64 is built, as an APK; no store listing (Google Play, Solana dApp Store). dx sets the APK's `versionCode` to 1 in every build, so Android cannot tell two releases apart by it: an update installs over the old one, but a store would refuse it.
-- **macOS and Linux desktop builds.** CI builds the core crates on Linux, but no desktop bundle is produced for either.
+- **Linux desktop builds, and Intel Macs.** CI builds the core crates on Linux, but no Linux desktop bundle is produced, and the macOS apps are built for Apple Silicon only.
 - **The web app.** It is not published anywhere by the release.
 
 ## Updating the compiler
