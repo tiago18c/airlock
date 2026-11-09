@@ -1,12 +1,13 @@
 //! The notices' commands.
 
+use std::convert::Infallible;
 use std::sync::Arc;
 
 use solana_signature::Signature;
 use tracing::{debug, debug_span};
 
-use super::saving::Store;
-use super::{locked, Core, Inner, CORE};
+use super::deferred::changed;
+use super::{Core, Inner, CORE};
 use crate::diagnostics::log_status;
 use crate::events::Event;
 use crate::notices::{BridgeRequestOutcome, NoticeId, NoticeKind, TxStatus};
@@ -63,16 +64,10 @@ impl Core {
 
 impl Inner {
     pub(crate) fn notices_push(self: &Arc<Self>, kind: NoticeKind) -> NoticeId {
-        let _span = debug_span!(target: CORE, "command", name = "notices_push").entered();
         let now = self.now_secs();
-        let id = {
-            let mut notices = locked(&self.notices);
-            let id = notices.data_mut().push(kind, now);
-            self.publish_notices(&notices);
-            id
-        };
-        self.mark_dirty(Store::Notices);
-        debug!(target: CORE, outcome = "ok", "command");
+        let Ok(id) = self.notices.change(self, "notices_push", |notices| {
+            Ok::<_, Infallible>(notices.push(kind, now))
+        });
         id
     }
 
@@ -83,14 +78,11 @@ impl Inner {
     ) -> bool {
         let _span = debug_span!(target: CORE, "command", name = "notices_set_tx_status").entered();
         let now = self.now_secs();
-        let updated = {
-            let mut notices = locked(&self.notices);
-            let Some(notice) = notices.data_mut().set_tx_status(&signature, status, now) else {
-                debug!(target: CORE, outcome = "ignored", "command");
-                return false;
-            };
-            self.publish_notices(&notices);
-            notice
+        let Ok(updated) = self.notices.edit(self, |notices| {
+            notices.set_tx_status(&signature, status, now).ok_or(())
+        }) else {
+            debug!(target: CORE, outcome = "ignored", "command");
+            return false;
         };
         let (flow, status) = match &updated.kind {
             NoticeKind::Transaction { flow, status, .. } => (*flow, status.clone()),
@@ -108,7 +100,7 @@ impl Inner {
         let _ = self
             .events
             .send(Event::TxStatusChanged { signature, status });
-        self.mark_dirty(Store::Notices);
+        self.notices.mark_dirty(self);
         debug!(target: CORE, outcome = "ok", "command");
         true
     }
@@ -123,18 +115,15 @@ impl Inner {
         let _span =
             debug_span!(target: CORE, "command", name = "notices_set_bridge_outcome").entered();
         let now = self.now_secs();
-        let found = {
-            let mut notices = locked(&self.notices);
-            let found = notices
-                .data_mut()
-                .set_bridge_outcome(request_id, outcome, now);
-            if found {
-                self.publish_notices(&notices);
+        let found = self.notices.edit(self, |notices| {
+            if notices.set_bridge_outcome(request_id, outcome, now) {
+                Ok(())
+            } else {
+                Err(())
             }
-            found
-        };
-        if found {
-            self.mark_dirty(Store::Notices);
+        });
+        if found.is_ok() {
+            self.notices.mark_dirty(self);
             debug!(target: CORE, outcome = "ok", "command");
             return;
         }
@@ -149,70 +138,38 @@ impl Inner {
     }
 
     pub(crate) fn notices_dismiss_toast(self: &Arc<Self>, id: NoticeId) {
-        let _span = debug_span!(target: CORE, "command", name = "notices_dismiss_toast").entered();
-        {
-            let mut notices = locked(&self.notices);
-            if !notices.data_mut().dismiss_toast(id) {
-                debug!(target: CORE, outcome = "unknown id", "command");
-                return;
-            }
-            self.publish_notices(&notices);
-        }
-        self.mark_dirty(Store::Notices);
-        debug!(target: CORE, outcome = "ok", "command");
+        let _ = self
+            .notices
+            .change(self, "notices_dismiss_toast", |notices| {
+                changed(notices.dismiss_toast(id), "unknown id")
+            });
     }
 
     pub(crate) fn notices_mark_read(self: &Arc<Self>, ids: &[NoticeId]) {
-        let _span = debug_span!(target: CORE, "command", name = "notices_mark_read").entered();
-        {
-            let mut notices = locked(&self.notices);
-            if !notices.data_mut().mark_read(ids) {
-                debug!(target: CORE, outcome = "unchanged", "command");
-                return;
-            }
-            self.publish_notices(&notices);
-        }
-        self.mark_dirty(Store::Notices);
-        debug!(target: CORE, outcome = "ok", "command");
+        let _ = self.notices.change(self, "notices_mark_read", |notices| {
+            changed(notices.mark_read(ids), "unchanged")
+        });
     }
 
     pub(crate) fn notices_mark_all_read(self: &Arc<Self>) {
-        let _span = debug_span!(target: CORE, "command", name = "notices_mark_all_read").entered();
-        {
-            let mut notices = locked(&self.notices);
-            if !notices.data_mut().mark_all_read() {
-                debug!(target: CORE, outcome = "unchanged", "command");
-                return;
-            }
-            self.publish_notices(&notices);
-        }
-        self.mark_dirty(Store::Notices);
-        debug!(target: CORE, outcome = "ok", "command");
+        let _ = self
+            .notices
+            .change(self, "notices_mark_all_read", |notices| {
+                changed(notices.mark_all_read(), "unchanged")
+            });
     }
 
     pub(crate) fn notices_remove(self: &Arc<Self>, id: NoticeId) {
-        let _span = debug_span!(target: CORE, "command", name = "notices_remove").entered();
-        {
-            let mut notices = locked(&self.notices);
-            if !notices.data_mut().remove(id) {
-                debug!(target: CORE, outcome = "unchanged", "command");
-                return;
-            }
-            self.publish_notices(&notices);
-        }
-        self.mark_dirty(Store::Notices);
-        debug!(target: CORE, outcome = "ok", "command");
+        let _ = self.notices.change(self, "notices_remove", |notices| {
+            changed(notices.remove(id), "unchanged")
+        });
     }
 
     pub(crate) fn notices_clear(self: &Arc<Self>) {
-        let _span = debug_span!(target: CORE, "command", name = "notices_clear").entered();
-        {
-            let mut notices = locked(&self.notices);
-            notices.data_mut().clear();
-            self.publish_notices(&notices);
-        }
-        self.mark_dirty(Store::Notices);
-        debug!(target: CORE, outcome = "ok", "command");
+        let Ok(()) = self.notices.change(self, "notices_clear", |notices| {
+            notices.clear();
+            Ok::<_, Infallible>(())
+        });
     }
 
     pub(crate) fn report_sync_failed(self: &Arc<Self>, job: &str, error: &str) {

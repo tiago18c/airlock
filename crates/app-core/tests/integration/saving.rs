@@ -187,3 +187,104 @@ async fn deferred_save_failure_keeps_change() {
     let on_disk: Holdings = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(on_disk.page(&owner, 0, 10)[0].amount, 7);
 }
+
+#[tokio::test]
+async fn a_failed_flush_is_a_notice_at_once_even_from_a_thread_with_no_runtime() {
+    let kit = kit();
+    let owner = pk(2);
+    let mut events = kit.core.events();
+    kit.storage.refuse_saves(true);
+    kit.core.holdings_deferred("apply_balances", |holdings| {
+        holdings.replace_owners(&[owner], &[token(owner, 7)]);
+    });
+
+    // The bridge's threads have no tokio runtime.
+    let core = kit.core.clone();
+    std::thread::spawn(move || core.flush()).join().unwrap();
+
+    let notices = kit.core.slices().notices.get();
+    assert_eq!(notices.len(), 1, "one notice, for the holdings");
+    assert!(matches!(
+        &notices.items()[0].kind,
+        NoticeKind::SaveFailed { store, .. } if store == "holdings"
+    ));
+    // The notice made the notices dirty, and their save failed too: that is
+    // an event, but not a notice of its own.
+    let stores: Vec<&str> = std::iter::from_fn(|| match events.try_recv() {
+        Ok(Event::SaveFailed { store, .. }) => Some(store),
+        _ => None,
+    })
+    .collect();
+    assert_eq!(stores, ["holdings", "notices"]);
+}
+
+#[tokio::test]
+async fn dropping_the_core_with_a_failed_save_only_sends_the_event() {
+    let kit = kit();
+    let owner = pk(2);
+    let mut events = kit.core.events();
+    kit.storage.refuse_saves(true);
+    kit.core.holdings_deferred("apply_balances", |holdings| {
+        holdings.replace_owners(&[owner], &[token(owner, 7)]);
+    });
+
+    drop(kit.core);
+
+    match events.try_recv() {
+        Ok(Event::SaveFailed { store, .. }) => assert_eq!(store, "holdings"),
+        other => panic!("expected SaveFailed, got {other:?}"),
+    }
+    // No notice was pushed, so the notices were not saved either.
+    assert!(matches!(
+        events.try_recv(),
+        Err(tokio::sync::broadcast::error::TryRecvError::Closed)
+    ));
+}
+
+#[tokio::test]
+async fn deferred_commands_and_saves_log_what_they_did() {
+    let kit = kit();
+    let log = Capture::default();
+    let subscriber = tracing_subscriber::fmt()
+        .with_writer(log.clone())
+        .with_ansi(false)
+        .without_time()
+        .with_max_level(tracing::Level::DEBUG)
+        .finish();
+    tracing::subscriber::with_default(subscriber, || {
+        let id = kit.core.notices_push(NoticeKind::VaultRecovered);
+        kit.core.notices_mark_read(&[id]);
+        kit.core.notices_mark_read(&[id]);
+        kit.core.notices_dismiss_toast(id);
+        kit.core.notices_remove(id);
+        kit.core.notices_remove(id);
+        kit.core.notices_dismiss_toast(id);
+        kit.core.history_deferred("history_nothing", |_| false);
+        kit.core
+            .public()
+            .workspace_deferred("set_rpc", |workspace| {
+                workspace.close_to_tray = true;
+            });
+        kit.core.flush();
+        kit.storage.refuse_saves(true);
+        kit.core.notices_clear();
+        kit.core.flush();
+    });
+    let text = log.text();
+    let expected = "\
+DEBUG command{name=\"notices_push\"}: airlock::core: command outcome=\"ok\"
+DEBUG command{name=\"notices_mark_read\"}: airlock::core: command outcome=\"ok\"
+DEBUG command{name=\"notices_mark_read\"}: airlock::core: command outcome=\"unchanged\"
+DEBUG command{name=\"notices_dismiss_toast\"}: airlock::core: command outcome=\"ok\"
+DEBUG command{name=\"notices_remove\"}: airlock::core: command outcome=\"ok\"
+DEBUG command{name=\"notices_remove\"}: airlock::core: command outcome=\"unchanged\"
+DEBUG command{name=\"notices_dismiss_toast\"}: airlock::core: command outcome=\"unknown id\"
+DEBUG command{name=\"history_nothing\"}: airlock::core: command outcome=\"unchanged\"
+DEBUG command{name=\"set_rpc\"}: airlock::core: command outcome=\"ok\"
+DEBUG airlock::core: save store=\"workspace\" policy=\"deferred\" result=\"ok\"
+DEBUG airlock::core: save store=\"notices\" policy=\"deferred\" result=\"ok\"
+DEBUG command{name=\"notices_clear\"}: airlock::core: command outcome=\"ok\"
+ WARN airlock::core: save failed; the change is kept in memory store=\"notices\" policy=\"deferred\" error=";
+    assert!(text.starts_with(expected), "{text}");
+    assert_eq!(text.lines().count(), 13, "{text}");
+}

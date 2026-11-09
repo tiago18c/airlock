@@ -31,9 +31,10 @@ use crate::storage::{
     open_wallet_list_in, open_workspace_in, AppHistory, AppHoldings, AppLeafMarks, AppNotices,
     AppVault, AppWalletList, AppWorkspace,
 };
-use saving::{Saver, Store};
+use deferred::Deferred;
 use sites::sites_view;
 
+mod deferred;
 mod notices;
 mod saving;
 mod settings;
@@ -61,20 +62,16 @@ pub(crate) struct Inner {
     /// leaf is reserved.
     leaf_marks: Ranked<AppLeafMarks>,
     wallet_list: Ranked<AppWalletList>,
-    workspace: Ranked<AppWorkspace>,
-    holdings: Ranked<AppHoldings>,
-    notices: Ranked<AppNotices>,
-    history: Ranked<AppHistory>,
+    workspace: Deferred<AppWorkspace>,
+    holdings: Deferred<AppHoldings>,
+    notices: Deferred<AppNotices>,
+    history: Deferred<AppHistory>,
     bridge: Ranked<BridgeState>,
     slices: Slices,
     events: broadcast::Sender<Event>,
     visible: watch::Sender<bool>,
     activity: watch::Sender<()>,
     reach: Ranked<Reach>,
-    workspace_saver: Saver,
-    holdings_saver: Saver,
-    notices_saver: Saver,
-    history_saver: Saver,
 }
 
 fn locked<T>(mutex: &Ranked<T>) -> RankedGuard<'_, T> {
@@ -138,23 +135,43 @@ impl Core {
             vault: Ranked::new(Rank::Vault, vault),
             leaf_marks: Ranked::new(Rank::LeafMarks, leaf_marks),
             wallet_list: Ranked::new(Rank::WalletList, wallet_list),
-            workspace: Ranked::new(Rank::Workspace, workspace),
-            holdings: Ranked::new(Rank::Holdings, holdings),
-            notices: Ranked::new(Rank::Notices, notices),
-            history: Ranked::new(Rank::History, history),
+            workspace: Deferred::new(
+                Rank::Workspace,
+                "workspace",
+                workspace,
+                Inner::publish_workspace,
+                |core| &core.workspace,
+            ),
+            holdings: Deferred::new(
+                Rank::Holdings,
+                "holdings",
+                holdings,
+                Inner::publish_holdings,
+                |core| &core.holdings,
+            ),
+            notices: Deferred::new(
+                Rank::Notices,
+                "notices",
+                notices,
+                Inner::publish_notices,
+                |core| &core.notices,
+            ),
+            history: Deferred::new(
+                Rank::History,
+                "history",
+                history,
+                Inner::publish_history,
+                |core| &core.history,
+            ),
             bridge: Ranked::new(Rank::Bridge, BridgeState::default()),
             slices,
             events: broadcast::channel(EVENT_BACKLOG).0,
             visible: watch::channel(true).0,
             activity: watch::channel(()).0,
             reach: Ranked::new(Rank::Reach, Reach::default()),
-            workspace_saver: Saver::default(),
-            holdings_saver: Saver::default(),
-            notices_saver: Saver::default(),
-            history_saver: Saver::default(),
         });
         if notices_pruned {
-            inner.mark_dirty(Store::Notices);
+            inner.notices.mark_dirty(&inner);
         }
 
         let policy = LockPolicy::new(
@@ -213,7 +230,7 @@ impl Core {
             ));
         }
         {
-            let workspace = locked(&self.inner.workspace);
+            let workspace = self.inner.workspace.lock();
             for problem in [workspace.load_problem(), workspace.grants_problem()]
                 .into_iter()
                 .flatten()
@@ -221,13 +238,13 @@ impl Core {
                 out.push(problem.message().to_string());
             }
         }
-        if let Some(problem) = locked(&self.inner.holdings).load_problem() {
+        if let Some(problem) = self.inner.holdings.lock().load_problem() {
             out.push(problem.message().to_string());
         }
-        if let Some(problem) = locked(&self.inner.notices).load_problem() {
+        if let Some(problem) = self.inner.notices.lock().load_problem() {
             out.push(problem.message().to_string());
         }
-        if let Some(problem) = locked(&self.inner.history).load_problem() {
+        if let Some(problem) = self.inner.history.lock().load_problem() {
             out.push(problem.message().to_string());
         }
         out

@@ -1,6 +1,5 @@
 //! The vault: creating, unlocking and locking it, and changing what it holds.
 
-use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
 use tracing::{debug, debug_span, info, warn};
@@ -299,11 +298,11 @@ impl Inner {
         let _span = debug_span!(target: CORE, "command", name).entered();
         let mut vault = locked(&self.vault);
         let enrolled = {
-            let mut workspace = locked(&self.workspace);
+            let mut workspace = self.workspace.lock();
             let enrolled = wallet_core::enroll(&mut *vault, &mut *workspace, add, label);
             if enrolled.is_ok() {
                 // Saved just now, and nothing else can have changed it yet.
-                self.workspace_saver.dirty.store(false, Ordering::SeqCst);
+                self.workspace.saved();
             }
             enrolled
         };
@@ -312,7 +311,7 @@ impl Inner {
                 // The wallet list comes before the workspace, so the workspace's
                 // lock is let go first. Each publishes what is current.
                 self.publish_vault(&vault);
-                self.publish_workspace(&locked(&self.workspace));
+                self.publish_workspace(&self.workspace.lock());
                 debug!(target: CORE, outcome = "ok", "command");
             }
             Err(err) => {

@@ -22,14 +22,14 @@ impl Core {
     /// Read the public workspace: what the published slices do not carry,
     /// such as the custom cluster last typed.
     pub fn with_workspace<R>(&self, f: impl FnOnce(&Workspace) -> R) -> R {
-        f(locked(&self.inner.workspace).data())
+        f(self.inner.workspace.lock().data())
     }
 }
 
 impl Inner {
     pub(crate) fn set_reach(&self, reach: Reach) {
         // With the workspace's lock, so that this cannot pass a cluster change.
-        let workspace = locked(&self.workspace);
+        let workspace = self.workspace.lock();
         *locked(&self.reach) = reach;
         self.slices.network.publish(network_from(&workspace, reach));
     }

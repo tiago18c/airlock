@@ -10,7 +10,6 @@ use wallet_core::{
     VaultError,
 };
 
-use super::saving::Store;
 use super::{locked, Core, Inner, CORE};
 use crate::bridge::{
     BridgeAnswer, BridgeRefused, BridgeReply, BridgeRequest, BridgeState, ConnectedSite,
@@ -184,7 +183,7 @@ impl Inner {
         let list = locked(&self.wallet_list);
         let data = shown_wallets(&vault, &list);
         let current = data.and_then(VaultData::acting_address);
-        let workspace = locked(&self.workspace);
+        let workspace = self.workspace.lock();
         (
             wallet_core::shareable_accounts(data, workspace.data()),
             current,
@@ -193,7 +192,9 @@ impl Inner {
 
     /// What `origin` was given, remembered or for this run of the app.
     fn site_grant(&self, origin: &str) -> Option<SiteGrant> {
-        let remembered = locked(&self.workspace)
+        let remembered = self
+            .workspace
+            .lock()
             .data()
             .connections
             .grant(origin)
@@ -202,10 +203,7 @@ impl Inner {
     }
 
     fn site_is_blocked(&self, origin: &str) -> bool {
-        locked(&self.workspace)
-            .data()
-            .connections
-            .is_blocked(origin)
+        self.workspace.lock().data().connections.is_blocked(origin)
     }
 
     pub(crate) fn site_connect(&self, origin: &str, silent: bool) -> SiteConnect {
@@ -354,7 +352,7 @@ impl Inner {
     }
 
     fn publish_sites(&self) {
-        let workspace = locked(&self.workspace);
+        let workspace = self.workspace.lock();
         let bridge = locked(&self.bridge);
         let view = sites_view(&workspace, &bridge);
         self.slices.sites.publish(Arc::new(view));
@@ -364,7 +362,9 @@ impl Inner {
     fn end_site(&self, origin: &str) {
         locked(&self.bridge).end_session(origin);
         locked(&self.bridge).drop_holding(origin);
-        let remembered = locked(&self.workspace)
+        let remembered = self
+            .workspace
+            .lock()
             .data()
             .connections
             .grant(origin)
@@ -389,7 +389,9 @@ impl Inner {
         let (shareable, current) = self.site_accounts();
         let keys: Vec<Pubkey> = shareable.iter().map(|account| account.pubkey).collect();
         let grant = self.site_grant(origin);
-        let remembered = locked(&self.workspace)
+        let remembered = self
+            .workspace
+            .lock()
             .data()
             .connections
             .grant(origin)
@@ -483,7 +485,9 @@ impl Inner {
     /// Keep what `origin` was given. When it cannot be saved the site still
     /// has it until the app closes, and the failure is reported.
     fn keep_site(&self, origin: &str, accounts: Vec<Pubkey>, remember: bool) {
-        let was_remembered = locked(&self.workspace)
+        let was_remembered = self
+            .workspace
+            .lock()
             .data()
             .connections
             .grant(origin)
@@ -512,7 +516,7 @@ impl Inner {
 
     fn report_site_save(&self, err: &VaultError) {
         let _ = self.events.send(Event::SaveFailed {
-            store: Store::Workspace.name(),
+            store: self.workspace.name(),
             error: err.to_string(),
         });
     }
