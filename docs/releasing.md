@@ -82,6 +82,16 @@ A version with a suffix, such as `1.2.3-rc.1`, is opened as a pre-release.
 
 If a build is wrong, delete the draft and the tag, fix it on the default branch, and tag again. A published release is never replaced: fix forward with a new version.
 
+## Nightly
+
+`.github/workflows/build.yml` builds every file above from the commit it runs on. `release.yml` calls it for a tag; `nightly.yml` calls it once a day, at 03:17 UTC, when `main` has moved since the last nightly, and publishes the files as a **prerelease** tagged `nightly`, named like `airlock-0.2.0-nightly.20261109.8e52ed1-windows-x64-setup.exe`.
+
+- **There is only one.** Each nightly deletes the one before, its tag included, before it publishes, so old builds do not accumulate. Its workflow artifacts are kept for 3 days, not the repository's 90.
+- **It is not "latest".** GitHub leaves prereleases out of `/releases/latest`, which the app's Extension chip and the README link to. Its notes are the changelog's Unreleased section, under a warning that nobody has tried the build.
+- **It checks what a release checks**, except the changelog and version checks (`release-check.mjs`) and CI, which already ran on every merge to `main`: the Linux job installs the `.deb`, starts both formats and registers the bridge, and the Android APK is signed with the release key and refused if debuggable. A failed nightly mails whoever last changed the schedule, and leaves the previous nightly in place unless the publish step itself failed.
+- **The same provenance.** Its files have attestations too; with cosign, check the identity `^https://github.com/tiago18c/airlock/.github/workflows/nightly.yml@refs/heads/main$`.
+- **Run it by hand** from the Actions tab (Nightly, Run workflow) to build now, even when `main` has not moved. From another branch it builds and uploads the workflow artifacts without publishing, which is how to try a packaging change before merging it. Pull requests never build the bundles: CI only builds and tests.
+
 ## Signing the Android app
 
 Android installs an update only when it is signed with the same key as the app already on the phone, so the key that signs the first release signs every one after it. Losing it means users have to uninstall, and lose the app's data, to move to a build signed with another key.

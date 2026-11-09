@@ -1,0 +1,218 @@
+name: Build
+
+# Every release file, from the commit it runs on, uploaded as this run's
+# artifacts: desktop, airgap, macos, linux-<app>, android, extension. The
+# release (release.yml) and the nightly (nightly.yml) call it, then publish
+# what it uploads. See docs/releasing.md.
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Goes into the file names.
+        type: string
+        required: true
+      retention-days:
+        description: Days to keep the uploaded files. 0 is the repository's setting (90 days by default).
+        type: number
+        default: 0
+    secrets:
+      ANDROID_KEYSTORE_BASE64:
+        required: false
+      ANDROID_KEYSTORE_PASSWORD:
+        required: false
+      ANDROID_KEY_ALIAS:
+        required: false
+      ANDROID_KEY_PASSWORD:
+        required: false
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  # Must match the dioxus version in Cargo.lock, and linux-bundle.yml's.
+  DX_VERSION: 0.7.10
+
+jobs:
+  desktop:
+    name: Windows app and native host
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: rustup show
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: cargo-bins/cargo-binstall@851112458b5f28a29e5bc14a690c3f283d9dcc6f # v1.26.2
+      - name: Install the Dioxus CLI
+        run: cargo binstall -y dioxus-cli@${{ env.DX_VERSION }}
+      # The full installer, the small one and the portable zip. It builds
+      # the native messaging host first, and puts it in all three.
+      - name: Bundle the app
+        shell: bash
+        run: scripts/bundle-windows.sh airlock "${{ inputs.version }}" DownloadBootstrapper out
+      - name: Collect the native messaging host
+        shell: bash
+        run: cp target/release/bridge-host.exe "out/bridge-host-${{ inputs.version }}-windows-x64.exe"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: desktop
+          path: out/
+          if-no-files-found: error
+          retention-days: ${{ inputs.retention-days }}
+
+  airgap:
+    name: Windows airgap app
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: rustup show
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: cargo-bins/cargo-binstall@851112458b5f28a29e5bc14a690c3f283d9dcc6f # v1.26.2
+      - name: Install the Dioxus CLI
+        run: cargo binstall -y dioxus-cli@${{ env.DX_VERSION }}
+      # Its machine may never be online, so the small installer cannot fetch
+      # WebView2: it assumes Windows has it, as Windows 11 does.
+      - name: Bundle the airgap app
+        shell: bash
+        run: scripts/bundle-windows.sh airlock-offline "${{ inputs.version }}" Skip out
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: airgap
+          path: out/
+          if-no-files-found: error
+          retention-days: ${{ inputs.retention-days }}
+
+  android:
+    name: Android app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: rustup show && rustup target add aarch64-linux-android
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: cargo-bins/cargo-binstall@851112458b5f28a29e5bc14a690c3f283d9dcc6f # v1.26.2
+      - name: Install the Dioxus CLI
+        run: cargo binstall -y dioxus-cli@${{ env.DX_VERSION }}
+      # dx builds a release APK with Gradle's assembleRelease, signed and
+      # without the debuggable flag, only when Dioxus.toml has [bundle.android].
+      # Without it, it assembles a debug APK. The keystore and its passwords
+      # are written for this run only and never committed.
+      - name: Signing key
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE" ] || [ -z "$STORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "::error::Set the ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD secrets. See docs/releasing.md."
+            exit 1
+          fi
+          # dx writes these into Kotlin and TOML strings as they are.
+          for value in "$STORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD"; do
+            case "$value" in *[\"\\\$]*)
+              echo "::error::The signing passwords and alias cannot hold \", \\ or \$."
+              exit 1 ;;
+            esac
+          done
+          mkdir -p target
+          echo "$KEYSTORE" | base64 -d > target/release.jks
+          cat >> apps/airlock-mobile/Dioxus.toml <<EOF
+
+          [bundle.android]
+          # dx resolves this from the workspace root.
+          jks_file = "target/release.jks"
+          jks_password = "$STORE_PASSWORD"
+          key_alias = "$KEY_ALIAS"
+          key_password = "$KEY_PASSWORD"
+          EOF
+      # The runner image has the SDK, an NDK and JDK 17; dx reads these two.
+      - name: Bundle the APK
+        run: |
+          export ANDROID_NDK_HOME="$ANDROID_NDK_LATEST_HOME"
+          export JAVA_HOME="$JAVA_HOME_17_X64"
+          dx bundle -p airlock-mobile --release --android --target aarch64-linux-android --package-types apk
+      - name: Collect files
+        run: |
+          mkdir out
+          version="${{ inputs.version }}"
+          apk="$(find target/dx/airlock-mobile -path '*outputs/apk/release*' -name 'app-release.apk' | head -n 1 || true)"
+          if [ -z "$apk" ]; then
+            echo "::error::No signed release APK was produced."
+            find target/dx -name '*.apk' 2>/dev/null || true
+            exit 1
+          fi
+          # A debug APK would be debuggable and leave WebView debugging on.
+          aapt="$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -n 1)"
+          if "$aapt" dump badging "$apk" | grep -q "application-debuggable"; then
+            echo "::error::The APK is debuggable."
+            exit 1
+          fi
+          apksigner="$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)"
+          "$apksigner" verify --print-certs "$apk"
+          cp "$apk" "out/airlock-mobile-${version}-android-arm64.apk"
+          rm -f target/release.jks
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: android
+          path: out/
+          if-no-files-found: error
+          retention-days: ${{ inputs.retention-days }}
+
+  macos:
+    name: macOS apps and native host
+    # Apple Silicon. Intel Macs are not built.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: rustup show
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: cargo-bins/cargo-binstall@851112458b5f28a29e5bc14a690c3f283d9dcc6f # v1.26.2
+      - name: Install the Dioxus CLI
+        run: cargo binstall -y dioxus-cli@${{ env.DX_VERSION }}
+      - name: Bundle the apps
+        run: |
+          scripts/bundle-macos.sh airlock "${{ inputs.version }}" out
+          scripts/bundle-macos.sh airlock-offline "${{ inputs.version }}" out
+      # The online app has the host inside it too. A tarball keeps the
+      # executable bit, which a browser download drops.
+      - name: Collect the native messaging host
+        run: |
+          tar -czf "out/bridge-host-${{ inputs.version }}-macos-arm64.tar.gz" -C target/release bridge-host
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: macos
+          path: out/
+          if-no-files-found: error
+          retention-days: ${{ inputs.retention-days }}
+
+  linux:
+    name: Linux apps
+    uses: ./.github/workflows/linux-bundle.yml
+    with:
+      version: ${{ inputs.version }}
+      retention-days: ${{ inputs.retention-days }}
+
+  extension:
+    name: Browser extension
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+      - run: npm ci
+        working-directory: extension
+      - run: npm run build
+        working-directory: extension
+      - name: Zip
+        run: |
+          mkdir out
+          cd extension/dist
+          zip -r "../../out/airlock-extension-${{ inputs.version }}.zip" . -x '*.map'
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: extension
+          path: out/
+          if-no-files-found: error
+          retention-days: ${{ inputs.retention-days }}

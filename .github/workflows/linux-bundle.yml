@@ -1,6 +1,6 @@
 name: Linux bundles
 
-# The .deb and the AppImage of the desktop apps, for the release. Before
+# The .deb and the AppImage of the desktop apps, for build.yml. Before
 # uploading them it installs the .deb, starts both formats and registers the
 # browser bridge from each, so a broken package fails the build instead of
 # reaching a release. Pull requests do not run it: CI builds and tests only.
@@ -14,13 +14,17 @@ on:
       packages:
         type: string
         default: '["airlock", "airlock-offline"]'
+      retention-days:
+        description: Days to keep the uploaded files. 0 is the repository's setting (90 days by default).
+        type: number
+        default: 0
 
 permissions:
   contents: read
 
 env:
   CARGO_TERM_COLOR: always
-  # Must match the dioxus version in Cargo.lock, and release.yml's.
+  # Must match the dioxus version in Cargo.lock, and build.yml's.
   DX_VERSION: 0.7.10
 
 jobs:
@@ -77,3 +81,4 @@ jobs:
           name: linux-${{ matrix.package }}
           path: out/
           if-no-files-found: error
+          retention-days: ${{ inputs.retention-days }}
