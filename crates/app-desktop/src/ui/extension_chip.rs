@@ -34,6 +34,13 @@ pub fn ExtensionChip() -> Element {
             }
         }
     });
+    // An AppImage's host is registered as a copy; keep it up to date with
+    // this AppImage before reading where the registration points.
+    use_hook(|| {
+        if let Some(host) = host_beside_app() {
+            install::refresh_stable_host(&host);
+        }
+    });
     let mut registration = use_signal(install::registration);
     // What the last press of Install did.
     let mut outcome = use_signal(|| None::<Result<(), String>>);
@@ -120,7 +127,8 @@ pub fn ExtensionChip() -> Element {
                         disabled: host.is_none() || transient.is_some(),
                         onclick: move |_| {
                             let Some(host) = host_beside_app() else { return };
-                            let result = install::register(&host)
+                            let result = install::stable_host(&host)
+                                .and_then(|host| install::register(&host))
                                 .map(|_| ())
                                 .map_err(|err| format!("Could not install the bridge: {err}"));
                             if let Err(why) = &result {

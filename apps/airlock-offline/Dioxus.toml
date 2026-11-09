@@ -28,3 +28,8 @@ info_plist_path = "Info.plist"
 
 [bundle.windows]
 webview_install_mode = { OfflineInstaller = { silent = false } }
+
+# The libraries the .deb needs, by their Ubuntu 22.04 and Debian 12 names.
+# The AppImage carries most of its own: see docs/releasing.md.
+[bundle.deb]
+depends = ["libwebkit2gtk-4.1-0", "libgtk-3-0", "libxdo3", "libssl3", "libayatana-appindicator3-1"]

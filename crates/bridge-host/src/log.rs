@@ -47,7 +47,7 @@ pub fn init() {
     });
 }
 
-fn data_dir() -> Option<std::path::PathBuf> {
+pub(crate) fn data_dir() -> Option<std::path::PathBuf> {
     if let Some(dir) = std::env::var_os("AIRLOCK_DATA_DIR") {
         return Some(std::path::PathBuf::from(dir));
     }
