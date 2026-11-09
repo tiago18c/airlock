@@ -9,13 +9,14 @@
 
 use super::*;
 use crate::rt::off_the_window_within;
+use crate::state::online::Network;
 use dioxus::dioxus_core::Task;
 use std::time::Duration;
 use wallet_core::protocol::TxContext;
 use wallet_core::relay::VectorContext;
 use wallet_core::{
-    explain_instructions, explain_transaction, CatalogView, ExplainedTx, Instruction, NoIdls,
-    WalletSummary,
+    display_accounts, explain_instructions, explain_transaction, CatalogView, DisplayNote,
+    ExplainedTx, Instruction, NoIdls, WalletSummary,
 };
 
 /// How long the window waits for words before it shows what it has without them.
@@ -138,7 +139,77 @@ type TxKey = (
     Option<TxContext>,
     Vec<VectorContext>,
     Vec<WalletSummary>,
+    Fetched,
 );
+
+type SiteKey = (Option<DecodedTx>, Vec<VectorContext>, Fetched);
+
+/// Account bytes, by address, that the node gave for what a reading's
+/// sentences read, such as the mint whose decimals turn a raw amount into
+/// "Mint 5 USDC". A shell with no network asks nothing, and those sentences
+/// show their raw fields.
+pub type Fetched = HashMap<Pubkey, Vec<u8>>;
+
+/// What the node gave a reading, for the sentences drawn under it: an amount
+/// scaled with an account in it was read from this device's own node.
+#[derive(Clone, Copy)]
+pub struct FetchedForReading(pub Signal<Fetched>);
+
+fn use_display_accounts() -> Signal<Fetched> {
+    let fetched = use_signal(Fetched::new);
+    use_context_provider(|| FetchedForReading(fetched));
+    fetched
+}
+
+/// Ask the node, once each, for the accounts `answer` says its sentences read
+/// and that were not asked for yet. What comes back goes into `fetched`, which
+/// is part of the reading's key, so the transaction is read again with it.
+fn use_fetch_needed(mut fetched: Signal<Fetched>, answer: &Answer<ExplainedTx>) {
+    // A window without the network capability, such as a test's, asks nothing.
+    let network = try_use_context::<Option<Network>>().flatten();
+    let mut asked = use_signal(HashSet::<Pubkey>::new);
+    let needed = match &answer.worked {
+        Worked::Done(explained) => explained.accounts_needed(),
+        _ => Vec::new(),
+    };
+    use_effect(use_reactive!(|(needed)| {
+        let Some(network) = network else { return };
+        let needed: Vec<(Pubkey, Pubkey)> = needed
+            .into_iter()
+            .filter(|(address, _)| !asked.peek().contains(address))
+            .collect();
+        if needed.is_empty() {
+            return;
+        }
+        let Ok(rpc) = network.rpc() else { return };
+        asked
+            .write()
+            .extend(needed.iter().map(|(address, _)| *address));
+        spawn(async move {
+            let addresses: Vec<Pubkey> = needed.iter().map(|(address, _)| *address).collect();
+            // What the node cannot give stays out, and its sentence shows the
+            // raw fields.
+            let Ok(accounts) = rpc.get_accounts(&addresses).await else {
+                return;
+            };
+            let found = display_accounts(&needed, &accounts);
+            if !found.is_empty() {
+                fetched.write().extend(found);
+            }
+        });
+    }));
+}
+
+/// `note` with `fetched` added. Where both have an account, this device's
+/// own node is taken over what another device wrote into the note.
+fn with_fetched(mut note: DisplayNote, fetched: &Fetched) -> DisplayNote {
+    note.accounts.extend(
+        fetched
+            .iter()
+            .map(|(address, data)| (*address, data.clone())),
+    );
+    note
+}
 
 /// How the Sign screen reads `tx`. What an Advance does to a hash-based key is read
 /// with the accounts' schemes: from a context note, a rebuild, or a Vector wallet in
@@ -149,21 +220,23 @@ pub fn use_explained(tx: DecodedTx) -> TxReading {
     let stored = (session.forms.sign.context)();
     let vector = (session.forms.sign.vector)();
     let wallets = (session.wallets)().summaries.clone();
+    let fetched = use_display_accounts();
     let for_bare = tx.clone();
     let bare = use_memo(use_reactive!(|(for_bare)| {
         explain_transaction(&NoIdls, &for_bare)
     }))();
     let answer = use_worked_out::<TxKey, ExplainedTx>(
-        (tx, stored, vector, wallets),
+        (tx, stored, vector, wallets, fetched()),
         READING_DEADLINE,
         |asked, now| asked.0.message == now.0.message,
-        |view, (tx, stored, vector, wallets)| {
+        |view, (tx, stored, vector, wallets, fetched)| {
             let note = display_note(tx, stored.as_ref())
                 .with_vector_schemes(vector)
                 .with_wallet_schemes(wallets);
-            explain_with_note(view, tx, &note)
+            explain_with_note(view, tx, &with_fetched(note, fetched))
         },
     );
+    use_fetch_needed(fetched, &answer);
     TxReading::of(answer, bare)
 }
 
@@ -172,19 +245,21 @@ pub fn use_explained(tx: DecodedTx) -> TxReading {
 pub fn use_explained_landed(tx: DecodedTx) -> TxReading {
     let session = use_context::<Session>();
     let wallets = (session.wallets)().summaries.clone();
+    let fetched = use_display_accounts();
     let for_bare = tx.clone();
     let bare = use_memo(use_reactive!(|(for_bare)| {
         explain_transaction(&NoIdls, &for_bare)
     }))();
-    let answer = use_worked_out::<(DecodedTx, Vec<WalletSummary>), ExplainedTx>(
-        (tx, wallets),
+    let answer = use_worked_out::<(DecodedTx, Vec<WalletSummary>, Fetched), ExplainedTx>(
+        (tx, wallets, fetched()),
         READING_DEADLINE,
         |asked, now| asked.0.message == now.0.message,
-        |view, (tx, wallets)| {
-            let note = wallet_core::DisplayNote::default().with_wallet_schemes(wallets);
-            explain_with_note(view, tx, &note)
+        |view, (tx, wallets, fetched)| {
+            let note = DisplayNote::default().with_wallet_schemes(wallets);
+            explain_with_note(view, tx, &with_fetched(note, fetched))
         },
     );
+    use_fetch_needed(fetched, &answer);
     TxReading::of(answer, bare)
 }
 
@@ -194,34 +269,34 @@ pub fn use_explained_for_site(
     tx: Option<DecodedTx>,
     schemes: Vec<VectorContext>,
 ) -> Option<TxReading> {
+    let fetched = use_display_accounts();
     let for_bare = tx.clone();
     let bare = use_memo(use_reactive!(|(for_bare)| {
         for_bare.as_ref().map(|tx| explain_transaction(&NoIdls, tx))
     }))();
-    let answer = use_worked_out::<(Option<DecodedTx>, Vec<VectorContext>), Option<ExplainedTx>>(
-        (tx, schemes),
+    let answer = use_worked_out::<SiteKey, Option<ExplainedTx>>(
+        (tx, schemes, fetched()),
         READING_DEADLINE,
-        |asked, now| asked == now,
-        |view, (tx, schemes)| {
+        // What the node gave since does not make it another request.
+        |asked, now| asked.0 == now.0 && asked.1 == now.1,
+        |view, (tx, schemes, fetched)| {
             tx.as_ref().map(|tx| {
-                let note = wallet_core::DisplayNote::default().with_vector_schemes(schemes);
-                explain_with_note(view, tx, &note)
+                let note = DisplayNote::default().with_vector_schemes(schemes);
+                explain_with_note(view, tx, &with_fetched(note, fetched))
             })
         },
     );
-    let bare = bare?;
     let worked = match answer.worked {
         Worked::Done(Some(explained)) => Worked::Done(explained),
         Worked::Done(None) | Worked::Waiting => Worked::Waiting,
         Worked::GaveUp => Worked::GaveUp,
     };
-    Some(TxReading::of(
-        Answer {
-            worked,
-            stale: answer.stale,
-        },
-        bare,
-    ))
+    let answer = Answer {
+        worked,
+        stale: answer.stale,
+    };
+    use_fetch_needed(fetched, &answer);
+    Some(TxReading::of(answer, bare?))
 }
 
 /// Says that a reading is under way, or took too long.

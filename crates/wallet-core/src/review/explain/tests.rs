@@ -1579,3 +1579,68 @@ fn publishing_an_idl_reads_as_program_metadata_calls() {
         Some(format!("Close {buffer} and send its balance to {recipient}").as_str())
     );
 }
+
+/// A Token-2022 mint on devnet with 6 decimals and the metadata pointer and
+/// token metadata extensions, as `getAccountInfo` returned it.
+const MINT_WITH_METADATA: &[u8] =
+    include_bytes!("../../../tests/fixtures/token-2022-mint-with-metadata.bin");
+
+fn mint_to(program: Pubkey, mint: Pubkey, token: Pubkey, amount: u64) -> DecodedTx {
+    let mut data = vec![7];
+    data.extend_from_slice(&amount.to_le_bytes());
+    let ix = Instruction {
+        program_id: program,
+        accounts: vec![
+            AccountMeta::new(mint, false),
+            AccountMeta::new(token, false),
+            AccountMeta::new(pk(1), true),
+        ],
+        data,
+    };
+    decode_v1_transaction(&compile(pk(1), vec![ix]).wire).unwrap()
+}
+
+fn raw_account(owner: Pubkey, data: &[u8]) -> crate::chain::RawAccount {
+    crate::chain::RawAccount {
+        lamports: 1,
+        data: data.to_vec(),
+        owner,
+        executable: false,
+        rent_epoch: 0,
+    }
+}
+
+#[test]
+fn a_mint_to_reads_as_a_sentence_once_the_mints_bytes_are_fetched() {
+    let store = builtins();
+    let tx = mint_to(TOKEN_2022_PROGRAM_ID, pk(7), pk(8), 123_456_000_000);
+    let bare = explain_transaction(&store, &tx);
+    let idl = bare.instructions[0].idl.as_ref().unwrap();
+    assert_eq!(idl.interpolated_intent, None);
+    assert_eq!(field(idl, "Amount"), "123456000000 (raw)");
+    let needed = bare.accounts_needed();
+    assert_eq!(needed, vec![(pk(7), TOKEN_2022_PROGRAM_ID)]);
+
+    let fetched = [Some(raw_account(TOKEN_2022_PROGRAM_ID, MINT_WITH_METADATA))];
+    let note = DisplayNote {
+        accounts: display_accounts(&needed, &fetched),
+        ..DisplayNote::default()
+    };
+    let explained = explain_with_note(&store, &tx, &note);
+    assert_eq!(
+        explained.instructions[0]
+            .idl
+            .as_ref()
+            .unwrap()
+            .interpolated_intent
+            .as_deref(),
+        Some(format!("Mint 123456 {} to {}", pk(7), pk(8)).as_str())
+    );
+}
+
+#[test]
+fn fetched_bytes_count_only_from_an_account_the_reading_program_owns() {
+    let needed = [(pk(7), TOKEN_2022_PROGRAM_ID), (pk(9), TOKEN_PROGRAM_ID)];
+    let fetched = [Some(raw_account(pk(3), MINT_WITH_METADATA)), None];
+    assert!(display_accounts(&needed, &fetched).is_empty());
+}

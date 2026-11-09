@@ -188,6 +188,19 @@ const cpPool = () => {
   return legacy(accounts, 8, [[17, order, data]]);
 };
 
+/** A Token-2022 `MintTo` of 123,456 tokens of a devnet mint with 6 decimals,
+ * which the sentence reads from the mint account. The payer stands as the
+ * mint authority. */
+const mintTo = () => {
+  const mint = b58decode("4VZURs67jSR9m8pkSP6Fj5SBoFnTGbbAcZPB5VTRiMRK");
+  const token = b58decode("H3qxSLGUQa2DPEgPtgNswgrarfsUzVduCmGPotJB6xsy");
+  const token2022 = b58decode("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
+  const data = Buffer.alloc(9);
+  data.writeUInt8(7, 0);
+  data.writeBigUInt64LE(123_456_000_000n, 1);
+  return legacy([mint, token, token2022], 1, [[3, [1, 2, 0], data]]);
+};
+
 // ---- scenarios: the transactions of one signTransaction request each ----
 
 const scenarios = {
@@ -197,6 +210,7 @@ const scenarios = {
   realms: () => [realmsInsert()],
   metadata: () => [metadata()],
   cpPool: () => [cpPool()],
+  mintTo: () => [mintTo()],
 };
 const chosen = process.argv.slice(3);
 for (const name of chosen) {
