@@ -162,6 +162,33 @@ jobs:
           path: out/
           if-no-files-found: error
 
+  macos:
+    name: macOS apps and native host
+    needs: [verify, checks]
+    # Apple Silicon. Intel Macs are not built.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: rustup show
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: cargo-bins/cargo-binstall@851112458b5f28a29e5bc14a690c3f283d9dcc6f # v1.26.2
+      - name: Install the Dioxus CLI
+        run: cargo binstall -y dioxus-cli@${{ env.DX_VERSION }}
+      - name: Bundle the apps
+        run: |
+          scripts/bundle-macos.sh airlock "${{ needs.verify.outputs.version }}" out
+          scripts/bundle-macos.sh airlock-offline "${{ needs.verify.outputs.version }}" out
+      # A tarball keeps the executable bit, which a browser download drops.
+      - name: Build the native messaging host
+        run: |
+          cargo build --locked --release -p bridge-host
+          tar -czf "out/bridge-host-${{ needs.verify.outputs.version }}-macos-arm64.tar.gz" -C target/release bridge-host
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: macos
+          path: out/
+          if-no-files-found: error
+
   extension:
     name: Browser extension
     needs: [verify, checks]
@@ -190,7 +217,7 @@ jobs:
 
   publish:
     name: Draft release
-    needs: [verify, desktop, airgap, android, extension]
+    needs: [verify, desktop, airgap, macos, android, extension]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -203,7 +230,7 @@ jobs:
       - name: Checksums
         run: |
           mkdir release
-          cp artifacts/desktop/* artifacts/airgap/* artifacts/android/* artifacts/extension/* release/
+          cp artifacts/desktop/* artifacts/airgap/* artifacts/macos/* artifacts/android/* artifacts/extension/* release/
           cd release
           sha256sum * > SHA256SUMS.txt
           cat SHA256SUMS.txt
