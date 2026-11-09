@@ -2364,6 +2364,7 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 .callout.warn-callout { border-color: var(--warn-line); background: var(--warn-soft); }
 .callout.warn-callout > p:first-child { display: flex; gap: 6px; align-items: flex-start; color: var(--warn-text); }
 .callout.warn-callout > p:first-child .icon { width: 16px; height: 16px; margin-top: 2px; }
+.callout.danger-callout { border-color: var(--danger-line); border-left-color: var(--danger-solid); background: var(--danger-soft); }
 
 
 /* Instructions, numbered within their own level. One carried inside another
@@ -2634,6 +2635,8 @@ textarea.short { min-height: 64px; }
   cursor: pointer;
 }
 .pf-watch-list { max-height: 50vh; overflow: auto; }
+.cleanup-list { max-height: 45vh; overflow: auto; }
+.cleanup-amount { white-space: nowrap; }
 .pf-controls select { width: auto; max-width: 16rem; }
 .pf-chevron { display: inline-flex; margin-left: auto; transition: transform var(--fast) var(--ease); }
 .pf-fold[aria-expanded="true"] .pf-chevron { transform: rotate(90deg); }

@@ -9,6 +9,7 @@
 //! Nothing here draws anything or keeps state between calls.
 
 pub mod adapt;
+pub mod cleanup;
 pub mod compile;
 pub mod device;
 mod error;

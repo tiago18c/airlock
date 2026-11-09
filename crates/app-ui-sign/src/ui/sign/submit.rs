@@ -62,6 +62,16 @@ pub(in crate::ui) fn SubmitProgress() -> Element {
         form.clear();
         session.open_in_history(signature);
     };
+    // A step of a token cleanup: the next one follows from here.
+    let cleanup_step = crate::actions::cleanup::step_on_screen(&session);
+    let mut continuing = use_signal(|| false);
+    let next_step = move |_| {
+        continuing.set(true);
+        spawn(async move {
+            crate::actions::cleanup::next(session).await;
+            continuing.set(false);
+        });
+    };
 
     rsx! {
         div { class: "modal-backdrop",
@@ -90,8 +100,20 @@ pub(in crate::ui) fn SubmitProgress() -> Element {
                             span { class: "submit-mark ok", Icon { glyph: Glyph::Check } }
                             p { class: "submit-title", "It landed." }
                             code { class: "mono submit-sig", "{signature}" }
+                            if let Some(step) = cleanup_step {
+                                p { class: "hint",
+                                    "Step {step} of burning and closing token accounts. The next step reads them again first."
+                                }
+                            }
                             div { class: "btn-row",
-                                button { class: "primary",
+                                if cleanup_step.is_some() {
+                                    button { class: "primary",
+                                        disabled: continuing(),
+                                        onclick: next_step,
+                                        if continuing() { "Reading the accounts…" } else { "Next step" }
+                                    }
+                                }
+                                button { class: if cleanup_step.is_some() { "" } else { "primary" },
                                     onclick: move |_| view(signature),
                                     "View transaction"
                                 }

@@ -11,7 +11,9 @@
 //! request modal. Offline, Airlock is not listed as a wallet at all.
 
 use app_mobile::Mode;
-use app_online::{HistoryPanel, NetworkChip, PortfolioPanel, ProposalsHost, SendHost, StakePanel};
+use app_online::{
+    CleanupHost, HistoryPanel, NetworkChip, PortfolioPanel, ProposalsHost, SendHost, StakePanel,
+};
 use app_ui::{AppBrand, AppShell, Network, NoticeBell, OnlineHooks, SubmitHandle, Tab, ToastHost};
 use dioxus::prelude::*;
 
@@ -127,6 +129,7 @@ fn Online(core: CopyValue<app_core::Core>) -> Element {
                 ToastHost { pinned: rsx! { app_desktop::RequestToast {} } }
                 ProposalsHost {}
                 SendHost {}
+                CleanupHost {}
             },
             setup: setting_up().then(|| rsx! {
                 app_mobile::Setup { on_done: move |_| setting_up.set(false) }

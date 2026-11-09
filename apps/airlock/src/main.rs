@@ -6,7 +6,9 @@
 
 #[cfg(all(feature = "desktop", not(target_arch = "wasm32")))]
 use app_desktop::bridge::{Bootstrap, Bridge};
-use app_online::{HistoryPanel, NetworkChip, PortfolioPanel, ProposalsHost, SendHost, StakePanel};
+use app_online::{
+    CleanupHost, HistoryPanel, NetworkChip, PortfolioPanel, ProposalsHost, SendHost, StakePanel,
+};
 use app_ui::{AppBrand, AppShell, Network, NoticeBell, Tab, ToastHost};
 use dioxus::prelude::*;
 
@@ -111,11 +113,13 @@ fn App() -> Element {
             settings_extra: connections_card(),
             window_controls: window_controls(),
             // Outside the pane switch so toasts survive tab changes. Hosts
-            // the Proposals and Send modals opened from other panes.
+            // the Proposals, Send and Burn and close modals opened from
+            // other panes.
             overlays: rsx! {
                 ToastHost { pinned: request_toast() }
                 ProposalsHost {}
                 SendHost {}
+                CleanupHost {}
             },
         }
     }

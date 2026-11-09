@@ -5,6 +5,7 @@ use wallet_core::{pinned_program, AddressKind, IdlDraft, TxSettings, SOLANA_PATH
 use zeroize::Zeroize;
 
 mod build;
+mod cleanup;
 mod contact;
 mod send;
 mod sign;
@@ -12,6 +13,7 @@ mod stake;
 mod wallet;
 
 pub use build::*;
+pub use cleanup::*;
 pub use contact::*;
 pub use send::*;
 pub use sign::*;
@@ -57,6 +59,7 @@ pub struct Forms {
     pub sign: SignForm,
     pub stake: StakeForm,
     pub send: SendForm,
+    pub cleanup: CleanupForm,
     pub program: ProgramForm,
     pub history: HistoryForm,
 }
@@ -148,6 +151,11 @@ pub fn use_forms() -> Forms {
         },
         send: SendForm {
             open: use_signal(|| None::<SendOpen>),
+        },
+        cleanup: CleanupForm {
+            open: use_signal(|| None),
+            run: use_signal(|| None),
+            notice: use_signal(|| None),
         },
         program: ProgramForm {
             selected: use_signal(|| None::<Pubkey>),

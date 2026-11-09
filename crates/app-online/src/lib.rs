@@ -14,7 +14,9 @@ pub use sync::{
     Scheduler, BALANCES_JOB, PRICES_JOB,
 };
 pub use tx::{Submitter, Tracker};
-pub use ui::{HistoryPanel, NetworkChip, PortfolioPanel, ProposalsHost, SendHost, StakePanel};
+pub use ui::{
+    CleanupHost, HistoryPanel, NetworkChip, PortfolioPanel, ProposalsHost, SendHost, StakePanel,
+};
 
 use std::sync::Arc;
 

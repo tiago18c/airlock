@@ -102,6 +102,7 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
                                 from: Some(id),
                                 ..SendOpen::default()
                             }),
+                            on_cleanup: move |_| session.open_cleanup(id),
                         }
                     }
                 }
