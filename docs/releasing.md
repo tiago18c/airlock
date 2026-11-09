@@ -6,20 +6,36 @@ A release is a tag. Pushing `v1.2.3` builds the files and opens a **draft** rele
 
 | File | What it is |
 | --- | --- |
-| `airlock-<version>-windows-x64-setup.exe` | Online desktop installer |
-| `airlock-offline-<version>-windows-x64-setup.exe` | Airgap desktop installer (opens no connection of its own) |
+| `airlock-<version>-windows-x64-setup.exe` | Online desktop installer. Downloads WebView2 while installing if Windows has none |
+| `airlock-<version>-windows-x64-setup-full.exe` | The same, with WebView2's offline installer inside (about 190 MB more) |
+| `airlock-<version>-windows-x64-portable.zip` | The online app without an installer: unzip and run `airlock.exe` |
+| `airlock-offline-<version>-windows-x64-setup.exe` | Airgap desktop installer (opens no connection of its own). Needs WebView2 already installed, as Windows 11 has it |
+| `airlock-offline-<version>-windows-x64-setup-full.exe` | The same, with WebView2's offline installer inside, for a machine that has never been online |
+| `airlock-offline-<version>-windows-x64-portable.zip` | The airgap app without an installer |
 | `bridge-host-<version>-windows-x64.exe` | Native messaging host for the browser extension |
 | `airlock-mobile-<version>-android-arm64.apk` | Android app, for Android 14 and later on arm64 phones |
 | `airlock-extension-<version>.zip` | Browser extension, ready to load or to upload to a store |
 | `SHA256SUMS.txt` | Checksum of every file above |
+| `airlock-<version>.sigstore.json` | The provenance attestation of every file above, as a Sigstore bundle |
 
-The online app is `apps/airlock`, bundled with `dx bundle -p airlock`. The airgap build is a separate package (`apps/airlock-offline`) bundled with `dx bundle -p airlock-offline`. The Android app is `apps/airlock-mobile`, bundled with `dx bundle -p airlock-mobile --android`; see [Signing the Android app](#signing-the-android-app).
+The online app is `apps/airlock`, bundled with `dx bundle -p airlock`. The airgap build is a separate package (`apps/airlock-offline`) bundled with `dx bundle -p airlock-offline`. `scripts/bundle-windows.sh` makes the three Windows files of each: it bundles once with the `webview_install_mode` in `Dioxus.toml` (`OfflineInstaller`), zips the app folder dx leaves (the exe and its `assets`), and bundles again with the small installer's mode. Every variant needs WebView2 at run time; none ships a fixed copy of it, which Windows Update would not patch. The portable app keeps its data where the installed one does, under `%LOCALAPPDATA%`, so the two share a vault, and only one copy runs on it at a time. The Android app is `apps/airlock-mobile`, bundled with `dx bundle -p airlock-mobile --android`; see [Signing the Android app](#signing-the-android-app).
 
 Each file also has a build provenance attestation: a signed statement that it was built by the release workflow from the tagged commit. Check one with:
 
 ```bash
-gh attestation verify airlock-1.2.3-windows-x64-setup.exe --repo <owner>/airlock
+gh attestation verify airlock-1.2.3-windows-x64-setup.exe --repo tiago18c/airlock
 ```
+
+The same attestation is published as `airlock-<version>.sigstore.json`, so [cosign](https://docs.sigstore.dev/cosign/) checks it without GitHub's CLI or an account:
+
+```bash
+cosign verify-blob-attestation --bundle airlock-1.2.3.sigstore.json --type slsaprovenance1 \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  --certificate-identity-regexp '^https://github.com/tiago18c/airlock/.github/workflows/release.yml@refs/tags/v' \
+  airlock-1.2.3-windows-x64-setup.exe
+```
+
+Both prove where a file was built, to whoever checks. Neither is what Windows or Android check before running it: see [Signing the Android app](#signing-the-android-app) and code signing under [Not automated yet](#not-automated-yet).
 
 ## Versions
 
@@ -52,7 +68,7 @@ Commit messages are not parsed. They can stay as full sentences.
    git push origin v1.2.3
    ```
 4. **Wait** for the Release workflow. It re-runs every check, builds the files, and opens the draft.
-5. **Check the draft.** Install the online app from its installer on a clean machine, load the extension zip, and confirm one QR transfer and one browser connect. Optionally install the airgap build and confirm a durable-nonce transfer can be built, signed and shown as QR. Compare a checksum.
+5. **Check the draft.** Install the online app from its installer on a clean machine, load the extension zip, and confirm one QR transfer and one browser connect. Optionally install the airgap build and confirm a durable-nonce transfer can be built, signed and shown as QR. Start each portable zip once. Compare a checksum, and verify one file's attestation.
 6. **Publish** the draft.
 
 A version with a suffix, such as `1.2.3-rc.1`, is opened as a pre-release.
@@ -72,7 +88,7 @@ dx builds a release APK (Gradle's `assembleRelease`: R8, no debuggable flag, Web
 | `ANDROID_KEY_ALIAS` | The alias of the key in it |
 | `ANDROID_KEY_PASSWORD` | The key's password |
 
-dx writes the passwords into Kotlin and TOML strings unescaped, so they cannot hold `"`, `\` or `$`. To make the key once:
+dx writes the passwords into Kotlin and TOML strings unescaped, so they cannot hold `"`, `\` or `$`. The key is made with `keytool`, from the JDK; no outside service is involved, and the certificate is self-signed. To make it once:
 
 ```bash
 keytool -genkeypair -keystore airlock-release.jks -alias airlock -keyalg RSA -keysize 4096 -validity 10000 -dname "CN=Airlock"
@@ -81,6 +97,14 @@ gh secret set ANDROID_KEYSTORE_PASSWORD
 gh secret set ANDROID_KEY_ALIAS --body airlock
 gh secret set ANDROID_KEY_PASSWORD
 ```
+
+In PowerShell, which has no `base64`:
+
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("$PWD\airlock-release.jks")) | gh secret set ANDROID_KEYSTORE_BASE64 --repo tiago18c/airlock
+```
+
+The two password commands ask for the value. A PKCS12 keystore, which `keytool` makes since JDK 9, has one password for the store and the key.
 
 Keep the `.jks` and its passwords somewhere safe outside GitHub as well: a secret cannot be read back.
 
