@@ -9,6 +9,8 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-09
+
 ### Added
 - **Inspect an account** from the magnifier on any address's card. It reads the account from your node and shows its balance, owner, whether it is executable, its rent epoch and its size, then its data decoded with its owner's IDL, looking the IDL up on chain when the device has none. Data no IDL reads shows as a hex dump or base64. An address inside the inspector has a card too, so you can follow the owner or a field to its own account, and **Back** returns.
 - On **Programs**, an IDL now has a tab for each kind of thing it describes (instructions, accounts, types, PDAs, events and errors, each with how many) and one for the raw file. Errors show as cards with their code in decimal and hex.
@@ -137,6 +139,3 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - A record of used signing leaves (`vector-leaves.json`) that cannot be read now stops XMSS and Winternitz keys from signing, and the file is left as it is. Before, it was set aside and the record started empty, falling back on the vault's counter plus 16 leaves.
 - Airlock and Airlock Offline lock their data folder while they run, and a second copy of either refuses to start with a message saying why. Before, two windows of Airlock Offline could run on one vault: each kept its own copy of the vault and of the record of used XMSS leaves and saved over the other's, so a leaf could sign twice. The online app was held to one copy only by its bridge socket, and not at all when the socket could not be named.
 - Secp256k1 and EIP-191 Vector keys sign with k256 0.14, off crypto-bigint 0.5 and its timing advisory (RUSTSEC-2026-0387). crypto-bigint 0.7 is at 0.7.9, off the yanked 0.7.7.
-
-### Added
-- Initial release.

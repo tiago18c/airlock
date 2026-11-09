@@ -78,6 +78,7 @@ function versionSources() {
       "Cargo.toml": workspace,
       "apps/airlock/Cargo.toml": crate("apps/airlock/Cargo.toml"),
       "apps/airlock-offline/Cargo.toml": crate("apps/airlock-offline/Cargo.toml"),
+      "apps/airlock-mobile/Cargo.toml": crate("apps/airlock-mobile/Cargo.toml"),
       "crates/wallet-core/Cargo.toml": crate("crates/wallet-core/Cargo.toml"),
       "crates/wallet-flows/Cargo.toml": crate("crates/wallet-flows/Cargo.toml"),
       "crates/wallet-rpc/Cargo.toml": crate("crates/wallet-rpc/Cargo.toml"),

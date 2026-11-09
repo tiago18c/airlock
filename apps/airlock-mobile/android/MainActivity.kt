@@ -35,6 +35,7 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 import android.view.View
+import androidx.annotation.Keep
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -148,6 +149,7 @@ class MainActivity : WryActivity() {
     }
 }
 
+@Keep
 object SeedVaultBridge {
     private const val TAG = "AirlockSeedVault"
     /// The bridge's request codes: AppCompat takes only 16 bits.
@@ -367,6 +369,7 @@ object SeedVaultBridge {
 /// Requests work as SeedVaultBridge's: an id, then take(id). A result is
 /// "ok:<text>" or "err:<code>:<text>"; an opened key is taken once with
 /// takeSecret(id), and Rust wipes the array after copying it.
+@Keep
 object KeyGuardBridge {
     private const val TAG = "AirlockKeyGuard"
     private const val STORE = "AndroidKeyStore"
@@ -542,6 +545,7 @@ object KeyGuardBridge {
 /// the user to let Airlock use one when it may not yet, opens it, and answers
 /// "ok:<fd>" with a file descriptor that Rust owns from then on, or
 /// "err:denied:", "err:gone:" or "err:failed:<text>".
+@Keep
 object UsbBridge {
     private const val TAG = "AirlockUsb"
     private const val ACTION = "dev.airlock.mobile.USB_PERMISSION"
@@ -647,6 +651,7 @@ object UsbBridge {
 /// MwaActivity is off in the manifest. Rust turns it on only in online mode
 /// with "Apps on this phone" on in Settings, so an offline Airlock is not a
 /// wallet any app can find.
+@Keep
 object MwaBridge {
     private const val TAG = "AirlockMwa"
 
@@ -958,6 +963,7 @@ class MwaActivity : Activity() {
 /// Starts Airlock again in a new process, as ProcessPhoenix does: Settings →
 /// Mode switches folders, which only a new process can. It runs in a process
 /// of its own (":restart"), ends Airlock's, and opens the launcher activity.
+@Keep
 class RestartActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
