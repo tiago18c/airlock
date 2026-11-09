@@ -181,6 +181,7 @@ pub fn use_session(core: CopyValue<Core>, online: OnlineHooks, submitter: Submit
     let save_error = use_signal(|| None::<String>);
     use_save_failures(core, save_error);
     let proposals = use_signal(|| None::<ProposalsOpen>);
+    let inspect = use_signal(|| None::<solana_pubkey::Pubkey>);
     let notices_open = use_signal(|| false);
     let notices_focus = use_signal(|| None::<app_core::NoticeId>);
     let online = use_hook(|| CopyValue::new(online));
@@ -217,6 +218,7 @@ pub fn use_session(core: CopyValue<Core>, online: OnlineHooks, submitter: Submit
             online,
             submitter,
             proposals,
+            inspect,
             notices_open,
             notices_focus,
             directory,

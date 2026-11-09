@@ -5,8 +5,8 @@
 
 use crate::state::session::{Session, Tab};
 use crate::ui::{
-    AddressBookPanel, BuildPanel, DeviceDialog, FingerprintOffer, Glyph, Icon, LockScreen,
-    PhoneLayout, ProgramsPanel, SettingsPanel, SignPanel, ThemeToggle, UnlockPrompt,
+    AccountInspector, AddressBookPanel, BuildPanel, DeviceDialog, FingerprintOffer, Glyph, Icon,
+    LockScreen, PhoneLayout, ProgramsPanel, SettingsPanel, SignPanel, ThemeToggle, UnlockPrompt,
     WalletSwitcher, WalletsPanel,
 };
 use crate::{MAIN_CSS, TOKENS_CSS};
@@ -147,6 +147,7 @@ pub fn AppShell(
             {overlays}
             UnlockPrompt {}
             FingerprintOffer {}
+            AccountInspector {}
             DeviceDialog {}
         }
     }

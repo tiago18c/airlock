@@ -361,6 +361,14 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     });
     let expired = blockhash.expired;
     let site_blockhash = from_browser && !exact;
+    // The node has answered for this very message: after an authorization,
+    // the transaction is signed only once its simulation is on screen.
+    let simulated = (form.simulated_for)() == Some(sha256_bytes(&tx.message))
+        && matches!(
+            &*form.simulation.read(),
+            SimState::Done(_) | SimState::Failed(_)
+        );
+    let simulating = online && !simulated;
     // Every address a signature row draws. The change the simulation finds
     // for one is shown on its row.
     let signer_rows: Vec<Pubkey> = status
@@ -506,12 +514,14 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             busy,
             blind_holds: blind.holds_sign,
             reading: reading.unsettled(),
+            simulating,
             needs_rebuild,
             refreshes_on_sign,
             blockhash,
             site_blockhash,
             site_signs,
             site_send,
+            from_site: from_browser,
         }
 
         if let Some(batch) = batch.as_ref().filter(|_| site_waiting) {
@@ -639,6 +649,8 @@ fn SignActions(
     blind_holds: bool,
     /// It is still being read.
     reading: bool,
+    /// The node has not answered for this message yet.
+    simulating: bool,
     refreshes_on_sign: bool,
     blockhash: BlockhashPlan,
     site_blockhash: bool,
@@ -646,6 +658,8 @@ fn SignActions(
     /// What came of the transaction since it went back to the site, and
     /// the site.
     site_send: Option<(SiteSend, String)>,
+    /// A site asked for it: it goes back there, and this press does not send it.
+    from_site: bool,
 ) -> Element {
     let session = use_context::<Session>();
     let rebuilding = session.forms.sign.rebuilding;
@@ -668,11 +682,15 @@ fn SignActions(
         site_holds: matches!(site_send, Some((SiteSend::Watching | SiteSend::Landed, _))),
         blind_holds,
         reading,
+        simulating,
     };
     let can_sign = may_sign(buttons);
     let can_submit = may_submit(buttons);
     let elsewhere = status.missing_elsewhere();
     let authorizations = status.authorizations_elsewhere();
+    // This press leaves nothing missing, so it submits too.
+    let submits = online && !from_site && elsewhere == 0;
+    let waits_for_simulation = simulating && step == NextSignature::Transaction;
     let sign_label = match step {
         // The authorizations go on a press of their own.
         NextSignature::Authorization => {
@@ -685,16 +703,23 @@ fn SignActions(
                 "Sign authorization".into()
             }
         }
-        NextSignature::Transaction => match (status.signable, on_device, device_vendor) {
-            (0, 1, Some(vendor)) => format!("Sign on {}", vendor.label()),
-            (0, count, Some(vendor)) if count > 1 => {
-                format!("Sign on {} ({count})", vendor.label())
+        NextSignature::Transaction => {
+            let label = match (status.signable, on_device, device_vendor) {
+                (0, 1, Some(vendor)) => format!("Sign on {}", vendor.label()),
+                (0, count, Some(vendor)) if count > 1 => {
+                    format!("Sign on {} ({count})", vendor.label())
+                }
+                (here, device, _) if here + device > 1 => {
+                    format!("Sign transaction ({})", here + device)
+                }
+                _ => "Sign transaction".into(),
+            };
+            if submits {
+                format!("{label} and submit")
+            } else {
+                label
             }
-            (here, device, _) if here + device > 1 => {
-                format!("Sign transaction ({})", here + device)
-            }
-            _ => "Sign transaction".into(),
-        },
+        }
         NextSignature::Nothing => "Sign".into(),
     };
 
@@ -739,6 +764,8 @@ fn SignActions(
             p { class: "hint", "Rebuilding the transaction for the wallet it asks to sign…" }
         } else if needs_rebuild {
             p { class: "hint", "Rebuild the transaction for the wallet it asks to sign before signing." }
+        } else if waits_for_simulation && status.signable + on_device > 0 {
+            p { class: "hint", "Simulating it first, so you can read what it does before you sign." }
         } else if status.waiting_for_authority {
             p { class: "hint",
                 "{authorizations} authorization signature(s) are still needed from other devices. Programmatic authorities sign first; Vector keys sign after those signatures are in. This device then moves the transaction to a fresh blockhash and signs as fee payer."

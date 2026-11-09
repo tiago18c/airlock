@@ -22,6 +22,7 @@ use wallet_core::{
 };
 use wallet_flows::adapt::rebuilt_note;
 pub use wallet_flows::offer::BlockhashOnSign;
+use wallet_flows::offer::{submits_on_sign, SignedFacts};
 use wallet_flows::request::{
     accounts_created, one_time_signers, replaceable_signers, reshape_unsupported,
 };
@@ -919,6 +920,10 @@ fn needs_vault_keys(session: Session) -> bool {
 /// Sign what is on screen. If another transaction has taken its place by the
 /// time the signatures exist, they are not used: nothing goes to the screen, and
 /// nothing to a site, since the request a site is told about is the one on screen.
+///
+/// The press that signs the transaction and leaves nothing missing submits it
+/// straight away, online ([`submits_on_sign`]). A site's goes back to the site
+/// instead, which sends it, or has this app send it, as it asked.
 fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: BlockhashOnSign) {
     let form = session.forms.sign;
     let mut error = form.error;
@@ -935,6 +940,7 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
     let told = form.vector.peek().clone();
     let tables = form.tables.peek().clone();
     let flow = form.flow.peek().unwrap_or_else(next_flow_id);
+    let from_site = matches!(*form.source.peek(), Some(TxSource::Browser { .. }));
     spawn(async move {
         // The move is kept only with the signatures made on it, so a
         // simulation started in between cannot write over them.
@@ -1132,6 +1138,15 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
                     }
                 }
                 let finished = done.authorized && !done.transaction_next;
+                let complete = finished
+                    && decode_on_sign(&done.wire, &tables)
+                        .is_ok_and(|tx| tx.signers.iter().all(|slot| slot.valid));
+                let submit = submits_on_sign(SignedFacts {
+                    online: rpc.is_some(),
+                    from_site,
+                    signed_transaction: done.signatures > 0,
+                    complete,
+                });
                 stored.set(Some(done.wire.clone()));
                 // The site gets it back once this device has nothing left
                 // to sign: not between the authorization and the transaction.
@@ -1161,6 +1176,12 @@ fn sign_unlocked(mut session: Session, mut busy: Signal<bool>, blockhash: Blockh
                         }
                         note.set(Some(phrase));
                     }
+                }
+                if submit {
+                    // Submit takes `busy` from here, and says how it goes.
+                    busy.set(false);
+                    submit_loaded(session, busy);
+                    return;
                 }
             }
             Err(err) => form.report(generation, sentence(err)),

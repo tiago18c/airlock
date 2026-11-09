@@ -21,8 +21,22 @@ pub use wallet::*;
 #[derive(Clone, Copy)]
 pub struct ProgramForm {
     pub selected: Signal<Option<Pubkey>>,
-    /// Parsed tree when true, original JSON when false.
-    pub parsed: Signal<bool>,
+    /// The part of the IDL shown, or the original JSON.
+    pub section: Signal<IdlSection>,
+}
+
+/// A tab of a program's IDL.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum IdlSection {
+    #[default]
+    Instructions,
+    Accounts,
+    Types,
+    Pdas,
+    Events,
+    Errors,
+    /// The file as it was imported.
+    Raw,
 }
 
 /// The History screen: which wallet it shows, and the transaction open.
@@ -137,7 +151,7 @@ pub fn use_forms() -> Forms {
         },
         program: ProgramForm {
             selected: use_signal(|| None::<Pubkey>),
-            parsed: use_signal(|| true),
+            section: use_signal(IdlSection::default),
         },
         history: HistoryForm {
             wallet: use_signal(|| None::<Pubkey>),
