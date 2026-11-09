@@ -5,10 +5,7 @@ use std::sync::Arc;
 use bridge_protocol::reply::{SendError, SiteAccount};
 use solana_pubkey::Pubkey;
 use tracing::{debug, debug_span, info};
-use wallet_core::{
-    connect_choice, current_first, reconnect_accounts, ShareableAccount, SiteGrant, VaultData,
-    VaultError,
-};
+use wallet_core::{current_first, ShareableAccount, VaultData, VaultError};
 
 use super::{locked, Core, Inner, CORE};
 use crate::bridge::{
@@ -17,6 +14,7 @@ use crate::bridge::{
 };
 use crate::events::Event;
 use crate::notices::BridgeRequestOutcome;
+use crate::sites::{self, labelled, Connect, Site};
 use crate::slices::shown_wallets;
 use crate::storage::AppWorkspace;
 
@@ -190,39 +188,33 @@ impl Inner {
         )
     }
 
-    /// What `origin` was given, remembered or for this run of the app.
-    fn site_grant(&self, origin: &str) -> Option<SiteGrant> {
-        let remembered = self
-            .workspace
-            .lock()
-            .data()
-            .connections
-            .grant(origin)
-            .cloned();
-        remembered.or_else(|| locked(&self.bridge).session(origin).cloned())
-    }
-
-    fn site_is_blocked(&self, origin: &str) -> bool {
-        self.workspace.lock().data().connections.is_blocked(origin)
+    /// What the app holds about `origin`: whether it is blocked, and what it
+    /// was given, remembered or for this run of the app.
+    fn site(&self, origin: &str) -> Site {
+        let (blocked, remembered) = {
+            let workspace = self.workspace.lock();
+            let connections = &workspace.data().connections;
+            (
+                connections.is_blocked(origin),
+                connections.grant(origin).cloned(),
+            )
+        };
+        Site {
+            blocked,
+            remembered: remembered.is_some(),
+            grant: remembered.or_else(|| locked(&self.bridge).session(origin).cloned()),
+        }
     }
 
     pub(crate) fn site_connect(&self, origin: &str, silent: bool) -> SiteConnect {
-        if self.site_is_blocked(origin) {
-            return SiteConnect::Blocked;
-        }
-        let Some(grant) = self.site_grant(origin) else {
-            return SiteConnect::Undecided;
-        };
-        // A site that disconnected stays out until it asks again.
-        if grant.ended && silent {
-            return SiteConnect::Undecided;
-        }
+        let site = self.site(origin);
         let (shareable, current) = self.site_accounts();
-        let keys: Vec<Pubkey> = shareable.iter().map(|account| account.pubkey).collect();
-        let Some(accounts) = reconnect_accounts(&grant.accounts, current, &keys) else {
-            return SiteConnect::Undecided;
+        let (accounts, ended) = match sites::connect(&site, silent, &shareable, current) {
+            Connect::Blocked => return SiteConnect::Blocked,
+            Connect::Undecided => return SiteConnect::Undecided,
+            Connect::Reconnect { accounts, ended } => (accounts, ended),
         };
-        if grant.ended {
+        if ended {
             self.set_site_ended(origin, false);
         }
         info!(target: "airlock::bridge", origin = %origin, silent, "site reconnected");
@@ -232,24 +224,18 @@ impl Inner {
     }
 
     pub(crate) fn site_sign(&self, origin: &str, accounts: &[Pubkey]) -> SiteSign {
-        if self.site_is_blocked(origin) {
-            return SiteSign::Blocked;
-        }
-        match self.site_grant(origin) {
-            Some(grant)
-                if !grant.ended && accounts.iter().all(|key| grant.accounts.contains(key)) =>
-            {
-                // A page from before the app restarted still holds its accounts.
-                let mut bridge = locked(&self.bridge);
-                if !bridge.holding().contains_key(origin) {
-                    bridge.set_holding(origin, grant.accounts);
-                    drop(bridge);
-                    self.publish_sites();
-                }
-                SiteSign::Allowed
+        let site = self.site(origin);
+        let decided = sites::sign(&site, accounts);
+        if let (SiteSign::Allowed, Some(grant)) = (decided, site.grant) {
+            // A page from before the app restarted still holds its accounts.
+            let mut bridge = locked(&self.bridge);
+            if !bridge.holding().contains_key(origin) {
+                bridge.set_holding(origin, grant.accounts);
+                drop(bridge);
+                self.publish_sites();
             }
-            _ => SiteSign::NotConnected,
         }
+        decided
     }
 
     pub(crate) fn site_disconnected(&self, origin: &str) {
@@ -323,21 +309,14 @@ impl Inner {
 
     pub(crate) fn sites_sync(&self) {
         let (shareable, current) = self.site_accounts();
-        let keys: Vec<Pubkey> = shareable.iter().map(|account| account.pubkey).collect();
         let holding = locked(&self.bridge).holding().clone();
         for (origin, held) in holding {
             let granted = self
-                .site_grant(&origin)
+                .site(&origin)
+                .grant
                 .map(|grant| grant.accounts)
                 .unwrap_or_default();
-            // A wallet the site was not given changes nothing, but one no
-            // longer on this device cannot stay with it.
-            let accounts = reconnect_accounts(&granted, current, &keys).unwrap_or_else(|| {
-                held.iter()
-                    .filter(|key| keys.contains(key))
-                    .copied()
-                    .collect()
-            });
+            let accounts = sites::synced(&granted, &held, &shareable, current);
             if accounts != held {
                 locked(&self.bridge).set_holding(&origin, accounts);
             }
@@ -387,23 +366,7 @@ impl Inner {
 
     pub(crate) fn site_choice(&self, origin: &str) -> SiteChoice {
         let (shareable, current) = self.site_accounts();
-        let keys: Vec<Pubkey> = shareable.iter().map(|account| account.pubkey).collect();
-        let grant = self.site_grant(origin);
-        let remembered = self
-            .workspace
-            .lock()
-            .data()
-            .connections
-            .grant(origin)
-            .is_some();
-        SiteChoice {
-            choice: connect_choice(
-                &keys,
-                current,
-                grant.as_ref().map(|grant| grant.accounts.as_slice()),
-            ),
-            remembered,
-        }
+        sites::choice(&self.site(origin), &shareable, current)
     }
 
     pub(crate) fn bridge_connect(
@@ -454,11 +417,7 @@ impl Inner {
             return false;
         };
         let (shareable, _) = self.site_accounts();
-        // The account that signed in comes first: it is who the site now sees.
-        let mut keys = vec![account];
-        if let Some(grant) = self.site_grant(&origin) {
-            keys.extend(grant.accounts.into_iter().filter(|key| *key != account));
-        }
+        let keys = sites::signed_in(account, self.site(&origin).grant.as_ref());
         let answer = BridgeAnswer::SignedIn {
             account: account.to_bytes(),
             accounts: labelled(keys.clone(), &shareable),
@@ -575,20 +534,4 @@ pub(super) fn sites_view(workspace: &AppWorkspace, bridge: &BridgeState) -> Site
         blocked: connections.blocked.clone(),
         holding: bridge.holding().clone(),
     }
-}
-
-/// `keys` as a site is sent them, each with the label it has here.
-fn labelled(keys: Vec<Pubkey>, accounts: &[ShareableAccount]) -> Vec<SiteAccount> {
-    keys.into_iter()
-        .map(|key| {
-            let known = accounts.iter().find(|account| account.pubkey == key);
-            SiteAccount {
-                pubkey: key.to_bytes(),
-                label: known
-                    .map(|account| account.label.clone())
-                    .unwrap_or_default(),
-                signs_messages: known.is_some_and(|account| !account.contract),
-            }
-        })
-        .collect()
 }
