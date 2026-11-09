@@ -40,7 +40,7 @@ apps/airlock-mobile
   android: core + ui + online + mobile (offline mode: core + ui + mobile, no Network)
 ```
 
-Each app is a thin `main.rs`: it picks its tabs and services and hands them to `AppShell` in `app-ui`. `apps/airlock` picks its desktop services with `cfg(target_arch)`, which is the only `cfg` on build flavour the code allows. Each app has its own `Dioxus.toml` and icons, because `dx -p` reads them from the package directory.
+Each app is a thin `main.rs`: it picks its tabs and services and hands them to `AppShell` in `app-ui`. `apps/airlock` keeps what only one build has in a module of its own, `desktop.rs` or `web.rs`, and takes one of them as `shell` with a single `cfg`, which is the only `cfg` on build flavour the code allows. Each app has its own `Dioxus.toml` and icons, because `dx -p` reads them from the package directory.
 
 ## app-core
 
