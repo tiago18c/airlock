@@ -1,10 +1,11 @@
+use super::asked::{listed_pages, read_wire};
 use super::*;
-use app_core::bridge::BridgeAnswer;
+use app_core::bridge::{BridgeAnswer, SendPlan};
 use app_core::testing::{kit, Kit};
 use app_core::{BridgeRequestOutcome, NoticeKind};
 use bridge_protocol::reply::SendError;
 use wallet_core::TxFormat as Format;
-use wallet_core::WalletSigner;
+use wallet_core::{ConfirmationLevel, WalletSigner};
 
 /// A bridge attached to a test core.
 fn attached_bridge() -> (Kit, Bridge) {
@@ -339,7 +340,7 @@ fn v1_b64(wire: &[u8]) -> String {
 }
 
 fn wire_read(wire: &[u8]) -> SiteWire {
-    read_wire(&json!({ "transaction": v1_b64(wire) }))
+    read_wire(Some(&v1_b64(wire)))
 }
 
 fn legacy_transfer_wire(payer: &Pubkey) -> Vec<u8> {
@@ -1063,12 +1064,8 @@ fn a_readable_transaction_wire_is_accepted() {
 
     assert_eq!(wire_read(&[0xff, 1, 2]), SiteWire::Unreadable(3));
     assert_eq!(wire_read(&[0xff, 1, 2]).bytes(), None);
-    assert_eq!(read_wire(&json!({})), SiteWire::Missing);
-    assert_eq!(read_wire(&json!({ "transaction": 7 })), SiteWire::Missing);
-    assert_eq!(
-        read_wire(&json!({ "transaction": "not base64!" })),
-        SiteWire::NotBase64
-    );
+    assert_eq!(read_wire(None), SiteWire::Missing);
+    assert_eq!(read_wire(Some("not base64!")), SiteWire::NotBase64);
 }
 
 #[test]
