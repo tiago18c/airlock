@@ -7,7 +7,8 @@
 
 use crate::chain::RawAccount;
 use crate::ids::{
-    ASSOCIATED_TOKEN_PROGRAM_ID, SYSTEM_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID, MEMO_PROGRAM_ID, NATIVE_MINT, NATIVE_MINT_2022, SYSTEM_PROGRAM_ID,
+    TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID,
 };
 use solana_instruction::{AccountMeta, Instruction};
 use solana_pubkey::Pubkey;
@@ -23,11 +24,30 @@ const ACCOUNT_TYPE_ACCOUNT: u8 = 2;
 
 // Token-2022 extension types this module reads.
 const EXT_TRANSFER_FEE_CONFIG: u16 = 1;
+const EXT_TRANSFER_FEE_AMOUNT: u16 = 2;
+const EXT_CONFIDENTIAL_TRANSFER_ACCOUNT: u16 = 5;
 const EXT_DEFAULT_ACCOUNT_STATE: u16 = 6;
 const EXT_MEMO_TRANSFER: u16 = 8;
 const EXT_NON_TRANSFERABLE: u16 = 9;
 const EXT_TRANSFER_HOOK: u16 = 14;
+const EXT_CONFIDENTIAL_TRANSFER_FEE_AMOUNT: u16 = 17;
 const EXT_PAUSABLE: u16 = 26;
+const EXT_PERMISSIONED_BURN: u16 = 28;
+
+/// Where a confidential account's encrypted balances sit in its extension:
+/// after `approved` (1) and the ElGamal key (32), the pending balance's low
+/// and high halves and the available balance, 64 bytes each. The account
+/// can be closed only while all three are the zero ciphertext.
+const CONFIDENTIAL_BALANCES: std::ops::Range<usize> = 33..225;
+
+// Token instruction tags.
+const IX_CLOSE_ACCOUNT: u8 = 9;
+const IX_TRANSFER_CHECKED: u8 = 12;
+const IX_BURN_CHECKED: u8 = 15;
+/// Token-2022's transfer-fee instructions, and `HarvestWithheldTokensToMint`
+/// among them.
+const IX_TRANSFER_FEE_EXTENSION: u8 = 26;
+const IX_HARVEST_WITHHELD_TOKENS_TO_MINT: u8 = 4;
 
 /// Account state as Token stores it.
 const STATE_INITIALIZED: u8 = 1;
@@ -82,7 +102,7 @@ pub fn transfer_checked(
     amount: u64,
     decimals: u8,
 ) -> Instruction {
-    let mut data = vec![12u8];
+    let mut data = vec![IX_TRANSFER_CHECKED];
     data.extend_from_slice(&amount.to_le_bytes());
     data.push(decimals);
     Instruction {
@@ -95,6 +115,84 @@ pub fn transfer_checked(
         ],
         data,
     }
+}
+
+/// Token `BurnChecked`: tag 15, the amount as u64 LE, then the decimals.
+pub fn burn_checked(
+    program: Pubkey,
+    account: Pubkey,
+    mint: Pubkey,
+    authority: Pubkey,
+    amount: u64,
+    decimals: u8,
+) -> Instruction {
+    let mut data = vec![IX_BURN_CHECKED];
+    data.extend_from_slice(&amount.to_le_bytes());
+    data.push(decimals);
+    Instruction {
+        program_id: program,
+        accounts: vec![
+            AccountMeta::new(account, false),
+            AccountMeta::new(mint, false),
+            AccountMeta::new_readonly(authority, true),
+        ],
+        data,
+    }
+}
+
+/// Token `CloseAccount`: tag 9. The account's lamports go to `destination`.
+/// A token account must hold no tokens first; a wrapped SOL account may, and
+/// closing it unwraps them.
+pub fn close_account(
+    program: Pubkey,
+    account: Pubkey,
+    destination: Pubkey,
+    authority: Pubkey,
+) -> Instruction {
+    Instruction {
+        program_id: program,
+        accounts: vec![
+            AccountMeta::new(account, false),
+            AccountMeta::new(destination, false),
+            AccountMeta::new_readonly(authority, true),
+        ],
+        data: vec![IX_CLOSE_ACCOUNT],
+    }
+}
+
+/// Token-2022 `HarvestWithheldTokensToMint`: moves the transfer fees withheld
+/// in `accounts` to their mint. Anyone may send it, and an account still
+/// holding withheld fees cannot be closed.
+pub fn harvest_withheld_to_mint(mint: Pubkey, accounts: &[Pubkey]) -> Instruction {
+    let mut metas = vec![AccountMeta::new(mint, false)];
+    metas.extend(
+        accounts
+            .iter()
+            .map(|account| AccountMeta::new(*account, false)),
+    );
+    Instruction {
+        program_id: TOKEN_2022_PROGRAM_ID,
+        accounts: metas,
+        data: vec![
+            IX_TRANSFER_FEE_EXTENSION,
+            IX_HARVEST_WITHHELD_TOKENS_TO_MINT,
+        ],
+    }
+}
+
+/// A memo with `text` and no signers. An account that wants a memo on what
+/// it receives needs one right before the transfer.
+pub fn memo(text: &str) -> Instruction {
+    Instruction {
+        program_id: MEMO_PROGRAM_ID,
+        accounts: Vec::new(),
+        data: text.as_bytes().to_vec(),
+    }
+}
+
+/// Whether `mint` is wrapped SOL, under either token program.
+pub fn is_native_mint(mint: &Pubkey) -> bool {
+    *mint == NATIVE_MINT || *mint == NATIVE_MINT_2022
 }
 
 /// What a send needs to know about a mint.
@@ -113,6 +211,8 @@ pub struct Mint {
     pub paused: bool,
     /// New accounts for this mint start frozen.
     pub frozen_by_default: bool,
+    /// A Token-2022 mint whose burns need this authority's signature too.
+    pub burn_authority: Option<Pubkey>,
 }
 
 impl Mint {
@@ -134,6 +234,7 @@ impl Mint {
             non_transferable: false,
             paused: false,
             frozen_by_default: false,
+            burn_authority: None,
         };
         if data.len() > MINT_LEN {
             if account.owner != TOKEN_2022_PROGRAM_ID {
@@ -158,6 +259,10 @@ impl Mint {
                         mint.transfer_hook = (program != Pubkey::default()).then_some(program);
                     }
                     EXT_PAUSABLE if value.len() >= 33 => mint.paused = value[32] != 0,
+                    EXT_PERMISSIONED_BURN if value.len() >= 32 => {
+                        let authority = Pubkey::try_from(&value[0..32]).ok()?;
+                        mint.burn_authority = (authority != Pubkey::default()).then_some(authority);
+                    }
                     _ => {}
                 }
             }
@@ -177,6 +282,17 @@ impl Mint {
             None
         }
     }
+
+    /// Why this app cannot burn this mint's tokens, if it cannot.
+    pub fn burn_refusal(&self) -> Option<&'static str> {
+        if self.paused {
+            Some("Burns of this token are paused by its mint.")
+        } else if self.burn_authority.is_some() {
+            Some("Burning this token needs the approval of an authority its mint names.")
+        } else {
+            None
+        }
+    }
 }
 
 /// What a send needs to know about a token account.
@@ -191,9 +307,23 @@ pub struct TokenAccount {
     pub frozen: bool,
     /// Incoming transfers must come with a memo (Token-2022).
     pub requires_memo: bool,
+    /// Who may close it instead of its owner, when someone is set.
+    pub close_authority: Option<Pubkey>,
+    /// Transfer fees withheld in it (Token-2022), which must be harvested to
+    /// the mint before it can be closed.
+    pub withheld: u64,
+    /// It holds a confidential balance or withheld confidential fees
+    /// (Token-2022), which only a zero-knowledge proof can empty, so it
+    /// cannot be closed by this app.
+    pub confidential: bool,
 }
 
 impl TokenAccount {
+    /// Who signs to close it: its close authority, or else its owner.
+    pub fn closer(&self) -> Pubkey {
+        self.close_authority.unwrap_or(self.owner)
+    }
+
     /// An initialized account owned by Token or Token-2022. `None` for any
     /// other account, a mint included.
     pub fn parse(account: &RawAccount) -> Option<Self> {
@@ -212,14 +342,34 @@ impl TokenAccount {
             amount: u64::from_le_bytes(data[64..72].try_into().ok()?),
             frozen: state == STATE_FROZEN,
             requires_memo: false,
+            // A COption: a u32 tag, 1 for set, then the key.
+            close_authority: match data[129..133] {
+                [1, 0, 0, 0] => Some(Pubkey::try_from(&data[133..165]).ok()?),
+                _ => None,
+            },
+            withheld: 0,
+            confidential: false,
         };
         if data.len() > ACCOUNT_LEN {
             if account.owner != TOKEN_2022_PROGRAM_ID {
                 return None;
             }
             for (kind, value) in extensions(data, ACCOUNT_TYPE_ACCOUNT)? {
-                if kind == EXT_MEMO_TRANSFER && !value.is_empty() {
-                    parsed.requires_memo = value[0] != 0;
+                match kind {
+                    EXT_MEMO_TRANSFER if !value.is_empty() => {
+                        parsed.requires_memo = value[0] != 0;
+                    }
+                    EXT_TRANSFER_FEE_AMOUNT if value.len() >= 8 => {
+                        parsed.withheld = u64::from_le_bytes(value[0..8].try_into().ok()?);
+                    }
+                    EXT_CONFIDENTIAL_TRANSFER_ACCOUNT => {
+                        let balances = value.get(CONFIDENTIAL_BALANCES)?;
+                        parsed.confidential |= balances.iter().any(|byte| *byte != 0);
+                    }
+                    EXT_CONFIDENTIAL_TRANSFER_FEE_AMOUNT => {
+                        parsed.confidential |= value.iter().any(|byte| *byte != 0);
+                    }
+                    _ => {}
                 }
             }
         }
@@ -372,6 +522,124 @@ mod tests {
         );
         // Extensions only exist under Token-2022.
         assert!(TokenAccount::parse(&raw(TOKEN_PROGRAM_ID, data)).is_none());
+    }
+
+    #[test]
+    fn close_authority_withheld_fees_and_confidential_balances_are_read() {
+        let mut data = account_data(pk(1), pk(2), 0, STATE_INITIALIZED);
+        data[129] = 1;
+        data[133..165].copy_from_slice(pk(7).as_ref());
+        let plain = TokenAccount::parse(&raw(TOKEN_PROGRAM_ID, data.clone())).unwrap();
+        assert_eq!(plain.close_authority, Some(pk(7)));
+        assert_eq!(plain.closer(), pk(7));
+        assert_eq!((plain.withheld, plain.confidential), (0, false));
+
+        let mut confidential = vec![0u8; 295];
+        let data = with_extensions(
+            account_data(pk(1), pk(2), 0, STATE_INITIALIZED),
+            ACCOUNT_TYPE_ACCOUNT,
+            &[
+                (EXT_TRANSFER_FEE_AMOUNT, 42u64.to_le_bytes().to_vec()),
+                (EXT_CONFIDENTIAL_TRANSFER_ACCOUNT, confidential.clone()),
+            ],
+        );
+        let parsed = TokenAccount::parse(&raw(TOKEN_2022_PROGRAM_ID, data)).unwrap();
+        assert_eq!(parsed.withheld, 42);
+        assert_eq!(parsed.close_authority, None);
+        assert_eq!(parsed.closer(), pk(2));
+        // Zero ciphertexts: configured, but nothing in it.
+        assert!(!parsed.confidential);
+
+        // Something in the available balance, after the key and the two
+        // halves of the pending balance.
+        confidential[33 + 128] = 5;
+        let data = with_extensions(
+            account_data(pk(1), pk(2), 0, STATE_INITIALIZED),
+            ACCOUNT_TYPE_ACCOUNT,
+            &[(EXT_CONFIDENTIAL_TRANSFER_ACCOUNT, confidential)],
+        );
+        assert!(
+            TokenAccount::parse(&raw(TOKEN_2022_PROGRAM_ID, data))
+                .unwrap()
+                .confidential
+        );
+    }
+
+    #[test]
+    fn a_mint_that_names_a_burn_authority_refuses_burns() {
+        let data = with_extensions(
+            mint_data(0),
+            ACCOUNT_TYPE_MINT,
+            &[(EXT_PERMISSIONED_BURN, pk(4).as_ref().to_vec())],
+        );
+        let mint = Mint::parse(&raw(TOKEN_2022_PROGRAM_ID, data)).unwrap();
+        assert_eq!(mint.burn_authority, Some(pk(4)));
+        assert!(mint.burn_refusal().is_some());
+        assert_eq!(mint.refusal(), None);
+
+        let data = with_extensions(
+            mint_data(0),
+            ACCOUNT_TYPE_MINT,
+            &[(EXT_PERMISSIONED_BURN, vec![0u8; 32])],
+        );
+        let mint = Mint::parse(&raw(TOKEN_2022_PROGRAM_ID, data)).unwrap();
+        assert_eq!(mint.burn_refusal(), None);
+    }
+
+    #[test]
+    fn burn_close_harvest_and_memo_are_laid_out_as_the_programs_read_them() {
+        let burn = burn_checked(TOKEN_PROGRAM_ID, pk(1), pk(2), pk(3), 9, 4);
+        assert_eq!(burn.data[0], 15);
+        assert_eq!(&burn.data[1..9], &9u64.to_le_bytes());
+        assert_eq!(burn.data[9], 4);
+        let metas: Vec<_> = burn
+            .accounts
+            .iter()
+            .map(|m| (m.pubkey, m.is_writable, m.is_signer))
+            .collect();
+        assert_eq!(
+            metas,
+            vec![
+                (pk(1), true, false),
+                (pk(2), true, false),
+                (pk(3), false, true)
+            ]
+        );
+
+        let close = close_account(TOKEN_2022_PROGRAM_ID, pk(1), pk(5), pk(3));
+        assert_eq!(close.program_id, TOKEN_2022_PROGRAM_ID);
+        assert_eq!(close.data, vec![9]);
+        let metas: Vec<_> = close
+            .accounts
+            .iter()
+            .map(|m| (m.pubkey, m.is_writable, m.is_signer))
+            .collect();
+        assert_eq!(
+            metas,
+            vec![
+                (pk(1), true, false),
+                (pk(5), true, false),
+                (pk(3), false, true)
+            ]
+        );
+
+        let harvest = harvest_withheld_to_mint(pk(2), &[pk(1), pk(6)]);
+        assert_eq!(harvest.program_id, TOKEN_2022_PROGRAM_ID);
+        assert_eq!(harvest.data, vec![26, 4]);
+        assert_eq!(harvest.accounts.len(), 3);
+        assert!(harvest
+            .accounts
+            .iter()
+            .all(|m| m.is_writable && !m.is_signer));
+
+        let memo = memo("hi");
+        assert_eq!(memo.program_id, MEMO_PROGRAM_ID);
+        assert_eq!(memo.data, b"hi");
+        assert!(memo.accounts.is_empty());
+
+        assert!(is_native_mint(&NATIVE_MINT));
+        assert!(is_native_mint(&NATIVE_MINT_2022));
+        assert!(!is_native_mint(&pk(1)));
     }
 
     #[test]

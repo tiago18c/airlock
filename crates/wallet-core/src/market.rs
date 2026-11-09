@@ -8,8 +8,7 @@ use solana_pubkey::Pubkey;
 use std::collections::BTreeMap;
 
 /// The mint that prices SOL.
-pub const WRAPPED_SOL_MINT: Pubkey =
-    Pubkey::from_str_const("So11111111111111111111111111111111111111112");
+pub const WRAPPED_SOL_MINT: Pubkey = crate::ids::NATIVE_MINT;
 
 /// How long a list of asset groups is used before it is read again.
 pub const GROUPS_TTL_SECS: i64 = 24 * 60 * 60;
