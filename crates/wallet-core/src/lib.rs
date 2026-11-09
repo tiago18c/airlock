@@ -68,8 +68,8 @@ pub use keys::{
 pub use phrase::{Part, Phrase};
 pub use review::{
     batch_steps, blind_in, blocks_left, blocks_left_after, carrying_stored, context_is_for,
-    context_note, context_note_for, context_note_with, display_note, explain_instructions,
-    explain_transaction, explain_with_note, format_countdown, keys_asked_for,
+    context_note, context_note_for, context_note_with, display_accounts, display_note,
+    explain_instructions, explain_transaction, explain_with_note, format_countdown, keys_asked_for,
     missing_catalog_programs, next_step, note_supplies_accounts, only_simulate_and_sign,
     quick_sign, quick_sign_in, read_clock, risks_in, seconds_left, sign_locally, sign_locally_in,
     sign_locally_in_with, sign_steps, signing_status, signing_status_in, stored_in, tx_lifetime,

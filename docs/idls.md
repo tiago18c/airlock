@@ -129,6 +129,7 @@ accounts        u16 count, 0..=32, each:
 - Pins are one per distinct program id. Pins and authorizations are kept: more than a note holds, and it is not built.
 - The receiver decodes a note only when a transaction is loaded and the message hash matches. Otherwise it says the note is for a different transaction and keeps the transaction. A second note for the same hash replaces the first.
 - For each instruction whose program has a pin, the pin is compared with the local checksum. Unequal or missing locally: that program's line says so, and the note's account bytes are not fed into that instruction's display, because a different IDL must not decode a mint.
+- An online device reads the accounts a display spec needs (`IdlExplanation::accounts_needed`, such as a mint for its decimals) from its own node, and reads the transaction again with them. It keeps an account only when the program whose instruction reads it owns it, and takes it over the note's. An amount scaled from a note's account says **unverified scale**; one scaled from the node's does not.
 - The note is ignored for signing. Signatures cover the versioned message only. Review, build and spans all work with no note.
 
 ## Known gaps

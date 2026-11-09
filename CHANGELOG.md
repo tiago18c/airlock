@@ -18,6 +18,9 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 ### Changed
 - Programmatic signers work with the signer programs devnet runs since 2026-11-09. The executor now signs each advance of the nonce, so an authorization signed ahead of another can only run once the one before it has, and the nonce's authority cannot skip it. Authorizations signed before that date no longer run: sign them again.
 
+### Fixed
+- **Mint tokens** and **Burn** now read as a sentence with the amount in whole tokens ("Mint 123456 t2 to …") in History, the Sign screen and the browser request. The online app reads the mint's decimals from your node. Before, it showed the raw amount and the accounts.
+
 ## [0.1.0] - 2026-11-09
 
 ### Added

@@ -248,17 +248,46 @@ pub struct ExplainedTx {
 }
 
 impl ExplainedTx {
-    /// Union of per-instruction account fetches, first-seen order.
-    pub fn accounts_needed(&self) -> Vec<Pubkey> {
-        let mut out = Vec::new();
-        for ix in &self.instructions {
-            let Some(idl) = &ix.idl else { continue };
-            for pubkey in &idl.accounts_needed {
-                if !out.contains(pubkey) {
-                    out.push(*pubkey);
+    /// The accounts whose bytes the sentences would read, each with the
+    /// program whose instruction reads it, first-seen order. Instructions
+    /// carried inside others count too.
+    pub fn accounts_needed(&self) -> Vec<(Pubkey, Pubkey)> {
+        fn walk(instructions: &[ExplainedIx], out: &mut Vec<(Pubkey, Pubkey)>) {
+            for ix in instructions {
+                if let Some(idl) = &ix.idl {
+                    for pubkey in &idl.accounts_needed {
+                        let pair = (*pubkey, ix.program_id);
+                        if !out.contains(&pair) {
+                            out.push(pair);
+                        }
+                    }
+                }
+                if let Some(inner) = &ix.inner {
+                    walk(&inner.instructions, out);
                 }
             }
         }
+        let mut out = Vec::new();
+        walk(&self.instructions, &mut out);
         out
     }
+}
+
+/// What of `fetched`, a node's answer for the accounts in `needed` in the same
+/// order, the display may read. An IDL describes the accounts of its own
+/// program, so an account is kept only when the program that reads it owns it:
+/// bytes anyone could have written to an account of their own must not set a
+/// mint's decimals.
+pub fn display_accounts(
+    needed: &[(Pubkey, Pubkey)],
+    fetched: &[Option<crate::chain::RawAccount>],
+) -> HashMap<Pubkey, Vec<u8>> {
+    needed
+        .iter()
+        .zip(fetched)
+        .filter_map(|((address, reader), account)| {
+            let account = account.as_ref()?;
+            (account.owner == *reader).then(|| (*address, account.data.clone()))
+        })
+        .collect()
 }

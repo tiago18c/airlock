@@ -83,6 +83,9 @@ pub fn IntentSentence(spans: Vec<IntentSpan>) -> Element {
 pub fn IntentPiece(span: IntentSpan) -> Element {
     let session = use_context::<Session>();
     let open = use_signal(|| false);
+    // The accounts this device's own node gave the reading above.
+    let fetched = try_use_context::<FetchedForReading>().map(|held| (held.0)());
+    let from_node = |pk: &Pubkey| fetched.as_ref().is_some_and(|held| held.contains_key(pk));
     match span {
         IntentSpan::Text(text) => rsx! { span { "{text}" } },
         // An address reads as it does everywhere else: what it is, its name,
@@ -96,18 +99,19 @@ pub fn IntentPiece(span: IntentSpan) -> Element {
             rsx! { span { "{text}" } }
         }
         IntentSpan::Value(value) => {
-            let lines = intent_lines(&session, &value);
+            let lines = intent_lines(&session, &value, &from_node);
             let tip = lines.join("\n");
             let primary = value.primary.clone();
             // The scale came from bytes another device supplied, which nothing
             // here can check. Say so beside the amount, not only in the popover.
-            let supplied = matches!(
-                value.body,
+            // Bytes this device's own node gave are as good as its simulation.
+            let supplied = match &value.body {
                 IntentBody::Amount {
-                    scale_from: ScaleSource::Account(_),
+                    scale_from: ScaleSource::Account(pk),
                     ..
-                }
-            );
+                } => !from_node(pk),
+                _ => false,
+            };
             rsx! {
                 span { class: "intent-value",
                     button {
@@ -135,7 +139,13 @@ pub fn IntentPiece(span: IntentSpan) -> Element {
     }
 }
 
-pub fn intent_lines(session: &Session, value: &IntentValue) -> Vec<String> {
+/// What the popover of a value says. `from_node` tells an account this
+/// device's own node gave from one another device supplied.
+pub fn intent_lines(
+    session: &Session,
+    value: &IntentValue,
+    from_node: &dyn Fn(&Pubkey) -> bool,
+) -> Vec<String> {
     match &value.body {
         // Drawn by `Address`, which has its own card.
         IntentBody::Address(pk) => vec![pk.to_string()],
@@ -154,6 +164,12 @@ pub fn intent_lines(session: &Session, value: &IntentValue) -> Vec<String> {
             }
             lines.push(match scale_from {
                 ScaleSource::Instruction => "scale from the instruction".into(),
+                ScaleSource::Account(pk) if from_node(pk) => {
+                    format!(
+                        "scale read from {} on the node",
+                        crate::ui::address::name_or_short(session, pk)
+                    )
+                }
                 ScaleSource::Account(pk) => {
                     format!(
                         "scale supplied from {}",

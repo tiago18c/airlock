@@ -19,10 +19,10 @@ pub use context::{
     display_note,
 };
 pub use explain::{
-    explain_instructions, explain_transaction, explain_with_note, missing_catalog_programs,
-    note_supplies_accounts, programs_of, AuthorizingKey, ContextPinMatch, DisplayNote, ExplainedIx,
-    ExplainedTx, IdlAccountLine, IdlExplanation, IdlField, IdlPinStatus, InnerKind, InnerMessage,
-    NextKey, ProgramLine, RunsAs,
+    display_accounts, explain_instructions, explain_transaction, explain_with_note,
+    missing_catalog_programs, note_supplies_accounts, programs_of, AuthorizingKey, ContextPinMatch,
+    DisplayNote, ExplainedIx, ExplainedTx, IdlAccountLine, IdlExplanation, IdlField, IdlPinStatus,
+    InnerKind, InnerMessage, NextKey, ProgramLine, RunsAs,
 };
 pub use quick_sign::{quick_sign, quick_sign_in, QuickSign};
 pub use risk::risks_in;
