@@ -41,13 +41,20 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: rustup show
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
-      - uses: cargo-bins/cargo-binstall@851112458b5f28a29e5bc14a690c3f283d9dcc6f # v1.26.2
-      - name: Install the Dioxus CLI
-        run: cargo binstall -y dioxus-cli@${{ env.DX_VERSION }}
       - name: Build deps
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev libxdo-dev libudev-dev libssl-dev libfuse2 xvfb
+      # The prebuilt dx needs a newer glibc than 22.04 has, so it is built
+      # here, once per version.
+      - id: dx-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cargo/bin/dx
+          key: dx-${{ env.DX_VERSION }}-ubuntu-22.04
+      - name: Build the Dioxus CLI
+        if: steps.dx-cache.outputs.cache-hit != 'true'
+        run: cargo install --locked dioxus-cli@${{ env.DX_VERSION }}
       - name: Bundle
         run: scripts/bundle-linux.sh "${{ matrix.package }}" "${{ inputs.version || '0.0.0' }}" out
       - name: Install the .deb and start it
