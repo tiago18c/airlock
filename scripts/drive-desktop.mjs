@@ -154,6 +154,40 @@ const metadata = () => {
   ]);
 };
 
+/** A Raydium CP swap `initialize_v2` on devnet: the payer creates a pool of
+ * wrapped SOL and another mint, with the creator fee on token 0 only. */
+const cpPool = () => {
+  const key = (s) => b58decode(s);
+  const token = key("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+  const data = Buffer.alloc(8 + 8 * 3 + 2);
+  Buffer.from("4399af27da102620", "hex").copy(data);
+  data.writeBigUInt64LE(1_000_000_000n, 8); // 1 SOL in lamports
+  data.writeBigUInt64LE(25_000_000n, 16);
+  data.writeBigUInt64LE(0n, 24); // open now
+  data.set([1, 1], 32); // Some(OnlyToken0)
+  // payer | pool, LP mint, creator token 0, 1 and LP, vaults 0 and 1, fee
+  // receiver, observation | AMM config, authority, mints 0 and 1, Token,
+  // associated token, System, CP swap
+  const accounts = [
+    ...[11, 12, 13, 14, 15, 16, 17].map((n) => Buffer.alloc(32, n)),
+    key("3oE58BKVt8KuYkGxx8zBojugnymWmBiyafWgMrnb6eYy"),
+    Buffer.alloc(32, 18),
+    Buffer.alloc(32, 19),
+    Buffer.alloc(32, 20),
+    key("So11111111111111111111111111111111111111112"),
+    key("USDCoctVLVnvTXBEuP9s8hntucdJokbo17RwHuNXemT"),
+    token,
+    key("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"),
+    systemProgram,
+    key("DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb"),
+  ];
+  // creator, config, authority, pool, mint 0, mint 1, LP mint, creator 0, 1,
+  // LP, vault 0, 1, fee receiver, observation, Token, token 0 and 1
+  // programs, associated token, System
+  const order = [0, 10, 11, 1, 12, 13, 2, 3, 4, 5, 6, 7, 8, 9, 14, 14, 14, 15, 16];
+  return legacy(accounts, 8, [[17, order, data]]);
+};
+
 // ---- scenarios: the transactions of one signTransaction request each ----
 
 const scenarios = {
@@ -162,6 +196,7 @@ const scenarios = {
   batch: () => [transfer(5), unread(9)],
   realms: () => [realmsInsert()],
   metadata: () => [metadata()],
+  cpPool: () => [cpPool()],
 };
 const chosen = process.argv.slice(3);
 for (const name of chosen) {

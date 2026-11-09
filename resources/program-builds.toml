@@ -22,3 +22,295 @@
 #
 # The watcher's report prints entries filled with what the chain holds now.
 # Paste one only after checking its IDL against that build.
+
+[[builds]]
+# computeBudget (core). Built into the validator. The IDL is the compute-budget repository's.
+programId = "ComputeBudget111111111111111111111111111111"
+network = "mainnet"
+programHash = "native"
+idlSha256 = "1a2e18158513353622cb6e39c075dc06731af76975af33df1468966d24e1ca95"
+reviewed = "2026-11-09"
+
+[[builds]]
+# memo (pack). One instruction: the memo as UTF-8, signers after it. The IDL is the memo repository's.
+programId = "Memo4c2pN8afCj432Lb7RMVKi9PbQnnW7ewFFaV3oAH"
+network = "mainnet"
+programHash = "90c688b8624b2d53ee18e9b3727b2f84d297b5815a04e3b74d31937b9887012a"
+authority = "GbX5VJUWBXgqDFKXZAmaneVHFuhauMVgvgGE7NPsJahD"
+idlSha256 = "13e1cd43277ec47113900e964087cc3627b9e83f3ca8eab9c8c5bf02114b571c"
+source = { repo = "https://github.com/solana-program/memo", commit = "e49b49d701ebabbcd74bf1927adbc7442135db09" }
+verified = "GbX5VJUWBXgqDFKXZAmaneVHFuhauMVgvgGE7NPsJahD"
+reviewed = "2026-11-09"
+
+[[builds]]
+# memo (pack). One instruction: the memo as UTF-8, signers after it. The IDL is the memo repository's.
+programId = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+network = "mainnet"
+programHash = "68d9bbae7023f8f51d32d0f6ff8a7003921c97c99e77921ccd0f51adcf6295db"
+idlSha256 = "87222b4802f4022af737e58455600cc47c2c30583250e3cd0bfa1bc330120b15"
+reviewed = "2026-11-09"
+
+[[builds]]
+# memo (pack). One instruction: the memo as UTF-8, signers after it. The IDL is the memo repository's.
+programId = "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo"
+network = "mainnet"
+programHash = "9874534bcabc56d8aa2bfeb7c41c8affaac3cd4c2c088d33fa9b120b26f9eba9"
+idlSha256 = "8504608e0b0b421bc1a10d04eef7df38916a77757226e844ad7ca2d9cfd4abae"
+reviewed = "2026-11-09"
+
+[[builds]]
+# programMetadata (pack). The IDL the program publishes, which its file matches but for display nodes.
+programId = "ProgM6JCCvbYkfKqJYHePx4xxSUSqJp7rh8Lyv7nk7S"
+network = "mainnet"
+programHash = "eaca0fc8d9fa5bde9419116009bc7462f18e2699e4af34c48ba9ffa13b14bc9a"
+authority = "7M7wSLFM65js7NamVhXnBBb8ooop1MHuracJbQNHuXWT"
+idlSha256 = "239d01cc33c6b237ca655c27a67b5aa47a99e32a3ecb0dbeb7a4c5bbcebe1e5f"
+reviewed = "2026-11-09"
+
+[[builds]]
+# raydiumClmm (pack). Every instruction the IDL lists is in this binary by name. The IDL is the one the program publishes.
+programId = "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK"
+network = "mainnet"
+programHash = "4b96e92b8705b24efe621d75ba4aebb208d708e91ab2aaa66e21d3d7965cb16b"
+authority = "FytDrVzDybM1TwFQPGb8qaxZR7dBCzNeqT3vtQsceZQK"
+idlSha256 = "be98a57a0608313de383f5bdad0b2cb4214d1342f4391ea046de464d2f680675"
+reviewed = "2026-11-09"
+
+[[builds]]
+# raydiumCpSwap (pack). Every instruction the IDL lists, initializeV2 included, is in this binary by name. The IDL is the one the program publishes.
+programId = "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
+network = "mainnet"
+programHash = "7e691824f591590ed44f5716ffc5e1040914e3aaa9ee4effdc47f50951a4f83e"
+authority = "FytDrVzDybM1TwFQPGb8qaxZR7dBCzNeqT3vtQsceZQK"
+idlSha256 = "d25cdb91210e54eff80954934af6d6e171dd7e371a0f35a942a3a8bc9ca2f3c6"
+reviewed = "2026-11-09"
+
+[[builds]]
+# splGovernance (pack). spl-governance v3.1.3. Every instruction the IDL keeps is in this binary by name (see the manifest for those it drops).
+programId = "GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw"
+network = "mainnet"
+programHash = "0ad7fdd41122eea3aac9fbe703e52d06cc0bded844de21a9967ca62a26ff96e6"
+authority = "HF7gCq7BMB6cFfhharTGGm31sqDdpmvLTgF4WEoW8y9n"
+idlSha256 = "0328455cdcd62d02cb286e0b5a12ea5cdd37f26746e7d54a1ef5208567a5d53c"
+reviewed = "2026-11-09"
+
+[[builds]]
+# squadsMultisigProgram (core). Every instruction the IDL lists is in this binary by name.
+programId = "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
+network = "mainnet"
+programHash = "d48660833989ecea3145ff726164fe640bd90696f03ce00dfd0cda258cbf2fac"
+idlSha256 = "5f9bde104975ea2e9e1c976770f445315ae6799a163439c5a4032ba03aef26a3"
+source = { repo = "https://github.com/Squads-Protocol/v4", commit = "2a47b4cc76068fb8accec3d5a599e6020c50f796" }
+verified = "sqdcVVoTcKZjXU8yPUwKFbGx1Hig1rhbWJQtMRXp2E1"
+reviewed = "2026-11-09"
+
+[[builds]]
+# squadsSmartAccountProgram (core). Every instruction the IDL lists is in this binary by name.
+programId = "SMRTzfY6DfH5ik3TKiyLFfXexV8uSG3d2UksSCYdunG"
+network = "mainnet"
+programHash = "1cacfe2080faabf33a02ea285b6f8c8182358d3c6e40e3e7375ad0d7baa58cd4"
+authority = "HT3JknwuufXdtVJggz5Z9JcnYtanPpLzTCqLWsVX1Vu2"
+idlSha256 = "be7bd07ab966fb7bf36f3973be17b31fb4a926d0f8da578226bf701a5aaf07a0"
+reviewed = "2026-11-09"
+
+[[builds]]
+# stake (core). Every instruction the IDL lists is in this binary by name.
+programId = "Stake11111111111111111111111111111111111111"
+network = "mainnet"
+programHash = "be260eeb07e6a7e8732065f31fa3efadd3c394572b4db7e82c028f0315c5c5ac"
+idlSha256 = "9527f716b5f449ce809ad6d3c05b4d4e743dff6c80242531df6a2f24067a6b9a"
+reviewed = "2026-11-09"
+
+[[builds]]
+# system (core). Built into the validator. The IDL is the system repository's.
+programId = "11111111111111111111111111111111"
+network = "mainnet"
+programHash = "native"
+idlSha256 = "bb1a83194457a7fc735f9e5a806ecaced94a17276fc7b45f356171810f15b63a"
+reviewed = "2026-11-09"
+
+[[builds]]
+# token (core). The IDL is the token repository's, p-token's instructions included.
+programId = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+network = "mainnet"
+programHash = "435df1e70f1ca6258eb01a4507701688c7f1a22656e3e4ef361db473bf478075"
+idlSha256 = "33add106ed36fead9222bfd882f1b364f3c4714346becefd5fa6068652b0cc33"
+source = { repo = "https://github.com/solana-program/token", commit = "a94dd19750dc3b2409f73e15bb74754935b2a489" }
+verified = "5vJwnLeyjV8uNJSp1zn7VLW8GwiQbcsQbGaVSwRmkE4r"
+reviewed = "2026-11-09"
+
+[[builds]]
+# token2022 (core). The IDL is the token-2022 repository's.
+programId = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+network = "mainnet"
+programHash = "5e888b294bd1941bfc47107a73d5e40bb24fde0d639f69099e7920ad8b6413d9"
+authority = "AeLmXCbPaQHGWRLr2saFsEVfmMNuKnxRAbWCT9P5twgz"
+idlSha256 = "13cbda7213599f3312e1b7ffd1c7f176f36ebd74dba9feabe6e9a6874dc1d5d2"
+source = { repo = "https://github.com/solana-program/token-2022", commit = "8867f751c0f69367ba03af4f85510b5611989491" }
+verified = "AeLmXCbPaQHGWRLr2saFsEVfmMNuKnxRAbWCT9P5twgz"
+reviewed = "2026-11-09"
+
+[[builds]]
+# whirlpool (pack). Every instruction the IDL lists is in this binary by name but migrateRepurposeRewardAuthoritySpace, a one-time migration this build dropped: a transaction using it fails.
+programId = "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc"
+network = "mainnet"
+programHash = "75d0cbf14e39949d50656d581b2e0065ac9543588da96a1dc4c1091a939c605c"
+authority = "GwH3Hiv5mACLX3ufTw1pFsrhSPon5tdw252DBs4Rx4PV"
+idlSha256 = "baad8c103644c55cb5cd364d2f08ac973b36cd947684d2b8c129ead73cff07a1"
+reviewed = "2026-11-09"
+
+[[builds]]
+# computeBudget (core). Built into the validator. The IDL is the compute-budget repository's.
+programId = "ComputeBudget111111111111111111111111111111"
+network = "devnet"
+programHash = "native"
+idlSha256 = "1a2e18158513353622cb6e39c075dc06731af76975af33df1468966d24e1ca95"
+reviewed = "2026-11-09"
+
+[[builds]]
+# ed25519Signer (core). The IDL the program publishes, which its file matches but for display nodes and additional programs.
+programId = "EdSigVfK1DkeMrjFNDMjwfQaJPhPTtX7jW8uPv3oKEgN"
+network = "devnet"
+programHash = "7c60435f1f799809e8eb552e540018f3149c75b4a981ac4bf9deac51a84d1041"
+authority = "Br2LeifQQeQpAw1r3yE4Fpk3Xo23HrsksE9adbCTqZ2g"
+idlSha256 = "80adf8b60fdb86130f53fe7ea7c115aad8335266b4833d09a3f1500182c16378"
+reviewed = "2026-11-09"
+
+[[builds]]
+# memo (pack). One instruction: the memo as UTF-8, signers after it. The IDL is the memo repository's.
+programId = "Memo4c2pN8afCj432Lb7RMVKi9PbQnnW7ewFFaV3oAH"
+network = "devnet"
+programHash = "90c688b8624b2d53ee18e9b3727b2f84d297b5815a04e3b74d31937b9887012a"
+authority = "GbX5VJUWBXgqDFKXZAmaneVHFuhauMVgvgGE7NPsJahD"
+idlSha256 = "13e1cd43277ec47113900e964087cc3627b9e83f3ca8eab9c8c5bf02114b571c"
+reviewed = "2026-11-09"
+
+[[builds]]
+# memo (pack). One instruction: the memo as UTF-8, signers after it. The IDL is the memo repository's.
+programId = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+network = "devnet"
+programHash = "68d9bbae7023f8f51d32d0f6ff8a7003921c97c99e77921ccd0f51adcf6295db"
+idlSha256 = "87222b4802f4022af737e58455600cc47c2c30583250e3cd0bfa1bc330120b15"
+reviewed = "2026-11-09"
+
+[[builds]]
+# memo (pack). One instruction: the memo as UTF-8, signers after it. The IDL is the memo repository's.
+programId = "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo"
+network = "devnet"
+programHash = "fc6c9b6c1124feed25cb44a441790c56146c684a3e5e3853c421289b1972d2bf"
+idlSha256 = "8504608e0b0b421bc1a10d04eef7df38916a77757226e844ad7ca2d9cfd4abae"
+reviewed = "2026-11-09"
+
+[[builds]]
+# programMetadata (pack). The IDL the program publishes, which its file matches but for display nodes.
+programId = "ProgM6JCCvbYkfKqJYHePx4xxSUSqJp7rh8Lyv7nk7S"
+network = "devnet"
+programHash = "eaca0fc8d9fa5bde9419116009bc7462f18e2699e4af34c48ba9ffa13b14bc9a"
+authority = "AXF4hqmBaXMwkpPwpbdJVPmq5KZ1mbF7e8sKqF2rrAPF"
+idlSha256 = "239d01cc33c6b237ca655c27a67b5aa47a99e32a3ecb0dbeb7a4c5bbcebe1e5f"
+reviewed = "2026-11-09"
+
+[[builds]]
+# raydiumClmm (pack). Every instruction the IDL lists is in this binary by name. The IDL is the one the program publishes.
+programId = "DRayAUgENGQBKVaX8owNhgzkEDyoHTGVEGHVJT1E9pfH"
+network = "devnet"
+programHash = "775141c4d0ba0c4b2f59e27a6d5c69604e35bbe7782c3960879fdc6ca0b7c9cd"
+authority = "DRayw6sn9fCvbhx5ZLtAVGAgAk6qAAX7UT7urzkXTeM5"
+idlSha256 = "5de4ccdbd944250bf196c7edca70e5af9e3e12847bfc3c7e6daf4f269f6d0684"
+reviewed = "2026-11-09"
+
+[[builds]]
+# raydiumCpSwap (pack). Every instruction the IDL lists, initializeV2 included, is in this binary by name. The IDL is the one the program publishes.
+programId = "DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb"
+network = "devnet"
+programHash = "0e8f94d000f116968de2a0147aee5b3294c8fa3c9e2bcd64ae99d307ad8b33e8"
+authority = "DRayw6sn9fCvbhx5ZLtAVGAgAk6qAAX7UT7urzkXTeM5"
+idlSha256 = "81b3d5635e0b05a58e9b47dd80e537746325b4d04a32ff4e044a9ffa99b55efc"
+reviewed = "2026-11-09"
+
+[[builds]]
+# raydiumRouter (pack). Written by hand from transactions this program executed.
+programId = "DRaybByLpbUL57LJARs3j8BitTxVfzBg351EaMr5UTCd"
+network = "devnet"
+programHash = "fa8daf8f9bfcffc4eb055eb4a0b540b18a8fba697a463200e9de47a6f6c3ef75"
+authority = "DRayw6sn9fCvbhx5ZLtAVGAgAk6qAAX7UT7urzkXTeM5"
+idlSha256 = "477340ae5635a19d31f568a9d4b0e2bea2d7efdb5c3f70db27a3b392749b2b78"
+reviewed = "2026-11-09"
+
+[[builds]]
+# splGovernance (pack). spl-governance v3.1.3. Every instruction the IDL keeps is in this binary by name (see the manifest for those it drops).
+programId = "GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw"
+network = "devnet"
+programHash = "6ab7466b56775dcd93f10c9d3cbe9c5c7e088ac5b01659776ec638266473bced"
+authority = "HsjQHG73wm2RzGRg7t8d2MthLAFFSnuEvBMAKJ2PkB6r"
+idlSha256 = "0328455cdcd62d02cb286e0b5a12ea5cdd37f26746e7d54a1ef5208567a5d53c"
+reviewed = "2026-11-09"
+
+[[builds]]
+# squadsMultisigProgram (core). Every instruction the IDL lists is in this binary by name.
+programId = "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
+network = "devnet"
+programHash = "57a8d2d7ef5409df250415135f29f83da876e5adf5a2e5b5752e323cfb4f2f74"
+authority = "HM5y4mz3Bt9JY9mr1hkyhnvqxSH4H2u2451j7Hc2dtvK"
+idlSha256 = "5f9bde104975ea2e9e1c976770f445315ae6799a163439c5a4032ba03aef26a3"
+reviewed = "2026-11-09"
+
+[[builds]]
+# squadsSmartAccountProgram (core). Every instruction the IDL lists is in this binary by name.
+programId = "SMRTzfY6DfH5ik3TKiyLFfXexV8uSG3d2UksSCYdunG"
+network = "devnet"
+programHash = "e88ffe8d6f0a69bf94efbfd57404f54c713bf2ba744f438c9e096efe7b420ebd"
+authority = "J496LGUhsKvBE6yRvet4FtMgxxox82fMiDKb3qtScUh2"
+idlSha256 = "be7bd07ab966fb7bf36f3973be17b31fb4a926d0f8da578226bf701a5aaf07a0"
+reviewed = "2026-11-09"
+
+[[builds]]
+# stake (core). Every instruction the IDL lists is in this binary by name.
+programId = "Stake11111111111111111111111111111111111111"
+network = "devnet"
+programHash = "be260eeb07e6a7e8732065f31fa3efadd3c394572b4db7e82c028f0315c5c5ac"
+idlSha256 = "9527f716b5f449ce809ad6d3c05b4d4e743dff6c80242531df6a2f24067a6b9a"
+reviewed = "2026-11-09"
+
+[[builds]]
+# system (core). Built into the validator. The IDL is the system repository's.
+programId = "11111111111111111111111111111111"
+network = "devnet"
+programHash = "native"
+idlSha256 = "bb1a83194457a7fc735f9e5a806ecaced94a17276fc7b45f356171810f15b63a"
+reviewed = "2026-11-09"
+
+[[builds]]
+# token (core). The IDL is the token repository's, p-token's instructions included.
+programId = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+network = "devnet"
+programHash = "435df1e70f1ca6258eb01a4507701688c7f1a22656e3e4ef361db473bf478075"
+idlSha256 = "33add106ed36fead9222bfd882f1b364f3c4714346becefd5fa6068652b0cc33"
+reviewed = "2026-11-09"
+
+[[builds]]
+# token2022 (core). The IDL is the token-2022 repository's.
+programId = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+network = "devnet"
+programHash = "5e888b294bd1941bfc47107a73d5e40bb24fde0d639f69099e7920ad8b6413d9"
+authority = "3URRPr96EV2wuNRgQKwQpuZitHHsVyDUen1eRSvEun9G"
+idlSha256 = "13cbda7213599f3312e1b7ffd1c7f176f36ebd74dba9feabe6e9a6874dc1d5d2"
+reviewed = "2026-11-09"
+
+[[builds]]
+# vector (core). The IDL the program publishes, which its file matches but for display nodes.
+programId = "74mXFW7BSAAwc6zQC2uYKuDcWnz17HHXMWqLnEeg9BJv"
+network = "devnet"
+programHash = "77b67adada54b028347f97ae43ec501760e3207fd49ddffc2a9b17cfe86fd9d3"
+authority = "3zFrUC2W8ziNmDjhMJ9qdfcVJjGUCg94BrvYXtKA8cqM"
+idlSha256 = "aa8eb1ddb1146384f9a6857a993e6def6a0efada7e4de4071e51f12f873c638d"
+reviewed = "2026-11-09"
+
+[[builds]]
+# whirlpool (pack). Every instruction the IDL lists is in this binary by name.
+programId = "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc"
+network = "devnet"
+programHash = "c3426d783b06a28dc68f8bc31a54a28dceada933ee36d970fe3f85b0ce354e8d"
+authority = "8rHQUMS8qg4qrQriPpTbrZqk2yjLrUHSLpA6MzgMSiM"
+idlSha256 = "baad8c103644c55cb5cd364d2f08ac973b36cd947684d2b8c129ead73cff07a1"
+reviewed = "2026-11-09"

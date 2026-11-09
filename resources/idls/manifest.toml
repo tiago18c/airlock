@@ -48,7 +48,7 @@ file = "raydium-cp-swap.json"
 programId = "DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb"
 name = "raydiumCpSwap"
 networks = ["devnet"]
-source = { kind = "chain", network = "devnet", account = "programMetadata", sha256 = "9fa6136d536592d90ebfea5fd16f1db8d33056d9a5a9f153f6e8468400ae781f" }
+source = { kind = "chain", network = "devnet", account = "programMetadata", sha256 = "105ebec48ea91fa408f0edaf8881ae6b85846d094e25464e1b608d5b6f51e077" }
 changes = """Converted from Anchor to Codama. `updateAmmConfig` declares the new owner \
 it reads as a remaining account. Token amounts are in base units. Display nodes added \
 by hand."""
@@ -60,7 +60,7 @@ name = "raydiumCpSwap"
 networks = ["mainnet"]
 # The devnet file with mainnet's program, admin and fee receiver addresses:
 # they are all the two networks' published IDLs differ in.
-source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "d86fe11ffc719fee9832f78a1c7374452ee9ebe2c63d51c0b5e5cb383a8fcfdb" }
+source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "e970d765469559c62089c0cf0bdceb6524c36eb9fd1ae7244d1ef85dd3afcaac" }
 changes = """Converted from Anchor to Codama. `updateAmmConfig` declares the new owner \
 it reads as a remaining account. Token amounts are in base units. Display nodes added \
 by hand."""
