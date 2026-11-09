@@ -9,10 +9,11 @@ A release is a tag. Pushing `v1.2.3` builds the files and opens a **draft** rele
 | `airlock-<version>-windows-x64-setup.exe` | Online desktop installer |
 | `airlock-offline-<version>-windows-x64-setup.exe` | Airgap desktop installer (opens no connection of its own) |
 | `bridge-host-<version>-windows-x64.exe` | Native messaging host for the browser extension |
+| `airlock-mobile-<version>-android-arm64.apk` | Android app, for Android 14 and later on arm64 phones |
 | `airlock-extension-<version>.zip` | Browser extension, ready to load or to upload to a store |
 | `SHA256SUMS.txt` | Checksum of every file above |
 
-The online app is `apps/airlock`, bundled with `dx bundle -p airlock`. The airgap build is a separate package (`apps/airlock-offline`) bundled with `dx bundle -p airlock-offline`.
+The online app is `apps/airlock`, bundled with `dx bundle -p airlock`. The airgap build is a separate package (`apps/airlock-offline`) bundled with `dx bundle -p airlock-offline`. The Android app is `apps/airlock-mobile`, bundled with `dx bundle -p airlock-mobile --android`; see [Signing the Android app](#signing-the-android-app).
 
 Each file also has a build provenance attestation: a signed statement that it was built by the release workflow from the tagged commit. Check one with:
 
@@ -58,10 +59,38 @@ A version with a suffix, such as `1.2.3-rc.1`, is opened as a pre-release.
 
 If a build is wrong, delete the draft and the tag, fix it on the default branch, and tag again. A published release is never replaced: fix forward with a new version.
 
+## Signing the Android app
+
+Android installs an update only when it is signed with the same key as the app already on the phone, so the key that signs the first release signs every one after it. Losing it means users have to uninstall, and lose the app's data, to move to a build signed with another key.
+
+dx builds a release APK (Gradle's `assembleRelease`: R8, no debuggable flag, WebView debugging off) only when `Dioxus.toml` has a `[bundle.android]` section naming a keystore. Without one it builds a debug APK, even with `--release`. The release workflow writes that section and the keystore for its run only, from four repository secrets:
+
+| Secret | What it holds |
+| --- | --- |
+| `ANDROID_KEYSTORE_BASE64` | The keystore (`.jks`), base64 encoded |
+| `ANDROID_KEYSTORE_PASSWORD` | The keystore's password |
+| `ANDROID_KEY_ALIAS` | The alias of the key in it |
+| `ANDROID_KEY_PASSWORD` | The key's password |
+
+dx writes the passwords into Kotlin and TOML strings unescaped, so they cannot hold `"`, `\` or `$`. To make the key once:
+
+```bash
+keytool -genkeypair -keystore airlock-release.jks -alias airlock -keyalg RSA -keysize 4096 -validity 10000 -dname "CN=Airlock"
+base64 -w0 airlock-release.jks | gh secret set ANDROID_KEYSTORE_BASE64
+gh secret set ANDROID_KEYSTORE_PASSWORD
+gh secret set ANDROID_KEY_ALIAS --body airlock
+gh secret set ANDROID_KEY_PASSWORD
+```
+
+Keep the `.jks` and its passwords somewhere safe outside GitHub as well: a secret cannot be read back.
+
+The workflow refuses an APK that is debuggable, and prints its certificate. R8 drops Kotlin that nothing in Kotlin calls, so the bridges in `MainActivity.kt` that Rust finds by name are marked `@Keep`; a new one needs it too.
+
 ## Not automated yet
 
 - **Code signing.** The Windows installer is not signed, so Windows shows a SmartScreen warning. Signing needs a certificate and a decision on where its key lives.
 - **Extension stores.** The zip is built but not uploaded to the Chrome Web Store or Firefox Add-ons. The extension id is pinned by the key in `extension/manifest.json`; a store listing will have its own.
+- **Android.** Only arm64 is built, as an APK; no store listing (Google Play, Solana dApp Store). dx sets the APK's `versionCode` to 1 in every build, so Android cannot tell two releases apart by it: an update installs over the old one, but a store would refuse it.
 - **macOS and Linux desktop builds.** CI builds the core crates on Linux, but no desktop bundle is produced for either.
 - **The web app.** It is not published anywhere by the release.
 
