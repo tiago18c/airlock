@@ -104,20 +104,46 @@ pub struct ButtonFacts {
     pub blind_holds: bool,
     /// It is still being read, so the screen does not say yet what it does.
     pub reading: bool,
+    /// The node has not yet said what this very message does. Online, the
+    /// transaction is signed only once it has: after an authorization that is
+    /// what shows what the authorized transaction runs, and what fits its limits.
+    pub simulating: bool,
 }
 
 /// Whether Sign can be pressed. An expired blockhash holds it back only if the
-/// press would not move the transaction off it.
+/// press would not move the transaction off it. The transaction itself waits for
+/// its simulation; an authorization does not, since nothing simulates before it.
 pub fn may_sign(facts: ButtonFacts) -> bool {
     facts.signable > 0
         && !facts.needs_rebuild
         && !facts.busy
         && !facts.blind_holds
         && !facts.reading
+        && !(facts.simulating && facts.step == NextSignature::Transaction)
         && (facts.step == NextSignature::Authorization
             || !facts.blockhash.expired
             || facts.refreshes_on_sign
             || facts.blockhash.on_sign != BlockhashOnSign::Keep)
+}
+
+/// What decides whether a Sign press sends the transaction it signed.
+#[derive(Clone, Copy, Debug)]
+pub struct SignedFacts {
+    pub online: bool,
+    /// A site asked for it. It goes back to the site, which sends it, or the app
+    /// sends it for the site when that is what the site asked: never both.
+    pub from_site: bool,
+    /// The press signed the transaction itself, not only an authorization.
+    pub signed_transaction: bool,
+    /// Every signature is in, authorizations and transaction.
+    pub complete: bool,
+}
+
+/// Whether a Sign press goes on to submit what it signed. The press that signs
+/// the transaction is the last informed step: it comes after the simulation, so
+/// once every signature is in there is nothing left to decide.
+pub fn submits_on_sign(facts: SignedFacts) -> bool {
+    facts.online && !facts.from_site && facts.signed_transaction && facts.complete
 }
 
 /// Whether Submit can be pressed.
@@ -497,6 +523,7 @@ mod tests {
             site_holds: false,
             blind_holds: false,
             reading: false,
+            simulating: false,
         }
     }
 
@@ -585,6 +612,61 @@ mod tests {
             },
         ] {
             assert!(!may_sign(held), "{held:?}");
+        }
+    }
+
+    #[test]
+    fn the_transaction_waits_for_its_simulation_and_an_authorization_does_not() {
+        let simulating = ButtonFacts {
+            simulating: true,
+            ..ready()
+        };
+        assert!(!may_sign(simulating));
+        assert!(may_sign(ButtonFacts {
+            step: Authorization,
+            ..simulating
+        }));
+        // Submit has nothing to wait for: what it sends is already signed.
+        assert!(may_submit(ButtonFacts {
+            complete: true,
+            signable: 0,
+            step: Nothing,
+            ..simulating
+        }));
+    }
+
+    #[test]
+    fn signing_the_transaction_submits_it_unless_a_site_asked_for_it() {
+        let last = SignedFacts {
+            online: true,
+            from_site: false,
+            signed_transaction: true,
+            complete: true,
+        };
+        assert!(submits_on_sign(last));
+        for held in [
+            // The site sends it, or has the app send it, as it asked.
+            SignedFacts {
+                from_site: true,
+                ..last
+            },
+            // No node: it is shared to a device that has one.
+            SignedFacts {
+                online: false,
+                ..last
+            },
+            // Only an authorization: the transaction is signed on the next press.
+            SignedFacts {
+                signed_transaction: false,
+                ..last
+            },
+            // Another device still signs.
+            SignedFacts {
+                complete: false,
+                ..last
+            },
+        ] {
+            assert!(!submits_on_sign(held), "{held:?}");
         }
     }
 
