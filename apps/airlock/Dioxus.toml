@@ -20,7 +20,9 @@ short_description = "QR payload transfer for online/offline signing"
 icon = ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.png", "icons/icon.ico"]
 # The browser bridge's native messaging host, installed beside the app. dx
 # reads this path from where it runs: scripts/bundle-windows.sh builds it
-# first, from the workspace root.
+# first, from the workspace root. Elsewhere dx skips it with a warning, and
+# the bundle scripts put the host in themselves (bundle-macos.sh: inside the
+# .app, in Contents/MacOS).
 resources = ["target/release/bridge-host.exe"]
 
 [permissions]
