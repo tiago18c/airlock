@@ -1,10 +1,20 @@
 //! The browser extension's chip in the sidebar's status bar, beside the
 //! network chip: whether an extension is connected to the bridge socket.
+//! Until one is, its card offers to register the browser bridge, for whoever
+//! skipped it in the installer, and says where to get the extension.
 
+use std::path::PathBuf;
+
+use app_ui_kit::Session;
+use bridge_host::install::{self, Registration, HOST_EXE};
 use dioxus::prelude::*;
 
 use super::connections::ConnectionsModal;
 use crate::bridge::Bridge;
+
+/// Where the extension is released. It is not in a store yet, so it is
+/// loaded unpacked from the zip on the release page.
+const EXTENSION_RELEASES: &str = "https://github.com/tiago18c/airlock/releases/latest";
 
 /// "Extension": green while a browser's extension holds a connection to the
 /// app, grey otherwise. Hovering or focusing it says how many browsers, or when one connects.
@@ -12,6 +22,7 @@ use crate::bridge::Bridge;
 pub fn ExtensionChip() -> Element {
     let bridge = use_context::<Bridge>();
     let manage = use_context::<ConnectionsModal>();
+    let session = use_context::<Session>();
     let unavailable = bridge.unavailable().map(str::to_owned);
     let mut connected = use_signal(|| *bridge.subscribe_extension().borrow());
     use_future(move || {
@@ -23,6 +34,10 @@ pub fn ExtensionChip() -> Element {
             }
         }
     });
+    let mut registration = use_signal(install::registration);
+    // What the last press of Install did.
+    let mut outcome = use_signal(|| None::<Result<(), String>>);
+    let mut link_error = use_signal(|| None::<String>);
 
     let n = connected();
     let (class, status) = if unavailable.is_some() {
@@ -32,6 +47,19 @@ pub fn ExtensionChip() -> Element {
     } else {
         ("status net-chip idle", "Not connected")
     };
+    let host = host_beside_app();
+    let registered = registration();
+    let bridge_text = match &registered {
+        Registration::Ready(_) => "Installed".to_owned(),
+        Registration::None => "Not installed".to_owned(),
+        Registration::Missing(path) => {
+            format!("Not installed: {} has moved", path.display())
+        }
+    };
+    // Nothing to set up once a browser has reached the app.
+    let setup = n == 0;
+    let can_install = setup && !matches!(registered, Registration::Ready(_));
+
     rsx! {
         span {
             class: "{class}",
@@ -54,6 +82,58 @@ pub fn ExtensionChip() -> Element {
                         dt { "Opens" }
                         dd { "When a site or the extension's popup first asks for Airlock" }
                     }
+                    if setup {
+                        dt { "Bridge" }
+                        dd { "{bridge_text}" }
+                    }
+                    match outcome() {
+                        Some(Ok(())) => rsx! {
+                            dt { "" }
+                            dd { "Installed. Restart the browser if the extension still says the host is missing." }
+                        },
+                        Some(Err(why)) => rsx! {
+                            dt { "" }
+                            dd { class: "net-err", "{why}" }
+                        },
+                        None => rsx! {},
+                    }
+                    if can_install && host.is_none() {
+                        dt { "" }
+                        dd { "The bridge ({HOST_EXE}) is not beside Airlock. It comes with the installer and the portable zip." }
+                    }
+                    if setup {
+                        dt { "Get it" }
+                        dd { "Download airlock-extension from the latest release and unzip it. In Chrome, Edge or Brave, open the extensions page, turn on Developer mode, and load the folder unpacked." }
+                    }
+                    if let Some(why) = link_error() {
+                        dt { "" }
+                        dd { class: "net-err", "{why}" }
+                    }
+                }
+                if can_install {
+                    button { class: "sm primary",
+                        disabled: host.is_none(),
+                        onclick: move |_| {
+                            let Some(host) = host_beside_app() else { return };
+                            let result = install::register(&host)
+                                .map(|_| ())
+                                .map_err(|err| format!("Could not install the bridge: {err}"));
+                            if let Err(why) = &result {
+                                tracing::warn!(target: "bridge", "{why}");
+                            }
+                            outcome.set(Some(result));
+                            registration.set(install::registration());
+                        },
+                        "Install the browser bridge"
+                    }
+                }
+                if setup {
+                    button { class: "sm",
+                        onclick: move |_| {
+                            link_error.set(session.open_link(EXTENSION_RELEASES).err().map(|err| format!("Could not open the release page: {err}")));
+                        },
+                        "Get the extension"
+                    }
                 }
                 button { class: "sm",
                     onclick: move |_| manage.show(),
@@ -62,4 +142,12 @@ pub fn ExtensionChip() -> Element {
             }
         }
     }
+}
+
+/// The host that came with this copy of the app: `bridge-host` beside its
+/// exe, where the installer and the portable zip put it, and where cargo
+/// builds it.
+fn host_beside_app() -> Option<PathBuf> {
+    let host = std::env::current_exe().ok()?.parent()?.join(HOST_EXE);
+    host.is_file().then_some(host)
 }

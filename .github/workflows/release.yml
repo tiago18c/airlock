@@ -49,13 +49,12 @@ jobs:
       - uses: cargo-bins/cargo-binstall@851112458b5f28a29e5bc14a690c3f283d9dcc6f # v1.26.2
       - name: Install the Dioxus CLI
         run: cargo binstall -y dioxus-cli@${{ env.DX_VERSION }}
-      # The full installer, the small one and the portable zip.
+      # The full installer, the small one and the portable zip. It builds
+      # the native messaging host first, and puts it in all three.
       - name: Bundle the app
         shell: bash
         run: scripts/bundle-windows.sh airlock "${{ needs.verify.outputs.version }}" DownloadBootstrapper out
-      - name: Build the native messaging host
-        run: cargo build --locked --release -p bridge-host
-      - name: Collect files
+      - name: Collect the native messaging host
         shell: bash
         run: cp target/release/bridge-host.exe "out/bridge-host-${{ needs.verify.outputs.version }}-windows-x64.exe"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

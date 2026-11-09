@@ -9,7 +9,14 @@ fn main() {
     let status = match std::env::args().nth(1).as_deref() {
         None => relay::relay_stdio().map(|()| 0),
         Some("install") => install::install().map(|()| 0),
-        Some("uninstall") => install::uninstall().map(|()| 0),
+        Some("uninstall") => match std::env::args().nth(2).as_deref() {
+            None => install::uninstall().map(|()| 0),
+            Some("--if-this-exe") => install::uninstall_if_this_exe().map(|()| 0),
+            Some(_) => {
+                print_usage();
+                Ok(2)
+            }
+        },
         Some("listen") => listen().map(|()| 0),
         Some("help") | Some("--help") | Some("-h") => {
             print_usage();
@@ -47,6 +54,7 @@ Airlock bridge-host
   bridge-host            Relay the browser to the desktop app. Chrome launches this.
   bridge-host install    Register the host for the current user.
   bridge-host uninstall  Remove that registration.
+      --if-this-exe      Only when it names this binary. The app's uninstaller passes it.
   bridge-host listen     Development stand-in. Answers status, rejects everything else.
 
 Quit listen before the desktop app binds the same socket."

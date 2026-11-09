@@ -43,12 +43,14 @@ A small Rust binary (`crates/bridge-host`) that the browser starts and talks to 
 | Command | What it does |
 | --- | --- |
 | `bridge-host install` | Registers the host for the current user |
-| `bridge-host uninstall` | Removes that registration |
+| `bridge-host uninstall` | Removes that registration. With `--if-this-exe`, only when it names this binary, which is how the app's uninstaller leaves a portable copy's registration alone |
 | `bridge-host listen` | A development stand-in for the app: answers `status`, rejects everything else. Quit it before starting the app, which needs the same socket |
 
 #### Registration
 
-`install` writes one manifest for Chromium browsers, whose `allowed_origins` pins the extension id, and one for Firefox, whose `allowed_extensions` pins `bridge@airlock.dev`. Both point at the `bridge-host` binary that ran `install`, so run it again after moving the binary. It is a separate opt-in step, not part of the app installer, so an offline machine never has it.
+`install` writes one manifest for Chromium browsers, whose `allowed_origins` pins the extension id, and one for Firefox, whose `allowed_extensions` pins `bridge@airlock.dev`. Both point at the `bridge-host` binary that ran `install`, so run it again after moving the binary.
+
+It stays opt-in. The online app's Windows installer has `bridge-host.exe` beside `airlock.exe` and asks, on its components page, whether to register it (`apps/airlock/installer.nsi`); the portable zip carries it too. Until a browser connects, the Extension chip's card says whether the host is registered, offers **Install the browser bridge**, which registers the `bridge-host` beside the app's exe in-process (`bridge_host::install::register`), and links to the latest release for the extension, which is loaded unpacked until it is in a store. A registration that names a binary that has moved counts as not installed. Airlock Offline ships no host, so an offline machine never has it.
 
 On Windows the manifests go to `%LOCALAPPDATA%\airlock\native-messaging\`, and a registry key per browser names them:
 

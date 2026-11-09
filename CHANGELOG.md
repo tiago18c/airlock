@@ -9,6 +9,10 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 ## [Unreleased]
 
+### Added
+- The Windows installer now asks whether to install the **browser bridge**, which lets the Airlock extension reach the app. It is on unless you untick it, and uninstalling Airlock removes it. The portable zip carries it too.
+- When no browser is connected, the **Extension** status at the bottom of the sidebar offers **Install the browser bridge**, for when you skipped it in the installer, and **Get the extension**, which opens the latest release with the steps to load the extension.
+
 ### Changed
 - Programmatic signers work with the signer programs devnet runs since 2026-11-09. The executor now signs each advance of the nonce, so an authorization signed ahead of another can only run once the one before it has, and the nonce's authority cannot skip it. Authorizations signed before that date no longer run: sign them again.
 
