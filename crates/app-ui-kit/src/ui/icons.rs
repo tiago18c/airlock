@@ -42,6 +42,8 @@ pub enum Glyph {
     SwitchCamera,
     /// A viewfinder's corners round a point: autofocus.
     Focus,
+    /// A magnifier: look inside.
+    Search,
 }
 
 impl Glyph {
@@ -198,6 +200,7 @@ impl Glyph {
                 "M8 20H5a1 1 0 0 1-1-1v-3",
                 "M12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z",
             ],
+            Glyph::Search => &["M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z", "M15.3 15.3 20 20"],
         }
     }
 }

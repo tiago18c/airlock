@@ -1,4 +1,5 @@
 use crate::actions::programs::*;
+use crate::state::forms::IdlSection;
 use crate::state::session::Session;
 use crate::ui::{short_checksum, AddressHeader, AddressRow, Glyph, Icon};
 use dioxus::prelude::*;

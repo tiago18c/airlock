@@ -116,6 +116,15 @@ fn take_slot(open: Signal<Option<CardAt>>) {
     }
 }
 
+/// Closes the card on screen, if one is open.
+pub(crate) fn close_open_card() {
+    if let Some(mut open) = OPEN_CARD.with(|slot| slot.take()) {
+        if let Ok(mut card) = open.try_write() {
+            *card = None;
+        }
+    }
+}
+
 /// The open state of a card, shared by the chip and the row.
 #[derive(Clone, Copy)]
 pub struct CardState {

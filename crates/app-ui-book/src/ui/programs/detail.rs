@@ -7,7 +7,7 @@ use solana_pubkey::Pubkey;
 pub(in crate::ui) fn ProgramDetail() -> Element {
     let session = use_context::<Session>();
     let form = session.forms.program;
-    let mut parsed = form.parsed;
+    let section = form.section;
     let selected = (form.selected)();
     let record = selected.and_then(|id| {
         session
@@ -27,6 +27,12 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
         };
     };
     let shown = view();
+    let tab = shown_section(shown.outline.as_ref(), section());
+    let version = shown
+        .outline
+        .as_ref()
+        .map(|tree| tree.version.clone())
+        .filter(|version| !version.is_empty());
     let spec = match record.spec {
         IdlSpec::Anchor => "Anchor",
         IdlSpec::Codama => "Codama",
@@ -54,7 +60,11 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                     title: record.name.clone(),
                 }
                 p { class: "muted",
-                    "{spec} · {checksum} · "
+                    "{spec} · "
+                    if let Some(version) = version {
+                        "version {version} · "
+                    }
+                    "{checksum} · "
                     span { class: status_class(status), "{status.label()}" }
                     if record.origin == IdlOrigin::Builtin {
                         " "
@@ -86,27 +96,13 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                     p { class: "note", "{text}" }
                 }
             }
-            div { class: "segmented",
-                button {
-                    class: if parsed() { "tab on" } else { "tab" },
-                    onclick: move |_| parsed.set(true),
-                    "Parsed"
-                }
-                button {
-                    class: if parsed() { "tab" } else { "tab on" },
-                    onclick: move |_| parsed.set(false),
-                    "Raw"
-                }
-            }
-            if parsed() {
-                if let Some(err) = shown.error.clone() {
-                    p { class: "error", "{err}" }
-                }
-                if let Some(tree) = shown.outline.clone() {
-                    ParsedIdl { tree }
-                }
-            } else {
+            IdlTabs { outline: shown.outline.clone(), section }
+            if tab == IdlSection::Raw {
                 pre { class: "idl-raw", "{shown.raw}" }
+            } else if let Some(err) = shown.error.clone() {
+                p { class: "error", "{err}" }
+            } else if let Some(tree) = shown.outline.clone() {
+                ParsedIdl { tree, section: tab }
             }
         }
     }
