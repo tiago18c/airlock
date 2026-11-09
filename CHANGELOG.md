@@ -40,6 +40,8 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - The program-metadata program's IDL ships with the app, for mainnet and devnet. Review reads the calls that publish or change a program's IDL and other metadata, such as creating, writing, closing or making it immutable, in words, and Build can make them.
 
 ### Changed
+- On Review and Sign, the press that signs the transaction now submits it too when nothing else is missing: the button reads **Sign transaction and submit**. A site's transaction still goes back to the site, as before.
+- On Review and Sign, the transaction is signed only once its simulation has answered, so after an authorization you always read what the authorized transaction does before the last signature, even when this device holds both keys.
 - The scanner on a phone: the camera preview fills the screen, with Start on it, Stop at its top left, a button at its top right for the front or back camera, and focus along its bottom edge: a button between autofocus and focusing by hand, with the slider only while focusing by hand.
 - The focus slider on Android spreads evenly from close up to far away. Before, everything from close up to a desk away sat in its first tenth.
 - On Review and Sign, a signature that is not made yet says whether the Seed Vault or which hardware wallet holds its key. On a phone, the chip sits beside the signer's role instead of past the edge.

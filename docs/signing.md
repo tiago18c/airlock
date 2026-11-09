@@ -48,7 +48,7 @@ flowchart LR
 - A **transaction signature** covers the whole message. It sits in the transaction's signature slots. The first slot is the fee payer's.
 - An **authorization signature** covers either a programmatic signer's `Submit` message (Ed25519, 64 bytes in instruction data) or a Vector account's digest in an `Advance` (length and place depend on the account's scheme). Both change the message, so every transaction signature made before them is removed.
 
-`wallet_core::review::signing::sign_locally` signs in one order: every authorization this device can make (Ed25519 `Submit` slots, then Vector `Advance` slots), with a stateful Vector key (XMSS or Winternitz) last among them. A press that signs any authorization stops there. The transaction itself is signed on a later press, once none is outstanding. An authorization changes what runs: an unsigned one makes simulation fail early, so the compute it reports is far too low. Between the two presses the Sign screen simulates the authorized transaction at the highest compute limit and fits both limits to what it used. A simulation that fails leaves compute at the maximum. The browser's quick Sign is not offered when this device signs an authorization; Review does it in two presses.
+`wallet_core::review::signing::sign_locally` signs in one order: every authorization this device can make (Ed25519 `Submit` slots, then Vector `Advance` slots), with a stateful Vector key (XMSS or Winternitz) last among them. A press that signs any authorization stops there. The transaction itself is signed on a later press, once none is outstanding. An authorization changes what runs: an unsigned one makes simulation fail early, so the compute it reports is far too low. Between the two presses the Sign screen simulates the authorized transaction at the highest compute limit and fits both limits to what it used. A simulation that fails leaves compute at the maximum. Online, the transaction press waits until the node has answered for the message on screen (`wallet_flows::offer::may_sign`, `simulating`), so the simulation is read before the last signature is made, even when one device holds both the authority and the fee payer. An authorization press does not wait: nothing simulates before it. The browser's quick Sign is not offered when this device signs an authorization; Review does it in two presses.
 
 ### Signer states
 
@@ -65,7 +65,7 @@ A transaction can be submitted once every line is Signed. While an authorization
 
 A multisig's wallet holds three settings: the wallet that acts as its member, the wallets that approve together with it (`approves_with`), and the durable nonce account a combined approval uses when one of them is offline (`approval_nonce`). They are set on the multisig's row on Wallets. An offline wallet approves together with others only on that durable nonce. See [Squads multisig](#squads-multisig).
 
-`next_step` says what Sign is about to do: an *authorization* (intent) while any authority line is open, then the *outer transaction*, then nothing (Submit). The Sign button reads **Sign authorization** or **Sign transaction**. Signers with an authorization are grouped under "Authorization (intent)" and "Transaction".
+`next_step` says what Sign is about to do: an *authorization* (intent) while any authority line is open, then the *outer transaction*, then nothing (Submit). The Sign button reads **Sign authorization** or **Sign transaction**, and **Sign transaction and submit** when that press leaves nothing missing on an online device. Signers with an authorization are grouped under "Authorization (intent)" and "Transaction".
 
 `sign_steps` lays the same status out as the row of steps above the transaction, in the order signing has to happen:
 
@@ -187,12 +187,11 @@ sequenceDiagram
   A->>N: latest blockhash
   A->>A: open_in_sign
   A->>N: simulate
-  U->>A: Sign
-  U->>A: Submit
+  U->>A: Sign transaction and submit
   A->>N: sendTransaction
 ```
 
-Everything happens on one device. Sign is enabled as soon as a local key has something to sign. Submit is enabled once every signer is Signed and the app is online.
+Everything happens on one device. Sign is enabled once a local key has something to sign and, online, the simulation of what is on screen has answered. The press that signs the transaction and leaves every signer Signed submits it straight away (`wallet_flows::offer::submits_on_sign`). A site's transaction is never submitted by that press: it goes back to the site, which sends it, or this app sends it when the site asked for that. Submit stays for a transaction completed some other way, such as a signature added from another device, and for sending again after a failure.
 
 ### Offline wallet
 

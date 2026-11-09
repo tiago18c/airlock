@@ -54,7 +54,9 @@ impl Signed {
             ));
         }
         if self.transaction_next {
-            parts.push("Press Sign again to sign the transaction.".to_string());
+            parts.push(
+                "Read what the simulation says it does, then sign the transaction.".to_string(),
+            );
         }
         parts.join(" ")
     }
@@ -356,7 +358,7 @@ mod tests {
         assert_eq!(blockhash_of(&first.wire), STALE);
         assert_eq!(
             first.note(),
-            "Signed the authorization. Press Sign again to sign the transaction."
+            "Signed the authorization. Read what the simulation says it does, then sign the transaction."
         );
 
         let done = run(Some(&rpc), &first.wire, &[&hot, &authority]);
@@ -375,7 +377,7 @@ mod tests {
         assert_eq!((authorized.authorizations, authorized.signatures), (2, 0));
         assert_eq!(
             authorized.note(),
-            "Signed the authorization as 2 authorities. Press Sign again to sign the transaction."
+            "Signed the authorization as 2 authorities. Read what the simulation says it does, then sign the transaction."
         );
         let done = run(Some(&rpc), &authorized.wire, &keys);
         assert_eq!((done.authorizations, done.signatures), (0, 1));
