@@ -22,17 +22,17 @@ export const PROGRAMS = [
   {
     file: "ed25519_signer.so",
     address: "EdSigVfK1DkeMrjFNDMjwfQaJPhPTtX7jW8uPv3oKEgN",
-    sha256: "26a86681ca9b6d2527c0185931692c9cd540b91659e4fb4c457a628d90626f98",
+    sha256: "4824c901ee53e6658024a6cc89aec92e8d29608f315f835a640e11039637c80b",
   },
   {
     file: "message_executor.so",
     address: "ExecxgyHYsAXB4c5dZodV1zJZ9hqfsDCYkRDRATrpkFR",
-    sha256: "27560290bd0744f3650895bb73d2faf39a4a9d2c5a4cf487877ad26d551355b2",
+    sha256: "276692a010a2f04aa4d540cf8c0f0f74d64d821d72f826f9964782ec2d190344",
   },
   {
     file: "nonce.so",
     address: "Noncediea1fH12usShuQAz28UhgAeuE5Maf32LsMUQB",
-    sha256: "08df5f60557edf0a717b1cdc91a1ff78dc5d8ba105e00a404e312333eab43c1a",
+    sha256: "095be5b6bcdf10003db710558a765221dd442a3a13aa7d62747d82871f60d3f7",
   },
   {
     file: "squads_multisig.so",

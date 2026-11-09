@@ -258,6 +258,24 @@
                 "kind": "instructionAccountDisplayNode",
                 "skip": "always"
               }
+            },
+            {
+              "kind": "instructionAccountNode",
+              "name": "transitionSigner",
+              "isWritable": false,
+              "isSigner": false,
+              "isOptional": false,
+              "docs": [
+                "Executor transition signer"
+              ],
+              "defaultValue": {
+                "kind": "publicKeyValueNode",
+                "publicKey": "EjCSGNbrrM7YJBwR9iqnrb87L1TYHfUtZ5L4gwQjWLFg"
+              },
+              "display": {
+                "kind": "instructionAccountDisplayNode",
+                "skip": "always"
+              }
             }
           ],
           "arguments": [
@@ -331,6 +349,25 @@
           ]
         }
       ],
+      "pdas": [
+        {
+          "kind": "pdaNode",
+          "name": "transitionSigner",
+          "seeds": [
+            {
+              "kind": "constantPdaSeedNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "value": {
+                "kind": "stringValueNode",
+                "string": "transition-signer"
+              }
+            }
+          ]
+        }
+      ],
       "errors": [
         {
           "kind": "errorNode",
@@ -367,6 +404,12 @@
           "name": "unsupportedTransactionConfig",
           "code": 5,
           "message": "The execution message sets transaction config fields"
+        },
+        {
+          "kind": "errorNode",
+          "name": "invalidTransitionSigner",
+          "code": 6,
+          "message": "The transition signer is not the Executor PDA for this nonce account"
         }
       ]
     },
@@ -518,6 +561,20 @@
             },
             {
               "kind": "instructionAccountNode",
+              "name": "transitionSigner",
+              "isWritable": false,
+              "isSigner": true,
+              "isOptional": false,
+              "docs": [
+                "Signer identity bound into the successor nonce"
+              ],
+              "display": {
+                "kind": "instructionAccountDisplayNode",
+                "label": "Transition signer"
+              }
+            },
+            {
+              "kind": "instructionAccountNode",
               "name": "nonceAccount",
               "isWritable": true,
               "isSigner": false,
@@ -586,7 +643,7 @@
               "isSigner": true,
               "isOptional": false,
               "docs": [
-                "Authority stored in the nonce account"
+                "Authority stored in the nonce account, or the nonce account itself if it is not initialized"
               ],
               "display": {
                 "kind": "instructionAccountDisplayNode",

@@ -295,6 +295,7 @@ sequenceDiagram
 ```
 
 - The authority signs a message with no blockhash and no fee payer, so it can sign at any time. The executor nonce stops the same authorization from running twice.
+- The executor advances that nonce with its transition signer (a PDA), whose address goes into the next value. So the authorizations of a chain signed ahead only become valid one after another, by the executor running each, and the nonce authority cannot skip one by moving the nonce itself.
 - Simulation waits until the authorization is signed.
 - The authority needs no funds. Only the fee payer does.
 
