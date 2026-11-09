@@ -17,6 +17,7 @@ pub mod history;
 pub mod idl;
 pub mod lookup;
 pub mod market;
+pub mod migrate;
 pub mod offer;
 pub mod offline_nonce;
 pub mod programmatic;

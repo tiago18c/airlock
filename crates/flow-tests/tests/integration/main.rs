@@ -2,6 +2,7 @@ mod support;
 
 mod cleanup;
 mod combined_approvals;
+mod migrate;
 mod mixed_approvals;
 mod offline_nonce;
 mod programmatic_squads;

@@ -14,6 +14,7 @@ pub mod idl;
 mod ids;
 pub mod keys;
 mod market;
+pub mod migrate;
 mod phrase;
 pub mod portfolio;
 pub mod program_code;
