@@ -24,6 +24,11 @@ icon = ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/i
 # the bundle scripts put the host in themselves (bundle-macos.sh: inside the
 # .app, in Contents/MacOS).
 resources = ["target/release/bridge-host.exe"]
+# The same for Linux: dx puts target/release/bridge-host-<target triple> in
+# usr/bin as bridge-host, in the .deb and in the AppImage, and
+# scripts/bundle-linux.sh copies it to that name first. Windows and macOS
+# find no file of that name, and skip it.
+external_bin = ["target/release/bridge-host"]
 
 [permissions]
 # macOS: dx serve and dx build write this into Info.plist as
@@ -41,3 +46,8 @@ webview_install_mode = { OfflineInstaller = { silent = false } }
 # dx's template with a page that asks whether to register the browser bridge.
 [bundle.windows.nsis]
 template = "installer.nsi"
+
+# The libraries the .deb needs, by their Ubuntu 22.04 and Debian 12 names.
+# The AppImage carries most of its own: see docs/releasing.md.
+[bundle.deb]
+depends = ["libwebkit2gtk-4.1-0", "libgtk-3-0", "libxdo3", "libssl3", "libayatana-appindicator3-1"]

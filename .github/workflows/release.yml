@@ -188,6 +188,13 @@ jobs:
           path: out/
           if-no-files-found: error
 
+  linux:
+    name: Linux apps
+    needs: [verify, checks]
+    uses: ./.github/workflows/linux-bundle.yml
+    with:
+      version: ${{ needs.verify.outputs.version }}
+
   extension:
     name: Browser extension
     needs: [verify, checks]
@@ -216,7 +223,7 @@ jobs:
 
   publish:
     name: Draft release
-    needs: [verify, desktop, airgap, macos, android, extension]
+    needs: [verify, desktop, airgap, macos, linux, android, extension]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -229,7 +236,7 @@ jobs:
       - name: Checksums
         run: |
           mkdir release
-          cp artifacts/desktop/* artifacts/airgap/* artifacts/macos/* artifacts/android/* artifacts/extension/* release/
+          cp artifacts/desktop/* artifacts/airgap/* artifacts/macos/* artifacts/linux-*/* artifacts/android/* artifacts/extension/* release/
           cd release
           sha256sum * > SHA256SUMS.txt
           cat SHA256SUMS.txt

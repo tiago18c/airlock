@@ -12,6 +12,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 ### Added
 - The Windows installer now asks whether to install the **browser bridge**, which lets the Airlock extension reach the app. It is on unless you untick it, and uninstalling Airlock removes it. The portable zip carries it too.
 - The macOS app now has the browser bridge inside it. Install it from the **Extension** status once Airlock is in Applications.
+- **Linux builds**: a `.deb` and an AppImage of the online and the airgap app, for x86-64. The online app has the browser bridge in it; install it from the **Extension** status.
 - When no browser is connected, the **Extension** status at the bottom of the sidebar offers **Install the browser bridge**, for when you skipped it in the installer, and **Get the extension**, which opens the latest release with the steps to load the extension.
 
 ### Changed

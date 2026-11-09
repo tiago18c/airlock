@@ -1,0 +1,79 @@
+name: Linux bundles
+
+# The .deb and the AppImage of the desktop apps. The release calls it with
+# its version and every app; a pull request that changes how they are
+# packaged runs it for the online app, then installs the .deb, starts both
+# formats and registers the browser bridge from each, so a broken package is
+# caught before a release. See docs/releasing.md.
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+      packages:
+        type: string
+        default: '["airlock", "airlock-offline"]'
+  pull_request:
+    paths:
+      - scripts/bundle-linux.sh
+      - .github/workflows/linux-bundle.yml
+      - apps/*/Dioxus.toml
+      - crates/bridge-host/src/install.rs
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  # Must match the dioxus version in Cargo.lock, and release.yml's.
+  DX_VERSION: 0.7.10
+
+jobs:
+  bundle:
+    name: ${{ matrix.package }}
+    # The oldest supported Ubuntu: the AppImage runs on a glibc at least this new.
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        package: ${{ fromJSON(inputs.packages || '["airlock"]') }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: rustup show
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: cargo-bins/cargo-binstall@851112458b5f28a29e5bc14a690c3f283d9dcc6f # v1.26.2
+      - name: Install the Dioxus CLI
+        run: cargo binstall -y dioxus-cli@${{ env.DX_VERSION }}
+      - name: Build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev libxdo-dev libudev-dev libssl-dev libfuse2 xvfb
+      - name: Bundle
+        run: scripts/bundle-linux.sh "${{ matrix.package }}" "${{ inputs.version || '0.0.0' }}" out
+      - name: Install the .deb and start it
+        run: |
+          sudo apt-get install -y ./out/*.deb
+          export AIRLOCK_DATA_DIR="$(mktemp -d)"
+          xvfb-run -a timeout 20 "/usr/bin/${{ matrix.package }}" || [ $? -eq 124 ]
+      - name: Start the AppImage
+        run: |
+          export AIRLOCK_DATA_DIR="$(mktemp -d)"
+          xvfb-run -a timeout 20 ./out/*.AppImage || [ $? -eq 124 ]
+      - name: Register the bridge from the .deb
+        if: matrix.package == 'airlock'
+        run: |
+          /usr/bin/bridge-host install
+          grep -q '"path": "/usr/bin/bridge-host"' ~/.config/google-chrome/NativeMessagingHosts/dev.airlock.bridge.json
+          /usr/bin/bridge-host uninstall
+      - name: The AppImage has the bridge
+        if: matrix.package == 'airlock'
+        run: |
+          cd "$(mktemp -d)"
+          "$GITHUB_WORKSPACE"/out/*.AppImage --appimage-extract > /dev/null
+          test -x squashfs-root/usr/bin/bridge-host
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: inputs.version != ''
+        with:
+          name: linux-${{ matrix.package }}
+          path: out/
+          if-no-files-found: error

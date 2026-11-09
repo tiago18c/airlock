@@ -14,6 +14,10 @@ A release is a tag. Pushing `v1.2.3` builds the files and opens a **draft** rele
 | `airlock-offline-<version>-windows-x64-portable.zip` | The airgap app without an installer |
 | `airlock-<version>-macos-arm64.dmg` | Online app for Macs with Apple Silicon, ad-hoc signed |
 | `airlock-offline-<version>-macos-arm64.dmg` | Airgap app for Macs with Apple Silicon, ad-hoc signed |
+| `airlock-<version>-linux-amd64.deb` | Online app for Debian, Ubuntu and their kin, x86-64 |
+| `airlock-<version>-linux-x86_64.AppImage` | Online app as one file, for other x86-64 Linux |
+| `airlock-offline-<version>-linux-amd64.deb` | Airgap app, `.deb` |
+| `airlock-offline-<version>-linux-x86_64.AppImage` | Airgap app, AppImage |
 | `bridge-host-<version>-windows-x64.exe` | Native messaging host for the browser extension. The online installers and portable zip have it too |
 | `bridge-host-<version>-macos-arm64.tar.gz` | The same, for macOS. The online app has it inside |
 | `airlock-mobile-<version>-android-arm64.apk` | Android app, for Android 14 and later on arm64 phones |
@@ -126,12 +130,21 @@ What a user sees:
 
 A Developer ID (the Apple Developer Program) would remove the first point: sign with the hardened runtime and the camera entitlement, then notarize with `notarytool`. dx does both when `APPLE_CERTIFICATE` and an App Store Connect API key are set.
 
+## Linux
+
+`.github/workflows/linux-bundle.yml` runs `scripts/bundle-linux.sh` for each desktop app on Ubuntu 22.04, the oldest Ubuntu still supported, because an AppImage runs only on a glibc at least as new as the one it was built on. The release calls it; a pull request that changes the packaging runs it for the online app, then installs the `.deb`, starts both formats under Xvfb for 20 seconds, and registers the bridge from each.
+
+- **The `.deb`** puts the app in `/usr/bin` and declares the libraries it needs (`[bundle.deb] depends` in `Dioxus.toml`, by their Ubuntu 22.04 and Debian 12 names). It installs as root, and the browser bridge's registration is per user, so the package registers nothing: the online app's `/usr/bin/bridge-host` is offered by the Extension chip. Removing the package leaves a registration naming a missing binary, which the chip then shows as not installed.
+- **The AppImage** carries the libraries `linuxdeploy` finds the app linked against, except those every system has (glibc, GL). WebKitGTK starts its helper processes from the system's own WebKitGTK, so the system needs `libwebkit2gtk-4.1` too, as Ubuntu and Fedora desktops have. An AppImage runs from a mount that goes away when it quits, so the chip registers a copy of its host, in the data folder, and refreshes that copy whenever the AppImage that registered it starts with a different one.
+- dx finds the host through `external_bin` in `Dioxus.toml`: the script copies `target/release/bridge-host` to `bridge-host-<target triple>`, which dx puts in `usr/bin` under its own name.
+- Neither is signed. The udev rules for hardware wallets (`resources/linux`) are not installed by either.
+
 ## Not automated yet
 
 - **Code signing.** The Windows installer is not signed, so Windows shows a SmartScreen warning. Signing needs a certificate and a decision on where its key lives. The macOS apps are signed ad hoc and not notarized: see [macOS](#macos).
 - **Extension stores.** The zip is built but not uploaded to the Chrome Web Store or Firefox Add-ons. The extension id is pinned by the key in `extension/manifest.json`; a store listing will have its own.
 - **Android.** Only arm64 is built, as an APK; no store listing (Google Play, Solana dApp Store). dx sets the APK's `versionCode` to 1 in every build, so Android cannot tell two releases apart by it: an update installs over the old one, but a store would refuse it.
-- **Linux desktop builds, and Intel Macs.** CI builds the core crates on Linux, but no Linux desktop bundle is produced, and the macOS apps are built for Apple Silicon only.
+- **Linux arm64, and Intel Macs.** The Linux apps are built for x86-64 only, and the macOS apps for Apple Silicon only.
 - **The web app.** It is not published anywhere by the release.
 
 ## Updating the compiler

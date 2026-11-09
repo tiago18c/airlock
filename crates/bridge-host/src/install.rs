@@ -74,6 +74,56 @@ pub fn register(exe: &Path) -> io::Result<Vec<String>> {
     Ok(locations)
 }
 
+/// The binary to register for the `host` that came with the app: `host`
+/// itself, or, inside a running AppImage, a copy in the data folder. An
+/// AppImage runs from a mount that goes away when the app quits, so a
+/// registration naming the host there would break. The copy is refreshed
+/// whenever it differs, so it keeps up with the AppImage it came from.
+pub fn stable_host(host: &Path) -> io::Result<PathBuf> {
+    let Some(copy) = appimage_copy(host) else {
+        return Ok(host.to_path_buf());
+    };
+    if fs::read(host)? != fs::read(&copy).unwrap_or_default() {
+        let dir = copy
+            .parent()
+            .ok_or_else(|| io::Error::other("no data folder"))?;
+        fs::create_dir_all(dir)?;
+        // Through a new file and a rename: a browser may be running the old one.
+        let fresh = dir.join(format!("{HOST_EXE}.new"));
+        fs::copy(host, &fresh)?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            fs::set_permissions(&fresh, fs::Permissions::from_mode(0o755))?;
+        }
+        fs::rename(&fresh, &copy)?;
+    }
+    Ok(copy)
+}
+
+/// Where [`stable_host`] keeps its copy of a host inside the running AppImage,
+/// or `None` when `host` is not in one.
+fn appimage_copy(host: &Path) -> Option<PathBuf> {
+    let appdir = std::env::var_os("APPDIR").filter(|_| std::env::var_os("APPIMAGE").is_some())?;
+    if !host.starts_with(appdir) {
+        return None;
+    }
+    crate::log::data_dir().map(|dir| dir.join(HOST_EXE))
+}
+
+/// At the app's start: when the registration names the copy [`stable_host`]
+/// made from `host`, brings the copy up to date with it. Nothing otherwise.
+pub fn refresh_stable_host(host: &Path) {
+    let Some(copy) = appimage_copy(host) else {
+        return;
+    };
+    if registered_host().as_deref() == Some(copy.as_path()) {
+        if let Err(err) = stable_host(host) {
+            tracing::warn!(target: "bridge", "could not refresh {}: {err}", copy.display());
+        }
+    }
+}
+
 /// Why a host at `exe` would not stay there: a macOS disk image that is
 /// still mounted, or the random copy macOS runs a quarantined app from
 /// (App Translocation) until it is moved out of the folder it came in.
