@@ -357,6 +357,7 @@ dependencies = [
  "url",
  "wallet-core",
  "wallet-vault",
+ "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
  "zeroize",
@@ -1570,6 +1571,7 @@ dependencies = [
  "base64 0.22.1",
  "serde_json",
  "sha2 0.10.9",
+ "tempfile",
 ]
 
 [[package]]

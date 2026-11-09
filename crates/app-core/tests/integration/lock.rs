@@ -131,6 +131,103 @@ async fn idle_timer_resets_on_activity() {
     assert_eq!(*kit.core.slices().vault.get(), VaultState::Locked);
 }
 
+/// The longest the policy sleeps at once (`lock::STEP`).
+const STEP: Duration = Duration::from_secs(15);
+
+#[tokio::test]
+async fn time_asleep_counts_towards_the_timeout() {
+    let kit = unlocked();
+    let mut events = kit.core.events();
+
+    kit.core.set_ui_visible(false);
+    settle().await;
+    kit.clock.advance(60 * SECOND);
+    settle().await;
+    // The machine sleeps past the timeout: the wall clock moves, the
+    // monotonic one does not.
+    kit.clock
+        .jump_wall(Settings::DEFAULT_AUTO_LOCK.as_millis() as i64);
+    settle().await;
+    assert_eq!(*kit.core.slices().vault.get(), VaultState::Unlocked);
+
+    // The next step after waking locks it.
+    kit.clock.advance(STEP);
+    settle().await;
+    assert_eq!(*kit.core.slices().vault.get(), VaultState::Locked);
+    assert_eq!(
+        events.try_recv().unwrap(),
+        Event::VaultLocked {
+            reason: LockReason::Hidden
+        }
+    );
+}
+
+#[tokio::test]
+async fn idle_time_asleep_counts_too() {
+    let kit = unlocked();
+    settle().await;
+
+    kit.clock
+        .jump_wall(Settings::DEFAULT_AUTO_LOCK.as_millis() as i64 + 1);
+    kit.clock.advance(STEP);
+    settle().await;
+    assert_eq!(*kit.core.slices().vault.get(), VaultState::Locked);
+}
+
+#[tokio::test]
+async fn a_clock_set_back_does_not_put_off_the_lock() {
+    let kit = unlocked();
+
+    kit.core.set_ui_visible(false);
+    settle().await;
+    kit.clock.jump_wall(-3_600_000);
+    for _ in 0..Settings::DEFAULT_AUTO_LOCK.as_secs() / STEP.as_secs() - 1 {
+        kit.clock.advance(STEP);
+        settle().await;
+    }
+    assert_eq!(*kit.core.slices().vault.get(), VaultState::Unlocked);
+
+    // The steps slept reach the timeout, whatever the wall clock says.
+    kit.clock.advance(STEP);
+    settle().await;
+    assert_eq!(*kit.core.slices().vault.get(), VaultState::Locked);
+}
+
+#[tokio::test]
+async fn a_shorter_timeout_applies_during_the_wait() {
+    let kit = unlocked();
+
+    kit.core.set_ui_visible(false);
+    settle().await;
+    kit.clock.advance(30 * SECOND);
+    settle().await;
+    kit.core.set_auto_lock(Duration::from_secs(60)).unwrap();
+    settle().await;
+    kit.clock.advance(29 * SECOND);
+    settle().await;
+    assert_eq!(*kit.core.slices().vault.get(), VaultState::Unlocked);
+
+    // 61 seconds since it was hidden: past the new timeout, long before the
+    // old one.
+    kit.clock.advance(2 * SECOND);
+    settle().await;
+    assert_eq!(*kit.core.slices().vault.get(), VaultState::Locked);
+}
+
+#[tokio::test]
+async fn a_timeout_already_passed_locks_when_it_is_set() {
+    let kit = unlocked();
+
+    kit.core.set_ui_visible(false);
+    settle().await;
+    kit.clock.advance(90 * SECOND);
+    settle().await;
+    assert_eq!(*kit.core.slices().vault.get(), VaultState::Unlocked);
+    kit.core.set_auto_lock(Duration::from_secs(60)).unwrap();
+    settle().await;
+    assert_eq!(*kit.core.slices().vault.get(), VaultState::Locked);
+}
+
 #[tokio::test]
 async fn lock_now_says_it_was_the_user() {
     let kit = unlocked();

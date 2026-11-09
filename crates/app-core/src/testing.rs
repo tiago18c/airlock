@@ -76,6 +76,8 @@ pub struct ManualClock {
 #[derive(Default)]
 struct ClockState {
     elapsed: Duration,
+    /// How far the wall clock has moved apart from `elapsed`.
+    wall_offset: i128,
     sleepers: Vec<(Duration, oneshot::Sender<()>)>,
 }
 
@@ -96,6 +98,14 @@ impl ManualClock {
             let _ = wake.send(());
         }
     }
+
+    /// Move the wall clock (`now_ms`) by `by_ms`, back when negative, and
+    /// leave sleepers where they are: what a machine waking from sleep, or
+    /// a clock being set, looks like to the app.
+    pub fn jump_wall(&self, by_ms: i64) {
+        let mut state = self.state.lock().unwrap_or_else(PoisonError::into_inner);
+        state.wall_offset += i128::from(by_ms);
+    }
 }
 
 /// An arbitrary but fixed start, so `now_ms` is never zero.
@@ -104,7 +114,8 @@ const EPOCH_MS: u64 = 1_700_000_000_000;
 impl Clock for ManualClock {
     fn now_ms(&self) -> u64 {
         let state = self.state.lock().unwrap_or_else(PoisonError::into_inner);
-        EPOCH_MS + state.elapsed.as_millis() as u64
+        let now = i128::from(EPOCH_MS) + state.elapsed.as_millis() as i128 + state.wall_offset;
+        u64::try_from(now).unwrap_or(0)
     }
 
     fn sleep(&self, duration: Duration) -> BoxFuture {

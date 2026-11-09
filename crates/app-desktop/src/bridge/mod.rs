@@ -24,6 +24,7 @@ use app_core::PublicCore;
 use base64::Engine;
 use bridge_host::endpoint::Endpoint;
 use bridge_host::relay::{Answer, Connection, FrameSender};
+use bridge_protocol::request::is_site_origin;
 use bridge_protocol::{reply, Frame};
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -593,17 +594,7 @@ impl Peer {
 
     /// The origins with a page open in this browser, as the extension lists them.
     fn set_pages(&self, params: &Value) {
-        let pages: BTreeSet<String> = params
-            .get("origins")
-            .and_then(Value::as_array)
-            .map(|origins| {
-                origins
-                    .iter()
-                    .filter_map(Value::as_str)
-                    .map(str::to_owned)
-                    .collect()
-            })
-            .unwrap_or_default();
+        let pages = listed_pages(params);
         let shared = &self.bridge.shared;
         if let Some(peer) = shared
             .peers
@@ -632,6 +623,9 @@ impl Connection for Peer {
             "cancel" => self.cancel(&frame.params),
             _ => {}
         }
+        if let Some(refused) = refuse_origin(&frame) {
+            return Answer::Now(refused);
+        }
         self.bridge.answer(frame, &self.waiting)
     }
 
@@ -656,6 +650,57 @@ impl Connection for Peer {
             .remove(&self.id);
         shared.report_pages();
     }
+}
+
+/// The origins a `pages` frame lists. One that is not a web origin is left
+/// out, rather than the whole list refused.
+fn listed_pages(params: &Value) -> BTreeSet<String> {
+    params
+        .get("origins")
+        .and_then(Value::as_array)
+        .map(|origins| {
+            origins
+                .iter()
+                .filter_map(Value::as_str)
+                .filter(|origin| is_site_origin(origin))
+                .map(str::to_owned)
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// The reply to a site's request from the socket that names no web origin
+/// as a browser writes it (`bridge_protocol::request::is_site_origin`), or
+/// `None` to go on. The origin is what the modal shows and the grants are
+/// filed under, and the extension sends the browser's own. A silent connect
+/// still gets no error, only no accounts. `status`, `show`, `pages` and
+/// `cancel` are not a site's, and need none: the extension's popup asks
+/// `status` as `chrome-extension://…`, and a second launch sends `show` with
+/// none. Requests from apps on a phone come through `apps` with the origin
+/// the app gave, `android-app://` among them, and are not checked here.
+fn refuse_origin(frame: &Frame) -> Option<Vec<u8>> {
+    let method = frame.method.as_str();
+    if !(waits_for_user(method) || method == "disconnect") || is_site_origin(&frame.origin) {
+        return None;
+    }
+    tracing::warn!(
+        target: "airlock::bridge",
+        code = %request_code(&frame.id),
+        method = %method,
+        origin = ?frame.origin,
+        "refused a request that names no web origin"
+    );
+    let silent =
+        method == "connect" && frame.params.get("silent").and_then(Value::as_bool) == Some(true);
+    Some(if silent {
+        reply::result(&frame.id, json!({ "accounts": [] }))
+    } else {
+        reply::error(
+            &frame.id,
+            "bad_request",
+            "The request does not name the site it comes from.",
+        )
+    })
 }
 
 /// Whether `method` goes to the user, through the core's queue. The rest,

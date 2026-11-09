@@ -9,9 +9,11 @@ mod web;
 
 pub use dirs::{app_dirs, set_app_dirs, set_base_dir, AppDirs};
 #[cfg(not(target_arch = "wasm32"))]
+pub(crate) use file::log_data_dir_move;
+#[cfg(not(target_arch = "wasm32"))]
 pub use file::{claim_data_dir, data_dir, logs_dir, DataDirClaim, FileStorage};
 #[cfg(target_arch = "wasm32")]
-pub use web::{LocalStorage, WebIdlBodies};
+pub use web::{claim_web_data, LocalStorage, WebDataClaim, WebIdlBodies};
 
 use wallet_core::vector::LeafMarks;
 use wallet_core::{
@@ -85,8 +87,9 @@ pub type AppIdls = IdlStore<BoxedStore, WebIdlBodies>;
 /// The files of this platform: the data folder, or `localStorage`.
 ///
 /// On desktop the folder has to be this process's: see [`claim_data_dir`].
-/// The shells claim it first thing, to say why when it is taken; this is the
-/// backstop, and stops the app rather than share the folder.
+/// In a browser the data has to be this tab's: see [`claim_web_data`]. The
+/// shells claim it first thing, to say why when it is taken; this is the
+/// backstop, and stops the app rather than share the data.
 pub fn platform_storage() -> Box<dyn Storage> {
     #[cfg(not(target_arch = "wasm32"))]
     {
@@ -94,6 +97,7 @@ pub fn platform_storage() -> Box<dyn Storage> {
     }
     #[cfg(target_arch = "wasm32")]
     {
+        web::held_web_data();
         Box::new(LocalStorage)
     }
 }
@@ -175,6 +179,7 @@ pub fn open_idls(network: wallet_core::IdlNetwork) -> AppIdls {
     }
     #[cfg(target_arch = "wasm32")]
     {
+        web::held_web_data();
         IdlStore::open_on(
             BoxedStore(LocalStorage.open("idls-index.json")),
             WebIdlBodies,

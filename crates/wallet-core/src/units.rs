@@ -17,17 +17,28 @@ pub fn format_sol(lamports: u64) -> String {
 
 /// A token amount in the token's own units, by its number of decimals.
 pub fn format_token_amount(amount: u64, decimals: u8) -> String {
-    if decimals == 0 {
-        return amount.to_string();
-    }
-    let factor = 10u64.pow(u32::from(decimals));
-    let whole = amount / factor;
-    let frac = amount % factor;
-    if frac == 0 {
-        whole.to_string()
+    let (whole, frac) = split_digits(&amount.to_string(), decimals);
+    let frac = frac.trim_end_matches('0');
+    if frac.is_empty() {
+        whole
     } else {
-        let frac = format!("{frac:0width$}", width = decimals as usize);
-        format!("{whole}.{}", frac.trim_end_matches('0'))
+        format!("{whole}.{frac}")
+    }
+}
+
+/// The decimal digits of an amount split `decimals` places from the right:
+/// the whole part, "0" when there is none, and the fraction, padded with
+/// zeros to `decimals` digits. It works on the digits rather than dividing
+/// by ten to the `decimals`, since a mint can claim up to 255 decimals and
+/// no integer holds that factor.
+pub(crate) fn split_digits(digits: &str, decimals: u8) -> (String, String) {
+    let decimals = usize::from(decimals);
+    match digits.len().checked_sub(decimals) {
+        Some(split) if split > 0 => {
+            let (whole, frac) = digits.split_at(split);
+            (whole.to_string(), frac.to_string())
+        }
+        _ => ("0".to_string(), format!("{digits:0>decimals$}")),
     }
 }
 
@@ -96,5 +107,29 @@ mod tests {
             assert_eq!(parse_amount(bad, 6), None, "{bad}");
         }
         assert_eq!(parse_amount("1", 20), None);
+    }
+
+    #[test]
+    fn any_number_of_decimals_prints_the_amount() {
+        let max = u64::MAX; // 18446744073709551615, 20 digits
+        assert_eq!(format_token_amount(max, 0), "18446744073709551615");
+        assert_eq!(format_token_amount(max, 9), "18446744073.709551615");
+        assert_eq!(format_token_amount(max, 19), "1.8446744073709551615");
+        assert_eq!(format_token_amount(max, 20), "0.18446744073709551615");
+        assert_eq!(
+            format_token_amount(max, 38),
+            "0.00000000000000000018446744073709551615"
+        );
+        assert_eq!(format_token_amount(5, 39), format!("0.{}5", "0".repeat(38)));
+        assert_eq!(format_token_amount(5, 64), format!("0.{}5", "0".repeat(63)));
+        assert_eq!(
+            format_token_amount(120, 255),
+            format!("0.{}12", "0".repeat(252))
+        );
+        for decimals in [0, 9, 19, 20, 38, 39, 64, 255] {
+            assert_eq!(format_token_amount(0, decimals), "0", "{decimals}");
+        }
+        assert_eq!(format_token_amount(10_000_000_000_000_000_000, 19), "1");
+        assert_eq!(format_token_amount(10, 1), "1");
     }
 }

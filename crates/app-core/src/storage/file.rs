@@ -2,7 +2,9 @@
 
 use std::fs::{File, OpenOptions, TryLockError};
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
+use std::sync::{Mutex, OnceLock};
+
+use bridge_protocol::data_dir::{create_private_dir, Moved};
 
 use wallet_core::{FileStore, VaultStore};
 
@@ -33,10 +35,11 @@ impl Storage for FileStorage {
 }
 
 /// This app's data folder: `<prefix>_DATA_DIR` when set, else its own folder
-/// under the platform's app data folder (see [`AppDirs`](super::AppDirs)).
-/// `None` when the environment names no such folder. There is no fallback
-/// to the working directory: the vault and the record of used leaves would
-/// then be wherever the app happened to be started.
+/// under the platform's app data folder (see [`AppDirs`](super::AppDirs) and
+/// [`bridge_protocol::data_dir`]). `None` when the environment names no such
+/// folder. There is no fallback to the working directory: the vault and the
+/// record of used leaves would then be wherever the app happened to be
+/// started.
 pub fn data_dir() -> Option<PathBuf> {
     let dirs = app_dirs();
     if let Some(dir) = std::env::var_os(dirs.env_var("DATA_DIR")) {
@@ -45,12 +48,51 @@ pub fn data_dir() -> Option<PathBuf> {
     if let Some(base) = super::dirs::base_dir() {
         return Some(base.join(dirs.folder));
     }
-    let mut dir = std::env::var_os("LOCALAPPDATA")
-        .or_else(|| std::env::var_os("XDG_DATA_HOME"))
-        .or_else(|| std::env::var_os("HOME"))
-        .map(PathBuf::from)?;
-    dir.push(dirs.folder);
-    Some(dir)
+    platform_data_dir()
+}
+
+/// The platform's folder, found once. The first call moves the data there
+/// from where builds before this one kept it on Unix. Logging reads this
+/// folder first thing in `main`, so the move comes before any file in it is
+/// opened.
+fn platform_data_dir() -> Option<PathBuf> {
+    static DIR: OnceLock<Option<PathBuf>> = OnceLock::new();
+    DIR.get_or_init(|| {
+        let (dir, moved) = bridge_protocol::data_dir::resolve(app_dirs().folder);
+        *MOVED
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner()) = moved;
+        dir
+    })
+    .clone()
+}
+
+/// What finding the folder moved, until logging is up to say so.
+static MOVED: Mutex<Option<Moved>> = Mutex::new(None);
+
+/// Log what finding the data folder moved, once. Logging calls it as soon
+/// as it is installed.
+pub(crate) fn log_data_dir_move() {
+    let moved = MOVED
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .take();
+    match moved {
+        Some(Moved::Moved { from, to }) => tracing::info!(
+            target: "airlock::core",
+            from = %from.display(),
+            to = %to.display(),
+            "moved the data folder to where this platform keeps app data"
+        ),
+        Some(Moved::Failed { from, to, error }) => tracing::warn!(
+            target: "airlock::core",
+            from = %from.display(),
+            to = %to.display(),
+            error = %error,
+            "could not move the data folder, using it where it is"
+        ),
+        None => {}
+    }
 }
 
 pub fn logs_dir() -> Option<PathBuf> {
@@ -79,7 +121,8 @@ impl std::fmt::Display for DataDirClaim {
         match self {
             Self::NoFolder(variable) => write!(
                 f,
-                "There is no folder for the app's data: none of {variable}, LOCALAPPDATA, XDG_DATA_HOME or HOME is set. Set one and start the app again."
+                "There is no folder for the app's data: neither {variable} nor {} is set. Set one and start the app again.",
+                if cfg!(windows) { "LOCALAPPDATA" } else { "HOME" }
             ),
             Self::InUse(dir) => write!(
                 f,
@@ -114,14 +157,7 @@ fn claim_dir(dir: &Path) -> Result<(), DataDirClaim> {
         return Ok(());
     }
     let failed = |err| DataDirClaim::Failed(dir.to_path_buf(), err);
-    std::fs::create_dir_all(dir).map_err(failed)?;
-    let file = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .create(true)
-        .truncate(false)
-        .open(dir.join(LOCK_FILE))
-        .map_err(failed)?;
+    let file = open_lock(dir).map_err(failed)?;
     match file.try_lock() {
         Ok(()) => {
             *held = Some(file);
@@ -130,6 +166,18 @@ fn claim_dir(dir: &Path) -> Result<(), DataDirClaim> {
         Err(TryLockError::WouldBlock) => Err(DataDirClaim::InUse(dir.to_path_buf())),
         Err(TryLockError::Error(err)) => Err(failed(err)),
     }
+}
+
+/// Make the data folder and open its lock file. Only this user may read the
+/// folder: it holds the vault, the RPC URL with its key, the sites' grants
+/// and the logs.
+fn open_lock(dir: &Path) -> std::io::Result<File> {
+    create_private_dir(dir)?;
+    let mut options = OpenOptions::new();
+    options.read(true).write(true).create(true).truncate(false);
+    #[cfg(unix)]
+    std::os::unix::fs::OpenOptionsExt::mode(&mut options, 0o600);
+    options.open(dir.join(LOCK_FILE))
 }
 
 #[cfg(test)]
@@ -153,5 +201,24 @@ mod tests {
         claim_dir(dir.path()).unwrap();
         // Held now, so taking it again is a no-op.
         claim_dir(dir.path()).unwrap();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_claimed_folder_is_only_this_users() {
+        use std::os::unix::fs::PermissionsExt;
+        let base = tempfile::tempdir().unwrap();
+        let dir = base.path().join("airlock");
+        std::fs::create_dir(&dir).unwrap();
+        std::fs::set_permissions(&dir, std::fs::Permissions::from_mode(0o755)).unwrap();
+        let mode = |path: &Path| std::fs::metadata(path).unwrap().permissions().mode() & 0o777;
+        // `claim_dir` holds one folder per process, so this asks what it
+        // does before taking the lock.
+        open_lock(&dir).unwrap();
+        assert_eq!(mode(&dir), 0o700);
+        assert_eq!(mode(&dir.join(LOCK_FILE)), 0o600);
+        let fresh = base.path().join("fresh");
+        open_lock(&fresh).unwrap();
+        assert_eq!(mode(&fresh), 0o700);
     }
 }

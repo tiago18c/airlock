@@ -1,4 +1,5 @@
-//! A file on disk, replaced whole on every save.
+//! A file on disk, replaced whole on every save. On Unix only its owner may
+//! read it: folders it makes are `0700` and files `0600`.
 
 use super::VaultStore;
 use crate::VaultError;
@@ -31,7 +32,11 @@ impl FileStore {
     fn create_parent(&self) -> Result<(), VaultError> {
         if let Some(parent) = self.path.parent() {
             if !parent.as_os_str().is_empty() {
-                std::fs::create_dir_all(parent).map_err(io)?;
+                let mut builder = std::fs::DirBuilder::new();
+                builder.recursive(true);
+                #[cfg(unix)]
+                std::os::unix::fs::DirBuilderExt::mode(&mut builder, 0o700);
+                builder.create(parent).map_err(io)?;
             }
         }
         Ok(())
@@ -84,6 +89,9 @@ impl VaultStore for FileStore {
             if bak.exists() {
                 std::fs::remove_file(&bak).map_err(io)?;
             }
+            // A file an earlier build wrote may be wider than its owner.
+            // Narrowed before it is moved, so a failure leaves it in place.
+            private(&self.path)?;
             std::fs::rename(&self.path, &bak).map_err(io)?;
         }
         if let Err(err) = std::fs::rename(&tmp, &self.path) {
@@ -122,14 +130,33 @@ fn sibling(path: &Path, suffix: &str) -> PathBuf {
 }
 
 fn write_synced(path: &Path, bytes: &[u8]) -> Result<(), VaultError> {
-    let mut file = std::fs::OpenOptions::new()
-        .write(true)
-        .create(true)
-        .truncate(true)
-        .open(path)
-        .map_err(io)?;
+    let mut options = std::fs::OpenOptions::new();
+    options.write(true).create(true).truncate(true);
+    #[cfg(unix)]
+    std::os::unix::fs::OpenOptionsExt::mode(&mut options, 0o600);
+    let mut file = options.open(path).map_err(io)?;
+    // The mode above is only for a file it makes. One left by a crash or an
+    // earlier build is narrowed before anything is written to it.
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        file.set_permissions(std::fs::Permissions::from_mode(0o600))
+            .map_err(io)?;
+    }
     file.write_all(bytes).map_err(io)?;
     file.sync_all().map_err(io)?;
+    Ok(())
+}
+
+/// Only the owner may read or write `path`, on Unix.
+fn private(path: &Path) -> Result<(), VaultError> {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600)).map_err(io)?;
+    }
+    #[cfg(not(unix))]
+    let _ = path;
     Ok(())
 }
 
@@ -254,6 +281,44 @@ mod tests {
         assert_eq!(store.load().unwrap().unwrap(), b"current");
         store.save(b"next").unwrap();
         assert!(!sibling(&path, ".bak").exists());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn only_the_owner_may_read_what_is_saved() {
+        use std::os::unix::fs::PermissionsExt;
+        let mode = |path: &Path| std::fs::metadata(path).unwrap().permissions().mode() & 0o777;
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("data").join("idls").join("vault.json");
+        let store = FileStore::new(&path);
+
+        store.save(b"first").unwrap();
+        assert_eq!(mode(&path), 0o600);
+        assert_eq!(mode(path.parent().unwrap()), 0o700);
+        assert_eq!(mode(&dir.path().join("data")), 0o700);
+
+        // A file an earlier build left readable by everyone, and a stale
+        // temp file, are not left wider after a save.
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o644)).unwrap();
+        std::fs::write(sibling(&path, ".tmp"), b"stale").unwrap();
+        std::fs::set_permissions(
+            sibling(&path, ".tmp"),
+            std::fs::Permissions::from_mode(0o666),
+        )
+        .unwrap();
+        store.save(b"second").unwrap();
+        assert_eq!(mode(&path), 0o600);
+        assert_eq!(mode(&sibling(&path, ".bak")), 0o600);
+
+        store.set_aside(b"damaged").unwrap();
+        assert_eq!(mode(&sibling(&path, ".unreadable")), 0o600);
+
+        let record = dir.path().join("marks.json");
+        let record_store = FileStore::without_backup(&record);
+        record_store.save(b"1").unwrap();
+        std::fs::set_permissions(&record, std::fs::Permissions::from_mode(0o644)).unwrap();
+        record_store.save(b"2").unwrap();
+        assert_eq!(mode(&record), 0o600);
     }
 
     #[test]

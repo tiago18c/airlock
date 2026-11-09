@@ -125,6 +125,12 @@ opt-level = 3
 [profile.dev.package.blake2]
 opt-level = 3
 
+# Amounts, counts and sizes read from a node or a site must not wrap
+# silently in a release build and print or sign something else: arithmetic
+# that overflows panics there as it does in a debug build.
+[profile.release]
+overflow-checks = true
+
 [profile.wasm-dev]
 inherits = "dev"
 opt-level = 1

@@ -111,9 +111,14 @@ fn init_native(
 ) {
     use tracing_subscriber::fmt;
 
+    // Finding the folder may move it, and that comes before any file in it
+    // is opened. The data folder and its logs folder are `0700` on Unix:
+    // `tracing-appender` makes its files with the default mode, so the
+    // folder is what keeps other accounts from reading the logs.
     let logs = logs_dir();
-    if let Some(logs) = &logs {
-        let _ = std::fs::create_dir_all(logs);
+    if let (Some(data), Some(logs)) = (data_dir(), &logs) {
+        let _ = bridge_protocol::data_dir::create_private_dir(&data)
+            .and_then(|()| bridge_protocol::data_dir::create_private_dir(logs));
     }
     // Written in place rather than through `non_blocking`: its worker only
     // flushes when its guard drops, and the process exits without dropping
@@ -170,6 +175,7 @@ fn init_native(
         data_dir = %shown(data.as_deref()),
         "started"
     );
+    crate::storage::log_data_dir_move();
 }
 
 /// The variable that sets the log filter: `AIRLOCK_LOG`, or
@@ -284,7 +290,7 @@ fn shown(path: Option<&std::path::Path>) -> String {
 #[cfg(not(target_arch = "wasm32"))]
 pub fn open_log_folder() -> Result<(), String> {
     let dir = logs_dir().ok_or_else(|| "No data folder is named.".to_string())?;
-    std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    bridge_protocol::data_dir::create_private_dir(&dir).map_err(|e| e.to_string())?;
     open_path(&dir)
 }
 

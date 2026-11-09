@@ -1,7 +1,10 @@
 //! File logging for the native messaging host. Stdout carries frames to the
 //! browser, so nothing else may write there.
 
-use std::sync::Once;
+use std::path::PathBuf;
+use std::sync::{Mutex, Once, OnceLock};
+
+use bridge_protocol::data_dir::{create_private_dir, Moved};
 
 use tracing_subscriber::filter::EnvFilter;
 use tracing_subscriber::prelude::*;
@@ -13,10 +16,14 @@ pub fn init() {
     ONCE.call_once(|| {
         // No folder to keep logs in: log nothing rather than write beside
         // whatever the browser started this in.
-        let Some(logs) = data_dir().map(|dir| dir.join("logs")) else {
+        let Some(data) = data_dir() else {
             return;
         };
-        let _ = std::fs::create_dir_all(&logs);
+        let logs = data.join("logs");
+        // `0700` on Unix, as the app makes them. `tracing-appender` makes its
+        // files with the default mode, so the folder is what keeps other
+        // accounts from reading the log.
+        let _ = create_private_dir(&data).and_then(|()| create_private_dir(&logs));
         let appender = match tracing_appender::rolling::Builder::new()
             .rotation(tracing_appender::rolling::Rotation::DAILY)
             .filename_prefix("bridge-host")
@@ -44,17 +51,48 @@ pub fn init() {
                     .with_target(true),
             )
             .try_init();
+
+        let moved = MOVED
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .take();
+        match moved {
+            Some(Moved::Moved { from, to }) => tracing::info!(
+                target: "airlock::bridge",
+                from = %from.display(),
+                to = %to.display(),
+                "moved the data folder to where this platform keeps app data"
+            ),
+            Some(Moved::Failed { from, to, error }) => tracing::warn!(
+                target: "airlock::bridge",
+                from = %from.display(),
+                to = %to.display(),
+                error = %error,
+                "could not move the data folder, using it where it is"
+            ),
+            None => {}
+        }
     });
 }
 
-pub(crate) fn data_dir() -> Option<std::path::PathBuf> {
+/// What finding the folder moved, until logging is up to say so.
+static MOVED: Mutex<Option<Moved>> = Mutex::new(None);
+
+/// The online app's data folder, as `app_core::storage::data_dir` finds it:
+/// `AIRLOCK_DATA_DIR`, else the folder [`bridge_protocol::data_dir`] names.
+/// The browser may start this before the app has ever run, so it moves the
+/// folder from where builds before this one kept it too.
+pub(crate) fn data_dir() -> Option<PathBuf> {
     if let Some(dir) = std::env::var_os("AIRLOCK_DATA_DIR") {
-        return Some(std::path::PathBuf::from(dir));
+        return Some(PathBuf::from(dir));
     }
-    let mut dir = std::env::var_os("LOCALAPPDATA")
-        .or_else(|| std::env::var_os("XDG_DATA_HOME"))
-        .or_else(|| std::env::var_os("HOME"))
-        .map(std::path::PathBuf::from)?;
-    dir.push("airlock");
-    Some(dir)
+    static DIR: OnceLock<Option<PathBuf>> = OnceLock::new();
+    DIR.get_or_init(|| {
+        let (dir, moved) = bridge_protocol::data_dir::resolve("airlock");
+        *MOVED
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner()) = moved;
+        dir
+    })
+    .clone()
 }

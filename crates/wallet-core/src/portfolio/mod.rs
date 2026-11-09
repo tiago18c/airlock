@@ -8,7 +8,7 @@ mod tests;
 pub use crate::market::*;
 
 use crate::book::{AddressBook, Holdings, TokenFlag};
-use crate::units::LAMPORTS_PER_SOL;
+use crate::units::{split_digits, LAMPORTS_PER_SOL};
 use solana_pubkey::Pubkey;
 use std::collections::BTreeMap;
 
@@ -304,6 +304,9 @@ fn group_of(line: &Line, market: &MarketCache) -> (String, String) {
     }
 }
 
+/// The amount in whole tokens, for a dollar value. Ten to the 255th is
+/// still a finite f64, so no number of decimals divides by zero or
+/// infinity, and a u128 divided by it is still above the f64's smallest.
 fn whole(raw: u128, decimals: u8) -> f64 {
     if decimals == 9 {
         return raw as f64 / LAMPORTS_PER_SOL as f64;
@@ -353,8 +356,7 @@ pub fn format_value(usd: f64) -> String {
 /// decimals, trailing zeros dropped. An amount too small to show is
 /// "<0.0001", never "0".
 pub fn format_amount(raw: u128, decimals: u8, max_frac: usize) -> String {
-    let factor = 10u128.pow(u32::from(decimals));
-    let whole = (raw / factor).to_string();
+    let (whole, frac) = split_digits(&raw.to_string(), decimals);
     let mut grouped = String::new();
     for (i, c) in whole.chars().enumerate() {
         if i > 0 && (whole.len() - i).is_multiple_of(3) {
@@ -365,10 +367,9 @@ pub fn format_amount(raw: u128, decimals: u8, max_frac: usize) -> String {
     if decimals == 0 {
         return grouped;
     }
-    let frac = format!("{:0width$}", raw % factor, width = decimals as usize);
     let frac: String = frac.chars().take(max_frac).collect();
     let frac = frac.trim_end_matches('0');
-    if frac.is_empty() && raw > 0 && raw < factor {
+    if frac.is_empty() && raw > 0 && whole == "0" {
         return format!("<0.{}1", "0".repeat(max_frac.saturating_sub(1)));
     }
     if frac.is_empty() {
