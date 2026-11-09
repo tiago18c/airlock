@@ -751,6 +751,51 @@ fn a_raydium_cp_swap_names_its_mints_pool_and_limits() {
             && field.value != TOKEN_2022_PROGRAM_ID.to_string()));
 }
 
+/// `initialize_v2` creates a pool like `initialize`, one account shorter
+/// (no rent sysvar), with an optional creator fee after the amounts.
+#[test]
+fn a_raydium_cp_pool_with_a_creator_fee_names_its_creator_and_fee() {
+    use crate::fixtures::RAYDIUM_CP_SWAP_PROGRAM_ID;
+
+    let pool = |creator_fee: &[u8]| {
+        let mut data = hex::decode("4399af27da102620").unwrap();
+        data.extend(1_000_000u64.to_le_bytes());
+        data.extend(2_000_000u64.to_le_bytes());
+        data.extend(0u64.to_le_bytes());
+        data.extend(creator_fee);
+        let mut accounts = vec![AccountMeta::new(pk(1), true)];
+        accounts.extend((2..=19).map(|byte| AccountMeta::new(pk(byte), false)));
+        Instruction {
+            program_id: RAYDIUM_CP_SWAP_PROGRAM_ID,
+            accounts,
+            data,
+        }
+    };
+
+    let idl = explain_one_ix(&builtins(), pk(1), pool(&[1, 1]));
+    assert_eq!(idl.intent, "Create pool");
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "{} creates pool {} for {} and {} under AMM config {}, depositing 1000000 base units and 2000000 base units",
+                pk(1),
+                pk(4),
+                pk(5),
+                pk(6),
+                pk(2)
+            )
+            .as_str()
+        )
+    );
+    assert_eq!(field(&idl, "Creator Fee"), "On token 0 only");
+    assert_eq!(idl.unnamed_accounts, 0);
+
+    let without = explain_one_ix(&builtins(), pk(1), pool(&[0]));
+    assert_eq!(without.intent, "Create pool");
+    assert_eq!(field(&without, "Creator Fee"), "None");
+}
+
 /// Setting a CP swap config's owner (`param` 3) reads the new owner from the
 /// account after the named ones, so review shows it rather than flagging it.
 #[test]

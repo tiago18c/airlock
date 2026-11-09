@@ -78,6 +78,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - Share opens on Everything, now its first tab. Its Signatures tab has tabs of its own: Local, which it opens on, puts the signatures made by keys on this device in one transfer; All puts every signature in one transfer; Individual shows a code for each.
 
 ### Fixed
+- Review reads a Raydium CP swap pool created with a creator fee (`initializeV2`, new on mainnet and devnet) like any other new pool, with the creator fee it sets. Before, that instruction showed as unread.
 - The camera preview on Windows is no longer black. With WebView2 156 the camera stopped as soon as it started, and a scanner canvas hid the video. On macOS the bundled apps had no camera at all, since the bundle left out the camera description macOS asks for. They have it now, and a window without a camera says why rather than asking you to open the app in a browser.
 - A signature scanned or pasted on Review and Sign that completes a site's transaction now sends it back to the site. Before, a request whose last signature came from another device was never answered.
 - A site's request that names a program with a large IDL no longer freezes the window while it is read. Reading now happens away from the window, and says so. If it takes more than 4 seconds, the transaction is shown as its programs and bytes rather than in words, and Sign is offered only as it is for anything unread.
