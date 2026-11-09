@@ -215,8 +215,13 @@ pub static BUILTIN_IDLS: [BuiltinIdl; 9] = [
             IdlOrigin::ProgramMetadata,
             "4f46c00d60e55bc29ee34157d7fb976f5e5dce3701cbc29b765d573b9ae24dde",
         ),
-        changes: "The message executor and its nonce program added to `additionalPrograms`. \
-                  Display nodes added by hand.",
+        // Devnet's published IDL predates the transition signer (upstream
+        // #127 and #128, deployed on devnet 2026-11-09), so the file is the
+        // repository's `idl.json` at 2b2cc7f. It carries the additional
+        // programs and the display nodes this file used to add by hand.
+        changes: "The message executor and its nonce program added to `additionalPrograms`, \
+                  and display nodes added. Then brought to the repository's IDL at 2b2cc7f, \
+                  which adds the transition signer the executor and nonce program now take.",
     },
     BuiltinIdl {
         program_id: SQUADS_V4_PROGRAM_ID,

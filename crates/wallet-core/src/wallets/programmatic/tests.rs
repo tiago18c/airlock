@@ -20,7 +20,8 @@ fn the_derived_address_differs_from_the_key_and_is_stable() {
 }
 
 /// Vectors from the nonce program's own `derivations_match_frozen_vectors`
-/// and the executor's `transition_commitment_matches_snapshot`.
+/// and the executor's `transition_commitment_matches_snapshot`, at
+/// solana-program/ed25519-programmatic-signer 2b2cc7f.
 #[test]
 fn the_next_nonce_matches_the_programs_own_vectors() {
     let empty = v1::Message::default();
@@ -30,19 +31,54 @@ fn the_next_nonce_matches_the_programs_own_vectors() {
         "CBg3iVEh1d3hGJDQQ7eQxEJhZ9txvkCeeMDSMaVTWZwc"
     );
 
-    let next = sha256(&[
-        NONCE_STEP_TAG,
-        &[1; 32],
-        &[2; 32],
-        "GgBaCs3NCBuZN12kCJgAW63ydqohFkHEdfdEXBPzLHq"
+    let next = authorization::derive_next_nonce(
+        &Pubkey::new_from_array([1; 32]),
+        &Pubkey::new_from_array([2; 32]),
+        &"GgBaCs3NCBuZN12kCJgAW63ydqohFkHEdfdEXBPzLHq"
             .parse::<Hash>()
-            .unwrap()
-            .as_ref(),
+            .unwrap(),
+        &Pubkey::new_from_array([5; 32]),
         &[4; 32],
-    ]);
+    );
     assert_eq!(
         Hash::new_from_array(next).to_string(),
-        "EgbzChWYoCDgPbJNWv8nVUqdxnoxDTRXg2stzPKhYZu4"
+        "FYhH2U33x6G4riCkS4A2J4v3vW87BJWoSPaiLzaZyyZq"
+    );
+}
+
+/// The executor's `TransitionSigner::constants_match_derivation`.
+#[test]
+fn the_transition_signer_is_the_executors_pda() {
+    assert_eq!(
+        Pubkey::find_program_address(&[b"transition-signer"], &MESSAGE_EXECUTOR_PROGRAM_ID),
+        (EXECUTOR_TRANSITION_SIGNER, 255)
+    );
+}
+
+#[test]
+fn execute_names_the_transition_signer_after_the_nonce_program() {
+    let authority = pk(1);
+    let derived = programmatic_signer_address(&authority);
+    let authorization = Authorization::new(
+        derived,
+        &[transfer(derived, pk(2), 5)],
+        &[authority],
+        nonce(derived),
+    )
+    .unwrap();
+    let execute = submit::execute_instruction(&authorization.nonce, &authorization.execution);
+    let fixed: Vec<_> = execute.accounts[..4]
+        .iter()
+        .map(|meta| (meta.pubkey, meta.is_signer, meta.is_writable))
+        .collect();
+    assert_eq!(
+        fixed,
+        vec![
+            (derived, true, false),
+            (pk(9), false, true),
+            (EXECUTOR_NONCE_PROGRAM_ID, false, false),
+            (EXECUTOR_TRANSITION_SIGNER, false, false),
+        ]
     );
 }
 

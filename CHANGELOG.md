@@ -9,6 +9,9 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 ## [Unreleased]
 
+### Changed
+- Programmatic signers work with the signer programs devnet runs since 2026-11-09. The executor now signs each advance of the nonce, so an authorization signed ahead of another can only run once the one before it has, and the nonce's authority cannot skip it. Authorizations signed before that date no longer run: sign them again.
+
 ## [0.1.0] - 2026-11-09
 
 ### Added

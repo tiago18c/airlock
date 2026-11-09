@@ -48,6 +48,12 @@ pub const MESSAGE_EXECUTOR_PROGRAM_ID: Pubkey =
     Pubkey::from_str_const("ExecxgyHYsAXB4c5dZodV1zJZ9hqfsDCYkRDRATrpkFR");
 pub const EXECUTOR_NONCE_PROGRAM_ID: Pubkey =
     Pubkey::from_str_const("Noncediea1fH12usShuQAz28UhgAeuE5Maf32LsMUQB");
+/// The executor's PDA (seed `transition-signer`, bump 255) that signs every
+/// nonce advance it makes. The nonce program mixes the signer's address into
+/// the next nonce, so a chain of authorizations signed ahead only moves on
+/// through the executor running each one.
+pub const EXECUTOR_TRANSITION_SIGNER: Pubkey =
+    Pubkey::from_str_const("EjCSGNbrrM7YJBwR9iqnrb87L1TYHfUtZ5L4gwQjWLFg");
 const SLOT_HASHES_SYSVAR_ID: Pubkey =
     Pubkey::from_str_const("SysvarS1otHashes111111111111111111111111111");
 

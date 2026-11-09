@@ -114,16 +114,18 @@ impl Authorization {
     ///
     /// It depends only on the current value and on this exact execution
     /// message, so it is known before anything is submitted. An authorization
-    /// built against it can only execute after this one.
+    /// built against it can only execute after this one. The executor's
+    /// transition signer is part of it, so only the executor running this
+    /// message reaches it.
     pub fn next_nonce(&self) -> ExecutorNonce {
         let commitment = sha256(&[&self.execution.serialize()]);
-        let value = sha256(&[
-            NONCE_STEP_TAG,
-            EXECUTOR_NONCE_PROGRAM_ID.as_ref(),
-            self.nonce.account.as_ref(),
-            self.nonce.value.as_ref(),
+        let value = derive_next_nonce(
+            &EXECUTOR_NONCE_PROGRAM_ID,
+            &self.nonce.account,
+            &self.nonce.value,
+            &EXECUTOR_TRANSITION_SIGNER,
             &commitment,
-        ]);
+        );
         ExecutorNonce {
             value: Hash::new_from_array(value),
             ..self.nonce
@@ -292,6 +294,26 @@ pub(super) fn check_limits(message: &v1::Message) -> Result<(), ProgrammaticErro
 
 pub(super) fn is_writable(message: &v1::Message, index: usize) -> bool {
     message.is_maybe_writable_with_reserved_addresses(index, None::<&std::collections::HashSet<_>>)
+}
+
+/// The nonce program's `derive_next_nonce`: what a nonce account holds after
+/// an advance from `value`, signed by `transition_signer`, committing to
+/// `commitment`.
+pub(super) fn derive_next_nonce(
+    program_id: &Pubkey,
+    nonce_account: &Pubkey,
+    value: &Hash,
+    transition_signer: &Pubkey,
+    commitment: &[u8; 32],
+) -> [u8; 32] {
+    sha256(&[
+        NONCE_STEP_TAG,
+        program_id.as_ref(),
+        nonce_account.as_ref(),
+        value.as_ref(),
+        transition_signer.as_ref(),
+        commitment,
+    ])
 }
 
 pub(super) fn sha256(parts: &[&[u8]]) -> [u8; 32] {

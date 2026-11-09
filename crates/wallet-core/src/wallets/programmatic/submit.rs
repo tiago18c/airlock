@@ -202,12 +202,13 @@ pub fn message_instructions(message: &v1::Message) -> Vec<Instruction> {
 }
 
 /// The executor's `Execute`: nonce authority, nonce account, nonce program,
-/// then every account of the execution message in order.
+/// transition signer, then every account of the execution message in order.
 pub(super) fn execute_instruction(nonce: &ExecutorNonce, execution: &v1::Message) -> Instruction {
     let mut accounts = vec![
         AccountMeta::new_readonly(nonce.authority, true),
         AccountMeta::new(nonce.account, false),
         AccountMeta::new_readonly(EXECUTOR_NONCE_PROGRAM_ID, false),
+        AccountMeta::new_readonly(EXECUTOR_TRANSITION_SIGNER, false),
     ];
     for (index, key) in execution.account_keys.iter().enumerate() {
         accounts.push(AccountMeta {
