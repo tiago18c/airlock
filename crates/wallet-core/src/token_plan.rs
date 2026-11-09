@@ -169,6 +169,22 @@ impl TokenPlan {
         self.accounts.iter().map(|planned| planned.returned).sum()
     }
 
+    /// How many accounts the steps close.
+    pub fn closing(&self) -> usize {
+        self.accounts
+            .iter()
+            .filter(|planned| {
+                matches!(
+                    planned.outcome,
+                    Outcome::Closed
+                        | Outcome::Unwrapped { .. }
+                        | Outcome::Burned { .. }
+                        | Outcome::Moved { closed: true, .. }
+                )
+            })
+            .count()
+    }
+
     /// The accounts left as they are, with why.
     pub fn left(&self) -> impl Iterator<Item = (&Planned, &Blocked)> {
         self.accounts
@@ -205,8 +221,11 @@ impl Limits {
     /// For a wallet Sign wraps the step for (programmatic signer, Vector,
     /// Squads), which adds its own accounts and instructions, and for a
     /// Squads vault stores the step inside the transaction that creates it.
+    /// Measured on burn-and-close steps: a programmatic signer's wrap is
+    /// about 2.6 times the step, and a Squads v4 vault runs out of heap
+    /// executing more than about 14 accounts. 1,100 bytes is about 12.
     pub const WRAPPED: Limits = Limits {
-        max_wire: 1_600,
+        max_wire: 1_100,
         max_units: 500_000,
         max_trace: 32,
     };
