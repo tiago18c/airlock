@@ -18,6 +18,10 @@ identifier = "dev.airlock.app"
 publisher = "Airlock"
 short_description = "QR payload transfer for online/offline signing"
 icon = ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.png", "icons/icon.ico"]
+# The browser bridge's native messaging host, installed beside the app. dx
+# reads this path from where it runs: scripts/bundle-windows.sh builds it
+# first, from the workspace root.
+resources = ["target/release/bridge-host.exe"]
 
 [permissions]
 # macOS: dx serve and dx build write this into Info.plist as
@@ -32,3 +36,6 @@ info_plist_path = "Info.plist"
 [bundle.windows]
 # Options: "DownloadBootstrapper", "OfflineInstaller", or "Embed"
 webview_install_mode = { OfflineInstaller = { silent = false } }
+# dx's template with a page that asks whether to register the browser bridge.
+[bundle.windows.nsis]
+template = "installer.nsi"

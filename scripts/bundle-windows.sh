@@ -13,6 +13,10 @@
 # Skip assumes it is there. The full installer uses the mode in Dioxus.toml,
 # which has to be OfflineInstaller. Run from the workspace root, in Git Bash
 # on Windows. See docs/releasing.md.
+#
+# A Dioxus.toml that lists target/release/bridge-host.exe in its resources
+# (the online app) gets the browser bridge's host built first, in its
+# installers and in its portable zip.
 set -euo pipefail
 
 package="$1"
@@ -39,6 +43,12 @@ trap 'mv -f "$toml.orig" "$toml"' EXIT
 
 mkdir -p "$out"
 
+with_bridge=false
+if grep -q 'target/release/bridge-host.exe' "$toml"; then
+  with_bridge=true
+  cargo build --locked --release -p bridge-host
+fi
+
 # Builds the installer and copies it to $out/$1.
 bundle() {
   find "target/dx/$package" -path '*nsis*' -name '*-setup.exe' -delete 2>/dev/null || true
@@ -60,6 +70,9 @@ stage="$(mktemp -d)"
 mkdir "$stage/$package-$version"
 cp "$app_dir/$package.exe" "$stage/$package-$version/"
 cp -r "$app_dir/assets" "$stage/$package-$version/"
+if $with_bridge; then
+  cp target/release/bridge-host.exe "$stage/$package-$version/"
+fi
 (cd "$stage" && 7z a -tzip -bso0 "$package-$version.zip" "$package-$version")
 mv "$stage/$package-$version.zip" "$out/$package-$version-windows-x64-portable.zip"
 rm -rf "$stage"
