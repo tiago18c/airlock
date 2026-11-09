@@ -39,15 +39,25 @@ if [ -z "$deb" ] || [ -z "$appimage" ]; then
   exit 1
 fi
 
-if [ -n "${triple:-}" ]; then
-  if ! dpkg-deb -c "$deb" | grep -Eq '(^|[ /])usr/bin/bridge-host$'; then
-    echo "::error::$deb has no usr/bin/bridge-host."
-    dpkg-deb -c "$deb"
-    ls -l target/release/bridge-host*
-    exit 1
-  fi
+# dx writes the .deb's files with the owner of the build's files, and dpkg
+# keeps that owner when it installs them: /usr/bin/airlock would belong to
+# whatever account has that uid. Repack it with root as the owner.
+unpacked="$(mktemp -d)"
+dpkg-deb -R "$deb" "$unpacked/pkg"
+dpkg-deb --root-owner-group -Zxz --build "$unpacked/pkg" "$out/$package-$version-linux-amd64.deb" > /dev/null
+rm -rf "$unpacked"
+listing="$(dpkg-deb -c "$out/$package-$version-linux-amd64.deb")"
+not_root="$(grep -Ev '^[-d][-rwxsStT]{9} root/root ' <<< "$listing" || true)"
+if [ -n "$not_root" ]; then
+  echo "::error::The .deb has files root does not own:"
+  echo "$not_root"
+  exit 1
+fi
+if [ -n "${triple:-}" ] && ! grep -Eq '(^|[ /])usr/bin/bridge-host$' <<< "$listing"; then
+  echo "::error::The .deb has no usr/bin/bridge-host."
+  echo "$listing"
+  exit 1
 fi
 
-cp "$deb" "$out/$package-$version-linux-amd64.deb"
 cp "$appimage" "$out/$package-$version-linux-x86_64.AppImage"
 chmod +x "$out/$package-$version-linux-x86_64.AppImage"
