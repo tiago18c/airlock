@@ -1,4 +1,6 @@
-/** Messages shared by the page wallet, the service worker, and bridge-host. */
+/** Messages shared by the page wallet, the service worker, and bridge-host.
+ * The limits here state the desktop app's again, and its tests hold the two
+ * together (`crates/app-desktop/src/bridge/extension_limits.rs`). */
 
 export const HOST_NAME = "dev.airlock.bridge";
 export const PAGE_SOURCE = "airlock-page";
