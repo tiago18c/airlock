@@ -418,6 +418,21 @@ impl Session {
         slot.set(Some(wallet));
     }
 
+    /// Open the Move wallet modal, on `from` when it is known (online shell
+    /// mounts it).
+    pub fn open_migrate(&self, from: Option<WalletId>) {
+        let form = self.forms.migrate;
+        let (mut slot, mut notice) = (form.open, form.notice);
+        notice.set(None);
+        slot.set(Some(from));
+    }
+
+    /// Close the Move wallet modal.
+    pub fn close_migrate(&self) {
+        let mut slot = self.forms.migrate.open;
+        slot.set(None);
+    }
+
     /// Close the Burn and close modal.
     pub fn close_cleanup(&self) {
         let mut slot = self.forms.cleanup.open;

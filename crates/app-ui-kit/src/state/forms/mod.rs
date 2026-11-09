@@ -7,6 +7,7 @@ use zeroize::Zeroize;
 mod build;
 mod cleanup;
 mod contact;
+mod migrate;
 mod send;
 mod sign;
 mod stake;
@@ -15,6 +16,7 @@ mod wallet;
 pub use build::*;
 pub use cleanup::*;
 pub use contact::*;
+pub use migrate::*;
 pub use send::*;
 pub use sign::*;
 pub use stake::*;
@@ -60,6 +62,7 @@ pub struct Forms {
     pub stake: StakeForm,
     pub send: SendForm,
     pub cleanup: CleanupForm,
+    pub migrate: MigrateForm,
     pub program: ProgramForm,
     pub history: HistoryForm,
 }
@@ -156,6 +159,12 @@ pub fn use_forms() -> Forms {
             open: use_signal(|| None),
             run: use_signal(|| None),
             notice: use_signal(|| None),
+        },
+        migrate: MigrateForm {
+            open: use_signal(|| None),
+            run: use_signal(|| None),
+            notice: use_signal(|| None),
+            finished: use_signal(|| None),
         },
         program: ProgramForm {
             selected: use_signal(|| None::<Pubkey>),

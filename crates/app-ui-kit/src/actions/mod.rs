@@ -9,6 +9,7 @@ pub mod build;
 pub mod cleanup;
 pub mod device;
 pub mod idl_check;
+pub mod migrate;
 pub mod network;
 pub mod programs;
 pub mod sign;
