@@ -177,10 +177,10 @@ jobs:
         run: |
           scripts/bundle-macos.sh airlock "${{ needs.verify.outputs.version }}" out
           scripts/bundle-macos.sh airlock-offline "${{ needs.verify.outputs.version }}" out
-      # A tarball keeps the executable bit, which a browser download drops.
-      - name: Build the native messaging host
+      # The online app has the host inside it too. A tarball keeps the
+      # executable bit, which a browser download drops.
+      - name: Collect the native messaging host
         run: |
-          cargo build --locked --release -p bridge-host
           tar -czf "out/bridge-host-${{ needs.verify.outputs.version }}-macos-arm64.tar.gz" -C target/release bridge-host
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

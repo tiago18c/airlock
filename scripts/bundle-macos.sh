@@ -11,6 +11,11 @@
 # unsigned), and hdiutil makes the disk image. Gatekeeper still asks the user
 # to allow it once: see docs/releasing.md. Run from the workspace root, on a
 # Mac.
+#
+# The online app (its Dioxus.toml lists bridge-host in its resources) gets the
+# browser bridge's host in Contents/MacOS, beside its own binary, where the
+# Extension chip looks for it. A disk image has no install step to ask in, so
+# the chip is where it is offered.
 set -euo pipefail
 
 package="$1"
@@ -30,6 +35,13 @@ fi
 # Without this key WKWebView hides the camera from the page (the Info.plist
 # in apps/<package>/ adds it; dx's own plist leaves it out).
 /usr/libexec/PlistBuddy -c 'Print :NSCameraUsageDescription' "$app/Contents/Info.plist" > /dev/null
+
+if grep -q 'bridge-host' "apps/$package/Dioxus.toml"; then
+  cargo build --locked --release -p bridge-host
+  cp target/release/bridge-host "$app/Contents/MacOS/bridge-host"
+  # Signed on its own first: the browser runs it directly, not as part of the app.
+  codesign --force --sign - "$app/Contents/MacOS/bridge-host"
+fi
 
 codesign --force --deep --sign - "$app"
 codesign --verify --deep --strict --verbose=2 "$app"

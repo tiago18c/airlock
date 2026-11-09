@@ -48,6 +48,7 @@ pub fn ExtensionChip() -> Element {
         ("status net-chip idle", "Not connected")
     };
     let host = host_beside_app();
+    let transient = host.as_deref().and_then(install::transient_location);
     let registered = registration();
     let bridge_text = match &registered {
         Registration::Ready(_) => "Installed".to_owned(),
@@ -99,7 +100,11 @@ pub fn ExtensionChip() -> Element {
                     }
                     if can_install && host.is_none() {
                         dt { "" }
-                        dd { "The bridge ({HOST_EXE}) is not beside Airlock. It comes with the installer and the portable zip." }
+                        dd { "The bridge ({HOST_EXE}) is not beside Airlock. It comes with every download of the app." }
+                    }
+                    if let (true, Some(why)) = (can_install, transient) {
+                        dt { "" }
+                        dd { "{why}" }
                     }
                     if setup {
                         dt { "Get it" }
@@ -112,7 +117,7 @@ pub fn ExtensionChip() -> Element {
                 }
                 if can_install {
                     button { class: "sm primary",
-                        disabled: host.is_none(),
+                        disabled: host.is_none() || transient.is_some(),
                         onclick: move |_| {
                             let Some(host) = host_beside_app() else { return };
                             let result = install::register(&host)

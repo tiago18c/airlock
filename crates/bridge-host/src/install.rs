@@ -38,6 +38,19 @@ pub fn install() -> io::Result<()> {
 
 /// Registers `exe` as the host for every browser, and returns where it wrote.
 pub fn register(exe: &Path) -> io::Result<Vec<String>> {
+    if let Some(why) = transient_location(exe) {
+        return Err(io::Error::other(why));
+    }
+    // A browser starts the host itself, not through Finder, so macOS would
+    // refuse a quarantined one even after the user allowed the app around
+    // it. It came in that app, so it is allowed with it.
+    #[cfg(target_os = "macos")]
+    let _ = std::process::Command::new("/usr/bin/xattr")
+        .args(["-d", "com.apple.quarantine"])
+        .arg(exe)
+        .stderr(std::process::Stdio::null())
+        .status();
+
     let extension_id = pinned_chrome_extension_id();
     let chromium = serde_json::to_string_pretty(&chromium_manifest(exe, &extension_id))
         .map_err(io::Error::other)?;
@@ -59,6 +72,22 @@ pub fn register(exe: &Path) -> io::Result<Vec<String>> {
         ));
     }
     Ok(locations)
+}
+
+/// Why a host at `exe` would not stay there: a macOS disk image that is
+/// still mounted, or the random copy macOS runs a quarantined app from
+/// (App Translocation) until it is moved out of the folder it came in.
+/// A registration naming either breaks once the image is ejected or the app
+/// restarts.
+pub fn transient_location(exe: &Path) -> Option<&'static str> {
+    let path = exe.to_string_lossy();
+    if path.starts_with("/Volumes/") {
+        Some("Airlock is running from its disk image. Drag it to Applications, open it from there, and try again.")
+    } else if path.contains("/AppTranslocation/") {
+        Some("macOS is running Airlock from a temporary copy. Move it to Applications, open it from there, and try again.")
+    } else {
+        None
+    }
 }
 
 pub fn uninstall() -> io::Result<()> {
@@ -376,5 +405,18 @@ mod tests {
         let other = json!({ "name": "com.example.other", "path": "C:/x.exe" }).to_string();
         assert_eq!(host_in_manifest(&other), None);
         assert_eq!(host_in_manifest("not json"), None);
+    }
+
+    #[test]
+    fn a_mounted_image_or_translocated_app_is_not_a_place_to_register() {
+        let stays = Path::new("/Applications/Airlock.app/Contents/MacOS/bridge-host");
+        assert_eq!(transient_location(stays), None);
+        let image = Path::new("/Volumes/Airlock/Airlock.app/Contents/MacOS/bridge-host");
+        assert!(transient_location(image).is_some());
+        let moved = Path::new(
+            "/private/var/folders/x/T/AppTranslocation/1234/d/Airlock.app/Contents/MacOS/bridge-host",
+        );
+        assert!(transient_location(moved).is_some());
+        assert!(register(image).is_err());
     }
 }

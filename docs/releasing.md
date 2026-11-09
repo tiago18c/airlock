@@ -15,7 +15,7 @@ A release is a tag. Pushing `v1.2.3` builds the files and opens a **draft** rele
 | `airlock-<version>-macos-arm64.dmg` | Online app for Macs with Apple Silicon, ad-hoc signed |
 | `airlock-offline-<version>-macos-arm64.dmg` | Airgap app for Macs with Apple Silicon, ad-hoc signed |
 | `bridge-host-<version>-windows-x64.exe` | Native messaging host for the browser extension. The online installers and portable zip have it too |
-| `bridge-host-<version>-macos-arm64.tar.gz` | The same, for macOS |
+| `bridge-host-<version>-macos-arm64.tar.gz` | The same, for macOS. The online app has it inside |
 | `airlock-mobile-<version>-android-arm64.apk` | Android app, for Android 14 and later on arm64 phones |
 | `airlock-extension-<version>.zip` | Browser extension, ready to load or to upload to a store |
 | `SHA256SUMS.txt` | Checksum of every file above |
@@ -121,7 +121,8 @@ What a user sees:
 
 - **The first launch is refused.** macOS 15 and later say Apple could not verify the app is free of malware, and offer only Done and Move to Trash; Control-click → Open no longer gets past it. Open it once, then **System Settings → Privacy & Security → Open Anyway**, and confirm with the password. Or remove the quarantine: `xattr -dr com.apple.quarantine "/Applications/Airlock.app"`.
 - **The camera is asked for again after each update.** macOS ties the permission to the app's signature, and an ad-hoc signature changes with every build.
-- **The native host** comes as a tarball, which keeps its executable bit. A downloaded tarball is quarantined too, so after unpacking it run `xattr -d com.apple.quarantine bridge-host`, then `./bridge-host install`.
+- **The browser bridge** is inside the online app, in `Contents/MacOS/bridge-host`, signed ad hoc on its own before the app. A disk image has no install step to ask in, so the app's Extension chip offers **Install the browser bridge**. That removes the host's quarantine first: a browser starts it directly, not through Finder, so macOS would otherwise refuse it even after the app was allowed. The chip refuses while the app runs from the mounted image or from App Translocation's temporary copy, whose paths do not last. Dragging the app to the Trash leaves the registration naming a missing binary, which the browser reports as a missing host; reinstalling and pressing Install again fixes it.
+- **The standalone host** also comes as a tarball, which keeps its executable bit. A downloaded tarball is quarantined too, so after unpacking it run `xattr -d com.apple.quarantine bridge-host`, then `./bridge-host install`.
 
 A Developer ID (the Apple Developer Program) would remove the first point: sign with the hardened runtime and the camera entitlement, then notarize with `notarytool`. dx does both when `APPLE_CERTIFICATE` and an App Store Connect API key are set.
 
