@@ -40,10 +40,12 @@ if [ -z "$deb" ] || [ -z "$appimage" ]; then
 fi
 
 if [ -n "${triple:-}" ]; then
-  dpkg-deb -c "$deb" | grep -q '\./usr/bin/bridge-host$' || {
+  if ! dpkg-deb -c "$deb" | grep -Eq '(^|[ /])usr/bin/bridge-host$'; then
     echo "::error::$deb has no usr/bin/bridge-host."
+    dpkg-deb -c "$deb"
+    ls -l target/release/bridge-host*
     exit 1
-  }
+  fi
 fi
 
 cp "$deb" "$out/$package-$version-linux-amd64.deb"
