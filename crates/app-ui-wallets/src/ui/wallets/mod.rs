@@ -60,6 +60,10 @@ pub fn WalletsPanel() -> Element {
     let contracts = of_class(WalletClass::SmartContract);
     // A phone lists only the groups that hold a wallet.
     let phone = app_ui_kit::ui::use_phone_layout();
+    // What reads the chain and sends is only offered in the online build.
+    let online = crate::state::use_network().is_some();
+    // Burn and close opens on the wallet in use, and picks another there.
+    let first_wallet = current.or_else(|| all.first().map(|wallet| wallet.id));
 
     rsx! {
         section { class: "page",
@@ -69,6 +73,17 @@ pub fn WalletsPanel() -> Element {
                         h2 { "Wallets" }
                     }
                     div { class: "btn-row",
+                        if online && !all.is_empty() {
+                            button {
+                                title: "Burn and close a wallet's token accounts, to get their rent back",
+                                onclick: move |_| {
+                                    if let Some(wallet) = first_wallet {
+                                        session.open_cleanup(wallet);
+                                    }
+                                },
+                                "Burn and close…"
+                            }
+                        }
                         if !all.is_empty() {
                             button {
                                 title: "Show the public keys of wallets here, for another device to add them",
@@ -179,15 +194,13 @@ pub fn WalletsPanel() -> Element {
     }
 }
 
-/// A wallet's SOL balance, with the small buttons that send from it and
-/// burn and close its token accounts. Shown only where balances are: the
-/// online build.
+/// A wallet's SOL balance, with the small button that sends from it. Shown
+/// only where balances are: the online build.
 #[component]
 pub(in crate::ui) fn WalletBalance(
     lamports: Option<u64>,
     send_title: &'static str,
     on_send: EventHandler<()>,
-    on_cleanup: EventHandler<()>,
 ) -> Element {
     rsx! {
         div { class: "wallet-balance",
@@ -199,12 +212,6 @@ pub(in crate::ui) fn WalletBalance(
                 aria_label: "Send SOL",
                 onclick: move |_| on_send.call(()),
                 Icon { glyph: Glyph::Send }
-            }
-            button { class: "ghost icon-btn sm",
-                title: "Burn and close this wallet's token accounts, to get their rent back",
-                aria_label: "Burn and close token accounts",
-                onclick: move |_| on_cleanup.call(()),
-                Icon { glyph: Glyph::Trash }
             }
         }
     }

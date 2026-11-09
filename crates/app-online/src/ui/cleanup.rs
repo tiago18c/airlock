@@ -1,10 +1,11 @@
 //! Burning and closing a wallet's token accounts, to get their rent back.
-//! Wallets and Portfolio open it on a wallet. It lists every token account
+//! Wallets and Portfolio open it on a wallet, and another can be picked in
+//! it. It lists every token account
 //! the chain has for it, ticks the empty ones and those of flagged tokens,
 //! and runs what is ticked one step at a time through Sign.
 
 use app_ui_kit::actions::cleanup;
-use app_ui_kit::{format_sol, format_token_amount, AddressRow, Session};
+use app_ui_kit::{format_sol, format_token_amount, AddressRow, Session, WalletPicker};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use std::collections::{BTreeMap, BTreeSet};
@@ -57,10 +58,6 @@ fn CleanupModal(wallet: WalletId) -> Element {
         .wallet_summaries()
         .into_iter()
         .find(|summary| summary.id == wallet);
-    let label = summary
-        .as_ref()
-        .map(|summary| summary.label.clone())
-        .unwrap_or_default();
     let owner = summary.and_then(|summary| summary.address);
 
     let mut reload = move || {
@@ -185,7 +182,22 @@ fn CleanupModal(wallet: WalletId) -> Element {
                 aria_modal: "true",
                 onclick: move |evt| evt.stop_propagation(),
                 div { class: "stack",
-                    h3 { "Burn and close token accounts of {label}" }
+                    h3 { "Burn and close token accounts" }
+                    WalletPicker {
+                        label: "Wallet".to_string(),
+                        options: session
+                            .wallet_summaries()
+                            .into_iter()
+                            .filter(|wallet| wallet.address.is_some())
+                            .collect::<Vec<_>>(),
+                        selected: Some(wallet),
+                        none_label: "Choose a wallet".to_string(),
+                        on_change: move |id: Option<WalletId>| {
+                            if let Some(id) = id {
+                                session.open_cleanup(id);
+                            }
+                        },
+                    }
                     p { class: "lede",
                         "Each token account holds about 0.002 SOL of rent. Closing one gives it back to the wallet. An account with tokens in it can only be closed once they are burned."
                     }
