@@ -32,6 +32,21 @@ pub(in crate::ui) fn CarrierEditor(draft: IxDraft) -> Element {
                         Address { pubkey: vault }
                     }
                 },
+                CarrierKind::SquadsSync { vault, vault_index, signers } => rsx! {
+                    p { class: "hint",
+                        "What vault {vault_index} runs at once, in this transaction. The multisig and the members who sign in place of votes stay as they are."
+                    }
+                    div { class: "chip-row",
+                        span { class: "chip", "vault" }
+                        Address { pubkey: vault }
+                    }
+                    div { class: "chip-row",
+                        span { class: "chip", "approved by" }
+                        for signer in signers {
+                            Address { pubkey: signer }
+                        }
+                    }
+                },
                 CarrierKind::Passthrough { signers } => rsx! {
                     p { class: "hint",
                         "What runs as these Vector accounts. The Advance that lists them stays as it is."

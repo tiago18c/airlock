@@ -164,4 +164,5 @@ mod payer;
 mod programmatic;
 mod refusals;
 mod squads;
+mod squads_sync;
 mod vector;

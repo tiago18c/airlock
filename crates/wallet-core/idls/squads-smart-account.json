@@ -5337,7 +5337,26 @@
           "kind": "instructionDisplayNode",
           "intent": "Execute transaction directly",
           "interpolatedIntent": "Signers of smart account settings ${accounts.consensusAccount} execute a transaction in this one"
-        }
+        },
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "signersAndAccounts"
+            },
+            "isOptional": true,
+            "isSigner": "either",
+            "isWritable": true,
+            "docs": [
+              "The members that sign in place of votes (`numSigners` of them), then every account of the instructions it runs, which review opens and shows on their own."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ]
       },
       {
         "kind": "instructionNode",
@@ -5416,7 +5435,26 @@
           "kind": "instructionDisplayNode",
           "intent": "Execute transaction directly",
           "interpolatedIntent": "Signers of smart account settings ${accounts.consensusAccount} execute a transaction in this one"
-        }
+        },
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "signersAndAccounts"
+            },
+            "isOptional": true,
+            "isSigner": "either",
+            "isWritable": true,
+            "docs": [
+              "The members that sign in place of votes (`numSigners` of them), then every account of the instructions it runs, which review opens and shows on their own."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ]
       },
       {
         "kind": "instructionNode",

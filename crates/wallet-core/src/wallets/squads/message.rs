@@ -1,6 +1,7 @@
 //! The transaction a vault stores: its accounts, its instructions and its bytes.
 
 use super::*;
+use solana_message::compiled_instruction::CompiledInstruction;
 use wincode::containers;
 use wincode::len::UseIntLen;
 use wincode::{SchemaRead, SchemaWrite};
@@ -286,6 +287,45 @@ struct WireMessage {
     instructions: Vec<WireInstruction>,
     #[wincode(with = "containers::Vec<WireLookup, UseIntLen<u8>>")]
     address_table_lookups: Vec<WireLookup>,
+}
+
+/// A list of compiled instructions alone, as `executeTransactionSync`
+/// carries them: a one-byte count, then each as in [`WireMessage`].
+#[derive(SchemaWrite, SchemaRead)]
+struct WireInstructions {
+    #[wincode(with = "containers::Vec<WireInstruction, UseIntLen<u8>>")]
+    instructions: Vec<WireInstruction>,
+}
+
+/// `instructions` as `executeTransactionSync` carries them. `None` when a
+/// count or a length is more than its field holds.
+pub(super) fn instructions_to_bytes(instructions: &[CompiledInstruction]) -> Option<Vec<u8>> {
+    wincode::serialize(&WireInstructions {
+        instructions: instructions
+            .iter()
+            .map(|instruction| WireInstruction {
+                program_id_index: instruction.program_id_index,
+                account_indexes: instruction.accounts.clone(),
+                data: instruction.data.clone(),
+            })
+            .collect(),
+    })
+    .ok()
+}
+
+/// The counterpart of [`instructions_to_bytes`].
+pub(super) fn instructions_from_bytes(bytes: &[u8]) -> Option<Vec<CompiledInstruction>> {
+    let wire: WireInstructions = wincode::deserialize_exact(bytes).ok()?;
+    Some(
+        wire.instructions
+            .into_iter()
+            .map(|instruction| CompiledInstruction {
+                program_id_index: instruction.program_id_index,
+                accounts: instruction.account_indexes,
+                data: instruction.data,
+            })
+            .collect(),
+    )
 }
 
 #[derive(SchemaWrite, SchemaRead)]

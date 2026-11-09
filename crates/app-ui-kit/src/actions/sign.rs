@@ -298,11 +298,12 @@ fn message_hash(wire: &[u8]) -> String {
 }
 
 fn transform_name(adapted: &Adapted) -> &'static str {
-    if adapted
-        .steps
-        .iter()
-        .any(|s| matches!(s, AdaptedStep::Squads { .. }))
-    {
+    if adapted.steps.iter().any(|s| {
+        matches!(
+            s,
+            AdaptedStep::Squads { .. } | AdaptedStep::SquadsSync { .. }
+        )
+    }) {
         "rebuild_squads"
     } else if adapted
         .steps

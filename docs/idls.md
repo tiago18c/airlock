@@ -58,7 +58,7 @@ Each embedded IDL, core or pack, lists the networks it is read on, its source (`
 | System, Stake, Token, Token-2022, compute budget | all | the program's repository; display nodes added |
 | Ed25519 signer, Vector | devnet | the program-metadata IDL devnet publishes |
 | Squads v4 | mainnet, devnet | the 2.1.0 Anchor IDL devnet publishes (mainnet still publishes 2.0.0) |
-| Squads smart account | mainnet, devnet | the repository's Anchor IDL, newer than either network's |
+| Squads smart account | mainnet, devnet | the repository's Anchor IDL, newer than either network's: they lack `executeTransactionSyncV2` and `closeEmptyPolicyTransaction` and name older accounts, while the mainnet program accepts every instruction the repository's lists (checked 2026-11-09) |
 | Raydium CLMM, CP swap (`DRay…`) | devnet | the program-metadata IDL devnet publishes |
 | Raydium CLMM, CP swap (`CAMM…`, `CPMM…`) | mainnet | the program-metadata IDL mainnet publishes |
 | Raydium router | devnet | written by hand |

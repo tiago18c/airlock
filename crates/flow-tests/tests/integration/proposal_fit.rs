@@ -114,6 +114,23 @@ fn sign_with_keys(
         .map_err(|err| err.to_string())
 }
 
+/// Both members take part and it executes: through a proposal in v4, at
+/// once in a smart account.
+fn both_execute(program: SquadsProgram, step: &AdaptedStep) -> bool {
+    match step {
+        AdaptedStep::Squads {
+            voters,
+            executor: Some(_),
+            held_back: None,
+            ..
+        } => program == SquadsProgram::V4 && voters.len() == 2,
+        AdaptedStep::SquadsSync { signers, .. } => {
+            program == SquadsProgram::SmartAccount && signers.len() == 2
+        }
+        _ => false,
+    }
+}
+
 #[test]
 fn two_ed25519_vector_members_execute_a_site_request_together() {
     for program in BOTH {
@@ -135,15 +152,7 @@ fn two_ed25519_vector_members_execute_a_site_request_together() {
         let recipient = KeypairSigner::new_random().pubkey();
         let adapted = desk.rebuild(vault, vec![transfer(&vault, &recipient)]);
         assert!(
-            matches!(
-                &adapted.steps[0],
-                AdaptedStep::Squads {
-                    voters,
-                    executor: Some(_),
-                    held_back: None,
-                    ..
-                } if voters.len() == 2
-            ),
+            both_execute(program, &adapted.steps[0]),
             "{program:?}: {:?}",
             adapted.steps[0]
         );
@@ -184,15 +193,7 @@ fn a_hot_key_and_an_mldsa_member_execute_a_site_request_together() {
         let recipient = KeypairSigner::new_random().pubkey();
         let adapted = desk.rebuild(vault, vec![transfer(&vault, &recipient)]);
         assert!(
-            matches!(
-                &adapted.steps[0],
-                AdaptedStep::Squads {
-                    voters,
-                    executor: Some(_),
-                    held_back: None,
-                    ..
-                } if voters.len() == 2
-            ),
+            both_execute(program, &adapted.steps[0]),
             "{program:?}: {:?}",
             adapted.steps[0]
         );

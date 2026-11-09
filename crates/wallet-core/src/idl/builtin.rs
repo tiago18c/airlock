@@ -237,10 +237,16 @@ pub static BUILTIN_IDLS: [BuiltinIdl; 9] = [
         name: "squadsSmartAccountProgram",
         json: include_str!("../../idls/squads-smart-account.json"),
         networks: MAINNET_AND_DEVNET,
-        // Newer than the Anchor IDL either network publishes.
+        // Newer than the Anchor IDL either network publishes, which lacks
+        // `executeTransactionSyncV2` and `closeEmptyPolicyTransaction` and
+        // names older accounts. Checked 2026-11-09: a fresh conversion of the
+        // repository's IDL (last changed 2025-11-04) matches this file but for
+        // `useSpendingLimit`'s decimals and what `changes` says, and the
+        // mainnet program accepts every instruction it lists.
         source: repository("https://github.com/Squads-Protocol/smart-account-program"),
         changes: "Converted from Anchor to Codama (`sdk/smart-account/idl`). Display nodes \
-                  added by hand.",
+                  added by hand. The two `executeTransactionSync` instructions declare the \
+                  members and accounts they list after their own as a remaining-accounts group.",
     },
     BuiltinIdl {
         program_id: VECTOR_PROGRAM_ID,

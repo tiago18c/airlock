@@ -169,6 +169,10 @@ fn summary_addresses(instructions: &[ExplainedIx], named: &mut HashSet<Pubkey>) 
                 InnerKind::SquadsTransaction { vault, .. } => {
                     named.insert(*vault);
                 }
+                InnerKind::SquadsSync { vault, signers, .. } => {
+                    named.insert(*vault);
+                    named.extend(signers.iter().copied());
+                }
                 InnerKind::ProposalTransaction {
                     governance,
                     proposal,
@@ -293,6 +297,21 @@ fn InnerBlock(inner: InnerMessage, inspect: bool) -> Element {
                             span { class: "muted", "(number {vault_index})" }
                         }
                         span { "to run after approval" }
+                    }
+                },
+                InnerKind::SquadsSync { vault, vault_index, signers } => rsx! {
+                    div { class: "chip-row inner-head",
+                        span { "Runs now as vault" }
+                        Address { pubkey: vault }
+                        if inspect {
+                            span { class: "muted", "(number {vault_index})" }
+                        }
+                        span { "approved by the members who sign:" }
+                    }
+                    div { class: "chip-row",
+                        for signer in signers {
+                            Address { pubkey: signer }
+                        }
                     }
                 },
                 InnerKind::ProposalTransaction {

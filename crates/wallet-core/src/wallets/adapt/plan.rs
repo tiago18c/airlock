@@ -134,6 +134,7 @@ pub fn plan_adaptation_with(
                 Some(payer) => payer,
                 None => payer_for(wallet)?,
             },
+            at_once: true,
         }));
     }
 
@@ -190,6 +191,7 @@ pub fn plan_adaptation_with(
         vector,
         nonce,
         fee_payer,
+        at_once: true,
     }))
 }
 

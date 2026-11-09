@@ -10,7 +10,8 @@
 //! In both, the account that holds the funds (the *vault*) is a separate
 //! address derived from the multisig. Spending from it takes four steps:
 //! store the transaction, open a proposal for it, approve until the threshold
-//! is met, execute.
+//! is met, execute. The smart account program can also run instructions at
+//! once, when the members that sign together are enough (see `sync`).
 //!
 //! Every instruction here is built, and every account read, from the
 //! program's own public IDL, converted to Codama (`idls/squads-multisig.json`
@@ -41,6 +42,7 @@ mod instructions;
 mod message;
 mod program;
 mod state;
+mod sync;
 mod values;
 
 #[cfg(test)]
@@ -49,6 +51,7 @@ pub(crate) mod tests;
 pub use message::*;
 pub use program::*;
 pub use state::*;
+pub use sync::*;
 use values::*;
 
 /// One multisig: the program it lives in and its config account.

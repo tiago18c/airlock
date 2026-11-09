@@ -4,7 +4,9 @@ use super::*;
 use crate::wallets::proposals::{
     executor_for, keyless_together, proposal_shapes, usable_voters, ChosenMember, ProposalShape,
 };
-use crate::wallets::squads::PERMISSION_EXECUTE;
+use crate::wallets::squads::{
+    SquadState, SquadsProgram, PERMISSION_ALL, PERMISSION_EXECUTE, PERMISSION_VOTE,
+};
 use crate::wallets::vector::{must_rotate, SchemeId};
 
 /// Why a shape did not fit, when the next one should be tried.
@@ -155,6 +157,49 @@ impl AdaptPlan {
             let shapes = proposal_shapes(&state, &[], &chosen);
             let structural = structural_held_back(&state, &chosen);
             let stored = site_instructions(tx, plan.vault);
+
+            // Enough members here to carry every vote and execute: a smart
+            // account runs it at once. When that does not fit or cannot be
+            // wrapped, the proposal is built as usual.
+            let at_once = self
+                .at_once
+                .then(|| sync_signers(plan, &state, &chosen, shapes.first()))
+                .flatten();
+            let sync = at_once.and_then(|signers| {
+                let mut context_sync = Vec::new();
+                let (wire, wrap_steps) = try_sync(
+                    self,
+                    plan,
+                    tx,
+                    &stored,
+                    &signers,
+                    read,
+                    blockhash,
+                    &mut context_sync,
+                )
+                .ok()?;
+                Some((wire, wrap_steps, signers, context_sync))
+            });
+            if let Some((wire, wrap_steps, signers, context_sync)) = sync {
+                steps.push(AdaptedStep::SquadsSync {
+                    wallet: plan.label.clone(),
+                    vault: plan.vault,
+                    member: plan.member,
+                    threshold: state.threshold,
+                    signers,
+                });
+                steps.extend(wrap_steps);
+                context.extend(context_sync);
+                current = decode_v1_transaction(&wire)
+                    .map_err(|err| AdaptError::Message(err.to_string()))?;
+                return Ok(Adapted {
+                    wire: current.wire,
+                    steps,
+                    fee_payer: self.fee_payer,
+                    voided: tx.signers.iter().filter(|slot| slot.filled).count(),
+                    context,
+                });
+            }
 
             let mut previous_failure: Option<HeldBack> = None;
             let mut built = None;
@@ -339,13 +384,6 @@ fn try_squads_shape<'a>(
     } else {
         SQUADS_OVERHEAD_CU
     };
-    let config = site.budget.rebuilt_config(limit);
-    let wire = compile_message(&plan.fee_payer, &instructions, blockhash, config)
-        .map_err(|err| shape_error(err.into()))?
-        .wire;
-    let mut current =
-        decode_v1_transaction(&wire).map_err(|err| Ok(AdaptError::Message(err.to_string())))?;
-
     let mut signers: Vec<Pubkey> = vec![squads.member];
     for voter in &shape.voters {
         if !signers.contains(voter) {
@@ -357,6 +395,122 @@ fn try_squads_shape<'a>(
             signers.push(executor);
         }
     }
+    let (wire, wrap_steps) = compile_and_wrap(
+        plan,
+        squads,
+        site,
+        &instructions,
+        &signers,
+        limit,
+        read,
+        blockhash,
+        context,
+    )?;
+    Ok((wire, wrap_steps, shape.clone()))
+}
+
+/// The members that run the site's instructions at once through a smart
+/// account's `executeTransactionSync`: the acting member, then the voters
+/// and the executor of `fullest`. `None` when that is not a smart account,
+/// a time lock holds execution, `fullest` does not execute, or the members
+/// do not hold every permission and enough votes between them, as the
+/// program checks.
+fn sync_signers(
+    squads: &SquadsPlan,
+    state: &SquadState,
+    chosen: &[ChosenMember],
+    fullest: Option<&ProposalShape>,
+) -> Option<Vec<Pubkey>> {
+    if squads.squad.program != SquadsProgram::SmartAccount || state.time_lock != 0 {
+        return None;
+    }
+    let shape = fullest?;
+    let executor = shape.executor?;
+    let mut signers = vec![squads.member];
+    for key in shape.voters.iter().copied().chain([executor]) {
+        if !signers.contains(&key) {
+            signers.push(key);
+        }
+    }
+    if signers
+        .iter()
+        .any(|key| !chosen.iter().any(|member| member.address == *key))
+    {
+        return None;
+    }
+    let permissions = |key: &Pubkey| {
+        state
+            .members
+            .iter()
+            .find(|member| member.key == *key)
+            .map_or(0, |member| member.permissions)
+    };
+    let held = signers.iter().fold(0, |held, key| held | permissions(key));
+    let votes = signers
+        .iter()
+        .filter(|key| permissions(key) & PERMISSION_VOTE != 0)
+        .count();
+    (held & PERMISSION_ALL == PERMISSION_ALL && votes >= usize::from(state.threshold))
+        .then_some(signers)
+}
+
+/// Compile one `executeTransactionSync` that `signers` sign, and wrap those
+/// of them without a key.
+#[allow(clippy::too_many_arguments)]
+fn try_sync<'a>(
+    plan: &AdaptPlan,
+    squads: &SquadsPlan,
+    site: &DecodedTx,
+    stored: &[Instruction],
+    signers: &[Pubkey],
+    read: impl Fn(&Pubkey) -> Option<&'a RawAccount>,
+    blockhash: Hash,
+    context: &mut Vec<VectorContext>,
+) -> Result<(Vec<u8>, Vec<AdaptedStep>), Result<AdaptError, ShapeSkip>> {
+    let execute = squads
+        .squad
+        .execute_sync(squads.vault_index, stored, signers)
+        .ok_or_else(|| {
+            Ok(AdaptError::Message(
+                "the transaction names more accounts than one instruction can".into(),
+            ))
+        })?;
+    let limit = site.stated_cu_limit().saturating_add(SQUADS_OVERHEAD_CU);
+    compile_and_wrap(
+        plan,
+        squads,
+        site,
+        &[execute],
+        signers,
+        limit,
+        read,
+        blockhash,
+        context,
+    )
+}
+
+/// Compile `instructions`, paid by the plan's fee payer, under a compute
+/// limit of `limit`, then wrap the members among `signers` that sign through
+/// a programmatic authorization or a Vector `Advance`. Refuse when the result
+/// is too large.
+#[allow(clippy::too_many_arguments)]
+fn compile_and_wrap<'a>(
+    plan: &AdaptPlan,
+    squads: &SquadsPlan,
+    site: &DecodedTx,
+    instructions: &[Instruction],
+    signers: &[Pubkey],
+    limit: u32,
+    read: impl Fn(&Pubkey) -> Option<&'a RawAccount>,
+    blockhash: Hash,
+    context: &mut Vec<VectorContext>,
+) -> Result<(Vec<u8>, Vec<AdaptedStep>), Result<AdaptError, ShapeSkip>> {
+    let config = site.budget.rebuilt_config(limit);
+    let wire = compile_message(&plan.fee_payer, instructions, blockhash, config)
+        .map_err(|err| shape_error(err.into()))?
+        .wire;
+    let mut current =
+        decode_v1_transaction(&wire).map_err(|err| Ok(AdaptError::Message(err.to_string())))?;
 
     let vector_plans: Vec<&VectorPlan> = squads
         .members
@@ -411,7 +565,7 @@ fn try_squads_shape<'a>(
             decode_v1_transaction(&wire).map_err(|err| Ok(AdaptError::Message(err.to_string())))?;
     }
     context.extend(context_local);
-    Ok((current.wire, wrap_steps, shape.clone()))
+    Ok((current.wire, wrap_steps))
 }
 
 /// `shape` with its approvals in an order where every instruction a

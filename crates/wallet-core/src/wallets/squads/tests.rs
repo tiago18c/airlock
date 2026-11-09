@@ -225,3 +225,122 @@ fn a_stored_transaction_that_names_lookup_tables_is_not_resolved() {
         Some(StoredAccount::LookupTables)
     );
 }
+
+#[test]
+fn an_execution_at_once_lists_the_members_then_the_stored_accounts() {
+    let squad = Squad::smart_account(7);
+    let vault = squad.vault(1);
+    let payment = transfer(vault, pk(9), 1_000);
+    let members = [pk(2), pk(3)];
+    let execute = squad
+        .execute_sync(1, std::slice::from_ref(&payment), &members)
+        .unwrap();
+    assert_eq!(execute.program_id, SQUADS_SMART_ACCOUNT_PROGRAM_ID);
+    let listed: Vec<(Pubkey, bool, bool)> = execute
+        .accounts
+        .iter()
+        .map(|meta| (meta.pubkey, meta.is_signer, meta.is_writable))
+        .collect();
+    assert_eq!(
+        listed,
+        vec![
+            (squad.address, false, false),
+            (SQUADS_SMART_ACCOUNT_PROGRAM_ID, false, false),
+            (pk(2), true, false),
+            (pk(3), true, false),
+            // The vault signs inside the program, never in the transaction.
+            (vault, false, true),
+            (pk(9), false, true),
+            (SYSTEM_PROGRAM_ID, false, false),
+        ]
+    );
+    // Tag, vault 1, two members, then the instructions as a sized list,
+    // numbered from the start of the members: the system program is 4, the
+    // vault 2 and the recipient 3.
+    let mut expected = hex::decode("2b66f859e7616886").unwrap();
+    expected.extend_from_slice(&[1, 2]);
+    let mut list = vec![1, 4, 2, 2, 3];
+    list.extend_from_slice(&(payment.data.len() as u16).to_le_bytes());
+    list.extend_from_slice(&payment.data);
+    expected.extend_from_slice(&(list.len() as u32).to_le_bytes());
+    expected.extend_from_slice(&list);
+    assert_eq!(execute.data, expected);
+
+    let read = SyncExecution::parse(&execute).unwrap();
+    assert_eq!(
+        (
+            read.squad,
+            read.vault,
+            read.vault_index,
+            read.signers.clone()
+        ),
+        (squad, vault, 1, members.to_vec())
+    );
+    assert_eq!(read.instructions, vec![payment.clone()]);
+
+    // Written again around other instructions, for the same members.
+    let other = transfer(vault, pk(4), 5);
+    let rewritten = SyncExecution::rewrite(&execute, std::slice::from_ref(&other)).unwrap();
+    assert_eq!(
+        rewritten,
+        squad.execute_sync(1, &[other], &members).unwrap()
+    );
+
+    // Other instructions, and v4, are not it.
+    assert_eq!(SyncExecution::parse(&squad.approve(1, &pk(2))), None);
+    assert_eq!(
+        Squad::v4(&pk(1)).execute_sync(0, &[payment], &members),
+        None
+    );
+}
+
+#[test]
+fn a_member_named_inside_is_not_a_signer_there_and_the_multisig_is_not_written() {
+    let squad = Squad::smart_account(7);
+    let vault = squad.vault(0);
+    // Pays the member, and names the multisig.
+    let mut payment = transfer(vault, pk(2), 5);
+    payment
+        .accounts
+        .push(AccountMeta::new(squad.address, false));
+    let mut execute = squad
+        .execute_sync(0, std::slice::from_ref(&payment), &[pk(2)])
+        .unwrap();
+    // As a decoded message flags it: the member signs everywhere it appears.
+    for meta in &mut execute.accounts {
+        if meta.pubkey == pk(2) {
+            meta.is_signer = true;
+        }
+    }
+    let read = SyncExecution::parse(&execute).unwrap();
+    let accounts = &read.instructions[0].accounts;
+    assert!(accounts[0].is_signer, "the vault signs");
+    assert!(!accounts[1].is_signer, "the member does not, inside");
+    assert!(!accounts[2].is_writable, "the multisig is passed read-only");
+}
+
+#[test]
+fn an_execution_at_once_numbers_at_most_256_accounts() {
+    let squad = Squad::smart_account(7);
+    let vault = squad.vault(0);
+    let many: Vec<Instruction> = (0..250u8)
+        .map(|n| transfer(vault, Pubkey::new_from_array([n; 32]), 1))
+        .collect();
+    assert!(squad.execute_sync(0, &many, &[pk(2)]).is_some());
+    let members: Vec<Pubkey> = (0..10).map(|n| pk(100 + n)).collect();
+    assert_eq!(squad.execute_sync(0, &many, &members), None);
+}
+
+/// The smart account program config as mainnet held it on 2026-11-09: what
+/// creating one there reads for its treasury and its number.
+#[test]
+fn the_mainnet_smart_account_config_reads() {
+    let data = unhex("c4d25ae790958c3fc7590b000000000000000000000000000ab482e5c90a9d95bf7edc0d49a413de6939ed6f69ad52069a876563c8ac47d100000000000000000ab482e5c90a9d95bf7edc0d49a413de6939ed6f69ad52069a876563c8ac47d100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000");
+    assert_eq!(SquadsProgram::smart_account_count(&data), Some(743_879));
+    assert_eq!(
+        SquadsProgram::SmartAccount.treasury(&data),
+        Some(address(
+            "0ab482e5c90a9d95bf7edc0d49a413de6939ed6f69ad52069a876563c8ac47d1"
+        ))
+    );
+}

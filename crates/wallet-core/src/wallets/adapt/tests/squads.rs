@@ -4,6 +4,8 @@ use super::*;
 
 #[test]
 fn a_vault_transaction_becomes_a_proposal_its_member_creates_approves_and_executes() {
+    // The proposal a smart account would run at once instead (see
+    // `squads_sync`), built as it still is when it cannot.
     for program in [SquadsProgram::V4, SquadsProgram::SmartAccount] {
         let mut d = desk();
         let member = KeypairSigner::new_random();
@@ -14,7 +16,10 @@ fn a_vault_transaction_becomes_a_proposal_its_member_creates_approves_and_execut
         let vault = squad.vault(0);
 
         let tx = site_tx(vault);
-        let plan = plan_adaptation(&tx, &d.wallets, None).unwrap().unwrap();
+        let plan = plan_adaptation(&tx, &d.wallets, None)
+            .unwrap()
+            .unwrap()
+            .proposal_only();
         assert_eq!(plan.accounts_to_read(), vec![squad.address]);
         let chain = [squad_account(
             &squad,
@@ -74,6 +79,8 @@ fn a_vault_transaction_becomes_a_proposal_its_member_creates_approves_and_execut
 /// wherever it appears; the wrap must not treat that as an extra signer.
 #[test]
 fn a_send_to_the_fee_payer_member_still_wraps_as_a_proposal() {
+    // The proposal a smart account would run at once instead (see
+    // `squads_sync`), built as it still is when it cannot.
     for program in [SquadsProgram::V4, SquadsProgram::SmartAccount] {
         let mut d = desk();
         let member = KeypairSigner::new_random();
@@ -107,7 +114,8 @@ fn a_send_to_the_fee_payer_member_still_wraps_as_a_proposal() {
         );
         let plan = plan_adaptation(&tx, &d.wallets, None)
             .unwrap_or_else(|err| panic!("{program:?}: plan: {err}"))
-            .unwrap_or_else(|| panic!("{program:?}: expected a Squads plan"));
+            .unwrap_or_else(|| panic!("{program:?}: expected a Squads plan"))
+            .proposal_only();
         let chain = [squad_account(
             &squad,
             1,
@@ -331,12 +339,17 @@ fn a_proposal_too_large_to_execute_at_once_is_left_approved() {
 
 #[test]
 fn a_multisig_whose_member_is_a_programmatic_signer_takes_both_steps() {
+    // The proposal a smart account would run at once instead (see
+    // `squads_sync`), built as it still is when it cannot.
     for program in [SquadsProgram::V4, SquadsProgram::SmartAccount] {
         let mut d = desk();
         let squad = d.add_squad(program, d.signer_id);
         let vault = squad.vault(0);
         let tx = site_tx(vault);
-        let plan = plan_adaptation(&tx, &d.wallets, None).unwrap().unwrap();
+        let plan = plan_adaptation(&tx, &d.wallets, None)
+            .unwrap()
+            .unwrap()
+            .proposal_only();
         assert_eq!(plan.accounts_to_read(), vec![squad.address, d.nonce]);
         let chain = [
             squad_account(&squad, 1, 0, 0, &[(d.address, PERMISSION_ALL)]),
@@ -381,7 +394,12 @@ fn a_multisig_whose_member_is_a_programmatic_signer_takes_both_steps() {
 
 /// A 2-of-2 multisig on `d` acted on by `acting`, with `with` approving
 /// together with it.
-fn add_pair(d: &mut Desk, program: SquadsProgram, acting: WalletId, with: WalletId) -> Squad {
+pub(super) fn add_pair(
+    d: &mut Desk,
+    program: SquadsProgram,
+    acting: WalletId,
+    with: WalletId,
+) -> Squad {
     let squad = d.add_squad(program, acting);
     d.wallets
         .last_mut()
@@ -392,7 +410,7 @@ fn add_pair(d: &mut Desk, program: SquadsProgram, acting: WalletId, with: Wallet
 }
 
 /// A hot key of this device, added to `d`.
-fn add_hot(d: &mut Desk, label: &str) -> (KeypairSigner, WalletId) {
+pub(super) fn add_hot(d: &mut Desk, label: &str) -> (KeypairSigner, WalletId) {
     let key = KeypairSigner::new_random();
     let wallet = WalletRecord::from_keypair_seed(label, key.seed_bytes());
     let id = wallet.id;
@@ -405,13 +423,18 @@ fn add_hot(d: &mut Desk, label: &str) -> (KeypairSigner, WalletId) {
 /// would run its execute before that vote. Another member executes.
 #[test]
 fn a_programmatic_creator_leaves_execute_to_a_member_after_its_authorization() {
+    // The proposal a smart account would run at once instead (see
+    // `squads_sync`), built as it still is when it cannot.
     for program in [SquadsProgram::V4, SquadsProgram::SmartAccount] {
         let mut d = desk();
         let (cosigner, cosigner_id) = add_hot(&mut d, "Cosigner");
         let signer_id = d.signer_id;
         let squad = add_pair(&mut d, program, signer_id, cosigner_id);
         let tx = site_tx(squad.vault(0));
-        let plan = plan_adaptation(&tx, &d.wallets, None).unwrap().unwrap();
+        let plan = plan_adaptation(&tx, &d.wallets, None)
+            .unwrap()
+            .unwrap()
+            .proposal_only();
         let members = [
             (d.address, PERMISSION_ALL),
             (cosigner.pubkey(), PERMISSION_ALL),
