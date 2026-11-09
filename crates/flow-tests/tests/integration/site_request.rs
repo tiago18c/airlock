@@ -17,8 +17,8 @@ use solana_signature::Signature;
 use solana_transaction::versioned::VersionedTransaction;
 use std::sync::Mutex;
 use wallet_core::adapt::{
-    plan_adaptation, plan_adaptation_with, plan_payer_swap, swap_fee_payer, AdaptError, Adapted,
-    AdaptedStep, HeldBack,
+    plan_adaptation, plan_adaptation_with, plan_payer_swap, swap_fee_payer, AdaptError, AdaptPlan,
+    Adapted, AdaptedStep, HeldBack,
 };
 use wallet_core::programmatic::create_executor_nonce;
 use wallet_core::squads::{
@@ -167,9 +167,20 @@ impl App {
     /// What the prompt does before it shows anything: plan, read the chain,
     /// rebuild.
     fn adapt(&self, request: &[u8]) -> Result<Adapted, AdaptError> {
+        self.adapt_as(request, |plan| plan)
+    }
+
+    /// [`Self::adapt`], with `shape` applied to the plan first.
+    fn adapt_as(
+        &self,
+        request: &[u8],
+        shape: impl FnOnce(AdaptPlan) -> AdaptPlan,
+    ) -> Result<Adapted, AdaptError> {
         let tx = decode_v1_transaction(request).unwrap();
-        let plan = plan_adaptation(&tx, &self.wallets, None)?
-            .expect("the request names a wallet without a key");
+        let plan = shape(
+            plan_adaptation(&tx, &self.wallets, None)?
+                .expect("the request names a wallet without a key"),
+        );
         let accounts: Vec<_> = plan
             .accounts_to_read()
             .into_iter()
@@ -304,9 +315,9 @@ fn a_request_for_a_vault_becomes_a_proposal_that_runs_at_once_when_one_approval_
         for number in 1..=2u64 {
             let request = app.site_request(&vault, vec![pay(&vault, &app.recipient, SOL)]);
             let adapted = app.adapt(&request).unwrap();
-            assert_eq!(
-                adapted.steps,
-                vec![AdaptedStep::Squads {
+            // A smart account runs it at once, and stores nothing.
+            let expected = match program {
+                SquadsProgram::V4 => AdaptedStep::Squads {
                     wallet: "Treasury".into(),
                     vault,
                     member: hot.pubkey(),
@@ -315,19 +326,32 @@ fn a_request_for_a_vault_becomes_a_proposal_that_runs_at_once_when_one_approval_
                     voters: vec![hot.pubkey()],
                     executor: Some(hot.pubkey()),
                     held_back: None,
-                }],
-                "{program:?}"
-            );
+                },
+                SquadsProgram::SmartAccount => AdaptedStep::SquadsSync {
+                    wallet: "Treasury".into(),
+                    vault,
+                    member: hot.pubkey(),
+                    threshold: 1,
+                    signers: vec![hot.pubkey()],
+                },
+            };
+            assert_eq!(adapted.steps, vec![expected], "{program:?}");
             assert_eq!(signer_keys(&adapted.wire), vec![hot.pubkey()]);
             assert!(is_plain_account(&adapted.wire, &vault), "{program:?}");
 
             // The stored payment reads, and so does the proposal around it,
-            // with the Squads IDL the app ships. The execution does not count
+            // with the Squads IDL the app ships. A v4 execution does not count
             // as read: it lists the stored transaction's accounts after the
-            // ones its IDL names. So this is still Review, not Sign.
+            // ones its IDL names. So that is still Review, not Sign. A smart
+            // account's execution at once carries the payment itself, which
+            // reads, so it is Sign.
             let verdict = app.verdict(&adapted.wire, &[&hot]);
             assert!(verdict.completes(), "{program:?}");
-            assert_eq!(verdict.unread, 1, "{program:?}");
+            let unread = match program {
+                SquadsProgram::V4 => 1,
+                SquadsProgram::SmartAccount => 0,
+            };
+            assert_eq!(verdict.unread, unread, "{program:?}");
 
             let landed = app.sign_and_send(&adapted.wire, &[&hot]);
             println!(
@@ -343,7 +367,51 @@ fn a_request_for_a_vault_becomes_a_proposal_that_runs_at_once_when_one_approval_
             );
         }
         assert_eq!(app.chain.balance(&vault), SOL, "{program:?}");
+        let state = squad.parse_state(&app.chain.data(&squad.address)).unwrap();
+        let stored = match program {
+            SquadsProgram::V4 => 2,
+            SquadsProgram::SmartAccount => 0,
+        };
+        assert_eq!(state.transaction_index, stored, "{program:?}");
     }
+}
+
+/// What a smart account does when it cannot run a request at once: the
+/// proposal, created, approved and executed in one transaction, still lands.
+#[test]
+fn a_smart_account_proposal_created_approved_and_executed_in_one_transaction_lands() {
+    let mut app = App::new();
+    let squad = app.add_squad(
+        SquadsProgram::SmartAccount,
+        vec![member(app.hot.pubkey(), PERMISSION_ALL)],
+        1,
+        app.hot_id,
+    );
+    let vault = squad.vault(0);
+    let hot = KeypairSigner::from_seed(&app.hot.seed_bytes()).unwrap();
+    let request = app.site_request(&vault, vec![pay(&vault, &app.recipient, SOL)]);
+    let adapted = app.adapt_as(&request, AdaptPlan::proposal_only).unwrap();
+    assert_eq!(
+        adapted.steps,
+        vec![AdaptedStep::Squads {
+            wallet: "Treasury".into(),
+            vault,
+            member: hot.pubkey(),
+            index: 1,
+            threshold: 1,
+            voters: vec![hot.pubkey()],
+            executor: Some(hot.pubkey()),
+            held_back: None,
+        }]
+    );
+    let landed = app.sign_and_send(&adapted.wire, &[&hot]);
+    println!(
+        "SmartAccount vault request as a proposal: {} bytes sent, {} compute units",
+        landed.size, landed.compute_units
+    );
+    assert_eq!(app.chain.balance(&app.recipient), SOL);
+    let state = squad.parse_state(&app.chain.data(&squad.address)).unwrap();
+    assert_eq!(state.transaction_index, 1);
 }
 
 #[test]
@@ -427,14 +495,22 @@ fn a_request_for_a_vault_whose_member_is_a_programmatic_signer_lands() {
         let request = app.site_request(&vault, vec![pay(&vault, &app.recipient, SOL)]);
         let adapted = app.adapt(&request).unwrap();
         assert_eq!(adapted.steps.len(), 2, "{program:?}");
-        assert!(matches!(
-            adapted.steps[0],
+        let through_member = match &adapted.steps[0] {
             AdaptedStep::Squads {
                 member,
                 executor: Some(executor),
                 ..
-            } if member == app.address && executor == app.address
-        ));
+            } => program == SquadsProgram::V4 && *member == app.address && *executor == app.address,
+            AdaptedStep::SquadsSync {
+                member, signers, ..
+            } => {
+                program == SquadsProgram::SmartAccount
+                    && *member == app.address
+                    && *signers == vec![app.address]
+            }
+            _ => false,
+        };
+        assert!(through_member, "{program:?}: {:?}", adapted.steps[0]);
         // The hot wallet alone signs the transaction. The vault and the
         // member's address are accounts in it.
         assert_eq!(signer_keys(&adapted.wire), vec![hot.pubkey()]);
@@ -1141,17 +1217,18 @@ fn a_sites_unsigned_token_2022_mint_for_a_vault_executes_at_once_with_the_key_ma
         };
         let fresh = keys.pubkeys();
         let adapted = app.adapt_with(&converted.wire, &fresh).unwrap();
-        assert!(
-            matches!(
-                adapted.steps[0],
-                AdaptedStep::Squads {
-                    executor: Some(_),
-                    held_back: None,
-                    ..
-                }
-            ),
-            "{program:?}"
-        );
+        // The key made here signs inside, beside the vault. A smart account
+        // passes its signature on from the one execution.
+        let at_once = match &adapted.steps[0] {
+            AdaptedStep::Squads {
+                executor: Some(_),
+                held_back: None,
+                ..
+            } => program == SquadsProgram::V4,
+            AdaptedStep::SquadsSync { .. } => program == SquadsProgram::SmartAccount,
+            _ => false,
+        };
+        assert!(at_once, "{program:?}: {:?}", adapted.steps[0]);
         assert_eq!(
             signer_keys(&adapted.wire),
             vec![app.hot.pubkey(), fresh[0]],

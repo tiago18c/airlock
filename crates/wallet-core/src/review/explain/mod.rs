@@ -16,7 +16,7 @@ use crate::wallets::programmatic::{
     ED25519_SIGNER_PROGRAM_ID,
 };
 use crate::wallets::relay::{advance_next_keys, AuthContext, VectorContext};
-use crate::wallets::squads::StoredTransaction;
+use crate::wallets::squads::{StoredTransaction, SyncExecution};
 use crate::wallets::vector::{parse_passthrough, SchemeId, PASSTHROUGH_DISCRIMINATOR, PROGRAM_ID};
 use codama_dynamic_client::{
     get_instruction_display, required_accounts_for_display, IntentSpan, ProgramClient,
@@ -123,6 +123,16 @@ fn open_instruction(
                 vault_index: stored.vault_index,
             },
             stored.instructions,
+        ));
+    }
+    if let Some(sync) = SyncExecution::parse(instruction) {
+        return Some((
+            InnerKind::SquadsSync {
+                vault: sync.vault,
+                vault_index: sync.vault_index,
+                signers: sync.signers,
+            },
+            sync.instructions,
         ));
     }
     if let Some(added) = realms::ProposalTransaction::parse(instruction) {

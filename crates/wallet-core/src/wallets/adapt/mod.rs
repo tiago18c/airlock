@@ -10,7 +10,9 @@
 //!   transaction. The new transaction creates it, opens its proposal and, as
 //!   far as fits after the Vector or programmatic wrap, approves and executes
 //!   it — including co-voters the multisig's row names under "Approves
-//!   together with".
+//!   together with". A smart account whose members here can carry every vote
+//!   and execute skips all of that: one `executeTransactionSync`, which they
+//!   all sign, runs the instructions at once and stores nothing.
 //! - **Programmatic signer.** The instructions move into an authorization its
 //!   authority signs (see `relay`). This also applies to a Squads member that
 //!   is a programmatic signer.
@@ -269,6 +271,9 @@ pub struct AdaptPlan {
     nonce: Option<NoncePlan>,
     /// The hot wallet that pays for and signs the rebuilt transaction.
     pub fee_payer: Pubkey,
+    /// Whether a smart account may run it at once, when its members here
+    /// can (see [`AdaptedStep::SquadsSync`]).
+    at_once: bool,
 }
 
 /// A wallet without a key that a plan rebuilds the transaction for, for the
@@ -311,6 +316,17 @@ pub enum AdaptedStep {
         /// Why the shape is not the whole job, when it is not.
         held_back: Option<HeldBack>,
     },
+    /// The instructions ran at once as a smart account's vault, in one
+    /// `executeTransactionSync`. Nothing is stored and no proposal is
+    /// opened: the members that sign stand in for the votes.
+    SquadsSync {
+        wallet: String,
+        vault: Pubkey,
+        member: Pubkey,
+        threshold: u16,
+        /// The members that sign, the acting member first.
+        signers: Vec<Pubkey>,
+    },
     /// The instructions were moved into an authorization.
     Programmatic {
         wallet: String,
@@ -340,6 +356,15 @@ pub struct Adapted {
 }
 
 impl AdaptPlan {
+    /// This plan, always building a proposal, even for a smart account whose
+    /// members here could run it at once. The app never asks for this: it is
+    /// how tests reach the proposal a smart account would otherwise skip.
+    #[doc(hidden)]
+    pub fn proposal_only(mut self) -> Self {
+        self.at_once = false;
+        self
+    }
+
     /// This plan, unless it rebuilds for a Vector wallet while Vector
     /// wallets are turned off. A Vector co-voter of a multisig is left out
     /// instead.

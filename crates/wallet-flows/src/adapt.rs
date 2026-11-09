@@ -174,6 +174,15 @@ pub fn rebuilt_note(adapted: &Adapted) -> Phrase {
             }
             sentence(part);
         }
+        if let AdaptedStep::SquadsSync { vault, signers, .. } = step {
+            let part = Phrase::default()
+                .t("Rebuilt for ")
+                .a(*vault)
+                .t(": the instructions run at once, approved by ")
+                .and(listed(signers))
+                .t(", who sign this transaction. Nothing is stored and no proposal is opened.");
+            sentence(part);
+        }
     }
     // Several programmatic signers share one authorization, and several
     // Vector wallets one Advance, so each kind gets one sentence.
@@ -182,7 +191,9 @@ pub fn rebuilt_note(adapted: &Adapted) -> Phrase {
         .iter()
         .filter_map(|step| match step {
             AdaptedStep::Programmatic { address, .. } => Some(*address),
-            AdaptedStep::Squads { .. } | AdaptedStep::Vector { .. } => None,
+            AdaptedStep::Squads { .. }
+            | AdaptedStep::SquadsSync { .. }
+            | AdaptedStep::Vector { .. } => None,
         })
         .collect();
     match signers.as_slice() {
@@ -202,7 +213,9 @@ pub fn rebuilt_note(adapted: &Adapted) -> Phrase {
         .iter()
         .filter_map(|step| match step {
             AdaptedStep::Vector { account, .. } => Some(*account),
-            AdaptedStep::Squads { .. } | AdaptedStep::Programmatic { .. } => None,
+            AdaptedStep::Squads { .. }
+            | AdaptedStep::SquadsSync { .. }
+            | AdaptedStep::Programmatic { .. } => None,
         })
         .collect();
     match accounts.as_slice() {

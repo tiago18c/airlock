@@ -896,6 +896,20 @@ pub(in crate::ui) fn AdaptedNotice(adapted: Adapted) -> Element {
                             }
                         }
                     },
+                    AdaptedStep::SquadsSync { vault, signers, .. } => rsx! {
+                        p { key: "{i}",
+                            Address { pubkey: vault }
+                            " is the vault of a Squads smart account, so no key signs as it. Enough of its members are on this device to approve and execute at once, so the site's instructions run in this transaction, with nothing stored and no proposal opened. These members sign in place of votes:"
+                        }
+                        p {
+                            for (s, signer) in signers.iter().cloned().enumerate() {
+                                span { key: "{i}-s-{s}",
+                                    if s > 0 { " " }
+                                    Address { pubkey: signer }
+                                }
+                            }
+                        }
+                    },
                     AdaptedStep::Programmatic { authority, address, .. } => rsx! {
                         p { key: "{i}",
                             Address { pubkey: address }

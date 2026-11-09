@@ -5,7 +5,7 @@ use crate::wallets::programmatic::{
     message_instructions, Authorization, Execution, ExecutorNonce, Submission,
     ED25519_SIGNER_PROGRAM_ID,
 };
-use crate::wallets::squads::StoredTransaction;
+use crate::wallets::squads::{StoredTransaction, SyncExecution};
 use crate::wallets::vector::{
     parse_passthrough, rewrite_passthrough, PassthroughSigner, PASSTHROUGH_DISCRIMINATOR,
     PROGRAM_ID as VECTOR_PROGRAM_ID,
@@ -21,6 +21,13 @@ pub enum CarrierKind {
     /// A Squads `vaultTransactionCreate` or `createTransaction`: what the
     /// vault runs once the proposal is approved.
     Squads { vault: Pubkey, vault_index: u8 },
+    /// A smart account's `executeTransactionSync`: what the vault runs at
+    /// once, approved by the members that sign.
+    SquadsSync {
+        vault: Pubkey,
+        vault_index: u8,
+        signers: Vec<Pubkey>,
+    },
     /// A Vector `Passthrough`: what runs as its accounts.
     Passthrough { signers: Vec<PassthroughSigner> },
     /// A programmatic signer's `Submit` and the executor's `Execute` inside
@@ -64,6 +71,18 @@ impl Carrier {
                 payer: None,
                 nonce: None,
             }
+        } else if let Some(sync) = SyncExecution::parse(instruction) {
+            Self {
+                kind: CarrierKind::SquadsSync {
+                    vault: sync.vault,
+                    vault_index: sync.vault_index,
+                    signers: sync.signers,
+                },
+                instruction: instruction.clone(),
+                inner: sync.instructions,
+                payer: None,
+                nonce: None,
+            }
         } else {
             let stored = StoredTransaction::parse(instruction)?;
             Self {
@@ -83,7 +102,7 @@ impl Carrier {
 
     pub fn label(&self) -> &'static str {
         match self.kind {
-            CarrierKind::Squads { .. } => "Squads vault",
+            CarrierKind::Squads { .. } | CarrierKind::SquadsSync { .. } => "Squads vault",
             CarrierKind::Passthrough { .. } => "Vector",
             CarrierKind::Programmatic { .. } => "Programmatic signer",
         }
@@ -92,6 +111,7 @@ impl Carrier {
     pub fn instruction_label(&self) -> &'static str {
         match self.kind {
             CarrierKind::Squads { .. } => "Stored transaction",
+            CarrierKind::SquadsSync { .. } => "Execute at once",
             CarrierKind::Passthrough { .. } => "Passthrough",
             CarrierKind::Programmatic { .. } => "Submit · Execute",
         }
@@ -109,6 +129,12 @@ impl Carrier {
             CarrierKind::Squads { .. } => {
                 StoredTransaction::rewrite(&self.instruction, instructions).ok_or_else(|| {
                     "These instructions do not fit a transaction stored for a Squads vault."
+                        .to_string()
+                })
+            }
+            CarrierKind::SquadsSync { .. } => {
+                SyncExecution::rewrite(&self.instruction, instructions).ok_or_else(|| {
+                    "These instructions name more accounts than one Squads execution can."
                         .to_string()
                 })
             }
