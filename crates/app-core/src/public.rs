@@ -14,7 +14,8 @@ use crate::ports::Ports;
 use crate::slices::Slices;
 
 /// What a sync job, the network monitor or the bridge server may do: read the
-/// slices, listen for events, and run deferred commands.
+/// slices, listen for events, and run deferred commands. [`Core`](crate::Core)
+/// dereferences to it, so the window has all of this too.
 ///
 /// Its type has no way to reach key material, so a service could not touch a
 /// key even through a bug. Unlocking, locking, the vault's own commands and
@@ -36,6 +37,26 @@ use crate::slices::Slices;
 /// let kit = app_core::testing::kit();
 /// let public = kit.core.public();
 /// public.vault_checked("rename", |_| {}).unwrap();
+/// ```
+///
+/// ```compile_fail,E0599
+/// let kit = app_core::testing::kit();
+/// let public = kit.core.public();
+/// let _key = public.vault_key_bytes();
+/// ```
+///
+/// ```compile_fail,E0599
+/// let kit = app_core::testing::kit();
+/// let public = kit.core.public();
+/// public.with_vault_and_marks(|_vault, _marks| ());
+/// ```
+///
+/// Nor can it be made back into the [`Core`](crate::Core) it came from:
+///
+/// ```compile_fail,E0277
+/// let kit = app_core::testing::kit();
+/// let public = kit.core.public();
+/// let _core: app_core::Core = public.into();
 /// ```
 ///
 /// Nor can it answer a browser request: that is the user's approval.
@@ -88,7 +109,7 @@ impl PublicCore {
         self.inner.ui_visible()
     }
 
-    /// The shell reports user input while the window is visible.
+    /// The shell reports user input while the window is visible (idle timer).
     pub fn ui_activity(&self) {
         self.inner.ui_activity();
     }
@@ -120,14 +141,17 @@ impl PublicCore {
         self.inner.history_deferred(name, f);
     }
 
+    /// Push a notice and save deferred.
     pub fn notices_push(&self, kind: NoticeKind) -> NoticeId {
         self.inner.notices_push(kind)
     }
 
+    /// Move a transaction notice's status forward (ignored if it would regress).
     pub fn notices_set_tx_status(&self, signature: Signature, status: TxStatus) -> bool {
         self.inner.notices_set_tx_status(signature, status)
     }
 
+    /// Hide the toast; the notice stays in the list.
     pub fn notices_dismiss_toast(&self, id: NoticeId) {
         self.inner.notices_dismiss_toast(id);
     }
@@ -145,18 +169,22 @@ impl PublicCore {
             .notices_set_bridge_outcome(request_id, origin, method, outcome);
     }
 
+    /// Mark the given notices read.
     pub fn notices_mark_read(&self, ids: &[NoticeId]) {
         self.inner.notices_mark_read(ids);
     }
 
+    /// Mark every notice read.
     pub fn notices_mark_all_read(&self) {
         self.inner.notices_mark_all_read();
     }
 
+    /// Remove one notice; a transaction still `Sent` stays until it ends.
     pub fn notices_remove(&self, id: NoticeId) {
         self.inner.notices_remove(id);
     }
 
+    /// Clear notices; transactions still `Sent` stay until they end.
     pub fn notices_clear(&self) {
         self.inner.notices_clear();
     }

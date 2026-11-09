@@ -38,21 +38,6 @@ impl Core {
     ) -> Result<(), VaultError> {
         self.inner.holdings_checked(name, f)
     }
-
-    // Deferred: caches that can be fetched again.
-
-    pub fn workspace_deferred(&self, name: &'static str, f: impl FnOnce(&mut Workspace)) {
-        self.inner.workspace_deferred(name, f);
-    }
-
-    pub fn holdings_deferred(&self, name: &'static str, f: impl FnOnce(&mut Holdings)) {
-        self.inner.holdings_deferred(name, f);
-    }
-
-    /// Change the transaction history. `f` says whether it changed anything.
-    pub fn history_deferred(&self, name: &'static str, f: impl FnOnce(&mut History) -> bool) {
-        self.inner.history_deferred(name, f);
-    }
 }
 
 impl Inner {

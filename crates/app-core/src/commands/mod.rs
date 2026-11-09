@@ -9,6 +9,7 @@
 //! - **deferred**: mark the store dirty. A task writes it once a second at
 //!   most, and a failure is sent as `SaveFailed` while the change stays.
 
+use std::ops::Deref;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -50,9 +51,22 @@ const VAULT: &str = "airlock::vault";
 
 /// The whole core, with the vault's secrets. Shells that start things hold
 /// this; services get [`PublicCore`].
+///
+/// It dereferences to its [`PublicCore`], so the commands both have are
+/// written once, there. What is here alone reaches the vault, or is the
+/// user's to do.
 #[derive(Clone)]
 pub struct Core {
     inner: Arc<Inner>,
+    public: PublicCore,
+}
+
+impl Deref for Core {
+    type Target = PublicCore;
+
+    fn deref(&self) -> &PublicCore {
+        &self.public
+    }
 }
 
 pub(crate) struct Inner {
@@ -182,39 +196,15 @@ impl Core {
             Arc::downgrade(&inner),
         );
         inner.ports.spawner.spawn(Box::pin(policy.run()));
-        Core { inner }
+        Core {
+            public: PublicCore::new(inner.clone()),
+            inner,
+        }
     }
 
     /// The handle for background services: no way to reach the secrets.
     pub fn public(&self) -> PublicCore {
-        PublicCore::new(self.inner.clone())
-    }
-
-    pub fn slices(&self) -> &Slices {
-        &self.inner.slices
-    }
-
-    pub fn events(&self) -> broadcast::Receiver<Event> {
-        self.inner.events.subscribe()
-    }
-
-    pub fn ports(&self) -> &Ports {
-        &self.inner.ports
-    }
-
-    /// The shell reports whether the window is on screen.
-    pub fn set_ui_visible(&self, visible: bool) {
-        self.inner.set_ui_visible(visible);
-    }
-
-    /// Whether the shell last reported the window as visible.
-    pub fn ui_visible(&self) -> bool {
-        self.inner.ui_visible()
-    }
-
-    /// The shell reports user input while the window is visible (idle timer).
-    pub fn ui_activity(&self) {
-        self.inner.ui_activity();
+        self.public.clone()
     }
 
     /// Stores that could not be read at startup. Each message says whether a

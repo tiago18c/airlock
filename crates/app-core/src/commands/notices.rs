@@ -7,60 +7,10 @@ use solana_signature::Signature;
 use tracing::{debug, debug_span};
 
 use super::deferred::changed;
-use super::{Core, Inner, CORE};
+use super::{Inner, CORE};
 use crate::diagnostics::log_status;
 use crate::events::Event;
 use crate::notices::{BridgeRequestOutcome, NoticeId, NoticeKind, TxStatus};
-
-impl Core {
-    /// Push a notice and save deferred.
-    pub fn notices_push(&self, kind: NoticeKind) -> NoticeId {
-        self.inner.notices_push(kind)
-    }
-
-    /// Move a transaction notice's status forward (ignored if it would regress).
-    pub fn notices_set_tx_status(&self, signature: Signature, status: TxStatus) -> bool {
-        self.inner.notices_set_tx_status(signature, status)
-    }
-
-    /// Hide the toast; the notice stays in the list.
-    pub fn notices_dismiss_toast(&self, id: NoticeId) {
-        self.inner.notices_dismiss_toast(id);
-    }
-
-    /// Record how a browser request ended, on the notice pushed when it
-    /// arrived, or on a new one when none was.
-    pub fn notices_set_bridge_outcome(
-        &self,
-        request_id: &str,
-        origin: &str,
-        method: &str,
-        outcome: BridgeRequestOutcome,
-    ) {
-        self.inner
-            .notices_set_bridge_outcome(request_id, origin, method, outcome);
-    }
-
-    /// Mark the given notices read.
-    pub fn notices_mark_read(&self, ids: &[NoticeId]) {
-        self.inner.notices_mark_read(ids);
-    }
-
-    /// Mark every notice read.
-    pub fn notices_mark_all_read(&self) {
-        self.inner.notices_mark_all_read();
-    }
-
-    /// Remove one notice; a transaction still `Sent` stays until it ends.
-    pub fn notices_remove(&self, id: NoticeId) {
-        self.inner.notices_remove(id);
-    }
-
-    /// Clear notices; transactions still `Sent` stay until they end.
-    pub fn notices_clear(&self) {
-        self.inner.notices_clear();
-    }
-}
 
 impl Inner {
     pub(crate) fn notices_push(self: &Arc<Self>, kind: NoticeKind) -> NoticeId {
