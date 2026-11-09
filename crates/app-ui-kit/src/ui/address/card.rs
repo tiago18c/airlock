@@ -1,6 +1,6 @@
 //! What the app knows about an address, over the address.
 
-use super::inline::{Beside, CardAt};
+use super::inline::{close_open_card, Beside, CardAt};
 use super::*;
 
 /// The whole address, what it is, and every fact the directory has, then
@@ -13,6 +13,10 @@ pub fn AddressCard(
     #[props(default)] accounts: Vec<(&'static str, Pubkey)>,
 ) -> Element {
     let session = use_context::<Session>();
+    // Inspecting reads the account from a node.
+    let online = try_use_context::<Option<crate::state::online::Network>>()
+        .flatten()
+        .is_some();
     let pubkey = described.pubkey;
     let full = pubkey.to_string();
     let (class, style) = match at.beside.and_then(beside_place) {
@@ -76,6 +80,20 @@ pub fn AddressCard(
             }
             div { class: "addr-card-full",
                 code { class: "mono", "{full}" }
+                if online {
+                    button { class: "ghost sm icon-btn tip tip-end",
+                        r#type: "button",
+                        "data-tip": "Inspect the account",
+                        aria_label: "Inspect the account",
+                        onclick: move |e| {
+                            e.stop_propagation();
+                            close_open_card();
+                            let mut inspect = session.inspect;
+                            inspect.set(Some(pubkey));
+                        },
+                        Icon { glyph: Glyph::Search }
+                    }
+                }
                 CopyButton { text: full.clone() }
             }
             if !facts.is_empty() || !accounts.is_empty() {

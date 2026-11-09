@@ -7,6 +7,7 @@ mod address_picker;
 pub mod clock;
 pub mod device;
 mod icons;
+pub mod inspect;
 pub mod local_time;
 pub mod lock;
 pub mod phone;
@@ -22,6 +23,7 @@ pub use address::{
 pub use address_picker::AddressPicker;
 pub use device::DeviceDialog;
 pub use icons::{Glyph, Icon};
+pub use inspect::AccountInspector;
 pub use lock::{FingerprintOffer, LockScreen, UnlockPrompt, VaultUnlock};
 pub use phone::{use_phone_layout, PhoneLayout};
 pub use theme::ThemeToggle;

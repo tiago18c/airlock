@@ -129,6 +129,9 @@ pub struct Session {
     submitter: CopyValue<SubmitHandle>,
     /// Proposals modal target; Wallets sets it, the online shell mounts the modal.
     pub proposals: Signal<Option<ProposalsOpen>>,
+    /// The account the inspector shows. Any address card can set it; the
+    /// shell mounts the inspector.
+    pub inspect: Signal<Option<Pubkey>>,
     /// Public wallet list. While the vault is locked it is the copy kept
     /// without secrets.
     pub wallets: ReadSignal<Arc<WalletsView>>,
@@ -181,6 +184,7 @@ impl Session {
         online: CopyValue<OnlineHooks>,
         submitter: CopyValue<SubmitHandle>,
         proposals: Signal<Option<ProposalsOpen>>,
+        inspect: Signal<Option<Pubkey>>,
         notices_open: Signal<bool>,
         notices_focus: Signal<Option<NoticeId>>,
         directory: Memo<Arc<wallet_core::Directory>>,
@@ -201,6 +205,7 @@ impl Session {
             online,
             submitter,
             proposals,
+            inspect,
             wallets: pump.wallets,
             book: pump.book,
             network: pump.network,

@@ -57,6 +57,10 @@ pub use idl::{
     IdlRecord, IdlSource, IdlSpec, IdlStore, InspectedIdl, MemoryBodies, NoIdls, PinnedProgram,
     BUILTIN_IDLS, ED25519_SIGNER_PROGRAM_ID, MAX_IDL_BYTES, PINNED_PROGRAMS,
 };
+pub use idl::{
+    base64_text, hex_dump, inspect_account, AccountHeader, AccountReading, InspectedAccount, Leaf,
+    ValueNode, SHOWN_BYTES,
+};
 pub use keys::{
     concrete_path, derive_batch, new_phrase, path_has_wildcard, secret_seed_from_import,
     DerivedAccount, KeypairSigner, WalletSigner, DERIVE_BATCH, SOLANA_PATH_TEMPLATE,

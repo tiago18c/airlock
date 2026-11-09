@@ -5,6 +5,7 @@ pub(crate) mod build;
 pub(crate) mod builtin;
 pub(crate) mod catalog;
 pub(crate) mod draft;
+pub(crate) mod inspect;
 pub(crate) mod network;
 pub(crate) mod pack;
 #[cfg(test)]
@@ -30,5 +31,9 @@ pub use catalog::{
     IdlSpec, IdlStore, InspectedIdl, MemoryBodies, NoIdls, MAX_IDL_BYTES,
 };
 pub use draft::IdlDraft;
+pub use inspect::{
+    base64_text, hex_dump, inspect_account, AccountHeader, AccountReading, InspectedAccount, Leaf,
+    ValueNode, SHOWN_BYTES,
+};
 pub use network::IdlNetwork;
 pub use pack::{idls_from_pack, IdlPackError};
