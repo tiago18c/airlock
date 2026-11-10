@@ -663,7 +663,7 @@ fn LineRow(
         _ => "Token account",
     };
     rsx! {
-        div { class: "pf-line",
+        div { class: if open() { "pf-line open" } else { "pf-line" },
             div { class: "pf-line-head",
                 // The whole row opens the holders; the symbol is the control
                 // a keyboard reaches. Not one button, so the mint's copy
@@ -705,7 +705,11 @@ fn LineRow(
                             span { class: "muted pf-name", "{name}" }
                         }
                     }
-                    span { class: "muted pf-holders", title: "{holders_all}", "{holders_short}" }
+                    // Who holds it, and the mark that the row opens to list them.
+                    span { class: "muted pf-holders", title: "{holders_all}",
+                        span { class: "pf-holders-text", "{holders_short}" }
+                        span { class: "pf-open-mark", aria_hidden: "true", Icon { glyph: Glyph::ChevronRight } }
+                    }
                     span { class: "pf-amount", "{amount}" }
                     if priced && valued {
                         span { class: "pf-price muted",
@@ -742,20 +746,26 @@ fn LineRow(
                 }
             }
             if open() {
+                // One line per wallet, on the table's columns: the wallet
+                // where the asset and its holders are, its amount under
+                // Amount, its value under Value, its send button under the
+                // asset's. The mint comes last, as a caption.
                 div { class: "pf-shares",
-                    if let Some(mint) = mint {
-                        div { class: "chip-row",
-                            span { class: "muted", "mint" }
-                            Address { pubkey: mint }
-                        }
-                    }
                     for share in line.shares.iter() {
-                        AddressRow { key: "{share.owner}", pubkey: share.owner,
-                            card_accounts: share.accounts.iter().map(|account| (account_kind, *account)).collect::<Vec<_>>(),
-                            span { class: "pf-amount", "{format_amount(u128::from(share.raw), line.decimals, AMOUNT_DIGITS)}" }
-                            if priced && several {
-                                if let Some(usd) = share.usd {
-                                    span { class: "muted", "{format_value(usd)}" }
+                        div { key: "{share.owner}", class: "pf-share",
+                            div { class: "pf-share-main",
+                                span { class: "pf-share-gap" }
+                                AddressRow { pubkey: share.owner, no_copy: true, class: "pf-share-who",
+                                    card_accounts: share.accounts.iter().map(|account| (account_kind, *account)).collect::<Vec<_>>(),
+                                    CopyButton { text: share.owner.to_string(), label: "Copy address" }
+                                }
+                                span { class: "pf-amount", "{format_amount(u128::from(share.raw), line.decimals, AMOUNT_DIGITS)}" }
+                                if priced {
+                                    span { class: "pf-share-gap pf-price" }
+                                    span { class: "pf-share-gap pf-change" }
+                                    span { class: "pf-value",
+                                        if let (Some(usd), true) = (share.usd, several) { "{format_value(usd)}" }
+                                    }
                                 }
                             }
                             if let (Some(asset), Some(id), true) = (
@@ -763,7 +773,7 @@ fn LineRow(
                                 senders.iter().find(|(owner, _)| *owner == share.owner).map(|(_, id)| *id),
                                 several,
                             ) {
-                                button { class: "ghost icon-btn sm",
+                                button { class: "ghost icon-btn sm pf-send",
                                     r#type: "button",
                                     title: "Send from this wallet",
                                     aria_label: "Send from this wallet",
@@ -774,7 +784,21 @@ fn LineRow(
                                     }),
                                     Icon { glyph: Glyph::Send }
                                 }
+                            } else {
+                                span { class: "pf-send-slot" }
                             }
+                        }
+                    }
+                    if let Some(mint) = mint {
+                        div { class: "pf-share pf-share-mint",
+                            div { class: "pf-share-main",
+                                span { class: "pf-share-gap" }
+                                span { class: "pf-share-who",
+                                    span { class: "pf-mint-label", "Mint" }
+                                    Address { pubkey: mint }
+                                }
+                            }
+                            span { class: "pf-send-slot" }
                         }
                     }
                 }
