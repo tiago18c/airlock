@@ -1,9 +1,9 @@
 use super::lock::VaultUnlock;
 use crate::state::forms::{AddWalletMode, SendOpen, WalletForm};
-use crate::state::session::{Session, WalletSummary};
+use crate::state::session::{Session, Tab, WalletSummary};
 use crate::ui::wallets::kinds::{
-    payers, ContractWalletRow, CurrentChip, ExportKeyButton, ExportKeysModal, HardwareForm,
-    KeyImportForm, OfflineForm, ProgrammaticForm, SquadsForm, VectorForm,
+    payers, ContractWalletRow, CurrentChip, ExportKeysModal, HardwareForm, KeyImportForm,
+    OfflineForm, ProgrammaticForm, SquadsForm, VectorForm, WalletRowMenu,
 };
 use crate::ui::{
     format_sol, Address, AddressHeader, CopyButton, Glyph, HelpTip, Icon, PaneMenu, WalletPicker,
@@ -146,7 +146,7 @@ pub fn WalletsPanel() -> Element {
                     HelpTip { text: "An offline wallet is the address of a key kept on another device. This device prepares its transactions and the other one signs them, from a QR code or pasted text. A hot wallet can pay its fees, and a programmatic signer lets it act without signing a transaction itself." }
                 }
                 if offline.is_empty() {
-                    p { class: "note",
+                    p { class: "wallets-empty",
                         "None yet. Add the address of a key kept on another device to prepare its transactions here."
                     }
                 }
@@ -163,10 +163,19 @@ pub fn WalletsPanel() -> Element {
                     HelpTip { text: "A hardware wallet keeps its key on a separate signing device that is plugged in or paired when it is time to sign." }
                 }
                 if hardware.is_empty() {
-                    p { class: "note",
-                        if session.hardware_offered().is_empty() {
-                            "None yet. A Ledger is offered once Pre-release hardware wallets is on in Settings, until Ledger releases the Solana app 1.18."
-                        } else {
+                    if session.hardware_offered().is_empty() {
+                        div { class: "wallets-empty",
+                            p {
+                                "None yet. A Ledger is offered once Pre-release hardware wallets is on in Settings, until Ledger releases the Solana app 1.18."
+                            }
+                            button { class: "ghost sm",
+                                title: "Go to Settings, where Pre-release hardware wallets is turned on",
+                                onclick: move |_| session.goto(Tab::Settings),
+                                "Open Settings"
+                            }
+                        }
+                    } else {
+                        p { class: "wallets-empty",
                             "None yet. Add one with Add wallet, Hardware or Seed Vault."
                         }
                     }
@@ -184,7 +193,7 @@ pub fn WalletsPanel() -> Element {
                     HelpTip { text: "A smart contract wallet has no key of its own. A program on chain decides who may act: a programmatic signer acts when its authority key signs a message, and a Squads multisig acts when enough of its members approve." }
                 }
                 if contracts.is_empty() {
-                    p { class: "note",
+                    p { class: "wallets-empty",
                         "None yet. Add a programmatic signer to sign offline and let a hot wallet pay, or a Squads multisig to share control."
                     }
                 }

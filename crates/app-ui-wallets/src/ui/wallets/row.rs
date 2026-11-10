@@ -128,17 +128,15 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                             }
                         }
                     }
-                    ExportKeyButton { id }
-                    button { class: "danger sm",
-                        onclick: move |_| {
+                    WalletRowMenu { id,
+                        on_remove: move |_| {
                             session.when_unlocked("Unlock the vault to remove a wallet from it.", move || confirm_open.set(true));
                         },
-                        "Remove"
                     }
                 }
             }
             if !can_sign {
-                div { class: "wallet-settings",
+                div { class: "settings-grid",
                     WalletPicker {
                         label: "Pays fees",
                         options: payers(&wallets, !show_balances)
@@ -153,56 +151,64 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                             });
                         },
                     }
-                }
-                if let (Some(vendor), Some(path)) = (on_device, device_path.clone()) {
-                    p { class: "wallet-fact",
-                        span { class: "muted", "{vendor.label()}" }
-                        code { class: "mono", "{path}" }
+                    if let (Some(vendor), Some(path)) = (on_device, device_path.clone()) {
+                        div { class: "setting-row",
+                            span { class: "setting-label", "{vendor.label()}" }
+                            div { class: "setting-value",
+                                code { class: "mono", "{path}" }
+                            }
+                        }
                     }
-                }
-                p { class: "wallet-fact",
-                    span { class: "muted", "Programmatic signer" }
-                    match signer {
-                        Some(signer) => rsx! {
-                            if let Some(address) = signer.address {
-                                Address { pubkey: address }
-                            } else {
-                                span { "{signer.label}" }
+                    div { class: "setting-row",
+                        span { class: "setting-label", "Programmatic signer" }
+                        div { class: "setting-value",
+                            match signer {
+                                Some(signer) => rsx! {
+                                    if let Some(address) = signer.address {
+                                        Address { pubkey: address }
+                                    } else {
+                                        span { "{signer.label}" }
+                                    }
+                                    PathDefault {
+                                        path: OfflinePath::Programmatic,
+                                        chosen: default_path,
+                                        on_choose: make_default,
+                                    }
+                                },
+                                None => rsx! {
+                                    span { class: "muted", "Not set up" }
+                                    button { class: "sm",
+                                        title: "Add the programmatic signer this key is the authority of. It is listed under Smart contract wallets.",
+                                        onclick: add_signer,
+                                        "Set up"
+                                    }
+                                },
                             }
-                            PathDefault {
-                                path: OfflinePath::Programmatic,
-                                chosen: default_path,
-                                on_choose: make_default,
-                            }
-                        },
-                        None => rsx! {
-                            button { class: "sm",
-                                title: "Add the programmatic signer this key is the authority of. It is listed under Smart contract wallets.",
-                                onclick: add_signer,
-                                "Set up"
-                            }
-                        },
+                        }
                     }
-                }
-                p { class: "wallet-fact",
-                    span { class: "muted", "Durable nonce" }
-                    match durable_nonce {
-                        Some(account) => rsx! {
-                            Address { pubkey: account }
-                            PathDefault {
-                                path: OfflinePath::DurableNonce,
-                                chosen: default_path,
-                                on_choose: make_default,
+                    div { class: "setting-row",
+                        span { class: "setting-label", "Durable nonce" }
+                        div { class: "setting-value",
+                            match durable_nonce {
+                                Some(account) => rsx! {
+                                    Address { pubkey: account }
+                                    PathDefault {
+                                        path: OfflinePath::DurableNonce,
+                                        chosen: default_path,
+                                        on_choose: make_default,
+                                    }
+                                },
+                                None => rsx! {
+                                    span { class: "muted", "None" }
+                                    button { class: "sm",
+                                        title: "Create a nonce account controlled by this key, paid by the fee payer above. What this key signs for itself then lives on it.",
+                                        disabled: busy(),
+                                        onclick: create_nonce,
+                                        if busy() { "Preparing…" } else { "Create nonce account" }
+                                    }
+                                },
                             }
-                        },
-                        None => rsx! {
-                            button { class: "sm",
-                                title: "Create a nonce account controlled by this key, paid by the fee payer above. What this key signs for itself then lives on it.",
-                                disabled: busy(),
-                                onclick: create_nonce,
-                                if busy() { "Preparing…" } else { "Create nonce account" }
-                            }
-                        },
+                        }
                     }
                 }
                 if durable_nonce.is_some() {

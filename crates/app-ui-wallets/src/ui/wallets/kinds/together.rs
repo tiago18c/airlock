@@ -38,7 +38,7 @@ pub(in crate::ui) fn ApprovesTogether(wallet: WalletSummary) -> Element {
     }
 
     rsx! {
-        div { class: "stack",
+        div { class: "stack approves-together",
             WalletChecklist {
                 label: "Approves together with",
                 options,

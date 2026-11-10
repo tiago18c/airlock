@@ -46,6 +46,8 @@ pub enum Glyph {
     Focus,
     /// A magnifier: look inside.
     Search,
+    /// A QR code: show something for another device to scan.
+    Qr,
 }
 
 impl Glyph {
@@ -204,6 +206,15 @@ impl Glyph {
                 "M12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z",
             ],
             Glyph::Search => &["M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z", "M15.3 15.3 20 20"],
+            Glyph::Qr => &[
+                "M4 4h6v6H4Z",
+                "M14 4h6v6h-6Z",
+                "M4 14h6v6H4Z",
+                "M14 14h2v2h-2Z",
+                "M20 14v2",
+                "M14 20h2",
+                "M18 18h2v2h-2Z",
+            ],
         }
     }
 }

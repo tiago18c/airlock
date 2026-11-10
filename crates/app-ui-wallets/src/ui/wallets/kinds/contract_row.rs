@@ -123,16 +123,14 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
                             }
                         }
                     }
-                    ExportKeyButton { id }
-                    button { class: "danger sm",
-                        onclick: move |_| {
+                    WalletRowMenu { id,
+                        on_remove: move |_| {
                             session.when_unlocked("Unlock the vault to remove a wallet from it.", move || confirm_remove.set(true));
                         },
-                        "Remove"
                     }
                 }
             }
-            div { class: "wallet-settings",
+            div { class: "settings-grid",
                 if is_squads {
                     WalletPicker {
                         label: "Acts as member",
@@ -157,6 +155,38 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
                         });
                     },
                 }
+                if let Some(authority) = authority {
+                    div { class: "setting-row",
+                        span { class: "setting-label", "Authority key" }
+                        div { class: "setting-value",
+                            Address { pubkey: authority }
+                        }
+                    }
+                }
+                if is_programmatic {
+                    div { class: "setting-row",
+                        span { class: "setting-label", "Nonce account" }
+                        div { class: "setting-value",
+                            match nonce {
+                                Some(account) => rsx! {
+                                    Address { pubkey: account }
+                                },
+                                None => rsx! {
+                                    span { class: "muted", "None" }
+                                    button { class: "sm",
+                                        title: "Create the nonce account this signer needs before it can act",
+                                        disabled: busy(),
+                                        onclick: create_nonce,
+                                        if busy() { "Preparing…" } else { "Create nonce account" }
+                                    }
+                                },
+                            }
+                        }
+                    }
+                }
+            }
+            if is_programmatic && nonce.is_none() {
+                p { class: "note", "This signer has no nonce account yet. It needs one before it can act: the nonce is what stops a signed message from running twice." }
             }
             match &route {
                 Ok(route) if route.fee_payer.is_none() => rsx! {
@@ -177,32 +207,8 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
             if is_squads {
                 ApprovesTogether { wallet: wallet.clone() }
             }
-            if let Some(authority) = authority {
-                p { class: "wallet-fact",
-                    span { class: "muted", "Authority key" }
-                    Address { pubkey: authority }
-                }
-            }
             if let (Some((scheme, key, held_by, held_here)), Some(address)) = (vector, wallet.address) {
                 VectorFacts { id, address, scheme, shown_key: key, held_by, held_here }
-            }
-            if is_programmatic {
-                match nonce {
-                    Some(account) => rsx! {
-                        p { class: "wallet-fact",
-                            span { class: "muted", "Nonce account" }
-                            Address { pubkey: account }
-                        }
-                    },
-                    None => rsx! {
-                        p { class: "note", "This signer has no nonce account yet. It needs one before it can act: the nonce is what stops a signed message from running twice." }
-                        div { class: "btn-row",
-                            button { disabled: busy(), onclick: create_nonce,
-                                if busy() { "Preparing…" } else { "Create nonce account" }
-                            }
-                        }
-                    },
-                }
             }
             if let Some(err) = error() {
                 p { class: "error", "{err}" }
