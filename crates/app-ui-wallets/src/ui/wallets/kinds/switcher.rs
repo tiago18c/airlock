@@ -116,14 +116,14 @@ fn PhoneWalletSwitcher(wallets: Vec<WalletSummary>, selected: Option<WalletId>) 
                             }
                             // Beside the row's button, not in it: a button
                             // inside a button is not a button to a screen
-                            // reader. A bordered button of its own, apart
-                            // from the row, so a near miss does not switch
-                            // wallet.
+                            // reader. A target of its own, apart from the
+                            // row, so a near miss does not switch wallet;
+                            // a plain icon, quieter than the row it serves.
                             if let Some(address) = wallet.address {
                                 CopyButton {
                                     text: address.to_string(),
                                     label: "Copy wallet address",
-                                    class: "wallet-sheet-copy",
+                                    class: "ghost wallet-sheet-copy",
                                 }
                             }
                         }
