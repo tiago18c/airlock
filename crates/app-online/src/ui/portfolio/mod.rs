@@ -283,10 +283,27 @@ fn ago(secs: i64) -> String {
     }
 }
 
-/// The total, its change in 24 hours, and what it is made of.
+/// The total, its change in 24 hours, and what it is made of. A part of the
+/// bar opens into what that part is made of, and All goes back.
 #[component]
 fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>, colors: Colors) -> Element {
     let allocation = allocation_parts(&portfolio, &colors);
+    // The part opened, and where its middle was on the whole bar, which the
+    // opened bar grows from. A part that is gone, after a refresh or another
+    // choice of wallet, shows the whole bar again.
+    let mut zoom = use_signal(|| None::<(String, f64)>);
+    let zoomed = zoom().and_then(|(key, origin)| {
+        zoomed_parts(&portfolio, &colors, &key).map(|inside| (inside, origin))
+    });
+    // Where each part's middle is on the bar, in percent.
+    let middles: Vec<f64> = allocation
+        .iter()
+        .scan(0.0, |before, part| {
+            let middle = (*before + part.share / 2.0) * 100.0;
+            *before += part.share;
+            Some(middle)
+        })
+        .collect();
     let excludes = excludes_note(portfolio.unpriced.len(), portfolio.left_out.len());
     let change = portfolio.change_24h_usd;
     let pct = change.map(|change| {
@@ -319,22 +336,56 @@ fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>, colors: Colo
                         }
                     }
                 }
-                if !allocation.is_empty() {
-                    div { class: "pf-alloc", role: "img", aria_label: "Allocation",
-                        for (title, share, color) in allocation.iter().cloned() {
+                if let Some((inside, origin)) = zoomed {
+                    div {
+                        class: "pf-alloc pf-alloc-zoomed",
+                        role: "img",
+                        aria_label: "What {inside.title} is made of",
+                        style: "transform-origin: {origin}% 50%",
+                        for part in inside.parts.iter().cloned() {
                             span {
-                                key: "{title}",
-                                class: "pf-alloc-part {color}",
-                                style: "flex-grow: {share}",
-                                title: "{title} {percent(share)}",
+                                key: "{part.title}",
+                                class: "pf-alloc-part {part.color}",
+                                style: "flex-grow: {part.share}; opacity: {part.tone}",
+                                title: "{part.title} {percent(part.share)} of {inside.title}",
                             }
                         }
                     }
                     div { class: "chip-row pf-legend",
-                        for (title, share, color) in allocation.iter().cloned() {
-                            span { key: "{title}", class: "pf-legend-item",
-                                span { class: "pf-swatch {color}", aria_hidden: "true" }
-                                "{title} {percent(share)}"
+                        button { class: "ghost sm pf-zoom-out",
+                            r#type: "button",
+                            title: "Back to every kind of asset",
+                            onclick: move |_| zoom.set(None),
+                            span { class: "pf-zoom-out-mark", aria_hidden: "true", Icon { glyph: Glyph::ChevronRight } }
+                            "All"
+                        }
+                        span { class: "pf-legend-item pf-legend-head",
+                            span { class: "pf-swatch {inside.color}", aria_hidden: "true" }
+                            "{inside.title} · {percent(inside.share)} of the total"
+                        }
+                        for part in inside.parts.iter().cloned() {
+                            span { key: "{part.title}", class: "pf-legend-item",
+                                span {
+                                    class: "pf-swatch {part.color}",
+                                    style: "opacity: {part.tone}",
+                                    aria_hidden: "true",
+                                }
+                                "{part.title} {percent(part.share)}"
+                            }
+                        }
+                    }
+                } else if !allocation.is_empty() {
+                    div { class: "pf-alloc", role: "group", aria_label: "Allocation",
+                        for (part, middle) in allocation.iter().cloned().zip(middles.iter().copied()) {
+                            AllocationPart { key: "{part.title}", part, bar: true,
+                                on_open: move |key| zoom.set(Some((key, middle))),
+                            }
+                        }
+                    }
+                    div { class: "chip-row pf-legend",
+                        for (part, middle) in allocation.iter().cloned().zip(middles.iter().copied()) {
+                            AllocationPart { key: "{part.title}", part, bar: false,
+                                on_open: move |key| zoom.set(Some((key, middle))),
                             }
                         }
                     }
@@ -377,7 +428,28 @@ fn group_colors(portfolio: &Portfolio) -> Colors {
         .collect()
 }
 
-fn allocation_parts(portfolio: &Portfolio, colors: &Colors) -> Vec<(String, f64, String)> {
+/// One part of the allocation bar, or one part of what an opened part is
+/// made of.
+#[derive(Clone, Debug, PartialEq)]
+struct Part {
+    /// What a press opens: the group's key, or [`OTHER_KEY`].
+    key: String,
+    title: String,
+    /// Of the whole bar it is drawn in.
+    share: f64,
+    color: String,
+    /// How strong the colour is: the parts of an opened group share its
+    /// colour, and are told apart by this.
+    tone: f64,
+}
+
+/// The key of the grey part that holds the smallest groups.
+const OTHER_KEY: &str = "\u{0}other";
+
+/// Tones of one colour, strongest first, for the parts of an opened part.
+const TONES: [f64; ALLOCATION_SLOTS] = [1.0, 0.72, 0.52, 0.38, 0.28, 0.2];
+
+fn allocation_parts(portfolio: &Portfolio, colors: &Colors) -> Vec<Part> {
     if portfolio.total_usd <= 0.0 {
         return Vec::new();
     }
@@ -385,22 +457,147 @@ fn allocation_parts(portfolio: &Portfolio, colors: &Colors) -> Vec<(String, f64,
     let mut other = 0.0;
     for group in portfolio.groups.iter().filter(|g| g.usd > 0.0) {
         match colors.get(&group.key) {
-            Some(class) if class != "pf-cother" => parts.push((
-                group.title.clone(),
-                group.usd / portfolio.total_usd,
-                class.clone(),
-            )),
+            Some(class) if class != "pf-cother" => parts.push(Part {
+                key: group.key.clone(),
+                title: group.title.clone(),
+                share: group.usd / portfolio.total_usd,
+                color: class.clone(),
+                tone: 1.0,
+            }),
             _ => other += group.usd,
         }
     }
     if other > 0.0 {
-        parts.push((
-            "Other".into(),
-            other / portfolio.total_usd,
-            "pf-cother".into(),
-        ));
+        parts.push(Part {
+            key: OTHER_KEY.into(),
+            title: "Other".into(),
+            share: other / portfolio.total_usd,
+            color: "pf-cother".into(),
+            tone: 1.0,
+        });
     }
     parts
+}
+
+/// A part of the bar, opened: what it is, its share of the total, and what
+/// it is made of.
+#[derive(Clone, Debug, PartialEq)]
+struct Zoomed {
+    title: String,
+    share: f64,
+    color: String,
+    parts: Vec<Part>,
+}
+
+/// What the part of the bar with `key` is made of: a group's assets, or for
+/// "Other" the groups folded into it. Largest first, in tones of the part's
+/// colour; past six, the smallest fold into one. `None` when there is no
+/// such part any more, or it is worth nothing.
+fn zoomed_parts(portfolio: &Portfolio, colors: &Colors, key: &str) -> Option<Zoomed> {
+    if portfolio.total_usd <= 0.0 {
+        return None;
+    }
+    let (title, color, mut pieces): (String, String, Vec<(String, f64)>) = if key == OTHER_KEY {
+        let folded = portfolio
+            .groups
+            .iter()
+            .filter(|group| group.usd > 0.0)
+            .filter(|group| {
+                colors
+                    .get(&group.key)
+                    .is_none_or(|class| class == "pf-cother")
+            })
+            .map(|group| (group.title.clone(), group.usd))
+            .collect();
+        ("Other".into(), "pf-cother".into(), folded)
+    } else {
+        let group = portfolio.groups.iter().find(|group| group.key == key)?;
+        let color = colors
+            .get(&group.key)
+            .filter(|class| *class != "pf-cother")?
+            .clone();
+        let lines = group
+            .lines
+            .iter()
+            .filter_map(|line| Some((line.symbol.clone(), line.usd.filter(|usd| *usd > 0.0)?)))
+            .collect();
+        (group.title.clone(), color, lines)
+    };
+    let total: f64 = pieces.iter().map(|(_, usd)| usd).sum();
+    if total <= 0.0 {
+        return None;
+    }
+    pieces.sort_by(|a, b| b.1.total_cmp(&a.1));
+    if pieces.len() > ALLOCATION_SLOTS {
+        let rest: f64 = pieces
+            .drain(ALLOCATION_SLOTS - 1..)
+            .map(|(_, usd)| usd)
+            .sum();
+        pieces.push(("Other".into(), rest));
+    }
+    let parts = pieces
+        .into_iter()
+        .zip(TONES)
+        .map(|((title, usd), tone)| Part {
+            key: String::new(),
+            title,
+            share: usd / total,
+            color: color.clone(),
+            tone,
+        })
+        .collect();
+    Some(Zoomed {
+        title,
+        share: total / portfolio.total_usd,
+        color,
+        parts,
+    })
+}
+
+/// A part of the allocation that opens into what it is made of: its stretch
+/// of the bar, or its entry in the legend under it. Not a `button`, whose
+/// own fill and hover would paint over the part's colour.
+#[component]
+fn AllocationPart(part: Part, bar: bool, on_open: EventHandler<String>) -> Element {
+    let tip = format!(
+        "{} {}. Press to see what it is made of.",
+        part.title,
+        percent(part.share)
+    );
+    let key = part.key.clone();
+    let key_too = part.key.clone();
+    let on_key = move |evt: KeyboardEvent| {
+        if evt.key() == Key::Enter || evt.key() == Key::Character(" ".into()) {
+            evt.prevent_default();
+            on_open.call(key_too.clone());
+        }
+    };
+    if bar {
+        return rsx! {
+            span {
+                class: "pf-alloc-part pf-alloc-open {part.color}",
+                style: "flex-grow: {part.share}",
+                role: "button",
+                tabindex: "0",
+                title: "{tip}",
+                aria_label: "{tip}",
+                onclick: move |_| on_open.call(key.clone()),
+                onkeydown: on_key,
+            }
+        };
+    }
+    rsx! {
+        span {
+            class: "pf-legend-item pf-legend-open",
+            role: "button",
+            tabindex: "0",
+            title: "{tip}",
+            onclick: move |_| on_open.call(key.clone()),
+            onkeydown: on_key,
+            span { class: "pf-swatch {part.color}", aria_hidden: "true" }
+            "{part.title} {percent(part.share)}"
+        }
+    }
 }
 
 /// What the columns of a row are, once, at the top of the table of priced
@@ -1187,6 +1384,90 @@ mod tests {
         );
         assert_eq!(verified_mark(&line(Asset::Token(mint), Some(false))), None);
         assert_eq!(verified_mark(&line(Asset::Token(mint), None)), None);
+    }
+
+    #[test]
+    fn a_part_of_the_bar_opens_into_what_it_is_made_of() {
+        use wallet_core::portfolio::Asset;
+        let line = |symbol: &str, usd: Option<f64>| Line {
+            asset: Asset::Sol,
+            symbol: symbol.into(),
+            name: None,
+            raw: 1,
+            decimals: 0,
+            price_usd: None,
+            change_24h_pct: None,
+            usd,
+            check: None,
+            shares: Vec::new(),
+        };
+        let group = |key: &str, title: &str, lines: Vec<Line>| Group {
+            key: key.into(),
+            title: title.into(),
+            usd: lines.iter().filter_map(|line| line.usd).sum(),
+            lines,
+            change_24h_usd: None,
+        };
+        // Eight groups: five keep a colour, three fold into "Other".
+        let mut groups = vec![
+            group(
+                "usd",
+                "US Dollar",
+                vec![
+                    line("USDT", Some(100.0)),
+                    line("USDC", Some(300.0)),
+                    line("DUST", Some(0.0)),
+                    line("NOPRICE", None),
+                ],
+            ),
+            group("sol", "SOL", vec![line("SOL", Some(200.0))]),
+        ];
+        for (n, title) in ["C", "D", "E", "F", "G", "H"].into_iter().enumerate() {
+            groups.push(group(
+                &title.to_lowercase(),
+                title,
+                vec![line(title, Some(60.0 - 10.0 * n as f64))],
+            ));
+        }
+        let total: f64 = groups.iter().map(|group| group.usd).sum();
+        let portfolio = Portfolio {
+            groups,
+            total_usd: total,
+            ..Default::default()
+        };
+        let colors = group_colors(&portfolio);
+        let whole = allocation_parts(&portfolio, &colors);
+        assert_eq!(whole.len(), 6);
+        assert_eq!(whole[0].key, "usd");
+        assert_eq!(whole[5].key, OTHER_KEY);
+
+        // A group: its assets worth something, largest first, in tones of
+        // its colour, as shares of the group.
+        let usd = zoomed_parts(&portfolio, &colors, "usd").unwrap();
+        assert_eq!(usd.title, "US Dollar");
+        assert_eq!(usd.color, whole[0].color);
+        assert!((usd.share - 400.0 / total).abs() < 1e-9);
+        let named: Vec<(&str, f64, f64)> = usd
+            .parts
+            .iter()
+            .map(|part| (part.title.as_str(), part.share, part.tone))
+            .collect();
+        assert_eq!(named, [("USDC", 0.75, 1.0), ("USDT", 0.25, 0.72)]);
+        assert!(usd.parts.iter().all(|part| part.color == usd.color));
+
+        // "Other": the groups folded into it.
+        let other = zoomed_parts(&portfolio, &colors, OTHER_KEY).unwrap();
+        let titles: Vec<&str> = other.parts.iter().map(|part| part.title.as_str()).collect();
+        assert_eq!(titles, ["F", "G", "H"]);
+        assert_eq!(other.color, "pf-cother");
+        let shares: f64 = other.parts.iter().map(|part| part.share).sum();
+        assert!((shares - 1.0).abs() < 1e-9);
+
+        // A part that is gone shows the whole bar again.
+        assert_eq!(zoomed_parts(&portfolio, &colors, "gone"), None);
+        // A group folded into "Other" is not a part of its own.
+        assert_eq!(zoomed_parts(&portfolio, &colors, "h"), None);
+        assert_eq!(zoomed_parts(&Portfolio::default(), &colors, "usd"), None);
     }
 
     #[test]

@@ -2706,15 +2706,32 @@ textarea.short { min-height: 64px; }
   line-height: var(--leading-tight);
 }
 /* One 100% bar; segments are separated by a 2 px surface gap. */
-.pf-alloc {
-  display: flex;
-  gap: 2px;
-  height: 10px;
-  border-radius: var(--radius-full);
-  overflow: hidden;
-}
+/* The bar's ends are rounded on its first and last parts, not by clipping
+   the bar: a part that opens reaches past the bar's ten pixels, so that it
+   is not that thin a thing to press. */
+.pf-alloc { display: flex; gap: 2px; height: 10px; }
 .pf-alloc-part { flex: 1 1 0; min-width: 2px; }
-.pf-legend { gap: var(--space-3); }
+.pf-alloc-part:first-child { border-top-left-radius: var(--radius-full); border-bottom-left-radius: var(--radius-full); }
+.pf-alloc-part:last-child { border-top-right-radius: var(--radius-full); border-bottom-right-radius: var(--radius-full); }
+/* A part that opens into what it is made of. */
+.pf-alloc-open { position: relative; cursor: pointer; transition: filter var(--fast) var(--ease), transform var(--fast) var(--ease); }
+.pf-alloc-open::before { content: ""; position: absolute; inset: -8px 0; }
+.pf-alloc-open:hover { filter: brightness(1.2); transform: scaleY(1.4); }
+.pf-alloc-open:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.pf-legend-open { cursor: pointer; border-radius: var(--radius-sm); }
+.pf-legend-open:hover { color: var(--text); }
+.pf-legend-open:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+/* The opened bar grows out of where its part was on the whole one. */
+.pf-alloc-zoomed { animation: pf-zoom 220ms var(--ease); }
+@keyframes pf-zoom {
+  from { transform: scaleX(0.3); opacity: 0.4; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+.pf-zoom-out { gap: 2px; height: 22px; min-height: 0; padding: 0 var(--space-2) 0 var(--space-1); font-size: var(--text-sm); }
+.pf-zoom-out-mark { display: inline-flex; transform: rotate(180deg); }
+.pf-zoom-out-mark .icon { width: 13px; height: 13px; }
+.pf-legend-head { color: var(--text); font-weight: var(--weight-medium); }
+.pf-legend { gap: var(--space-3); align-items: center; min-height: 22px; }
 .pf-legend-item {
   display: inline-flex;
   align-items: center;
