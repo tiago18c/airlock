@@ -77,11 +77,99 @@ pub(in crate::ui) fn IdlTabs(
 pub(in crate::ui) fn ParsedIdl(tree: IdlOutline, section: IdlSection) -> Element {
     match section {
         IdlSection::Instructions => rsx! {
-            div { class: "idl-section",
-                if tree.instructions.is_empty() {
-                    p { class: "muted", "This IDL describes no instructions." }
+            InstructionList { instructions: tree.instructions }
+        },
+        IdlSection::Accounts => rsx! {
+            div { class: "idl-section idl-list",
+                for account in tree.accounts {
+                    NamedItem { key: "{account.name}", name: account.name, detail: account.detail }
                 }
-                for ix in tree.instructions {
+            }
+        },
+        IdlSection::Types => rsx! {
+            div { class: "idl-section idl-list",
+                for kind in tree.types {
+                    NamedItem { key: "{kind.name}", name: kind.name, detail: kind.detail }
+                }
+            }
+        },
+        IdlSection::Pdas => rsx! {
+            div { class: "idl-section idl-list",
+                for pda in tree.pdas {
+                    details { class: "idl-item", key: "{pda.name}",
+                        summary { "{pda.name}" }
+                        if !pda.seeds.is_empty() {
+                            div { class: "idl-body",
+                                ul { class: "idl-lines",
+                                    for seed in pda.seeds {
+                                        li { key: "{seed}", "{seed}" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        IdlSection::Events => rsx! {
+            div { class: "idl-section idl-list",
+                for event in tree.events {
+                    NamedItem { key: "{event.name}", name: event.name, detail: event.detail }
+                }
+            }
+        },
+        IdlSection::Errors => rsx! {
+            div { class: "idl-errors",
+                for err in tree.errors {
+                    div { class: "idl-error", key: "{err.code}",
+                        div { class: "idl-error-code",
+                            code { "{err.code}" }
+                            code { class: "muted", "0x{err.code:x}" }
+                        }
+                        p { class: "idl-error-name", "{err.name}" }
+                        if !err.message.is_empty() {
+                            p { class: "muted", "{err.message}" }
+                        }
+                    }
+                }
+            }
+        },
+        IdlSection::Raw => rsx! {},
+    }
+}
+
+/// The instructions tab: a filter by name over one list, each instruction
+/// opening in place to its accounts and arguments.
+#[component]
+fn InstructionList(instructions: Vec<IdlIxOutline>) -> Element {
+    let mut filter = use_signal(String::new);
+    let any = !instructions.is_empty();
+    let shown: Vec<_> = instructions
+        .into_iter()
+        .filter(|ix| name_matches(&ix.name, &filter()))
+        .collect();
+
+    rsx! {
+        div { class: "idl-section",
+            if !any {
+                p { class: "muted", "This IDL describes no instructions." }
+            } else {
+                div { class: "filter-bar",
+                    label { "Filter instructions"
+                        input {
+                            r#type: "search",
+                            placeholder: "Instruction name",
+                            value: "{filter}",
+                            oninput: move |e| filter.set(e.value()),
+                        }
+                    }
+                }
+                if shown.is_empty() {
+                    p { class: "muted", "No instructions match this filter." }
+                }
+            }
+            div { class: "idl-list",
+                for ix in shown {
                     details { class: "idl-item", key: "{ix.name}",
                         summary { "{ix.name}" }
                         div { class: "idl-body",
@@ -111,63 +199,7 @@ pub(in crate::ui) fn ParsedIdl(tree: IdlOutline, section: IdlSection) -> Element
                     }
                 }
             }
-        },
-        IdlSection::Accounts => rsx! {
-            div { class: "idl-section",
-                for account in tree.accounts {
-                    NamedItem { key: "{account.name}", name: account.name, detail: account.detail }
-                }
-            }
-        },
-        IdlSection::Types => rsx! {
-            div { class: "idl-section",
-                for kind in tree.types {
-                    NamedItem { key: "{kind.name}", name: kind.name, detail: kind.detail }
-                }
-            }
-        },
-        IdlSection::Pdas => rsx! {
-            div { class: "idl-section",
-                for pda in tree.pdas {
-                    details { class: "idl-item", key: "{pda.name}",
-                        summary { "{pda.name}" }
-                        if !pda.seeds.is_empty() {
-                            div { class: "idl-body",
-                                ul { class: "idl-lines",
-                                    for seed in pda.seeds {
-                                        li { key: "{seed}", "{seed}" }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        IdlSection::Events => rsx! {
-            div { class: "idl-section",
-                for event in tree.events {
-                    NamedItem { key: "{event.name}", name: event.name, detail: event.detail }
-                }
-            }
-        },
-        IdlSection::Errors => rsx! {
-            div { class: "idl-errors",
-                for err in tree.errors {
-                    div { class: "idl-error", key: "{err.code}",
-                        div { class: "idl-error-code",
-                            code { "{err.code}" }
-                            code { class: "muted", "0x{err.code:x}" }
-                        }
-                        p { class: "idl-error-name", "{err.name}" }
-                        if !err.message.is_empty() {
-                            p { class: "muted", "{err.message}" }
-                        }
-                    }
-                }
-            }
-        },
-        IdlSection::Raw => rsx! {},
+        }
     }
 }
 

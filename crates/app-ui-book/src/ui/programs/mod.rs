@@ -4,7 +4,8 @@ use crate::state::session::Session;
 use crate::ui::{short_checksum, AddressHeader, AddressRow, Glyph, Icon};
 use dioxus::prelude::*;
 use wallet_core::{
-    pretty_idl, IdlAccountUse, IdlOrigin, IdlOutline, IdlPinStatus, IdlRecord, IdlSource, IdlSpec,
+    pretty_idl, IdlAccountUse, IdlIxOutline, IdlOrigin, IdlOutline, IdlPinStatus, IdlRecord,
+    IdlSource, IdlSpec,
 };
 
 mod detail;
@@ -18,7 +19,21 @@ pub fn ProgramsPanel() -> Element {
     let session = use_context::<Session>();
     let note = use_signal(|| None::<String>);
     let error = use_signal(|| None::<String>);
+    let mut filter = use_signal(String::new);
     let records = session.idl_records();
+    let directory = (session.directory)();
+    let any = !records.is_empty();
+    let shown: Vec<IdlRecord> = records
+        .into_iter()
+        .filter(|record| {
+            let label = directory.describe(&record.program_id).full_label();
+            program_matches(
+                &record.program_id.to_string(),
+                [label.as_deref(), Some(record.name.as_str())],
+                &filter(),
+            )
+        })
+        .collect();
     // Android has no file picker for the app to open IDL files or folders with.
     let files = !cfg!(target_os = "android");
 
@@ -55,16 +70,33 @@ pub fn ProgramsPanel() -> Element {
                 if let Some(text) = note() {
                     p { class: "note", "{text}" }
                 }
-                if records.is_empty() {
+                if !any {
                     div { class: "empty",
                         Icon { glyph: Glyph::Code }
                         p { "No programs yet." }
                     }
                 }
-                div { class: "book-layout",
-                    ul { class: "group-list programs",
-                        for record in records {
-                            ProgramItem { key: "{record.program_id}", record }
+                div { class: "book-layout program-layout",
+                    if any {
+                        div { class: "program-side",
+                            div { class: "filter-bar",
+                                label { "Filter programs"
+                                    input {
+                                        r#type: "search",
+                                        placeholder: "Name or address",
+                                        value: "{filter}",
+                                        oninput: move |e| filter.set(e.value()),
+                                    }
+                                }
+                            }
+                            if shown.is_empty() {
+                                p { class: "muted", "No programs match this filter." }
+                            }
+                            ul { class: "group-list program-list",
+                                for record in shown {
+                                    ProgramItem { key: "{record.program_id}", record }
+                                }
+                            }
                         }
                     }
                     ProgramDetail {}
@@ -103,7 +135,7 @@ fn ProgramItem(record: IdlRecord) -> Element {
             button {
                 class: "group-pick",
                 onclick: move |_| selected.set(Some(id)),
-                AddressRow { pubkey: id, no_copy: true, no_card: true }
+                AddressRow { pubkey: id, no_copy: true, no_card: true, class: "program-row" }
             }
             if record.origin != IdlOrigin::Builtin && record.host.is_none() {
             div { class: "group-actions",
@@ -121,5 +153,48 @@ fn ProgramItem(record: IdlRecord) -> Element {
             }
             }
         }
+    }
+}
+
+/// Whether a program answers the filter: one of its names, or its address,
+/// holds the text, whatever the case.
+fn program_matches(address: &str, names: [Option<&str>; 2], filter: &str) -> bool {
+    let wanted = filter.trim().to_lowercase();
+    wanted.is_empty()
+        || names
+            .into_iter()
+            .flatten()
+            .chain([address])
+            .any(|text| text.to_lowercase().contains(&wanted))
+}
+
+/// Whether a name holds the filter, whatever the case.
+fn name_matches(name: &str, filter: &str) -> bool {
+    let wanted = filter.trim().to_lowercase();
+    wanted.is_empty() || name.to_lowercase().contains(&wanted)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TOKEN: &str = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+
+    #[test]
+    fn a_program_is_found_by_either_name_or_its_address() {
+        let names = [Some("Token Program"), Some("token")];
+        assert!(program_matches(TOKEN, names, ""));
+        assert!(program_matches(TOKEN, names, "  "));
+        assert!(program_matches(TOKEN, names, "token prog"));
+        assert!(program_matches(TOKEN, [None, Some("token")], "TOK"));
+        assert!(program_matches(TOKEN, names, "kegqfe"));
+        assert!(!program_matches(TOKEN, names, "memo"));
+    }
+
+    #[test]
+    fn an_instruction_is_found_by_part_of_its_name() {
+        assert!(name_matches("transferChecked", ""));
+        assert!(name_matches("transferChecked", "checked"));
+        assert!(!name_matches("transferChecked", "burn"));
     }
 }

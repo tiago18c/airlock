@@ -47,6 +47,16 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
             .find(|row| row.program_id == host)
             .map_or_else(|| host.to_string(), |row| row.name)
     });
+    // The name the list gives it; the IDL's own name beside it when that
+    // says something else.
+    let label = (session.directory)()
+        .describe(&record.program_id)
+        .full_label();
+    let idl_name = label
+        .as_ref()
+        .is_some_and(|label| *label != record.name)
+        .then(|| record.name.clone());
+    let title = label.unwrap_or_else(|| record.name.clone());
     let network = session.idl_network();
     let embedded = (record.origin == IdlOrigin::Builtin)
         .then(|| session.embedded_idl(&record.program_id))
@@ -57,14 +67,17 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
             div { class: "stack",
                 AddressHeader {
                     pubkey: Some(record.program_id),
-                    title: record.name.clone(),
+                    title,
+                    title_after: idl_name.map(|name| rsx! {
+                        code { class: "program-idl-name", title: "Its name in the IDL", "{name}" }
+                    }),
                 }
-                p { class: "muted",
+                p { class: "muted program-facts",
                     "{spec} · "
                     if let Some(version) = version {
                         "version {version} · "
                     }
-                    "{checksum} · "
+                    "{checksum} "
                     span { class: status_class(status), "{status.label()}" }
                     if record.origin == IdlOrigin::Builtin {
                         " "
@@ -172,6 +185,6 @@ pub(in crate::ui) fn status_class(status: IdlPinStatus) -> &'static str {
     match status {
         IdlPinStatus::Matches | IdlPinStatus::MatchesSource => "chip ok",
         IdlPinStatus::Differs => "chip danger",
-        _ => "chip",
+        IdlPinStatus::NotChecked | IdlPinStatus::NoIdl => "chip warn",
     }
 }
