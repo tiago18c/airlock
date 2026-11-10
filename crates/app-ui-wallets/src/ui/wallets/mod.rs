@@ -131,7 +131,6 @@ pub fn WalletsPanel() -> Element {
                 if !hot.is_empty() {
                     h3 { class: "group-title wallets-group",
                         "Hot wallets"
-                        GroupCount { count: hot.len() }
                         HelpTip { text: "A hot wallet's private key or seed phrase is stored in this device's vault, so the app can sign with it here." }
                     }
                     ul { class: "tree",
@@ -144,7 +143,6 @@ pub fn WalletsPanel() -> Element {
                 if !phone || !offline.is_empty() {
                 h3 { class: "group-title wallets-group",
                     "Offline wallets"
-                    GroupCount { count: offline.len() }
                     HelpTip { text: "An offline wallet is the address of a key kept on another device. This device prepares its transactions and the other one signs them, from a QR code or pasted text. A hot wallet can pay its fees, and a programmatic signer lets it act without signing a transaction itself." }
                 }
                 if offline.is_empty() {
@@ -162,7 +160,6 @@ pub fn WalletsPanel() -> Element {
                 if !phone || !hardware.is_empty() {
                 h3 { class: "group-title wallets-group",
                     "Hardware wallets"
-                    GroupCount { count: hardware.len() }
                     HelpTip { text: "A hardware wallet keeps its key on a separate signing device that is plugged in or paired when it is time to sign." }
                 }
                 if hardware.is_empty() {
@@ -193,7 +190,6 @@ pub fn WalletsPanel() -> Element {
                 if !phone || !contracts.is_empty() {
                 h3 { class: "group-title wallets-group",
                     "Smart contract wallets"
-                    GroupCount { count: contracts.len() }
                     HelpTip { text: "A smart contract wallet has no key of its own. A program on chain decides who may act: a programmatic signer acts when its authority key signs a message, and a Squads multisig acts when enough of its members approve." }
                 }
                 if contracts.is_empty() {
@@ -215,14 +211,6 @@ pub fn WalletsPanel() -> Element {
         if export_open() {
             ExportKeysModal { on_close: move |_| export_open.set(false) }
         }
-    }
-}
-
-/// How many wallets a group holds, in muted text after its name.
-#[component]
-fn GroupCount(count: usize) -> Element {
-    rsx! {
-        span { class: "group-count", "· {count}" }
     }
 }
 

@@ -2137,9 +2137,8 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 }
 .group-title { font-size: var(--text-md); margin-top: var(--space-3); }
 .wallet-row h3 .chip { margin-left: var(--space-2); vertical-align: middle; }
-/* The Wallets pane's group headings: a step above the old size, the count
-   of wallets after the name, more room above a group than inside it, and
-   the heading close to its own cards. */
+/* The Wallets pane's group headings: a step above the old size, more room
+   above a group than inside it, and the heading close to its own cards. */
 .group-title.wallets-group {
   display: flex;
   align-items: center;
@@ -2151,7 +2150,6 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 }
 .stack > .group-title.wallets-group:first-of-type { margin-top: var(--space-2); }
 .group-title.wallets-group .help { margin-left: 0; }
-.group-count { color: var(--text-2); font-weight: var(--weight-regular); }
 /* A wallet card's head: the name, the address and under it the balance
    with Send, on the left; the card's buttons on the right of the name's row.
    Where they do not fit beside the name they drop below, still on the right. */
