@@ -504,7 +504,18 @@ fn Review(
                             let pick = token_pick(&held);
                             let (base, base2, base3) = (choices.clone(), choices.clone(), choices.clone());
                             rsx! {
-                                li { class: "book-row", key: "{address}",
+                                li { class: "book-row pick-row", key: "{address}",
+                                    input {
+                                        r#type: "checkbox",
+                                        checked: ticked,
+                                        title: "Include this account",
+                                        aria_label: "Include the account {address}",
+                                        onchange: move |evt| {
+                                            let mut next = base3.clone();
+                                            next.tokens.insert(address, if evt.checked() { pick } else { TokenMove::Leave });
+                                            on_change.call(next);
+                                        },
+                                    }
                                     AddressRow { pubkey: held.account.mint,
                                         span { class: "mono cleanup-amount", "{amount}" }
                                         if ticked && either {
@@ -537,17 +548,6 @@ fn Review(
                                         }
                                         if let Some(why) = &blocked {
                                             span { class: "chip warn", title: "{why}", "{why}" }
-                                        }
-                                        input {
-                                            r#type: "checkbox",
-                                            checked: ticked,
-                                            title: "Include this account",
-                                            aria_label: "Include the account {address}",
-                                            onchange: move |evt| {
-                                                let mut next = base3.clone();
-                                                next.tokens.insert(address, if evt.checked() { pick } else { TokenMove::Leave });
-                                                on_change.call(next);
-                                            },
                                         }
                                     }
                                 }
@@ -583,23 +583,23 @@ fn Review(
                             };
                             let base = choices.clone();
                             rsx! {
-                                li { class: "book-row", key: "{address}",
+                                li { class: "book-row pick-row", key: "{address}",
+                                    input {
+                                        r#type: "checkbox",
+                                        checked: ticked,
+                                        title: "Hand this stake account over",
+                                        aria_label: "Hand over the stake account {address}",
+                                        onchange: move |evt| {
+                                            let mut next = base.clone();
+                                            next.stakes.insert(
+                                                address,
+                                                if evt.checked() { StakeChoice::BOTH } else { StakeChoice::default() },
+                                            );
+                                            on_change.call(next);
+                                        },
+                                    }
                                     AddressRow { pubkey: address,
                                         span { class: "mono cleanup-amount", "{format_sol(stake.lamports)}" }
-                                        input {
-                                            r#type: "checkbox",
-                                            checked: ticked,
-                                            title: "Hand this stake account over",
-                                            aria_label: "Hand over the stake account {address}",
-                                            onchange: move |evt| {
-                                                let mut next = base.clone();
-                                                next.stakes.insert(
-                                                    address,
-                                                    if evt.checked() { StakeChoice::BOTH } else { StakeChoice::default() },
-                                                );
-                                                on_change.call(next);
-                                            },
-                                        }
                                     }
                                     if let Some(reason) = reason {
                                         p { class: "hint", "{reason}" }
@@ -632,27 +632,28 @@ fn Review(
                                 _ => None,
                             };
                             let ticked = choices.nonces.contains(&address);
+                            let is_blocked = blocked.is_some();
                             let base = choices.clone();
                             rsx! {
-                                li { class: "book-row", key: "{address}",
+                                li { class: "book-row pick-row", key: "{address}",
+                                    input {
+                                        r#type: "checkbox",
+                                        checked: ticked,
+                                        disabled: is_blocked,
+                                        title: "Close this nonce account",
+                                        aria_label: "Close the nonce account {address}",
+                                        onchange: move |evt| {
+                                            let mut next = base.clone();
+                                            if evt.checked() {
+                                                next.nonces.insert(address);
+                                            } else {
+                                                next.nonces.remove(&address);
+                                            }
+                                            on_change.call(next);
+                                        },
+                                    }
                                     AddressRow { pubkey: address,
                                         span { class: "mono cleanup-amount", "{format_sol(nonce.lamports)}" }
-                                        input {
-                                            r#type: "checkbox",
-                                            checked: ticked,
-                                            disabled: blocked.is_some(),
-                                            title: "Close this nonce account",
-                                            aria_label: "Close the nonce account {address}",
-                                            onchange: move |evt| {
-                                                let mut next = base.clone();
-                                                if evt.checked() {
-                                                    next.nonces.insert(address);
-                                                } else {
-                                                    next.nonces.remove(&address);
-                                                }
-                                                on_change.call(next);
-                                            },
-                                        }
                                     }
                                     if let Some(reason) = blocked {
                                         p { class: "hint", "{reason}" }
