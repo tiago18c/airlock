@@ -97,7 +97,7 @@ pub(in crate::ui) fn ParsedIdl(tree: IdlOutline, section: IdlSection) -> Element
             div { class: "idl-section idl-list",
                 for pda in tree.pdas {
                     details { class: "idl-item", key: "{pda.name}",
-                        summary { "{pda.name}" }
+                        IdlSummary { name: pda.name.clone() }
                         if !pda.seeds.is_empty() {
                             div { class: "idl-body",
                                 ul { class: "idl-lines",
@@ -171,26 +171,37 @@ fn InstructionList(instructions: Vec<IdlIxOutline>) -> Element {
             div { class: "idl-list",
                 for ix in shown {
                     details { class: "idl-item", key: "{ix.name}",
-                        summary { "{ix.name}" }
+                        IdlSummary { name: ix.name.clone() }
                         div { class: "idl-body",
                             if !ix.docs.is_empty() {
-                                p { "{ix.docs}" }
+                                p { class: "idl-docs", "{ix.docs}" }
                             }
                             if !ix.accounts.is_empty() {
-                                p { class: "muted", "Accounts" }
-                                ul { class: "idl-lines",
-                                    for account in ix.accounts {
-                                        li { key: "{account.name}", "{account_line(&account)}" }
+                                div { class: "idl-block",
+                                    h4 { class: "eyebrow", "Accounts" }
+                                    ul { class: "idl-rows",
+                                        for account in ix.accounts {
+                                            li { class: "idl-row", key: "{account.name}",
+                                                span { class: "idl-row-name", "{account.name}" }
+                                                span { class: "idl-flags",
+                                                    for flag in account_flags(&account) {
+                                                        span { class: "chip", key: "{flag}", "{flag}" }
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
                             if !ix.arguments.is_empty() {
-                                p { class: "muted", "Arguments" }
-                                ul { class: "idl-lines",
-                                    for arg in ix.arguments {
-                                        li { key: "{arg.name}",
-                                            span { "{arg.name}" }
-                                            span { class: "muted", " {arg.ty}" }
+                                div { class: "idl-block",
+                                    h4 { class: "eyebrow", "Arguments" }
+                                    ul { class: "idl-rows",
+                                        for arg in ix.arguments {
+                                            li { class: "idl-row", key: "{arg.name}",
+                                                span { class: "idl-row-name", "{arg.name}" }
+                                                code { class: "idl-row-type", "{arg.ty}" }
+                                            }
                                         }
                                     }
                                 }
@@ -203,6 +214,18 @@ fn InstructionList(instructions: Vec<IdlIxOutline>) -> Element {
     }
 }
 
+/// The row that opens an IDL item: the app's chevron, which turns when the
+/// item is open, then the name.
+#[component]
+fn IdlSummary(name: String) -> Element {
+    rsx! {
+        summary {
+            span { class: "idl-chevron", aria_hidden: "true", Icon { glyph: Glyph::ChevronRight } }
+            span { class: "idl-name", "{name}" }
+        }
+    }
+}
+
 /// An account, type or event: its name, opening to what it holds.
 #[component]
 fn NamedItem(name: String, detail: String) -> Element {
@@ -211,24 +234,28 @@ fn NamedItem(name: String, detail: String) -> Element {
     }
     rsx! {
         details { class: "idl-item",
-            summary { "{name}" }
+            IdlSummary { name }
             div { class: "idl-body", p { "{detail}" } }
         }
     }
 }
 
-pub(in crate::ui) fn account_line(account: &IdlAccountUse) -> String {
-    let access = if account.writable {
-        "writable"
+/// What an instruction's account is drawn with, as the transaction view
+/// draws them: writable or readonly, then whether it signs. An account that
+/// may sign or not ("either" in the IDL) is "signer optional".
+pub(in crate::ui) fn account_flags(account: &IdlAccountUse) -> Vec<String> {
+    let mut flags = vec![if account.writable {
+        "writable".to_string()
     } else {
-        "readonly"
-    };
-    if account.optional {
-        format!(
-            "{} · {access} · {} · optional",
-            account.name, account.signer
-        )
-    } else {
-        format!("{} · {access} · {}", account.name, account.signer)
+        "readonly".to_string()
+    }];
+    match account.signer.trim() {
+        "" | "not a signer" => {}
+        "either" => flags.push("signer optional".into()),
+        other => flags.push(other.to_string()),
     }
+    if account.optional {
+        flags.push("optional".into());
+    }
+    flags
 }

@@ -7,6 +7,12 @@
 
 use crate::book::address_book::{AddressBook, AddressKind, Origin};
 use crate::book::holdings::{Holdings, TokenFlag};
+use crate::idl::builtin::ED25519_SIGNER_PROGRAM_ID;
+use crate::ids::{
+    COMPUTE_BUDGET_PROGRAM_ID, MEMO_PROGRAM_ID, REALMS_GOVERNANCE_PROGRAM_ID,
+    SQUADS_SMART_ACCOUNT_PROGRAM_ID, SQUADS_V4_PROGRAM_ID,
+};
+use crate::wallets::vector::PROGRAM_ID as VECTOR_PROGRAM_ID;
 use crate::wallets::{WalletClass, WalletKind, WalletSummary};
 use solana_pubkey::Pubkey;
 use std::collections::HashMap;
@@ -191,13 +197,19 @@ impl Directory {
     }
 
     /// `programs` names programs the book does not, such as those an IDL
-    /// on this device describes.
+    /// on this device describes. A program whose IDL ships with the app is
+    /// shown by its display name rather than the IDL's.
     pub fn with_programs(
         wallets: &[WalletSummary],
         book: Arc<AddressBook>,
         holdings: Arc<Holdings>,
-        programs: HashMap<Pubkey, String>,
+        mut programs: HashMap<Pubkey, String>,
     ) -> Self {
+        for (pubkey, name) in programs.iter_mut() {
+            if let Some(shown) = program_display_name(pubkey) {
+                *name = shown.to_string();
+            }
+        }
         let mut by_address = HashMap::new();
         for (index, wallet) in wallets.iter().enumerate() {
             if let Some(address) = wallet.address {
@@ -448,6 +460,79 @@ fn wallet_label(wallet: &WalletSummary, role: Role) -> String {
         Role::Own => wallet.label.trim().to_string(),
         Role::Multisig => format!("{} multisig", wallet.label.trim()),
     }
+}
+
+/// The names of the programs whose IDLs ship with the app, for where the
+/// IDL's own name is an identifier ("computeBudget"). The System, Stake,
+/// Token, Token-2022 and Associated Token programs are named by the address
+/// book's seeded entries, which win over these.
+const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
+    (COMPUTE_BUDGET_PROGRAM_ID, "Compute Budget Program"),
+    (ED25519_SIGNER_PROGRAM_ID, "Programmatic Signer Program"),
+    (
+        Pubkey::from_str_const("ExecxgyHYsAXB4c5dZodV1zJZ9hqfsDCYkRDRATrpkFR"),
+        "Message Executor Program",
+    ),
+    (
+        Pubkey::from_str_const("Noncediea1fH12usShuQAz28UhgAeuE5Maf32LsMUQB"),
+        "Message Executor Nonce Program",
+    ),
+    (SQUADS_V4_PROGRAM_ID, "Squads Multisig Program"),
+    (
+        SQUADS_SMART_ACCOUNT_PROGRAM_ID,
+        "Squads Smart Account Program",
+    ),
+    (VECTOR_PROGRAM_ID, "Vector Program"),
+    // The three memo programs read the same data. The shipped files declare
+    // v1 and v4 for the `Memo1…` and `Memo4…` addresses; the code calls the
+    // one in between, the one the app writes memos with, both v2 and v3, so
+    // it carries no number.
+    (
+        Pubkey::from_str_const("Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo"),
+        "Memo Program v1",
+    ),
+    (MEMO_PROGRAM_ID, "Memo Program"),
+    (
+        Pubkey::from_str_const("Memo4c2pN8afCj432Lb7RMVKi9PbQnnW7ewFFaV3oAH"),
+        "Memo Program v4",
+    ),
+    (
+        Pubkey::from_str_const("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc"),
+        "Orca Whirlpool Program",
+    ),
+    (
+        Pubkey::from_str_const("CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK"),
+        "Raydium CLMM Program",
+    ),
+    (
+        Pubkey::from_str_const("DRayAUgENGQBKVaX8owNhgzkEDyoHTGVEGHVJT1E9pfH"),
+        "Raydium CLMM Program",
+    ),
+    (
+        Pubkey::from_str_const("CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"),
+        "Raydium CP Swap Program",
+    ),
+    (
+        Pubkey::from_str_const("DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb"),
+        "Raydium CP Swap Program",
+    ),
+    (
+        Pubkey::from_str_const("DRaybByLpbUL57LJARs3j8BitTxVfzBg351EaMr5UTCd"),
+        "Raydium Router Program",
+    ),
+    (REALMS_GOVERNANCE_PROGRAM_ID, "SPL Governance Program"),
+    (
+        Pubkey::from_str_const("ProgM6JCCvbYkfKqJYHePx4xxSUSqJp7rh8Lyv7nk7S"),
+        "Program Metadata Program",
+    ),
+];
+
+/// The display name of a program whose IDL ships with the app.
+fn program_display_name(pubkey: &Pubkey) -> Option<&'static str> {
+    PROGRAM_DISPLAY_NAMES
+        .iter()
+        .find(|(known, _)| known == pubkey)
+        .map(|(_, name)| *name)
 }
 
 /// Labels compare trimmed and without case. An imported label carries its

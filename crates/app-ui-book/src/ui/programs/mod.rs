@@ -192,6 +192,28 @@ mod tests {
     }
 
     #[test]
+    fn an_account_says_how_it_is_used_as_the_transaction_view_does() {
+        let account = |writable, signer: &str, optional| IdlAccountUse {
+            name: "authority".into(),
+            writable,
+            signer: signer.into(),
+            optional,
+        };
+        assert_eq!(
+            account_flags(&account(true, "not a signer", false)),
+            ["writable"]
+        );
+        assert_eq!(
+            account_flags(&account(false, "signer", false)),
+            ["readonly", "signer"]
+        );
+        assert_eq!(
+            account_flags(&account(false, "either", true)),
+            ["readonly", "signer optional", "optional"]
+        );
+    }
+
+    #[test]
     fn an_instruction_is_found_by_part_of_its_name() {
         assert!(name_matches("transferChecked", ""));
         assert!(name_matches("transferChecked", "checked"));
