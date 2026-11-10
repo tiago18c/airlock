@@ -267,6 +267,29 @@ mod tests {
     }
 
     #[test]
+    fn an_opened_instruction_sizes_its_name_column_to_its_longest_name() {
+        let ix = IdlIxOutline {
+            name: "transferChecked".into(),
+            docs: String::new(),
+            accounts: vec![IdlAccountUse {
+                name: "destination".into(),
+                writable: true,
+                signer: "not a signer".into(),
+                optional: false,
+            }],
+            arguments: vec![wallet_core::IdlArgOutline {
+                name: "discriminator".into(),
+                ty: "u8".into(),
+                fixed: true,
+                fixed_value: Some("12".into()),
+            }],
+        };
+        assert_eq!(row_names_width(&ix), "discriminator".len());
+        assert_eq!(longest(["burn", "transferChecked"].into_iter()), 15);
+        assert_eq!(longest(std::iter::empty()), 1);
+    }
+
+    #[test]
     fn an_instruction_is_found_by_part_of_its_name() {
         assert!(name_matches("transferChecked", ""));
         assert!(name_matches("transferChecked", "checked"));

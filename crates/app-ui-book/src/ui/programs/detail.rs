@@ -82,24 +82,26 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                     code { class: "mono", "{program_id}" }
                     CopyButton { text: program_id.to_string() }
                 }
-                p { class: "muted program-facts",
-                    span { class: "program-facts-text",
-                        "{spec} · "
-                        if let Some(version) = version {
-                            "version {version} · "
+                // Two lines: what the file is, then the state of the online
+                // check with the action that runs it, as one group.
+                div { class: "program-facts-block",
+                    p { class: "muted program-facts",
+                        span { class: "program-facts-text",
+                            "{spec} · "
+                            if let Some(version) = version {
+                                "version {version} · "
+                            }
+                            "{checksum}"
                         }
-                        "{checksum}"
+                        if record.origin == IdlOrigin::Builtin {
+                            span { class: "chip", "built in" }
+                        }
+                        if let Some(host) = host_name.clone() {
+                            span { class: "chip info", "from the {host} IDL" }
+                        }
+                        span { class: "chip", title: "IDLs are kept per network: the cluster in use", "IDL for {network}" }
                     }
-                    if record.origin == IdlOrigin::Builtin {
-                        span { class: "chip", "built in" }
-                    }
-                    if let Some(host) = host_name.clone() {
-                        span { class: "chip info", "from the {host} IDL" }
-                    }
-                    span { class: "chip", title: "IDLs are kept per network: the cluster in use", "IDL for {network}" }
-                    // The state of the online check, and the action that
-                    // runs it, together at the end of the line.
-                    span { class: "program-check-group",
+                    div { class: "program-check-group",
                         span { class: status_class(status), title: status_tip(status), "{status_words(status)}" }
                         button {
                             class: "sm program-check",

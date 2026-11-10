@@ -43,6 +43,12 @@ pub struct IdlAccountUse {
 pub struct IdlArgOutline {
     pub name: String,
     pub ty: String,
+    /// The IDL gives it a value the caller cannot change: a default with
+    /// the `omitted` strategy, as a discriminator has.
+    pub fixed: bool,
+    /// That value in words, when it is a plain number, boolean, string or
+    /// bytes.
+    pub fixed_value: Option<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -155,13 +161,44 @@ pub(super) fn instruction_outline(node: &serde_json::Value) -> IdlIxOutline {
                     .unwrap_or(false),
             })
             .collect(),
-        arguments: arguments
-            .iter()
-            .map(|arg| IdlArgOutline {
-                name: text_at(arg, "name"),
-                ty: type_text(arg.get("type").unwrap_or(&serde_json::Value::Null)),
-            })
-            .collect(),
+        arguments: arguments.iter().map(argument_outline).collect(),
+    }
+}
+
+pub(super) fn argument_outline(arg: &serde_json::Value) -> IdlArgOutline {
+    let default = arg.get("defaultValue").filter(|value| !value.is_null());
+    let fixed = default.is_some() && text_at(arg, "defaultValueStrategy") == "omitted";
+    IdlArgOutline {
+        name: text_at(arg, "name"),
+        ty: type_text(arg.get("type").unwrap_or(&serde_json::Value::Null)),
+        fixed,
+        fixed_value: default.filter(|_| fixed).and_then(value_text),
+    }
+}
+
+/// A plain value in words: a number, a boolean, a string, or bytes (base16
+/// as `0x…`). `None` for anything else, such as a value read from another
+/// account or argument.
+pub(super) fn value_text(value: &serde_json::Value) -> Option<String> {
+    match value.get("kind").and_then(serde_json::Value::as_str)? {
+        "numberValueNode" => value.get("number").map(serde_json::Value::to_string),
+        "booleanValueNode" => value
+            .get("boolean")
+            .and_then(serde_json::Value::as_bool)
+            .map(|on| on.to_string()),
+        "stringValueNode" => value
+            .get("string")
+            .and_then(serde_json::Value::as_str)
+            .map(|text| format!("{text:?}")),
+        "bytesValueNode" => {
+            let data = value.get("data").and_then(serde_json::Value::as_str)?;
+            match text_at(value, "encoding").as_str() {
+                "base16" => Some(format!("0x{data}")),
+                "" => Some(data.to_string()),
+                encoding => Some(format!("{data} ({encoding})")),
+            }
+        }
+        _ => None,
     }
 }
 

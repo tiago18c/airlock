@@ -144,6 +144,9 @@ pub(in crate::ui) fn ParsedIdl(tree: IdlOutline, section: IdlSection) -> Element
 fn InstructionList(instructions: Vec<IdlIxOutline>) -> Element {
     let mut filter = use_signal(String::new);
     let any = !instructions.is_empty();
+    // One column for the names of the whole list, as wide as the longest
+    // (the CSS caps it), so every description starts at the same place.
+    let name_width = longest(instructions.iter().map(|ix| ix.name.as_str()));
     let shown: Vec<_> = instructions
         .into_iter()
         .filter(|ix| name_matches(&ix.name, &filter()))
@@ -169,18 +172,21 @@ fn InstructionList(instructions: Vec<IdlIxOutline>) -> Element {
                     p { class: "muted", "No instructions match this filter." }
                 }
             }
-            div { class: "idl-list",
+            div { class: "idl-list", style: "--ix-name-w: {name_width}ch",
                 for ix in shown {
                     details { class: "idl-item idl-ix", key: "{ix.name}",
                         summary {
                             span { class: "idl-chevron", aria_hidden: "true", Icon { glyph: Glyph::ChevronRight } }
-                            span { class: "idl-name", "{ix.name}" }
+                            span { class: "idl-name", title: "{ix.name}", "{ix.name}" }
                             if let Some(gist) = first_sentence(&ix.docs) {
                                 span { class: "idl-gist", "{gist}" }
                             }
                             span { class: "idl-counts", "{shape(ix.accounts.len(), ix.arguments.len())}" }
                         }
                         div { class: "idl-body",
+                            // The names of its accounts and arguments on one
+                            // column, as wide as the longest of them.
+                            style: "--idl-name-w: {row_names_width(&ix)}ch",
                             if !ix.docs.is_empty() {
                                 p { class: "idl-docs", "{ix.docs}" }
                             }
@@ -188,11 +194,11 @@ fn InstructionList(instructions: Vec<IdlIxOutline>) -> Element {
                                 div { class: "idl-block",
                                     h4 { class: "eyebrow", "Accounts" }
                                     ul { class: "idl-rows",
-                                        for account in ix.accounts {
+                                        for account in ix.accounts.iter() {
                                             li { class: "idl-row", key: "{account.name}",
                                                 span { class: "idl-row-name", "{account.name}" }
                                                 span { class: "idl-flags",
-                                                    for flag in account_flags(&account) {
+                                                    for flag in account_flags(account) {
                                                         span { class: flag_class(&flag), key: "{flag}", "{flag}" }
                                                     }
                                                 }
@@ -205,10 +211,24 @@ fn InstructionList(instructions: Vec<IdlIxOutline>) -> Element {
                                 div { class: "idl-block",
                                     h4 { class: "eyebrow", "Arguments" }
                                     ul { class: "idl-rows",
-                                        for arg in ix.arguments {
+                                        for arg in ix.arguments.iter() {
                                             li { class: "idl-row", key: "{arg.name}",
                                                 span { class: "idl-row-name", "{arg.name}" }
-                                                code { class: "idl-row-type", "{arg.ty}" }
+                                                span { class: "idl-row-value",
+                                                    code { class: "idl-row-type", "{arg.ty}" }
+                                                    // A value the IDL sets, which
+                                                    // the caller does not supply.
+                                                    if arg.fixed {
+                                                        span {
+                                                            class: "idl-fixed",
+                                                            title: "Set by the IDL: the caller does not supply it",
+                                                            "fixed"
+                                                            if let Some(value) = arg.fixed_value.clone() {
+                                                                code { class: "idl-fixed-value", "{value}" }
+                                                            }
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -246,6 +266,26 @@ fn NamedItem(name: String, detail: String) -> Element {
             div { class: "idl-body", p { "{detail}" } }
         }
     }
+}
+
+/// How many characters the longest of these names has, at least one.
+pub(in crate::ui) fn longest<'a>(names: impl Iterator<Item = &'a str>) -> usize {
+    names
+        .map(|name| name.chars().count())
+        .max()
+        .unwrap_or(0)
+        .max(1)
+}
+
+/// The width of an opened instruction's name column: its longest account
+/// or argument name.
+pub(in crate::ui) fn row_names_width(ix: &IdlIxOutline) -> usize {
+    longest(
+        ix.accounts
+            .iter()
+            .map(|account| account.name.as_str())
+            .chain(ix.arguments.iter().map(|arg| arg.name.as_str())),
+    )
 }
 
 /// The pill a flag is drawn in: the account that signs in the accent, as
