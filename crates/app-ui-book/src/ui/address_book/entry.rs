@@ -220,6 +220,19 @@ fn kind_line(described: &Described) -> Option<String> {
     }
 }
 
+/// The kind line on a phone, as the parts it is made of, each kept whole
+/// on one line: a line breaks only between them. A smart contract wallet's
+/// line drops its first part where a more specific one follows, "Squads v4
+/// · 2 of 3", since the row's icon already says what it is and the whole
+/// line would not fit on one line of a phone.
+fn phone_kind_parts(category: Category, line: &str) -> Vec<String> {
+    let mut parts: Vec<String> = line.split(" · ").map(str::to_string).collect();
+    if category == Category::Wallet(WalletSort::SmartContract) && parts.len() > 1 {
+        parts.remove(0);
+    }
+    parts
+}
+
 /// The name a token's mark is drawn from: its own label, without the group
 /// a full label adds.
 fn token_mark_name(described: &Described, entry: &wallet_core::AddressEntry) -> Option<String> {
@@ -263,6 +276,11 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
     let collides = !described.collides_with.is_empty();
     let name = entry_name(&described, &entry);
     let what = kind_line(&described);
+    let phone = crate::ui::use_phone_layout();
+    let kind_parts = match (phone, what.as_deref()) {
+        (true, Some(line)) => phone_kind_parts(category, line),
+        _ => Vec::new(),
+    };
     // The kind line is drawn when it says something, or ends in the toggle
     // of the entry's token accounts.
     let has_holdings = owns_tokens && session.holding_summary(&pubkey).total > 0;
@@ -290,11 +308,11 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
     };
     // On a phone every row has one shape: the name over its kind line, the
     // balance beside it when there is one, then the address shortened to one
-    // line with copy and the three dots at the right edge, where they are on
-    // every row. A row with nothing to weigh draws nothing there rather than
-    // a dash, and its name takes the room. The three dots open a bottom
-    // sheet titled with the entry's name, as a wallet card's do.
-    let phone = crate::ui::use_phone_layout();
+    // line with copy right after it, and the three dots at the right end of
+    // that line, where they are on every row. A row with nothing to weigh
+    // draws nothing there rather than a dash, and its name takes the room.
+    // The three dots open a bottom sheet titled with the entry's name, as a
+    // wallet card's do.
     let mut sheet_open = use_signal(|| false);
     let weighed = has_balance || token_amount.is_some();
     let row_class = if phone && !weighed {
@@ -377,7 +395,16 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                 }
                 if show_kind {
                     p { class: "ab-kind",
-                        if let Some(what) = what.as_ref() {
+                        if phone {
+                            // The separator keeps to the part before it, so a
+                            // line breaks after it, never before.
+                            for (i, part) in kind_parts.iter().enumerate() {
+                                span { class: "ab-kind-part", "{part}" }
+                                if i + 1 < kind_parts.len() {
+                                    "\u{a0}· "
+                                }
+                            }
+                        } else if let Some(what) = what.as_ref() {
                             "{what}"
                         }
                         if has_holdings {
@@ -394,16 +421,11 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
             }
             div { class: "ab-address",
                 if phone {
-                    // Shortened in the middle, so both ends show; the copy
-                    // button beside it still copies the whole address.
-                    AddressRow {
-                        pubkey,
-                        no_copy: true,
-                        no_label: true,
-                        no_icon: true,
-                        no_card: true,
-                        class: "ab-short",
-                    }
+                    // Shortened in the middle, so both ends show, with the
+                    // copy icon right after it: one button that copies the
+                    // whole address. Every short address is as long, so the
+                    // icon lands at one x on every row.
+                    CopyAddress { pubkey, class: "ab-copy-addr" }
                 } else {
                     code { class: "mono", title: "{address}", "{address}" }
                 }
@@ -411,8 +433,10 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                     p { class: "ab-nonce mono", title: "nonce {hash}", "nonce {hash}" }
                 }
             }
-            div { class: "ab-copy",
-                CopyButton { text: address.clone() }
+            if !phone {
+                div { class: "ab-copy",
+                    CopyButton { text: address.clone() }
+                }
             }
             if !phone || weighed {
                 div { class: "ab-balance",

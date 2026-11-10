@@ -1728,53 +1728,92 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 /* Address Book on a phone. The header is one line where it fits: the title,
    Add address and the three lines, which open a sheet with Refresh from
    chain, Export and Import. The kind chips are one row that scrolls
-   sideways, running to the screen's edges so a cut chip says there is
-   more. Every entry has one shape: the name over its kind line with the
-   balance beside it, then the address shortened to one line, and copy and
-   the three dots in two fixed columns at the right edge, so they sit at
-   the same x on every row and each is a full touch target. */
+   sideways, running to the screen's edges, faded where they are cut so the
+   row says there is more. Every entry has one shape: the name over its
+   kind line with the balance beside it, then the address shortened to one
+   line with the copy icon right after it, one button, and the three dots
+   at the right end of that line. What ends a row at the right sits as far
+   from the card's edge as the kind icon does from the left. */
 .app.phone .ab-head { align-items: center; }
 .app.phone .ab-head > :first-child { flex: 1 1 auto; min-width: 0; }
 .app.phone .ab-head > .btn-row { width: auto; flex-wrap: nowrap; }
 .app.phone .ab-head > .btn-row > button { flex: none; }
 .app.phone .ab-head > .btn-row > .icon-btn { width: var(--control-lg); min-width: var(--control-lg); }
+/* How far the chips fade at each end: nothing at the start until the row
+   is scrolled, and nothing at the end once it is scrolled to the end.
+   Where scroll-driven animations are missing, the end stays faded. */
+@property --ab-chips-lead { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@property --ab-chips-trail { syntax: "<length>"; inherits: false; initial-value: 40px; }
+@keyframes ab-chips-fade {
+  0% { --ab-chips-lead: 0px; --ab-chips-trail: 40px; }
+  10% { --ab-chips-lead: 24px; }
+  90% { --ab-chips-trail: 40px; }
+  100% { --ab-chips-lead: 24px; --ab-chips-trail: 0px; }
+}
 .app.phone .ab-chips {
+  --ab-chips-lead: 0px;
+  --ab-chips-trail: 40px;
   flex-wrap: nowrap;
   overflow-x: auto;
   margin-inline: calc(-1 * var(--space-4));
   padding-inline: var(--space-4);
   scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--ab-chips-lead), #000 calc(100% - var(--ab-chips-trail)), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 var(--ab-chips-lead), #000 calc(100% - var(--ab-chips-trail)), transparent);
+}
+@supports (animation-timeline: scroll()) {
+  .app.phone .ab-chips {
+    animation: ab-chips-fade linear both;
+    animation-timeline: scroll(self inline);
+  }
 }
 .app.phone .ab-chips::-webkit-scrollbar { display: none; }
 .app.phone .ab-chips > .tab { flex: none; white-space: nowrap; }
 .app.phone .ab-row {
   grid-template-columns:
-    var(--control-sm) minmax(0, 1fr) max-content var(--control-lg) var(--control-lg);
+    var(--control-sm) minmax(0, 1fr) max-content var(--control-lg);
   grid-template-areas:
-    "icon name balance balance balance"
-    ". address address copy actions"
-    "holdings holdings holdings holdings holdings";
+    "icon name balance balance"
+    ". address address actions"
+    "holdings holdings holdings holdings";
   column-gap: var(--space-2);
   row-gap: var(--space-1);
   align-items: start;
-  padding: var(--space-3) var(--space-2) var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-4) var(--space-2);
 }
 /* Nothing to weigh: the name takes the balance's room too. */
 .app.phone .ab-row.ab-unweighed > .ab-name { grid-column: 2 / -1; }
-.app.phone .ab-address { align-self: center; }
-.app.phone .ab-address .addr-short { color: var(--text-2); }
-/* The name's line already marks a name used twice. */
-.app.phone .ab-address .addr-alert { display: none; }
-/* Full targets that take only the address's own line: they reach over
-   the row's gaps, so the name and address read as one block. */
-.app.phone .ab-copy .copy-btn,
+/* The kind line breaks only between its parts, never inside one. */
+.app.phone .ab-kind { overflow-wrap: normal; }
+.app.phone .ab-kind-part { white-space: nowrap; }
+.app.phone .ab-address { align-self: center; justify-items: start; }
+/* The short address and its copy icon: one target as tall as a finger,
+   reaching over the row's gaps so the line stays as tall as the three
+   dots'. Its padding is taken back by its margin, so the address starts
+   under the name. */
+.app.phone .ab-copy-addr {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-lg);
+  margin: calc(-1 * var(--space-2)) 0 calc(-1 * var(--space-2)) calc(-1 * var(--space-2));
+  padding: 0 var(--space-2);
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-2);
+  font-weight: var(--weight-regular);
+}
+.app.phone .ab-copy-addr .addr-short { color: inherit; }
+.app.phone .ab-copy-addr .icon { width: 16px; height: 16px; flex: none; }
+/* The three dots: a full target whose glyph ends where the balance does,
+   its margin giving back what the target is wider than the glyph. */
 .app.phone .ab-actions > .ab-more {
   width: var(--control-lg);
   min-width: var(--control-lg);
   min-height: var(--control-lg);
-  margin-block: calc(-1 * var(--space-2));
+  margin: calc(-1 * var(--space-2)) calc((20px - var(--control-lg)) / 2) calc(-1 * var(--space-2)) 0;
+  color: var(--text-2);
 }
-.app.phone .ab-actions > .ab-more { color: var(--text-2); }
 .app.phone .ab-actions > .ab-more .icon { width: 20px; height: 20px; stroke-width: 3; }
 /* An owner's token accounts toggle on a line of its own under the kind
    line, its target as tall as a finger without making the line so. */
@@ -1785,7 +1824,8 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 }
 /* The token accounts take the row's whole width. Each is two lines: the
    token and its flag with the amount at the right, then the account's
-   short address and copy, under the name; the "…" spans both at the end. */
+   short address and copy, under the name; the "…" spans both at the end.
+   An address on either line is captioned with what it is. */
 .app.phone .ab-holdings .holding-list { margin-left: 0; padding-left: var(--space-3); }
 .app.phone .ab-holdings .holding-row {
   display: grid;
@@ -1799,24 +1839,23 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   padding: var(--space-2) 0;
 }
 .app.phone .ab-holding-token { grid-area: token; overflow: hidden; }
+.app.phone .ab-caption { flex: none; color: var(--text-3); font-size: var(--text-xs); }
 .app.phone .ab-holding-mint { flex-wrap: nowrap; }
 .app.phone .ab-holding-mint .addr-short { color: var(--text-2); }
 .app.phone .ab-holding-amount { grid-area: amount; margin-left: 0; }
 .app.phone .ab-holding-account {
   grid-area: account;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   padding-left: calc(22px + var(--space-2));
-}
-.app.phone .ab-holding-account .copy-btn {
-  width: var(--control-lg);
-  min-width: var(--control-lg);
-  min-height: var(--control-lg);
-  margin-block: calc(-1 * var(--space-2));
 }
 .app.phone .ab-holding-more {
   grid-area: more;
   width: var(--control-lg);
   min-width: var(--control-lg);
   min-height: var(--control-lg);
+  margin-right: calc((20px - var(--control-lg)) / 2);
   color: var(--text-2);
 }
 .app.phone .ab-holding-more .icon { width: 20px; height: 20px; stroke-width: 3; }

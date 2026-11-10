@@ -19,7 +19,7 @@ mod wallet_picker;
 
 pub use address::{
     category_class, category_glyph, Address, AddressCard, AddressHeader, AddressRow, AddressSelect,
-    BalanceDeltas, CategoryIcon, PhraseView,
+    BalanceDeltas, CategoryIcon, CopyAddress, PhraseView,
 };
 pub use address_picker::AddressPicker;
 pub use device::DeviceDialog;

@@ -90,3 +90,43 @@ pub fn AddressRow(
         }
     }
 }
+
+/// An address's short form with the copy icon right after it, the two one
+/// button that copies the whole address: for a narrow row, where a copy
+/// button of its own at the row's end would sit far from what it copies.
+#[component]
+pub fn CopyAddress(
+    pubkey: Pubkey,
+    /// Extra classes for the button.
+    #[props(default)]
+    class: String,
+) -> Element {
+    let mut copied = use_signal(|| false);
+    let short = short_pubkey(&pubkey);
+    let full = pubkey.to_string();
+    let tip = if copied() {
+        "Copied".to_string()
+    } else {
+        format!("Copy address {short}")
+    };
+    rsx! {
+        button { class: "ghost copy-addr {class}",
+            r#type: "button",
+            title: "{full}",
+            aria_label: "{tip}",
+            onclick: move |e| {
+                // A copy button inside a row must not also pick the row.
+                e.stop_propagation();
+                let text = full.clone();
+                copied.set(true);
+                spawn(async move {
+                    let _ = crate::platform::copy_text(&text).await;
+                    crate::rt::sleep(std::time::Duration::from_millis(1500)).await;
+                    copied.set(false);
+                });
+            },
+            code { class: "addr-short", "{short}" }
+            Icon { glyph: if copied() { Glyph::Check } else { Glyph::Copy } }
+        }
+    }
+}

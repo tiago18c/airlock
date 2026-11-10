@@ -25,7 +25,7 @@ pub use card::AddressCard;
 pub use header::AddressHeader;
 pub use inline::Address;
 pub use phrase::PhraseView;
-pub use row::AddressRow;
+pub use row::{AddressRow, CopyAddress};
 
 pub use select::AddressSelect;
 

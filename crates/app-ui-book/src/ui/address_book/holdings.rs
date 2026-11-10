@@ -283,11 +283,12 @@ const RED_FLAG_MEANS: &str =
     "Left out of Portfolio's total, listed last when sending, and offered to burn and close in Manage tokens.";
 
 /// One token account on a phone, in two lines that cannot run into each
-/// other: the token's mark and name (its short mint when nothing names it),
-/// with its flag if it has one, and the amount at the right; under them the
-/// account's short address with its copy button. One "…" at the row's end
-/// opens a sheet to set or clear a flag, each choice with what it means, in
-/// place of two bare flag buttons.
+/// other: the token's mark and name (its short mint, captioned "Mint", when
+/// nothing names it), with its flag if it has one, and the amount at the
+/// right; under them the account's short address, captioned "Account", with
+/// the copy icon right after it. One "…" at the row's end opens a sheet to
+/// set or clear a flag, each choice with what it means, in place of two bare
+/// flag buttons.
 #[component]
 fn PhoneHoldingRow(
     owner: Pubkey,
@@ -318,6 +319,7 @@ fn PhoneHoldingRow(
                 } else {
                     span { class: "ab-token-icon ab-token-mark", title: "Unknown token", "?" }
                     span { class: "sr-only", "Unknown token" }
+                    span { class: "ab-caption", "Mint" }
                     AddressRow {
                         pubkey: mint,
                         no_copy: true,
@@ -353,7 +355,10 @@ fn PhoneHoldingRow(
                     span { class: "ab-holding-symbol", " {symbol}" }
                 }
             }
-            AddressRow { pubkey: token, no_label: true, class: "ab-holding-account" }
+            div { class: "ab-holding-account",
+                span { class: "ab-caption", "Account" }
+                CopyAddress { pubkey: token, class: "ab-copy-addr" }
+            }
             button { class: "ghost icon-btn ab-holding-more",
                 title: "Token account actions",
                 aria_label: "Token account actions",

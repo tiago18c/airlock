@@ -3,14 +3,14 @@ use crate::actions::network::refresh_from_chain;
 use crate::state::session::Session;
 use crate::ui::{
     category_class, category_glyph, format_sol, format_token_amount, ActionSheet, Address,
-    AddressRow, CopyButton, Glyph, Icon, PaneMenu,
+    AddressRow, CopyAddress, CopyButton, Glyph, Icon, PaneMenu,
 };
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use std::str::FromStr;
 use wallet_core::{
     AddressKind, BookGroupInfo, BookRow, Category, Described, Fact, Group, TokenFlag, TokenHolding,
-    LOCAL_GROUP_ID,
+    WalletSort, LOCAL_GROUP_ID,
 };
 
 mod entry;
