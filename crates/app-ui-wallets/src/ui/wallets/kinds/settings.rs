@@ -388,8 +388,8 @@ pub(in crate::ui) fn WalletSettingsDialog(
                         }
                     }
                     if let (Some((scheme, key, held_by, held_here)), Some(address)) = (vector, pubkey) {
-                        h4 { class: "eyebrow", "Key and account" }
-                        VectorFacts { id, address, scheme, shown_key: key, held_by, held_here }
+                        h4 { class: "eyebrow", "Account on chain" }
+                        VectorFacts { id, address, scheme, shown_key: key, held_by, held_here, state_only: true }
                     }
                     if let Some(err) = error() {
                         p { class: "error", "{err}" }
@@ -434,6 +434,8 @@ fn Fact(name: &'static str, children: Element) -> Element {
 pub(in crate::ui) fn WalletDetailsDialog(
     wallet: WalletSummary,
     on_close: EventHandler<()>,
+    /// Close this and open the wallet's Settings.
+    on_settings: EventHandler<()>,
 ) -> Element {
     let session = use_context::<Session>();
     let wallets = (session.wallets)().summaries.clone();
@@ -549,12 +551,18 @@ pub(in crate::ui) fn WalletDetailsDialog(
                             }
                         }
                     }
-                    p { class: "hint", "To change any of this, open the wallet's Settings." }
                     div { class: "btn-row",
-                        button {
+                        button { class: "ghost",
                             r#type: "button",
                             onclick: move |_| on_close.call(()),
                             "Close"
+                        }
+                        button {
+                            r#type: "button",
+                            title: "Change who pays its fees and how it signs",
+                            onclick: move |_| on_settings.call(()),
+                            Icon { glyph: Glyph::Gear }
+                            "Change in Settings"
                         }
                     }
                 }
@@ -588,7 +596,14 @@ pub(in crate::ui) fn WalletDialogButtons(wallet: WalletSummary) -> Element {
             Icon { glyph: Glyph::Gear }
         }
         if details_open() {
-            WalletDetailsDialog { wallet: wallet.clone(), on_close: move |_| details_open.set(false) }
+            WalletDetailsDialog {
+                wallet: wallet.clone(),
+                on_close: move |_| details_open.set(false),
+                on_settings: move |_| {
+                    details_open.set(false);
+                    settings_open.set(true);
+                },
+            }
         }
         if settings_open() {
             WalletSettingsDialog { wallet: wallet.clone(), on_close: move |_| settings_open.set(false) }

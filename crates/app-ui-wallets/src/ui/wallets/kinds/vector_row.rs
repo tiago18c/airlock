@@ -119,6 +119,10 @@ pub(super) fn VectorFacts(
     held_by: String,
     /// The key is kept with the wallet on this device.
     held_here: bool,
+    /// Leave out the scheme, the key and where it signs, where they are
+    /// shown elsewhere: only the account's state and its steps.
+    #[props(default)]
+    state_only: bool,
 ) -> Element {
     let session = use_context::<Session>();
     let network = crate::state::use_network();
@@ -296,17 +300,19 @@ pub(super) fn VectorFacts(
     };
 
     rsx! {
-        p { class: "wallet-fact",
-            span { class: "muted", "Scheme" }
-            span { "{scheme.label()}" }
-        }
-        p { class: "wallet-fact",
-            span { class: "muted", "Key" }
-            span { class: "mono", "{shown_key}" }
-        }
-        p { class: "wallet-fact",
-            span { class: "muted", "Signs with" }
-            span { "{held_by}" }
+        if !state_only {
+            p { class: "wallet-fact",
+                span { class: "muted", "Scheme" }
+                span { "{scheme.label()}" }
+            }
+            p { class: "wallet-fact",
+                span { class: "muted", "Key" }
+                span { class: "mono", "{shown_key}" }
+            }
+            p { class: "wallet-fact",
+                span { class: "muted", "Signs with" }
+                span { "{held_by}" }
+            }
         }
         if !online && held_here {
             p { class: "note",
