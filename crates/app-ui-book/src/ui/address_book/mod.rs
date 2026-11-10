@@ -1,12 +1,16 @@
 use crate::actions::addresses::*;
 use crate::actions::network::refresh_from_chain;
 use crate::state::session::Session;
-use crate::ui::{format_sol, format_token_amount, Address, AddressHeader, AddressRow, Glyph, Icon};
+use crate::ui::{
+    category_class, category_glyph, format_sol, format_token_amount, Address, AddressRow,
+    CopyButton, Glyph, Icon,
+};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use std::str::FromStr;
 use wallet_core::{
-    AddressKind, BookGroupInfo, BookRow, Group, TokenFlag, TokenHolding, LOCAL_GROUP_ID,
+    AddressKind, BookGroupInfo, BookRow, Described, Fact, Group, TokenFlag, TokenHolding,
+    LOCAL_GROUP_ID,
 };
 
 mod entry;
@@ -19,7 +23,7 @@ pub(in crate::ui) use groups::*;
 pub(in crate::ui) use holdings::*;
 pub(in crate::ui) use transfer::*;
 
-const PAGE_SIZE: usize = 10;
+const PAGE_SIZE: usize = 25;
 
 #[component]
 pub fn AddressBookPanel() -> Element {
@@ -44,6 +48,24 @@ pub fn AddressBookPanel() -> Element {
                         h2 { "Address Book" }
                     }
                     div { class: "btn-row",
+                        if online {
+                            button {
+                                disabled: fetching(),
+                                onclick: move |_| {
+                                    error.set(None);
+                                    fetch_note.set(None);
+                                    fetching.set(true);
+                                    spawn(async move {
+                                        match refresh_from_chain(session).await {
+                                            Ok(note) => fetch_note.set(Some(note)),
+                                            Err(err) => error.set(Some(err)),
+                                        }
+                                        fetching.set(false);
+                                    });
+                                },
+                                if fetching() { "Refreshing…" } else { "Refresh from chain" }
+                            }
+                        }
                         button {
                             onclick: move |_| export_open.set(true),
                             "Export"
@@ -66,26 +88,7 @@ pub fn AddressBookPanel() -> Element {
                     }
                 }
 
-                if online {
-                    div { class: "btn-row",
-                        button {
-                            disabled: fetching(),
-                            onclick: move |_| {
-                                error.set(None);
-                                fetch_note.set(None);
-                                fetching.set(true);
-                                spawn(async move {
-                                    match refresh_from_chain(session).await {
-                                        Ok(note) => fetch_note.set(Some(note)),
-                                        Err(err) => error.set(Some(err)),
-                                    }
-                                    fetching.set(false);
-                                });
-                            },
-                            if fetching() { "Refreshing…" } else { "Refresh from chain" }
-                        }
-                    }
-                } else {
+                if !online {
                     p { class: "hint", "Offline: token accounts and nonce hashes stay local until getGenesisHash succeeds." }
                 }
                 if let Some(err) = error() {
@@ -121,13 +124,21 @@ fn AddressBookList() -> Element {
     let group_id = form.group;
     let directory = (session.directory)();
     let wanted = kind_filter();
-    let entries: Vec<BookRow> = (session.book)()
+    let mut entries: Vec<BookRow> = (session.book)()
         .rows_in(&group_id(), &filter(), None)
         .into_iter()
         .filter(|row| {
             wanted.is_none() || directory.describe(&row.entry.pubkey).category.group() == wanted
         })
         .collect();
+    // By name, ignoring case; the unnamed last, by address.
+    entries.sort_by_cached_key(|row| {
+        let name = entry_name(&directory.describe(&row.entry.pubkey), &row.entry);
+        match name {
+            Some(name) => (false, name.to_lowercase(), String::new()),
+            None => (true, String::new(), row.entry.pubkey.to_string()),
+        }
+    });
     let collisions = directory.collisions();
     let total = entries.len();
     let pages = total.div_ceil(PAGE_SIZE).max(1);
@@ -138,9 +149,8 @@ fn AddressBookList() -> Element {
     let to = (start + shown.len()).min(total);
 
     rsx! {
-        div { class: "book-layout",
-            GroupSidebar {}
-            div { class: "stack",
+        div { class: "stack",
+            GroupBar {}
             div { class: "filter-bar",
                 label { "Filter"
                     input {
@@ -200,11 +210,13 @@ fn AddressBookList() -> Element {
                 }
             }
 
-            ul { class: "book-list",
-                for row in shown {
-                    BookEntry {
-                        key: "{row.group_id}:{row.entry.pubkey}",
-                        row,
+            if total > 0 {
+                ul { class: "book-list ab-list",
+                    for row in shown {
+                        BookEntry {
+                            key: "{row.group_id}:{row.entry.pubkey}",
+                            row,
+                        }
                     }
                 }
             }
@@ -223,7 +235,6 @@ fn AddressBookList() -> Element {
                         "Next"
                     }
                 }
-            }
             }
         }
     }

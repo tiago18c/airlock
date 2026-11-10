@@ -1,14 +1,14 @@
-//! The list of groups beside the address list.
+//! The bar of groups above the address list.
 
 use super::*;
 
 #[component]
-pub(in crate::ui) fn GroupSidebar() -> Element {
+pub(in crate::ui) fn GroupBar() -> Element {
     let session = use_context::<Session>();
     let groups = (session.book)().groups();
 
     rsx! {
-        ul { class: "group-list",
+        ul { class: "ab-groups", aria_label: "Groups",
             for group in groups {
                 GroupItem { key: "{group.id}", info: group }
             }
@@ -36,15 +36,16 @@ pub(in crate::ui) fn GroupItem(info: BookGroupInfo) -> Element {
     let imported = info.imported;
 
     rsx! {
-        li { class: if on { "group-item on" } else { "group-item" },
+        li { class: if on { "ab-group on" } else { "ab-group" },
             if renaming() {
-                div { class: "group-rename",
+                div { class: "ab-group-rename",
                     input {
                         r#type: "text",
+                        aria_label: "Group name",
                         value: "{draft}",
                         oninput: move |evt| draft.set(evt.value()),
                     }
-                    button {
+                    button { class: "sm",
                         onclick: move |_| {
                             let name = draft.read().trim().to_string();
                             if name.is_empty() {
@@ -61,16 +62,17 @@ pub(in crate::ui) fn GroupItem(info: BookGroupInfo) -> Element {
                 }
             } else {
                 button {
-                    class: "group-pick",
+                    class: "ab-group-pick",
+                    aria_pressed: "{on}",
                     onclick: move |_| {
                         selected.set(pick_id.clone());
                         page.set(0);
                     },
-                    span { class: "group-name", "{name}" }
-                    span { class: "muted", "{entries}" }
+                    span { class: "ab-group-name", "{name}" }
+                    span { class: "ab-group-count", "{entries}" }
                 }
                 if imported {
-                    div { class: "group-actions",
+                    div { class: "ab-group-actions",
                         button {
                             class: "ghost icon-btn sm",
                             title: "Edit",

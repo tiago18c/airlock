@@ -19,20 +19,25 @@ pub(in crate::ui) fn OwnerHoldings(owner: Pubkey) -> Element {
     let shown = session.holding_page(&owner, start, HOLDING_PAGE);
     let from = start + 1;
     let to = start + shown.len();
-    let count = if summary.red > 0 {
-        format!("{} token accounts, {} red", summary.total, summary.red)
+    let noun = if summary.total == 1 {
+        "token account"
     } else {
-        format!("{} token accounts", summary.total)
+        "token accounts"
+    };
+    let count = if summary.red > 0 {
+        format!("{} {noun}, {} red", summary.total, summary.red)
+    } else {
+        format!("{} {noun}", summary.total)
     };
 
     rsx! {
-        div { class: "holdings",
-            div { class: "book-head",
-                p { class: "muted", "{count}" }
-                button { class: "sm",
-                    onclick: move |_| open.set(!open()),
-                    if open() { "Hide tokens" } else { "Show tokens" }
-                }
+        div { class: "ab-holdings",
+            button {
+                class: if open() { "ghost sm ab-holdings-toggle open" } else { "ghost sm ab-holdings-toggle" },
+                aria_expanded: "{open()}",
+                onclick: move |_| open.set(!open()),
+                Icon { glyph: Glyph::ChevronRight }
+                "{count}"
             }
             if open() {
                 ul { class: "holding-list",
@@ -60,18 +65,48 @@ pub(in crate::ui) fn OwnerHoldings(owner: Pubkey) -> Element {
     }
 }
 
+/// What to call a token: its name in the book, else its symbol or name as
+/// the market gives them. `None` when nothing names it.
+fn token_name(session: &Session, mint: &Pubkey) -> Option<String> {
+    session.label_of(mint).or_else(|| {
+        let holdings = (session.holdings_view)();
+        let quote = holdings.market.quote(mint)?;
+        quote
+            .symbol
+            .clone()
+            .or_else(|| quote.name.clone())
+            .filter(|name| !name.trim().is_empty())
+    })
+}
+
+/// One token account on one line: the token, the account's address, and the
+/// amount, with its flags at the end.
 #[component]
 pub(in crate::ui) fn HoldingRow(owner: Pubkey, holding: TokenHolding) -> Element {
     let session = use_context::<Session>();
     let token = holding.pubkey;
+    let mint = holding.mint;
     let flag = holding.flag;
-    let amount = format_token_amount(holding.amount, holding.decimals);
+    let amount = wallet_core::portfolio::format_amount(
+        u128::from(holding.amount),
+        holding.decimals,
+        usize::from(holding.decimals),
+    );
+    let name = token_name(&session, &mint);
+    let mint_text = mint.to_string();
 
     rsx! {
         li { class: "holding-row",
-            AddressRow { pubkey: token,
-                span { class: "muted", "{amount}" }
+            div { class: "ab-holding-token",
+                if let Some(name) = name {
+                    span { class: "cat cat-token", Icon { glyph: Glyph::Coin } }
+                    span { class: "ab-token-name", title: "{mint_text}", "{name}" }
+                } else {
+                    AddressRow { pubkey: mint, no_copy: true, no_label: true, class: "ab-holding-mint" }
+                }
             }
+            AddressRow { pubkey: token, no_label: true, class: "ab-holding-account" }
+            span { class: "ab-holding-amount", "{amount}" }
             div { class: if flag.is_some() { "flag-actions visible" } else { "flag-actions" },
                 if flag != Some(TokenFlag::Red) {
                     button {

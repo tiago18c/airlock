@@ -1266,24 +1266,229 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 }
 .pager .muted { font-size: var(--text-md); font-variant-numeric: tabular-nums; }
 
-.holdings {
-  display: grid;
-  gap: var(--space-2);
-  padding-top: var(--space-2);
-  border-top: 1px solid var(--border);
-}
-.holdings > .book-head { align-items: center; }
-.holding-list { list-style: none; display: grid; }
-.holding-row {
+/* ---------- Address Book ---------- */
+
+/* The groups, as a strip of tabs above the filter. */
+.ab-groups {
+  list-style: none;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-3);
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-1) var(--space-2);
   min-width: 0;
-  padding: var(--space-2) 0;
-  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
-.holding-row > :first-child { min-width: 0; display: grid; gap: 2px; }
+.ab-groups:empty { display: none; }
+.ab-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  color: var(--text-2);
+}
+.ab-group.on { border-bottom-color: var(--brand); color: var(--brand-text); }
+.ab-group-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  min-height: var(--control-md);
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: transparent;
+  color: inherit;
+  font-weight: var(--weight-medium);
+}
+.ab-group-pick:hover { background: var(--surface-2); color: var(--text); }
+.ab-group.on .ab-group-pick { color: var(--brand-text); font-weight: var(--weight-semibold); }
+.ab-group-name { min-width: 0; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ab-group-count {
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  line-height: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.ab-group.on .ab-group-count { background: var(--brand-soft); color: var(--brand-text); }
+.ab-group-actions { display: flex; gap: 2px; flex-shrink: 0; }
+.ab-group-rename { display: flex; gap: 6px; align-items: center; padding: var(--space-1) 0; }
+.ab-group-rename input { min-width: 0; width: 12rem; }
+
+/* The entries: one bordered list, a row each. Every row is the same grid,
+   so the columns line up from row to row. */
+.book-list.ab-list {
+  gap: 0;
+  container-type: inline-size;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.ab-row {
+  display: grid;
+  grid-template-columns:
+    var(--control-sm) minmax(9rem, 1.1fr) minmax(0, 2.2fr) minmax(6.5rem, 0.6fr)
+    minmax(0, 1fr) max-content;
+  grid-template-areas:
+    "icon name address balance tags actions"
+    ". holdings holdings holdings holdings holdings";
+  align-items: center;
+  column-gap: var(--space-3);
+  min-width: 0;
+  min-height: 56px;
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
+  transition: background var(--fast) var(--ease);
+}
+.ab-row + .ab-row { border-top: 1px solid var(--border); }
+.ab-row:first-child { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+.ab-row:last-child { border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+.ab-row:only-child { border-radius: var(--radius-lg); }
+.ab-row:hover { background: var(--surface-2); }
+.ab-row p { margin: 0; }
+
+.ab-badge {
+  grid-area: icon;
+  width: var(--control-sm);
+  height: var(--control-sm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.ab-badge .icon { width: 16px; height: 16px; }
+.ab-name { grid-area: name; display: grid; min-width: 0; }
+.ab-title { display: flex; align-items: center; gap: var(--space-1); min-width: 0; }
+.ab-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: var(--weight-semibold);
+}
+.ab-label.unnamed { color: var(--text-3); font-weight: var(--weight-regular); font-style: italic; }
+.ab-kind {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-2);
+  font-size: var(--text-sm);
+}
+.ab-address { grid-area: address; display: grid; min-width: 0; }
+.ab-address-line { display: flex; align-items: center; gap: var(--space-1); min-width: 0; }
+.ab-address-line .mono {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: normal;
+  color: var(--text-2);
+  font-size: var(--text-sm);
+}
+.ab-nonce {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: normal;
+  color: var(--text-3);
+  font-size: var(--text-xs);
+}
+.ab-balance { grid-area: balance; display: grid; justify-items: end; min-width: 0; text-align: right; }
+.ab-balance .balance { white-space: nowrap; }
+.ab-tags { grid-area: tags; display: flex; flex-wrap: wrap; gap: var(--space-1); min-width: 0; }
+.ab-actions { grid-area: actions; display: flex; justify-content: flex-end; gap: var(--space-1); }
+.ab-act-slot { display: inline-block; visibility: hidden; }
+
+/* An owner's token accounts, under its row and indented to its name. */
+.ab-holdings {
+  grid-area: holdings;
+  display: grid;
+  gap: var(--space-1);
+  justify-items: start;
+  min-width: 0;
+  margin-top: var(--space-1);
+}
+.ab-holdings-toggle {
+  gap: var(--space-1);
+  padding: 0 var(--space-2) 0 var(--space-1);
+  color: var(--text-2);
+  font-weight: var(--weight-medium);
+}
+.ab-holdings-toggle .icon { width: 14px; height: 14px; transition: transform var(--fast) var(--ease); }
+.ab-holdings-toggle.open .icon { transform: rotate(90deg); }
+.ab-holdings .holding-list,
+.ab-holdings .pager { justify-self: stretch; }
+.ab-holdings .holding-list {
+  list-style: none;
+  display: grid;
+  margin-left: var(--space-2);
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--border);
+}
+.ab-holdings .holding-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  min-width: 0;
+  min-height: 36px;
+  padding: 2px 0;
+}
+.ab-holdings .holding-row + .holding-row { border-top: 1px solid var(--border); }
+.ab-holding-token {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 0 1 11rem;
+  min-width: 0;
+}
+.ab-token-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: var(--weight-semibold);
+}
+.ab-holding-account .cat,
+.ab-holding-account .addr-row-rest { display: none; }
+.ab-holding-amount {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-medium);
+  text-align: right;
+  white-space: nowrap;
+}
+/* Two flags wide, so the amounts end in one line however many show. */
+.ab-holdings .flag-actions {
+  justify-content: flex-end;
+  min-width: calc(var(--control-sm) * 2 + var(--space-1));
+}
+@media (pointer: coarse) {
+  .ab-holdings .flag-actions { min-width: calc(var(--control-md) * 2 + var(--space-1)); }
+}
+
+/* A narrow list: each row wraps onto two or three lines. */
+@container (max-width: 720px) {
+  .ab-row {
+    grid-template-columns: var(--control-sm) minmax(0, 1fr) max-content;
+    grid-template-areas:
+      "icon name balance"
+      ". address address"
+      ". tags actions"
+      ". holdings holdings";
+    row-gap: var(--space-1);
+    align-items: start;
+  }
+  .ab-badge { margin-top: 2px; }
+  .ab-actions { align-self: center; }
+  .ab-holding-token { flex-basis: 8rem; }
+}
 
 .derive-list {
   list-style: none;

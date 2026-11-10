@@ -186,6 +186,34 @@ pub(in crate::ui) fn AddressModal() -> Element {
     }
 }
 
+/// What an entry is called in the list: what the directory calls its
+/// address, else the label the book gives it in its group.
+pub(in crate::ui) fn entry_name(
+    described: &Described,
+    entry: &wallet_core::AddressEntry,
+) -> Option<String> {
+    described.full_label().or_else(|| {
+        let label = entry.label.trim();
+        (!label.is_empty()).then(|| label.to_string())
+    })
+}
+
+/// What an address is, as the line under its name: "Contact", "Hot wallet ·
+/// private key".
+fn kind_line(described: &Described) -> String {
+    let kind = described.facts.iter().find_map(|fact| match fact {
+        Fact::WalletKind(kind) => Some(kind.clone()),
+        _ => None,
+    });
+    match kind {
+        Some(kind) => format!("{} · {kind}", described.category.name()),
+        None => described.category.name().to_string(),
+    }
+}
+
+/// One entry as a row of the list: its kind, name, address, balance, tags
+/// and actions, each in a column that lines up from row to row, and under
+/// it the token accounts it owns.
 #[component]
 pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
     let session = use_context::<Session>();
@@ -207,54 +235,99 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
     let tags_csv = join_tags(&entry.tags);
     let can_remove = kind != AddressKind::Program;
     let label = entry.label.clone();
+    let described = (session.directory)().describe(&pubkey);
+    let category = described.category;
+    let collides = !described.collides_with.is_empty();
+    let name = entry_name(&described, &entry);
+    let what = kind_line(&described);
+    let address = pubkey.to_string();
+    let token_amount = match (kind, entry.token_amount, entry.decimals) {
+        (AddressKind::TokenAccount, Some(amount), Some(decimals)) => {
+            Some(format_token_amount(amount, decimals))
+        }
+        _ => None,
+    };
+    let edit_title = match name.as_deref() {
+        Some(name) => format!("Edit {name}"),
+        None => "Edit".to_string(),
+    };
+    let remove_title = match name.as_deref() {
+        Some(name) => format!("Remove {name}"),
+        None => "Remove".to_string(),
+    };
 
     rsx! {
-        li { class: "book-row",
-            div { class: "book-head",
-                AddressHeader { pubkey: Some(pubkey),
-                    if let Some(lamports) = entry.lamports {
-                        p { class: "balance", "{format_sol(lamports)}" }
+        li { class: "ab-row",
+            span { class: "ab-badge {category_class(category)}", title: category.name(),
+                Icon { glyph: category_glyph(category) }
+            }
+            div { class: "ab-name",
+                p { class: "ab-title",
+                    if let Some(name) = name.as_ref() {
+                        span { class: "ab-label", title: "{name}", "{name}" }
+                    } else {
+                        span { class: "ab-label unnamed", "No name" }
                     }
-                    if entry.kind == AddressKind::TokenAccount {
-                        if let (Some(amount), Some(decimals)) = (entry.token_amount, entry.decimals) {
-                            p { class: "balance", "{format_token_amount(amount, decimals)}" }
+                    if collides {
+                        span { class: "addr-alert", title: "Another address has this name",
+                            Icon { glyph: Glyph::Alert }
                         }
-                    }
-                    if let Some(hash) = entry.nonce_hash {
-                        p { class: "muted mono", "nonce {hash}" }
                     }
                 }
-                div { class: "book-actions",
-                    button { class: "sm",
-                        onclick: move |_| {
-                            pubkey_field.set(pubkey.to_string());
-                            label_field.set(label.clone());
-                            tags_field.set(tags_csv.clone());
-                            error.set(None);
-                            editing.set(Some(pubkey));
-                            editing_group.set(edit_group.clone());
-                            modal_open.set(true);
-                        },
-                        "Edit"
-                    }
-                    if can_remove {
-                        button { class: "danger sm",
-                            onclick: move |_| {
-                                let group = remove_group.clone();
-                                session.edit_workspace(|ws| {
-                                    ws.book.remove_in(&group, &pubkey);
-                                });
-                            },
-                            "Remove"
-                        }
-                    }
+                p { class: "ab-kind", "{what}" }
+            }
+            div { class: "ab-address",
+                div { class: "ab-address-line",
+                    code { class: "mono", title: "{address}", "{address}" }
+                    CopyButton { text: address.clone() }
+                }
+                if let Some(hash) = entry.nonce_hash {
+                    p { class: "ab-nonce mono", title: "nonce {hash}", "nonce {hash}" }
                 }
             }
-            if !tags.is_empty() {
-                div { class: "chip-row",
-                    for tag in tags {
-                        span { class: "chip", key: "{tag}", "{tag}" }
+            div { class: "ab-balance",
+                if let Some(lamports) = entry.lamports {
+                    p { class: "balance", "{format_sol(lamports)}" }
+                }
+                if let Some(amount) = token_amount {
+                    p { class: "balance", "{amount}" }
+                }
+            }
+            div { class: "ab-tags",
+                for tag in tags {
+                    span { class: "chip", key: "{tag}", "{tag}" }
+                }
+            }
+            div { class: "ab-actions",
+                button { class: "ghost icon-btn sm",
+                    title: "Edit",
+                    aria_label: "{edit_title}",
+                    onclick: move |_| {
+                        pubkey_field.set(pubkey.to_string());
+                        label_field.set(label.clone());
+                        tags_field.set(tags_csv.clone());
+                        error.set(None);
+                        editing.set(Some(pubkey));
+                        editing_group.set(edit_group.clone());
+                        modal_open.set(true);
+                    },
+                    Icon { glyph: Glyph::Pencil }
+                }
+                if can_remove {
+                    button { class: "ghost danger icon-btn sm",
+                        title: "Remove",
+                        aria_label: "{remove_title}",
+                        onclick: move |_| {
+                            let group = remove_group.clone();
+                            session.edit_workspace(|ws| {
+                                ws.book.remove_in(&group, &pubkey);
+                            });
+                        },
+                        Icon { glyph: Glyph::Trash }
                     }
+                } else {
+                    // Keeps the column as wide as in the rows that can be removed.
+                    span { class: "icon-btn sm ab-act-slot", aria_hidden: "true" }
                 }
             }
             if matches!(kind, AddressKind::Account) {
