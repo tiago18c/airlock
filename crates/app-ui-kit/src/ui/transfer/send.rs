@@ -182,22 +182,37 @@ pub fn QrCarousel(objects: Vec<QrObject>) -> Element {
                     "v{frame.version} · {frame.modules}×{frame.modules} · {frame.encoded_bytes} bytes · id {frame.transfer_id}"
                 }
             }
-            div { class: "btn-row",
-                button { class: if large() { "sm on" } else { "sm" },
-                    aria_pressed: "{large()}",
-                    title: "Fewer modules in each code, in more frames, for a camera further away",
-                    onclick: move |_| {
-                        index.set(0);
-                        large.toggle();
-                    },
-                    "Larger codes"
+            div { class: "btn-row qr-size",
+                div { class: "segmented", role: "group", aria_label: "Code size",
+                    button {
+                        class: if large() { "tab" } else { "tab on" },
+                        title: "As many modules in each code as fit, in the fewest frames",
+                        onclick: move |_| {
+                            if large() {
+                                index.set(0);
+                                large.set(false);
+                            }
+                        },
+                        "Standard"
+                    }
+                    button {
+                        class: if large() { "tab on" } else { "tab" },
+                        title: "Fewer modules in each code, in more frames, for a camera further away",
+                        onclick: move |_| {
+                            if !large() {
+                                index.set(0);
+                                large.set(true);
+                            }
+                        },
+                        "Larger"
+                    }
                 }
                 span { class: "hint",
                     "Bigger squares, over more codes, for a camera that is further away."
                 }
             }
             if frame_count > 1 {
-                div { class: "btn-row",
+                div { class: "btn-row qr-frames",
                     button { class: "icon-btn",
                         title: "Previous frame",
                         aria_label: "Previous frame",

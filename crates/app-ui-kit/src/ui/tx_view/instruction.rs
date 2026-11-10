@@ -42,18 +42,20 @@ pub fn IdlInstruction(idl: IdlExplanation, data: Vec<u8>, inspect: bool) -> Elem
         }
         // Without a sentence, the accounts are what says what it touches.
         if inspect || !has_sentence {
-            ul { class: "ix-accounts",
-                for account in accounts {
-                    li { class: "chip-row", key: "{account.name}-{account.pubkey}",
-                        span { class: "muted ix-account-name", "{account.name}" }
-                        AddressRow { pubkey: account.pubkey, full: true,
-                            if account.writable {
-                                span { class: "chip", "writable" }
-                            } else {
-                                span { class: "chip", "readonly" }
-                            }
-                            if account.signer {
-                                span { class: "chip", "signer" }
+            AccountRowDeltas { inspect,
+                ul { class: "ix-accounts",
+                    for account in accounts {
+                        li { class: "chip-row", key: "{account.name}-{account.pubkey}",
+                            span { class: "muted ix-account-name", "{account.name}" }
+                            AddressRow { pubkey: account.pubkey, full: true,
+                                if account.writable {
+                                    span { class: "chip", "writable" }
+                                } else {
+                                    span { class: "chip", "readonly" }
+                                }
+                                if account.signer {
+                                    span { class: "chip kind", "signer" }
+                                }
                             }
                         }
                     }
@@ -63,6 +65,21 @@ pub fn IdlInstruction(idl: IdlExplanation, data: Vec<u8>, inspect: bool) -> Elem
         if inspect {
             DataBytes { hex }
         }
+    }
+}
+
+/// An instruction's account rows. In Inspect they are drawn without a balance
+/// change: an account's change is in the sentence and the Accounts list, and
+/// would repeat on every row it fills. In Summary, rows stand in for a
+/// sentence, so they keep it.
+#[component]
+pub fn AccountRowDeltas(inspect: bool, children: Element) -> Element {
+    if inspect {
+        rsx! {
+            WithoutDeltas { {children} }
+        }
+    } else {
+        rsx! { {children} }
     }
 }
 

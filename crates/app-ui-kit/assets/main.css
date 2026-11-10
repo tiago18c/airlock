@@ -2424,7 +2424,8 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   align-items: center;
   gap: var(--space-2);
 }
-.frame-status .muted { font-size: var(--text-md); }
+/* Version, size and transfer id: for troubleshooting, so small and quiet. */
+.frame-status .muted { font-size: var(--text-xs); color: var(--text-3); }
 
 .scanner {
   display: grid;
@@ -3087,27 +3088,30 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 
 .sign-status { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 
-/* Review and Sign's rows of buttons. On a wide screen they are pinned to the
-   bottom of the pane, over the pane's background, with the transaction
-   scrolling under them. A shadow of that background paints the margin round
-   them, so where they fit they sit and look as any other row. Once pinned,
-   a line sets them off from what scrolls under them. */
+/* Review and Sign's buttons: one row in one order. The state's primary
+   button, then what else applies, outlined, then the quiet ways out at the
+   far end. On a narrow screen the row wraps. */
 .sign-actions-bar { display: grid; gap: var(--space-4); min-width: 0; }
+.sign-actions-end {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+/* On a wide screen the bar is pinned to the bottom of the pane, with the
+   transaction scrolling under it. It has the pane's own background and a
+   line along its top, pinned or not, so nothing shows through it and no row
+   above it reads as cut in half. */
 @media (min-width: 640px) {
   .app:not(.phone) .sign-actions {
     position: sticky;
-    bottom: var(--space-3);
+    bottom: 0;
     z-index: var(--z-sticky);
-    container-type: scroll-state;
   }
   .app:not(.phone) .sign-actions-bar {
+    padding: var(--space-3) 0 var(--space-4);
+    border-top: 1px solid var(--border);
     background: var(--bg);
-    box-shadow: 0 0 0 var(--space-3) var(--bg);
-  }
-  @container scroll-state(stuck: bottom) {
-    .sign-actions-bar {
-      box-shadow: 0 0 0 var(--space-3) var(--bg), 0 -1px 0 var(--space-3) var(--border);
-    }
   }
 }
 
@@ -3465,11 +3469,20 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 .copy-field .disclosure:hover { background: var(--surface-2); color: var(--text); }
 
 /* Share with another device: the panel is as wide as its code, which keeps
-   its own white margin, and a code fits a window 900px high. */
+   its own white margin. The code takes what the dialog leaves: as wide as
+   the dialog, and as high as the window less the rest of the dialog, about
+   520px with the text closed, so the whole of it fits a window 900px high
+   without scrolling. The Play row and its hint of a code in several frames
+   take about 90px more. */
 .share-next { margin: 0; color: var(--text-2); font-size: var(--text-md); }
 @media (min-width: 640px) {
   .modal.share .qr-wrap { justify-self: center; padding: var(--space-2); }
-  .modal.share .qr-svg svg { width: min(360px, max(200px, calc(100vh - 560px))); }
+  .modal.share .qr-svg svg {
+    width: min(36rem, calc(100vw - 120px), max(200px, calc(100vh - 524px)));
+  }
+  .modal.share:has(.qr-frames) .qr-svg svg {
+    width: min(36rem, calc(100vw - 120px), max(200px, calc(100vh - 614px)));
+  }
 }
 /* The row under the text holds only what the caller adds. */
 .payload-actions:not(:has(*)) { display: none; }
@@ -3482,6 +3495,12 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   text-transform: uppercase;
   color: var(--text-3);
 }
+/* A signer whose signature comes from elsewhere offers the share dialog at
+   the end of its row. */
+.signer-share { margin-left: auto; }
+/* What the transaction's format allows, above its signatures. */
+.note.format-note { display: flex; align-items: flex-start; gap: var(--space-2); }
+.format-note .icon { flex: none; width: 16px; height: 16px; margin-top: 1px; }
 textarea.short { min-height: 64px; }
 
 @media (max-width: 639px) {
@@ -4104,7 +4123,7 @@ textarea.short { min-height: 64px; }
 .submit-stage .btn-row { justify-content: center; }
 .submit-stage .error { justify-self: stretch; text-align: left; overflow-wrap: anywhere; }
 
-/* A toggle button that is on, such as Larger codes under a QR code. */
+/* A toggle button that is on. */
 button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-text); border-color: var(--brand); }
 
 /* ---------- Phone shell ----------

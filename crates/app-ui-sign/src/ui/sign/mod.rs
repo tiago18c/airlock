@@ -25,7 +25,7 @@ use crate::ui::transfer::send::{CopyableText, PayloadShare, QrCarousel};
 use crate::ui::tx_view::{
     use_explained, FeeLine, ReadInstructions, SimulatedDeltas, TxView, WithoutDeltas,
 };
-use crate::ui::{Address, AddressRow, CopyButton};
+use crate::ui::{Address, AddressRow, CopyButton, Glyph, Icon};
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
 use dioxus::prelude::*;
@@ -317,7 +317,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     let reading_stored = use_stored_behind(&approvals, online);
     let blind = offer_on_screen(session, tx.as_ref(), &approvals, reading_stored);
     let busy = use_signal(|| false);
-    let mut share_open = use_signal(|| false);
+    let share_open = use_signal(|| false);
     let source = (form.source)();
     let editable = tx.clone();
     let step = next_step(&status);
@@ -448,11 +448,6 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         && !needs_rebuild
         && signable_here == 0
         && (status.missing_elsewhere() > site_signs || (status.complete() && !online));
-    // Signatures are coming from other devices: what they return goes in
-    // through Add a signature, which then follows the primary button.
-    let collecting = tx.format == TxFormat::V1
-        && !needs_rebuild
-        && (status.missing_elsewhere() > site_signs || status.waiting_for_authority);
     let mut inbox_title = use_signal(|| "Add a signature");
     let mut view = form.view;
 
@@ -496,12 +491,35 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             // that no sentence names is listed under the transaction.
             TxView { tx: tx.as_ref().clone(), reading: reading.clone(), inspect,
                 on_inspect: move |_| view.set(SignView::Inspect),
+                fee_line: true,
                 if let Some(source) = source.clone() {
                     SourceChip { source }
                 }
             }
 
             FeeLine { tx: tx.as_ref().clone() }
+
+            // What the format allows limits who can sign, so it is said
+            // before the signatures, not after the buttons.
+            match tx.format {
+                TxFormat::V1 => rsx! {},
+                TxFormat::Legacy => rsx! {
+                    p { class: "note format-note",
+                        Icon { glyph: Glyph::Info }
+                        span {
+                            "This transaction is in the legacy format, which cannot be handed to another device. Only keys on this device can sign it."
+                        }
+                    }
+                },
+                TxFormat::V0 => rsx! {
+                    p { class: "note format-note",
+                        Icon { glyph: Glyph::Info }
+                        span {
+                            "This transaction is in the older v0 format, which cannot be handed to another device. Only keys on this device can sign it."
+                        }
+                    }
+                },
+            }
 
             div { class: "sign-status",
                 h3 { "Signatures" }
@@ -513,7 +531,9 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             // What signing changes in a signer's balance is not a matter of
             // signing: it stays in the sentences and the Accounts list.
             WithoutDeltas {
-                SignerList { status: status.clone(), inspect }
+                SignerList { status: status.clone(), inspect,
+                    share: (tx.format == TxFormat::V1).then_some(share_open),
+                }
             }
         }
 
@@ -549,11 +569,21 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             from_site: from_browser,
             share_next,
             share_open,
-            add_signature_first: collecting,
+            shareable: tx.format == TxFormat::V1,
             on_add_signature: move |_| {
                 inbox_title.set("Add a signature");
                 inbox_open.set(true);
             },
+            on_load_another: move |_| {
+                inbox_title.set("Load another transaction");
+                inbox_open.set(true);
+            },
+            edit_title: if from_browser {
+                "Change it on Build. What Build compiles is a new transaction, and it does not go back to the site."
+            } else {
+                "Change it on Build. What Build compiles is a new transaction, signed again."
+            },
+            on_edit: move |_| edit_on_build(&session, &editable),
 
             if let Some(batch) = batch.as_ref().filter(|_| site_waiting) {
                 if batch_signed {
@@ -577,56 +607,6 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
                     }
                 }
             }
-
-            div { class: "btn-row",
-                // While signatures come from other devices, it follows the
-                // primary button in the row above.
-                if !collecting {
-                    button {
-                        onclick: move |_| {
-                            inbox_title.set("Add a signature");
-                            inbox_open.set(true);
-                        },
-                        "Add a signature"
-                    }
-                }
-                button {
-                    onclick: move |_| {
-                        inbox_title.set("Load another transaction");
-                        inbox_open.set(true);
-                    },
-                    "Load another transaction"
-                }
-                button {
-                    title: if from_browser {
-                        "Change it on Build. What Build compiles is a new transaction, and it does not go back to the site."
-                    } else {
-                        "Change it on Build. What Build compiles is a new transaction, signed again."
-                    },
-                    onclick: move |_| edit_on_build(&session, &editable),
-                    "Edit on Build"
-                }
-                // When sharing is the next step, it leads the row above.
-                if tx.format == TxFormat::V1 && !share_next {
-                    button {
-                        onclick: move |_| share_open.set(true),
-                        "Share with another device"
-                    }
-                }
-            }
-        }
-        match tx.format {
-            TxFormat::V1 => rsx! {},
-            TxFormat::Legacy => rsx! {
-                p { class: "hint",
-                    "This transaction is in the legacy format, which cannot be handed to another device. Only keys on this device can sign it."
-                }
-            },
-            TxFormat::V0 => rsx! {
-                p { class: "hint",
-                    "This transaction is in the older v0 format, which cannot be handed to another device. Only keys on this device can sign it."
-                }
-            },
         }
 
         if inbox_open() {
@@ -696,7 +676,11 @@ fn SignModal(
     }
 }
 
-/// The Sign / Submit / Refresh buttons and the hints under them.
+/// The screen's buttons, in one row and one order in every state: the
+/// state's primary button (Sign, Share with another device or Submit), then
+/// Add a signature and Share with another device, outlined, when each applies
+/// and is not the primary, then Load another transaction and Edit on Build,
+/// quiet, at the far end. The hints go under the row.
 #[component]
 fn SignActions(
     status: SigningStatus,
@@ -727,10 +711,13 @@ fn SignActions(
     /// Share leads the row.
     share_next: bool,
     mut share_open: Signal<bool>,
-    /// Signatures are coming from other devices: Add a signature follows the
-    /// primary button.
-    add_signature_first: bool,
+    /// The transaction can be handed to another device.
+    shareable: bool,
     on_add_signature: EventHandler<()>,
+    on_load_another: EventHandler<()>,
+    /// Edit on Build's tooltip.
+    edit_title: String,
+    on_edit: EventHandler<()>,
     /// The rows under these buttons, pinned with them.
     children: Element,
 ) -> Element {
@@ -814,35 +801,19 @@ fn SignActions(
         )
     });
 
-    // Add a signature goes right after whichever button is primary.
-    let add_after_share = add_signature_first && share_next;
-    let add_after_sign = add_signature_first && !share_next && sign_shown;
-    let add_leads = add_signature_first && !share_next && !sign_shown;
-    let add_signature = rsx! {
-        button {
-            onclick: move |_| on_add_signature.call(()),
-            "Add a signature"
-        }
-    };
-
     rsx! {
         // Pinned to the bottom of the pane, so the next step is in reach
         // however long the transaction is.
         div { class: "sign-actions",
             div { class: "sign-actions-bar",
-                div { class: "btn-row",
-                    if add_leads {
-                        {add_signature.clone()}
-                    }
+                div { class: "btn-row sign-actions-row",
+                    // The state's own buttons, its primary first.
                     if share_next {
                         button {
                             class: "primary",
                             onclick: move |_| share_open.set(true),
                             "Share with another device"
                         }
-                    }
-                    if add_after_share {
-                        {add_signature.clone()}
                     }
                     if sign_shown {
                         button {
@@ -852,14 +823,11 @@ fn SignActions(
                             "{sign_label}"
                         }
                     }
-                    if add_after_sign {
-                        {add_signature.clone()}
-                    }
                     // Submit could not be pressed while a signature is missing,
                     // so it waits until every one is in.
                     if status.complete() {
                         button {
-                            class: if share_next { "" } else { "primary" },
+                            class: if share_next || sign_shown { "" } else { "primary" },
                             disabled: !can_submit,
                             title: submit_waits,
                             onclick: move |_| submit_loaded(session, busy),
@@ -868,6 +836,29 @@ fn SignActions(
                     }
                     if show_refresh {
                         RefreshBlockhash {}
+                    }
+                    // What else applies, outlined.
+                    button {
+                        onclick: move |_| on_add_signature.call(()),
+                        "Add a signature"
+                    }
+                    if shareable && !share_next {
+                        button {
+                            onclick: move |_| share_open.set(true),
+                            "Share with another device"
+                        }
+                    }
+                    // The ways out, quiet, at the far end.
+                    div { class: "sign-actions-end",
+                        button { class: "ghost",
+                            onclick: move |_| on_load_another.call(()),
+                            "Load another transaction"
+                        }
+                        button { class: "ghost",
+                            title: edit_title,
+                            onclick: move |_| on_edit.call(()),
+                            "Edit on Build"
+                        }
                     }
                 }
                 {children}

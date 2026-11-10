@@ -62,7 +62,9 @@ pub fn SimulatedDeltas(
 /// screen lists under its signatures, inside the same [`SimulatedDeltas`]. Their
 /// changes are drawn there, so Summary does not repeat them. `children` sit
 /// beside the heading. With `on_inspect`, Summary says which instructions it
-/// leaves out, with a button that calls it to show them.
+/// leaves out, with a button that calls it to show them. `fee_line`: the
+/// screen draws [`FeeLine`] under this, so a fee payer whose only change is
+/// that fee is not listed again under "Also changes".
 #[component]
 pub fn TxView(
     tx: DecodedTx,
@@ -70,6 +72,7 @@ pub fn TxView(
     inspect: bool,
     #[props(default)] signers: Vec<Pubkey>,
     #[props(default)] on_inspect: Option<EventHandler<()>>,
+    #[props(default)] fee_line: bool,
     children: Element,
 ) -> Element {
     let shown = tx.clone();
@@ -87,11 +90,22 @@ pub fn TxView(
             let mut named: HashSet<Pubkey> = signers.into_iter().collect();
             summary_addresses(&explained.instructions, &mut named);
             let deltas = deltas.0.read();
+            // The fee line states what the fee payer pays in fees.
+            let fee_payer = shown.fee_payer().filter(|_| fee_line);
+            let fee = shown.fee_lamports();
+            let only_the_fee = |pubkey: &Pubkey| {
+                Some(*pubkey) == fee_payer
+                    && deltas
+                        .get(pubkey)
+                        .is_some_and(|(before, after)| after < before && before - after <= fee)
+            };
             shown
                 .accounts
                 .iter()
                 .map(|account| account.pubkey)
-                .filter(|pubkey| deltas.contains_key(pubkey) && !named.contains(pubkey))
+                .filter(|pubkey| {
+                    deltas.contains_key(pubkey) && !named.contains(pubkey) && !only_the_fee(pubkey)
+                })
                 .collect()
         }
         _ => Vec::new(),
@@ -99,12 +113,15 @@ pub fn TxView(
     // What InstructionList leaves out of Summary at the top level.
     let left_out = match on_inspect {
         Some(on_inspect) if !inspect && !waiting => {
-            let count = explained
+            // Their places in the message, which the cards shown keep.
+            let places: Vec<String> = explained
                 .instructions
                 .iter()
-                .filter(|ix| ix.program_id == COMPUTE_BUDGET_PROGRAM_ID)
-                .count();
-            (count > 0).then_some((count, on_inspect))
+                .enumerate()
+                .filter(|(_, ix)| ix.program_id == COMPUTE_BUDGET_PROGRAM_ID)
+                .map(|(i, _)| (i + 1).to_string())
+                .collect();
+            (!places.is_empty()).then_some((places, on_inspect))
         }
         _ => None,
     };
@@ -119,15 +136,15 @@ pub fn TxView(
         }
         RiskNotice { explained: explained.clone() }
         ReadingNote { waiting, gave_up }
-        if !waiting {
-            InstructionList { instructions: explained.instructions.clone(), inspect }
-        }
-        if let Some((count, on_inspect)) = left_out {
+        // Above the cards, so the numbers they start at explain themselves.
+        if let Some((places, on_inspect)) = left_out {
             p { class: "ix-left-out muted",
-                if count == 1 {
-                    "1 compute budget instruction is not shown."
-                } else {
-                    "{count} compute budget instructions are not shown."
+                match places.as_slice() {
+                    [one] => rsx! { "Instruction {one} sets the compute budget and is not shown." },
+                    [rest @ .., last] => rsx! {
+                        "Instructions {rest.join(\", \")} and {last} set the compute budget and are not shown."
+                    },
+                    [] => rsx! {},
                 }
                 button { class: "link-btn",
                     r#type: "button",
@@ -135,6 +152,9 @@ pub fn TxView(
                     "Inspect"
                 }
             }
+        }
+        if !waiting {
+            InstructionList { instructions: explained.instructions.clone(), inspect }
         }
         if !unnamed.is_empty() {
             p { class: "fee-line muted",
@@ -428,11 +448,13 @@ fn UnknownInstruction(ix: ExplainedIx, inspect: bool) -> Element {
         }
         // Nothing names these accounts, so they are listed by position.
         if !ix.accounts.is_empty() {
-            ul { class: "ix-accounts",
-                for (i, account) in ix.accounts.iter().copied().enumerate() {
-                    li { class: "chip-row", key: "{i}",
-                        span { class: "muted ix-account-name", "#{i + 1}" }
-                        AddressRow { pubkey: account, full: true }
+            AccountRowDeltas { inspect,
+                ul { class: "ix-accounts",
+                    for (i, account) in ix.accounts.iter().copied().enumerate() {
+                        li { class: "chip-row", key: "{i}",
+                            span { class: "muted ix-account-name", "#{i + 1}" }
+                            AddressRow { pubkey: account, full: true }
+                        }
                     }
                 }
             }
