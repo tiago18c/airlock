@@ -82,14 +82,14 @@ pub(in crate::ui) fn ParsedIdl(tree: IdlOutline, section: IdlSection) -> Element
         IdlSection::Accounts => rsx! {
             div { class: "idl-section idl-list",
                 for account in tree.accounts {
-                    NamedItem { key: "{account.name}", name: account.name, detail: account.detail }
+                    NamedItem { key: "{account.name}", item: account }
                 }
             }
         },
         IdlSection::Types => rsx! {
             div { class: "idl-section idl-list",
                 for kind in tree.types {
-                    NamedItem { key: "{kind.name}", name: kind.name, detail: kind.detail }
+                    NamedItem { key: "{kind.name}", item: kind }
                 }
             }
         },
@@ -114,7 +114,7 @@ pub(in crate::ui) fn ParsedIdl(tree: IdlOutline, section: IdlSection) -> Element
         IdlSection::Events => rsx! {
             div { class: "idl-section idl-list",
                 for event in tree.events {
-                    NamedItem { key: "{event.name}", name: event.name, detail: event.detail }
+                    NamedItem { key: "{event.name}", item: event }
                 }
             }
         },
@@ -256,16 +256,81 @@ fn IdlSummary(name: String) -> Element {
 
 /// An account, type or event: its name, opening to what it holds.
 #[component]
-fn NamedItem(name: String, detail: String) -> Element {
+fn NamedItem(item: IdlNamed) -> Element {
+    let phone = use_phone_layout();
+    let IdlNamed {
+        name,
+        detail,
+        fields,
+        variants,
+        size,
+    } = item;
     if detail.is_empty() {
         return rsx! { div { class: "idl-item idl-leaf", "{name}" } };
     }
+    if !phone {
+        return rsx! {
+            details { class: "idl-item",
+                IdlSummary { name }
+                div { class: "idl-body", p { "{detail}" } }
+            }
+        };
+    }
+    // On a phone it reads as an instruction does: what it holds at the end
+    // of its closed row, and opened, a row for each field or variant with
+    // its type. One with neither, a type that is another type's alias, says
+    // what it is in a word, closed and open.
+    let counts =
+        held(fields.len(), variants, size).or_else(|| fields.is_empty().then(|| detail.clone()));
+    let width = longest(fields.iter().map(|field| field.name.as_str()));
     rsx! {
-        details { class: "idl-item",
-            IdlSummary { name }
-            div { class: "idl-body", p { "{detail}" } }
+        details { class: "idl-item idl-named",
+            summary {
+                span { class: "idl-chevron", aria_hidden: "true", Icon { glyph: Glyph::ChevronRight } }
+                span { class: "idl-name", title: "{name}", "{name}" }
+                if let Some(counts) = counts {
+                    span { class: "idl-counts", "{counts}" }
+                }
+            }
+            div { class: "idl-body", style: "--idl-name-w: {width}ch",
+                if fields.is_empty() {
+                    p { "{detail}" }
+                } else {
+                    div { class: "idl-block",
+                        h4 { class: "eyebrow", if variants { "Variants" } else { "Fields" } }
+                        ul { class: "idl-rows",
+                            for field in fields {
+                                li { class: "idl-row", key: "{field.name}",
+                                    span { class: "idl-row-name", "{field.name}" }
+                                    if !field.ty.is_empty() {
+                                        span { class: "idl-row-value",
+                                            code { class: "idl-row-type", "{field.ty}" }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
+}
+
+/// What a closed account or type says it holds: "5 fields · 82 bytes",
+/// "3 variants"; `None` when it holds neither and has no size.
+pub(in crate::ui) fn held(fields: usize, variants: bool, size: Option<u64>) -> Option<String> {
+    let one = if variants { "variant" } else { "field" };
+    let mut parts = Vec::new();
+    match fields {
+        0 => {}
+        1 => parts.push(format!("1 {one}")),
+        n => parts.push(format!("{n} {one}s")),
+    }
+    if let Some(size) = size {
+        parts.push(format!("{size} bytes"));
+    }
+    (!parts.is_empty()).then(|| parts.join(" · "))
 }
 
 /// How many characters the longest of these names has, at least one.

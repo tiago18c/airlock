@@ -6,8 +6,8 @@ use crate::ui::{
 };
 use dioxus::prelude::*;
 use wallet_core::{
-    pretty_idl, IdlAccountUse, IdlIxOutline, IdlOrigin, IdlOutline, IdlPinStatus, IdlRecord,
-    IdlSource, IdlSpec,
+    pretty_idl, IdlAccountUse, IdlIxOutline, IdlNamed, IdlOrigin, IdlOutline, IdlPinStatus,
+    IdlRecord, IdlSource, IdlSpec,
 };
 
 mod detail;
@@ -376,6 +376,33 @@ mod tests {
     fn a_long_address_keeps_both_ends() {
         assert_eq!(middle_cut(TOKEN, 12), "TokenkegQfeZ…f9Ss623VQ5DA");
         assert_eq!(middle_cut("short", 12), "short");
+    }
+
+    #[test]
+    fn a_forge_url_is_shown_as_its_path() {
+        assert_eq!(
+            short_source("https://github.com/solana-program/token"),
+            "solana-program/token"
+        );
+        assert_eq!(
+            short_source("https://gitlab.com/owner/repo.git/"),
+            "owner/repo"
+        );
+        assert_eq!(
+            short_source("https://example.org/owner/repo"),
+            "https://example.org/owner/repo"
+        );
+        assert_eq!(short_source("https://github.com/"), "https://github.com/");
+    }
+
+    #[test]
+    fn a_closed_account_says_what_it_holds() {
+        assert_eq!(
+            held(5, false, Some(82)).as_deref(),
+            Some("5 fields · 82 bytes")
+        );
+        assert_eq!(held(1, true, None).as_deref(), Some("1 variant"));
+        assert_eq!(held(0, false, None), None);
     }
 
     #[test]

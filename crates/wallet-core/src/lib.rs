@@ -54,10 +54,10 @@ pub use idl::{
     program_metadata_account_data, program_metadata_idl_address, sha256_bytes, BuiltinIdl,
     CatalogView, EmbeddedIdl, IdlAccountField, IdlAccountSource, IdlAccountUse, IdlArgField,
     IdlArgKind, IdlArgOutline, IdlBodies, IdlBuildFailure, IdlBuildInput, IdlBundleReport,
-    IdlCatalog, IdlChainSource, IdlCheck, IdlDraft, IdlError, IdlErrorOutline, IdlForm,
-    IdlIxOutline, IdlNamed, IdlNetwork, IdlOrigin, IdlOutline, IdlPackError, IdlPdaOutline,
-    IdlRecord, IdlSource, IdlSpec, IdlStore, InspectedIdl, MemoryBodies, NoIdls, PinnedProgram,
-    BUILTIN_IDLS, ED25519_SIGNER_PROGRAM_ID, MAX_IDL_BYTES, PINNED_PROGRAMS,
+    IdlCatalog, IdlChainSource, IdlCheck, IdlDraft, IdlError, IdlErrorOutline, IdlFieldOutline,
+    IdlForm, IdlIxOutline, IdlNamed, IdlNetwork, IdlOrigin, IdlOutline, IdlPackError,
+    IdlPdaOutline, IdlRecord, IdlSource, IdlSpec, IdlStore, InspectedIdl, MemoryBodies, NoIdls,
+    PinnedProgram, BUILTIN_IDLS, ED25519_SIGNER_PROGRAM_ID, MAX_IDL_BYTES, PINNED_PROGRAMS,
 };
 pub use idl::{
     base64_text, hex_dump, inspect_account, AccountHeader, AccountReading, InspectedAccount, Leaf,

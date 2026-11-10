@@ -55,6 +55,19 @@ pub struct IdlArgOutline {
 pub struct IdlNamed {
     pub name: String,
     pub detail: String,
+    /// What it holds, each with its type: an account's or a struct's
+    /// fields, or an enum's variants (the type of one that carries data).
+    pub fields: Vec<IdlFieldOutline>,
+    /// Whether `fields` are an enum's variants rather than fields.
+    pub variants: bool,
+    /// Its size in bytes, when the IDL gives one.
+    pub size: Option<u64>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct IdlFieldOutline {
+    pub name: String,
+    pub ty: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -113,10 +126,7 @@ fn outline_client(client: &ProgramClient) -> Result<IdlOutline, IdlError> {
             .collect(),
         types: array_at(&program, "definedTypes")
             .iter()
-            .map(|node| IdlNamed {
-                name: text_at(node, "name"),
-                detail: type_text(node.get("type").unwrap_or(node)),
-            })
+            .map(type_outline)
             .collect(),
         pdas: array_at(&program, "pdas").iter().map(pda_outline).collect(),
         events: array_at(&program, "events")
@@ -124,6 +134,9 @@ fn outline_client(client: &ProgramClient) -> Result<IdlOutline, IdlError> {
             .map(|node| IdlNamed {
                 name: text_at(node, "name"),
                 detail: String::new(),
+                fields: Vec::new(),
+                variants: false,
+                size: None,
             })
             .collect(),
         errors: array_at(&program, "errors")
@@ -203,16 +216,11 @@ pub(super) fn value_text(value: &serde_json::Value) -> Option<String> {
 }
 
 pub(super) fn account_outline(node: &serde_json::Value) -> IdlNamed {
-    let fields: Vec<String> = node
-        .get("data")
-        .map(|data| array_at(data, "fields"))
-        .unwrap_or_default()
-        .iter()
-        .map(|field| text_at(field, "name"))
-        .filter(|name| !name.is_empty())
-        .collect();
-    let mut detail = fields.join(", ");
-    if let Some(size) = node.get("size").and_then(serde_json::Value::as_u64) {
+    let fields = node.get("data").map(struct_fields).unwrap_or_default();
+    let size = node.get("size").and_then(serde_json::Value::as_u64);
+    let names: Vec<&str> = fields.iter().map(|field| field.name.as_str()).collect();
+    let mut detail = names.join(", ");
+    if let Some(size) = size {
         let size = format!("{size} bytes");
         detail = if detail.is_empty() {
             size
@@ -223,7 +231,52 @@ pub(super) fn account_outline(node: &serde_json::Value) -> IdlNamed {
     IdlNamed {
         name: text_at(node, "name"),
         detail,
+        fields,
+        variants: false,
+        size,
     }
+}
+
+/// A defined type: what kind it is in a word, then a struct's fields or an
+/// enum's variants.
+pub(super) fn type_outline(node: &serde_json::Value) -> IdlNamed {
+    let ty = node.get("type").unwrap_or(node);
+    let variants = text_at(ty, "kind") == "enumTypeNode";
+    let fields = if variants {
+        array_at(ty, "variants")
+            .iter()
+            .map(|variant| IdlFieldOutline {
+                name: text_at(variant, "name"),
+                ty: match text_at(variant, "kind").as_str() {
+                    "enumStructVariantTypeNode" => "struct".into(),
+                    "enumTupleVariantTypeNode" => "tuple".into(),
+                    _ => String::new(),
+                },
+            })
+            .filter(|variant| !variant.name.is_empty())
+            .collect()
+    } else {
+        struct_fields(ty)
+    };
+    IdlNamed {
+        name: text_at(node, "name"),
+        detail: type_text(ty),
+        fields,
+        variants,
+        size: None,
+    }
+}
+
+/// The named fields of a struct type node, each with its type.
+fn struct_fields(node: &serde_json::Value) -> Vec<IdlFieldOutline> {
+    array_at(node, "fields")
+        .iter()
+        .map(|field| IdlFieldOutline {
+            name: text_at(field, "name"),
+            ty: type_text(field.get("type").unwrap_or(&serde_json::Value::Null)),
+        })
+        .filter(|field| !field.name.is_empty())
+        .collect()
 }
 
 pub(super) fn pda_outline(node: &serde_json::Value) -> IdlPdaOutline {
