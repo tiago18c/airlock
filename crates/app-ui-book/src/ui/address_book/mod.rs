@@ -25,6 +25,20 @@ pub(in crate::ui) use transfer::*;
 
 const PAGE_SIZE: usize = 25;
 
+/// One line of the list: a kind's subheading, or an entry.
+enum ListItem {
+    Heading { name: &'static str, count: usize },
+    Entry(Box<BookRow>),
+}
+
+/// Where a kind comes in the list with every kind shown: the order of the
+/// chips, and what has no kind last.
+fn group_rank(group: Option<Group>) -> usize {
+    group
+        .and_then(|group| Group::ALL.iter().position(|of| *of == group))
+        .unwrap_or(Group::ALL.len())
+}
+
 #[component]
 pub fn AddressBookPanel() -> Element {
     let session = use_context::<Session>();
@@ -132,19 +146,25 @@ fn AddressBookList() -> Element {
     let group_id = form.group;
     let directory = (session.directory)();
     let wanted = kind_filter();
-    let mut entries: Vec<BookRow> = (session.book)()
+    let grouped = wanted.is_none();
+    // Each entry with the kind it is listed under.
+    let mut entries: Vec<(Option<Group>, BookRow)> = (session.book)()
         .rows_in(&group_id(), &filter(), None)
         .into_iter()
-        .filter(|row| {
-            wanted.is_none() || directory.describe(&row.entry.pubkey).category.group() == wanted
+        .map(|row| {
+            let group = directory.describe(&row.entry.pubkey).category.group();
+            (group, row)
         })
+        .filter(|(group, _)| grouped || *group == wanted)
         .collect();
-    // By name, ignoring case; the unnamed last, by address.
-    entries.sort_by_cached_key(|row| {
+    // With every kind listed, by kind in the order of the chips; then by
+    // name, ignoring case; the unnamed last, by address.
+    entries.sort_by_cached_key(|(group, row)| {
+        let rank = if grouped { group_rank(*group) } else { 0 };
         let name = entry_name(&directory.describe(&row.entry.pubkey), &row.entry);
         match name {
-            Some(name) => (false, name.to_lowercase(), String::new()),
-            None => (true, String::new(), row.entry.pubkey.to_string()),
+            Some(name) => (rank, false, name.to_lowercase(), String::new()),
+            None => (rank, true, String::new(), row.entry.pubkey.to_string()),
         }
     });
     let collisions = directory.collisions();
@@ -152,9 +172,40 @@ fn AddressBookList() -> Element {
     let pages = total.div_ceil(PAGE_SIZE).max(1);
     let page_i = page().min(pages - 1);
     let start = page_i * PAGE_SIZE;
-    let shown: Vec<BookRow> = entries.into_iter().skip(start).take(PAGE_SIZE).collect();
+    let counts: Vec<(Option<Group>, usize)> = if grouped {
+        let mut counts: Vec<(Option<Group>, usize)> = Vec::new();
+        for (group, _) in &entries {
+            match counts.last_mut() {
+                Some((last, count)) if last == group => *count += 1,
+                _ => counts.push((*group, 1)),
+            }
+        }
+        counts
+    } else {
+        Vec::new()
+    };
+    let shown: Vec<(Option<Group>, BookRow)> =
+        entries.into_iter().skip(start).take(PAGE_SIZE).collect();
     let from = if total == 0 { 0 } else { start + 1 };
     let to = (start + shown.len()).min(total);
+    // The page's rows, each kind's first under its subheading: the kind's
+    // name and how many entries of it the whole list holds.
+    let mut items: Vec<ListItem> = Vec::with_capacity(shown.len() + counts.len());
+    let mut previous: Option<Option<Group>> = None;
+    for (group, row) in shown {
+        if grouped && previous != Some(group) {
+            let count = counts
+                .iter()
+                .find(|(of, _)| *of == group)
+                .map_or(0, |(_, count)| *count);
+            items.push(ListItem::Heading {
+                name: group.map_or("Other", Group::name),
+                count,
+            });
+        }
+        previous = Some(group);
+        items.push(ListItem::Entry(Box::new(row)));
+    }
 
     rsx! {
         div { class: "stack",
@@ -229,10 +280,20 @@ fn AddressBookList() -> Element {
                         span { class: "ab-col-tags", "Tags" }
                     }
                     ul { class: "book-list ab-list",
-                        for row in shown {
-                            BookEntry {
-                                key: "{row.group_id}:{row.entry.pubkey}",
-                                row,
+                        for item in items {
+                            match item {
+                                ListItem::Heading { name, count } => rsx! {
+                                    li { class: "ab-kind-head", key: "kind:{name}",
+                                        span { class: "ab-kind-head-name", "{name}" }
+                                        span { class: "ab-kind-head-count", "{count}" }
+                                    }
+                                },
+                                ListItem::Entry(row) => rsx! {
+                                    BookEntry {
+                                        key: "{row.group_id}:{row.entry.pubkey}",
+                                        row: *row,
+                                    }
+                                },
                             }
                         }
                     }

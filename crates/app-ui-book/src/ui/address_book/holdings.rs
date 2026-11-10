@@ -4,21 +4,15 @@ use super::*;
 
 pub(in crate::ui) const HOLDING_PAGE: usize = 20;
 
+/// How many token accounts an owner has, at the end of its kind line: a
+/// button that opens them under the row. Nothing when it has none.
 #[component]
-pub(in crate::ui) fn OwnerHoldings(owner: Pubkey) -> Element {
+pub(in crate::ui) fn HoldingsToggle(owner: Pubkey, open: Signal<bool>) -> Element {
     let session = use_context::<Session>();
-    let mut open = use_signal(|| false);
-    let mut page = use_signal(|| 0usize);
     let summary = session.holding_summary(&owner);
     if summary.total == 0 {
         return rsx! {};
     }
-    let pages = summary.total.div_ceil(HOLDING_PAGE).max(1);
-    let page_i = page().min(pages - 1);
-    let start = page_i * HOLDING_PAGE;
-    let shown = session.holding_page(&owner, start, HOLDING_PAGE);
-    let from = start + 1;
-    let to = start + shown.len();
     let noun = if summary.total == 1 {
         "token account"
     } else {
@@ -31,33 +25,53 @@ pub(in crate::ui) fn OwnerHoldings(owner: Pubkey) -> Element {
     };
 
     rsx! {
+        span { class: "ab-kind-sep", aria_hidden: "true", " · " }
+        button {
+            class: if open() { "ab-holdings-toggle open" } else { "ab-holdings-toggle" },
+            r#type: "button",
+            aria_expanded: "{open()}",
+            onclick: move |_| open.set(!open()),
+            "{count}"
+            Icon { glyph: Glyph::ChevronRight }
+        }
+    }
+}
+
+/// An owner's token accounts, under its row while `open`.
+#[component]
+pub(in crate::ui) fn OwnerHoldings(owner: Pubkey, open: Signal<bool>) -> Element {
+    let session = use_context::<Session>();
+    let mut page = use_signal(|| 0usize);
+    let summary = session.holding_summary(&owner);
+    if summary.total == 0 || !open() {
+        return rsx! {};
+    }
+    let pages = summary.total.div_ceil(HOLDING_PAGE).max(1);
+    let page_i = page().min(pages - 1);
+    let start = page_i * HOLDING_PAGE;
+    let shown = session.holding_page(&owner, start, HOLDING_PAGE);
+    let from = start + 1;
+    let to = start + shown.len();
+
+    rsx! {
         div { class: "ab-holdings",
-            button {
-                class: if open() { "ghost sm ab-holdings-toggle open" } else { "ghost sm ab-holdings-toggle" },
-                aria_expanded: "{open()}",
-                onclick: move |_| open.set(!open()),
-                Icon { glyph: Glyph::ChevronRight }
-                "{count}"
-            }
-            if open() {
-                ul { class: "holding-list",
-                    for holding in shown {
-                        HoldingRow { key: "{holding.pubkey}", owner, holding }
-                    }
+            ul { class: "holding-list",
+                for holding in shown {
+                    HoldingRow { key: "{holding.pubkey}", owner, holding }
                 }
-                if pages > 1 {
-                    div { class: "pager",
-                        button {
-                            disabled: page_i == 0,
-                            onclick: move |_| page.set(page_i.saturating_sub(1)),
-                            "Previous"
-                        }
-                        p { class: "muted", "{from}–{to} of {summary.total}" }
-                        button {
-                            disabled: page_i + 1 >= pages,
-                            onclick: move |_| page.set(page_i + 1),
-                            "Next"
-                        }
+            }
+            if pages > 1 {
+                div { class: "pager",
+                    button {
+                        disabled: page_i == 0,
+                        onclick: move |_| page.set(page_i.saturating_sub(1)),
+                        "Previous"
+                    }
+                    p { class: "muted", "{from}–{to} of {summary.total}" }
+                    button {
+                        disabled: page_i + 1 >= pages,
+                        onclick: move |_| page.set(page_i + 1),
+                        "Next"
                     }
                 }
             }
@@ -117,7 +131,9 @@ pub(in crate::ui) fn HoldingRow(owner: Pubkey, holding: TokenHolding) -> Element
                     span { class: "cat cat-token", Icon { glyph: Glyph::Coin } }
                     span { class: "ab-token-name", title: "{mint_text}", "{name}" }
                 } else {
-                    AddressRow { pubkey: mint, no_copy: true, no_label: true, class: "ab-holding-mint" }
+                    AddressRow { pubkey: mint, no_copy: true, no_label: true, class: "ab-holding-mint",
+                        span { class: "ab-token-unknown", "Unknown token" }
+                    }
                 }
             }
             AddressRow { pubkey: token, no_label: true, class: "ab-holding-account" }

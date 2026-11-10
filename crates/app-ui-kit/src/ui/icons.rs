@@ -29,6 +29,7 @@ pub enum Glyph {
     Hourglass,
     History,
     Server,
+    /// A coin, its rim round its face: a token.
     Coin,
     Pie,
     Person,
@@ -174,8 +175,7 @@ impl Glyph {
             Glyph::Pie => &["M21.2 15.9A10 10 0 1 1 8 2.8", "M22 12A10 10 0 0 0 12 2v10Z"],
             Glyph::Coin => &[
                 "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z",
-                "M8.5 12h7",
-                "M12 8.5v7",
+                "M12 6.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Z",
             ],
             Glyph::Person => &[
                 "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z",

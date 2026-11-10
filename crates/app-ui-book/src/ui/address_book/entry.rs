@@ -212,8 +212,8 @@ fn kind_line(described: &Described) -> String {
 }
 
 /// One entry as a row of the list: its kind, name, address, balance, tags
-/// and actions, each in a column that lines up from row to row, and under
-/// it the token accounts it owns.
+/// and actions, each in a column that lines up from row to row. An owner's
+/// kind line ends in a toggle for its token accounts, which open under it.
 #[component]
 pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
     let session = use_context::<Session>();
@@ -225,12 +225,14 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
     let mut error = form.error;
     let mut editing = form.editing;
     let mut editing_group = form.editing_group;
+    let holdings_open = use_signal(|| false);
     let group_id = row.group_id.clone();
     let edit_group = group_id.clone();
     let remove_group = group_id;
     let entry = row.entry;
     let pubkey = entry.pubkey;
     let kind = entry.kind;
+    let owns_tokens = matches!(kind, AddressKind::Account);
     let tags: Vec<String> = entry.tags.iter().cloned().collect();
     let tags_csv = join_tags(&entry.tags);
     let can_remove = kind != AddressKind::Program;
@@ -274,7 +276,12 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                         }
                     }
                 }
-                p { class: "ab-kind", "{what}" }
+                p { class: "ab-kind",
+                    "{what}"
+                    if owns_tokens {
+                        HoldingsToggle { owner: pubkey, open: holdings_open }
+                    }
+                }
             }
             div { class: "ab-address",
                 code { class: "mono", title: "{address}", "{address}" }
@@ -331,8 +338,8 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                     }
                 }
             }
-            if matches!(kind, AddressKind::Account) {
-                OwnerHoldings { owner: pubkey }
+            if owns_tokens {
+                OwnerHoldings { owner: pubkey, open: holdings_open }
             }
         }
     }
