@@ -2244,13 +2244,21 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   font-size: var(--text-md);
 }
 .wallets-empty > p { flex: 1 1 20rem; min-width: 0; margin: 0; }
-/* A multisig's or a Vector wallet's details are in the card's markup and
-   open from its Details button as a dialog. Closed, only their warnings
-   show, as lines of the card, so nothing that needs attention is hidden. */
-.wallet-details-closed,
-.wallet-details-closed > .wallet-details { display: contents; }
-.wallet-details-closed > .wallet-details > :not(.warn) { display: none; }
-.wallet-details-title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+/* A Vector wallet's account is watched from its card: only what needs
+   attention shows there (.warn, .on-card). All of it is in its settings. */
+.wallet-status { display: contents; }
+.wallet-status > :not(.warn):not(.on-card) { display: none; }
+/* A wallet's Settings and Details dialogs. */
+.wallet-dialog { max-height: calc(100vh - 96px); overflow-y: auto; }
+.wallet-details-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); }
+.wallet-details-title > .muted { font-size: var(--text-md); font-weight: var(--weight-regular); }
+.wallet-dialog .settings-grid { grid-template-columns: max-content minmax(0, 1fr); }
+.wallet-dialog-unsaved { margin-right: auto; font-size: var(--text-md); }
+/* Details is wider: it shows whole addresses beside their names. */
+.modal.wide.wallet-facts-modal { width: min(52rem, 100%); }
+.wallet-facts > .setting-row { align-items: baseline; min-height: 0; }
+.wallet-facts { row-gap: var(--space-3); }
+.wallet-fact-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-1); }
 /* A multisig's co-approvers grow with their rows; the pane scrolls. */
 .approves-together .derive-list { max-height: none; overflow: visible; }
 .checklist-head { display: grid; gap: var(--space-1); }

@@ -2,17 +2,15 @@ use super::lock::VaultUnlock;
 use crate::state::forms::{AddWalletMode, SendOpen, WalletForm};
 use crate::state::session::{Session, Tab, WalletSummary};
 use crate::ui::wallets::kinds::{
-    payers, ContractWalletRow, CurrentChip, ExportKeysModal, HardwareForm, KeyImportForm,
-    OfflineForm, ProgrammaticForm, SquadsForm, VectorForm, WalletRowMenu,
+    ContractWalletRow, CurrentChip, ExportKeysModal, HardwareForm, KeyImportForm, OfflineForm,
+    ProgrammaticForm, SquadsForm, VectorForm, WalletDialogButtons, WalletRowMenu,
 };
-use crate::ui::{
-    format_sol, Address, AddressHeader, CopyButton, Glyph, HelpTip, Icon, PaneMenu, WalletPicker,
-};
+use crate::ui::{format_sol, AddressHeader, CopyButton, Glyph, HelpTip, Icon, PaneMenu};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use wallet_core::{
-    Category, DerivedAccount, NewSigner, OfflinePath, WalletClass, WalletKind, WalletRecord,
-    DERIVE_BATCH, SOLANA_PATH_TEMPLATE,
+    Category, DerivedAccount, NewSigner, OfflinePath, WalletClass, WalletKind, DERIVE_BATCH,
+    SOLANA_PATH_TEMPLATE,
 };
 use zeroize::Zeroize;
 

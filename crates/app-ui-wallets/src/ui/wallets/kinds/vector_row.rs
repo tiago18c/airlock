@@ -334,10 +334,10 @@ pub(super) fn VectorFacts(
                 p { class: "warn", "{problem}" }
             },
             VectorChain::Uninitialized => rsx! {
-                p { class: "note",
+                p { class: "note on-card",
                     "Not initialized on this cluster yet. It can already receive SOL and tokens; initializing keeps what it holds. It cannot send until then."
                 }
-                div { class: "btn-row",
+                div { class: "btn-row on-card",
                     button { disabled: busy(), onclick: initialize,
                         if busy() { "Preparing…" } else { "Initialize" }
                     }

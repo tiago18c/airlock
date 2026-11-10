@@ -9,20 +9,17 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
     let id = wallet.id;
     let can_sign = wallet.class == WalletClass::Hot;
     let pubkey = wallet.address;
-    let tags = wallet.tags;
-    let label = wallet.label;
-    let fee_payer = wallet.fee_payer;
+    let tags = wallet.tags.clone();
+    let label = wallet.label.clone();
     let show_balances = crate::state::use_network().is_some();
     let lamports = show_balances
         .then(|| pubkey.and_then(|pk| (session.book)().get(&pk).and_then(|e| e.lamports)))
         .flatten();
     let durable_nonce = wallet.durable_nonce;
     let on_device = wallet.on_device;
-    let device_path = wallet.derivation_path.clone();
     let default_path = wallet.default_path;
+    let dialogs_of = wallet.clone();
     let mut confirm_open = use_signal(|| false);
-    let mut error = use_signal(|| None::<String>);
-    let mut busy = use_signal(|| false);
 
     let wallets = (session.wallets)().summaries.clone();
     // The programmatic signer this key is the authority of.
@@ -35,47 +32,10 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                 .and_then(WalletKind::signer_authority);
             authority.is_some() && authority == pubkey
         })
-        .cloned();
-    let signer_label = format!("{label} signer");
-    let add_signer = move |_| {
-        error.set(None);
-        let Some(authority) = pubkey else {
-            return;
-        };
-        let signer = WalletRecord::programmatic(signer_label.clone(), authority, Some(id));
-        session.when_unlocked(
-            "Unlock the vault to add the programmatic signer.",
-            move || match session.add_contract_wallet(signer) {
-                Ok(()) => {
-                    let _ = session.update_wallet(id, |kind| {
-                        kind.default_path_unless_chosen(OfflinePath::Programmatic)
-                    });
-                    crate::actions::network::start_refresh(session);
-                }
-                Err(err) => error.set(Some(err.to_string())),
-            },
-        );
-    };
-    let create_nonce = move |_| {
-        error.set(None);
-        session.when_unlocked(CHANGE_WALLET, move || {
-            busy.set(true);
-            spawn(async move {
-                if let Err(err) = crate::actions::wallets::create_durable_nonce(session, id).await {
-                    error.set(Some(err));
-                }
-                busy.set(false);
-            });
-        });
-    };
-    let make_default = move |path: OfflinePath| {
-        session.when_unlocked(CHANGE_WALLET, move || {
-            let _ = session.update_wallet(id, |kind| kind.set_default_path(Some(path)));
-        });
-    };
+        .is_some();
     // A default whose target is gone is not taken.
     let lost_default = match default_path {
-        Some(OfflinePath::Programmatic) => signer.is_none(),
+        Some(OfflinePath::Programmatic) => !signer,
         Some(OfflinePath::DurableNonce) => durable_nonce.is_none(),
         None => false,
     };
@@ -129,6 +89,9 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                                 }
                             }
                         }
+                        if !can_sign {
+                            WalletDialogButtons { wallet: dialogs_of }
+                        }
                         WalletRowMenu { id,
                             on_remove: move |_| {
                                 session.when_unlocked("Unlock the vault to remove a wallet from it.", move || confirm_open.set(true));
@@ -137,92 +100,9 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                     }
                 }
             }
-            if !can_sign {
-                div { class: "settings-grid",
-                    WalletPicker {
-                        label: "Pays fees",
-                        options: payers(&wallets, !show_balances)
-                            .into_iter()
-                            .filter(|other| other.id != id)
-                            .collect::<Vec<_>>(),
-                        selected: fee_payer,
-                        none_label: if on_device.is_some() { "The hardware wallet itself" } else { "The offline wallet itself" },
-                        on_change: move |choice| {
-                            session.when_unlocked(CHANGE_WALLET, move || {
-                                let _ = session.update_wallet(id, |kind| kind.set_fee_payer(choice));
-                            });
-                        },
-                    }
-                    if let (Some(vendor), Some(path)) = (on_device, device_path.clone()) {
-                        div { class: "setting-row",
-                            span { class: "setting-label", "{vendor.label()}" }
-                            div { class: "setting-value",
-                                code { class: "mono", "{path}" }
-                            }
-                        }
-                    }
-                    div { class: "setting-row",
-                        span { class: "setting-label", "Programmatic signer" }
-                        div { class: "setting-value",
-                            match signer {
-                                Some(signer) => rsx! {
-                                    if let Some(address) = signer.address {
-                                        Address { pubkey: address }
-                                    } else {
-                                        span { "{signer.label}" }
-                                    }
-                                    PathDefault {
-                                        path: OfflinePath::Programmatic,
-                                        chosen: default_path,
-                                        on_choose: make_default,
-                                    }
-                                },
-                                None => rsx! {
-                                    button { class: "sm",
-                                        title: "Add the programmatic signer this key is the authority of. It is listed under Smart contract wallets.",
-                                        onclick: add_signer,
-                                        "Set up"
-                                    }
-                                },
-                            }
-                        }
-                    }
-                    div { class: "setting-row",
-                        span { class: "setting-label", "Durable nonce" }
-                        div { class: "setting-value",
-                            match durable_nonce {
-                                Some(account) => rsx! {
-                                    Address { pubkey: account }
-                                    PathDefault {
-                                        path: OfflinePath::DurableNonce,
-                                        chosen: default_path,
-                                        on_choose: make_default,
-                                    }
-                                },
-                                None => rsx! {
-                                    button { class: "sm",
-                                        title: "Create a nonce account controlled by this key, paid by the fee payer above. What this key signs for itself then lives on it.",
-                                        disabled: busy(),
-                                        onclick: create_nonce,
-                                        if busy() { "Preparing…" } else { "Create nonce account" }
-                                    }
-                                },
-                            }
-                        }
-                    }
-                }
-                if durable_nonce.is_some() {
-                    p { class: "hint",
-                        "A transaction this key signs for itself lives on the durable nonce, so it stays valid however long the trip to the other device, or the confirmation on it, takes. One transaction at a time: the first to land voids any other made on the same nonce."
-                    }
-                }
-                if lost_default {
-                    p { class: "warn",
-                        "The default path is no longer set up, so this key acts as itself, on a fresh blockhash."
-                    }
-                }
-                if let Some(err) = error() {
-                    p { class: "error", "{err}" }
+            if !can_sign && lost_default {
+                p { class: "warn",
+                    "The default path is no longer set up, so this key acts as itself, on a fresh blockhash."
                 }
             }
             if !tags.is_empty() {
@@ -249,7 +129,7 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
 
 /// Marks the path an offline wallet takes by default, or offers to make it so.
 #[component]
-fn PathDefault(
+pub(in crate::ui) fn PathDefault(
     path: OfflinePath,
     chosen: Option<OfflinePath>,
     on_choose: EventHandler<OfflinePath>,

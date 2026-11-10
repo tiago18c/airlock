@@ -1,10 +1,8 @@
-//! One programmatic signer or multisig on the Wallets pane, with its settings.
+//! One programmatic signer or multisig on the Wallets pane.
 //!
-//! A multisig and a Vector wallet keep who pays their fees on the card. The
-//! rest (a multisig's acting member and who approves with it; a Vector
-//! wallet's key, where it signs and its account's state) opens from Details.
-//! It is the same markup either way: closed, the stylesheet shows only its
-//! warnings on the card; open, it is drawn as a dialog.
+//! The card says what the wallet is and what needs attention. What can be
+//! changed about it opens from its wheel, and what it is made of from its
+//! magnifier: see [`WalletSettingsDialog`] and [`WalletDetailsDialog`].
 
 use super::*;
 /// One programmatic signer or multisig on the Wallets pane, with its settings.
@@ -26,123 +24,23 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
         })
         .flatten();
     let kind = wallet.contract.as_ref().and_then(kind_chip);
-    let mut error = use_signal(|| None::<String>);
-    let mut busy = use_signal(|| false);
     let mut confirm_remove = use_signal(|| false);
     let squad = wallet.contract.as_ref().and_then(WalletKind::squad);
     let proposals_offered = crate::state::use_network().is_some();
     let proposals_label = wallet.label.clone();
 
-    let fee_payer = wallet.contract.as_ref().and_then(WalletKind::fee_payer);
-    let (member_wallet, members, nonce, authority) = match &wallet.contract {
-        Some(WalletKind::Squads {
-            member_wallet,
-            members,
-            ..
-        }) => (*member_wallet, members.clone(), None, None),
-        Some(kind @ WalletKind::Programmatic { .. }) => (
-            None,
-            Vec::new(),
-            kind.executor_nonce(),
-            kind.signer_authority(),
-        ),
-        _ => (None, Vec::new(), None, None),
-    };
-    let is_squads = matches!(wallet.contract, Some(WalletKind::Squads { .. }));
-    // "The member's own setting" and "The authority key" leave the fee payer
-    // to the wallet next along the chain: say who that resolves to.
-    let next_in_chain = match &wallet.contract {
-        Some(WalletKind::Squads { member_wallet, .. }) => *member_wallet,
-        Some(WalletKind::Programmatic {
-            authority: Authority::Wallet { wallet },
-            ..
-        }) => Some(*wallet),
-        _ => None,
-    };
-    let none_payer = if is_squads {
-        "The member's own setting"
-    } else {
-        "The authority key"
-    };
-    let none_payer = match next_in_chain
-        .and_then(|next| session.route_of(next).ok())
-        .and_then(|route| route.fee_payer)
-        .and_then(|(payer, _)| wallets.iter().find(|other| other.id == payer))
-    {
-        Some(payer) => format!("{none_payer} · {}", payer.label),
-        None => none_payer.to_string(),
-    };
-    let is_programmatic = authority.is_some();
-    // A Vector wallet's key, and where the key that signs for it is.
-    let vector = wallet
+    let is_vector = wallet
         .contract
         .as_ref()
         .and_then(WalletKind::vector_settings)
-        .map(|settings| {
-            let held_by = match settings.authority {
-                Authority::Wallet { wallet } => wallets
-                    .iter()
-                    .find(|other| other.id == *wallet)
-                    .map(|other| other.label.clone())
-                    .unwrap_or_else(|| "A wallet no longer on this device".into()),
-                Authority::Held { .. } => "Kept with this wallet, on this device".into(),
-                Authority::Outside => "On another device".into(),
-            };
-            (
-                settings.scheme,
-                settings.scheme.show_key(settings.key),
-                held_by,
-                matches!(settings.authority, Authority::Held { .. }),
-            )
+        .is_some();
+    // An Ed25519 signer acts through a nonce account of its own.
+    let wants_nonce = !is_vector
+        && wallet.contract.as_ref().is_some_and(|kind| {
+            kind.signer_authority().is_some() && kind.executor_nonce().is_none()
         });
-    let create_nonce = move |_| {
-        error.set(None);
-        session.when_unlocked(CHANGE_WALLET, move || {
-            busy.set(true);
-            spawn(async move {
-                if let Err(err) = crate::actions::wallets::create_nonce(session, id).await {
-                    error.set(Some(err));
-                }
-                busy.set(false);
-            });
-        });
-    };
-    let is_vector = vector.is_some();
-    let has_details = is_squads || is_vector;
-    let mut details_open = use_signal(|| false);
-    let details_kind = kind.clone();
-    // A programmatic signer's authority key and nonce account: on the card,
-    // or in a Vector wallet's details.
-    let signer_rows = rsx! {
-        if let Some(authority) = authority {
-            div { class: "setting-row",
-                span { class: "setting-label", "Authority key" }
-                div { class: "setting-value",
-                    Address { pubkey: authority }
-                }
-            }
-        }
-        if is_programmatic {
-            div { class: "setting-row",
-                span { class: "setting-label", "Nonce account" }
-                div { class: "setting-value",
-                    match nonce {
-                        Some(account) => rsx! {
-                            Address { pubkey: account }
-                        },
-                        None => rsx! {
-                            button { class: "sm",
-                                title: "Create the nonce account this signer needs before it can act",
-                                disabled: busy(),
-                                onclick: create_nonce,
-                                if busy() { "Preparing…" } else { "Create nonce account" }
-                            }
-                        },
-                    }
-                }
-            }
-        }
-    };
+    let vector = vector_facts(&wallet, &wallets);
+    let dialogs_of = wallet.clone();
     rsx! {
         li { class: "wallet-row",
             div { class: "wallet-head wallet-card-head",
@@ -190,18 +88,7 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
                                 }
                             }
                         }
-                        if has_details {
-                            button { class: "sm",
-                                title: if is_squads {
-                                    "Which member this device acts as, and who approves together with it"
-                                } else {
-                                    "This wallet's key, where it signs, and the state of its account"
-                                },
-                                aria_haspopup: "dialog",
-                                onclick: move |_| details_open.set(true),
-                                "Details"
-                            }
-                        }
+                        WalletDialogButtons { wallet: dialogs_of }
                         WalletRowMenu { id,
                             on_remove: move |_| {
                                 session.when_unlocked("Unlock the vault to remove a wallet from it.", move || confirm_remove.set(true));
@@ -210,93 +97,28 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
                     }
                 }
             }
-            div { class: "settings-grid",
-                WalletPicker {
-                    label: "Pays fees",
-                    options: payers(&wallets, offline_app),
-                    selected: fee_payer,
-                    none_label: none_payer,
-                    on_change: move |choice| {
-                        session.when_unlocked(CHANGE_WALLET, move || {
-                            let _ = session.update_wallet(id, |kind| kind.set_fee_payer(choice));
-                        });
-                    },
-                }
-                if !is_vector {
-                    {signer_rows.clone()}
-                }
-            }
-            if is_programmatic && nonce.is_none() {
-                p { class: "note", "This signer has no nonce account yet. It needs one before it can act: the nonce is what stops a signed message from running twice." }
+            if wants_nonce {
+                p { class: "note", "This signer has no nonce account yet. It needs one before it can act: the nonce is what stops a signed message from running twice. Create it in this wallet's settings." }
             }
             match &route {
                 Ok(route) if route.fee_payer.is_none() => rsx! {
                     p { class: "warn",
                         if offline_app {
-                            "Nothing pays fees for this wallet yet. Pick a hot or offline wallet above."
+                            "Nothing pays fees for this wallet yet. Pick a hot or offline wallet in its settings."
                         } else {
-                            "Nothing on this device can pay fees for this wallet. Pick a hot wallet above."
+                            "Nothing on this device can pay fees for this wallet. Pick a hot wallet in its settings."
                         }
                     }
                 },
                 Ok(_) => rsx! {},
                 Err(err) => rsx! { p { class: "warn", "{err}" } },
             }
-            if has_details {
-                div {
-                    class: if details_open() { "modal-backdrop" } else { "wallet-details-closed" },
-                    onclick: move |_| details_open.set(false),
-                    div {
-                        class: if details_open() { "modal wide stack wallet-details" } else { "wallet-details" },
-                        role: if details_open() { "dialog" } else { "group" },
-                        aria_modal: if details_open() { "true" } else { "false" },
-                        aria_label: "Details of {wallet.label}",
-                        onclick: move |evt| evt.stop_propagation(),
-                        h3 { class: "wallet-details-title",
-                            "{wallet.label}"
-                            if let Some(kind) = details_kind {
-                                span { class: "chip kind", "{kind}" }
-                            }
-                        }
-                        if is_squads {
-                            div { class: "settings-grid",
-                                WalletPicker {
-                                    label: "Acts as member",
-                                    options: member_candidates(&wallets),
-                                    selected: member_wallet,
-                                    none_label: "Choose a wallet",
-                                    on_change: move |choice| {
-                                        session.when_unlocked(CHANGE_WALLET, move || {
-                                            let _ = session.update_wallet(id, |kind| kind.set_member_wallet(choice));
-                                        });
-                                    },
-                                }
-                            }
-                            if members.is_empty() {
-                                p { class: "note", "Members were not read from the chain yet, so the member choice is not checked." }
-                            }
-                            ApprovesTogether { wallet: wallet.clone() }
-                        }
-                        if is_vector && is_programmatic {
-                            div { class: "settings-grid",
-                                {signer_rows.clone()}
-                            }
-                        }
-                        if let (Some((scheme, key, held_by, held_here)), Some(address)) = (vector, wallet.address) {
-                            VectorFacts { id, address, scheme, shown_key: key, held_by, held_here }
-                        }
-                        div { class: "btn-row wallet-details-foot",
-                            button {
-                                r#type: "button",
-                                onclick: move |_| details_open.set(false),
-                                "Close"
-                            }
-                        }
-                    }
+            // A Vector wallet's account is watched from the card, where only
+            // what needs attention shows. The rest is in its settings.
+            if let (Some((scheme, key, held_by, held_here)), Some(address)) = (vector, wallet.address) {
+                div { class: "wallet-status",
+                    VectorFacts { id, address, scheme, shown_key: key, held_by, held_here }
                 }
-            }
-            if let Some(err) = error() {
-                p { class: "error", "{err}" }
             }
         }
         crate::ui::wallets::ConfirmRemoveModal {
@@ -311,7 +133,7 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
 
 /// What a smart contract wallet is, beside its name: the protocol, and a
 /// multisig's threshold. A Vector wallet's scheme is listed with its key.
-fn kind_chip(kind: &WalletKind) -> Option<String> {
+pub(super) fn kind_chip(kind: &WalletKind) -> Option<String> {
     match kind {
         WalletKind::Squads {
             program,
