@@ -122,7 +122,7 @@ pub use solana_instruction::Instruction;
 /// Limits and sizes of a Solana v1 transaction, from the crates that define them.
 pub use solana_message::v1::{MAX_TRANSACTION_SIZE, V1_PREFIX};
 pub use solana_signature::SIGNATURE_BYTES;
-pub use units::{format_sol, format_token_amount, parse_amount, LAMPORTS_PER_SOL};
+pub use units::{format_sol, format_token_amount, group_thousands, parse_amount, LAMPORTS_PER_SOL};
 pub use wallet_vault::{
     password_problem, LoadProblem, MemoryStore, PasswordChange, SealKey, SecretBytes, SecretString,
     Unlocked, Unlocking, VaultStore,
