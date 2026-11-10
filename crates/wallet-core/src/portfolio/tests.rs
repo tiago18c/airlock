@@ -255,6 +255,32 @@ fn dollars_and_amounts_read_well() {
 }
 
 #[test]
+fn any_number_of_decimals_makes_a_table_amount() {
+    let max = u128::MAX; // 340282366920938463463374607431768211455, 39 digits
+    assert_eq!(
+        format_amount(max, 0, 4),
+        "340,282,366,920,938,463,463,374,607,431,768,211,455"
+    );
+    assert_eq!(
+        format_amount(max, 9, 4),
+        "340,282,366,920,938,463,463,374,607,431.7682"
+    );
+    assert_eq!(format_amount(max, 19, 4), "34,028,236,692,093,846,346.3374");
+    assert_eq!(format_amount(max, 20, 4), "3,402,823,669,209,384,634.6337");
+    assert_eq!(format_amount(max, 38, 4), "3.4028");
+    assert_eq!(format_amount(max, 39, 4), "0.3402");
+    assert_eq!(format_amount(max, 64, 4), "<0.0001");
+    assert_eq!(format_amount(max, 255, 4), "<0.0001");
+    assert_eq!(format_amount(10u128.pow(38), 38, 4), "1");
+    for decimals in [0, 9, 19, 20, 38, 39, 64, 255] {
+        assert_eq!(format_amount(0, decimals, 4), "0", "{decimals}");
+    }
+    assert!(whole(max, 255).is_finite());
+    assert!(whole(max, 255) > 0.0);
+    assert_eq!(whole(1_500_000, 6), 1.5);
+}
+
+#[test]
 fn prices_are_for_mainnet_only() {
     use crate::book::{Cluster, KnownCluster};
     assert!(prices_apply_to(&Cluster::MainnetBeta));

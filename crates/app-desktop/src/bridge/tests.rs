@@ -562,6 +562,86 @@ async fn a_request_waiting_for_the_user_holds_up_nothing_else() {
     assert_eq!(read(&settled(waiting))["error"]["code"], "rejected");
 }
 
+#[tokio::test]
+async fn a_site_request_that_names_no_web_origin_is_refused() {
+    let (kit, bridge) = attached_bridge();
+    let peer = Peer::new(bridge.clone(), None);
+    let bad = [
+        "",
+        "https://example.test/",
+        "javascript:alert(1)",
+        "https://Example.test",
+    ];
+    for origin in bad {
+        for request in [
+            connect_from("c", origin),
+            json!({ "v": 1, "id": "d", "origin": origin, "method": "disconnect" }),
+            json!({ "v": 1, "id": "m", "origin": origin, "method": "signMessage",
+                    "params": { "account": account().to_string(), "message": "aGk=" } }),
+            json!({ "v": 1, "id": "i", "origin": origin, "method": "signIn", "params": {} }),
+        ]
+        .into_iter()
+        .chain(["signTransaction", SEND, SEND_ALL].map(|method| {
+            let mut request = sign_request("t", 1);
+            request["origin"] = json!(origin);
+            request["method"] = json!(method);
+            request
+        })) {
+            let reply = read(&settled(sent(&peer, request.clone())));
+            assert_eq!(reply["error"]["code"], "bad_request", "{request}");
+        }
+        // A silent connect gets no error, only no accounts.
+        let silent = read(&settled(sent(
+            &peer,
+            json!({ "v": 1, "id": "s", "origin": origin, "method": "connect", "params": { "silent": true } }),
+        )));
+        assert_eq!(silent["result"]["accounts"], json!([]));
+        assert!(silent.get("error").is_none());
+    }
+    assert!(kit.core.slices().bridge.get().is_empty());
+
+    // What is not a site's needs no web origin.
+    let status = read(&settled(sent(
+        &peer,
+        json!({ "v": 1, "id": "st", "origin": "chrome-extension://abcdefghijklmnop", "method": "status" }),
+    )));
+    assert_eq!(status["result"]["role"], "desktop");
+    let show = read(&settled(sent(
+        &peer,
+        json!({ "v": 1, "id": "show", "method": "show" }),
+    )));
+    assert!(show.get("error").is_none());
+    let pages = read(&settled(sent(
+        &peer,
+        json!({ "v": 1, "id": "p", "method": "pages", "params": { "origins": [ORIGIN] } }),
+    )));
+    assert!(pages.get("error").is_none());
+    assert!(read(&settled(sent(&peer, cancel_of("none"))))
+        .get("error")
+        .is_none());
+
+    // A well-formed one goes on to the user.
+    let waiting = sent(&peer, connect_from("w", "http://[::1]:8080"));
+    assert!(matches!(waiting, Answer::Later(_)));
+    assert_eq!(
+        kit.core.slices().bridge.get().head().unwrap().origin,
+        "http://[::1]:8080"
+    );
+    assert!(kit.core.bridge_answer("w", &BridgeAnswer::Rejected));
+    settled(waiting);
+}
+
+#[test]
+fn a_listed_page_that_is_not_a_web_origin_is_left_out() {
+    let pages = listed_pages(&json!({
+        "origins": [ORIGIN, "", "https://example.test/", "chrome-extension://x", 7, "http://localhost:8080"]
+    }));
+    assert_eq!(
+        pages,
+        BTreeSet::from([ORIGIN.to_string(), "http://localhost:8080".to_string()])
+    );
+}
+
 fn connect_from(id: &str, origin: &str) -> Value {
     json!({ "v": 1, "id": id, "origin": origin, "method": "connect" })
 }

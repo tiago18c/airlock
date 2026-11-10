@@ -22,6 +22,15 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 ### Fixed
 - **Mint tokens** and **Burn** now read as a sentence with the amount in whole tokens ("Mint 123456 t2 to …") in History, the Sign screen and the browser request. The online app reads the mint's decimals from your node. Before, it showed the raw amount and the accounts.
+- A token whose mint claims more than 19 decimals now shows its amount correctly. Before, the amount was wrong, and a mint with 64 or more decimals could stop the app.
+- Auto-lock now counts the time the computer was asleep. Before, a laptop closed partway through the timeout woke still unlocked on Linux and macOS, with the rest of the timeout to go. A shorter timeout chosen in Settings now applies at once instead of at the next lock cycle.
+- The browser bridge keeps serving sites after a connection fails to open. Before, one failed connection stopped it until Airlock restarted.
+
+### Security
+- On Linux and macOS, Airlock's data folder is now only readable by you: the folder is created `0700`, so other accounts on the computer cannot read the vault, settings, site grants or logs, and the files Airlock saves are `0600`. It has also moved to where the platform keeps app data: `~/.local/share/airlock` on Linux (or `$XDG_DATA_HOME/airlock`), `~/Library/Application Support/airlock` on macOS. A folder at `~/airlock` from an earlier build is moved there on first start.
+- In a browser, Airlock opens in one tab at a time. A second tab says Airlock is open elsewhere instead of loading, since two tabs would undo each other's saves, including the record of used signing leaves.
+- Release builds ignore `WEBVIEW2_*` environment variables (and `WEBKIT_INSPECTOR_SERVER` on Linux), which could open a debugging port into the wallet's window or swap the browser it runs on.
+- The desktop app refuses a site's request whose origin is not a well-formed web address, so the request window always names the site the browser reported.
 
 ## [0.1.0] - 2026-11-09
 

@@ -5,6 +5,7 @@ use std::future::{poll_fn, Future};
 use std::pin::pin;
 use std::sync::{Arc, Weak};
 use std::task::Poll;
+use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 use tokio::sync::watch;
@@ -40,6 +41,12 @@ impl fmt::Display for LockReason {
     }
 }
 
+/// The longest the policy sleeps at once. A monotonic timer stops while the
+/// machine is asleep on Linux and macOS, so a laptop closed partway through
+/// the timeout would wake with the rest of it still to wait. Waking this
+/// often to look at the wall clock locks it at the first step after waking.
+pub(crate) const STEP: Duration = Duration::from_secs(15);
+
 /// Locks the vault once the window has been hidden for the timeout in
 /// Settings, or after the same time with no activity while visible. The shell
 /// reports `ui_visible` and pings `ui_activity`. Runs on the core's `Spawner`,
@@ -73,16 +80,14 @@ impl LockPolicy {
     pub(crate) async fn run(mut self) {
         loop {
             let shown = *self.visible.borrow_and_update();
-            // Timeout is read at the start of each wait; a Settings change
-            // applies on the next cycle (next hide, or next idle restart).
-            let timeout = self.settings.borrow().auto_lock;
             if shown {
                 // Drop any activity that arrived while we were hidden so the
                 // idle clock starts fresh.
                 self.activity.borrow_and_update();
-                let sleep = self.clock.sleep(timeout);
-                match race(sleep, race(self.visible.changed(), self.activity.changed())).await {
-                    Either::Left(()) => {
+                let interrupt = race(self.visible.changed(), self.activity.changed());
+                match wait_out(&*self.clock, &mut self.settings, interrupt).await {
+                    Waited::Closed => return,
+                    Waited::Elapsed => {
                         let Some(core) = self.core.upgrade() else {
                             return;
                         };
@@ -93,15 +98,13 @@ impl LockPolicy {
                             Either::Left(Ok(())) | Either::Right(Ok(())) => {}
                         }
                     }
-                    Either::Right(Either::Left(Ok(()))) | Either::Right(Either::Right(Ok(()))) => {}
-                    Either::Right(Either::Left(Err(_))) | Either::Right(Either::Right(Err(_))) => {
-                        return
-                    }
+                    Waited::Interrupted(Either::Left(Ok(())) | Either::Right(Ok(()))) => {}
+                    Waited::Interrupted(Either::Left(Err(_)) | Either::Right(Err(_))) => return,
                 }
             } else {
-                let sleep = self.clock.sleep(timeout);
-                match race(sleep, self.visible.changed()).await {
-                    Either::Left(()) => {
+                match wait_out(&*self.clock, &mut self.settings, self.visible.changed()).await {
+                    Waited::Closed => return,
+                    Waited::Elapsed => {
                         let Some(core) = self.core.upgrade() else {
                             return;
                         };
@@ -111,10 +114,57 @@ impl LockPolicy {
                             return;
                         }
                     }
-                    Either::Right(Ok(())) => {}
-                    Either::Right(Err(_)) => return,
+                    Waited::Interrupted(Ok(())) => {}
+                    Waited::Interrupted(Err(_)) => return,
                 }
             }
+        }
+    }
+}
+
+/// How a [`wait_out`] ended.
+enum Waited<T> {
+    /// The timeout passed.
+    Elapsed,
+    /// What it was raced with finished first.
+    Interrupted(T),
+    /// The settings are gone with the core.
+    Closed,
+}
+
+/// Wait until the auto-lock timeout has passed since this was called, or
+/// `interrupt` finishes. Time is measured on both clocks, and whichever says
+/// more has passed wins: the steps slept, which a wall clock set back cannot
+/// stretch, and the wall clock, which goes on while the machine sleeps. The
+/// timeout is read again whenever Settings changes, against the same start,
+/// so a shorter one applies at once. A step cut short by that change is not
+/// counted on the first clock, only on the wall clock.
+async fn wait_out<F: Future>(
+    clock: &dyn Clock,
+    settings: &mut watch::Receiver<Arc<Settings>>,
+    interrupt: F,
+) -> Waited<F::Output> {
+    let started_ms = clock.now_ms();
+    let mut slept = Duration::ZERO;
+    let mut interrupt = pin!(interrupt);
+    loop {
+        let timeout = settings.borrow_and_update().auto_lock;
+        let wall = Duration::from_millis(clock.now_ms().saturating_sub(started_ms));
+        let left = timeout.saturating_sub(wall.max(slept));
+        if left.is_zero() {
+            return Waited::Elapsed;
+        }
+        let step = left.min(STEP);
+        match race(
+            clock.sleep(step),
+            race(interrupt.as_mut(), settings.changed()),
+        )
+        .await
+        {
+            Either::Left(()) => slept += step,
+            Either::Right(Either::Left(value)) => return Waited::Interrupted(value),
+            Either::Right(Either::Right(Ok(()))) => {}
+            Either::Right(Either::Right(Err(_))) => return Waited::Closed,
         }
     }
 }

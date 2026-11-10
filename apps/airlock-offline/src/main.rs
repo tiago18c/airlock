@@ -28,6 +28,9 @@ const BRAND: AppBrand = AppBrand {
 const ICON: &[u8] = include_bytes!("../icons/128x128.png");
 
 fn main() {
+    // Before anything else, while this is the only thread.
+    #[cfg(feature = "desktop")]
+    let dropped = app_desktop::drop_webview_overrides();
     // Its own data folder and variables, so it never opens the online app's
     // vault, and both can run on one machine.
     app_core::storage::set_app_dirs(app_core::storage::AppDirs::OFFLINE);
@@ -35,6 +38,8 @@ fn main() {
         flavour: "airgap",
         version: env!("CARGO_PKG_VERSION"),
     });
+    #[cfg(feature = "desktop")]
+    app_desktop::log_dropped_webview_overrides(&dropped);
 
     // One process per data folder: this one holds the hash-based keys and
     // the record of their used leaves.

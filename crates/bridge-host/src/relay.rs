@@ -11,6 +11,7 @@ use std::{
     process,
     sync::{Arc, Mutex, PoisonError},
     thread,
+    time::Duration,
 };
 
 use interprocess::local_socket::{traits::Stream as _, Name};
@@ -165,32 +166,96 @@ impl FrameSender {
 
 /// Like [`serve_listener`], with a handler made for each connection by
 /// `accept`, which also gets the way to send it frames of the app's own.
+/// It serves until the process ends: see [`accept_each`].
 pub fn serve_connections(
     listener: endpoint::Listener,
     accept: impl Fn(FrameSender) -> Arc<dyn Connection>,
 ) -> io::Result<()> {
+    accept_each(
+        || interprocess::local_socket::traits::Listener::accept(&listener),
+        |stream| serve_stream(stream, &accept),
+        thread::sleep,
+    )
+}
+
+/// Take connections from `accept` and hand each to `serve`, for ever. A
+/// failed accept is logged and tried again after a pause from `backoff`,
+/// rather than ending the bridge for the rest of the app's life. The socket
+/// stays bound whatever one accept says: what fails there is one connection
+/// (a client that went away mid-accept, a pipe instance Windows would not
+/// make, a process out of file handles for a moment), so no error is taken
+/// as final, and the pause keeps one that persists from spinning a core.
+fn accept_each<S>(
+    mut accept: impl FnMut() -> io::Result<S>,
+    mut serve: impl FnMut(S),
+    mut pause: impl FnMut(Duration),
+) -> ! {
+    let mut backoff = Backoff::default();
     loop {
-        let stream = interprocess::local_socket::traits::Listener::accept(&listener)?;
-        let (mut reader, writer) = stream.split();
-        let sender = FrameSender(Arc::new(Mutex::new(writer)));
-        let connection = accept(sender.clone());
-        thread::spawn(move || {
-            while let Ok(Some(message)) = read_frame(&mut reader) {
-                match connection.answer(&message) {
-                    Answer::Now(reply) => {
-                        let _ = sender.send(&reply);
-                    }
-                    Answer::Later(wait) => {
-                        let sender = sender.clone();
-                        thread::spawn(move || {
-                            let _ = sender.send(&wait());
-                        });
-                    }
+        match accept() {
+            Ok(stream) => {
+                backoff.succeeded();
+                serve(stream);
+            }
+            Err(err) => {
+                let wait = backoff.failed();
+                tracing::warn!(
+                    target: "airlock::bridge",
+                    error = %err,
+                    failures = backoff.failures,
+                    retry_ms = wait.as_millis() as u64,
+                    "could not accept a connection, trying again"
+                );
+                pause(wait);
+            }
+        }
+    }
+}
+
+/// The pause after each failed accept in a row: 10 ms, doubling up to 5 s,
+/// and back to the start once one succeeds.
+#[derive(Default)]
+struct Backoff {
+    failures: u32,
+}
+
+impl Backoff {
+    const FIRST: Duration = Duration::from_millis(10);
+    const LONGEST: Duration = Duration::from_secs(5);
+
+    fn failed(&mut self) -> Duration {
+        let wait = Self::FIRST
+            .saturating_mul(2u32.saturating_pow(self.failures))
+            .min(Self::LONGEST);
+        self.failures = self.failures.saturating_add(1);
+        wait
+    }
+
+    fn succeeded(&mut self) {
+        self.failures = 0;
+    }
+}
+
+fn serve_stream(stream: endpoint::Stream, accept: &impl Fn(FrameSender) -> Arc<dyn Connection>) {
+    let (mut reader, writer) = stream.split();
+    let sender = FrameSender(Arc::new(Mutex::new(writer)));
+    let connection = accept(sender.clone());
+    thread::spawn(move || {
+        while let Ok(Some(message)) = read_frame(&mut reader) {
+            match connection.answer(&message) {
+                Answer::Now(reply) => {
+                    let _ = sender.send(&reply);
+                }
+                Answer::Later(wait) => {
+                    let sender = sender.clone();
+                    thread::spawn(move || {
+                        let _ = sender.send(&wait());
+                    });
                 }
             }
-            connection.closed();
-        });
-    }
+        }
+        connection.closed();
+    });
 }
 
 pub fn serve_dev(name: &Name<'_>) -> io::Result<()> {
@@ -200,17 +265,20 @@ pub fn serve_dev(name: &Name<'_>) -> io::Result<()> {
         target: "airlock::bridge",
         "listening (development stand-in; answers status only)"
     );
-    loop {
-        let mut connection = interprocess::local_socket::traits::Listener::accept(&listener)?;
-        thread::spawn(move || {
-            while let Ok(Some(message)) = read_frame(&mut connection) {
-                let reply = crate::message::dev_stub_reply(&message);
-                if write_frame(&mut connection, &reply).is_err() {
-                    break;
+    accept_each(
+        || interprocess::local_socket::traits::Listener::accept(&listener),
+        |mut connection: endpoint::Stream| {
+            thread::spawn(move || {
+                while let Ok(Some(message)) = read_frame(&mut connection) {
+                    let reply = crate::message::dev_stub_reply(&message);
+                    if write_frame(&mut connection, &reply).is_err() {
+                        break;
+                    }
                 }
-            }
-        });
-    }
+            });
+        },
+        thread::sleep,
+    )
 }
 
 #[allow(unsafe_code)] // The C runtime's _setmode, which std does not wrap.
@@ -247,6 +315,49 @@ mod tests {
         let value: Value = serde_json::from_slice(&reply).unwrap();
         assert_eq!(value["id"], "abc");
         assert_eq!(value["error"]["code"], "app_not_running");
+    }
+
+    #[test]
+    fn failed_accepts_wait_longer_each_time_and_start_over_after_one_works() {
+        let mut backoff = Backoff::default();
+        let waits: Vec<u64> = (0..12)
+            .map(|_| backoff.failed().as_millis() as u64)
+            .collect();
+        assert_eq!(
+            waits,
+            [10, 20, 40, 80, 160, 320, 640, 1280, 2560, 5000, 5000, 5000]
+        );
+        for _ in 0..100 {
+            backoff.failed();
+        }
+        assert_eq!(backoff.failed(), Backoff::LONGEST);
+        backoff.succeeded();
+        assert_eq!(backoff.failed(), Backoff::FIRST);
+    }
+
+    #[test]
+    fn a_failed_accept_does_not_end_the_loop() {
+        // Fails three times, takes one, fails again, then stops the test.
+        let mut calls = 0;
+        let served = std::cell::Cell::new(0);
+        let pauses = std::cell::RefCell::new(Vec::new());
+        let stopped = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            accept_each(
+                || {
+                    calls += 1;
+                    match calls {
+                        1..=3 | 5 => Err(io::Error::other("no pipe instance")),
+                        4 => Ok(calls),
+                        _ => panic!("stop"),
+                    }
+                },
+                |_| served.set(served.get() + 1),
+                |wait| pauses.borrow_mut().push(wait.as_millis() as u64),
+            )
+        }));
+        assert!(stopped.is_err());
+        assert_eq!(served.get(), 1);
+        assert_eq!(*pauses.borrow(), [10, 20, 40, 10]);
     }
 
     #[test]

@@ -37,6 +37,9 @@ const TABS: &[Tab] = &[
 ];
 
 fn main() {
+    // Before anything else, while this is the only thread.
+    #[cfg(all(feature = "desktop", not(target_arch = "wasm32")))]
+    let dropped = app_desktop::drop_webview_overrides();
     app_core::diagnostics::init(app_core::diagnostics::LogConfig {
         flavour: if cfg!(target_arch = "wasm32") {
             "web"
@@ -45,6 +48,8 @@ fn main() {
         },
         version: env!("CARGO_PKG_VERSION"),
     });
+    #[cfg(all(feature = "desktop", not(target_arch = "wasm32")))]
+    app_desktop::log_dropped_webview_overrides(&dropped);
 
     // The bridge socket is claimed before any window opens, so a second
     // launch only asks the running one to show.
@@ -70,8 +75,41 @@ fn main() {
             .launch(App);
     }
 
-    #[cfg(not(all(feature = "desktop", not(target_arch = "wasm32"))))]
+    // In a browser the tab takes the app's data before any store opens.
+    #[cfg(target_arch = "wasm32")]
+    dioxus::launch(WebGate);
+
+    #[cfg(not(any(target_arch = "wasm32", feature = "desktop")))]
     dioxus::launch(App);
+}
+
+/// The web build's counterpart of claiming the data folder: the app opens
+/// once this tab holds the app's data, and says why when another tab does.
+#[cfg(target_arch = "wasm32")]
+#[component]
+fn WebGate() -> Element {
+    let claim = use_resource(|| async {
+        let claim = app_core::storage::claim_web_data().await;
+        if let Err(err) = &claim {
+            tracing::error!(target: "airlock::app", "{err}");
+        }
+        claim
+    });
+    let refused = match &*claim.read() {
+        None => return rsx! {},
+        Some(Ok(())) => return rsx! { App {} },
+        Some(Err(err)) => err.to_string(),
+    };
+    rsx! {
+        document::Stylesheet { href: app_ui::TOKENS_CSS }
+        document::Stylesheet { href: app_ui::MAIN_CSS }
+        div { class: "content",
+            div { class: "empty",
+                h2 { "{BRAND.name} cannot open here" }
+                p { "{refused}" }
+            }
+        }
+    }
 }
 
 #[component]

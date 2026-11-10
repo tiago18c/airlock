@@ -28,6 +28,12 @@ mod refuse;
 #[cfg(all(feature = "desktop", not(target_arch = "wasm32")))]
 pub use refuse::refuse_to_start;
 
+#[cfg(all(feature = "desktop", not(target_arch = "wasm32")))]
+mod webview_env;
+
+#[cfg(all(feature = "desktop", not(target_arch = "wasm32")))]
+pub use webview_env::{drop_webview_overrides, log_dropped_webview_overrides};
+
 // Toasts and the hidden-window notify rule are online-only: they ride with
 // `bridge`, same as [`online`], so the airgap build does not compile them.
 #[cfg(all(feature = "bridge", feature = "desktop", not(target_arch = "wasm32")))]
