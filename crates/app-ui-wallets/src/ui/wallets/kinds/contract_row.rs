@@ -43,6 +43,29 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
         _ => (None, Vec::new(), None, None),
     };
     let is_squads = matches!(wallet.contract, Some(WalletKind::Squads { .. }));
+    // "The member's own setting" and "The authority key" leave the fee payer
+    // to the wallet next along the chain: say who that resolves to.
+    let next_in_chain = match &wallet.contract {
+        Some(WalletKind::Squads { member_wallet, .. }) => *member_wallet,
+        Some(WalletKind::Programmatic {
+            authority: Authority::Wallet { wallet },
+            ..
+        }) => Some(*wallet),
+        _ => None,
+    };
+    let none_payer = if is_squads {
+        "The member's own setting"
+    } else {
+        "The authority key"
+    };
+    let none_payer = match next_in_chain
+        .and_then(|next| session.route_of(next).ok())
+        .and_then(|route| route.fee_payer)
+        .and_then(|(payer, _)| wallets.iter().find(|other| other.id == payer))
+    {
+        Some(payer) => format!("{none_payer} · {}", payer.label),
+        None => none_payer.to_string(),
+    };
     let is_programmatic = authority.is_some();
     // A Vector wallet's key, and where the key that signs for it is.
     let vector = wallet
@@ -80,7 +103,7 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
     };
     rsx! {
         li { class: "wallet-row",
-            div { class: "wallet-head",
+            div { class: "wallet-head wallet-card-head",
                 AddressHeader {
                     pubkey: wallet.address,
                     title: wallet.label.clone(),
@@ -94,6 +117,8 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
                             CurrentChip {}
                         }
                     },
+                }
+                div { class: "wallet-end",
                     if show_balances && wallet.address.is_some() {
                         crate::ui::wallets::WalletBalance {
                             lamports,
@@ -104,30 +129,30 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
                             }),
                         }
                     }
-                }
-                div { class: "btn-row wallet-side",
-                    if !current {
-                        button { class: "sm",
-                            title: "Make this wallet the current one, the one the app acts as",
-                            onclick: move |_| { let _ = session.select_wallet(id); },
-                            "Make current"
-                        }
-                    }
-                    if proposals_offered {
-                        if let Some(squad) = squad {
+                    div { class: "btn-row wallet-side",
+                        if !current {
                             button { class: "sm",
-                                title: "Browse this multisig's proposals, and approve or execute them",
-                                onclick: move |_| {
-                                    session.open_proposals(id, proposals_label.clone(), squad);
-                                },
-                                "Proposals"
+                                title: "Make this wallet the current one, the one the app acts as",
+                                onclick: move |_| { let _ = session.select_wallet(id); },
+                                "Make current"
                             }
                         }
-                    }
-                    WalletRowMenu { id,
-                        on_remove: move |_| {
-                            session.when_unlocked("Unlock the vault to remove a wallet from it.", move || confirm_remove.set(true));
-                        },
+                        if proposals_offered {
+                            if let Some(squad) = squad {
+                                button { class: "sm",
+                                    title: "Browse this multisig's proposals, and approve or execute them",
+                                    onclick: move |_| {
+                                        session.open_proposals(id, proposals_label.clone(), squad);
+                                    },
+                                    "Proposals"
+                                }
+                            }
+                        }
+                        WalletRowMenu { id,
+                            on_remove: move |_| {
+                                session.when_unlocked("Unlock the vault to remove a wallet from it.", move || confirm_remove.set(true));
+                            },
+                        }
                     }
                 }
             }
@@ -149,7 +174,7 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
                     label: "Pays fees",
                     options: payers(&wallets, offline_app),
                     selected: fee_payer,
-                    none_label: if is_squads { "The member's own setting" } else { "The authority key" },
+                    none_label: none_payer,
                     on_change: move |choice| {
                         session.when_unlocked(CHANGE_WALLET, move || {
                             let _ = session.update_wallet(id, |kind| kind.set_fee_payer(choice));

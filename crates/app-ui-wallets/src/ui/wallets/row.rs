@@ -89,7 +89,7 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
 
     rsx! {
         li { class: "wallet-row",
-            div { class: "wallet-head",
+            div { class: "wallet-head wallet-card-head",
                 AddressHeader {
                     pubkey,
                     title: label.clone(),
@@ -100,6 +100,8 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                             CurrentChip {}
                         }
                     },
+                }
+                div { class: "wallet-end",
                     if show_balances && pubkey.is_some() {
                         WalletBalance {
                             lamports,
@@ -110,28 +112,28 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                             }),
                         }
                     }
-                }
-                div { class: "btn-row wallet-side",
-                    if !current {
-                        button { class: "sm",
-                            title: use_title,
-                            onclick: move |_| { let _ = session.select_wallet(acting); },
-                            "Make current"
-                        }
-                    }
-                    if on_device.is_some() {
-                        if let Some(address) = pubkey {
+                    div { class: "btn-row wallet-side",
+                        if !current {
                             button { class: "sm",
-                                title: "Show this address on the device, to check it against the one on this screen",
-                                onclick: move |_| crate::actions::device::show_on_device(session, address),
-                                "Show on device"
+                                title: use_title,
+                                onclick: move |_| { let _ = session.select_wallet(acting); },
+                                "Make current"
                             }
                         }
-                    }
-                    WalletRowMenu { id,
-                        on_remove: move |_| {
-                            session.when_unlocked("Unlock the vault to remove a wallet from it.", move || confirm_open.set(true));
-                        },
+                        if on_device.is_some() {
+                            if let Some(address) = pubkey {
+                                button { class: "sm",
+                                    title: "Show this address on the device, to check it against the one on this screen",
+                                    onclick: move |_| crate::actions::device::show_on_device(session, address),
+                                    "Show on device"
+                                }
+                            }
+                        }
+                        WalletRowMenu { id,
+                            on_remove: move |_| {
+                                session.when_unlocked("Unlock the vault to remove a wallet from it.", move || confirm_open.set(true));
+                            },
+                        }
                     }
                 }
             }

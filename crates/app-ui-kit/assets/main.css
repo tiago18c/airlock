@@ -1168,8 +1168,8 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   text-transform: uppercase;
 }
 .balance { font-weight: var(--weight-semibold); font-variant-numeric: tabular-nums; }
-/* A wallet's balance and the send button beside it. */
-.wallet-balance { display: flex; align-items: center; gap: var(--space-1); }
+/* A wallet's balance, its value and the send button beside it. */
+.wallet-balance { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); }
 .wallet-balance .balance { margin: 0; }
 
 /* An instruction row leads with its sentence; a lone chip keeps its own width. */
@@ -2137,6 +2137,44 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 }
 .group-title { font-size: var(--text-md); margin-top: var(--space-3); }
 .wallet-row h3 .chip { margin-left: var(--space-2); vertical-align: middle; }
+/* The Wallets pane's group headings: a step above the old size, the count
+   of wallets after the name, more room above a group than inside it, and
+   the heading close to its own cards. */
+.group-title.wallets-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-base);
+  color: var(--text);
+  margin-top: var(--space-6);
+  margin-bottom: calc(var(--space-2) - var(--space-4));
+}
+.stack > .group-title.wallets-group:first-of-type { margin-top: var(--space-2); }
+.group-title.wallets-group .help { margin-left: 0; }
+.group-count { color: var(--text-2); font-weight: var(--weight-regular); }
+/* A wallet card's head: the name and address on the left; the balance, its
+   value and Send, then the card's buttons, on the right of the name's row.
+   Where they do not fit beside the name they drop below, still on the right. */
+.wallet-card-head { flex-wrap: wrap; }
+.wallet-card-head > .addr-head { flex: 1 1 22rem; }
+.wallet-end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2) var(--space-4);
+  margin-left: auto;
+  min-width: 0;
+}
+.wallet-end > .wallet-side { flex-wrap: nowrap; margin-left: auto; }
+.wallet-value { color: var(--text-2); font-size: var(--text-md); font-variant-numeric: tabular-nums; }
+.wallet-send { gap: var(--space-1); }
+.wallet-send .icon { width: 15px; height: 15px; }
+@media (max-width: 639px) {
+  /* A phone puts the balance back under the address, the buttons at the
+     right end of the same line. */
+  .wallet-end { width: 100%; justify-content: space-between; }
+}
 /* A wallet's settings on one grid: names in the first column, controls in
    the second, every row as high as a field. A row is a .setting-row, or a
    WalletPicker whose label is split over the two columns. The name column

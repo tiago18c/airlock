@@ -10,9 +10,10 @@ use crate::ui::{
 };
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
+use wallet_core::portfolio::{format_value, prices_apply_to, WRAPPED_SOL_MINT};
 use wallet_core::{
     Category, DerivedAccount, NewSigner, OfflinePath, WalletClass, WalletKind, WalletRecord,
-    DERIVE_BATCH, SOLANA_PATH_TEMPLATE,
+    DERIVE_BATCH, LAMPORTS_PER_SOL, SOLANA_PATH_TEMPLATE,
 };
 use zeroize::Zeroize;
 
@@ -131,8 +132,9 @@ pub fn WalletsPanel() -> Element {
                 }
 
                 if !hot.is_empty() {
-                    h3 { class: "group-title",
+                    h3 { class: "group-title wallets-group",
                         "Hot wallets"
+                        GroupCount { count: hot.len() }
                         HelpTip { text: "A hot wallet's private key or seed phrase is stored in this device's vault, so the app can sign with it here." }
                     }
                     ul { class: "tree",
@@ -143,8 +145,9 @@ pub fn WalletsPanel() -> Element {
                 }
 
                 if !phone || !offline.is_empty() {
-                h3 { class: "group-title",
+                h3 { class: "group-title wallets-group",
                     "Offline wallets"
+                    GroupCount { count: offline.len() }
                     HelpTip { text: "An offline wallet is the address of a key kept on another device. This device prepares its transactions and the other one signs them, from a QR code or pasted text. A hot wallet can pay its fees, and a programmatic signer lets it act without signing a transaction itself." }
                 }
                 if offline.is_empty() {
@@ -160,20 +163,21 @@ pub fn WalletsPanel() -> Element {
                 }
 
                 if !phone || !hardware.is_empty() {
-                h3 { class: "group-title",
+                h3 { class: "group-title wallets-group",
                     "Hardware wallets"
+                    GroupCount { count: hardware.len() }
                     HelpTip { text: "A hardware wallet keeps its key on a separate signing device that is plugged in or paired when it is time to sign." }
                 }
                 if hardware.is_empty() {
                     if session.hardware_offered().is_empty() {
                         div { class: "wallets-empty",
                             p {
-                                "No hardware wallets yet. Ledger support is pre-release until Ledger ships the Solana app 1.18: turn on Pre-release hardware wallets in Settings to add one."
+                                "No hardware wallets yet. Ledger support is pre-release until Ledger ships the Solana app 1.18."
                             }
-                            button { class: "ghost sm",
-                                title: "Go to Settings, where Pre-release hardware wallets is turned on",
+                            button { class: "sm",
+                                title: "Go to Settings and turn on Pre-release hardware wallets, to add one",
                                 onclick: move |_| session.goto(Tab::Settings),
-                                "Open Settings"
+                                "Turn on in Settings"
                             }
                         }
                     } else {
@@ -190,8 +194,9 @@ pub fn WalletsPanel() -> Element {
                 }
 
                 if !phone || !contracts.is_empty() {
-                h3 { class: "group-title",
+                h3 { class: "group-title wallets-group",
                     "Smart contract wallets"
+                    GroupCount { count: contracts.len() }
                     HelpTip { text: "A smart contract wallet has no key of its own. A program on chain decides who may act: a programmatic signer acts when its authority key signs a message, and a Squads multisig acts when enough of its members approve." }
                 }
                 if contracts.is_empty() {
@@ -216,25 +221,55 @@ pub fn WalletsPanel() -> Element {
     }
 }
 
-/// A wallet's SOL balance, with the small button that sends from it. Shown
-/// only where balances are: the online build.
+/// How many wallets a group holds, in muted text after its name.
+#[component]
+fn GroupCount(count: usize) -> Element {
+    rsx! {
+        span { class: "group-count", "· {count}" }
+    }
+}
+
+/// A wallet's SOL balance, what it is worth when the session has a price for
+/// SOL, and the small button that sends from it. Shown only where balances
+/// are: the online build.
 #[component]
 pub(in crate::ui) fn WalletBalance(
     lamports: Option<u64>,
     send_title: &'static str,
     on_send: EventHandler<()>,
 ) -> Element {
+    let session = use_context::<Session>();
+    let value = lamports
+        .filter(|lamports| *lamports > 0)
+        .zip(sol_price(session))
+        .map(|(lamports, price)| format_value(lamports as f64 / LAMPORTS_PER_SOL as f64 * price));
     rsx! {
         div { class: "wallet-balance",
             if let Some(lamports) = lamports {
-                p { class: "balance", "{format_sol(lamports)}" }
+                span { class: "balance", "{format_sol(lamports)}" }
             }
-            button { class: "ghost icon-btn sm",
+            if let Some(value) = value {
+                span { class: "wallet-value", title: "At the last price the Tokens API gave", "≈ {value}" }
+            }
+            button { class: "ghost sm wallet-send",
                 title: send_title,
-                aria_label: "Send SOL",
                 onclick: move |_| on_send.call(()),
                 Icon { glyph: Glyph::Send }
+                "Send"
             }
         }
     }
+}
+
+/// The dollar price of one SOL the session already holds: on mainnet, with a
+/// Tokens API key, once the prices job has read it. Nothing is fetched here.
+fn sol_price(session: Session) -> Option<f64> {
+    if !prices_apply_to(&session.cluster()) || (session.settings)().tokens_api_key.is_none() {
+        return None;
+    }
+    (session.holdings_view)()
+        .market
+        .quote(&WRAPPED_SOL_MINT)
+        .and_then(|quote| quote.price_usd)
+        .filter(|price| price.is_finite() && *price > 0.0)
 }
