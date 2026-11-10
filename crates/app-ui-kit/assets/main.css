@@ -2503,21 +2503,24 @@ textarea.short { min-height: 64px; }
 
 /* ---------- Portfolio ---------- */
 
-/* Allocation colours: a categorical palette checked for colour-blind
-   separation on both surfaces. The legend labels every segment. */
+/* Group colours, in the allocation bar and the dot before each group's
+   name: categorical hues that say nothing. None is near the amber, red or
+   green of the warn, danger and ok states, so a group never reads as a
+   warning. Blue, violet, cyan, magenta, indigo and orchid, set apart by
+   lightness as well as hue; the legend labels every segment. */
 :root {
-  --pf-c0: #2a78d6; --pf-c1: #eb6834; --pf-c2: #1baf7a;
-  --pf-c3: #eda100; --pf-c4: #e87ba4; --pf-c5: #6250d6;
+  --pf-c0: #2a78d6; --pf-c1: #7a5ae0; --pf-c2: #0f8fae;
+  --pf-c3: #c4459b; --pf-c4: #3c4fb0; --pf-c5: #b07ad0;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --pf-c0: #3987e5; --pf-c1: #d95926; --pf-c2: #199e70;
-    --pf-c3: #c98500; --pf-c4: #d55181; --pf-c5: #9085e9;
+    --pf-c0: #3f8de8; --pf-c1: #9580ee; --pf-c2: #2bb0cf;
+    --pf-c3: #dc68b3; --pf-c4: #6f80e0; --pf-c5: #c99be0;
   }
 }
 :root[data-theme="dark"] {
-  --pf-c0: #3987e5; --pf-c1: #d95926; --pf-c2: #199e70;
-  --pf-c3: #c98500; --pf-c4: #d55181; --pf-c5: #9085e9;
+  --pf-c0: #3f8de8; --pf-c1: #9580ee; --pf-c2: #2bb0cf;
+  --pf-c3: #dc68b3; --pf-c4: #6f80e0; --pf-c5: #c99be0;
 }
 .pf-c0 { background: var(--pf-c0); }
 .pf-c1 { background: var(--pf-c1); }
@@ -2553,7 +2556,8 @@ textarea.short { min-height: 64px; }
   font-size: var(--text-sm);
   color: var(--text-2);
 }
-.pf-swatch { width: 10px; height: 10px; border-radius: 3px; }
+/* A group's dot, in the legend and before the group's name. */
+.pf-swatch { flex: none; width: 8px; height: 8px; border-radius: var(--radius-full); }
 /* Where the prices come from, then what the total leaves out. */
 .pf-source { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--space-3); }
 .pf-source > .pf-excludes { font-size: var(--text-md); color: var(--text-3); }
@@ -2602,30 +2606,47 @@ textarea.short { min-height: 64px; }
 .pf-mono.pf-t6 { background: var(--pf-t6-bg); color: var(--pf-t6-fg); }
 .pf-mono.pf-t7 { background: var(--pf-t7-bg); color: var(--pf-t7-fg); }
 
+/* The send slot's width, which the heads and group subtotals leave free so
+   they end on the Value column. */
+.pf-table, .pf-group { --pf-send-w: var(--control-sm); }
 .pf-group { display: grid; gap: var(--space-2); padding: var(--space-3) var(--space-4); }
+/* The priced groups, one table: the column heads once, then each group as
+   a section, with a divider between sections. */
+.pf-table { display: grid; padding: var(--space-3) var(--space-4); }
+.pf-table > .pf-cols { padding-bottom: var(--space-2); border-bottom: 1px solid var(--border); }
+.pf-section { display: grid; gap: var(--space-1); padding: var(--space-3) 0; }
+.pf-section:first-child { padding-top: 0; }
+.pf-section:last-child { padding-bottom: 0; }
+.pf-section + .pf-section { border-top: 1px solid var(--border); }
 .pf-group-head {
   display: flex;
-  align-items: baseline;
-  gap: var(--space-3);
-  padding-bottom: var(--space-2);
-  border-bottom: 1px solid var(--border);
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-1) calc(var(--pf-send-w) + var(--space-3) + var(--space-1)) var(--space-1) var(--space-1);
 }
+.pf-group-head > .pf-swatch { margin-right: calc(-1 * var(--space-1)); }
 .pf-group-title { flex: 1; font-weight: var(--weight-semibold); }
+/* A folded group's hint, then the chips every one of its rows would carry. */
+.pf-hint-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); }
+.pf-hint-row > .hint { margin: 0; }
 .pf-value { font-weight: var(--weight-semibold); font-variant-numeric: tabular-nums; }
 .pf-lines { display: grid; gap: var(--space-1); }
 .pf-line { display: grid; gap: var(--space-1); min-width: 0; }
 /* The asset row, then its send button on the right; rows that cannot send
  * keep the slot so the columns stay aligned. */
-.pf-line-head { display: flex; align-items: center; gap: var(--space-1); min-width: 0; }
+.pf-line-head { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
 .pf-line-head > .pf-line-main { flex: 1; min-width: 0; }
 .pf-send-slot { flex: none; width: var(--control-sm); }
-/* Avatar, asset, amount, price, 24 h, value. The column heads at the top of
- * each group use the same tracks; their minimums are fixed, so separate
- * grids of one width line up. The asset gets the most room, so its symbol
- * and chips stay on one line. */
+/* The row's send button: the secondary icon colour, clear of Value. */
+.pf-line-head > .pf-send { flex: none; color: var(--text-2); }
+.pf-line-head > .pf-send:hover { background: var(--surface-3); color: var(--text); }
+/* Avatar, asset, who holds it, amount, price, 24 h, value. The column heads
+ * at the top of the table use the same tracks; their minimums are fixed, so
+ * separate grids of one width line up. The asset gets the most room, so its
+ * symbol and chips stay on one line. */
 .pf-line-main, .pf-cols-main {
   display: grid;
-  grid-template-columns: 28px minmax(8rem, 2.6fr) minmax(5rem, 1fr) minmax(4.5rem, 1fr) minmax(4rem, 0.8fr) minmax(5rem, 1fr);
+  grid-template-columns: 28px minmax(8rem, 2fr) minmax(4rem, 1.2fr) minmax(5rem, 1fr) minmax(4.5rem, 1fr) minmax(4rem, 0.8fr) minmax(5rem, 1fr);
   align-items: center;
   gap: var(--space-3);
   padding: 0 var(--space-1);
@@ -2644,12 +2665,20 @@ textarea.short { min-height: 64px; }
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
-/* Above the first holding of the first priced group, laid out as its rows
- * are: the row's avatar and asset tracks left empty, then a send slot. */
+/* Who holds the asset: quiet, cut short; the tooltip names them all. */
+.pf-holders {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* At the top of the table of priced groups, laid out as its rows are: the
+ * row's avatar and asset tracks left empty, then a send slot. */
 .pf-cols {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-3);
   padding-top: var(--space-1);
   color: var(--text-3);
   font-size: var(--text-xs);
@@ -2796,7 +2825,8 @@ textarea.short { min-height: 64px; }
 @media (max-width: 760px) {
   .pf-line-main { grid-template-columns: 28px minmax(6rem, 1fr) auto auto; }
   .pf-line-main > .pf-price,
-  .pf-line-main > .pf-change { display: none; }
+  .pf-line-main > .pf-change,
+  .pf-line-main > .pf-holders { display: none; }
   /* The rows' columns size to their content here, so heads would not line up. */
   .pf-cols { display: none; }
   /* The asset is narrow here: its chips go under the symbol. */
@@ -2804,6 +2834,7 @@ textarea.short { min-height: 64px; }
   .pf-line-toggle { white-space: normal; }
 }
 @media (pointer: coarse) {
+  .pf-table, .pf-group { --pf-send-w: var(--control-md); }
   .pf-sub .copy-btn, .pf-title > .copy-btn { width: var(--control-md); min-width: var(--control-md); height: auto; min-height: var(--control-sm); }
 }
 

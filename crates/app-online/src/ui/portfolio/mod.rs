@@ -73,6 +73,11 @@ pub fn PortfolioPanel() -> Element {
     let locked = !session.is_unlocked();
     let can_send = owners.iter().any(|owner| !owner.watched);
     let monograms = monograms_of(&portfolio);
+    let colors = group_colors(&portfolio);
+    let names: Names = owners
+        .iter()
+        .map(|owner| (owner.address, owner.label.clone()))
+        .collect();
 
     let refresh = move |_| {
         refresh_error.set(None);
@@ -177,23 +182,23 @@ pub fn PortfolioPanel() -> Element {
                         p { "No wallets or watched addresses yet. Add a wallet, or watch an address from the address book." }
                     }
                 } else {
-                    Summary { portfolio: portfolio.clone(), priced, ago }
-                    for (at, group) in portfolio.groups.iter().cloned().enumerate() {
-                        GroupBlock {
-                            key: "{group.key}",
-                            group,
-                            total: portfolio.total_usd,
-                            priced,
-                            heads: at == 0,
-                            monograms: monograms.clone(),
-                        }
+                    Summary { portfolio: portfolio.clone(), priced, ago, colors: colors.clone() }
+                    Holdings {
+                        groups: portfolio.groups.clone(),
+                        total: portfolio.total_usd,
+                        priced,
+                        colors,
+                        monograms: monograms.clone(),
+                        names: names.clone(),
                     }
                     Section {
                         title: "Not priced",
                         hint: "The Tokens API has no market for these, so they are not in the total.",
                         lines: portfolio.unpriced.clone(),
                         priced,
+                        says_no_market: true,
                         monograms: monograms.clone(),
+                        names: names.clone(),
                     }
                     Section {
                         title: "Collectibles",
@@ -201,6 +206,7 @@ pub fn PortfolioPanel() -> Element {
                         lines: portfolio.collectibles.clone(),
                         priced,
                         monograms: monograms.clone(),
+                        names: names.clone(),
                     }
                     Section {
                         title: "Left out",
@@ -208,6 +214,7 @@ pub fn PortfolioPanel() -> Element {
                         lines: portfolio.left_out.clone(),
                         priced,
                         monograms: monograms.clone(),
+                        names,
                     }
                 }
             }
@@ -271,8 +278,8 @@ fn ago(secs: i64) -> String {
 
 /// The total, its change in 24 hours, and what it is made of.
 #[component]
-fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>) -> Element {
-    let allocation = allocation_parts(&portfolio);
+fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>, colors: Colors) -> Element {
+    let allocation = allocation_parts(&portfolio, &colors);
     let excludes = excludes_note(portfolio.unpriced.len(), portfolio.left_out.len());
     let change = portfolio.change_24h_usd;
     let pct = change.map(|change| {
@@ -319,7 +326,7 @@ fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>) -> Element {
                     div { class: "chip-row pf-legend",
                         for (title, share, color) in allocation.iter().cloned() {
                             span { key: "{title}", class: "pf-legend-item",
-                                span { class: "pf-swatch {color}" }
+                                span { class: "pf-swatch {color}", aria_hidden: "true" }
                                 "{title} {percent(share)}"
                             }
                         }
@@ -332,35 +339,53 @@ fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>) -> Element {
     }
 }
 
-/// Colours for the allocation bar. A colour follows its group, not its rank:
-/// SOL takes the first, the rest take the next ones in the order of their
-/// keys. Past five groups, the smallest fold into a grey "Other".
+/// Colours for the allocation bar, and the dot before each group's name.
+/// A colour follows its group, not its rank: SOL takes the first, the rest
+/// take the next ones in the order of their keys. Past six groups, the
+/// smallest fold into a grey "Other".
 const ALLOCATION_SLOTS: usize = 6;
 
-fn allocation_parts(portfolio: &Portfolio) -> Vec<(String, f64, String)> {
+/// The colour class of each group worth something, by its key.
+type Colors = BTreeMap<String, String>;
+
+fn group_colors(portfolio: &Portfolio) -> Colors {
+    let groups: Vec<&Group> = portfolio.groups.iter().filter(|g| g.usd > 0.0).collect();
+    let named = if groups.len() > ALLOCATION_SLOTS {
+        ALLOCATION_SLOTS - 1
+    } else {
+        groups.len()
+    };
+    let mut keys: Vec<&str> = groups[..named].iter().map(|g| g.key.as_str()).collect();
+    keys.sort_by_key(|key| (*key != "sol", *key));
+    groups
+        .iter()
+        .enumerate()
+        .map(|(at, group)| {
+            let class = match keys.iter().position(|key| *key == group.key) {
+                Some(slot) if at < named => format!("pf-c{slot}"),
+                _ => "pf-cother".to_string(),
+            };
+            (group.key.clone(), class)
+        })
+        .collect()
+}
+
+fn allocation_parts(portfolio: &Portfolio, colors: &Colors) -> Vec<(String, f64, String)> {
     if portfolio.total_usd <= 0.0 {
         return Vec::new();
     }
-    let groups: Vec<&Group> = portfolio.groups.iter().filter(|g| g.usd > 0.0).collect();
-    let (shown, rest) = if groups.len() > ALLOCATION_SLOTS {
-        groups.split_at(ALLOCATION_SLOTS - 1)
-    } else {
-        (groups.as_slice(), &[][..])
-    };
-    let mut keys: Vec<&str> = shown.iter().map(|g| g.key.as_str()).collect();
-    keys.sort_by_key(|key| (*key != "sol", *key));
-    let mut parts: Vec<(String, f64, String)> = shown
-        .iter()
-        .map(|group| {
-            let slot = keys.iter().position(|key| *key == group.key).unwrap_or(0);
-            (
+    let mut parts = Vec::new();
+    let mut other = 0.0;
+    for group in portfolio.groups.iter().filter(|g| g.usd > 0.0) {
+        match colors.get(&group.key) {
+            Some(class) if class != "pf-cother" => parts.push((
                 group.title.clone(),
                 group.usd / portfolio.total_usd,
-                format!("pf-c{slot}"),
-            )
-        })
-        .collect();
-    let other: f64 = rest.iter().map(|g| g.usd).sum();
+                class.clone(),
+            )),
+            _ => other += group.usd,
+        }
+    }
     if other > 0.0 {
         parts.push((
             "Other".into(),
@@ -371,9 +396,8 @@ fn allocation_parts(portfolio: &Portfolio) -> Vec<(String, f64, String)> {
     parts
 }
 
-/// What the numbers of a row are, on their columns, once: above the first
-/// holding of the first priced group. Hidden where the columns narrow, on a
-/// phone.
+/// What the columns of a row are, once, at the top of the table of priced
+/// groups. Hidden where the columns narrow, on a phone.
 #[component]
 fn ColumnHeads() -> Element {
     rsx! {
@@ -381,6 +405,7 @@ fn ColumnHeads() -> Element {
             div { class: "pf-cols-main",
                 span {}
                 span {}
+                span { class: "pf-col", "In" }
                 span { class: "pf-col-num", "Amount" }
                 span { class: "pf-col-num", "Price" }
                 span { class: "pf-col-num", "24h" }
@@ -391,43 +416,80 @@ fn ColumnHeads() -> Element {
     }
 }
 
-/// Related assets under one heading: SOL with staked SOL and liquid staking
-/// tokens, or the variants of one asset.
+/// The priced groups, as one table: the column heads once, then each group
+/// as a section of it.
 #[component]
-fn GroupBlock(
+fn Holdings(
+    groups: Vec<Group>,
+    total: f64,
+    priced: bool,
+    colors: Colors,
+    monograms: Monograms,
+    names: Names,
+) -> Element {
+    if groups.is_empty() {
+        return rsx! {};
+    }
+    // A group of one holding needs no heading of its own, unless others
+    // share the table with it.
+    let headed = groups.len() > 1;
+    rsx! {
+        div { class: "card pf-table",
+            if priced {
+                ColumnHeads {}
+            }
+            for group in groups {
+                GroupSection {
+                    key: "{group.key}",
+                    color: colors.get(&group.key).cloned().filter(|_| priced),
+                    headed: headed || group.lines.len() > 1,
+                    group,
+                    total,
+                    priced,
+                    monograms: monograms.clone(),
+                    names: names.clone(),
+                }
+            }
+        }
+    }
+}
+
+/// Related assets under one heading: SOL with staked SOL and liquid staking
+/// tokens, or the variants of one asset. The dot before the name has the
+/// group's colour in the allocation bar.
+#[component]
+fn GroupSection(
     group: Group,
     total: f64,
     priced: bool,
-    heads: bool,
+    headed: bool,
+    color: Option<String>,
     monograms: Monograms,
+    names: Names,
 ) -> Element {
-    let share = if total > 0.0 {
-        group.usd / total * 100.0
-    } else {
-        0.0
-    };
-    let several = group.lines.len() > 1;
+    let share = if total > 0.0 { group.usd / total } else { 0.0 };
     rsx! {
-        div { class: "card pf-group",
-            if several {
+        div { class: "pf-section",
+            if headed {
                 div { class: "pf-group-head",
+                    if let Some(color) = color {
+                        span { class: "pf-swatch {color}", aria_hidden: "true" }
+                    }
                     span { class: "pf-group-title", "{group.title}" }
                     if priced {
-                        span { class: "muted", "{percent(share / 100.0)}" }
+                        span { class: "muted", "{percent(share)}" }
                         span { class: "pf-value", "{format_usd(group.usd)}" }
                     }
                 }
             }
             div { class: "pf-lines",
-                if priced && heads {
-                    ColumnHeads {}
-                }
                 for line in group.lines.iter().cloned() {
                     LineRow {
                         key: "{line.symbol}-{line.raw}",
                         monogram: monogram_for(&monograms, &line),
                         line,
                         priced,
+                        names: names.clone(),
                     }
                 }
             }
@@ -443,13 +505,27 @@ fn Section(
     hint: &'static str,
     lines: Vec<Line>,
     priced: bool,
+    /// The hint says the Tokens API has no market for any of these, so no
+    /// row says it again, but in its tooltip.
+    #[props(default)]
+    says_no_market: bool,
     monograms: Monograms,
+    names: Names,
 ) -> Element {
     let mut open = use_signal(|| false);
     if lines.is_empty() {
         return rsx! {};
     }
     let count = lines.len();
+    let tip_only: Vec<String> = if says_no_market {
+        vec![NO_MARKET.to_string()]
+    } else {
+        Vec::new()
+    };
+    // What every row would say goes once on the hint line.
+    let common = common_warnings(&lines, &tip_only);
+    let skip: Vec<String> = common.iter().chain(&tip_only).cloned().collect();
+    let now = unix_now();
     rsx! {
         div { class: "card pf-group",
             button { class: "pf-fold",
@@ -460,7 +536,17 @@ fn Section(
                 span { class: "pf-chevron", Icon { glyph: Glyph::ChevronRight } }
             }
             if open() {
-                p { class: "hint", "{hint}" }
+                div { class: "pf-hint-row",
+                    p { class: "hint", "{hint}" }
+                    for code in common {
+                        span {
+                            key: "{code}",
+                            class: "chip warn",
+                            title: warning_tip(&code, "these tokens", 0, now),
+                            "{warning_text(&code)}"
+                        }
+                    }
+                }
                 div { class: "pf-lines",
                     for line in lines {
                         LineRow {
@@ -469,6 +555,9 @@ fn Section(
                             line,
                             priced,
                             valued: false,
+                            names: names.clone(),
+                            skip: skip.clone(),
+                            tip_only: tip_only.clone(),
                         }
                     }
                 }
@@ -486,6 +575,13 @@ fn LineRow(
     monogram: String,
     priced: bool,
     #[props(default = true)] valued: bool,
+    names: Names,
+    /// Warning codes not shown on the row: its group says them.
+    #[props(default)]
+    skip: Vec<String>,
+    /// Warning codes shown only in the row's tooltip.
+    #[props(default)]
+    tip_only: Vec<String>,
 ) -> Element {
     let mut open = use_signal(|| false);
     let amount = format_amount(line.raw, line.decimals, AMOUNT_DIGITS);
@@ -505,10 +601,25 @@ fn LineRow(
         (monogram, tint_class(&line.asset.price_mint()))
     };
     // The tooltip: all of the mint for an unknown token.
-    let title = match (unknown, mint) {
+    let mut title = match (unknown, mint) {
         (true, Some(mint)) => mint.to_string(),
         _ => line.symbol.clone(),
     };
+    for code in warning_codes(&line).filter(|code| tip_only.contains(code)) {
+        title.push_str(&format!("\nTokens API: {}", warning_text(code)));
+    }
+    let holders: Vec<String> = line
+        .shares
+        .iter()
+        .map(|share| {
+            names
+                .get(&share.owner)
+                .cloned()
+                .unwrap_or_else(|| wallet_core::short_pubkey(&share.owner))
+        })
+        .collect();
+    let holders_short = holders_text(&holders);
+    let holders_all = holders.join(", ");
     let title_class = if unknown {
         "pf-symbol pf-mint"
     } else {
@@ -536,6 +647,7 @@ fn LineRow(
             check
                 .warnings
                 .iter()
+                .filter(|code| !skip.contains(code) && !tip_only.contains(code))
                 .map(|code| {
                     (
                         warning_text(code),
@@ -593,6 +705,7 @@ fn LineRow(
                             span { class: "muted pf-name", "{name}" }
                         }
                     }
+                    span { class: "muted pf-holders", title: "{holders_all}", "{holders_short}" }
                     span { class: "pf-amount", "{amount}" }
                     if priced && valued {
                         span { class: "pf-price muted",
@@ -613,7 +726,7 @@ fn LineRow(
                     }
                 }
                 if let (Some(asset), false) = (sendable, senders.is_empty()) {
-                    button { class: "ghost icon-btn sm",
+                    button { class: "ghost icon-btn sm pf-send",
                         r#type: "button",
                         title: "Send {symbol}",
                         aria_label: "Send {symbol}",
@@ -669,6 +782,46 @@ fn LineRow(
         }
     }
 }
+
+/// The Tokens API's code for a token it has no market for.
+const NO_MARKET: &str = "no_market_data";
+
+/// The warning codes the Tokens API gave a line.
+fn warning_codes(line: &Line) -> impl Iterator<Item = &String> {
+    line.check.iter().flat_map(|check| check.warnings.iter())
+}
+
+/// The warnings every one of several lines carries, but those in `except`,
+/// in the order of the first line's.
+fn common_warnings(lines: &[Line], except: &[String]) -> Vec<String> {
+    let Some((first, rest)) = lines.split_first() else {
+        return Vec::new();
+    };
+    if rest.is_empty() {
+        return Vec::new();
+    }
+    warning_codes(first)
+        .filter(|code| !except.contains(code))
+        .filter(|code| {
+            rest.iter()
+                .all(|line| warning_codes(line).any(|c| c == *code))
+        })
+        .cloned()
+        .collect()
+}
+
+/// Who holds an asset, short: the first two names, then how many more.
+fn holders_text(names: &[String]) -> String {
+    match names {
+        [] => String::new(),
+        [one] => one.clone(),
+        [a, b] => format!("{a}, {b}"),
+        [a, b, rest @ ..] => format!("{a}, {b} +{}", rest.len()),
+    }
+}
+
+/// The names of the wallets and watched addresses, by address.
+type Names = BTreeMap<Pubkey, String>;
 
 /// A token the Tokens API gave no symbol or name for: its symbol is its
 /// short mint, which is no name.
@@ -989,6 +1142,57 @@ mod tests {
             excludes_note(2, 3).as_deref(),
             Some("Excludes 2 tokens with no price and 3 left out")
         );
+    }
+
+    #[test]
+    fn holders_read_as_two_names_then_a_count() {
+        let names = |n: &[&str]| n.iter().map(|s| s.to_string()).collect::<Vec<_>>();
+        assert_eq!(holders_text(&names(&[])), "");
+        assert_eq!(holders_text(&names(&["Main"])), "Main");
+        assert_eq!(
+            holders_text(&names(&["Main", "Cold vault"])),
+            "Main, Cold vault"
+        );
+        assert_eq!(
+            holders_text(&names(&["Main", "Cold vault", "Ops"])),
+            "Main, Cold vault +1"
+        );
+    }
+
+    #[test]
+    fn a_warning_every_row_carries_goes_to_the_group() {
+        let line = |codes: &[&str]| Line {
+            asset: wallet_core::portfolio::Asset::Sol,
+            symbol: "X".into(),
+            name: None,
+            raw: 1,
+            decimals: 0,
+            price_usd: None,
+            change_24h_pct: None,
+            usd: None,
+            check: Some(wallet_core::portfolio::TokenCheck {
+                warnings: codes.iter().map(|c| c.to_string()).collect(),
+                ..Default::default()
+            }),
+            shares: Vec::new(),
+        };
+        let lines = [
+            line(&["no_market_data", "unverified"]),
+            line(&["unverified", "no_market_data"]),
+            line(&["unverified", "new_token"]),
+        ];
+        assert_eq!(common_warnings(&lines, &[]), ["unverified"]);
+        let two = [
+            line(&["no_market_data", "unverified"]),
+            line(&["unverified", "no_market_data"]),
+        ];
+        assert_eq!(common_warnings(&two, &[]), ["no_market_data", "unverified"]);
+        assert_eq!(
+            common_warnings(&two, &[NO_MARKET.to_string()]),
+            ["unverified"]
+        );
+        // One row has no others to share with.
+        assert!(common_warnings(&lines[..1], &[]).is_empty());
     }
 
     #[test]
