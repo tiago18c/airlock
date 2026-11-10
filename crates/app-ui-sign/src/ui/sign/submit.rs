@@ -62,13 +62,23 @@ pub(in crate::ui) fn SubmitProgress() -> Element {
         form.clear();
         session.open_in_history(signature);
     };
-    // A step of a token cleanup: the next one follows from here.
-    let cleanup_step = crate::actions::cleanup::step_on_screen(&session);
+    // A step of a token cleanup or a move: the next one follows from here.
+    let run_step = crate::actions::cleanup::step_on_screen(&session)
+        .map(|step| (step, "burning and closing token accounts", false))
+        .or_else(|| {
+            crate::actions::migrate::step_on_screen(&session)
+                .map(|step| (step, "moving this wallet", true))
+        });
     let mut continuing = use_signal(|| false);
     let next_step = move |_| {
+        let moving = run_step.is_some_and(|(_, _, moving)| moving);
         continuing.set(true);
         spawn(async move {
-            crate::actions::cleanup::next(session).await;
+            if moving {
+                crate::actions::migrate::next(session).await;
+            } else {
+                crate::actions::cleanup::next(session).await;
+            }
             continuing.set(false);
         });
     };
@@ -100,20 +110,20 @@ pub(in crate::ui) fn SubmitProgress() -> Element {
                             span { class: "submit-mark ok", Icon { glyph: Glyph::Check } }
                             p { class: "submit-title", "It landed." }
                             code { class: "mono submit-sig", "{signature}" }
-                            if let Some(step) = cleanup_step {
+                            if let Some((step, what, _)) = run_step {
                                 p { class: "hint",
-                                    "Step {step} of burning and closing token accounts. The next step reads them again first."
+                                    "Step {step} of {what}. The next step reads the chain again first."
                                 }
                             }
                             div { class: "btn-row",
-                                if cleanup_step.is_some() {
+                                if run_step.is_some() {
                                     button { class: "primary",
                                         disabled: continuing(),
                                         onclick: next_step,
-                                        if continuing() { "Reading the accounts…" } else { "Next step" }
+                                        if continuing() { "Reading the chain…" } else { "Next step" }
                                     }
                                 }
-                                button { class: if cleanup_step.is_some() { "" } else { "primary" },
+                                button { class: if run_step.is_some() { "" } else { "primary" },
                                     onclick: move |_| view(signature),
                                     "View transaction"
                                 }

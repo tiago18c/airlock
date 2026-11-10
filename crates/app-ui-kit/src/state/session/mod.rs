@@ -409,7 +409,7 @@ impl Session {
         slot.set(None);
     }
 
-    /// Open the Burn and close modal on `wallet`'s token accounts (online
+    /// Open the Manage tokens modal on `wallet`'s token accounts (online
     /// shell mounts it).
     pub fn open_cleanup(&self, wallet: WalletId) {
         let form = self.forms.cleanup;
@@ -418,7 +418,22 @@ impl Session {
         slot.set(Some(wallet));
     }
 
-    /// Close the Burn and close modal.
+    /// Open the Migrate wallet modal, on `from` when it is known (online shell
+    /// mounts it).
+    pub fn open_migrate(&self, from: Option<WalletId>) {
+        let form = self.forms.migrate;
+        let (mut slot, mut notice) = (form.open, form.notice);
+        notice.set(None);
+        slot.set(Some(from));
+    }
+
+    /// Close the Migrate wallet modal.
+    pub fn close_migrate(&self) {
+        let mut slot = self.forms.migrate.open;
+        slot.set(None);
+    }
+
+    /// Close the Manage tokens modal.
     pub fn close_cleanup(&self) {
         let mut slot = self.forms.cleanup.open;
         slot.set(None);

@@ -91,6 +91,13 @@ pub fn WalletsPanel() -> Element {
                             PaneMenu { label: "More wallet actions",
                                 button { class: "pane-menu-item",
                                     role: "menuitem",
+                                    title: "Move everything a wallet holds to another address: to rotate a key, or to move to a programmatic signer, a Vector account or a multisig",
+                                    onclick: move |_| session.open_migrate(current),
+                                    Icon { glyph: Glyph::Send }
+                                    "Migrate wallet"
+                                }
+                                button { class: "pane-menu-item",
+                                    role: "menuitem",
                                     title: "Burn and close a wallet's token accounts, to get their rent back",
                                     onclick: move |_| {
                                         if let Some(wallet) = first_wallet {

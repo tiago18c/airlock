@@ -18,7 +18,7 @@ use wallet_flows::cleanup::default_choice;
 /// What a burn asks to be typed before it runs.
 const BURN_WORD: &str = "burn";
 
-/// Mounts the Burn and close modal while a screen has it open.
+/// Mounts the Manage tokens modal while a screen has it open.
 #[component]
 pub fn CleanupHost() -> Element {
     let session = use_context::<Session>();

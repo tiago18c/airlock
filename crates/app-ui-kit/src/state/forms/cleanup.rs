@@ -1,4 +1,4 @@
-//! Slot for the Burn and close modal, and the cleanup it runs one step at a
+//! Slot for the Manage tokens modal, and the cleanup it runs one step at a
 //! time: any screen opens it, the online shell mounts it.
 
 use dioxus::prelude::*;
