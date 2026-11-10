@@ -17,8 +17,8 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use std::{io, thread};
 
 use app_core::bridge::{
-    BridgeQueue, BridgeRefused, BridgeRequest, SendPlan, SiteCall, SiteConnect, SiteSign,
-    SiteTransaction, SiteWire, SEND, SEND_ALL,
+    BridgeQueue, BridgeRefused, BridgeRequest, SiteCall, SiteConnect, SiteSign, SiteTransaction,
+    SiteWire, SEND, SEND_ALL,
 };
 use app_core::PublicCore;
 use base64::Engine;
@@ -31,10 +31,13 @@ use serde_json::{json, Value};
 use solana_pubkey::Pubkey;
 use tokio::sync::watch;
 use wallet_core::site_message::SignIn;
-use wallet_core::{ConfirmationLevel, TxFormat};
+use wallet_core::TxFormat;
 use wallet_flows::request::wallets_asked;
 
 mod apps;
+mod asked;
+
+use asked::Asked;
 
 pub use apps::{AppAnswer, AppCall, AppClaim, AppIdentity, AppSession, SignedIn};
 
@@ -216,14 +219,21 @@ impl Bridge {
 
     /// What becomes of one frame from the native host. A request that goes to
     /// the user joins `waiting`.
-    fn answer(&self, frame: Frame, waiting: &Waiting) -> Answer {
+    fn answer(&self, mut frame: Frame, waiting: &Waiting) -> Answer {
+        let asked = Asked::read(&frame.method, std::mem::take(&mut frame.params));
+        self.answer_asked(frame, asked, waiting)
+    }
+
+    /// [`answer`](Self::answer), for a frame whose params were read already,
+    /// into `asked`. The params are not looked at again.
+    fn answer_asked(&self, frame: Frame, asked: Asked, waiting: &Waiting) -> Answer {
         let Frame {
             version,
             id,
             origin,
             expires_at,
             method,
-            params,
+            params: _,
         } = frame;
         if version != Some(1) {
             return Answer::Now(reply::error(
@@ -240,8 +250,7 @@ impl Bridge {
         let method = method.as_str();
 
         let core = self.shared.core.get();
-        let silent =
-            method == "connect" && params.get("silent").and_then(Value::as_bool) == Some(true);
+        let silent = asked.is_silent_connect();
         // A silent connect never gets an error: the site just stays out.
         if silent && core.is_none() {
             return Answer::Now(reply::result(&id, json!({ "accounts": [] })));
@@ -259,40 +268,44 @@ impl Bridge {
             "request in"
         );
 
-        match (method, core) {
-            ("status", _) => Answer::Now(reply::result(
+        match (asked, core) {
+            (Asked::Status, _) => Answer::Now(reply::result(
                 &id,
                 json!({ "ready": true, "role": "desktop" }),
             )),
             // The connection took these in already: it knows which browser
             // this is, and which requests are its own.
-            ("pages" | "cancel", _) => Answer::Now(reply::result(&id, json!({}))),
-            ("show", _) => {
+            (Asked::Pages(_) | Asked::Cancel(_), _) => Answer::Now(reply::result(&id, json!({}))),
+            (Asked::Show, _) => {
                 self.shared.show.send_modify(|n| *n = n.wrapping_add(1));
                 Answer::Now(reply::result(&id, json!({})))
             }
-            ("disconnect", core) => {
+            (Asked::Disconnect, core) => {
                 if let Some(core) = core {
                     core.site_disconnected(&origin);
                 }
                 Answer::Now(reply::result(&id, json!({})))
             }
-            (SEND | SEND_ALL, _) if !every_chain_named(&params) => Answer::Now(reply::error(
+            (Asked::Transactions(asked), _) if asked.sends() && !asked.every_chain_named => {
+                Answer::Now(reply::error(
+                    &id,
+                    "bad_request",
+                    "A transaction names no network.",
+                ))
+            }
+            (Asked::Transactions(asked), _) if asked.count == 0 => Answer::Now(reply::error(
                 &id,
                 "bad_request",
-                "A transaction names no network.",
+                "No transaction was included.",
             )),
-            (TRANSACTION_METHODS!(), _) if transaction_count(&params) == 0 => Answer::Now(
-                reply::error(&id, "bad_request", "No transaction was included."),
-            ),
-            (TRANSACTION_METHODS!(), _) if transaction_count(&params) > MAX_TRANSACTIONS => {
+            (Asked::Transactions(asked), _) if asked.count > MAX_TRANSACTIONS => {
                 Answer::Now(reply::error(
                     &id,
                     "not_implemented",
                     &format!("Airlock signs at most {MAX_TRANSACTIONS} transactions per request."),
                 ))
             }
-            ("connect", Some(core)) => match core.site_connect(&origin, silent) {
+            (Asked::Connect { silent }, Some(core)) => match core.site_connect(&origin, silent) {
                 SiteConnect::Allowed(accounts) => Answer::Now(reply::connected(&id, &accounts)),
                 _ if silent => Answer::Now(reply::result(&id, json!({ "accounts": [] }))),
                 SiteConnect::Blocked => Answer::Now(blocked(&id)),
@@ -305,31 +318,35 @@ impl Bridge {
                     wait_for_user(core, request, DECISION_TIMEOUT, waiting)
                 }
             },
-            ("signMessage", Some(core)) => match read_message_request(core, &origin, &params) {
-                Ok(call) => {
-                    let request = BridgeRequest { id, origin, call };
-                    wait_for_user(core, request, DECISION_TIMEOUT, waiting)
+            (Asked::SignMessage { account, message }, Some(core)) => {
+                match read_message_request(core, &origin, account, message.as_deref()) {
+                    Ok(call) => {
+                        let request = BridgeRequest { id, origin, call };
+                        wait_for_user(core, request, DECISION_TIMEOUT, waiting)
+                    }
+                    Err(message) => Answer::Now(reply::error(&id, "rejected", &message)),
                 }
-                Err(message) => Answer::Now(reply::error(&id, "rejected", &message)),
-            },
-            ("signIn", Some(core)) => match read_sign_in_request(core, &origin, &params) {
-                Ok(sign_in) => {
-                    let request = BridgeRequest {
-                        id,
-                        origin,
-                        call: SiteCall::SignIn(Box::new(sign_in)),
-                    };
-                    wait_for_user(core, request, DECISION_TIMEOUT, waiting)
+            }
+            (Asked::SignIn(params), Some(core)) => {
+                match read_sign_in_request(core, &origin, &params) {
+                    Ok(sign_in) => {
+                        let request = BridgeRequest {
+                            id,
+                            origin,
+                            call: SiteCall::SignIn(Box::new(sign_in)),
+                        };
+                        wait_for_user(core, request, DECISION_TIMEOUT, waiting)
+                    }
+                    Err(message) => Answer::Now(reply::error(&id, "rejected", &message)),
                 }
-                Err(message) => Answer::Now(reply::error(&id, "rejected", &message)),
-            },
-            (TRANSACTION_METHODS!(), Some(core)) => {
-                let accounts = requested_accounts(&params);
+            }
+            (Asked::Transactions(asked), Some(core)) => {
+                let accounts = asked.accounts();
                 match core.site_sign(&origin, &accounts) {
                     SiteSign::Blocked => Answer::Now(blocked(&id)),
-                    SiteSign::Allowed if accounts.len() == transaction_count(&params) => {
+                    SiteSign::Allowed if accounts.len() == asked.count => {
                         let request = BridgeRequest {
-                            call: transactions_call(method, &params, accounts),
+                            call: asked.call(accounts),
                             id,
                             origin,
                         };
@@ -359,14 +376,6 @@ impl Bridge {
     }
 }
 
-/// The requests that hand over transactions.
-macro_rules! TRANSACTION_METHODS {
-    () => {
-        "signTransaction" | SEND | SEND_ALL
-    };
-}
-use TRANSACTION_METHODS;
-
 const HELD_BY_SOMETHING_ELSE: &str = "Something other than Airlock holds its connection to the browser, so sites cannot reach this window. Close it, then start Airlock again.";
 
 fn cannot_set_up(err: &io::Error) -> String {
@@ -390,13 +399,10 @@ fn blocked(id: &str) -> Vec<u8> {
 fn read_message_request(
     core: &PublicCore,
     origin: &str,
-    params: &Value,
+    account: Option<Pubkey>,
+    message: Option<&str>,
 ) -> Result<SiteCall, String> {
-    let account: Pubkey = params
-        .get("account")
-        .and_then(Value::as_str)
-        .and_then(|account| account.parse().ok())
-        .ok_or(NOT_CONNECTED)?;
+    let account = account.ok_or(NOT_CONNECTED)?;
     match core.site_sign(origin, &[account]) {
         SiteSign::Blocked => return Err(BLOCKED.into()),
         SiteSign::NotConnected => return Err(NOT_CONNECTED.into()),
@@ -405,9 +411,7 @@ fn read_message_request(
     if !holds_key(core, &account) {
         return Err("No key on this device signs as this account.".into());
     }
-    let message = params
-        .get("message")
-        .and_then(Value::as_str)
+    let message = message
         .and_then(|text| base64::engine::general_purpose::STANDARD.decode(text).ok())
         .ok_or("The message was not valid base64.")?;
     match device_of(core, &account).filter(|vendor| vendor.wraps_messages()) {
@@ -578,10 +582,7 @@ impl Peer {
 
     /// The extension's word that nobody is waiting on one of its requests any
     /// more. Another connection's request is not its to end.
-    fn cancel(&self, params: &Value) {
-        let Some(id) = params.get("id").and_then(Value::as_str) else {
-            return;
-        };
+    fn cancel(&self, id: &str) {
         let ours = self
             .waiting
             .lock()
@@ -593,8 +594,7 @@ impl Peer {
     }
 
     /// The origins with a page open in this browser, as the extension lists them.
-    fn set_pages(&self, params: &Value) {
-        let pages = listed_pages(params);
+    fn set_pages(&self, pages: BTreeSet<String>) {
         let shared = &self.bridge.shared;
         if let Some(peer) = shared
             .peers
@@ -615,18 +615,19 @@ impl Connection for Peer {
         if !knocking && !self.counted.swap(true, Ordering::SeqCst) {
             self.bridge.shared.extension.send_modify(|n| *n += 1);
         }
-        let Some(frame) = frame else {
+        let Some(mut frame) = frame else {
             return Answer::Now(reply::error("", "bad_request", "The request is not JSON."));
         };
-        match frame.method.as_str() {
-            "pages" => self.set_pages(&frame.params),
-            "cancel" => self.cancel(&frame.params),
+        let asked = Asked::read(&frame.method, std::mem::take(&mut frame.params));
+        match &asked {
+            Asked::Pages(pages) => self.set_pages(pages.clone()),
+            Asked::Cancel(Some(id)) => self.cancel(id),
             _ => {}
         }
-        if let Some(refused) = refuse_origin(&frame) {
+        if let Some(refused) = refuse_origin(&frame, &asked) {
             return Answer::Now(refused);
         }
-        self.bridge.answer(frame, &self.waiting)
+        self.bridge.answer_asked(frame, asked, &self.waiting)
     }
 
     fn closed(&self) {
@@ -652,23 +653,6 @@ impl Connection for Peer {
     }
 }
 
-/// The origins a `pages` frame lists. One that is not a web origin is left
-/// out, rather than the whole list refused.
-fn listed_pages(params: &Value) -> BTreeSet<String> {
-    params
-        .get("origins")
-        .and_then(Value::as_array)
-        .map(|origins| {
-            origins
-                .iter()
-                .filter_map(Value::as_str)
-                .filter(|origin| is_site_origin(origin))
-                .map(str::to_owned)
-                .collect()
-        })
-        .unwrap_or_default()
-}
-
 /// The reply to a site's request from the socket that names no web origin
 /// as a browser writes it (`bridge_protocol::request::is_site_origin`), or
 /// `None` to go on. The origin is what the modal shows and the grants are
@@ -678,7 +662,7 @@ fn listed_pages(params: &Value) -> BTreeSet<String> {
 /// `status` as `chrome-extension://…`, and a second launch sends `show` with
 /// none. Requests from apps on a phone come through `apps` with the origin
 /// the app gave, `android-app://` among them, and are not checked here.
-fn refuse_origin(frame: &Frame) -> Option<Vec<u8>> {
+fn refuse_origin(frame: &Frame, asked: &Asked) -> Option<Vec<u8>> {
     let method = frame.method.as_str();
     if !(waits_for_user(method) || method == "disconnect") || is_site_origin(&frame.origin) {
         return None;
@@ -690,9 +674,7 @@ fn refuse_origin(frame: &Frame) -> Option<Vec<u8>> {
         origin = ?frame.origin,
         "refused a request that names no web origin"
     );
-    let silent =
-        method == "connect" && frame.params.get("silent").and_then(Value::as_bool) == Some(true);
-    Some(if silent {
+    Some(if asked.is_silent_connect() {
         reply::result(&frame.id, json!({ "accounts": [] }))
     } else {
         reply::error(
@@ -844,40 +826,6 @@ impl BridgePrompt {
     }
 }
 
-/// The transactions of a request, as the site sent them.
-fn transaction_items(params: &Value) -> &[Value] {
-    params
-        .get("transactions")
-        .and_then(Value::as_array)
-        .map_or(&[], Vec::as_slice)
-}
-
-/// The accounts the transactions of a request name, those that read as addresses.
-fn requested_accounts(params: &Value) -> Vec<Pubkey> {
-    transaction_items(params)
-        .iter()
-        .filter_map(|item| item.get("account")?.as_str()?.parse().ok())
-        .collect()
-}
-
-/// A request for transactions, each of which named one of `accounts`.
-fn transactions_call(method: &str, params: &Value, accounts: Vec<Pubkey>) -> SiteCall {
-    let transactions = transaction_items(params)
-        .iter()
-        .zip(accounts)
-        .map(|(item, account)| read_transaction(item, account))
-        .collect();
-    let plan = match method {
-        SEND => SendPlan::InOrder,
-        SEND_ALL if params.get("mode").and_then(Value::as_str) == Some("serial") => {
-            SendPlan::Serial
-        }
-        SEND_ALL => SendPlan::Independent,
-        _ => return SiteCall::SignTransactions(transactions),
-    };
-    SiteCall::Send { transactions, plan }
-}
-
 /// The wallets of this device that `transactions` ask for a signature. One that
 /// needs lookup tables to be read is judged here by its own signers, and in full
 /// when it is prepared.
@@ -908,37 +856,6 @@ fn unsigned_signers(wire: &[u8]) -> Vec<Pubkey> {
         .filter(|slot| !view.slot_valid(*slot))
         .map(|slot| view.static_keys[slot])
         .collect()
-}
-
-fn read_transaction(item: &Value, account: Pubkey) -> SiteTransaction {
-    SiteTransaction {
-        account,
-        wire: read_wire(item),
-        chain: item.get("chain").and_then(Value::as_str).map(str::to_owned),
-        commitment: match item
-            .get("options")
-            .and_then(|options| options.get("commitment"))
-            .and_then(Value::as_str)
-        {
-            Some("processed") => Some(ConfirmationLevel::Processed),
-            Some("confirmed") => Some(ConfirmationLevel::Confirmed),
-            Some("finalized") => Some(ConfirmationLevel::Finalized),
-            _ => None,
-        },
-    }
-}
-
-fn read_wire(item: &Value) -> SiteWire {
-    let Some(text) = item.get("transaction").and_then(Value::as_str) else {
-        return SiteWire::Missing;
-    };
-    let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(text) else {
-        return SiteWire::NotBase64;
-    };
-    match wallet_core::parse_wire(&bytes).map(|view| view.format) {
-        Ok(format) => SiteWire::Readable(format, bytes),
-        Err(_) => SiteWire::Unreadable(bytes.len()),
-    }
 }
 
 fn detail(request: &BridgeRequest) -> String {
@@ -972,18 +889,6 @@ pub fn sign_detail(transaction: Option<&SiteTransaction>) -> String {
             format!("{} byte {format} transaction.", bytes.len())
         }
     }
-}
-
-/// Whether every transaction of a send says which network it is for, as the
-/// standard requires.
-fn every_chain_named(params: &Value) -> bool {
-    transaction_items(params)
-        .iter()
-        .all(|item| item.get("chain").is_some_and(Value::is_string))
-}
-
-fn transaction_count(params: &Value) -> usize {
-    transaction_items(params).len()
 }
 
 fn now_secs() -> u64 {
