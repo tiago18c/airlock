@@ -109,7 +109,7 @@ pub fn PortfolioPanel() -> Element {
                                         session.open_cleanup(wallet);
                                     }
                                 },
-                                "Burn and close…"
+                                "Manage tokens"
                             }
                         }
                         select {

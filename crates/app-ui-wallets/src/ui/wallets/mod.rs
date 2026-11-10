@@ -98,7 +98,7 @@ pub fn WalletsPanel() -> Element {
                                         }
                                     },
                                     Icon { glyph: Glyph::Trash }
-                                    "Burn and close…"
+                                    "Manage tokens"
                                 }
                             }
                         }

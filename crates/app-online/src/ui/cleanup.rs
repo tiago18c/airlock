@@ -182,7 +182,7 @@ fn CleanupModal(wallet: WalletId) -> Element {
                 aria_modal: "true",
                 onclick: move |evt| evt.stop_propagation(),
                 div { class: "stack",
-                    h3 { "Burn and close token accounts" }
+                    h3 { "Manage tokens" }
                     WalletPicker {
                         label: "Wallet".to_string(),
                         options: session
