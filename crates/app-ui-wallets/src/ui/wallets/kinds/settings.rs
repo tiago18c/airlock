@@ -571,7 +571,7 @@ pub(in crate::ui) fn WalletDetailsDialog(
     }
 }
 
-/// The two icon buttons that open a wallet's dialogs: a magnifier for
+/// The two icon buttons that open a wallet's dialogs: an "i" in a circle for
 /// Details, on a smart contract wallet, and a wheel for Settings.
 #[component]
 pub(in crate::ui) fn WalletDialogButtons(wallet: WalletSummary) -> Element {
@@ -585,7 +585,7 @@ pub(in crate::ui) fn WalletDialogButtons(wallet: WalletSummary) -> Element {
                 aria_label: "Details of {wallet.label}",
                 aria_haspopup: "dialog",
                 onclick: move |_| details_open.set(true),
-                Icon { glyph: Glyph::Search }
+                Icon { glyph: Glyph::Info }
             }
         }
         button { class: "icon-btn sm",

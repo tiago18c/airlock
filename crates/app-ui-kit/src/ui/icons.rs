@@ -36,6 +36,8 @@ pub enum Glyph {
     Copy,
     Check,
     Alert,
+    /// An "i" in a circle: something to know, beside an informational note.
+    Info,
     X,
     More,
     /// Three lines: a menu of a pane's less used actions.
@@ -190,6 +192,11 @@ impl Glyph {
             ],
             Glyph::Check => &["M5 12.5l4.5 4.5L19 7.5"],
             Glyph::Alert => &["M12 4 2.5 20h19L12 4Z", "M12 10v4", "M12 17h.01"],
+            Glyph::Info => &[
+                "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z",
+                "M12 11v5.5",
+                "M12 7.5h.01",
+            ],
             Glyph::X => &["M6 6l12 12", "M18 6 6 18"],
             Glyph::More => &["M5 12h.01", "M12 12h.01", "M19 12h.01"],
             Glyph::Menu => &["M4 7h16", "M4 12h16", "M4 17h16"],

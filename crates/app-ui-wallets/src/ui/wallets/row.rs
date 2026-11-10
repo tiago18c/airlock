@@ -39,13 +39,6 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
         Some(OfflinePath::DurableNonce) => durable_nonce.is_none(),
         None => false,
     };
-    // Make current follows the default path: the signer is a wallet of its own.
-    let acting = session.acting_wallet(id);
-    let use_title = if acting == id {
-        "Make this key the current wallet, the one the app acts as"
-    } else {
-        "Make this key's programmatic signer, its default path, the current wallet. The signer is a wallet of its own, at another address."
-    };
 
     rsx! {
         li { class: "wallet-row",
@@ -73,13 +66,6 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                         }
                     }
                     div { class: "btn-row wallet-side",
-                        if !current {
-                            button { class: "sm",
-                                title: use_title,
-                                onclick: move |_| { let _ = session.select_wallet(acting); },
-                                "Make current"
-                            }
-                        }
                         if on_device.is_some() {
                             if let Some(address) = pubkey {
                                 button { class: "sm",

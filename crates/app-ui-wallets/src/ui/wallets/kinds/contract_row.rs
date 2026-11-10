@@ -70,13 +70,6 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
                         }
                     }
                     div { class: "btn-row wallet-side",
-                        if !current {
-                            button { class: "sm",
-                                title: "Make this wallet the current one, the one the app acts as",
-                                onclick: move |_| { let _ = session.select_wallet(id); },
-                                "Make current"
-                            }
-                        }
                         if proposals_offered {
                             if let Some(squad) = squad {
                                 button { class: "sm",
