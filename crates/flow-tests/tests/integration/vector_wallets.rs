@@ -808,6 +808,163 @@ fn a_wallet_restored_from_its_phrase_finds_its_key_and_rotates_at_the_last_leaf(
     assert_eq!(desk.chain().balance(&receiver), 3 * SOL / 8);
 }
 
+/// The leaf a rotation's signature was made with.
+fn leaf_of(signed: &wallet_core::protocol::RotationSignature) -> u32 {
+    u32::from_be_bytes(signed.signature[..4].try_into().unwrap())
+}
+
+#[test]
+fn a_restored_wallet_beaten_to_the_nonce_signs_again_with_the_leaf_below() {
+    use wallet_core::vector::{XMSS_LEAVES, XMSS_RECOVERY_LEAVES};
+
+    let mut desk = Desk::new();
+    let account = desk.add_xmss_phrase("Tree", PHRASE);
+    let receiver = KeypairSigner::new_random().pubkey();
+    let signed_transfer = |desk: &mut Desk| {
+        let adapted = desk.rebuild(
+            account.address,
+            vec![transfer(&account.address, &receiver, SOL / 8)],
+        );
+        desk.sign(&adapted.wire, &adapted.context).unwrap().wire
+    };
+    let first = signed_transfer(&mut desk);
+    desk.land(&first);
+    // The last thing the device signed before it was lost never landed, and
+    // whoever holds it can still land it.
+    let held_back = signed_transfer(&mut desk);
+
+    desk.restore_from_phrase(account.wallet, PHRASE);
+    desk.adopt_state(account.wallet, &account.address);
+    assert_eq!(
+        desk.recovery_left(account.wallet),
+        Some(XMSS_RECOVERY_LEAVES)
+    );
+    let first_try = desk.sign_rotation(account.wallet);
+    assert_eq!(leaf_of(&first_try.signed[0]), XMSS_LEAVES - 1);
+    assert_eq!(
+        desk.recovery_left(account.wallet),
+        Some(XMSS_RECOVERY_LEAVES - 1)
+    );
+
+    // The transfer that was held back lands first, and moves the nonce.
+    desk.land(&held_back);
+    let key = wallet_core::vector::phrase_key(PHRASE, SchemeId::Xmss, 0)
+        .unwrap()
+        .0;
+    let rotate = |desk: &Desk, rotation: &wallet_core::protocol::KeyRotation| {
+        run(wallet_flows::vector::rotate(
+            &desk.node,
+            desk.payer.pubkey(),
+            SchemeId::Xmss,
+            &key,
+            rotation,
+        ))
+    };
+    let refused = rotate(&desk, &first_try).unwrap_err().to_string();
+    assert!(
+        refused.contains("nonces this account is not at"),
+        "{refused}"
+    );
+    // Without the new state the device has nothing new to sign at: it
+    // shows what it signed, and spends no leaf.
+    assert_eq!(desk.sign_rotation(account.wallet), first_try);
+    assert_eq!(
+        desk.recovery_left(account.wallet),
+        Some(XMSS_RECOVERY_LEAVES - 1)
+    );
+
+    // With it, the second attempt signs at the new nonce, one leaf down.
+    desk.adopt_state(account.wallet, &account.address);
+    let second_try = desk.sign_rotation(account.wallet);
+    assert_eq!(second_try.signed.len(), 1);
+    assert_ne!(second_try.signed[0].nonce, first_try.signed[0].nonce);
+    assert_eq!(leaf_of(&second_try.signed[0]), XMSS_LEAVES - 2);
+    assert_eq!(
+        desk.recovery_left(account.wallet),
+        Some(XMSS_RECOVERY_LEAVES - 2)
+    );
+    let prepared = rotate(&desk, &second_try).unwrap();
+    let paid = desk.sign(&prepared.wire, &[]).unwrap();
+    desk.land(&paid.wire);
+
+    // It landed: the wallet is whole again, on the phrase's next key.
+    let after = signed_transfer(&mut desk);
+    desk.land(&after);
+    assert_eq!(phrase_index(&desk, account.wallet), (1, false));
+    assert_eq!(desk.recovery_left(account.wallet), None);
+    assert_eq!(desk.chain().balance(&receiver), 3 * SOL / 8);
+}
+
+#[test]
+fn a_phrase_typed_in_twice_signs_the_same_rotation_and_not_a_second_one() {
+    let mut desk = Desk::new();
+    let account = desk.add_xmss_phrase("Tree", PHRASE);
+
+    // Two devices restored from one phrase, neither knowing of the other,
+    // shown the same state.
+    desk.restore_from_phrase(account.wallet, PHRASE);
+    desk.adopt_state(account.wallet, &account.address);
+    let one = desk.sign_rotation(account.wallet);
+    desk.restore_from_phrase(account.wallet, PHRASE);
+    desk.adopt_state(account.wallet, &account.address);
+    let other = desk.sign_rotation(account.wallet);
+
+    // One leaf, one digest, one salt: the same bytes, so nobody who holds
+    // both learns more than one of them says.
+    assert_eq!(one, other);
+    assert_eq!(
+        leaf_of(&one.signed[0]),
+        wallet_core::vector::XMSS_LEAVES - 1
+    );
+}
+
+#[test]
+fn a_restored_wallet_signs_no_more_than_the_leaves_kept_for_it() {
+    use wallet_core::vector::XMSS_RECOVERY_LEAVES;
+
+    let mut desk = Desk::new();
+    let account = desk.add_xmss_phrase("Tree", PHRASE);
+    // Each state it is told of, at another nonce, is another attempt, and
+    // the fifth is refused.
+    desk.restore_from_phrase(account.wallet, PHRASE);
+    let mut leaves = Vec::new();
+    for attempt in 0..XMSS_RECOVERY_LEAVES {
+        desk.adopt_told_state(account.wallet, &account.address, [attempt as u8 + 1; 32]);
+        let rotation = desk.sign_rotation(account.wallet);
+        leaves.push(leaf_of(&rotation.signed[0]));
+    }
+    assert_eq!(leaves, [255, 254, 253, 252]);
+    assert_eq!(desk.recovery_left(account.wallet), Some(0));
+    desk.adopt_told_state(account.wallet, &account.address, [9; 32]);
+    let refused = desk.try_sign_rotation(account.wallet).unwrap_err();
+    assert!(
+        refused.contains("every leaf kept for recovering"),
+        "{refused}"
+    );
+    // And the phrase typed in a third time starts from the last leaf again,
+    // which is why the row says to do that only once a rotation has landed.
+}
+
+#[test]
+fn an_account_state_that_claims_more_leaves_than_a_key_has_is_not_taken() {
+    let mut desk = Desk::new();
+    let account = desk.add_xmss_phrase("Tree", PHRASE);
+    let refused = desk
+        .try_adopt(account.wallet, &account.address, |state| {
+            state.leaf_floor = wallet_core::vector::XMSS_LEAVES + 1;
+        })
+        .unwrap_err();
+    assert!(refused.contains("a key has only 256"), "{refused}");
+    // Nothing was counted as used: it still signs, from its first leaf.
+    let receiver = KeypairSigner::new_random().pubkey();
+    let adapted = desk.rebuild(
+        account.address,
+        vec![transfer(&account.address, &receiver, SOL / 8)],
+    );
+    let signed = desk.sign(&adapted.wire, &adapted.context).unwrap();
+    desk.land(&signed.wire);
+}
+
 #[test]
 fn a_winternitz_vector_wallet_signs_rotates_and_signs_again() {
     let mut desk = Desk::new();
@@ -974,7 +1131,12 @@ fn an_xmss_wallet_may_skip_a_leaf_and_cannot_reuse_a_lower_one() {
 fn the_last_xmss_leaf_must_rotate_and_rotation_resets_the_chain() {
     let mut desk = Desk::new();
     let account = desk.add_xmss("Last");
-    desk.set_xmss_leaf(&account.address, wallet_core::vector::XMSS_LEAVES - 1);
+    // The last leaf a device that kept its key signs with: those after it
+    // are kept for a wallet restored from its recovery phrase.
+    desk.set_xmss_leaf(
+        &account.address,
+        wallet_core::vector::XMSS_RECOVERY_FROM - 1,
+    );
     let receiver = KeypairSigner::new_random().pubkey();
 
     // Without a next key, rebuild refuses past the force-rotate threshold.

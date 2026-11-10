@@ -8,6 +8,7 @@ use crate::wallets::record::{Authority, WalletKind};
 use crate::wallets::vault::Vault;
 use crate::wallets::vector::{
     winternitz_from_seed, SchemeId, VectorSigner, PROGRAM_ID, XMSS_FORCE_ROTATE_USED, XMSS_LEAVES,
+    XMSS_RECOVERY_FROM, XMSS_RECOVERY_LEAVES,
 };
 use solana_pubkey::Pubkey;
 use std::sync::Arc;
@@ -261,18 +262,32 @@ fn a_mark_file_that_cannot_be_read_stops_signing_and_is_left_as_it_is() {
 }
 
 #[test]
-fn the_last_leaf_signs_and_then_nothing_does() {
-    let mut device = Device::new(XMSS_LEAVES - 1);
+fn the_last_leaf_below_those_kept_for_recovery_signs_and_then_nothing_does() {
+    let last = XMSS_RECOVERY_FROM - 1;
+    let mut device = Device::new(last);
     let account = device.account;
-    device.marks.raise(&account, &KEY, XMSS_LEAVES - 1).unwrap();
-    assert_eq!(device.reserve_rotation(None).unwrap().leaf, XMSS_LEAVES - 1);
+    device.marks.raise(&account, &KEY, last).unwrap();
+    assert_eq!(device.reserve_rotation(None).unwrap().leaf, last);
     let before = device.vault_file.load().unwrap();
-    assert!(matches!(
-        device.reserve_rotation(None),
-        Err(LeafError::Exhausted(label)) if label == "Quantum"
-    ));
+    let marks_before = device.marks_file.load().unwrap();
+    // Not even a rotation gets one of the leaves kept for recovery, on a
+    // device that kept its key.
+    for _ in 0..2 {
+        assert!(matches!(
+            device.reserve_rotation(None),
+            Err(LeafError::KeptForRecovery(label)) if label == "Quantum"
+        ));
+    }
     // Nothing was written by the refusal.
     assert_eq!(device.vault_file.load().unwrap(), before);
+    assert_eq!(device.marks_file.load().unwrap(), marks_before);
+    // Nor when the chain's floor is among them.
+    let mut told = Device::new(0);
+    assert!(matches!(
+        told.reserve_rotation(Some(XMSS_RECOVERY_FROM)),
+        Err(LeafError::KeptForRecovery(_))
+    ));
+    assert_eq!(told.marks.next_leaf(&told.account, &KEY), None);
     // A floor past the end is refused the same way.
     let mut fresh = Device::new(0);
     assert!(matches!(
@@ -380,13 +395,14 @@ fn only_a_held_xmss_key_has_leaves() {
 
 #[test]
 fn a_key_that_replaces_a_used_up_one_starts_at_its_first_leaf() {
-    let mut device = Device::new(XMSS_LEAVES - 1);
+    let last = XMSS_RECOVERY_FROM - 1;
+    let mut device = Device::new(last);
     let account = device.account;
-    device.marks.raise(&account, &KEY, XMSS_LEAVES - 1).unwrap();
-    assert_eq!(device.reserve_rotation(None).unwrap().leaf, XMSS_LEAVES - 1);
+    device.marks.raise(&account, &KEY, last).unwrap();
+    assert_eq!(device.reserve_rotation(None).unwrap().leaf, last);
     assert!(matches!(
         device.reserve_rotation(None),
-        Err(LeafError::Exhausted(_))
+        Err(LeafError::KeptForRecovery(_))
     ));
 
     // The account rotated to another key, and the record was reset with it.
@@ -501,4 +517,153 @@ fn the_nonce_is_where_the_last_signature_was_made_or_one_of_its_digests() {
     assert_eq!(marks.pending_rotation(&account), None);
     assert!(marks.pending_rotations().is_empty());
     assert_eq!(marks.possible_nonces(&account), vec![[5; 32]]);
+}
+
+const PHRASE: &str =
+    "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+
+/// A device the wallet was typed into again from its recovery phrase.
+fn restored_device() -> (Device, Vec<u8>) {
+    let mut device = Device::new(0);
+    let record =
+        WalletRecord::vector_from_phrase("Tree", SchemeId::Xmss, PROGRAM_ID, PHRASE, true).unwrap();
+    device.wallet = record.id;
+    device.account = record.address().unwrap();
+    device
+        .vault
+        .change(|data| data.wallets = vec![record])
+        .unwrap();
+    let key = VectorSigner::from_record(&device.vault.data().unwrap().wallets, device.wallet)
+        .unwrap()
+        .key();
+    (device, key)
+}
+
+#[test]
+fn a_restored_wallet_takes_the_leaves_kept_for_it_from_the_last_one_down() {
+    let (mut device, key) = restored_device();
+    let wallet = device.wallet;
+    let left = |device: &Device| recovery_attempts_left(&device.vault, &device.marks, wallet);
+    assert_eq!(left(&device), Some(XMSS_RECOVERY_LEAVES));
+    let mut given = Vec::new();
+    for _ in 0..XMSS_RECOVERY_LEAVES {
+        let reserved =
+            reserve_recovery_leaf(&device.vault, &mut device.marks, wallet, &key).unwrap();
+        given.push(reserved.leaf);
+        // What is counted is on disk before the leaf is given, and a
+        // restart does not give it again.
+        device.restart();
+    }
+    assert_eq!(given, [255, 254, 253, 252]);
+    assert_eq!(given.last(), Some(&XMSS_RECOVERY_FROM));
+    assert_eq!(left(&device), Some(0));
+    let marks_before = device.marks_file.load().unwrap();
+    assert!(matches!(
+        reserve_recovery_leaf(&device.vault, &mut device.marks, wallet, &key),
+        Err(LeafError::RecoverySpent(label)) if label == "Tree"
+    ));
+    assert_eq!(device.marks_file.load().unwrap(), marks_before);
+    // The leaves it may not use otherwise stay refused too.
+    assert!(matches!(
+        reserve_leaf(
+            &mut device.vault,
+            &mut device.marks,
+            wallet,
+            &key,
+            Some(XMSS_RECOVERY_FROM),
+            LeafFor::Rotation
+        ),
+        Err(LeafError::KeptForRecovery(_))
+    ));
+}
+
+#[test]
+fn a_leaf_kept_for_recovery_is_given_only_above_what_the_chain_has_seen() {
+    let (mut device, key) = restored_device();
+    let (wallet, account) = (device.wallet, device.account);
+    // The chain says leaf 253 has signed: only the two above it are left.
+    device.marks.raise(&account, &key, 254).unwrap();
+    assert_eq!(
+        recovery_attempts_left(&device.vault, &device.marks, wallet),
+        Some(2)
+    );
+    for expected in [255, 254] {
+        let reserved =
+            reserve_recovery_leaf(&device.vault, &mut device.marks, wallet, &key).unwrap();
+        assert_eq!(reserved.leaf, expected);
+    }
+    assert_eq!(
+        recovery_attempts_left(&device.vault, &device.marks, wallet),
+        Some(0)
+    );
+    assert!(matches!(
+        reserve_recovery_leaf(&device.vault, &mut device.marks, wallet, &key),
+        Err(LeafError::RecoverySpent(_))
+    ));
+    // A build before this one signed a restored wallet's rotation with the
+    // last leaf and marked the whole key used: nothing is given after it.
+    let (mut earlier, key) = restored_device();
+    let account = earlier.account;
+    earlier.marks.raise(&account, &key, XMSS_LEAVES).unwrap();
+    assert_eq!(
+        recovery_attempts_left(&earlier.vault, &earlier.marks, earlier.wallet),
+        Some(0)
+    );
+    assert!(matches!(
+        reserve_recovery_leaf(&earlier.vault, &mut earlier.marks, earlier.wallet, &key),
+        Err(LeafError::RecoverySpent(_))
+    ));
+}
+
+#[test]
+fn only_a_restored_wallet_gets_a_leaf_kept_for_recovery() {
+    let mut device = Device::new(0);
+    assert_eq!(
+        recovery_attempts_left(&device.vault, &device.marks, device.wallet),
+        None
+    );
+    let before = device.marks_file.load().unwrap();
+    assert!(matches!(
+        reserve_recovery_leaf(&device.vault, &mut device.marks, device.wallet, &KEY),
+        Err(LeafError::NotStateful(_))
+    ));
+    assert_eq!(device.marks_file.load().unwrap(), before);
+    assert!(matches!(
+        reserve_recovery_leaf(&device.vault, &mut device.marks, WalletId::new(), &KEY),
+        Err(LeafError::NoWallet)
+    ));
+}
+
+#[test]
+fn what_a_key_used_of_its_recovery_leaves_outlives_its_rotation() {
+    let (mut device, key) = restored_device();
+    let (wallet, account) = (device.wallet, device.account);
+    reserve_recovery_leaf(&device.vault, &mut device.marks, wallet, &key).unwrap();
+    // The rotation it signed is recorded, kept and then settled, as when a
+    // note says it landed. Told later that the account holds this key
+    // after all, the leaf it used is still counted.
+    let (next, nonce, digest) = ([9u8; 41], [1u8; 32], [2u8; 32]);
+    device
+        .marks
+        .note_rotation(&account, &next, &[digest])
+        .unwrap();
+    device
+        .marks
+        .keep_rotation_signature(&account, &next, &nonce, &[5; 8])
+        .unwrap();
+    let kept = device.marks.kept_rotation(&account).unwrap();
+    assert_eq!(kept.next_key, next);
+    assert_eq!(kept.signed.len(), 1);
+    assert_eq!(kept.signed[0].nonce, nonce);
+    assert_eq!(device.marks.kept_rotations(), vec![kept]);
+    device.marks.settle_rotation(&account, &digest).unwrap();
+    assert_eq!(device.marks.kept_rotation(&account), None);
+    device.restart();
+    assert_eq!(device.marks.recovery_used(&account, &key), 1);
+    assert_eq!(
+        reserve_recovery_leaf(&device.vault, &mut device.marks, wallet, &key)
+            .unwrap()
+            .leaf,
+        XMSS_LEAVES - 2
+    );
 }

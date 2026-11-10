@@ -35,7 +35,7 @@ use super::held::local_vector_keys;
 use crate::error::VaultError;
 use crate::ids::WalletId;
 use crate::keys::signer::WalletSigner;
-use crate::transport::protocol::MAX_ROTATION_NONCES;
+use crate::transport::protocol::{KeyRotation, RotationSignature, MAX_ROTATION_NONCES};
 use crate::wallets::record::{Authority, Protocol, WalletKind, WalletRecord};
 use crate::wallets::relay::{
     refuse_handover, sign_authorizations_in, to_sign_now, AuthContext, VectorContext,
@@ -43,7 +43,7 @@ use crate::wallets::relay::{
 use crate::wallets::vault::Vault;
 use crate::wallets::vector::{
     seed, SchemeId, VectorKey, VectorSigner, XmssRetryCache, XMSS_FORCE_ROTATE_USED, XMSS_LEAVES,
-    XMSS_SALT_LEN,
+    XMSS_RECOVERY_FROM, XMSS_RECOVERY_LEAVES, XMSS_SALT_LEN,
 };
 use serde::{Deserialize, Serialize};
 use solana_pubkey::Pubkey;
@@ -78,8 +78,9 @@ pub enum LeafFor {
 }
 
 // A rotation may sign at every nonce it may be at, one leaf each, and the
-// leaves kept for it have to cover that.
-const _: () = assert!((XMSS_LEAVES - XMSS_FORCE_ROTATE_USED) as usize >= MAX_ROTATION_NONCES);
+// leaves kept for it, below those kept for recovery, have to cover that.
+const _: () =
+    assert!((XMSS_RECOVERY_FROM - XMSS_FORCE_ROTATE_USED) as usize >= MAX_ROTATION_NONCES);
 
 /// The marks as stored, each under its account and the hash of its key.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -98,6 +99,12 @@ struct Marks {
     /// landed, by address.
     #[serde(default)]
     rotations: BTreeMap<String, Rotation>,
+    /// XMSS: how many of the leaves kept for recovery a key has signed
+    /// with here, by account and key as `leaves` is. It only rises, and
+    /// stays when the rotation it signed is settled or replaced: the key
+    /// may come back, and its leaves are as used as they were.
+    #[serde(default)]
+    recovery: BTreeMap<String, u32>,
 }
 
 /// The nonces an account may be at: the one this device last signed at, and
@@ -183,6 +190,65 @@ impl<S: VaultStore> LeafMarks<S> {
         let mark = self.marks.leaves.entry(mark_id(account, key)).or_insert(0);
         *mark = (*mark).max(next);
         self.save()
+    }
+
+    /// How many of the leaves kept for recovery `key` has signed with here.
+    pub fn recovery_used(&self, account: &Pubkey, key: &[u8]) -> u32 {
+        self.marks
+            .recovery
+            .get(&mark_id(account, key))
+            .copied()
+            .unwrap_or(0)
+    }
+
+    /// Count one more of the leaves kept for recovery as used by `key`, and
+    /// save. When the save fails it stays counted in memory.
+    fn spend_recovery(&mut self, account: &Pubkey, key: &[u8]) -> Result<(), VaultError> {
+        let used = self
+            .marks
+            .recovery
+            .entry(mark_id(account, key))
+            .or_insert(0);
+        *used = used.saturating_add(1);
+        self.save()
+    }
+
+    /// The rotation of `account` signed here that may not have landed, with
+    /// every signature kept of it, for showing again. Nothing is signed.
+    /// `None` when there is none, or it was only recorded and never signed.
+    pub fn kept_rotation(&self, account: &Pubkey) -> Option<KeyRotation> {
+        let rotation = self.marks.rotations.get(&account.to_string())?;
+        let mut signed: Vec<RotationSignature> = rotation
+            .signed
+            .iter()
+            .filter_map(|signed| {
+                Some(RotationSignature {
+                    nonce: unhex(&signed.nonce)?,
+                    signature: hex::decode(&signed.signature).ok()?,
+                })
+            })
+            .collect();
+        if signed.is_empty() {
+            return None;
+        }
+        // The newest are the ones the account may still be at.
+        let over = signed.len().saturating_sub(MAX_ROTATION_NONCES);
+        signed.drain(..over);
+        Some(KeyRotation {
+            account: account.to_bytes(),
+            scheme: SchemeId::Xmss.byte(),
+            next_key: hex::decode(&rotation.next_key).ok()?,
+            signed,
+        })
+    }
+
+    /// Every rotation [`Self::kept_rotation`] would show.
+    pub fn kept_rotations(&self) -> Vec<KeyRotation> {
+        self.marks
+            .rotations
+            .keys()
+            .filter_map(|account| self.kept_rotation(&account.parse().ok()?))
+            .collect()
     }
 
     /// The salt `key` signs `digest` with: the one recorded, when it is this
@@ -482,6 +548,12 @@ pub enum LeafError {
     RestoredMustRotate(String),
     #[error("{0} has used all but the last few leaves of its key. Those are kept for moving to its next key, so it signs nothing else: Rotate key on its row.")]
     MustRotate(String),
+    #[error("{0} has signed with every leaf of its key that this device may use. The last {XMSS_RECOVERY_LEAVES} are kept for a wallet restored from its recovery phrase. If a rotation signed here is still waiting, send it again. Otherwise add the wallet again from its recovery phrase on a device that has never held it, and rotate from there.")]
+    KeptForRecovery(String),
+    #[error("{0} has used every leaf kept for recovering it, or the chain says they are used. Signing again would use a leaf twice, which gives the key away, so nothing more is signed for it here. If the account is still at a nonce a rotation was signed at, send that rotation again.")]
+    RecoverySpent(String),
+    #[error("The other device says the account of {label} has used {floor} leaves of its key, and a key has only {XMSS_LEAVES}. Nothing was taken from it.")]
+    FloorPastKey { label: String, floor: u32 },
     #[error("The other device says {label} has used {floor} leaves of its key, and this device has used {own}. Either another copy of the key has signed, or the other device is wrong. Nothing was signed or recorded. To take its word for it, scan the account state from it, then try again.")]
     FloorPastOwnCount { label: String, floor: u32, own: u32 },
     #[error("{0}")]
@@ -540,7 +612,8 @@ pub fn reserve<V: VaultStore, M: VaultStore>(
 /// The leaf is the highest of the record's `next_leaf`, the key's mark, and
 /// the account's `next_leaf` on chain when it is known. Both counters are
 /// moved past it and saved before this returns it. Past
-/// [`XMSS_FORCE_ROTATE_USED`] only a [`LeafFor::Rotation`] gets a leaf, and
+/// [`XMSS_FORCE_ROTATE_USED`] only a [`LeafFor::Rotation`] gets a leaf, from
+/// [`XMSS_RECOVERY_FROM`] nothing does (see [`reserve_recovery_leaf`]), and
 /// a refusal records nothing.
 pub fn reserve_leaf<V: VaultStore, M: VaultStore>(
     vault: &mut Vault<V>,
@@ -589,6 +662,9 @@ pub fn reserve_leaf<V: VaultStore, M: VaultStore>(
     if purpose == LeafFor::Other && leaf >= XMSS_FORCE_ROTATE_USED {
         return Err(LeafError::MustRotate(label));
     }
+    if leaf >= XMSS_RECOVERY_FROM {
+        return Err(LeafError::KeptForRecovery(label));
+    }
 
     marks
         .raise(&account, key, leaf + 1)
@@ -601,6 +677,80 @@ pub fn reserve_leaf<V: VaultStore, M: VaultStore>(
         leaf,
         salt: None,
         skipped,
+    })
+}
+
+/// How many more times `wallet`, restored from its recovery phrase, can
+/// sign the move to its next key: one leaf kept for recovery each, from the
+/// last one down, as far as the lowest leaf the chain still accepts. `None`
+/// when the wallet is not a restored XMSS one.
+pub fn recovery_attempts_left<V: VaultStore, M: VaultStore>(
+    vault: &Vault<V>,
+    marks: &LeafMarks<M>,
+    wallet: WalletId,
+) -> Option<u32> {
+    let data = vault.data().ok()?;
+    let record = data.wallets.iter().find(|record| record.id == wallet)?;
+    if !record.vector_phrase().is_some_and(|phrase| phrase.restored) {
+        return None;
+    }
+    let account = record.address()?;
+    let key = VectorSigner::from_record(&data.wallets, wallet).ok()?.key();
+    let used = marks.recovery_used(&account, &key);
+    let floor = own_count(record, marks, &account, &key);
+    // Leaves from `floor` up are still good, and those from the top down
+    // to `XMSS_LEAVES - used` are spent.
+    let good = XMSS_LEAVES.saturating_sub(floor.max(XMSS_RECOVERY_FROM));
+    Some(good.saturating_sub(used))
+}
+
+/// Reserve the next leaf kept for recovery of `wallet`'s XMSS key `key`,
+/// before it signs: the last leaf of the key first, then the one below it.
+///
+/// Only a wallet restored from its recovery phrase gets one. A copy of the
+/// key that was lost took its leaves in rising order and never reached
+/// these ([`reserve_leaf`]), so they are the ones it cannot have used. Each
+/// attempt at moving the account on takes one: when the account's nonce
+/// moved before a rotation landed, the next attempt signs with the leaf
+/// below. A leaf under the lowest one the chain still accepts is not
+/// given, and neither is a fifth.
+pub fn reserve_recovery_leaf<V: VaultStore, M: VaultStore>(
+    vault: &Vault<V>,
+    marks: &mut LeafMarks<M>,
+    wallet: WalletId,
+    key: &[u8],
+) -> Result<Reserved, LeafError> {
+    let data = vault.data().map_err(|_| LeafError::Locked)?;
+    let record = data
+        .wallets
+        .iter()
+        .find(|record| record.id == wallet)
+        .ok_or(LeafError::NoWallet)?;
+    let label = record.label.clone();
+    let restored = record.vector_phrase().is_some_and(|phrase| phrase.restored);
+    let xmss = record
+        .kind
+        .vector_settings()
+        .is_some_and(|settings| settings.scheme == SchemeId::Xmss);
+    let (Some(account), true, true) = (record.address(), restored, xmss) else {
+        return Err(LeafError::NotStateful(label));
+    };
+    let used = marks.recovery_used(&account, key);
+    if used >= XMSS_RECOVERY_LEAVES {
+        return Err(LeafError::RecoverySpent(label));
+    }
+    let leaf = XMSS_LEAVES - 1 - used;
+    // What the chain has seen, or a build before this one signed with.
+    if leaf < own_count(record, marks, &account, key) {
+        return Err(LeafError::RecoverySpent(label));
+    }
+    marks
+        .spend_recovery(&account, key)
+        .map_err(LeafError::Mark)?;
+    Ok(Reserved {
+        leaf,
+        salt: None,
+        skipped: false,
     })
 }
 
