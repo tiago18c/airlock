@@ -1725,6 +1725,116 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   .ab-holding-amount { margin-left: auto; white-space: nowrap; }
 }
 
+/* Address Book on a phone. The header is one line where it fits: the title,
+   Add address and the three lines, which open a sheet with Refresh from
+   chain, Export and Import. The kind chips are one row that scrolls
+   sideways, running to the screen's edges so a cut chip says there is
+   more. Every entry has one shape: the name over its kind line with the
+   balance beside it, then the address shortened to one line, and copy and
+   the three dots in two fixed columns at the right edge, so they sit at
+   the same x on every row and each is a full touch target. */
+.app.phone .ab-head { align-items: center; }
+.app.phone .ab-head > :first-child { flex: 1 1 auto; min-width: 0; }
+.app.phone .ab-head > .btn-row { width: auto; flex-wrap: nowrap; }
+.app.phone .ab-head > .btn-row > button { flex: none; }
+.app.phone .ab-head > .btn-row > .icon-btn { width: var(--control-lg); min-width: var(--control-lg); }
+.app.phone .ab-chips {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  margin-inline: calc(-1 * var(--space-4));
+  padding-inline: var(--space-4);
+  scrollbar-width: none;
+}
+.app.phone .ab-chips::-webkit-scrollbar { display: none; }
+.app.phone .ab-chips > .tab { flex: none; white-space: nowrap; }
+.app.phone .ab-row {
+  grid-template-columns:
+    var(--control-sm) minmax(0, 1fr) max-content var(--control-lg) var(--control-lg);
+  grid-template-areas:
+    "icon name balance balance balance"
+    ". address address copy actions"
+    "holdings holdings holdings holdings holdings";
+  column-gap: var(--space-2);
+  row-gap: var(--space-1);
+  align-items: start;
+  padding: var(--space-3) var(--space-2) var(--space-2) var(--space-4);
+}
+/* Nothing to weigh: the name takes the balance's room too. */
+.app.phone .ab-row.ab-unweighed > .ab-name { grid-column: 2 / -1; }
+.app.phone .ab-address { align-self: center; }
+.app.phone .ab-address .addr-short { color: var(--text-2); }
+/* The name's line already marks a name used twice. */
+.app.phone .ab-address .addr-alert { display: none; }
+/* Full targets that take only the address's own line: they reach over
+   the row's gaps, so the name and address read as one block. */
+.app.phone .ab-copy .copy-btn,
+.app.phone .ab-actions > .ab-more {
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+  min-height: var(--control-lg);
+  margin-block: calc(-1 * var(--space-2));
+}
+.app.phone .ab-actions > .ab-more { color: var(--text-2); }
+.app.phone .ab-actions > .ab-more .icon { width: 20px; height: 20px; stroke-width: 3; }
+/* An owner's token accounts toggle on a line of its own under the kind
+   line, its target as tall as a finger without making the line so. */
+.app.phone .ab-holdings-more { display: flex; }
+.app.phone .ab-holdings-toggle {
+  min-height: var(--control-lg);
+  margin-block: calc(-1 * var(--space-3));
+}
+/* The token accounts take the row's whole width. Each is two lines: the
+   token and its flag with the amount at the right, then the account's
+   short address and copy, under the name; the "…" spans both at the end. */
+.app.phone .ab-holdings .holding-list { margin-left: 0; padding-left: var(--space-3); }
+.app.phone .ab-holdings .holding-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content var(--control-lg);
+  grid-template-areas:
+    "token amount more"
+    "account account more";
+  column-gap: var(--space-2);
+  row-gap: 0;
+  align-items: center;
+  padding: var(--space-2) 0;
+}
+.app.phone .ab-holding-token { grid-area: token; overflow: hidden; }
+.app.phone .ab-holding-mint { flex-wrap: nowrap; }
+.app.phone .ab-holding-mint .addr-short { color: var(--text-2); }
+.app.phone .ab-holding-amount { grid-area: amount; margin-left: 0; }
+.app.phone .ab-holding-account {
+  grid-area: account;
+  padding-left: calc(22px + var(--space-2));
+}
+.app.phone .ab-holding-account .copy-btn {
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+  min-height: var(--control-lg);
+  margin-block: calc(-1 * var(--space-2));
+}
+.app.phone .ab-holding-more {
+  grid-area: more;
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+  min-height: var(--control-lg);
+  color: var(--text-2);
+}
+.app.phone .ab-holding-more .icon { width: 20px; height: 20px; stroke-width: 3; }
+.app.phone .ab-flag-mark { display: inline-grid; flex: none; }
+.app.phone .ab-flag-mark .icon { width: 14px; height: 14px; }
+/* A flag's choice in the sheet: the flag in its colour, the action, and
+   what the flag means under it. */
+.app.phone .ab-flag-item { align-items: flex-start; padding-block: var(--space-2); }
+.app.phone .ab-flag-item .flag { display: inline-grid; margin-top: 2px; }
+.app.phone .ab-flag-item .flag.white .icon { color: var(--text-2); }
+.app.phone .ab-flag-item .flag.red .icon { color: var(--danger-solid); }
+.app.phone .ab-flag-text { display: grid; gap: 2px; min-width: 0; }
+.app.phone .ab-flag-means {
+  color: var(--text-3);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+}
+
 .derive-list {
   list-style: none;
   display: grid;

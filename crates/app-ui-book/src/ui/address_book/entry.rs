@@ -288,9 +288,60 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
         Some(name) => format!("Remove {name}"),
         None => "Remove".to_string(),
     };
+    // On a phone every row has one shape: the name over its kind line, the
+    // balance beside it when there is one, then the address shortened to one
+    // line with copy and the three dots at the right edge, where they are on
+    // every row. A row with nothing to weigh draws nothing there rather than
+    // a dash, and its name takes the room. The three dots open a bottom
+    // sheet titled with the entry's name, as a wallet card's do.
+    let phone = crate::ui::use_phone_layout();
+    let mut sheet_open = use_signal(|| false);
+    let weighed = has_balance || token_amount.is_some();
+    let row_class = if phone && !weighed {
+        "ab-row ab-unweighed"
+    } else {
+        "ab-row"
+    };
+    let sheet_title = name.clone().unwrap_or_else(|| "No name".to_string());
+    let (item_class, item_role) = if phone {
+        ("more-item", None)
+    } else {
+        ("pane-menu-item", Some("menuitem"))
+    };
+    let row_actions = rsx! {
+        button { class: item_class,
+            role: item_role,
+            title: "{edit_title}",
+            onclick: move |_| {
+                pubkey_field.set(pubkey.to_string());
+                label_field.set(label.clone());
+                tags_field.set(tags_csv.clone());
+                error.set(None);
+                editing.set(Some(pubkey));
+                editing_group.set(edit_group.clone());
+                modal_open.set(true);
+            },
+            Icon { glyph: Glyph::Pencil }
+            "Edit"
+        }
+        if can_remove {
+            button { class: "{item_class} danger",
+                role: item_role,
+                title: "{remove_title}",
+                onclick: move |_| {
+                    let group = remove_group.clone();
+                    session.edit_workspace(|ws| {
+                        ws.book.remove_in(&group, &pubkey);
+                    });
+                },
+                Icon { glyph: Glyph::Trash }
+                "Remove"
+            }
+        }
+    };
 
     rsx! {
-        li { class: "ab-row",
+        li { class: row_class,
             match token_mark {
                 Some((mint, Some(token))) => rsx! {
                     TokenAvatar { mint, name: token, class: "ab-badge", title: category.name() }
@@ -330,17 +381,32 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                             "{what}"
                         }
                         if has_holdings {
+                            // On a phone the toggle takes a line of its own,
+                            // so no separator is left to start it.
                             HoldingsToggle {
                                 owner: pubkey,
                                 open: holdings_open,
-                                alone: what.is_none(),
+                                alone: what.is_none() || phone,
                             }
                         }
                     }
                 }
             }
             div { class: "ab-address",
-                code { class: "mono", title: "{address}", "{address}" }
+                if phone {
+                    // Shortened in the middle, so both ends show; the copy
+                    // button beside it still copies the whole address.
+                    AddressRow {
+                        pubkey,
+                        no_copy: true,
+                        no_label: true,
+                        no_icon: true,
+                        no_card: true,
+                        class: "ab-short",
+                    }
+                } else {
+                    code { class: "mono", title: "{address}", "{address}" }
+                }
                 if let Some(hash) = entry.nonce_hash {
                     p { class: "ab-nonce mono", title: "nonce {hash}", "nonce {hash}" }
                 }
@@ -348,57 +414,46 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
             div { class: "ab-copy",
                 CopyButton { text: address.clone() }
             }
-            div { class: "ab-balance",
-                if let Some(lamports) = entry.lamports {
-                    p { class: "balance", "{format_sol(lamports)}" }
-                }
-                if let Some(amount) = token_amount.as_ref() {
-                    p { class: "balance", "{amount}" }
-                }
-                // Nothing to weigh: a dash, so the column does not read as
-                // missing data. A balance of zero still says "0 SOL".
-                if !has_balance && token_amount.is_none() {
-                    p { class: "ab-no-balance",
-                        span { aria_hidden: "true", "–" }
-                        span { class: "sr-only", "No balance" }
+            if !phone || weighed {
+                div { class: "ab-balance",
+                    if let Some(lamports) = entry.lamports {
+                        p { class: "balance", "{format_sol(lamports)}" }
+                    }
+                    if let Some(amount) = token_amount.as_ref() {
+                        p { class: "balance", "{amount}" }
+                    }
+                    // Nothing to weigh: a dash, so the column does not read
+                    // as missing data. A balance of zero still says "0 SOL".
+                    if !weighed {
+                        p { class: "ab-no-balance",
+                            span { aria_hidden: "true", "–" }
+                            span { class: "sr-only", "No balance" }
+                        }
                     }
                 }
             }
             div { class: "ab-actions",
-                PaneMenu { label: "More actions", glyph: Glyph::More, small: true,
-                    button { class: "pane-menu-item",
-                        role: "menuitem",
-                        title: "{edit_title}",
-                        onclick: move |_| {
-                            pubkey_field.set(pubkey.to_string());
-                            label_field.set(label.clone());
-                            tags_field.set(tags_csv.clone());
-                            error.set(None);
-                            editing.set(Some(pubkey));
-                            editing_group.set(edit_group.clone());
-                            modal_open.set(true);
-                        },
-                        Icon { glyph: Glyph::Pencil }
-                        "Edit"
+                if phone {
+                    button { class: "ghost icon-btn ab-more",
+                        title: "More actions",
+                        aria_label: "More actions",
+                        aria_haspopup: "dialog",
+                        onclick: move |_| sheet_open.set(true),
+                        Icon { glyph: Glyph::More }
                     }
-                    if can_remove {
-                        button { class: "pane-menu-item danger",
-                            role: "menuitem",
-                            title: "{remove_title}",
-                            onclick: move |_| {
-                                let group = remove_group.clone();
-                                session.edit_workspace(|ws| {
-                                    ws.book.remove_in(&group, &pubkey);
-                                });
-                            },
-                            Icon { glyph: Glyph::Trash }
-                            "Remove"
-                        }
+                } else {
+                    PaneMenu { label: "More actions", glyph: Glyph::More, small: true,
+                        {row_actions.clone()}
                     }
                 }
             }
             if owns_tokens {
                 OwnerHoldings { owner: pubkey, open: holdings_open }
+            }
+        }
+        if phone {
+            ActionSheet { open: sheet_open, title: sheet_title.clone(), label: "Actions of {sheet_title}",
+                {row_actions}
             }
         }
     }
