@@ -7,7 +7,7 @@ use wallet_core::explorer;
 use crate::actions::unix_now;
 use crate::state::session::Session;
 use crate::ui::local_time;
-use crate::ui::{tx_status_chip, CopyButton, Glyph, Icon};
+use crate::ui::{tx_status_chip, use_phone_layout, CopyButton, Glyph, Icon, PhoneSheet};
 
 /// Filter chips in the notification panel.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -51,6 +51,7 @@ pub fn NoticeBell() -> Element {
     let notices = (session.notices)();
     let unread = notices.unread_count();
     let open = (session.notices_open)();
+    let phone = use_phone_layout();
     let badge = if unread > 99 {
         "99+".to_string()
     } else if unread > 0 {
@@ -84,16 +85,42 @@ pub fn NoticeBell() -> Element {
                     span { class: "notice-badge", "{badge}" }
                 }
             }
-            if open {
-                NoticesPanel {}
+            // On a phone the panel is a bottom sheet over a scrim, as the
+            // wallet picker and More are: floating under the bell, it left
+            // the pane's numbers showing around it.
+            if open && phone {
+                PhoneSheet {
+                    label: "Notifications",
+                    class: "notice-panel",
+                    on_close: move |_| session.close_notices(),
+                    NoticesBody {}
+                }
+            } else if open {
+                // `data-drag: false`: they sit inside the top bar, but a
+                // click on them is not a window move.
+                div {
+                    class: "notice-backdrop",
+                    "data-drag": "false",
+                    onclick: move |_| session.close_notices(),
+                }
+                div {
+                    class: "notice-panel",
+                    "data-drag": "false",
+                    role: "dialog",
+                    aria_label: "Notifications",
+                    onclick: move |e| e.stop_propagation(),
+                    NoticesBody {}
+                }
             }
         }
     }
 }
 
+/// What the panel holds: its head, the filters and the notices.
 #[component]
-fn NoticesPanel() -> Element {
+fn NoticesBody() -> Element {
     let session = use_context::<Session>();
+    let phone = use_phone_layout();
     let mut filter = use_signal(|| NoticeFilter::All);
     let notices = (session.notices)();
     let focus = (session.notices_focus)();
@@ -107,69 +134,68 @@ fn NoticesPanel() -> Element {
         .collect();
     let groups = group_by_day(&items, now);
     let unread = notices.unread_count();
+    let empty = notices.is_empty();
+    // A phone has no room for an action with nothing to act on, so it
+    // leaves one out rather than showing it greyed.
+    let show_mark = !phone || unread > 0;
+    // Clear keeps a transaction still in flight, so with only those left
+    // it has nothing to act on.
+    let show_clear = !phone || notices.items().iter().any(|n| !n.pinned());
 
     rsx! {
-        // `data-drag: false`: they sit inside the top bar, but a click on
-        // them is not a window move.
-        div {
-            class: "notice-backdrop",
-            "data-drag": "false",
-            onclick: move |_| session.close_notices(),
-        }
-        div {
-            class: "notice-panel",
-            "data-drag": "false",
-            role: "dialog",
-            aria_label: "Notifications",
-            onclick: move |e| e.stop_propagation(),
-            div { class: "notice-panel-head",
-                h2 { "Notifications" }
+        div { class: "notice-panel-head",
+            h2 { "Notifications" }
+            if show_mark || show_clear {
                 div { class: "btn-row",
-                    button {
-                        class: "ghost sm",
-                        r#type: "button",
-                        disabled: unread == 0,
-                        onclick: move |_| session.notices_mark_all_read(),
-                        "Mark all read"
+                    if show_mark {
+                        button {
+                            class: "ghost sm",
+                            r#type: "button",
+                            disabled: unread == 0,
+                            onclick: move |_| session.notices_mark_all_read(),
+                            "Mark all read"
+                        }
                     }
-                    button {
-                        class: "ghost sm",
-                        r#type: "button",
-                        disabled: notices.is_empty(),
-                        onclick: move |_| session.notices_clear(),
-                        "Clear"
-                    }
-                }
-            }
-            div { class: "segmented notice-filters", role: "group", aria_label: "Filter",
-                for option in [
-                    NoticeFilter::All,
-                    NoticeFilter::Transactions,
-                    NoticeFilter::Browser,
-                    NoticeFilter::Other,
-                ] {
-                    button {
-                        class: if filter() == option { "tab on" } else { "tab" },
-                        r#type: "button",
-                        key: "{option.label()}",
-                        onclick: move |_| filter.set(option),
-                        "{option.label()}"
+                    if show_clear {
+                        button {
+                            class: "ghost sm",
+                            r#type: "button",
+                            disabled: empty,
+                            onclick: move |_| session.notices_clear(),
+                            "Clear"
+                        }
                     }
                 }
             }
-            div { class: "notice-list",
-                if groups.is_empty() {
-                    p { class: "muted notice-empty", "No notifications yet." }
-                } else {
-                    for (day_label, day_items) in groups {
-                        div { class: "notice-day", key: "{day_label}",
-                            h3 { class: "notice-day-label", "{day_label}" }
-                            for notice in day_items {
-                                NoticeRow {
-                                    key: "{notice.id}",
-                                    focused: focus == Some(notice.id),
-                                    notice,
-                                }
+        }
+        div { class: "segmented notice-filters", role: "group", aria_label: "Filter",
+            for option in [
+                NoticeFilter::All,
+                NoticeFilter::Transactions,
+                NoticeFilter::Browser,
+                NoticeFilter::Other,
+            ] {
+                button {
+                    class: if filter() == option { "tab on" } else { "tab" },
+                    r#type: "button",
+                    key: "{option.label()}",
+                    onclick: move |_| filter.set(option),
+                    "{option.label()}"
+                }
+            }
+        }
+        div { class: "notice-list",
+            if groups.is_empty() {
+                p { class: "muted notice-empty", "No notifications yet." }
+            } else {
+                for (day_label, day_items) in groups {
+                    div { class: "notice-day", key: "{day_label}",
+                        h3 { class: "notice-day-label", "{day_label}" }
+                        for notice in day_items {
+                            NoticeRow {
+                                key: "{notice.id}",
+                                focused: focus == Some(notice.id),
+                                notice,
                             }
                         }
                     }

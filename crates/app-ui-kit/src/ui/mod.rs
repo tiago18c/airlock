@@ -27,7 +27,7 @@ pub use icons::{Glyph, Icon};
 pub use inspect::AccountInspector;
 pub use lock::{FingerprintOffer, LockScreen, UnlockPrompt, VaultUnlock};
 pub use pane_menu::PaneMenu;
-pub use phone::{use_phone_layout, PhoneLayout};
+pub use phone::{use_phone_layout, PhoneLayout, PhoneSheet};
 pub use theme::ThemeToggle;
 pub use wallet_picker::WalletPicker;
 

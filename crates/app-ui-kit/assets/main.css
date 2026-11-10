@@ -3974,29 +3974,113 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
 .app.phone .topbar { padding-top: env(safe-area-inset-top); }
 .app.phone.locked .content { padding-top: max(var(--space-4), env(safe-area-inset-top)); }
 
-/* More: a sheet above the tab bar, over a backdrop that closes it. */
-.more-backdrop {
+/* A phone's sheets (`PhoneSheet`): the wallet picker, the notifications and
+   More. One family: the same scrim over everything else, the dialog's
+   radius, and flush on the tab bar, whose height the shell measures into
+   --dock-h (the status line above the tabs counts). */
+.app.phone .phone-scrim {
   position: fixed;
   inset: 0;
-  z-index: var(--z-nav);
+  z-index: var(--z-popover);
   background: var(--overlay);
   animation: fade var(--slow) var(--ease);
 }
-.more-sheet {
+.app.phone .phone-sheet {
   position: fixed;
-  left: var(--space-2);
-  right: var(--space-2);
-  bottom: calc(var(--tabbar-h) + max(var(--space-1), env(safe-area-inset-bottom)) + var(--space-2));
-  z-index: calc(var(--z-nav) + 1);
+  top: auto;
+  left: 0;
+  right: 0;
+  bottom: var(--dock-h, 0px);
+  z-index: calc(var(--z-popover) + 1);
   display: grid;
+  align-content: start;
   gap: var(--space-1);
-  padding: var(--space-2);
+  width: auto;
+  max-height: calc(100vh - var(--dock-h, 0px) - var(--topbar-h) - env(safe-area-inset-top));
+  overflow: auto;
+  padding: var(--space-3);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-width: 1px 0 0;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   background: var(--surface);
   box-shadow: var(--shadow-lg);
   animation: rise var(--slow) var(--ease);
 }
+/* Locked, there is no tab bar: the sheet keeps clear of the gesture bar. */
+.app.phone.locked .phone-sheet { padding-bottom: max(var(--space-3), env(safe-area-inset-bottom)); }
+/* The sticky top bar is a layer under the tab bar's, so a sheet it opens
+   lifts it: its scrim then covers the tab bar too, as More's does, and a tap
+   there closes the sheet. */
+.app.phone .topbar:has(.phone-scrim) { z-index: var(--z-popover); }
+.phone-sheet-title {
+  margin: 0;
+  padding: var(--space-1) var(--space-3) var(--space-2);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+/* The notifications keep their own spacing; the list scrolls, not the sheet. */
+.app.phone .phone-sheet.notice-panel { gap: var(--space-3); padding: var(--space-4); overflow: hidden; }
+.app.phone .phone-sheet.notice-panel .notice-filters { flex-wrap: nowrap; overflow-x: auto; }
+
+/* The wallet picker's sheet: a row per wallet, picked by its button, with
+   its copy button beside it. The current one is marked as More marks its
+   section, and with the chip its card has. */
+.wallet-sheet-list { display: grid; gap: var(--space-1); }
+.wallet-sheet-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding-right: var(--space-1);
+  border-radius: var(--radius-lg);
+}
+.wallet-sheet-row.on { background: var(--brand-soft); }
+.wallet-sheet-pick {
+  flex: 1;
+  min-width: 0;
+  justify-content: flex-start;
+  min-height: var(--control-lg);
+  padding: 0 var(--space-3);
+  border: 0;
+  background: none;
+  text-align: left;
+}
+.wallet-sheet-pick > .addr-row,
+.wallet-switch-btn > .addr-row,
+.wallet-sheet-pick .addr-row-main,
+.wallet-switch-btn .addr-row-main { flex: 0 1 auto; min-width: 0; }
+.wallet-sheet-pick .addr-row-rest:empty,
+.wallet-switch-btn .addr-row-rest:empty { display: none; }
+.wallet-sheet-pick .addr-label,
+.wallet-switch-btn .addr-label { white-space: nowrap; }
+.wallet-sheet-pick .addr-short,
+.wallet-switch-btn .addr-short { flex-shrink: 0; }
+.wallet-sheet-pick .chip { margin-left: auto; flex-shrink: 0; }
+
+/* The picker's button in the top bar takes the room the bar has left, and
+   shows the address only where it fits beside the name: not beside the
+   Locked button, which takes its room. */
+.app.phone .topbar-tools { flex: 1; }
+.app.phone .topbar-tools > .wallet-switch-btn {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+  container-type: inline-size;
+}
+@container (max-width: 13rem) {
+  .wallet-switch-btn .addr-short { display: none; }
+}
+
+/* The lock, on a phone: unlocked is the usual state, a quiet icon like the
+   bell. Locked is the one to notice, by more than colour: a filled warning
+   tint and the word. */
+.app.phone .lock-toggle.locked {
+  gap: var(--space-1);
+  background: var(--warn-soft);
+  border-color: var(--warn-line);
+  color: var(--warn-text);
+  font-weight: var(--weight-semibold);
+}
+.app.phone .lock-toggle.locked .icon { width: 16px; height: 16px; }
 .more-item {
   display: flex;
   align-items: center;

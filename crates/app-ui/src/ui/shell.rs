@@ -5,9 +5,9 @@
 
 use crate::state::session::{Session, Tab};
 use crate::ui::{
-    AccountInspector, AddressBookPanel, BuildPanel, DeviceDialog, FingerprintOffer, Glyph, Icon,
-    LockScreen, PhoneLayout, ProgramsPanel, SettingsPanel, SignPanel, ThemeToggle, UnlockPrompt,
-    WalletSwitcher, WalletsPanel,
+    use_phone_layout, AccountInspector, AddressBookPanel, BuildPanel, DeviceDialog,
+    FingerprintOffer, Glyph, Icon, LockScreen, PhoneLayout, PhoneSheet, ProgramsPanel,
+    SettingsPanel, SignPanel, ThemeToggle, UnlockPrompt, WalletSwitcher, WalletsPanel,
 };
 use crate::{MAIN_CSS, TOKENS_CSS};
 use dioxus::prelude::*;
@@ -85,6 +85,15 @@ pub fn AppShell(
     if phone {
         class.push_str(" phone");
     }
+    // A phone's sheets sit flush on its tab bar, whose height changes with
+    // the status line and the system's gesture bar, so the bar is measured.
+    // Locked, there is no tab bar and the sheets rest on the bottom edge.
+    let dock = use_signal(|| 0.0_f64);
+    let style = if phone && !gated {
+        format!("--dock-h: {}px", dock())
+    } else {
+        String::new()
+    };
 
     rsx! {
         document::Title { "{brand.name}" }
@@ -94,12 +103,13 @@ pub fn AppShell(
 
         div {
             class,
+            style,
             onmousemove: move |_| session.ui_activity(),
             onkeydown: move |_| session.ui_activity(),
             onclick: move |_| session.ui_activity(),
             ontouchstart: move |_| session.ui_activity(),
             if !gated {
-                Sidebar { tabs, more, status: sidebar_status }
+                Sidebar { tabs, more, status: sidebar_status, dock }
             }
             div { class: "main",
                 TopBar { extra: top_bar_extra, controls: window_controls }
@@ -195,6 +205,10 @@ pub fn Sidebar(
     tabs: &'static [Tab],
     more: Option<&'static [Tab]>,
     status: Option<Element>,
+    /// Given on a phone: kept at the tab bar's height, for the sheets that
+    /// sit on it.
+    #[props(default)]
+    dock: Option<Signal<f64>>,
 ) -> Element {
     let session = use_context::<Session>();
     let mut more_open = use_signal(|| false);
@@ -202,7 +216,13 @@ pub fn Sidebar(
     let in_more = more.is_some_and(|more| more.contains(&current));
     let phone = more.is_some();
     rsx! {
-        aside { class: "sidebar",
+        aside {
+            class: "sidebar",
+            onresize: move |e| {
+                if let (Some(mut dock), Ok(size)) = (dock, e.get_border_box_size()) {
+                    dock.set(size.height);
+                }
+            },
             Brand {}
             nav { class: "nav", aria_label: "Sections",
                 for &tab in tabs {
@@ -232,11 +252,11 @@ pub fn Sidebar(
                         span { class: "nav-label", "More" }
                     }
                     if more_open() {
-                        div {
-                            class: "more-backdrop",
-                            onclick: move |_| more_open.set(false),
-                        }
-                        div { class: "more-sheet", role: "menu",
+                        PhoneSheet {
+                            label: "More",
+                            role: "menu",
+                            class: "more-sheet",
+                            on_close: move |_| more_open.set(false),
                             for &tab in more {
                                 {
                                     let (label, glyph) = tab_entry(tab);
@@ -287,6 +307,7 @@ pub fn TopBar(extra: Option<Element>, controls: Option<Element>) -> Element {
 #[component]
 fn LockToggle() -> Element {
     let session = use_context::<Session>();
+    let phone = use_phone_layout();
     if !session.is_initialized() {
         return rsx! {};
     }
@@ -296,9 +317,18 @@ fn LockToggle() -> Element {
     } else {
         (Glyph::Lock, "Unlock vault")
     };
+    // On a phone the locked vault is the state to notice, and not by colour
+    // alone: a filled button that says so. Unlocked is the usual state, a
+    // quiet icon like the bell beside it.
+    let class = match (phone, unlocked) {
+        (true, true) => "icon-btn sm lock-toggle",
+        (true, false) => "sm lock-toggle locked",
+        (false, true) => "icon-btn sm lock-toggle unlocked",
+        (false, false) => "icon-btn sm lock-toggle",
+    };
     rsx! {
         button {
-            class: if unlocked { "icon-btn sm lock-toggle unlocked" } else { "icon-btn sm lock-toggle" },
+            class,
             title: "{label}",
             aria_label: "{label}",
             onclick: move |_| {
@@ -309,6 +339,9 @@ fn LockToggle() -> Element {
                 }
             },
             Icon { glyph }
+            if phone && !unlocked {
+                span { "Locked" }
+            }
         }
     }
 }
