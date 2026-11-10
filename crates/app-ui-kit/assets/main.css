@@ -2636,6 +2636,10 @@ textarea.short { min-height: 64px; }
 }
 .pf-watch-list { max-height: 50vh; overflow: auto; }
 .cleanup-list { max-height: 45vh; overflow: auto; }
+/* A row picked with a box at its start, so a column of them is quick to
+   go down. What explains the row sits under it, past the box. */
+.pick-row { grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: var(--space-3); }
+.pick-row > :not(input) { grid-column: 2; }
 
 /* ---------- Pane menu ---------- */
 

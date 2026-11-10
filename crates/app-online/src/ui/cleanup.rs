@@ -339,19 +339,19 @@ fn CleanupRow(
     let blocked = matches!(&outcome, Some(Outcome::Left(why)) if *why != Blocked::Chosen);
 
     rsx! {
-        li { class: "book-row cleanup-row",
+        li { class: "book-row pick-row cleanup-row",
+            input {
+                r#type: "checkbox",
+                checked: ticked,
+                title: "Close this account",
+                aria_label: "Close the {symbol} account {address}",
+                onchange: move |evt| {
+                    on_pick.call((address, if evt.checked() { ticked_choice.clone() } else { Choice::Leave }));
+                },
+            }
             AddressRow { pubkey: held.account.mint,
                 span { class: "mono cleanup-amount", "{amount}" }
                 span { class: "{chip_class}", title: if blocked { what.clone() } else { String::new() }, "{what}" }
-                input {
-                    r#type: "checkbox",
-                    checked: ticked,
-                    title: "Close this account",
-                    aria_label: "Close the {symbol} account {address}",
-                    onchange: move |evt| {
-                        on_pick.call((address, if evt.checked() { ticked_choice.clone() } else { Choice::Leave }));
-                    },
-                }
             }
         }
     }
