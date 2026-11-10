@@ -307,6 +307,9 @@ pub async fn send_rotation(
         .and_then(WalletKind::vector_settings)
         .ok_or_else(|| format!("{} is not a Vector wallet.", wallet.label))?;
     let (scheme, key) = (settings.scheme, settings.key.to_vec());
+    // Kept until the chain shows it landed, so the wallet's row can say when
+    // it has not, and send it again.
+    session.keep_received_rotation(rotation.clone());
     let route = session.route_of(wallet.id).map_err(|err| err.to_string())?;
     let Some((_, payer)) = route.fee_payer else {
         return Err(format!(

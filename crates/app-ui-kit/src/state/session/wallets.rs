@@ -303,6 +303,62 @@ impl Session {
         .map_err(|err| err.to_string())
     }
 
+    /// The rotation of the account at `address` signed here that may not
+    /// have landed, with its signatures, to show or send again. Nothing is
+    /// signed.
+    pub fn kept_rotation(&self, address: &Pubkey) -> Option<wallet_core::protocol::KeyRotation> {
+        (self.wallets)()
+            .kept_rotations
+            .iter()
+            .find(|rotation| rotation.account == address.to_bytes())
+            .cloned()
+    }
+
+    /// How many more times `id`, restored from its recovery phrase, can
+    /// sign the move to its next key. `None` when it is not such a wallet,
+    /// or the vault is locked.
+    pub fn recovery_left(&self, id: WalletId) -> Option<u32> {
+        self.track_wallets();
+        self.core().with_vault_and_marks(|vault, marks| {
+            wallet_core::vector::recovery_attempts_left(vault, marks, id)
+        })
+    }
+
+    /// Keep `rotation`, which the device that holds the key gave this one
+    /// to send, in place of any kept for the same account before.
+    pub fn keep_received_rotation(&self, rotation: wallet_core::protocol::KeyRotation) {
+        let mut kept = self.received_rotations;
+        let mut kept = kept.write();
+        kept.retain(|other| other.account != rotation.account);
+        kept.push(rotation);
+    }
+
+    /// The rotation this device was given to send for the account at
+    /// `address`, while the chain has not shown it landed.
+    pub fn received_rotation(
+        &self,
+        address: &Pubkey,
+    ) -> Option<wallet_core::protocol::KeyRotation> {
+        (self.received_rotations)()
+            .iter()
+            .find(|rotation| rotation.account == address.to_bytes())
+            .cloned()
+    }
+
+    /// The rotation given for the account at `address` landed, or is of no
+    /// more use.
+    pub fn forget_received_rotation(&self, address: &Pubkey) {
+        let mut kept = self.received_rotations;
+        if kept
+            .peek()
+            .iter()
+            .any(|rotation| rotation.account == address.to_bytes())
+        {
+            kept.write()
+                .retain(|rotation| rotation.account != address.to_bytes());
+        }
+    }
+
     /// The key a rotation signed here moves the account at `address` to,
     /// while it may not have landed.
     pub fn pending_rotation(&self, address: &Pubkey) -> Option<Vec<u8>> {

@@ -112,6 +112,10 @@ pub struct Session {
     pub idl_misses: CopyValue<HashSet<(String, Pubkey)>>,
     /// Last XMSS leaf and salt per account, so a second Sign press reuses them.
     pub xmss_retries: Signal<wallet_core::vector::XmssRetryCache>,
+    /// Rotations this device was given to send, by the device that holds
+    /// the key, until the chain shows each landed. Kept while the app runs,
+    /// so one that did not land can be sent again without scanning it again.
+    pub received_rotations: Signal<Vec<wallet_core::protocol::KeyRotation>>,
     pub tab: Signal<Tab>,
     pub forms: Forms,
     pub save_error: Signal<Option<String>>,
@@ -175,6 +179,7 @@ impl Session {
         idl_pack: Signal<crate::platform::idl_pack::IdlPackState>,
         idl_misses: CopyValue<HashSet<(String, Pubkey)>>,
         xmss_retries: Signal<wallet_core::vector::XmssRetryCache>,
+        received_rotations: Signal<Vec<wallet_core::protocol::KeyRotation>>,
         tab: Signal<Tab>,
         forms: Forms,
         save_error: Signal<Option<String>>,
@@ -196,6 +201,7 @@ impl Session {
             idl_pack,
             idl_misses,
             xmss_retries,
+            received_rotations,
             tab,
             forms,
             save_error,

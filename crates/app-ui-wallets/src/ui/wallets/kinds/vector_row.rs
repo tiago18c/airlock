@@ -8,6 +8,7 @@ use std::collections::HashMap;
 use wallet_core::protocol::QrObject;
 use wallet_core::vector::{
     account_state, leaf_status_note, warn_leaves, SchemeId, VectorAccount, XMSS_LEAVES,
+    XMSS_RECOVERY_LEAVES,
 };
 
 /// What the chain says of a Vector wallet's account.
@@ -189,6 +190,60 @@ pub(super) fn VectorFacts(
                 != Some(next)
         });
 
+    // The same, with its signatures: shown or sent again without signing.
+    let kept = session
+        .kept_rotation(&address)
+        .filter(|_| rotates_here && pending.is_some());
+    let kept_nonces = kept.as_ref().map_or(0, |kept| kept.signed.len());
+    // How many more times a wallet restored from its phrase can sign its
+    // rotation, once the vault is unlocked.
+    let restored = phrase.is_some_and(|(_, restored)| restored);
+    let recovery_left = restored.then(|| session.recovery_left(id)).flatten();
+    // A rotation the device that holds the key gave this one to send, and
+    // where the chain says it stands.
+    let received = session
+        .received_rotation(&address)
+        .filter(|_| online && !held_here)
+        .and_then(|rotation| {
+            let account = reads.account(&address)?;
+            let current = account
+                .current_key()
+                .map_or_else(|| created_with.clone(), <[u8]>::to_vec);
+            Some(if current == rotation.next_key {
+                Received::Landed
+            } else if rotation
+                .signed
+                .iter()
+                .any(|signed| signed.nonce == account.nonce)
+            {
+                Received::Waiting
+            } else {
+                Received::Overtaken
+            })
+        });
+    let landed = received == Some(Received::Landed);
+    use_effect(use_reactive!(|(address, landed)| {
+        if landed {
+            session.forget_received_rotation(&address);
+        }
+    }));
+    let send_again = move |_| {
+        error.set(None);
+        let Some(rotation) = session.received_rotation(&address) else {
+            return;
+        };
+        spawn(async move {
+            if let Err(err) = crate::actions::wallets::send_rotation(session, rotation).await {
+                error.set(Some(err));
+            }
+        });
+    };
+    let show_kept = move |_| {
+        if let Some(kept) = session.kept_rotation(&address) {
+            rotation.set(Some(QrObject::KeyRotation(kept)));
+        }
+    };
+
     use_effect(use_reactive!(|(id, address)| {
         // Read again once the vault is unlocked: the prepared key is in it.
         if !session.is_unlocked() {
@@ -321,8 +376,46 @@ pub(super) fn VectorFacts(
             }
             if restored {
                 p { class: "warn",
-                    "Restored from its recovery phrase. It signs nothing until it has moved to its next key: scan the account's state from the online device on Sign, then press Rotate key and send what it shows."
+                    "Restored from its recovery phrase. It signs nothing until it has moved to its next key: scan the account's state from the online device on Sign, then press Rotate key and send what it shows at once."
                 }
+                p { class: "warn",
+                    match recovery_left {
+                        Some(0) => "No attempt at moving it is left on this device: every leaf kept for recovery has signed. A rotation already signed can still be sent again.".to_string(),
+                        Some(1) => "1 attempt at moving it is left on this device.".to_string(),
+                        Some(left) => format!("{left} attempts at moving it are left on this device."),
+                        None => format!("It has at most {XMSS_RECOVERY_LEAVES} attempts at moving it. Unlock the vault to see how many are left."),
+                    }
+                    " An attempt is spent only when the account's nonce moved before a rotation landed, because something signed before the key was lost landed first. Send anything like that, or let it go, before you rotate."
+                }
+                p { class: "warn",
+                    "Do not type this phrase into another device until a rotation has landed. A second copy would sign with the same leaves, and two signatures with one leaf give the key away."
+                }
+            }
+        }
+        if let Some(received) = received {
+            match received {
+                Received::Waiting => rsx! {
+                    p { class: "warn", role: "status",
+                        "The rotation scanned for this wallet has not landed: the account still holds its old key. If its transaction was sent and is gone, send it again."
+                    }
+                    div { class: "btn-row",
+                        button { class: "sm",
+                            title: "Build the rotation's transaction again, on a new blockhash, and open it in Sign. The key device does not have to sign again.",
+                            onclick: send_again,
+                            "Send rotation again"
+                        }
+                    }
+                },
+                Received::Overtaken => rsx! {
+                    p { class: "warn", role: "alert",
+                        "The rotation scanned for this wallet can no longer land: the account's nonce moved first. Show the account state to the device that holds the key, press Rotate key there again, and scan what it shows."
+                    }
+                },
+                Received::Landed => rsx! {
+                    p { class: "note", role: "status",
+                        "The rotation landed: the account holds its next key. Show the account state to the device that holds the key, so it signs with it."
+                    }
+                },
             }
         }
         if scheme.is_stateful() && !held_here && online && state_object.is_some() {
@@ -362,9 +455,27 @@ pub(super) fn VectorFacts(
             p { class: "note",
                 "Keep this key on this device only, and never sign with a copy restored from a backup."
             }
-            if pending.is_some() {
-                p { class: "note",
-                    "A rotation to the next key was signed here and has not been seen on chain. Once a transaction from the online device shows it landed, this device signs with the next key."
+            if pending.is_some() && online {
+                p { class: "warn", role: "status",
+                    "A rotation to the next key was signed here and has not landed. Press Rotate key to send it again: nothing new is signed unless the account's nonce moved."
+                }
+            } else if pending.is_some() {
+                p { class: "warn", role: "status",
+                    if kept_nonces == 1 {
+                        "A rotation to the next key is signed, and this device has not been shown that it landed."
+                    } else {
+                        "A rotation to the next key is signed, at each of {kept_nonces} nonces the account may be at, and this device has not been shown that it landed."
+                    }
+                    " Show it again for the online device as often as needed: that signs nothing. Once it has landed, scan the account's state from the online device on Sign, and this device signs with the next key."
+                }
+                if kept.is_some() {
+                    div { class: "btn-row",
+                        button { class: "sm",
+                            title: "Show the rotation already signed, for the online device to send. Nothing is signed.",
+                            onclick: show_kept,
+                            "Show rotation again"
+                        }
+                    }
                 }
             }
             div { class: "btn-row",
@@ -458,6 +569,18 @@ pub(super) fn VectorFacts(
             }
         }
     }
+}
+
+/// Where a rotation this device was given to send stands on chain.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Received {
+    /// The account still holds its old key, at a nonce the rotation was
+    /// signed at: it can still land.
+    Waiting,
+    /// The account's nonce moved first: nothing it carries can land.
+    Overtaken,
+    /// The account holds the key it names.
+    Landed,
 }
 
 /// When the account already holds the next key this device made for it,

@@ -428,7 +428,10 @@ fn a_key_that_replaces_a_used_up_one_starts_at_its_first_leaf() {
     device.restart();
     assert_eq!(device.marks.next_leaf(&account, &next), Some(1));
     // The old key's mark still holds.
-    assert_eq!(device.marks.next_leaf(&account, &KEY), Some(XMSS_LEAVES));
+    assert_eq!(
+        device.marks.next_leaf(&account, &KEY),
+        Some(XMSS_RECOVERY_FROM)
+    );
 }
 
 #[test]

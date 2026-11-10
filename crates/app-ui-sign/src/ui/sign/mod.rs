@@ -241,6 +241,10 @@ pub fn SignPanel() -> Element {
                         div { class: "card",
                             Inbox { loaded: false }
                         }
+                        // Without a node, what was signed here goes out again from here.
+                        if !online {
+                            KeptRotations {}
+                        }
                         if !phone {
                             p { class: "hint",
                                 "Build sends its transactions here on its own. So does Review on a browser request."
