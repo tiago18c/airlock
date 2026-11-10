@@ -171,6 +171,7 @@ pub fn use_session(core: CopyValue<Core>, online: OnlineHooks, submitter: Submit
     keep_tests_off_the_data_folder();
     let (idls, idl_pack) = use_idls(pump.network);
     let idl_misses = use_hook(|| CopyValue::new(std::collections::HashSet::new()));
+    let logo_urls = use_hook(|| CopyValue::new(std::collections::HashMap::new()));
     let xmss_retries = use_signal(wallet_core::vector::XmssRetryCache::default);
     let received_rotations = use_signal(Vec::new);
     let tab = use_signal(|| Tab::Wallets);
@@ -209,6 +210,7 @@ pub fn use_session(core: CopyValue<Core>, online: OnlineHooks, submitter: Submit
             idls,
             idl_pack,
             idl_misses,
+            logo_urls,
             xmss_retries,
             received_rotations,
             tab,

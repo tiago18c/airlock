@@ -379,7 +379,7 @@ fn PricesCard() -> Element {
         div { class: "card",
             h3 { "Prices" }
             p { class: "hint wordy",
-                "The Portfolio values holdings with the Tokens API (tokens.xyz). Only token mints are sent, never an address or an amount. Prices are for mainnet."
+                "The Portfolio values holdings with the Tokens API (tokens.xyz). Only token mints are sent, never an address or an amount. A token's logo is downloaded once from the address the Tokens API names for it, without the key, and kept on this device. Prices are for mainnet."
             }
             label { if saved { "API key (saved)" } else { "API key" }
                 input {

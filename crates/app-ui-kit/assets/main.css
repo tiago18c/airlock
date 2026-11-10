@@ -2912,6 +2912,10 @@ textarea.short { min-height: 64px; }
 }
 /* A token nothing names: a plain avatar, not one tinted from its mint. */
 .pf-mono.pf-unknown { border: 1px dashed var(--border-strong); background: var(--surface-2); color: var(--text-3); font-size: var(--text-sm); }
+/* A token's logo fills its avatar, on the avatar's neutral ground, so a
+   transparent logo still has one. */
+.pf-mono.pf-has-logo { overflow: hidden; }
+.pf-logo { display: block; width: 28px; height: 28px; border-radius: var(--radius-full); object-fit: cover; }
 .pf-asset { display: grid; min-width: 0; }
 .pf-symbol { font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
 .pf-name { font-size: var(--text-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

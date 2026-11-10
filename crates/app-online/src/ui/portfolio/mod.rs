@@ -11,8 +11,8 @@ use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use std::collections::BTreeMap;
 use wallet_core::portfolio::{
-    build, format_amount, format_usd, format_value, prices_apply_to, Group, HeldStake, Line, Owner,
-    Portfolio,
+    build, format_amount, format_usd, format_value, prices_apply_to, Group, HeldStake, Line,
+    LogoKind, LogoState, MarketCache, Owner, Portfolio,
 };
 use wallet_core::{AddressKind, WalletId};
 
@@ -73,6 +73,7 @@ pub fn PortfolioPanel() -> Element {
     let locked = !session.is_unlocked();
     let can_send = owners.iter().any(|owner| !owner.watched);
     let monograms = monograms_of(&portfolio);
+    let logos = logos_of(&portfolio, market);
     let colors = group_colors(&portfolio);
     let names: Names = owners
         .iter()
@@ -189,6 +190,7 @@ pub fn PortfolioPanel() -> Element {
                         priced,
                         colors,
                         monograms: monograms.clone(),
+                        logos: logos.clone(),
                         names: names.clone(),
                     }
                     Section {
@@ -198,6 +200,7 @@ pub fn PortfolioPanel() -> Element {
                         priced,
                         says_no_market: true,
                         monograms: monograms.clone(),
+                        logos: logos.clone(),
                         names: names.clone(),
                     }
                     Section {
@@ -206,6 +209,7 @@ pub fn PortfolioPanel() -> Element {
                         lines: portfolio.collectibles.clone(),
                         priced,
                         monograms: monograms.clone(),
+                        logos,
                         names: names.clone(),
                     }
                     Section {
@@ -214,6 +218,9 @@ pub fn PortfolioPanel() -> Element {
                         lines: portfolio.left_out.clone(),
                         priced,
                         monograms: monograms.clone(),
+                        // A token left out keeps its letters: its logo may
+                        // be another token's.
+                        logos: Logos::new(),
                         names,
                     }
                 }
@@ -425,6 +432,7 @@ fn Holdings(
     priced: bool,
     colors: Colors,
     monograms: Monograms,
+    logos: Logos,
     names: Names,
 ) -> Element {
     if groups.is_empty() {
@@ -447,6 +455,7 @@ fn Holdings(
                     total,
                     priced,
                     monograms: monograms.clone(),
+                    logos: logos.clone(),
                     names: names.clone(),
                 }
             }
@@ -465,6 +474,7 @@ fn GroupSection(
     headed: bool,
     color: Option<String>,
     monograms: Monograms,
+    logos: Logos,
     names: Names,
 ) -> Element {
     let share = if total > 0.0 { group.usd / total } else { 0.0 };
@@ -487,6 +497,7 @@ fn GroupSection(
                     LineRow {
                         key: "{line.symbol}-{line.raw}",
                         monogram: monogram_for(&monograms, &line),
+                        logo: logos.get(&line.asset).copied(),
                         line,
                         priced,
                         names: names.clone(),
@@ -510,6 +521,7 @@ fn Section(
     #[props(default)]
     says_no_market: bool,
     monograms: Monograms,
+    logos: Logos,
     names: Names,
 ) -> Element {
     let mut open = use_signal(|| false);
@@ -552,6 +564,7 @@ fn Section(
                         LineRow {
                             key: "{line.symbol}-{line.raw}",
                             monogram: monogram_for(&monograms, &line),
+                            logo: logos.get(&line.asset).copied(),
                             line,
                             priced,
                             valued: false,
@@ -573,6 +586,9 @@ fn Section(
 fn LineRow(
     line: Line,
     monogram: String,
+    /// The format of the logo kept for the line's asset, when one is.
+    #[props(default)]
+    logo: Option<LogoKind>,
     priced: bool,
     #[props(default = true)] valued: bool,
     names: Names,
@@ -584,6 +600,8 @@ fn LineRow(
     tip_only: Vec<String>,
 ) -> Element {
     let mut open = use_signal(|| false);
+    // The logo could not be shown: the letters stand in for it.
+    let mut logo_failed = use_signal(|| false);
     let amount = format_amount(line.raw, line.decimals, AMOUNT_DIGITS);
     let session = use_context::<Session>();
     let mint = match line.asset {
@@ -600,6 +618,10 @@ fn LineRow(
     } else {
         (monogram, tint_class(&line.asset.price_mint()))
     };
+    // Read from memory after the first time: see `Session::logo_url`.
+    let logo = logo
+        .filter(|_| !unknown && !logo_failed())
+        .and_then(|kind| session.logo_url(&line.asset.price_mint(), kind));
     // The tooltip: all of the mint for an unknown token.
     let mut title = match (unknown, mint) {
         (true, Some(mint)) => mint.to_string(),
@@ -670,7 +692,19 @@ fn LineRow(
                 // button is not inside another.
                 div { class: "pf-line-main",
                     onclick: move |_| open.set(!open()),
-                    span { class: "pf-mono {tint}", aria_hidden: "true", "{monogram}" }
+                    if let Some(src) = logo {
+                        span { class: "pf-mono pf-has-logo", aria_hidden: "true",
+                            img { class: "pf-logo",
+                                src,
+                                alt: "",
+                                width: "28",
+                                height: "28",
+                                onerror: move |_| logo_failed.set(true),
+                            }
+                        }
+                    } else {
+                        span { class: "pf-mono {tint}", aria_hidden: "true", "{monogram}" }
+                    }
                     span { class: "pf-asset",
                         span { class: "pf-title",
                             button { class: "pf-line-toggle",
@@ -878,6 +912,33 @@ fn excludes_note(unpriced: usize, left_out: usize) -> Option<String> {
             tokens(n)
         )),
     }
+}
+
+/// The format of the logo kept for each line's asset, by asset.
+type Logos = BTreeMap<wallet_core::portfolio::Asset, LogoKind>;
+
+/// The logos kept for the lines the screen lists. Staked SOL goes by SOL's,
+/// as it does for its price. A token the Tokens API gave no name, or thinks
+/// passes itself off as another, has none: it keeps its letters.
+fn logos_of(portfolio: &Portfolio, market: &MarketCache) -> Logos {
+    portfolio
+        .groups
+        .iter()
+        .flat_map(|group| group.lines.iter())
+        .chain(&portfolio.unpriced)
+        .chain(&portfolio.collectibles)
+        .filter(|line| !is_unknown(line))
+        .filter(|line| {
+            !line
+                .check
+                .as_ref()
+                .is_some_and(|check| check.impersonates())
+        })
+        .filter_map(|line| match market.logo(&line.asset.price_mint()) {
+            Some(LogoState::Kept { kind }) => Some((line.asset, kind)),
+            _ => None,
+        })
+        .collect()
 }
 
 /// The avatar letters of each line listed, by asset.
