@@ -2555,6 +2555,49 @@ textarea.short { min-height: 64px; }
 }
 .pf-swatch { width: 10px; height: 10px; border-radius: 3px; }
 
+/* Avatar tints, picked from the mint: a soft fill and a strong letter of
+   one hue, at least 7:1 in each theme. The two letters stay the label. */
+:root {
+  --pf-t0-bg: #dce9fb; --pf-t0-fg: #1b4c8c;
+  --pf-t1-bg: #fde4d7; --pf-t1-fg: #8a3510;
+  --pf-t2-bg: #d6f2e5; --pf-t2-fg: #0f5e3b;
+  --pf-t3-bg: #fbedc9; --pf-t3-fg: #6e4800;
+  --pf-t4-bg: #fbdeea; --pf-t4-fg: #872049;
+  --pf-t5-bg: #e6e2fb; --pf-t5-fg: #4031a0;
+  --pf-t6-bg: #d3eff0; --pf-t6-fg: #0c5a5e;
+  --pf-t7-bg: #e7efd0; --pf-t7-fg: #43560f;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --pf-t0-bg: #16304f; --pf-t0-fg: #a3c8f6;
+    --pf-t1-bg: #3d2214; --pf-t1-fg: #f5b696;
+    --pf-t2-bg: #11352a; --pf-t2-fg: #8adfb9;
+    --pf-t3-bg: #3a2d0d; --pf-t3-fg: #f2cb74;
+    --pf-t4-bg: #3e1929; --pf-t4-fg: #f4aacb;
+    --pf-t5-bg: #27224f; --pf-t5-fg: #c3baf8;
+    --pf-t6-bg: #0f3436; --pf-t6-fg: #86d9dc;
+    --pf-t7-bg: #29330f; --pf-t7-fg: #c1da80;
+  }
+}
+:root[data-theme="dark"] {
+  --pf-t0-bg: #16304f; --pf-t0-fg: #a3c8f6;
+  --pf-t1-bg: #3d2214; --pf-t1-fg: #f5b696;
+  --pf-t2-bg: #11352a; --pf-t2-fg: #8adfb9;
+  --pf-t3-bg: #3a2d0d; --pf-t3-fg: #f2cb74;
+  --pf-t4-bg: #3e1929; --pf-t4-fg: #f4aacb;
+  --pf-t5-bg: #27224f; --pf-t5-fg: #c3baf8;
+  --pf-t6-bg: #0f3436; --pf-t6-fg: #86d9dc;
+  --pf-t7-bg: #29330f; --pf-t7-fg: #c1da80;
+}
+.pf-mono.pf-t0 { background: var(--pf-t0-bg); color: var(--pf-t0-fg); }
+.pf-mono.pf-t1 { background: var(--pf-t1-bg); color: var(--pf-t1-fg); }
+.pf-mono.pf-t2 { background: var(--pf-t2-bg); color: var(--pf-t2-fg); }
+.pf-mono.pf-t3 { background: var(--pf-t3-bg); color: var(--pf-t3-fg); }
+.pf-mono.pf-t4 { background: var(--pf-t4-bg); color: var(--pf-t4-fg); }
+.pf-mono.pf-t5 { background: var(--pf-t5-bg); color: var(--pf-t5-fg); }
+.pf-mono.pf-t6 { background: var(--pf-t6-bg); color: var(--pf-t6-fg); }
+.pf-mono.pf-t7 { background: var(--pf-t7-bg); color: var(--pf-t7-fg); }
+
 .pf-group { display: grid; gap: var(--space-2); padding: var(--space-3) var(--space-4); }
 .pf-group-head {
   display: flex;
@@ -2572,32 +2615,68 @@ textarea.short { min-height: 64px; }
 .pf-line-head { display: flex; align-items: center; gap: var(--space-1); min-width: 0; }
 .pf-line-head > .pf-line-main { flex: 1; min-width: 0; }
 .pf-send-slot { flex: none; width: var(--control-sm); }
-/* Asset, amount, price, 24 h, value. */
-.pf-line-main {
+/* Avatar, asset, amount, price, 24 h, value. The column heads above the
+ * groups use the same tracks; their minimums are fixed, so separate grids
+ * of one width line up. */
+.pf-line-main, .pf-cols-main {
   display: grid;
   grid-template-columns: 28px minmax(8rem, 2fr) minmax(5rem, 1.2fr) minmax(4.5rem, 1fr) minmax(4rem, 0.8fr) minmax(5rem, 1fr);
   align-items: center;
   gap: var(--space-3);
-  width: 100%;
-  height: auto;
+  padding: 0 var(--space-1);
+}
+.pf-line-main {
   padding: var(--space-2) var(--space-1);
-  border: 0;
   border-radius: var(--radius-md);
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  white-space: normal;
   cursor: pointer;
 }
 .pf-line-main:hover { background: var(--surface-2); }
 .pf-line-main > .pf-amount,
 .pf-line-main > .pf-price,
 .pf-line-main > .pf-change,
-.pf-line-main > .pf-value {
+.pf-line-main > .pf-value,
+.pf-cols-main > .pf-col-num {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+/* Lined up with the rows inside the cards: the card's border and padding. */
+.pf-cols {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: calc(-1 * var(--space-2));
+  padding: 0 calc(var(--space-4) + 1px);
+  color: var(--text-3);
+  font-size: var(--text-sm);
+}
+.pf-cols > .pf-cols-main { flex: 1; min-width: 0; }
+/* The symbol, then what the Tokens API says of it, on one line. */
+.pf-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  min-width: 0;
+  min-height: 22px;
+}
+.pf-line-toggle {
+  display: inline;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  white-space: normal;
+}
+.pf-line-toggle:hover, .pf-line-toggle:active { background: transparent; }
+.pf-line-toggle:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.pf-mint { color: var(--text); word-break: normal; }
+.pf-title .copy-btn { width: 22px; min-width: 22px; min-height: 22px; }
+.pf-title .copy-btn .icon { width: 14px; height: 14px; }
+.pf-flat { color: var(--text-3); font-weight: var(--weight-regular); }
 .pf-mono {
   display: grid;
   place-items: center;
@@ -2612,7 +2691,6 @@ textarea.short { min-height: 64px; }
 .pf-asset { display: grid; min-width: 0; }
 .pf-symbol { font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
 .pf-name { font-size: var(--text-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pf-chips { padding-left: calc(28px + var(--space-4)); }
 .pf-shares {
   display: grid;
   gap: var(--space-1);
@@ -2699,6 +2777,11 @@ textarea.short { min-height: 64px; }
   .pf-line-main { grid-template-columns: 28px minmax(6rem, 1fr) auto auto; }
   .pf-line-main > .pf-price,
   .pf-line-main > .pf-change { display: none; }
+  /* The rows' columns size to their content here, so heads would not line up. */
+  .pf-cols { display: none; }
+}
+@media (pointer: coarse) {
+  .pf-title .copy-btn { width: var(--control-md); min-width: var(--control-md); min-height: var(--control-sm); }
 }
 
 /* ---------- History ---------- */

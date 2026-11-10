@@ -5,6 +5,7 @@
 use crate::actions::stake_screen::{load_key, refresh as refresh_stakes};
 use app_ui_kit::actions::unix_now;
 use app_ui_kit::state::forms::{SendAsset, SendOpen};
+use app_ui_kit::ui::{CopyButton, PaneMenu};
 use app_ui_kit::{Address, AddressRow, Glyph, Icon, Session, Tab};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
@@ -99,18 +100,6 @@ pub fn PortfolioPanel() -> Element {
                                 }),
                                 "Send"
                             }
-                            button {
-                                title: "Burn and close token accounts of the wallet shown, or the one in use, to get their rent back",
-                                onclick: move |_| {
-                                    let wallet = selected
-                                        .and_then(|owner| wallet_at(session, owner))
-                                        .or_else(|| session.selected_wallet());
-                                    if let Some(wallet) = wallet {
-                                        session.open_cleanup(wallet);
-                                    }
-                                },
-                                "Manage tokens"
-                            }
                         }
                         select {
                             aria_label: "Whose holdings",
@@ -126,13 +115,34 @@ pub fn PortfolioPanel() -> Element {
                             }
                         }
                         button {
-                            onclick: move |_| watch_open.set(true),
-                            "Watched addresses"
-                        }
-                        button {
                             disabled: refreshing(),
                             onclick: refresh,
                             if refreshing() { "Refreshing…" } else { "Refresh" }
+                        }
+                        PaneMenu { label: "More portfolio actions",
+                            if can_send {
+                                button { class: "pane-menu-item",
+                                    role: "menuitem",
+                                    title: "Burn and close token accounts of the wallet shown, or the one in use, to get their rent back",
+                                    onclick: move |_| {
+                                        let wallet = selected
+                                            .and_then(|owner| wallet_at(session, owner))
+                                            .or_else(|| session.selected_wallet());
+                                        if let Some(wallet) = wallet {
+                                            session.open_cleanup(wallet);
+                                        }
+                                    },
+                                    Icon { glyph: Glyph::Trash }
+                                    "Manage tokens"
+                                }
+                            }
+                            button { class: "pane-menu-item",
+                                role: "menuitem",
+                                title: "Pick the address book accounts counted here beside this device's wallets",
+                                onclick: move |_| watch_open.set(true),
+                                Icon { glyph: Glyph::Book }
+                                "Watched addresses"
+                            }
                         }
                     }
                 }
@@ -166,6 +176,9 @@ pub fn PortfolioPanel() -> Element {
                     }
                 } else {
                     Summary { portfolio: portfolio.clone(), priced, ago }
+                    if priced && !portfolio.groups.is_empty() {
+                        ColumnHeads {}
+                    }
                     for group in portfolio.groups.iter().cloned() {
                         GroupBlock { key: "{group.key}", group, total: portfolio.total_usd, priced }
                     }
@@ -173,16 +186,19 @@ pub fn PortfolioPanel() -> Element {
                         title: "Not priced",
                         hint: "The Tokens API has no market for these, so they are not in the total.",
                         lines: portfolio.unpriced.clone(),
+                        priced,
                     }
                     Section {
                         title: "Collectibles",
                         hint: "One-of-a-kind tokens. They are not valued.",
                         lines: portfolio.collectibles.clone(),
+                        priced,
                     }
                     Section {
                         title: "Left out",
                         hint: "Flagged red in the address book, or a token the Tokens API thinks passes itself off as another. Not in the total.",
                         lines: portfolio.left_out.clone(),
+                        priced,
                     }
                 }
             }
@@ -264,7 +280,7 @@ fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>) -> Element {
                     span { class: "pf-total", "{format_usd(portfolio.total_usd)}" }
                     if let (Some(change), Some(pct)) = (change, pct) {
                         span {
-                            class: if change >= 0.0 { "delta up" } else { "delta down" },
+                            class: change_class(pct),
                             "{signed_pct(pct)} ({signed_usd(change)}) today"
                         }
                     }
@@ -338,6 +354,25 @@ fn allocation_parts(portfolio: &Portfolio) -> Vec<(String, f64, String)> {
     parts
 }
 
+/// What the numbers of a row are, once above the groups, on the rows'
+/// columns. Hidden where the columns narrow, on a phone.
+#[component]
+fn ColumnHeads() -> Element {
+    rsx! {
+        div { class: "pf-cols",
+            div { class: "pf-cols-main",
+                span {}
+                span {}
+                span { class: "pf-col-num", "Amount" }
+                span { class: "pf-col-num", "Price" }
+                span { class: "pf-col-num", "24h" }
+                span { class: "pf-col-num", "Value" }
+            }
+            span { class: "pf-send-slot" }
+        }
+    }
+}
+
 /// Related assets under one heading: SOL with staked SOL and liquid staking
 /// tokens, or the variants of one asset.
 #[component]
@@ -368,9 +403,10 @@ fn GroupBlock(group: Group, total: f64, priced: bool) -> Element {
     }
 }
 
-/// Lines that are not in the total, folded away.
+/// Lines that are not in the total, folded away. Where prices are shown,
+/// they keep the columns of the priced rows, with no value in them.
 #[component]
-fn Section(title: &'static str, hint: &'static str, lines: Vec<Line>) -> Element {
+fn Section(title: &'static str, hint: &'static str, lines: Vec<Line>, priced: bool) -> Element {
     let mut open = use_signal(|| false);
     if lines.is_empty() {
         return rsx! {};
@@ -389,7 +425,7 @@ fn Section(title: &'static str, hint: &'static str, lines: Vec<Line>) -> Element
                 p { class: "hint", "{hint}" }
                 div { class: "pf-lines",
                     for line in lines {
-                        LineRow { key: "{line.symbol}-{line.raw}", line, priced: false }
+                        LineRow { key: "{line.symbol}-{line.raw}", line, priced, valued: false }
                     }
                 }
             }
@@ -398,11 +434,13 @@ fn Section(title: &'static str, hint: &'static str, lines: Vec<Line>) -> Element
 }
 
 /// One asset: what it is, how much, its price and value. A click shows who
-/// holds it.
+/// holds it. `priced` lays the row out on the price columns; `valued` fills
+/// them, and is off for lines that are not in the total.
 #[component]
-fn LineRow(line: Line, priced: bool) -> Element {
+fn LineRow(line: Line, priced: bool, #[props(default = true)] valued: bool) -> Element {
     let mut open = use_signal(|| false);
     let amount = format_amount(line.raw, line.decimals, AMOUNT_DIGITS);
+    let tint = tint_class(&line.asset.price_mint());
     let monogram: String = line
         .symbol
         .chars()
@@ -428,15 +466,24 @@ fn LineRow(line: Line, priced: bool) -> Element {
         .collect();
     let only_sender = (senders.len() == 1).then(|| senders[0].1);
     let symbol = line.symbol.clone();
+    // A token the Tokens API gave no symbol for goes by its mint.
+    let unnamed_mint =
+        mint.filter(|mint| line.name.is_none() && line.symbol == wallet_core::short_pubkey(mint));
     let verified = line.check.as_ref().is_some_and(|check| check.verified);
-    let warnings: Vec<String> = line
+    let now = unix_now();
+    let warnings: Vec<(String, Option<String>)> = line
         .check
         .as_ref()
         .map(|check| {
             check
                 .warnings
                 .iter()
-                .map(|code| warning_text(code))
+                .map(|code| {
+                    (
+                        warning_text(code),
+                        warning_tip(code, &symbol, check.checked_at, now),
+                    )
+                })
                 .collect()
         })
         .unwrap_or_default();
@@ -448,30 +495,54 @@ fn LineRow(line: Line, priced: bool) -> Element {
     rsx! {
         div { class: "pf-line",
             div { class: "pf-line-head",
-                button { class: "pf-line-main",
-                    r#type: "button",
-                    aria_expanded: "{open()}",
+                // The whole row opens the holders; the symbol is the control
+                // a keyboard reaches. Not one button, so the mint's copy
+                // button is not inside another.
+                div { class: "pf-line-main",
                     onclick: move |_| open.set(!open()),
-                    span { class: "pf-mono", aria_hidden: "true", "{monogram}" }
+                    span { class: "pf-mono {tint}", aria_hidden: "true", "{monogram}" }
                     span { class: "pf-asset",
-                        span { class: "pf-symbol", "{line.symbol}" }
-                        if let Some(name) = line.name.clone() {
-                            span { class: "muted pf-name", "{name}" }
+                        span { class: "pf-title",
+                            button { class: "pf-line-toggle",
+                                r#type: "button",
+                                aria_expanded: "{open()}",
+                                if let Some(mint) = unnamed_mint {
+                                    code { class: "pf-mint", title: "{mint}", "{line.symbol}" }
+                                } else {
+                                    span { class: "pf-symbol", "{line.symbol}" }
+                                }
+                            }
+                            if let Some(mint) = unnamed_mint {
+                                CopyButton { text: mint.to_string(), label: "Copy mint address" }
+                            }
+                            if verified {
+                                span { class: "chip ok", "verified" }
+                            }
+                            for (warning, tip) in warnings {
+                                span { key: "{warning}", class: "chip warn", title: tip, "{warning}" }
+                            }
+                        }
+                        span { class: "muted pf-name",
+                            if let Some(name) = line.name.clone() { "{name}" } else { "No name" }
                         }
                     }
                     span { class: "pf-amount", "{amount}" }
-                    if priced {
+                    if priced && valued {
                         span { class: "pf-price muted",
                             if let Some(price) = line.price_usd { "{format_usd(price)}" } else { "–" }
                         }
                         span { class: "pf-change",
                             if let Some(pct) = line.change_24h_pct {
-                                span { class: if pct >= 0.0 { "delta up" } else { "delta down" }, "{signed_pct(pct)}" }
+                                span { class: change_class(pct), "{signed_pct(pct)}" }
                             }
                         }
                         span { class: "pf-value",
                             if let Some(usd) = line.usd { "{format_value(usd)}" } else { "–" }
                         }
+                    } else if priced {
+                        span { class: "pf-price muted", "–" }
+                        span { class: "pf-change" }
+                        span { class: "pf-value muted", "–" }
                     }
                 }
                 if let (Some(asset), false) = (sendable, senders.is_empty()) {
@@ -488,16 +559,6 @@ fn LineRow(line: Line, priced: bool) -> Element {
                     }
                 } else {
                     span { class: "pf-send-slot" }
-                }
-            }
-            if verified || !warnings.is_empty() {
-                div { class: "chip-row pf-chips",
-                    if verified {
-                        span { class: "chip ok", "verified" }
-                    }
-                    for warning in warnings {
-                        span { key: "{warning}", class: "chip warn", "{warning}" }
-                    }
                 }
             }
             if open() {
@@ -552,19 +613,73 @@ fn percent(share: f64) -> String {
     }
 }
 
+/// A change shown with two decimals reads 0.00%: it has no direction.
+fn flat_pct(pct: f64) -> bool {
+    (pct * 100.0).round() == 0.0
+}
+
+/// The class of a change: green up, red down, muted when it is 0.00%.
+fn change_class(pct: f64) -> &'static str {
+    if flat_pct(pct) {
+        "delta pf-flat"
+    } else if pct > 0.0 {
+        "delta up"
+    } else {
+        "delta down"
+    }
+}
+
+/// A change with its sign, "0.00%" with none when it rounds to nothing.
 fn signed_pct(pct: f64) -> String {
-    if pct >= 0.0 {
+    if flat_pct(pct) {
+        "0.00%".to_string()
+    } else if pct > 0.0 {
         format!("+{pct:.2}%")
     } else {
         format!("−{:.2}%", -pct)
     }
 }
 
+/// Dollars with their sign, "$0.00" with none when they round to nothing.
 fn signed_usd(usd: f64) -> String {
-    if usd >= 0.0 {
+    if (usd * 100.0).round() == 0.0 {
+        format_usd(0.0)
+    } else if usd > 0.0 {
         format!("+{}", format_usd(usd))
     } else {
         format!("−{}", format_usd(-usd))
+    }
+}
+
+/// Avatar tints, `pf-t0` to `pf-t7` in the stylesheet.
+const TINTS: u32 = 8;
+
+/// The avatar tint of an asset, picked from its mint, so that two symbols
+/// with the same first letters, such as USDC and USDT, mostly differ.
+fn tint_class(mint: &Pubkey) -> String {
+    // FNV-1a over the mint's bytes: stable across runs and builds.
+    let hash = mint.to_bytes().iter().fold(0x811c_9dc5_u32, |hash, byte| {
+        (hash ^ u32::from(*byte)).wrapping_mul(0x0100_0193)
+    });
+    format!("pf-t{}", hash % TINTS)
+}
+
+/// A warning's tooltip, where its words alone leave out what it means.
+fn warning_tip(code: &str, symbol: &str, checked_at: i64, now: i64) -> Option<String> {
+    match code {
+        "stale_data" => {
+            let mut tip = format!(
+                "The Tokens API says its market data for {symbol} has not been updated lately, so its price and 24h change may be out of date."
+            );
+            if checked_at > 0 {
+                tip.push_str(&format!(
+                    " It said so when it checked the token, {}.",
+                    ago(now.saturating_sub(checked_at))
+                ));
+            }
+            Some(tip)
+        }
+        _ => None,
     }
 }
 
@@ -605,5 +720,41 @@ mod tests {
             "may impersonate another token"
         );
         assert_eq!(warning_text("brand_new_code"), "brand new code");
+    }
+
+    #[test]
+    fn a_change_that_rounds_to_zero_has_no_sign_or_colour() {
+        assert_eq!(signed_pct(-0.004), "0.00%");
+        assert_eq!(signed_pct(0.004), "0.00%");
+        assert_eq!(change_class(-0.004), "delta pf-flat");
+        assert_eq!(change_class(0.0), "delta pf-flat");
+        assert_eq!(signed_pct(0.006), "+0.01%");
+        assert_eq!(change_class(0.006), "delta up");
+        assert_eq!(change_class(-0.006), "delta down");
+        assert_eq!(signed_usd(-0.004), "$0.00");
+        assert_eq!(signed_usd(0.5), "+$0.50");
+    }
+
+    #[test]
+    fn usdc_and_usdt_get_different_tints() {
+        let usdc: Pubkey = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+            .parse()
+            .unwrap();
+        let usdt: Pubkey = "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
+            .parse()
+            .unwrap();
+        assert_ne!(tint_class(&usdc), tint_class(&usdt));
+        assert!(tint_class(&usdc).starts_with("pf-t"));
+    }
+
+    #[test]
+    fn stale_data_says_what_is_stale_and_when() {
+        let tip = warning_tip("stale_data", "USDC", 1_000, 1_000 + 7_200).unwrap();
+        assert!(tip.contains("market data for USDC"), "{tip}");
+        assert!(tip.ends_with("2 h ago."), "{tip}");
+        assert!(!warning_tip("stale_data", "USDC", 0, 5)
+            .unwrap()
+            .contains("ago"));
+        assert_eq!(warning_tip("unverified", "USDC", 1, 2), None);
     }
 }
