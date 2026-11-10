@@ -6,7 +6,7 @@ use crate::actions::stake_screen::{load_key, refresh as refresh_stakes};
 use app_ui_kit::actions::unix_now;
 use app_ui_kit::state::forms::{SendAsset, SendOpen};
 use app_ui_kit::ui::{CopyButton, PaneMenu};
-use app_ui_kit::{Address, AddressRow, Glyph, Icon, Session, Tab};
+use app_ui_kit::{AddressRow, Glyph, Icon, Session, Tab};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use std::collections::BTreeMap;
@@ -1030,8 +1030,10 @@ fn LineRow(
                                 span { class: "pf-share-gap" }
                                 span { class: "pf-share-who",
                                     span { class: "pf-mint-label", "Mint" }
-                                    span { class: "pf-mint-chip",
-                                        Address { pubkey: mint }
+                                    // The address alone, as on the lines
+                                    // above: the asset's row names the token.
+                                    // Its card still opens on hover.
+                                    AddressRow { pubkey: mint, no_copy: true, class: "pf-mint-addr",
                                         CopyButton { text: mint.to_string(), label: "Copy mint address" }
                                     }
                                 }

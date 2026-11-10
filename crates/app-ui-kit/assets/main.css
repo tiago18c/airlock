@@ -3002,9 +3002,11 @@ textarea.short { min-height: 64px; }
 }
 .pf-share-mint > .pf-share-main { font-size: var(--text-sm); }
 .pf-mint-label { grid-column: 1; color: var(--text-3); }
-/* The chip keeps its whole name: the line has nothing in the columns after it. */
-.pf-mint-chip { grid-column: 2; display: inline-flex; align-items: center; gap: var(--space-1); width: max-content; white-space: nowrap; }
-.pf-mint-chip .addr, .pf-mint-chip .addr-label { flex: none; overflow: visible; }
+/* The mint's address alone, under the wallets' addresses and drawn as they
+   are: no icon and no name, which the asset's row has. */
+.pf-mint-addr { grid-column: 2; gap: var(--space-1); width: max-content; }
+.pf-mint-addr .cat, .pf-mint-addr .addr-label { display: none; }
+.pf-mint-addr .addr-row-rest { flex: none; }
 .pf-fold {
   display: flex;
   align-items: center;
