@@ -61,8 +61,8 @@ pub fn TxFacts(tx: DecodedTx) -> Element {
 
 /// The most the fee payer pays in fees: the base fee for each signature and
 /// the priority fee, which is named when there is one. The payer is drawn
-/// without its balance change, which is more than the fee and is listed
-/// under the instructions.
+/// without its balance change, which is more than the fee: the sentences
+/// say what else it pays.
 #[component]
 pub fn FeeLine(tx: DecodedTx) -> Element {
     let fee = match tx.budget.priority_fee.filter(|fee| *fee > 0) {

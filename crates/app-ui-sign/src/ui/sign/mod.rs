@@ -518,8 +518,8 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         PersonalSignBox { tx: tx.clone(), status: status.clone() }
 
         SimulatedDeltas {
-            // The signature rows draw no balance change: a signer's change is
-            // listed under the transaction, with every other account's.
+            // The signature rows draw no balance change, so a signer's change
+            // that no sentence names is listed under the transaction.
             TxView { tx: tx.as_ref().clone(), reading: reading.clone(), inspect,
                 on_inspect: move |_| view.set(SignView::Inspect),
                 fee_line: true,
@@ -560,7 +560,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
                 }
             }
             // What signing changes in a signer's balance is not a matter of
-            // signing: it stays under the transaction and in the Accounts list.
+            // signing: the sentences say it, and the Accounts list has it.
             WithoutDeltas {
                 SignerList { status: status.clone(), inspect, share: row_share }
             }

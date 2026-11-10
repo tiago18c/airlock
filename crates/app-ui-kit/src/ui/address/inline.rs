@@ -11,7 +11,7 @@ pub fn Address(
     #[props(default)]
     warn: bool,
     /// Draw what the account gains or loses, where the view provides
-    /// [`BalanceDeltas`]: for a list of what a transaction changes. An
+    /// [`BalanceDeltas`]: for a list of accounts a transaction changes. An
     /// address in a sentence leaves it out, since the sentence says in words
     /// what moves.
     #[props(default)]

@@ -64,7 +64,7 @@ pub fn SimulatedDeltas(
 /// beside the heading. With `on_inspect`, Summary says which instructions it
 /// leaves out, with a button that calls it to show them. `fee_line`: the
 /// screen draws [`FeeLine`] under this, so a fee payer whose only change is
-/// that fee is not listed again under "Changes".
+/// that fee is not listed again under "Also changes".
 #[component]
 pub fn TxView(
     tx: DecodedTx,
@@ -82,17 +82,15 @@ pub fn TxView(
         gave_up,
         ..
     } = reading;
-    // Summary's sentences say what moves in words, and their addresses carry
-    // no change. Every account that changes is listed once, on a line under
-    // the instructions, with what it gains or loses; Inspect lists every
-    // account. Left out: an account drawn as a row, which carries its change,
-    // and the signers the screen lists with theirs.
+    // Summary names only some accounts, in sentences that say what moves, so
+    // a named account carries no balance change. One that changes and is
+    // neither named nor a signer gets a line of its own, with its change;
+    // Inspect lists every account.
     let deltas = try_use_context::<BalanceDeltas>();
-    let (changed, also): (Vec<Pubkey>, bool) = match deltas {
+    let unnamed: Vec<Pubkey> = match deltas {
         Some(deltas) if !inspect => {
-            let mut rows = HashSet::new();
-            row_addresses(&explained.instructions, &mut rows);
-            let listed: HashSet<Pubkey> = signers.into_iter().collect();
+            let mut named: HashSet<Pubkey> = signers.into_iter().collect();
+            summary_addresses(&explained.instructions, &mut named);
             let deltas = deltas.0.read();
             // The fee line states what the fee payer pays in fees.
             let fee_payer = shown.fee_payer().filter(|_| fee_line);
@@ -103,24 +101,18 @@ pub fn TxView(
                         .get(pubkey)
                         .is_some_and(|(before, after)| after < before && before - after <= fee)
             };
-            let changed = shown
+            shown
                 .accounts
                 .iter()
                 .map(|account| account.pubkey)
                 .filter(|pubkey| {
-                    deltas.contains_key(pubkey)
-                        && !rows.contains(pubkey)
-                        && !listed.contains(pubkey)
-                        && !only_the_fee(pubkey)
+                    deltas.contains_key(pubkey) && !named.contains(pubkey) && !only_the_fee(pubkey)
                 })
-                .collect();
-            // Some changes are on rows above: the line holds the rest.
-            let also = rows.iter().any(|pubkey| deltas.contains_key(pubkey));
-            (changed, also)
+                .collect()
         }
-        _ => (Vec::new(), false),
+        _ => Vec::new(),
     };
-    let last = changed.len().saturating_sub(1);
+    let last = unnamed.len().saturating_sub(1);
     // What InstructionList leaves out of Summary at the top level.
     let left_out = match on_inspect {
         Some(on_inspect) if !inspect && !waiting => {
@@ -167,10 +159,10 @@ pub fn TxView(
         if !waiting {
             InstructionList { instructions: explained.instructions.clone(), inspect }
         }
-        if !changed.is_empty() {
+        if !unnamed.is_empty() {
             p { class: "fee-line muted",
-                if also { "Also changes " } else { "Changes " }
-                for (i, pubkey) in changed.into_iter().enumerate() {
+                "Also changes "
+                for (i, pubkey) in unnamed.into_iter().enumerate() {
                     // The comma closes its own item: the line's gap follows it.
                     span { key: "{pubkey}",
                         Address { pubkey, delta: true }
@@ -188,10 +180,9 @@ pub fn TxView(
     }
 }
 
-/// Every address Summary draws as a row for `instructions`: the accounts of
-/// an instruction [`InstructionBody`] has no sentence for. A row carries the
-/// account's balance change; an address in a sentence does not.
-fn row_addresses(instructions: &[ExplainedIx], rows: &mut HashSet<Pubkey>) {
+/// Every address Summary draws for `instructions`, the way
+/// [`InstructionBody`] decides what to draw.
+fn summary_addresses(instructions: &[ExplainedIx], named: &mut HashSet<Pubkey>) {
     for ix in instructions {
         let envelope = matches!(
             ix.inner.as_ref().map(|inner| &inner.kind),
@@ -203,13 +194,53 @@ fn row_addresses(instructions: &[ExplainedIx], rows: &mut HashSet<Pubkey>) {
         );
         if !envelope {
             match &ix.idl {
-                Some(IdlExplanation { spans: Some(_), .. }) => {}
-                Some(idl) => rows.extend(idl.accounts.iter().map(|account| account.pubkey)),
-                None => rows.extend(ix.accounts.iter().copied()),
+                Some(IdlExplanation {
+                    spans: Some(spans), ..
+                }) => named.extend(spans.iter().filter_map(|span| match span {
+                    IntentSpan::Value(IntentValue {
+                        body: IntentBody::Address(pubkey),
+                        ..
+                    }) => Some(*pubkey),
+                    _ => None,
+                })),
+                Some(idl) => named.extend(idl.accounts.iter().map(|account| account.pubkey)),
+                None => named.extend(ix.accounts.iter().copied()),
             }
         }
         if let Some(inner) = &ix.inner {
-            row_addresses(&inner.instructions, rows);
+            match &inner.kind {
+                InnerKind::Authorization { authorities, .. } => {
+                    for key in authorities {
+                        named.insert(key.authority);
+                        named.insert(key.address);
+                    }
+                }
+                InnerKind::Execution { nonce_account, .. } => {
+                    named.insert(*nonce_account);
+                }
+                InnerKind::SquadsTransaction { vault, .. } => {
+                    named.insert(*vault);
+                }
+                InnerKind::SquadsSync { vault, signers, .. } => {
+                    named.insert(*vault);
+                    named.extend(signers.iter().copied());
+                }
+                InnerKind::ProposalTransaction {
+                    governance,
+                    proposal,
+                    ..
+                } => {
+                    named.insert(*governance);
+                    named.insert(*proposal);
+                }
+                InnerKind::Passthrough { signers } => {
+                    for signer in signers {
+                        named.insert(signer.account);
+                        named.extend(signer.system);
+                    }
+                }
+            }
+            summary_addresses(&inner.instructions, named);
         }
     }
 }
