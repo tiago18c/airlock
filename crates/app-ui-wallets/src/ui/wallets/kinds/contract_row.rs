@@ -57,8 +57,6 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
                             CurrentChip {}
                         }
                     },
-                }
-                div { class: "wallet-end",
                     if show_balances && wallet.address.is_some() {
                         crate::ui::wallets::WalletBalance {
                             lamports,
@@ -69,6 +67,8 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
                             }),
                         }
                     }
+                }
+                div { class: "wallet-end",
                     div { class: "btn-row wallet-side",
                         if proposals_offered {
                             if let Some(squad) = squad {

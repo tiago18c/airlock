@@ -53,8 +53,6 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                             CurrentChip {}
                         }
                     },
-                }
-                div { class: "wallet-end",
                     if show_balances && pubkey.is_some() {
                         WalletBalance {
                             lamports,
@@ -65,6 +63,8 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                             }),
                         }
                     }
+                }
+                div { class: "wallet-end",
                     div { class: "btn-row wallet-side",
                         if on_device.is_some() {
                             if let Some(address) = pubkey {
