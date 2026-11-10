@@ -39,6 +39,8 @@ mod apps;
 pub use apps::{AppAnswer, AppCall, AppClaim, AppIdentity, AppSession, SignedIn};
 
 #[cfg(test)]
+mod extension_limits;
+#[cfg(test)]
 mod tests;
 
 /// How long a prompt waits for a decision in the window.
