@@ -25,6 +25,9 @@ pub fn AddressHeader(
     /// Beside the title: chips such as "current".
     #[props(default)]
     title_after: Option<Element>,
+    /// Leave the full address out, for a screen that draws it elsewhere.
+    #[props(default)]
+    no_address: bool,
     /// Under the address: a balance, and the like.
     children: Element,
 ) -> Element {
@@ -81,7 +84,7 @@ pub fn AddressHeader(
                 if !subtitle.is_empty() {
                     p { class: "muted", "{subtitle}" }
                 }
-                if let Some(pubkey) = pubkey {
+                if let Some(pubkey) = pubkey.filter(|_| !no_address) {
                     div { class: "addr-full",
                         code { class: "mono", "{pubkey}" }
                         CopyButton { text: pubkey.to_string() }

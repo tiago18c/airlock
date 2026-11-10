@@ -1198,7 +1198,6 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   border-radius: var(--radius-lg);
   background: var(--surface);
 }
-.group-list.programs { max-height: min(70vh, 40rem); overflow: auto; }
 .group-list:empty { display: none; }
 .group-item {
   display: flex;
@@ -1579,6 +1578,203 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 
 /* ---------- Programs ---------- */
 
+/* The list of programs: a wider column than the address book's groups, that
+   stays in view while the detail scrolls, with its own scroll when it is
+   taller than the window. It is one card, starting level with the detail:
+   the filter its first row, in place while the rows scroll under it. The
+   list and the detail's pinned header stop at the same offset, so the two
+   panes stay level while scrolled. */
+.program-layout {
+  --program-pin-top: var(--space-4);
+  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+}
+.program-side {
+  position: sticky;
+  top: var(--program-pin-top);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-height: calc(100vh - var(--topbar-h) - var(--space-8));
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+}
+.program-filter {
+  flex-shrink: 0;
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+.program-side > .program-none {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-md);
+}
+.program-side > .group-list {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.program-list { flex: 0 1 auto; min-height: 0; overflow: auto; }
+/* Rows a little tighter than the address book's, the name and the short
+   address close together. */
+.program-list .group-pick {
+  padding-top: calc(var(--space-1) * 1.5);
+  padding-bottom: calc(var(--space-1) * 1.5);
+}
+.program-list .addr-short { line-height: var(--leading-tight); }
+/* Each row: the name over the short address. Every entry is a program, so
+   the icon is left out; an address that needs care keeps its own beside
+   both. */
+.program-list .addr-row { flex: 1; }
+.program-list .addr-row-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--space-2);
+}
+.program-list .addr-row-main > .addr-label,
+.program-list .addr-row-main > .addr-short { grid-column: 1; }
+.program-list .addr-row-main > .addr-alert { grid-row: 1; grid-column: 2; }
+.program-list .addr-row-main:has(> .cat) { grid-template-columns: auto minmax(0, 1fr) auto; }
+.program-list .addr-row-main > .cat { grid-row: 1 / span 2; grid-column: 1; }
+.program-list .addr-row-main:has(> .cat) > .addr-label,
+.program-list .addr-row-main:has(> .cat) > .addr-short { grid-column: 2; }
+.program-list .addr-row-main:has(> .cat) > .addr-alert { grid-column: 3; }
+.program-list .addr-label {
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+}
+.program-list .addr-row-rest:empty { display: none; }
+.group-item.on .program-row .addr-short { color: inherit; opacity: 0.8; }
+
+/* The detail header: the program's name, pinned at the top of the pane with
+   the tabs under it while the rest scrolls, so what is being read stays in
+   sight. The name is one line, cut with an ellipsis; the tabs pin at its
+   height. The address, facts and provenance scroll away.
+   Pinned, the name and the tabs are one opaque block that draws the card's
+   top edge (border, rounded corners) over the card's own, with a rule
+   under the tabs, so rows go out of sight cleanly beneath it. At rest it
+   looks the same as the card's top. A strip of the page's background
+   above it hides what scrolls between the window's top and the block. */
+.program-detail {
+  --program-card-pad: var(--space-5);
+  --program-head-h: calc(32px + 2 * var(--space-2));
+  /* The pinned name's whole height: the card's top border and padding
+     above the name's own height. */
+  --program-head-full: calc(var(--program-head-h) + var(--space-3) + 1px);
+  /* One column no wider than the card, so a long line inside it (an
+     instruction's description) is cut where the card ends instead of
+     widening what holds it. */
+  grid-template-columns: minmax(0, 1fr);
+}
+.program-detail .idl-section { grid-template-columns: minmax(0, 1fr); }
+.program-head,
+.program-detail > .idl-tabs {
+  position: sticky;
+  z-index: var(--z-sticky);
+  background: var(--surface);
+}
+.program-head {
+  top: var(--program-pin-top, 0px);
+  display: flex;
+  align-items: center;
+  height: var(--program-head-full);
+  margin: calc(-1 * var(--program-card-pad) - 1px) calc(-1 * var(--program-card-pad) - 1px) 0;
+  padding: var(--space-3) var(--program-card-pad) 0;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  /* Closes the hairline between the strip above and this edge. */
+  box-shadow: 0 -2px 0 0 var(--bg);
+}
+.program-head::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  bottom: calc(100% + 1px);
+  height: var(--program-pin-top, 0px);
+  background: var(--bg);
+  pointer-events: none;
+}
+/* The tabs pin right under the name, 1px over it so no seam shows, and
+   carry the card's sides and the block's bottom rule. */
+.program-detail > .idl-tabs {
+  top: calc(var(--program-pin-top, 0px) + var(--program-head-full) - 1px);
+  margin-left: calc(-1 * var(--program-card-pad) - 1px);
+  margin-right: calc(-1 * var(--program-card-pad) - 1px);
+  padding-left: var(--program-card-pad);
+  padding-right: var(--program-card-pad);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+.program-head .addr-head { flex: 1; align-items: center; }
+.program-head .addr-badge { width: 32px; height: 32px; }
+.program-head .addr-badge .icon { width: 18px; height: 18px; }
+.program-head .addr-head-body h3 {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.program-head .addr-head-body h3 > * { margin-left: var(--space-2); vertical-align: middle; }
+/* The address under the name, lined up with it past the badge. */
+.program-about { margin-top: calc(-1 * var(--space-4) - var(--space-1)); }
+.program-address { padding-left: calc(32px + var(--space-3)); }
+/* The IDL's own name beside the one the list uses. */
+.program-idl-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  color: var(--text-3);
+}
+/* Two lines: the facts and the chips that describe the file, then the
+   state of the online check and Check online, which runs it, side by side
+   at the left as one group. */
+.program-facts-block { display: grid; gap: var(--space-2); justify-items: start; }
+.program-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+.program-check-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+
+/* An IDL's instructions, accounts, types and events: one bordered list,
+   a divider between rows, each opening in place. */
+.idl-list {
+  display: grid;
+  /* One column no wider than the list, so a row's text never sizes it. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.idl-list:empty { display: none; }
+.idl-list > .idl-item { border: 0; border-radius: 0; background: transparent; }
+.idl-list > .idl-item + .idl-item { border-top: 1px solid var(--border); }
+.idl-list > .idl-item > summary { border-radius: 0; }
+/* An open row is one panel: its name and its body share a background and a
+   rule down the left. */
+.idl-list > .idl-item[open] {
+  background: var(--surface-2);
+  box-shadow: inset 2px 0 0 var(--brand);
+}
+.idl-list > .idl-item[open] > summary:hover { background: var(--surface-3); }
+.idl-list > .idl-item[open] > .idl-body { padding-top: var(--space-1); }
+
 .idl-raw {
   margin: 0;
   max-height: min(70vh, 48rem);
@@ -1607,31 +1803,139 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   background: var(--surface);
 }
 .idl-item[open] { border-color: var(--border-control); }
+/* The app's chevron instead of the browser's triangle; it turns open. */
 .idl-item > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
+  list-style: none;
   font-family: var(--font-mono);
   font-size: var(--text-md);
   font-weight: var(--weight-medium);
   cursor: pointer;
 }
 .idl-item > summary:hover { background: var(--surface-2); }
-.idl-body { display: grid; gap: 6px; padding: var(--space-1) var(--space-3) var(--space-3); }
+.idl-item > summary::-webkit-details-marker,
+.idl-item > summary::marker { display: none; content: ""; }
+.idl-chevron {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--text-3);
+  transition: transform var(--fast) var(--ease);
+}
+.idl-chevron .icon { width: 16px; height: 16px; }
+.idl-item[open] > summary .idl-chevron { transform: rotate(90deg); }
+.idl-name { min-width: 0; overflow-wrap: anywhere; }
+/* A collapsed instruction: its name in regular weight on a column as wide
+   as the list's longest name (`--ix-name-w`, set by the list, in the
+   name's own `ch`), capped at a share of the row and cut with an ellipsis
+   past it; how many accounts and arguments it takes at the end, and
+   between them the first sentence of its description in what is left,
+   ending in an ellipsis where it does not fit. Open, the name is in full
+   and the description is in full below, so the cut one goes. */
+.idl-ix > summary { min-width: 0; font-weight: var(--weight-regular); }
+.idl-ix > summary .idl-name {
+  flex: 0 0 min(var(--ix-name-w, 40%), 40%);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.idl-ix[open] > summary .idl-name { white-space: normal; overflow-wrap: anywhere; }
+.idl-gist,
+.idl-counts { font-family: var(--font-sans); }
+.idl-gist { color: var(--text-2); }
+.idl-counts { color: var(--text-3); }
+.idl-gist {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.idl-counts {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+.idl-ix[open] > summary .idl-gist { visibility: hidden; }
+/* What an item opens to lines up with its name, past the chevron. An opened
+   instruction is its description, then its accounts and arguments, each a
+   block of two-column rows under a small label: the names on a column as
+   wide as the instruction's longest (`--idl-name-w`, in the name's own
+   `ch`, capped at half the body), and the flags or type a little past it. */
+.idl-body {
+  container-type: inline-size;
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-1) var(--space-3) var(--space-3) calc(var(--space-3) + 16px + var(--space-2));
+}
 .idl-lines { display: grid; gap: var(--space-1); padding-left: 1.1rem; }
+.idl-docs { color: var(--text-2); max-width: 72ch; }
+.idl-block { display: grid; gap: var(--space-2); }
+.idl-rows { display: grid; gap: var(--space-1); list-style: none; }
+.idl-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3) var(--space-6);
+  min-height: 24px;
+}
+.idl-row-name {
+  width: min(var(--idl-name-w, 14rem), 50cqi);
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  color: var(--text);
+}
+.idl-row-type { min-width: 0; overflow-wrap: anywhere; color: var(--text-2); }
+/* An argument's type, then, for one the IDL sets, a muted "fixed" and its
+   value. */
+.idl-row-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-2);
+  min-width: 0;
+}
+.idl-fixed {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  min-width: 0;
+  color: var(--text-3);
+  font-size: var(--text-sm);
+  cursor: default;
+}
+.idl-fixed-value { min-width: 0; overflow-wrap: anywhere; color: var(--text-3); font-size: var(--text-sm); }
+.idl-flags { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+/* The open panel is sunken; the flags keep the card's surface to stand out. */
+.idl-flags .chip { background: var(--surface); }
+/* The account that signs keeps its accent, as in the transaction view. */
+.idl-flags .chip.kind { background: var(--brand-soft); }
 
+/* The IDL's tabs: the open one underlined in the brand colour, in full (the
+   shared tabs hang 1px over the border, which this row clips), and each
+   count as legible as the app's secondary text. */
 .idl-tabs { margin-top: calc(-1 * var(--space-2)); }
+.idl-tabs > .tab { margin-bottom: 0; }
+.idl-tabs > .tab.on { border-bottom-color: var(--brand); }
 .tab-count {
   margin-left: 6px;
   padding: 0 6px;
   border-radius: var(--radius-full);
   background: var(--surface-2);
-  color: var(--text-3);
-  font-size: var(--text-xs);
+  color: var(--text-2);
+  font-size: var(--text-sm);
   font-weight: var(--weight-medium);
 }
 .tab.on .tab-count { background: var(--brand-soft); color: var(--brand-text); }
 .idl-leaf {
-  padding: var(--space-2) var(--space-3);
+  /* Names line up with those past a chevron. */
+  padding: var(--space-2) var(--space-3) var(--space-2) calc(var(--space-3) + 16px + var(--space-2));
   font-family: var(--font-mono);
   font-size: var(--text-md);
   font-weight: var(--weight-medium);
@@ -2027,7 +2331,31 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 
 @media (max-width: 760px) {
   .book-layout { grid-template-columns: 1fr; }
-  .group-list.programs { max-height: 14rem; }
+  .program-layout { grid-template-columns: minmax(0, 1fr); }
+  .program-side { position: static; max-height: none; }
+  .program-list { max-height: 14rem; }
+}
+
+@media (max-width: 639px) {
+  /* An instruction's rows: the name over its flags or type, and the body
+     no longer indented past the chevron. */
+  .idl-body { padding-left: var(--space-3); }
+  .idl-row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .idl-row-name { width: auto; }
+  .idl-rows { gap: var(--space-2); }
+  /* The top bar is the one thing pinned here; the program's name and tabs
+     scroll with the page. A collapsed instruction is its name and what it
+     takes, without the description. */
+  .program-head, .program-detail > .idl-tabs { position: static; }
+  .program-head::before { display: none; }
+  /* The card's smaller padding here: the name keeps its place in it. */
+  .program-detail {
+    --program-card-pad: var(--space-4);
+    --program-head-full: calc(var(--program-head-h) + var(--space-2) + 1px);
+  }
+  .program-head { padding-top: var(--space-2); }
+  .idl-ix > summary .idl-gist { display: none; }
+  .idl-ix > summary .idl-name { flex: 0 1 auto; }
 }
 
 /* Below 640px navigation moves to a bar along the bottom edge. */

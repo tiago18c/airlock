@@ -248,3 +248,43 @@ fn an_old_book_reads_owners_and_contacts_as_accounts() {
         .iter()
         .all(|entry| entry.kind == AddressKind::Account));
 }
+
+#[test]
+fn a_shipped_program_is_shown_by_its_display_name_and_others_by_their_idl_name() {
+    let memo_v1 = Pubkey::from_str_const("Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo");
+    let programs = HashMap::from([
+        (COMPUTE_BUDGET_PROGRAM_ID, "computeBudget".to_string()),
+        (MEMO_PROGRAM_ID, "memo".to_string()),
+        (memo_v1, "memo".to_string()),
+        (pk(9), "myProgram".to_string()),
+    ]);
+    let found = Directory::with_programs(
+        &[],
+        Arc::new(AddressBook::new()),
+        Arc::new(Holdings::default()),
+        programs,
+    );
+    let label = |pubkey: &Pubkey| found.describe(pubkey).label;
+    assert_eq!(
+        label(&COMPUTE_BUDGET_PROGRAM_ID).as_deref(),
+        Some("Compute Budget Program")
+    );
+    assert_eq!(label(&MEMO_PROGRAM_ID).as_deref(), Some("Memo Program"));
+    assert_eq!(label(&memo_v1).as_deref(), Some("Memo Program v1"));
+    assert_eq!(label(&pk(9)).as_deref(), Some("myProgram"));
+    // A shipped name is never given to a program no IDL describes here.
+    assert_eq!(label(&SQUADS_V4_PROGRAM_ID), None);
+}
+
+#[test]
+fn every_shipped_program_has_one_display_name() {
+    for (i, (pubkey, name)) in PROGRAM_DISPLAY_NAMES.iter().enumerate() {
+        assert!(name.ends_with("Program") || name.contains("Program v"));
+        assert!(
+            PROGRAM_DISPLAY_NAMES[i + 1..]
+                .iter()
+                .all(|(other, _)| other != pubkey),
+            "{pubkey} is listed twice"
+        );
+    }
+}

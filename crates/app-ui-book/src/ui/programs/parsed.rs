@@ -77,60 +77,27 @@ pub(in crate::ui) fn IdlTabs(
 pub(in crate::ui) fn ParsedIdl(tree: IdlOutline, section: IdlSection) -> Element {
     match section {
         IdlSection::Instructions => rsx! {
-            div { class: "idl-section",
-                if tree.instructions.is_empty() {
-                    p { class: "muted", "This IDL describes no instructions." }
-                }
-                for ix in tree.instructions {
-                    details { class: "idl-item", key: "{ix.name}",
-                        summary { "{ix.name}" }
-                        div { class: "idl-body",
-                            if !ix.docs.is_empty() {
-                                p { "{ix.docs}" }
-                            }
-                            if !ix.accounts.is_empty() {
-                                p { class: "muted", "Accounts" }
-                                ul { class: "idl-lines",
-                                    for account in ix.accounts {
-                                        li { key: "{account.name}", "{account_line(&account)}" }
-                                    }
-                                }
-                            }
-                            if !ix.arguments.is_empty() {
-                                p { class: "muted", "Arguments" }
-                                ul { class: "idl-lines",
-                                    for arg in ix.arguments {
-                                        li { key: "{arg.name}",
-                                            span { "{arg.name}" }
-                                            span { class: "muted", " {arg.ty}" }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            InstructionList { instructions: tree.instructions }
         },
         IdlSection::Accounts => rsx! {
-            div { class: "idl-section",
+            div { class: "idl-section idl-list",
                 for account in tree.accounts {
                     NamedItem { key: "{account.name}", name: account.name, detail: account.detail }
                 }
             }
         },
         IdlSection::Types => rsx! {
-            div { class: "idl-section",
+            div { class: "idl-section idl-list",
                 for kind in tree.types {
                     NamedItem { key: "{kind.name}", name: kind.name, detail: kind.detail }
                 }
             }
         },
         IdlSection::Pdas => rsx! {
-            div { class: "idl-section",
+            div { class: "idl-section idl-list",
                 for pda in tree.pdas {
                     details { class: "idl-item", key: "{pda.name}",
-                        summary { "{pda.name}" }
+                        IdlSummary { name: pda.name.clone() }
                         if !pda.seeds.is_empty() {
                             div { class: "idl-body",
                                 ul { class: "idl-lines",
@@ -145,7 +112,7 @@ pub(in crate::ui) fn ParsedIdl(tree: IdlOutline, section: IdlSection) -> Element
             }
         },
         IdlSection::Events => rsx! {
-            div { class: "idl-section",
+            div { class: "idl-section idl-list",
                 for event in tree.events {
                     NamedItem { key: "{event.name}", name: event.name, detail: event.detail }
                 }
@@ -171,6 +138,122 @@ pub(in crate::ui) fn ParsedIdl(tree: IdlOutline, section: IdlSection) -> Element
     }
 }
 
+/// The instructions tab: a filter by name over one list, each instruction
+/// opening in place to its accounts and arguments.
+#[component]
+fn InstructionList(instructions: Vec<IdlIxOutline>) -> Element {
+    let mut filter = use_signal(String::new);
+    let any = !instructions.is_empty();
+    // One column for the names of the whole list, as wide as the longest
+    // (the CSS caps it), so every description starts at the same place.
+    let name_width = longest(instructions.iter().map(|ix| ix.name.as_str()));
+    let shown: Vec<_> = instructions
+        .into_iter()
+        .filter(|ix| name_matches(&ix.name, &filter()))
+        .collect();
+
+    rsx! {
+        div { class: "idl-section",
+            if !any {
+                p { class: "muted", "This IDL describes no instructions." }
+            } else {
+                div { class: "filter-bar",
+                    label {
+                        span { class: "sr-only", "Filter instructions" }
+                        input {
+                            r#type: "search",
+                            placeholder: "Instruction name",
+                            value: "{filter}",
+                            oninput: move |e| filter.set(e.value()),
+                        }
+                    }
+                }
+                if shown.is_empty() {
+                    p { class: "muted", "No instructions match this filter." }
+                }
+            }
+            div { class: "idl-list", style: "--ix-name-w: {name_width}ch",
+                for ix in shown {
+                    details { class: "idl-item idl-ix", key: "{ix.name}",
+                        summary {
+                            span { class: "idl-chevron", aria_hidden: "true", Icon { glyph: Glyph::ChevronRight } }
+                            span { class: "idl-name", title: "{ix.name}", "{ix.name}" }
+                            if let Some(gist) = first_sentence(&ix.docs) {
+                                span { class: "idl-gist", "{gist}" }
+                            }
+                            span { class: "idl-counts", "{shape(ix.accounts.len(), ix.arguments.len())}" }
+                        }
+                        div { class: "idl-body",
+                            // The names of its accounts and arguments on one
+                            // column, as wide as the longest of them.
+                            style: "--idl-name-w: {row_names_width(&ix)}ch",
+                            if !ix.docs.is_empty() {
+                                p { class: "idl-docs", "{ix.docs}" }
+                            }
+                            if !ix.accounts.is_empty() {
+                                div { class: "idl-block",
+                                    h4 { class: "eyebrow", "Accounts" }
+                                    ul { class: "idl-rows",
+                                        for account in ix.accounts.iter() {
+                                            li { class: "idl-row", key: "{account.name}",
+                                                span { class: "idl-row-name", "{account.name}" }
+                                                span { class: "idl-flags",
+                                                    for flag in account_flags(account) {
+                                                        span { class: flag_class(&flag), key: "{flag}", "{flag}" }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if !ix.arguments.is_empty() {
+                                div { class: "idl-block",
+                                    h4 { class: "eyebrow", "Arguments" }
+                                    ul { class: "idl-rows",
+                                        for arg in ix.arguments.iter() {
+                                            li { class: "idl-row", key: "{arg.name}",
+                                                span { class: "idl-row-name", "{arg.name}" }
+                                                span { class: "idl-row-value",
+                                                    code { class: "idl-row-type", "{arg.ty}" }
+                                                    // A value the IDL sets, which
+                                                    // the caller does not supply.
+                                                    if arg.fixed {
+                                                        span {
+                                                            class: "idl-fixed",
+                                                            title: "Set by the IDL: the caller does not supply it",
+                                                            "fixed"
+                                                            if let Some(value) = arg.fixed_value.clone() {
+                                                                code { class: "idl-fixed-value", "{value}" }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// The row that opens an IDL item: the app's chevron, which turns when the
+/// item is open, then the name.
+#[component]
+fn IdlSummary(name: String) -> Element {
+    rsx! {
+        summary {
+            span { class: "idl-chevron", aria_hidden: "true", Icon { glyph: Glyph::ChevronRight } }
+            span { class: "idl-name", "{name}" }
+        }
+    }
+}
+
 /// An account, type or event: its name, opening to what it holds.
 #[component]
 fn NamedItem(name: String, detail: String) -> Element {
@@ -179,24 +262,89 @@ fn NamedItem(name: String, detail: String) -> Element {
     }
     rsx! {
         details { class: "idl-item",
-            summary { "{name}" }
+            IdlSummary { name }
             div { class: "idl-body", p { "{detail}" } }
         }
     }
 }
 
-pub(in crate::ui) fn account_line(account: &IdlAccountUse) -> String {
-    let access = if account.writable {
-        "writable"
-    } else {
-        "readonly"
-    };
-    if account.optional {
-        format!(
-            "{} · {access} · {} · optional",
-            account.name, account.signer
-        )
-    } else {
-        format!("{} · {access} · {}", account.name, account.signer)
+/// How many characters the longest of these names has, at least one.
+pub(in crate::ui) fn longest<'a>(names: impl Iterator<Item = &'a str>) -> usize {
+    names
+        .map(|name| name.chars().count())
+        .max()
+        .unwrap_or(0)
+        .max(1)
+}
+
+/// The width of an opened instruction's name column: its longest account
+/// or argument name.
+pub(in crate::ui) fn row_names_width(ix: &IdlIxOutline) -> usize {
+    longest(
+        ix.accounts
+            .iter()
+            .map(|account| account.name.as_str())
+            .chain(ix.arguments.iter().map(|arg| arg.name.as_str())),
+    )
+}
+
+/// The pill a flag is drawn in: the account that signs in the accent, as
+/// the transaction view's account list draws it.
+pub(in crate::ui) fn flag_class(flag: &str) -> &'static str {
+    match flag {
+        "signer" | "signer optional" => "chip kind",
+        _ => "chip",
     }
+}
+
+/// What a collapsed instruction says it takes: "4 accounts · 3 args".
+pub(in crate::ui) fn shape(accounts: usize, args: usize) -> String {
+    fn count(n: usize, one: &str) -> String {
+        if n == 1 {
+            format!("1 {one}")
+        } else {
+            format!("{n} {one}s")
+        }
+    }
+    format!("{} · {}", count(accounts, "account"), count(args, "arg"))
+}
+
+/// The first sentence of an instruction's description, for its collapsed
+/// row; `None` when it has none. An IDL's docs are lines, often one
+/// sentence wrapped over several, so the lines of the first paragraph are
+/// read as one.
+pub(in crate::ui) fn first_sentence(docs: &str) -> Option<String> {
+    let paragraph = docs
+        .lines()
+        .map(str::trim)
+        .skip_while(|line| line.is_empty())
+        .take_while(|line| !line.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ");
+    let end = paragraph
+        .match_indices(". ")
+        .next()
+        .map_or(paragraph.len(), |(at, _)| at + 1);
+    let sentence = paragraph[..end].trim();
+    (!sentence.is_empty()).then(|| sentence.to_string())
+}
+
+/// What an instruction's account is drawn with, as the transaction view
+/// draws them: writable or readonly, then whether it signs. An account that
+/// may sign or not ("either" in the IDL) is "signer optional".
+pub(in crate::ui) fn account_flags(account: &IdlAccountUse) -> Vec<String> {
+    let mut flags = vec![if account.writable {
+        "writable".to_string()
+    } else {
+        "readonly".to_string()
+    }];
+    match account.signer.trim() {
+        "" | "not a signer" => {}
+        "either" => flags.push("signer optional".into()),
+        other => flags.push(other.to_string()),
+    }
+    if account.optional {
+        flags.push("optional".into());
+    }
+    flags
 }

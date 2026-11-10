@@ -935,3 +935,53 @@ fn a_record_from_before_turns_were_kept_reads_as_the_oldest() {
     let written = serde_json::to_value(&record).unwrap();
     assert!(written.get("readTurn").is_none());
 }
+
+#[test]
+fn a_one_byte_number_has_no_byte_order() {
+    let number = |format: &str| serde_json::json!({ "kind": "numberTypeNode", "format": format, "endian": "le" });
+    assert_eq!(outline::type_text(&number("u8")), "u8");
+    assert_eq!(outline::type_text(&number("i8")), "i8");
+    assert_eq!(outline::type_text(&number("u64")), "u64 le");
+}
+
+#[test]
+fn an_omitted_default_is_a_fixed_argument_with_its_value() {
+    let arg = |extra: serde_json::Value| {
+        let mut node = serde_json::json!({
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": { "kind": "numberTypeNode", "format": "u8", "endian": "le" },
+        });
+        node.as_object_mut()
+            .unwrap()
+            .extend(extra.as_object().unwrap().clone());
+        outline::argument_outline(&node)
+    };
+    let number = arg(serde_json::json!({
+        "defaultValue": { "kind": "numberValueNode", "number": 12 },
+        "defaultValueStrategy": "omitted",
+    }));
+    assert!(number.fixed);
+    assert_eq!(number.fixed_value.as_deref(), Some("12"));
+
+    let bytes = arg(serde_json::json!({
+        "defaultValue": { "kind": "bytesValueNode", "encoding": "base16", "data": "e445a52e51cb9a1d" },
+        "defaultValueStrategy": "omitted",
+    }));
+    assert_eq!(bytes.fixed_value.as_deref(), Some("0xe445a52e51cb9a1d"));
+
+    // A default the caller may replace is not fixed, nor is a value the
+    // outline cannot put in words given one.
+    let optional = arg(serde_json::json!({
+        "defaultValue": { "kind": "numberValueNode", "number": 1 },
+        "defaultValueStrategy": "optional",
+    }));
+    assert!(!optional.fixed);
+    let linked = arg(serde_json::json!({
+        "defaultValue": { "kind": "argumentValueNode", "name": "amount" },
+        "defaultValueStrategy": "omitted",
+    }));
+    assert!(linked.fixed);
+    assert_eq!(linked.fixed_value, None);
+    assert!(!arg(serde_json::json!({})).fixed);
+}
