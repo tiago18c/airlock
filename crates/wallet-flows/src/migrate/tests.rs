@@ -62,6 +62,14 @@ fn snapshot(rpc: &FakeRpc, route: &SigningRoute) -> Snapshot {
     snapshot
 }
 
+/// Nothing chosen but the SOL.
+fn send_sol() -> Choices {
+    Choices {
+        sol: true,
+        ..Choices::default()
+    }
+}
+
 fn node() -> FakeRpc {
     FakeRpc::default().with_account(pk(SOURCE), system(1_000_000_000))
 }
@@ -208,7 +216,7 @@ fn a_wallet_another_pays_for_sends_everything() {
     snap.tokens.clear();
     snap.stakes.clear();
     snap.nonces.clear();
-    let made = plan(&route, &snap, &Choices::default()).unwrap();
+    let made = plan(&route, &snap, &send_sol()).unwrap();
     let (last, _) = pollster::block_on(prepare(&rpc, &route, &snap, &made, 0))
         .unwrap()
         .unwrap();
@@ -235,7 +243,7 @@ fn an_account_a_program_owns_keeps_its_rent() {
     let snap = pollster::block_on(snapshot_with(&rpc, &route, pk(TO), Vec::new(), NOW)).unwrap();
     // The fake node's rent for any size.
     assert_eq!(snap.rent_exempt, 2_282_880);
-    let made = plan(&route, &snap, &Choices::default()).unwrap();
+    let made = plan(&route, &snap, &send_sol()).unwrap();
     let (last, _) = pollster::block_on(prepare(&rpc, &route, &snap, &made, 0))
         .unwrap()
         .unwrap();
@@ -274,4 +282,37 @@ fn the_wallets_own_nonce_stays_and_the_rest_reads_from_the_node() {
             NonceOutcome::Left(wallet_core::migrate::NonceBlocked::InUse)
         )]
     );
+}
+
+#[test]
+fn the_sol_stays_unless_it_is_chosen() {
+    let rpc = node();
+    let route = plain();
+    let mut snap = snapshot(&rpc, &route);
+    snap.tokens.clear();
+    let mut choices = default_choices(&route, &snap, &BTreeSet::new());
+    assert!(choices.sol);
+    choices.sol = false;
+    let made = plan(&route, &snap, &choices).unwrap();
+    assert!(!made.sweeps);
+    assert_eq!(made.steps(), 1);
+    let (last, _) = pollster::block_on(prepare(&rpc, &route, &snap, &made, 0))
+        .unwrap()
+        .unwrap();
+    let tx = decode_v1_transaction(&last.wire).unwrap();
+    // The stake hand-over and the nonce close, and no transfer.
+    let programs: Vec<Pubkey> = tx.instructions.iter().map(|ix| ix.program_id).collect();
+    assert_eq!(
+        programs,
+        vec![STAKE_PROGRAM_ID, STAKE_PROGRAM_ID, SYSTEM_PROGRAM_ID]
+    );
+    assert!(!last.note.plain().contains("sends"));
+
+    // With the stake and nonces left too, nothing is left to do.
+    let nothing = Choices::default();
+    let made = plan(&route, &snap, &nothing).unwrap();
+    assert_eq!(made.steps(), 0);
+    assert!(pollster::block_on(prepare(&rpc, &route, &snap, &made, 0))
+        .unwrap()
+        .is_none());
 }

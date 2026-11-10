@@ -237,11 +237,14 @@ pub struct Choices {
     pub stakes: BTreeMap<Pubkey, StakeChoice>,
     /// The nonce accounts to close.
     pub nonces: BTreeSet<Pubkey>,
+    /// Send the wallet's SOL in the last step.
+    pub sol: bool,
 }
 
 /// What the screen starts with: move every token but the flagged ones,
 /// which are burned; hand both authorities of every stake account over;
-/// close every nonce account the wallet's transactions do not live on.
+/// close every nonce account the wallet's transactions do not live on; and
+/// send the SOL.
 pub fn default_choices(
     route: &SigningRoute,
     snapshot: &Snapshot,
@@ -274,6 +277,7 @@ pub fn default_choices(
             .map(|nonce| nonce.address)
             .filter(|address| route.durable_nonce != Some(*address))
             .collect(),
+        sol: true,
     }
 }
 
@@ -291,6 +295,8 @@ pub struct MigrationPlan {
     /// the receiving accounts it creates. The step itself works it out
     /// again exactly.
     pub sweep_estimate: u64,
+    /// The SOL is sent: it was chosen, and there is some to send.
+    pub sweeps: bool,
 }
 
 impl MigrationPlan {
@@ -298,7 +304,7 @@ impl MigrationPlan {
     /// instructions, the sweep with the last, or the sweep alone.
     pub fn final_steps(&self) -> usize {
         if self.ops.is_empty() {
-            usize::from(self.sweep_estimate > 0)
+            usize::from(self.sweeps)
         } else {
             self.ops.len()
         }
@@ -396,6 +402,7 @@ pub fn plan(
         nonces,
         ops: chunk_ops(ops, per_step),
         sweep_estimate,
+        sweeps: choices.sol && sweep_estimate > 0,
     })
 }
 
@@ -442,6 +449,14 @@ pub async fn prepare(
         (ops, note)
     } else {
         let ops = plan.ops.first().cloned().unwrap_or_default();
+        if !plan.sweeps {
+            if ops.is_empty() {
+                return Ok(None);
+            }
+            let note = ops_note(snapshot, &ops).t(".");
+            let (prepared, height) = compile(rpc, route, payer, ops, counted(note)).await?;
+            return Ok(Some((prepared, height)));
+        }
         // Read now: the token steps changed it.
         let account = rpc.get_account(&snapshot.source).await?;
         let balance = account.as_ref().map_or(0, |raw| raw.lamports);
