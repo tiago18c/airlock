@@ -235,10 +235,7 @@ pub async fn create_durable_nonce(session: Session, id: WalletId) -> Result<(), 
         .await
         .map_err(|err| err.to_string())?;
     session
-        .update_wallet(id, |kind| {
-            kind.set_durable_nonce(Some(made.account));
-            kind.default_path_unless_chosen(wallet_core::OfflinePath::DurableNonce);
-        })
+        .update_wallet(id, |kind| kind.set_durable_nonce(Some(made.account)))
         .map_err(|err| err.to_string())?;
     session.open_in_sign(
         SignLoad::new(made.wire, TxSource::Wallets).with_note(

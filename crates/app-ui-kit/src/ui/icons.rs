@@ -36,6 +36,8 @@ pub enum Glyph {
     Copy,
     Check,
     Alert,
+    /// An "i" in a circle: something to know, beside an informational note.
+    Info,
     X,
     More,
     /// Three lines: a menu of a pane's less used actions.
@@ -46,6 +48,10 @@ pub enum Glyph {
     Focus,
     /// A magnifier: look inside.
     Search,
+    /// A QR code: show something for another device to scan.
+    Qr,
+    /// The wheel that opens settings.
+    Gear,
 }
 
 impl Glyph {
@@ -186,6 +192,11 @@ impl Glyph {
             ],
             Glyph::Check => &["M5 12.5l4.5 4.5L19 7.5"],
             Glyph::Alert => &["M12 4 2.5 20h19L12 4Z", "M12 10v4", "M12 17h.01"],
+            Glyph::Info => &[
+                "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z",
+                "M12 11v5.5",
+                "M12 7.5h.01",
+            ],
             Glyph::X => &["M6 6l12 12", "M18 6 6 18"],
             Glyph::More => &["M5 12h.01", "M12 12h.01", "M19 12h.01"],
             Glyph::Menu => &["M4 7h16", "M4 12h16", "M4 17h16"],
@@ -204,6 +215,19 @@ impl Glyph {
                 "M12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z",
             ],
             Glyph::Search => &["M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z", "M15.3 15.3 20 20"],
+            Glyph::Qr => &[
+                "M4 4h6v6H4Z",
+                "M14 4h6v6h-6Z",
+                "M4 14h6v6H4Z",
+                "M14 14h2v2h-2Z",
+                "M20 14v2",
+                "M14 20h2",
+                "M18 18h2v2h-2Z",
+            ],
+            Glyph::Gear => &[
+                "M10.4 5.08L10.69 2.69L13.31 2.69L13.6 5.08L15.76 5.98L17.66 4.49L19.51 6.34L18.02 8.24L18.92 10.4L21.31 10.69L21.31 13.31L18.92 13.6L18.02 15.76L19.51 17.66L17.66 19.51L15.76 18.02L13.6 18.92L13.31 21.31L10.69 21.31L10.4 18.92L8.24 18.02L6.34 19.51L4.49 17.66L5.98 15.76L5.08 13.6L2.69 13.31L2.69 10.69L5.08 10.4L5.98 8.24L4.49 6.34L6.34 4.49L8.24 5.98Z",
+                "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z",
+            ],
         }
     }
 }

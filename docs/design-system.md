@@ -75,7 +75,8 @@ Contrast, checked for both themes: body and secondary text at least 7:1, hint te
 | Row | `.book-row`, `.wallet-row` | List entries. Row actions appear on hover or focus, always on touch |
 | Dialog | `.modal-backdrop > .modal` | A bottom sheet under 640px |
 | Accordion | `Accordion { title, open }` | Optional detail |
-| Pane menu | `PaneMenu { label }` holding `button.pane-menu-item` with `role: "menuitem"` | A pane's less used actions, behind a three-line button at the end of its header. It closes on a choice, a press outside or Escape |
+| Pane menu | `PaneMenu { label }` holding `button.pane-menu-item` with `role: "menuitem"` | A pane's less used actions, behind a three-line button at the end of its header. It closes on a choice, a press outside or Escape. `glyph: Glyph::More, small: true` makes it the three-dot menu at the end of a row's buttons, as on a wallet card |
+| Settings and details of a row | `button.icon-btn.sm` with `Glyph::Gear` and `Glyph::Info`, each opening a `.modal`; on a wallet card, `WalletDialogButtons { wallet }` | What can be changed about a row's subject goes behind the wheel, in a dialog that keeps the choices until **Save** and says "Not saved yet" meanwhile. What can only be read goes behind the "i", in a dialog with **Close** and a button to the settings. The row itself keeps only what identifies its subject and what needs attention. An action that starts a transaction acts at once, wherever it is |
 | Copy | `CopyButton { text }` | An icon. Its tooltip and accessible name say "Copy to clipboard"; it shows a check for a moment after copying |
 
 ## Addresses

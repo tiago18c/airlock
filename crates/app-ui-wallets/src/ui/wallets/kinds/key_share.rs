@@ -4,6 +4,7 @@
 use super::*;
 use crate::ui::transfer::receive::QrScanner;
 use crate::ui::transfer::send::PayloadShare;
+use crate::ui::{Glyph, Icon, PaneMenu};
 use wallet_core::protocol::{
     decode_payload, encode_wallet_keys, parse_payload_text, QrObject, WalletKey,
 };
@@ -65,26 +66,45 @@ pub(in crate::ui) fn KeyExportModal(keys: Vec<WalletKey>, on_close: EventHandler
     }
 }
 
-/// A row's button that exports its wallet's public key, when another device
-/// can add it by that key.
+/// A wallet row's less used actions, at the end of its buttons: Export key,
+/// when another device can add the wallet by its key, and Remove. The
+/// export dialog lives here, not in the menu, so it outlasts the menu.
 #[component]
-pub(in crate::ui) fn ExportKeyButton(id: WalletId) -> Element {
+pub(in crate::ui) fn WalletRowMenu(id: WalletId, on_remove: EventHandler<()>) -> Element {
     let session = use_context::<Session>();
-    let mut open = use_signal(|| false);
+    let mut export_open = use_signal(|| false);
     let found = exportable(&(session.wallets)().summaries)
         .into_iter()
         .find(|one| one.id == id);
-    let Some(found) = found else {
-        return rsx! {};
-    };
+    let export_title = found.as_ref().map(|found| {
+        format!(
+            "Show this wallet's public key, for another device to add it as {}",
+            found.becomes
+        )
+    });
     rsx! {
-        button { class: "sm",
-            title: "Show this wallet's public key, for another device to add it as {found.becomes}",
-            onclick: move |_| open.set(true),
-            "Export key"
+        PaneMenu { label: "More actions", glyph: Glyph::More, small: true,
+            if let Some(title) = export_title {
+                button { class: "pane-menu-item",
+                    role: "menuitem",
+                    title,
+                    onclick: move |_| export_open.set(true),
+                    Icon { glyph: Glyph::Qr }
+                    "Export key"
+                }
+            }
+            button { class: "pane-menu-item danger",
+                role: "menuitem",
+                title: "Remove this wallet from this device",
+                onclick: move |_| on_remove.call(()),
+                Icon { glyph: Glyph::Trash }
+                "Remove"
+            }
         }
-        if open() {
-            KeyExportModal { keys: vec![found.key.clone()], on_close: move |_| open.set(false) }
+        if export_open() {
+            if let Some(found) = found {
+                KeyExportModal { keys: vec![found.key.clone()], on_close: move |_| export_open.set(false) }
+            }
         }
     }
 }

@@ -1168,8 +1168,8 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   text-transform: uppercase;
 }
 .balance { font-weight: var(--weight-semibold); font-variant-numeric: tabular-nums; }
-/* A wallet's balance and the send button beside it. */
-.wallet-balance { display: flex; align-items: center; gap: var(--space-1); }
+/* A wallet's balance and the send button beside it, under its address. */
+.wallet-balance { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); }
 .wallet-balance .balance { margin: 0; }
 
 /* An instruction row leads with its sentence; a lone chip keeps its own width. */
@@ -2137,11 +2137,177 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 }
 .group-title { font-size: var(--text-md); margin-top: var(--space-3); }
 .wallet-row h3 .chip { margin-left: var(--space-2); vertical-align: middle; }
-.wallet-settings {
+/* The Wallets pane's group headings: a step above the old size, more room
+   above a group than inside it, and the heading close to its own cards. */
+.group-title.wallets-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-base);
+  color: var(--text);
+  margin-top: var(--space-6);
+  margin-bottom: calc(var(--space-2) - var(--space-4));
+}
+.stack > .group-title.wallets-group:first-of-type { margin-top: var(--space-2); }
+.group-title.wallets-group .help { margin-left: 0; }
+/* A wallet card's head: the name, the address and under it the balance
+   with Send, on the left; the card's buttons on the right of the name's row.
+   Where they do not fit beside the name they drop below, still on the right. */
+.wallet-card-head { flex-wrap: wrap; }
+.wallet-card-head > .addr-head { flex: 1 1 22rem; }
+.wallet-end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2) var(--space-4);
+  margin-left: auto;
+  min-width: 0;
+}
+.wallet-end > .wallet-side { flex-wrap: nowrap; margin-left: auto; }
+.wallet-send { gap: var(--space-1); }
+/* Under the address the balance leads its line, and Send follows closely. */
+.addr-head-body > .wallet-balance { margin-top: calc(-1 * var(--space-1)); }
+.wallet-send .icon { width: 15px; height: 15px; }
+@media (max-width: 639px) {
+  /* A phone puts the buttons on a line of their own, at its right end. */
+  .wallet-end { width: 100%; }
+}
+/* A wallet's settings on one grid: names in the first column, controls in
+   the second, every row as high as a field. A row is a .setting-row, or a
+   WalletPicker whose label is split over the two columns. The name column
+   is as wide as the card's longest name, so a control follows its name
+   closely and the controls of one card line up. */
+.settings-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
-  gap: var(--space-3);
-  margin-block: var(--space-3);
+  grid-template-columns: max-content minmax(0, 28rem);
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  margin-block: var(--space-2);
+}
+.settings-grid > .setting-row,
+.settings-grid > .picker,
+.settings-grid > .picker > label {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+  gap: inherit;
+  min-height: var(--control-md);
+}
+.settings-grid > .picker > .picker-menu { grid-column: 2; }
+/* Every picker fills the control column, so all are one width. */
+.settings-grid .picker-button { width: 100%; }
+.setting-label {
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+.setting-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* Set up, Create nonce account, Make default: one height, centred on the row. */
+.setting-value > button.sm {
+  height: var(--control-sm);
+  align-self: center;
+  white-space: nowrap;
+}
+@media (pointer: coarse) {
+  .settings-grid > .setting-row,
+  .settings-grid > .picker,
+  .settings-grid > .picker > label { min-height: var(--control-lg); }
+  .setting-value > button.sm { height: var(--control-md); }
+}
+@media (max-width: 639px) {
+  /* A phone puts each name above its control. */
+  .settings-grid { grid-template-columns: minmax(0, 1fr); }
+  .settings-grid > .picker > .picker-menu { grid-column: 1; }
+}
+/* An empty group of wallets: a quiet line, not a message. */
+.wallets-empty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px dashed var(--border-control);
+  border-radius: var(--radius-lg);
+  color: var(--text-2);
+  font-size: var(--text-md);
+}
+.wallets-empty > p { flex: 1 1 20rem; min-width: 0; margin: 0; }
+/* A Vector wallet's account is watched from its card: only what needs
+   attention shows there (.warn, .on-card). All of it is in its settings. */
+.wallet-status { display: contents; }
+.wallet-status > :not(.warn):not(.on-card) { display: none; }
+/* A wallet's Settings and Details dialogs. */
+.wallet-dialog { max-height: calc(100vh - 96px); overflow-y: auto; }
+.wallet-details-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); }
+.wallet-details-title > .muted { font-size: var(--text-md); font-weight: var(--weight-regular); }
+.wallet-dialog .settings-grid { grid-template-columns: max-content minmax(0, 1fr); }
+.wallet-dialog-unsaved { margin-right: auto; font-size: var(--text-md); }
+/* Details is wider: it shows whole addresses beside their names. */
+.modal.wide.wallet-facts-modal { width: min(52rem, 100%); }
+.wallet-facts > .setting-row { align-items: baseline; min-height: 0; }
+.wallet-facts { row-gap: var(--space-3); }
+.wallet-fact-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-1); }
+/* A multisig's co-approvers grow with their rows; the pane scrolls. */
+.approves-together .derive-list { max-height: none; overflow: visible; }
+.checklist-head { display: grid; gap: var(--space-1); }
+/* Its checkboxes are drawn, not left to the platform, whose unticked box
+   reads as disabled in the dark theme: an outline on the card's surface,
+   and the brand fill with a check once ticked. */
+.approves-together input[type="checkbox"] {
+  appearance: none;
+  position: relative;
+  display: inline-grid;
+  place-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--border-control);
+  border-radius: calc(var(--radius-sm) / 2);
+  background: var(--surface);
+  transition: background var(--fast) var(--ease), border-color var(--fast) var(--ease);
+}
+.approves-together input[type="checkbox"]:hover { border-color: var(--border-strong); }
+.approves-together input[type="checkbox"]:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.approves-together input[type="checkbox"]:checked {
+  border-color: var(--brand);
+  background: var(--brand);
+}
+.approves-together input[type="checkbox"]:checked:hover {
+  border-color: var(--brand-hover);
+  background: var(--brand-hover);
+}
+.approves-together input[type="checkbox"]::after {
+  content: "";
+  width: 4px;
+  height: 8px;
+  margin-top: -2px;
+  border: solid var(--on-brand);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  opacity: 0;
+}
+.approves-together input[type="checkbox"]:checked::after { opacity: 1; }
+@media (pointer: coarse) {
+  .approves-together input[type="checkbox"] { width: 20px; height: 20px; }
+  .approves-together input[type="checkbox"]::after { width: 5px; height: 10px; }
+}
+/* Remove, in a wallet row's menu, keeps the danger colour. */
+.wallet-side .pane-menu-item.danger,
+.wallet-side .pane-menu-item.danger .icon { color: var(--danger-text); }
+.wallet-side .pane-menu-item.danger:hover,
+.wallet-side .pane-menu-item.danger:focus-visible {
+  background: var(--danger-soft);
+  box-shadow: inset 3px 0 0 var(--danger-solid);
 }
 @media (max-width: 639px) {
   /* Only the wallet switcher gives way, as in the frameless top bar. */
