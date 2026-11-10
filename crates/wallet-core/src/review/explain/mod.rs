@@ -11,6 +11,7 @@
 
 use crate::idl::catalog::{IdlCatalog, IdlCheck, IdlOrigin};
 use crate::tx::decode::DecodedTx;
+use crate::units::group_thousands;
 use crate::wallets::programmatic::{
     message_instructions, programmatic_signer_address, Execution, Submission, SubmitRole,
     ED25519_SIGNER_PROGRAM_ID,
@@ -19,7 +20,7 @@ use crate::wallets::relay::{advance_next_keys, AuthContext, VectorContext};
 use crate::wallets::squads::{StoredTransaction, SyncExecution};
 use crate::wallets::vector::{parse_passthrough, SchemeId, PASSTHROUGH_DISCRIMINATOR, PROGRAM_ID};
 use codama_dynamic_client::{
-    get_instruction_display, required_accounts_for_display, IntentSpan, ProgramClient,
+    get_instruction_display, required_accounts_for_display, IntentBody, IntentSpan, ProgramClient,
 };
 use codama_nodes::Node;
 use solana_instruction::Instruction;
@@ -318,6 +319,27 @@ fn context_pin(
     })
 }
 
+/// An amount in a sentence, with its thousands grouped: "Transfer 1,250".
+fn grouped_span(span: IntentSpan) -> IntentSpan {
+    match span {
+        IntentSpan::Value(mut value) if matches!(value.body, IntentBody::Amount { .. }) => {
+            value.primary = group_thousands(&value.primary);
+            IntentSpan::Value(value)
+        }
+        other => other,
+    }
+}
+
+/// A decoded value that is a number, with its thousands grouped: "200,000
+/// CUs". An address made only of digits, such as the System Program's, is
+/// left as it is.
+fn grouped_field(value: &str) -> String {
+    if value.parse::<Pubkey>().is_ok() {
+        return value.to_string();
+    }
+    group_thousands(value)
+}
+
 fn explain_one(
     store: &dyn IdlCatalog,
     clients: &mut Clients,
@@ -369,18 +391,31 @@ fn explain_one(
     } else {
         parsed.remaining_accounts.len()
     };
+    let spans: Option<Vec<IntentSpan>> = display
+        .spans
+        .map(|spans| spans.into_iter().map(grouped_span).collect());
+    // The sentence is its spans joined, so it reads as they do.
+    let interpolated_intent = spans.as_ref().map(|spans| {
+        spans
+            .iter()
+            .map(|span| match span {
+                IntentSpan::Text(text) => text.as_str(),
+                IntentSpan::Value(value) => value.primary.as_str(),
+            })
+            .collect::<String>()
+    });
     Some(IdlExplanation {
         unnamed_accounts,
         idl_sha256: *sha256,
         intent: display.intent,
-        interpolated_intent: display.interpolated_intent,
-        spans: display.spans,
+        interpolated_intent,
+        spans,
         fields: display
             .fields
             .into_iter()
             .map(|field| IdlField {
+                value: grouped_field(&field.value),
                 label: field.label,
-                value: field.value,
             })
             .collect(),
         accounts_needed: required_accounts_for_display(client.root(), &parsed),

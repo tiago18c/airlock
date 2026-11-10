@@ -5,9 +5,14 @@ use super::*;
 /// The numbers a v1 message states about itself.
 #[component]
 pub fn TxFacts(tx: DecodedTx) -> Element {
-    let size = tx.wire.len();
+    let number = |n: u64| group_thousands(&n.to_string());
+    let size = format!(
+        "{} / {} bytes",
+        number(tx.wire.len() as u64),
+        number(MAX_TRANSACTION_SIZE as u64)
+    );
     let limit = match tx.budget.compute_unit_limit {
-        Some(limit) => format!("{limit} units"),
+        Some(limit) => format!("{} units", number(limit.into())),
         None => "not set (zero)".to_string(),
     };
     let priority = match tx.budget.priority_fee {
@@ -15,14 +20,18 @@ pub fn TxFacts(tx: DecodedTx) -> Element {
         None => "none".to_string(),
     };
     let loaded = match tx.budget.loaded_accounts_data_size_limit {
-        Some(bytes) => format!("{bytes} bytes"),
+        Some(bytes) => format!("{} bytes", number(bytes.into())),
         None => "not set (zero)".to_string(),
     };
+    let heap = tx
+        .budget
+        .heap_size
+        .map(|heap| format!("{} bytes", number(heap.into())));
     rsx! {
         div { class: "stats",
             div { class: "stat",
                 span { class: "stat-label", "Size" }
-                span { class: "stat-value", "{size} / {MAX_TRANSACTION_SIZE} bytes" }
+                span { class: "stat-value", "{size}" }
             }
             div { class: "stat",
                 span { class: "stat-label", "Compute limit" }
@@ -36,10 +45,10 @@ pub fn TxFacts(tx: DecodedTx) -> Element {
                 span { class: "stat-label", "Account data limit" }
                 span { class: "stat-value", "{loaded}" }
             }
-            if let Some(heap) = tx.budget.heap_size {
+            if let Some(heap) = heap {
                 div { class: "stat",
                     span { class: "stat-label", "Heap" }
-                    span { class: "stat-value", "{heap} bytes" }
+                    span { class: "stat-value", "{heap}" }
                 }
             }
         }
@@ -51,12 +60,22 @@ pub fn TxFacts(tx: DecodedTx) -> Element {
 }
 
 /// The most the fee payer pays in fees: the base fee for each signature and
-/// the priority fee.
+/// the priority fee, which is named when there is one. The payer is drawn
+/// without its balance change, which is more than the fee: the sentences
+/// say what else it pays.
 #[component]
 pub fn FeeLine(tx: DecodedTx) -> Element {
+    let fee = match tx.budget.priority_fee.filter(|fee| *fee > 0) {
+        Some(priority) => format!(
+            "Fee up to {}, of which {} priority",
+            format_sol(tx.fee_lamports()),
+            format_sol(priority)
+        ),
+        None => format!("Fee up to {}", format_sol(tx.fee_lamports())),
+    };
     rsx! {
         p { class: "fee-line muted",
-            "Fee up to {format_sol(tx.fee_lamports())}"
+            "{fee}"
             if let Some(payer) = tx.fee_payer() {
                 " · paid by "
                 Address { pubkey: payer }
@@ -65,11 +84,19 @@ pub fn FeeLine(tx: DecodedTx) -> Element {
     }
 }
 
+/// Address rows in `children` drawn without a balance change.
+#[component]
+pub fn WithoutDeltas(children: Element) -> Element {
+    let none = use_memo(HashMap::new);
+    use_context_provider(|| BalanceDeltas(none));
+    rsx! { {children} }
+}
+
 #[component]
 pub fn AccountList(tx: DecodedTx) -> Element {
     rsx! {
         h3 { "Accounts" }
-        ul { class: "book-list",
+        ul { class: "book-list tx-rows",
             for account in tx.accounts {
                 li { class: "book-row",
                     key: "{account.pubkey}",
@@ -108,33 +135,44 @@ pub fn ProgramList(explained_programs: Vec<wallet_core::ProgramLine>) -> Element
     let checking = use_signal(|| false);
     let check_note = use_signal(|| None::<String>);
     rsx! {
-        h3 { "Programs" }
+        // Check programs is the list's own action, at the end of its heading.
+        div { class: "program-list-head",
+            h3 { "Programs" }
+            div { class: "program-list-check",
+                if let Some(text) = check_note() {
+                    span { class: "muted", "{text}" }
+                }
+                button { class: "sm",
+                    disabled: checking() || no_idl_to_check,
+                    onclick: move |_| {
+                        check_many(session, check_ids.clone(), checking, check_note)
+                    },
+                    if checking() { "Checking…" } else { "Check programs" }
+                }
+            }
+        }
         if let Some(text) = session.idl_pack_note() {
             p { class: "hint", "{text}" }
         }
-        div { class: "btn-row",
-            button {
-                disabled: checking() || no_idl_to_check,
-                onclick: move |_| {
-                    check_many(session, check_ids.clone(), checking, check_note)
-                },
-                if checking() { "Checking…" } else { "Check programs" }
-            }
-            if let Some(text) = check_note() {
-                span { class: "muted", "{text}" }
-            }
-        }
-        ul { class: "book-list",
+        ul { class: "book-list tx-rows",
             for line in explained_programs {
                 li { class: "book-row",
                     key: "{line.program_id}",
                     div { class: "chip-row",
-                        if let Some(name) = line.name.clone() {
-                            span { "{name}" }
+                        // The chip names the program. The IDL's name is
+                        // written only where nothing else names it.
+                        if session.label_of(&line.program_id).is_none() {
+                            if let Some(name) = line.name.clone() {
+                                span { "{name}" }
+                            }
                         }
                         Address { pubkey: line.program_id }
                         if let Some(sha) = line.sha256 {
-                            code { class: "mono", "{short_checksum(&sha)}" }
+                            span { class: "idl-checksum",
+                                title: "The first bytes of the SHA-256 checksum of the IDL this device read the program's instructions with",
+                                "IDL "
+                                code { "{short_checksum(&sha)}" }
+                            }
                         }
                         match line.origin {
                             Some(IdlOrigin::Builtin) => rsx! { span { class: "chip", "built in" } },

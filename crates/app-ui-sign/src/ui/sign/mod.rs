@@ -21,9 +21,11 @@ use crate::state::session::Session;
 use crate::state::use_network;
 use crate::ui::clock::BlockhashCountdown;
 use crate::ui::transfer::receive::QrScanner;
-use crate::ui::transfer::send::{PayloadShare, QrCarousel};
-use crate::ui::tx_view::{use_explained, FeeLine, ReadInstructions, SimulatedDeltas, TxView};
-use crate::ui::{Address, AddressRow, CopyButton};
+use crate::ui::transfer::send::{CopyableText, PayloadShare, QrCarousel};
+use crate::ui::tx_view::{
+    use_explained, FeeLine, ReadInstructions, SimulatedDeltas, TxView, WithoutDeltas,
+};
+use crate::ui::{Address, AddressRow, CopyButton, Glyph, Icon};
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
 use dioxus::prelude::*;
@@ -38,7 +40,8 @@ use wallet_core::simulate::Simulation;
 use wallet_core::{
     context_note_for, missing_catalog_programs, next_step, sha256_bytes, sign_steps,
     signature_objects, signing_status_in, tx_lifetime, DecodedTx, LocalKeys, NextSignature,
-    SignFinish, SignStepInputs, SignerRole, SignerState, SigningStatus, SimulationStage, TxFormat,
+    SignFinish, SignStepInputs, SignStepKind, SignerRole, SignerState, SigningStatus,
+    SimulationStage, TxFormat,
 };
 use wallet_flows::offer::{
     batch_keepable, blockhash_plan, may_sign, may_submit, BatchFacts, BlockhashFacts,
@@ -115,11 +118,10 @@ pub fn SignPanel() -> Element {
             if !report.imported.is_empty() {
                 extra.push(format!("Fetched {}.", report.imported.join(", ")));
             }
-            if report.missing > 0 {
-                extra.push(format!(
-                    "No on-chain IDL for {} program(s).",
-                    report.missing
-                ));
+            match report.missing {
+                0 => {}
+                1 => extra.push("No on-chain IDL for 1 program.".into()),
+                count => extra.push(format!("No on-chain IDL for {count} programs.")),
             }
             if let Some(err) = report.errors.first() {
                 extra.push(err.clone());
@@ -315,7 +317,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     let reading_stored = use_stored_behind(&approvals, online);
     let blind = offer_on_screen(session, tx.as_ref(), &approvals, reading_stored);
     let busy = use_signal(|| false);
-    let mut share_open = use_signal(|| false);
+    let share_open = use_signal(|| false);
     let source = (form.source)();
     let editable = tx.clone();
     let step = next_step(&status);
@@ -373,16 +375,6 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             SimState::Done(_) | SimState::Failed(_)
         );
     let simulating = online && !simulated;
-    // Every address a signature row draws. The change the simulation finds
-    // for one is shown on its row.
-    let signer_rows: Vec<Pubkey> = status
-        .lines
-        .iter()
-        .flat_map(|line| match line.role {
-            SignerRole::Authority { address } => vec![line.authority_chip(), address],
-            _ => vec![line.authority_chip()],
-        })
-        .collect();
     let site_waiting = match &source {
         Some(TxSource::Browser { id, .. }) => session.bridge.read().get(id).is_some(),
         _ => false,
@@ -422,7 +414,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         left_for_site: site_signs,
         expired,
     });
-    let steps = sign_steps(
+    let mut steps = sign_steps(
         &status,
         &SignStepInputs {
             needs_rebuild,
@@ -443,6 +435,52 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             left_for_site: site_signs,
         },
     );
+    // Collecting counts every signature, in the words of the badge beside
+    // "Signatures", so the two never disagree.
+    for step in &mut steps {
+        if step.kind == SignStepKind::CollectSignatures {
+            step.progress = Some((status.signed(), status.total()));
+        }
+    }
+    // Nothing is left for this device to sign, and another device is next:
+    // it signs what is missing, or submits what this offline one cannot.
+    let share_next = tx.format == TxFormat::V1
+        && !needs_rebuild
+        && signable_here == 0
+        && (status.missing_elsewhere() > site_signs || (status.complete() && !online));
+    // Share is offered in one place at a time: the primary button while it
+    // is the next step, else on the row of a signature still missing, else
+    // outlined among the buttons.
+    let shareable = tx.format == TxFormat::V1;
+    let row_share = (shareable && !share_next).then_some(share_open);
+    let row_offers_share = row_share.is_some()
+        && status
+            .lines
+            .iter()
+            .any(|line| line.state == SignerState::Missing);
+    let site_send_for_hint = site_send.clone();
+    let hint = sign_hint(HintFacts {
+        status: &status,
+        on_device: on_device.len(),
+        online,
+        blockhash,
+        refreshes_on_sign,
+        site_blockhash,
+        needs_rebuild,
+        rebuilding: (form.rebuilding)(),
+        simulating,
+        step,
+        site_signs,
+        site_send: site_send_for_hint,
+    });
+    // What is still needed of others is said under the signatures; what
+    // holds the buttons back, under them.
+    let (signer_hint, action_hint) = match hint {
+        Some(hint) if hint.about_signers() => (Some(hint), None),
+        other => (None, other),
+    };
+    let mut inbox_title = use_signal(|| "Add a signature");
+    let mut view = form.view;
 
     // In a batch, the return is the batch's, not this transaction's.
     let batch_steps = batch.as_ref().map(|batch| {
@@ -458,9 +496,11 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     });
 
     rsx! {
+        // Every transaction shows its steps, however few, so the screen
+        // reads the same from one to the next.
         if let Some((states, signed, on_screen, own)) = batch_steps {
             BatchSteps { states, signed, on_screen, steps: own }
-        } else if !wallet_core::only_simulate_and_sign(&steps) {
+        } else {
             SignSteps { steps }
         }
 
@@ -478,13 +518,39 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         PersonalSignBox { tx: tx.clone(), status: status.clone() }
 
         SimulatedDeltas {
-            TxView { tx: tx.as_ref().clone(), reading: reading.clone(), inspect, signers: signer_rows,
+            // The signature rows draw no balance change, so a signer's change
+            // that no sentence names is listed under the transaction.
+            TxView { tx: tx.as_ref().clone(), reading: reading.clone(), inspect,
+                on_inspect: move |_| view.set(SignView::Inspect),
+                fee_line: true,
                 if let Some(source) = source.clone() {
                     SourceChip { source }
                 }
             }
 
             FeeLine { tx: tx.as_ref().clone() }
+
+            // What the format allows limits who can sign, so it is said
+            // before the signatures, not after the buttons.
+            match tx.format {
+                TxFormat::V1 => rsx! {},
+                TxFormat::Legacy => rsx! {
+                    p { class: "note format-note",
+                        Icon { glyph: Glyph::Info }
+                        span {
+                            "This transaction is in the legacy format, which cannot be handed to another device. Only keys on this device can sign it."
+                        }
+                    }
+                },
+                TxFormat::V0 => rsx! {
+                    p { class: "note format-note",
+                        Icon { glyph: Glyph::Info }
+                        span {
+                            "This transaction is in the older v0 format, which cannot be handed to another device. Only keys on this device can sign it."
+                        }
+                    }
+                },
+            }
 
             div { class: "sign-status",
                 h3 { "Signatures" }
@@ -493,7 +559,14 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
                     "{status.signed()} of {status.total()} signed"
                 }
             }
-            SignerList { status: status.clone(), inspect }
+            // What signing changes in a signer's balance is not a matter of
+            // signing: the sentences say it, and the Accounts list has it.
+            WithoutDeltas {
+                SignerList { status: status.clone(), inspect, share: row_share }
+            }
+            if let Some(hint) = signer_hint {
+                SignHintText { hint, class: "signer-hint" }
+            }
         }
 
         SimulationStrip { tx: tx.clone(), inspect }
@@ -522,64 +595,54 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             needs_rebuild,
             refreshes_on_sign,
             blockhash,
-            site_blockhash,
             site_signs,
             site_send,
             from_site: from_browser,
-        }
+            share_next,
+            share_open,
+            shareable: shareable && !row_offers_share,
+            hint: action_hint,
+            on_add_signature: move |_| {
+                inbox_title.set("Add a signature");
+                inbox_open.set(true);
+            },
+            on_load_another: move |_| {
+                inbox_title.set("Load another transaction");
+                inbox_open.set(true);
+            },
+            edit_title: if from_browser {
+                "Change it on Build. What Build compiles is a new transaction, and it does not go back to the site."
+            } else {
+                "Change it on Build. What Build compiles is a new transaction, signed again."
+            },
+            on_edit: move |_| edit_on_build(&session, &editable),
 
-        if let Some(batch) = batch.as_ref().filter(|_| site_waiting) {
-            if batch_signed {
-                p { class: "hint",
-                    "Signed. It goes back to the site with the others, once all {batch.len()} are signed."
-                }
-            } else if batch_keepable {
-                div { class: "btn-row",
-                    button {
-                        class: "primary",
-                        onclick: move |_| keep_batch_item(session),
-                        if batch.signed() + 1 == batch.len() {
-                            "Keep as is and return all {batch.len()}"
-                        } else {
-                            "Keep as is and go to the next"
+            if let Some(batch) = batch.as_ref().filter(|_| site_waiting) {
+                if batch_signed {
+                    p { class: "hint",
+                        "Signed. It goes back to the site with the others, once all {batch.len()} are signed."
+                    }
+                } else if batch_keepable {
+                    div { class: "btn-row",
+                        button {
+                            class: "primary",
+                            onclick: move |_| keep_batch_item(session),
+                            if batch.signed() + 1 == batch.len() {
+                                "Keep as is and return all {batch.len()}"
+                            } else {
+                                "Keep as is and go to the next"
+                            }
                         }
                     }
+                    p { class: "hint",
+                        "This device has nothing to sign in this transaction. The site gets it back as it is, with the others."
+                    }
                 }
-                p { class: "hint",
-                    "This device has nothing to sign in this transaction. The site gets it back as it is, with the others."
-                }
-            }
-        }
-
-        div { class: "btn-row",
-            button {
-                onclick: move |_| inbox_open.set(true),
-                "Add a signature, or load another transaction"
-            }
-            button {
-                title: if from_browser {
-                    "Change it on Build. What Build compiles is a new transaction, and it does not go back to the site."
-                } else {
-                    "Change it on Build. What Build compiles is a new transaction, signed again."
-                },
-                onclick: move |_| edit_on_build(&session, &editable),
-                "Edit on Build"
-            }
-            if tx.format == TxFormat::V1 {
-                button {
-                    onclick: move |_| share_open.set(true),
-                    "Share with another device"
-                }
-            }
-        }
-        if tx.format != TxFormat::V1 {
-            p { class: "hint",
-                "Sharing is only for v1 transactions. This one is signed only with hot keys on this device."
             }
         }
 
         if inbox_open() {
-            SignModal { title: "Add a signature, or load another transaction", open: inbox_open,
+            SignModal { title: inbox_title(), open: inbox_open,
                 Inbox { loaded: true }
                 if let Some(text) = (form.error)() {
                     p { class: "error", role: "alert", "{text}" }
@@ -587,8 +650,8 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             }
         }
         if share_open() && tx.format == TxFormat::V1 {
-            SignModal { title: "Share with another device", open: share_open,
-                Share { tx: tx.clone() }
+            SignModal { title: "Share with another device", class: "share", open: share_open,
+                Share { tx: tx.clone(), complete: status.complete(), status: status.clone() }
             }
         }
     }
@@ -614,19 +677,27 @@ fn simulation_stage(state: &SimState, online: bool) -> SimulationStage {
 
 /// A dialog over the Sign screen, closed by its button or the backdrop.
 #[component]
-fn SignModal(title: &'static str, mut open: Signal<bool>, children: Element) -> Element {
+fn SignModal(
+    title: &'static str,
+    /// A class of its own beside `modal wide`, for what it holds.
+    #[props(default)]
+    class: &'static str,
+    mut open: Signal<bool>,
+    children: Element,
+) -> Element {
     rsx! {
         div { class: "modal-backdrop",
             onclick: move |_| open.set(false),
-            div { class: "modal wide",
+            div { class: "modal wide {class}",
                 role: "dialog",
                 aria_label: title,
                 onclick: move |evt| evt.stop_propagation(),
                 div { class: "stack",
                     h3 { "{title}" }
                     {children}
-                    div { class: "btn-row",
-                        button { class: "ghost",
+                    div { class: "btn-row modal-foot",
+                        button {
+                            r#type: "button",
                             onclick: move |_| open.set(false),
                             "Close"
                         }
@@ -637,7 +708,13 @@ fn SignModal(title: &'static str, mut open: Signal<bool>, children: Element) -> 
     }
 }
 
-/// The Sign / Submit / Refresh buttons and the hints under them.
+/// The screen's buttons, in one row and one order in every state: the
+/// state's primary button (Sign, Share with another device or Submit), then
+/// Add a signature and Share with another device, outlined, when each applies
+/// and is not the primary (Share only where no signer row offers it), then
+/// Load another transaction and Edit on Build, quiet, at the far end. A hint
+/// about what holds the buttons back goes under the row; one about what is
+/// still needed of others, under the signatures.
 #[component]
 fn SignActions(
     status: SigningStatus,
@@ -657,16 +734,30 @@ fn SignActions(
     simulating: bool,
     refreshes_on_sign: bool,
     blockhash: BlockhashPlan,
-    site_blockhash: bool,
     site_signs: usize,
     /// What came of the transaction since it went back to the site, and
     /// the site.
     site_send: Option<(SiteSend, String)>,
     /// A site asked for it: it goes back there, and this press does not send it.
     from_site: bool,
+    /// Nothing is left for this device to sign and another device is next:
+    /// Share leads the row.
+    share_next: bool,
+    mut share_open: Signal<bool>,
+    /// The transaction can be handed to another device, and no signer row
+    /// offers it already: Share with another device is among the outlined.
+    shareable: bool,
+    /// The sentence under the buttons, about what holds them back.
+    hint: Option<SignHint>,
+    on_add_signature: EventHandler<()>,
+    on_load_another: EventHandler<()>,
+    /// Edit on Build's tooltip.
+    edit_title: String,
+    on_edit: EventHandler<()>,
+    /// The rows under these buttons, pinned with them.
+    children: Element,
 ) -> Element {
     let session = use_context::<Session>();
-    let rebuilding = session.forms.sign.rebuilding;
     let BlockhashPlan {
         on_sign: blockhash_on_sign,
         offer_refresh: show_refresh,
@@ -691,10 +782,8 @@ fn SignActions(
     let can_sign = may_sign(buttons);
     let can_submit = may_submit(buttons);
     let elsewhere = status.missing_elsewhere();
-    let authorizations = status.authorizations_elsewhere();
     // This press leaves nothing missing, so it submits too.
     let submits = online && !from_site && elsewhere == 0;
-    let waits_for_simulation = simulating && step == NextSignature::Transaction;
     let sign_label = match step {
         // The authorizations go on a press of their own.
         NextSignature::Authorization => {
@@ -726,69 +815,305 @@ fn SignActions(
         }
         NextSignature::Nothing => "Sign".into(),
     };
+    // Sign is left out while this device has nothing to sign, now, once an
+    // authorization from elsewhere is in, or once it is rebuilt: it could
+    // not be pressed.
+    let sign_shown =
+        status.signable + on_device > 0 || status.waiting_for_authority || needs_rebuild;
+    let submit_waits = (!can_submit).then(|| {
+        submit_waits_for(
+            &status,
+            SubmitHold {
+                online,
+                needs_rebuild,
+                busy: buttons.busy,
+                expired,
+                site_send: site_send.as_ref().map(|(send, _)| *send),
+                site_signs,
+            },
+        )
+    });
 
     rsx! {
-        div { class: "btn-row",
-            button {
-                class: "primary",
-                disabled: !can_sign,
-                onclick: move |_| sign_loaded(session, busy, blockhash_on_sign),
-                "{sign_label}"
-            }
-            button {
-                class: if status.complete() { "primary" } else { "" },
-                disabled: !can_submit,
-                onclick: move |_| submit_loaded(session, busy),
-                "Submit"
-            }
-            if show_refresh {
-                RefreshBlockhash {}
+        // Pinned to the bottom of the pane, so the next step is in reach
+        // however long the transaction is.
+        div { class: "sign-actions",
+            div { class: "sign-actions-bar",
+                div { class: "btn-row sign-actions-row",
+                    // The state's own buttons, its primary first.
+                    if share_next {
+                        button {
+                            class: "primary",
+                            onclick: move |_| share_open.set(true),
+                            "Share with another device"
+                        }
+                    }
+                    if sign_shown {
+                        button {
+                            class: if share_next { "" } else { "primary" },
+                            disabled: !can_sign,
+                            onclick: move |_| sign_loaded(session, busy, blockhash_on_sign),
+                            "{sign_label}"
+                        }
+                    }
+                    // Submit could not be pressed while a signature is missing,
+                    // so it waits until every one is in.
+                    if status.complete() {
+                        button {
+                            class: if share_next || sign_shown { "" } else { "primary" },
+                            disabled: !can_submit,
+                            title: submit_waits,
+                            onclick: move |_| submit_loaded(session, busy),
+                            "Submit"
+                        }
+                    }
+                    if show_refresh {
+                        RefreshBlockhash {}
+                    }
+                    // What else applies, outlined.
+                    button {
+                        onclick: move |_| on_add_signature.call(()),
+                        "Add a signature"
+                    }
+                    if shareable && !share_next {
+                        button {
+                            onclick: move |_| share_open.set(true),
+                            "Share with another device"
+                        }
+                    }
+                    // The ways out, quiet, at the far end.
+                    div { class: "sign-actions-end",
+                        button { class: "ghost",
+                            onclick: move |_| on_load_another.call(()),
+                            "Load another transaction"
+                        }
+                        button { class: "ghost",
+                            title: edit_title,
+                            onclick: move |_| on_edit.call(()),
+                            "Edit on Build"
+                        }
+                    }
+                }
+                {children}
             }
         }
-        if let Some((send, origin)) = site_send.filter(|_| status.complete()) {
-            p { class: "hint",
-                match send {
+        if let Some(hint) = hint {
+            SignHintText { hint, class: "hint" }
+        }
+    }
+}
+
+/// The one sentence under the signatures or the buttons that says what the
+/// transaction still waits for.
+#[derive(Clone, Debug, PartialEq)]
+enum SignHint {
+    /// What came of it since it went back to the site, and the site.
+    SiteSend(SiteSend, String),
+    /// The blockhash expired, and nothing here moves it: the site's, or not.
+    Expired {
+        site: bool,
+    },
+    Rebuilding,
+    Rebuild,
+    Simulating,
+    /// Authorization signatures still needed from other devices.
+    Authorizations(usize),
+    /// Signatures only the site adds.
+    SiteSigns(usize),
+    OnDevice,
+    /// Signatures still needed from other devices.
+    Elsewhere(usize),
+    CompleteOffline,
+}
+
+impl SignHint {
+    /// It says what is still needed of others, so it goes under the
+    /// signatures, not under the buttons.
+    fn about_signers(&self) -> bool {
+        matches!(
+            self,
+            SignHint::Authorizations(_) | SignHint::SiteSigns(_) | SignHint::Elsewhere(_)
+        )
+    }
+}
+
+/// What [`sign_hint`] reads.
+struct HintFacts<'a> {
+    status: &'a SigningStatus,
+    on_device: usize,
+    online: bool,
+    blockhash: BlockhashPlan,
+    refreshes_on_sign: bool,
+    site_blockhash: bool,
+    needs_rebuild: bool,
+    rebuilding: bool,
+    simulating: bool,
+    step: NextSignature,
+    site_signs: usize,
+    site_send: Option<(SiteSend, String)>,
+}
+
+/// The sentence that applies, the first of them in this order.
+fn sign_hint(facts: HintFacts) -> Option<SignHint> {
+    let status = facts.status;
+    let elsewhere = status.missing_elsewhere();
+    if let Some((send, origin)) = facts.site_send.filter(|_| status.complete()) {
+        return Some(SignHint::SiteSend(send, origin));
+    }
+    if facts.blockhash.expired
+        && !facts.refreshes_on_sign
+        && facts.blockhash.on_sign == BlockhashOnSign::Keep
+    {
+        // With the rebuild button there, it says what to do.
+        return (!facts.blockhash.offer_refresh).then_some(SignHint::Expired {
+            site: facts.site_blockhash,
+        });
+    }
+    if facts.needs_rebuild {
+        return Some(if facts.rebuilding {
+            SignHint::Rebuilding
+        } else {
+            SignHint::Rebuild
+        });
+    }
+    let waits_for_simulation = facts.simulating && facts.step == NextSignature::Transaction;
+    if waits_for_simulation && status.signable + facts.on_device > 0 {
+        return Some(SignHint::Simulating);
+    }
+    if status.waiting_for_authority {
+        return Some(SignHint::Authorizations(status.authorizations_elsewhere()));
+    }
+    if elsewhere > 0 && elsewhere == facts.site_signs && status.signable == 0 {
+        return Some(SignHint::SiteSigns(elsewhere));
+    }
+    if facts.on_device > 0 && status.signable == 0 && !status.complete() {
+        return Some(SignHint::OnDevice);
+    }
+    if elsewhere > 0 && status.signable == 0 {
+        return Some(SignHint::Elsewhere(elsewhere));
+    }
+    if status.complete() && !facts.online {
+        return Some(SignHint::CompleteOffline);
+    }
+    None
+}
+
+#[component]
+fn SignHintText(hint: SignHint, class: &'static str) -> Element {
+    rsx! {
+        p { class,
+            match hint {
+                SignHint::SiteSend(send, origin) => match send {
                     SiteSend::Watching => rsx! { "Watching for {origin} to send it. Submit waits a few seconds so it is not sent twice." },
                     SiteSend::Landed => rsx! { "{origin} sent it, and it landed. There is nothing left to submit." },
                     SiteSend::NotSent => rsx! { "{origin} did not send it. Submit it here." },
-                }
-            }
-        } else if expired && !refreshes_on_sign && blockhash_on_sign == BlockhashOnSign::Keep {
-            // With the rebuild button there, it says what to do.
-            if !show_refresh {
-                p { class: "hint",
-                    if site_blockhash {
-                        "The site's blockhash has expired. Ask the site to send the transaction again."
+                },
+                SignHint::Expired { site: true } => rsx! {
+                    "The site's blockhash has expired. Ask the site to send the transaction again."
+                },
+                SignHint::Expired { site: false } => rsx! {
+                    "The blockhash has expired. Whoever made the transaction has to make it again on a fresh blockhash."
+                },
+                SignHint::Rebuilding => rsx! { "Rebuilding the transaction for the wallet it asks to sign…" },
+                SignHint::Rebuild => rsx! { "Rebuild the transaction for the wallet it asks to sign before signing." },
+                SignHint::Simulating => rsx! { "Simulating it first, so you can read what it does before you sign." },
+                SignHint::Authorizations(count) => rsx! {
+                    if count == 1 {
+                        "1 authorization signature is still needed from another device."
                     } else {
-                        "The blockhash has expired. Whoever made the transaction has to make it again on a fresh blockhash."
+                        "{count} authorization signatures are still needed from other devices."
                     }
-                }
+                    " Programmatic authorities sign first; Vector keys sign after those signatures are in. This device then moves the transaction to a fresh blockhash and signs as fee payer."
+                },
+                SignHint::SiteSigns(count) => rsx! {
+                    if count == 1 {
+                        "1 signature is the site's: it signs for the account it creates, such as a new mint, once it has the transaction back."
+                    } else {
+                        "{count} signatures are the site's: it signs for the accounts it creates, such as a new mint, once it has the transaction back."
+                    }
+                },
+                SignHint::OnDevice => rsx! {
+                    "Sign asks the device that holds the key for its signature: the Seed Vault on this phone, or a hardware wallet, connected and unlocked with the Solana app open."
+                },
+                SignHint::Elsewhere(count) => rsx! {
+                    if count == 1 {
+                        "1 signature is needed from another device. Share the transaction, then add what it returns."
+                    } else {
+                        "{count} signatures are needed from other devices. Share the transaction, then add what they return."
+                    }
+                },
+                SignHint::CompleteOffline => rsx! {
+                    "Fully signed. Go online to submit, or share it with a device that is."
+                },
             }
-        } else if needs_rebuild && rebuilding() {
-            p { class: "hint", "Rebuilding the transaction for the wallet it asks to sign…" }
-        } else if needs_rebuild {
-            p { class: "hint", "Rebuild the transaction for the wallet it asks to sign before signing." }
-        } else if waits_for_simulation && status.signable + on_device > 0 {
-            p { class: "hint", "Simulating it first, so you can read what it does before you sign." }
-        } else if status.waiting_for_authority {
-            p { class: "hint",
-                "{authorizations} authorization signature(s) are still needed from other devices. Programmatic authorities sign first; Vector keys sign after those signatures are in. This device then moves the transaction to a fresh blockhash and signs as fee payer."
-            }
-        } else if elsewhere > 0 && elsewhere == site_signs && status.signable == 0 {
-            p { class: "hint",
-                "{elsewhere} signature(s) are the site's: it signs for the account(s) it creates, such as a new mint, once it has the transaction back."
-            }
-        } else if on_device > 0 && status.signable == 0 && !status.complete() {
-            p { class: "hint",
-                "Sign asks the device that holds the key for its signature: the Seed Vault on this phone, or a hardware wallet, connected and unlocked with the Solana app open."
-            }
-        } else if elsewhere > 0 && status.signable == 0 {
-            p { class: "hint",
-                "{elsewhere} signature(s) are needed from other devices. Share the transaction, then add what they return."
-            }
-        } else if status.complete() && !online {
-            p { class: "hint", "Fully signed. Go online to submit, or share it with a device that is." }
         }
+    }
+}
+
+/// What holds Submit back, besides the signatures.
+#[derive(Clone, Copy)]
+struct SubmitHold {
+    online: bool,
+    needs_rebuild: bool,
+    busy: bool,
+    expired: bool,
+    site_send: Option<SiteSend>,
+    /// Missing signatures the site adds once it has the transaction back.
+    site_signs: usize,
+}
+
+/// Why Submit cannot be pressed, for its tooltip.
+fn submit_waits_for(status: &SigningStatus, hold: SubmitHold) -> String {
+    if !hold.online {
+        return "Submit needs a connection to a node. Share the signed transaction with a device that has one.".into();
+    }
+    if hold.needs_rebuild {
+        return "Waits for the transaction to be rebuilt and signed.".into();
+    }
+    if !status.complete() {
+        let elsewhere = status.missing_elsewhere();
+        let here = status.total() - status.signed() - elsewhere;
+        let others = elsewhere.saturating_sub(hold.site_signs);
+        let site = elsewhere - others;
+        let mut waits = Vec::new();
+        match here {
+            0 => {}
+            1 => waits.push("a signature of this device".to_string()),
+            n => waits.push(format!("{n} signatures of this device")),
+        }
+        match others {
+            0 => {}
+            1 => waits.push("a signature from another device".to_string()),
+            n => waits.push(format!("{n} signatures from other devices")),
+        }
+        match site {
+            0 => {}
+            1 => waits.push("a signature from the site".to_string()),
+            n => waits.push(format!("{n} signatures from the site")),
+        }
+        return format!("Waits for {}.", and_list(&waits));
+    }
+    if hold.busy {
+        return "Waits for the signing under way.".into();
+    }
+    if hold.expired {
+        return "The blockhash has expired, so it cannot be submitted.".into();
+    }
+    match hold.site_send {
+        Some(SiteSend::Watching) => {
+            "Waits a few seconds for the site to send it, so it is not sent twice.".into()
+        }
+        Some(SiteSend::Landed) => "The site sent it, and it landed.".into(),
+        _ => "It cannot be submitted yet.".into(),
+    }
+}
+
+/// "a", "a and b", "a, b and c".
+fn and_list(items: &[String]) -> String {
+    match items {
+        [] => String::new(),
+        [one] => one.clone(),
+        [rest @ .., last] => format!("{} and {last}", rest.join(", ")),
     }
 }
 

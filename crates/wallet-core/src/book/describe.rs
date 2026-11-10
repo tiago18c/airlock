@@ -390,7 +390,7 @@ impl Directory {
                     facts.push(Fact::Flag(flag));
                 }
                 if label.is_none() {
-                    label = self.mint_label(&holding.mint);
+                    label = self.token_account_label(Some(owner), Some(holding.mint));
                 }
             }
             (None, Some(entry)) if entry.kind == AddressKind::TokenAccount => {
@@ -407,7 +407,7 @@ impl Directory {
                     facts.push(Fact::OwnedBy(owner));
                 }
                 if label.is_none() {
-                    label = entry.mint.and_then(|mint| self.mint_label(&mint));
+                    label = self.token_account_label(entry.owner, entry.mint);
                 }
             }
             (None, Some(entry)) if entry.kind == AddressKind::NonceAccount => {
@@ -440,6 +440,20 @@ impl Directory {
 
     fn mint_label(&self, mint: &Pubkey) -> Option<String> {
         self.explicit_label(mint)
+    }
+
+    /// A token account nothing names: whose it is and which token, as
+    /// "Alice · USDC", when its owner has a name. Otherwise the mint's name,
+    /// or none.
+    fn token_account_label(&self, owner: Option<Pubkey>, mint: Option<Pubkey>) -> Option<String> {
+        let token = mint.and_then(|mint| self.mint_label(&mint));
+        match owner.and_then(|owner| self.explicit_label(&owner)) {
+            Some(owner) => Some(format!(
+                "{owner} · {}",
+                token.as_deref().unwrap_or("token account")
+            )),
+            None => token,
+        }
     }
 
     /// A name someone gave: a wallet's, or the book's. Never derived.

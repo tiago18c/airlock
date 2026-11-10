@@ -16,9 +16,17 @@ fn note_for(session: Session, tx: &DecodedTx) -> Result<wallet_core::protocol::T
 
 /// What another device needs: the transaction, the signatures made here, a
 /// note saying which IDLs this device read it with, or all of them at once.
+/// `complete`: every signature is in, and the other device is to submit it.
+/// `status` names who has signed, for the line under each code.
 #[component]
-pub(in crate::ui) fn Share(tx: std::rc::Rc<DecodedTx>) -> Element {
+pub(in crate::ui) fn Share(
+    tx: std::rc::Rc<DecodedTx>,
+    complete: bool,
+    status: SigningStatus,
+) -> Element {
     let session = use_context::<Session>();
+    let name = |pubkey: &Pubkey| crate::ui::address::name_or_short(&session, pubkey);
+    let tx_caption = carries_status(&status, name);
     let form = session.forms.sign;
     let mut tab = form.share;
     let known = (form.vector)();
@@ -41,6 +49,7 @@ pub(in crate::ui) fn Share(tx: std::rc::Rc<DecodedTx>) -> Element {
         .enumerate()
         .map(|(i, item)| ShownSignature {
             local: here.contains(&item.pubkey),
+            name: name(&item.pubkey),
             pubkey: item.pubkey,
             signed: item.signed,
             authorization: i >= own,
@@ -73,10 +82,16 @@ pub(in crate::ui) fn Share(tx: std::rc::Rc<DecodedTx>) -> Element {
         }
         match tab() {
             ShareTab::Everything => rsx! {
-                EverythingShare { tx: shown.clone(), signatures: all_signed.clone() }
+                EverythingShare {
+                    tx: shown.clone(),
+                    signatures: all_signed.clone(),
+                    caption: tx_caption.clone(),
+                }
+                NextOnOtherDevice { complete }
             },
             ShareTab::Transaction => rsx! {
-                TransactionShare { tx: shown.clone() }
+                TransactionShare { tx: shown.clone(), caption: tx_caption.clone() }
+                NextOnOtherDevice { complete }
             },
             ShareTab::Signatures => rsx! {
                 SignaturesShare { signatures }
@@ -84,6 +99,24 @@ pub(in crate::ui) fn Share(tx: std::rc::Rc<DecodedTx>) -> Element {
             ShareTab::Context => rsx! {
                 ContextShare { tx: shown.clone() }
             },
+        }
+    }
+}
+
+/// What to do with the transaction once it is shown: where the other device
+/// takes it, and how what it adds comes back.
+#[component]
+fn NextOnOtherDevice(complete: bool) -> Element {
+    rsx! {
+        p { class: "share-next",
+            "Next: the other device scans this on its Review and Sign screen. "
+            if complete {
+                "It can submit the transaction from there."
+            } else {
+                "Its signature comes back here through "
+                strong { "Add a signature" }
+                "."
+            }
         }
     }
 }
@@ -96,6 +129,61 @@ struct ShownSignature {
     authorization: bool,
     /// Made by a key, or for a Vector account, this device holds.
     local: bool,
+    /// What to call its address in a sentence.
+    name: String,
+}
+
+/// "Carries 2 signatures: Main and Cold vault.", for a code of signatures
+/// made by `names`.
+fn carries_signatures(names: &[String]) -> String {
+    match names {
+        [] => "Carries no signatures.".into(),
+        [one] => format!("Carries 1 signature: {one}."),
+        many => format!("Carries {} signatures: {}.", many.len(), and_list(many)),
+    }
+}
+
+/// What a code of the transaction carries of its signatures, in words, from
+/// the signing status: "Carries 1 of 2 signatures: Main has signed, Cold
+/// vault has not."
+fn carries_status(status: &SigningStatus, name: impl Fn(&Pubkey) -> String) -> String {
+    let (signed, missing): (Vec<_>, Vec<_>) = status
+        .lines
+        .iter()
+        .partition(|line| line.state == SignerState::Signed);
+    let names = |lines: Vec<&wallet_core::SignerLine>| -> Vec<String> {
+        lines
+            .into_iter()
+            .map(|line| name(&line.authority_chip()))
+            .collect()
+    };
+    let signed = names(signed);
+    let missing = names(missing);
+    let has = |names: &[String]| if names.len() == 1 { "has" } else { "have" };
+    let total = status.total();
+    match (signed.len(), missing.len()) {
+        (0, 0) => "Carries the transaction. It needs no signatures.".into(),
+        (0, 1) => format!(
+            "Carries no signature yet: {} has not signed.",
+            and_list(&missing)
+        ),
+        (0, _) => format!(
+            "Carries none of its {total} signatures yet: {} have not signed.",
+            and_list(&missing)
+        ),
+        (1, 0) => format!("Carries its 1 signature: {} has signed.", and_list(&signed)),
+        (_, 0) => format!(
+            "Carries all {total} signatures: {} have signed.",
+            and_list(&signed)
+        ),
+        (count, _) => format!(
+            "Carries {count} of {total} signatures: {} {} signed, {} {} not.",
+            and_list(&signed),
+            has(&signed),
+            and_list(&missing),
+            has(&missing),
+        ),
+    }
 }
 
 /// Which signatures the Signatures tab shows.
@@ -120,6 +208,8 @@ fn SignaturesShare(signatures: Vec<ShownSignature>) -> Element {
         .iter()
         .map(|item| QrObject::Signature(item.signed.clone()))
         .collect();
+    let local_names: Vec<String> = local.iter().map(|item| item.name.clone()).collect();
+    let all_names: Vec<String> = signatures.iter().map(|item| item.name.clone()).collect();
     let all_signed: Vec<QrObject> = signatures
         .iter()
         .map(|item| QrObject::Signature(item.signed.clone()))
@@ -166,7 +256,12 @@ fn SignaturesShare(signatures: Vec<ShownSignature>) -> Element {
                                 Address { key: "{item.pubkey}", pubkey: item.pubkey }
                             }
                         }
-                        PayloadShare { objects: local_signed.clone(), short: true }
+                        PayloadShare {
+                            objects: local_signed.clone(),
+                            short: true,
+                            collapsed: true,
+                            caption: carries_signatures(&local_names),
+                        }
                     }
                 }
             },
@@ -179,7 +274,12 @@ fn SignaturesShare(signatures: Vec<ShownSignature>) -> Element {
                         strong { "All {count} signatures" }
                         span { class: "chip", "one transfer" }
                     }
-                    PayloadShare { objects: all_signed.clone(), short: true }
+                    PayloadShare {
+                        objects: all_signed.clone(),
+                        short: true,
+                        collapsed: true,
+                        caption: carries_signatures(&all_names),
+                    }
                 }
             },
             SignaturesTab::Individual => rsx! {
@@ -192,6 +292,7 @@ fn SignaturesShare(signatures: Vec<ShownSignature>) -> Element {
                         pubkey: item.pubkey,
                         signed: item.signed.clone(),
                         authorization: item.authorization,
+                        caption: carries_signatures(std::slice::from_ref(&item.name)),
                     }
                 }
             },
@@ -202,7 +303,7 @@ fn SignaturesShare(signatures: Vec<ShownSignature>) -> Element {
 /// The transaction, and in the same codes its context note unless left out.
 /// The text is the transaction alone, as other tools read one.
 #[component]
-fn TransactionShare(tx: std::rc::Rc<DecodedTx>) -> Element {
+fn TransactionShare(tx: std::rc::Rc<DecodedTx>, caption: String) -> Element {
     let session = use_context::<Session>();
     let mut with_note = use_signal(|| true);
     let note = use_memo(use_reactive!(|(tx)| note_for(session, &tx)))();
@@ -215,7 +316,7 @@ fn TransactionShare(tx: std::rc::Rc<DecodedTx>) -> Element {
     let tx_b64 = STANDARD.encode(&tx.wire);
     rsx! {
         p { class: "hint",
-            "The whole transaction, with every signature it has so far. The other device loads it on its Sign screen."
+            "The whole transaction, with every signature it has so far. The other device loads it on its Review and Sign screen."
         }
         label { class: "check",
             input {
@@ -229,13 +330,8 @@ fn TransactionShare(tx: std::rc::Rc<DecodedTx>) -> Element {
         if let Err(err) = &note {
             p { class: "error", "{err}" }
         }
-        QrCarousel { objects }
-        label { "Base64"
-            textarea { readonly: true, value: "{tx_b64}" }
-        }
-        div { class: "btn-row",
-            CopyButton { text: tx_b64.clone() }
-        }
+        QrCarousel { objects, caption }
+        CopyableText { label: "Base64", text: tx_b64, collapsed: true }
     }
 }
 
@@ -243,7 +339,11 @@ fn TransactionShare(tx: std::rc::Rc<DecodedTx>) -> Element {
 /// and one JSON array. The wire already carries the signatures; they ride
 /// along as objects of their own for a device that reads them apart.
 #[component]
-fn EverythingShare(tx: std::rc::Rc<DecodedTx>, signatures: Vec<QrObject>) -> Element {
+fn EverythingShare(
+    tx: std::rc::Rc<DecodedTx>,
+    signatures: Vec<QrObject>,
+    caption: String,
+) -> Element {
     let session = use_context::<Session>();
     let note = use_memo(use_reactive!(|(tx)| note_for(session, &tx)))();
     let mut objects = vec![QrObject::Transaction(tx.wire.clone())];
@@ -253,17 +353,24 @@ fn EverythingShare(tx: std::rc::Rc<DecodedTx>, signatures: Vec<QrObject>) -> Ele
     objects.extend(signatures);
     rsx! {
         p { class: "hint",
-            "The transaction, its context note and every signature it has so far, in one transfer. The other device loads it on its Sign screen and takes each part in turn."
+            "The transaction, its context note and every signature it has so far, in one transfer. The other device loads it on its Review and Sign screen and takes each part in turn."
         }
         if let Err(err) = &note {
             p { class: "error", "Sent without its context note: {err}" }
         }
-        PayloadShare { objects }
+        PayloadShare { objects, collapsed: true, caption }
     }
 }
 
 #[component]
-pub(in crate::ui) fn SignatureCard(pubkey: Pubkey, signed: Signed, authorization: bool) -> Element {
+pub(in crate::ui) fn SignatureCard(
+    pubkey: Pubkey,
+    signed: Signed,
+    authorization: bool,
+    /// What the code carries, in words, under it.
+    #[props(default)]
+    caption: Option<String>,
+) -> Element {
     let objects = vec![QrObject::Signature(signed)];
     rsx! {
         div { class: "card",
@@ -275,7 +382,7 @@ pub(in crate::ui) fn SignatureCard(pubkey: Pubkey, signed: Signed, authorization
                     span { class: "chip", "transaction signature" }
                 }
             }
-            PayloadShare { objects, short: true }
+            PayloadShare { objects, short: true, collapsed: true, caption }
         }
     }
 }
@@ -290,6 +397,16 @@ pub(in crate::ui) fn ContextShare(tx: std::rc::Rc<DecodedTx>) -> Element {
         note_for(session, &tx).map(|context| vec![QrObject::Context(context)])
     }))();
     let says_stored = (form.stored_behind)().is_some_and(|stored| !stored.is_empty());
+    // It carries no signatures: say what it carries instead.
+    let mut carried =
+        vec!["the checksums of the IDLs this device read the transaction with".to_string()];
+    if authorizations > 0 {
+        carried.push("the nonce of each Vector account it lists".into());
+    }
+    if says_stored {
+        carried.push("what the node says is stored behind its approval".into());
+    }
+    let caption = format!("Carries no signatures: {}.", and_list(&carried));
     rsx! {
         p { class: "hint",
             if authorizations > 0 {
@@ -308,7 +425,7 @@ pub(in crate::ui) fn ContextShare(tx: std::rc::Rc<DecodedTx>) -> Element {
         }
         match built {
             Ok(objects) => rsx! {
-                PayloadShare { objects, short: true }
+                PayloadShare { objects, short: true, collapsed: true, caption }
             },
             Err(err) => rsx! { p { class: "error", "{err}" } },
         }

@@ -10,6 +10,12 @@ pub fn Address(
     /// member of the multisig it is listed under.
     #[props(default)]
     warn: bool,
+    /// Draw what the account gains or loses, where the view provides
+    /// [`BalanceDeltas`]: for a list of accounts a transaction changes. An
+    /// address in a sentence leaves it out, since the sentence says in words
+    /// what moves.
+    #[props(default)]
+    delta: bool,
 ) -> Element {
     let described = use_described(pubkey);
     let care = warn || needs_care(&described);
@@ -44,7 +50,9 @@ pub fn Address(
                 span { class: "addr-label", "{label}" }
             }
             code { class: "addr-short", "{short_pubkey(&pubkey)}" }
-            BalanceDelta { pubkey }
+            if delta {
+                BalanceDelta { pubkey }
+            }
             if collides {
                 span { class: "addr-alert", title: "Another address has this name",
                     Icon { glyph: Glyph::Alert }

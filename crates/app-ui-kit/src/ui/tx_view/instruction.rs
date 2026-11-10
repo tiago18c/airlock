@@ -42,18 +42,20 @@ pub fn IdlInstruction(idl: IdlExplanation, data: Vec<u8>, inspect: bool) -> Elem
         }
         // Without a sentence, the accounts are what says what it touches.
         if inspect || !has_sentence {
-            ul { class: "ix-accounts",
-                for account in accounts {
-                    li { class: "chip-row", key: "{account.name}-{account.pubkey}",
-                        span { class: "muted ix-account-name", "{account.name}" }
-                        AddressRow { pubkey: account.pubkey, full: true,
-                            if account.writable {
-                                span { class: "chip", "writable" }
-                            } else {
-                                span { class: "chip", "readonly" }
-                            }
-                            if account.signer {
-                                span { class: "chip", "signer" }
+            AccountRowDeltas { inspect,
+                ul { class: "ix-accounts",
+                    for account in accounts {
+                        li { class: "chip-row", key: "{account.name}-{account.pubkey}",
+                            span { class: "muted ix-account-name", "{account.name}" }
+                            AddressRow { pubkey: account.pubkey, full: true,
+                                if account.writable {
+                                    span { class: "chip", "writable" }
+                                } else {
+                                    span { class: "chip", "readonly" }
+                                }
+                                if account.signer {
+                                    span { class: "chip kind", "signer" }
+                                }
                             }
                         }
                     }
@@ -61,7 +63,34 @@ pub fn IdlInstruction(idl: IdlExplanation, data: Vec<u8>, inspect: bool) -> Elem
             }
         }
         if inspect {
-            if !hex.is_empty() {
+            DataBytes { hex }
+        }
+    }
+}
+
+/// An instruction's account rows. In Inspect they are drawn without a balance
+/// change: an account's change is in the Accounts list, and would repeat on
+/// every row it fills. In Summary, rows stand in for a sentence that would
+/// say what moves, so they keep it.
+#[component]
+pub fn AccountRowDeltas(inspect: bool, children: Element) -> Element {
+    if inspect {
+        rsx! {
+            WithoutDeltas { {children} }
+        }
+    } else {
+        rsx! { {children} }
+    }
+}
+
+/// An instruction's raw data, as hex behind a "Data" disclosure that starts
+/// closed. Nothing is drawn for an instruction with no data.
+#[component]
+pub fn DataBytes(hex: String) -> Element {
+    rsx! {
+        if !hex.is_empty() {
+            details { class: "ix-data",
+                summary { "Data" }
                 code { class: "mono", "{hex}" }
             }
         }

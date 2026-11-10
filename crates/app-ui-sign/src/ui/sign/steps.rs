@@ -153,12 +153,11 @@ fn label(kind: SignStepKind) -> &'static str {
 }
 
 /// The word under a step, so its color is never the only thing that says
-/// where it stands.
+/// where it stands. Collecting signatures counts them as the badge beside
+/// "Signatures" does.
 fn detail(step: &SignStep) -> Option<String> {
-    let collects = matches!(
-        step.kind,
-        SignStepKind::CollectAuthorizations | SignStepKind::CollectSignatures
-    );
+    let collects = step.kind == SignStepKind::CollectAuthorizations;
+    let all_signatures = step.kind == SignStepKind::CollectSignatures;
     Some(match step.state {
         SignStepState::Done => {
             if step.kind == SignStepKind::Simulate {
@@ -174,7 +173,9 @@ fn detail(step: &SignStep) -> Option<String> {
         SignStepState::Skipped => "offline".into(),
         SignStepState::Current | SignStepState::Upcoming => match step.progress {
             Some((signed, total)) if collects => format!("{signed} of {total} in"),
-            Some((signed, total)) if total > 1 => format!("{signed} of {total} signed"),
+            Some((signed, total)) if all_signatures || total > 1 => {
+                format!("{signed} of {total} signed")
+            }
             _ if step.state == SignStepState::Current => "next".into(),
             _ => return None,
         },

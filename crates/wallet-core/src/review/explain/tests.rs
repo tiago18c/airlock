@@ -682,10 +682,10 @@ fn a_raydium_swap_names_its_mints_pool_and_limits() {
             .as_str()
         )
     );
-    assert_eq!(field(&idl, "Amount"), "6708044446768 base units");
+    assert_eq!(field(&idl, "Amount"), "6,708,044,446,768 base units");
     assert_eq!(
         field(&idl, "Minimum Out or Maximum In"),
-        "1622897189 base units"
+        "1,622,897,189 base units"
     );
     assert_eq!(field(&idl, "Exact Input"), "true");
     // The tick arrays are read by the program, so they are not unnamed, and
@@ -732,7 +732,7 @@ fn a_raydium_cp_swap_names_its_mints_pool_and_limits() {
         idl.interpolated_intent.as_deref(),
         Some(
             format!(
-                "{} swaps 2500000 base units of {} for at least 1900000 base units of {} in pool {}",
+                "{} swaps 2,500,000 base units of {} for at least 1,900,000 base units of {} in pool {}",
                 pk(1),
                 pk(9),
                 pk(10),
@@ -778,7 +778,7 @@ fn a_raydium_cp_pool_with_a_creator_fee_names_its_creator_and_fee() {
         idl.interpolated_intent.as_deref(),
         Some(
             format!(
-                "{} creates pool {} for {} and {} under AMM config {}, depositing 1000000 base units and 2000000 base units",
+                "{} creates pool {} for {} and {} under AMM config {}, depositing 1,000,000 base units and 2,000,000 base units",
                 pk(1),
                 pk(4),
                 pk(5),
@@ -929,8 +929,8 @@ fn a_legacy_routed_swap_names_its_source_and_destination() {
         idl.interpolated_intent.as_deref(),
         Some(
             format!(
-                "{owner} swaps 10000000 base units from {source} for at least \
-                 90290214181 base units into {destination} through a route of pools"
+                "{owner} swaps 10,000,000 base units from {source} for at least \
+                 90,290,214,181 base units into {destination} through a route of pools"
             )
             .as_str()
         )
@@ -979,7 +979,7 @@ fn a_legacy_routed_exact_output_swap_reads_its_limits() {
         idl.interpolated_intent.as_deref(),
         Some(
             format!(
-                "{owner} receives 1500000000000000 base units for at most 604511 base units \
+                "{owner} receives 1,500,000,000,000,000 base units for at most 604,511 base units \
                  through a route of pools"
             )
             .as_str()
@@ -1047,8 +1047,8 @@ fn a_routed_swap_names_its_input_and_first_hop() {
         idl.interpolated_intent.as_deref(),
         Some(
             format!(
-                "{owner} swaps 3704113814 base units of {ROUTER_WSOL} from {source} through a \
-                 route of pools, for at least 9826653 base units of its last token"
+                "{owner} swaps 3,704,113,814 base units of {ROUTER_WSOL} from {source} through a \
+                 route of pools, for at least 9,826,653 base units of its last token"
             )
             .as_str()
         )
@@ -1128,10 +1128,10 @@ fn a_whirlpool_swap_names_its_mints_and_reads_its_extra_tick_arrays() {
             .as_str()
         )
     );
-    assert_eq!(field(&idl, "Amount"), "100000 base units");
+    assert_eq!(field(&idl, "Amount"), "100,000 base units");
     assert_eq!(
         field(&idl, "Minimum Out or Maximum In"),
-        "4466638 base units"
+        "4,466,638 base units"
     );
     assert_eq!(field(&idl, "Exact Input"), "true");
     assert_eq!(field(&idl, "Token A For Token B"), "false");
@@ -1283,7 +1283,7 @@ fn a_realms_deposit_names_its_owner_and_amount() {
         idl.interpolated_intent.as_deref(),
         Some(
             format!(
-                "{owner} deposits 200000000000 base units from {source} into realm {REALMS_REALM}"
+                "{owner} deposits 200,000,000,000 base units from {source} into realm {REALMS_REALM}"
             )
             .as_str()
         )
@@ -1434,7 +1434,7 @@ fn a_realms_proposal_transaction_is_opened_and_each_instruction_explained() {
     assert_eq!(
         worded.interpolated_intent.as_deref(),
         Some(
-            "Transfer 1000000 AuNZhucaYASPKmjCZLhTfhigadRMq4q6qXHbkSjvy4Q1 from \
+            "Transfer 1,000,000 AuNZhucaYASPKmjCZLhTfhigadRMq4q6qXHbkSjvy4Q1 from \
              22Tax896iNLNZbsCRExWomRmS6uJnrMT1vF4FGzvM4JH to \
              4mTLFrGiJCX7ACKtxnBJRH9TivTHXfQyK3VgkveijVaY"
         )
@@ -1617,7 +1617,7 @@ fn a_mint_to_reads_as_a_sentence_once_the_mints_bytes_are_fetched() {
     let bare = explain_transaction(&store, &tx);
     let idl = bare.instructions[0].idl.as_ref().unwrap();
     assert_eq!(idl.interpolated_intent, None);
-    assert_eq!(field(idl, "Amount"), "123456000000 (raw)");
+    assert_eq!(field(idl, "Amount"), "123,456,000,000 (raw)");
     let needed = bare.accounts_needed();
     assert_eq!(needed, vec![(pk(7), TOKEN_2022_PROGRAM_ID)]);
 
@@ -1634,7 +1634,7 @@ fn a_mint_to_reads_as_a_sentence_once_the_mints_bytes_are_fetched() {
             .unwrap()
             .interpolated_intent
             .as_deref(),
-        Some(format!("Mint 123456 {} to {}", pk(7), pk(8)).as_str())
+        Some(format!("Mint 123,456 {} to {}", pk(7), pk(8)).as_str())
     );
 }
 

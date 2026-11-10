@@ -2,6 +2,7 @@
 //! blockhash, and who still has to sign.
 
 use super::*;
+use wallet_core::{Category, WalletSort};
 
 /// Shown when a required signer is an address no key signs for.
 #[component]
@@ -90,8 +91,15 @@ pub(in crate::ui) fn RefreshBlockhash() -> Element {
     }
 }
 
+/// `share` opens the share dialog, for a signature that has to come from
+/// another device: such a row offers it at its end. `None` while Share is
+/// the screen's primary button, so it is offered once.
 #[component]
-fn SignerRow(line: wallet_core::SignerLine, inspect: bool) -> Element {
+fn SignerRow(
+    line: wallet_core::SignerLine,
+    inspect: bool,
+    #[props(default)] share: Option<Signal<bool>>,
+) -> Element {
     // A phone has no width for the chip beside the address: it goes up
     // beside the role.
     let phone = crate::ui::use_phone_layout();
@@ -101,19 +109,33 @@ fn SignerRow(line: wallet_core::SignerLine, inspect: bool) -> Element {
         SignerRole::Authority { .. } => "Authority",
     };
     let state = rsx! { SignerChip { line } };
+    let share_button = match share.filter(|_| line.state == SignerState::Missing) {
+        Some(mut open) => rsx! {
+            button { class: "sm signer-share",
+                r#type: "button",
+                title: "Share with another device",
+                onclick: move |_| open.set(true),
+                "Share"
+            }
+        },
+        None => rsx! {},
+    };
     rsx! {
         li { class: if phone { "book-row signer-row stacked" } else { "book-row signer-row" },
             if phone {
                 div { class: "chip-row signer-head",
                     span { class: "signer-role", "{role}" }
                     {state.clone()}
+                    {share_button.clone()}
                 }
             }
             div { class: "chip-row",
                 if !phone {
                     span { class: "signer-role", "{role}" }
                 }
-                AddressRow { pubkey: line.authority_chip(), full: inspect,
+                // Copy sits right after the address it copies, before the chip.
+                AddressRow { pubkey: line.authority_chip(), full: inspect, no_copy: true,
+                    CopyButton { text: line.authority_chip().to_string() }
                     if let SignerRole::Authority { address } = line.role {
                         // A Vector row without the controlling key only knows the
                         // account; do not print it twice around "for".
@@ -126,6 +148,9 @@ fn SignerRow(line: wallet_core::SignerLine, inspect: bool) -> Element {
                         {state}
                     }
                 }
+                if !phone {
+                    {share_button}
+                }
             }
         }
     }
@@ -134,6 +159,7 @@ fn SignerRow(line: wallet_core::SignerLine, inspect: bool) -> Element {
 /// Where a signature stands, and for one not made yet, what holds its key.
 #[component]
 fn SignerChip(line: wallet_core::SignerLine) -> Element {
+    let session = use_context::<Session>();
     match line.state {
         SignerState::Signed => rsx! { span { class: "chip ok", "signed" } },
         SignerState::Invalid => rsx! { span { class: "chip danger", "invalid signature" } },
@@ -147,12 +173,30 @@ fn SignerChip(line: wallet_core::SignerLine) -> Element {
             },
             None => rsx! { span { class: "chip info", "on a hardware wallet · not signed" } },
         },
-        SignerState::Missing => rsx! { span { class: "chip warn", "needed from elsewhere" } },
+        SignerState::Missing => {
+            // Where this device knows what holds the key, it says so, in the
+            // words of the Wallets screen.
+            let category = (session.directory)()
+                .describe(&line.authority_chip())
+                .category;
+            let text = match category {
+                Category::Wallet(WalletSort::Cold) => "needed from its offline device",
+                Category::Wallet(WalletSort::Hardware) => "needed from its hardware wallet",
+                _ => "needed from elsewhere",
+            };
+            rsx! { span { class: "chip warn", "{text}" } }
+        }
     }
 }
 
+/// `share` opens the share dialog; a row whose signature has to come from
+/// another device offers it. `None` where the transaction cannot be shared.
 #[component]
-pub(in crate::ui) fn SignerList(status: SigningStatus, inspect: bool) -> Element {
+pub(in crate::ui) fn SignerList(
+    status: SigningStatus,
+    inspect: bool,
+    #[props(default)] share: Option<Signal<bool>>,
+) -> Element {
     let authorities: Vec<_> = status
         .lines
         .iter()
@@ -172,14 +216,14 @@ pub(in crate::ui) fn SignerList(status: SigningStatus, inspect: bool) -> Element
             h4 { "Authorization (intent)" }
             ul { class: "book-list",
                 for (i, line) in authorities {
-                    SignerRow { key: "{i}", line, inspect }
+                    SignerRow { key: "{i}", line, inspect, share }
                 }
             }
             h4 { "Transaction" }
         }
         ul { class: "book-list",
             for (i, line) in outer {
-                SignerRow { key: "{i}", line, inspect }
+                SignerRow { key: "{i}", line, inspect, share }
             }
         }
     }

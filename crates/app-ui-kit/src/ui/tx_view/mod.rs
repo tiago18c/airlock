@@ -11,9 +11,9 @@ use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use std::collections::{HashMap, HashSet};
 use wallet_core::{
-    display_note, explain_with_note, ContextPinMatch, DecodedTx, ExplainedIx, ExplainedTx,
-    IdlExplanation, IdlOrigin, IdlPinStatus, InnerKind, InnerMessage, IntentBody, IntentSpan,
-    IntentValue, NextKey, ScaleSource, COMPUTE_BUDGET_PROGRAM_ID, MAX_TRANSACTION_SIZE,
+    display_note, explain_with_note, group_thousands, ContextPinMatch, DecodedTx, ExplainedIx,
+    ExplainedTx, IdlExplanation, IdlOrigin, IdlPinStatus, InnerKind, InnerMessage, IntentBody,
+    IntentSpan, IntentValue, NextKey, ScaleSource, COMPUTE_BUDGET_PROGRAM_ID, MAX_TRANSACTION_SIZE,
 };
 
 mod facts;
@@ -61,13 +61,18 @@ pub fn SimulatedDeltas(
 /// `reading` is [`use_explained`] of `tx`. `signers` are the addresses the
 /// screen lists under its signatures, inside the same [`SimulatedDeltas`]. Their
 /// changes are drawn there, so Summary does not repeat them. `children` sit
-/// beside the heading.
+/// beside the heading. With `on_inspect`, Summary says which instructions it
+/// leaves out, with a button that calls it to show them. `fee_line`: the
+/// screen draws [`FeeLine`] under this, so a fee payer whose only change is
+/// that fee is not listed again under "Also changes".
 #[component]
 pub fn TxView(
     tx: DecodedTx,
     reading: TxReading,
     inspect: bool,
     #[props(default)] signers: Vec<Pubkey>,
+    #[props(default)] on_inspect: Option<EventHandler<()>>,
+    #[props(default)] fee_line: bool,
     children: Element,
 ) -> Element {
     let shown = tx.clone();
@@ -77,22 +82,51 @@ pub fn TxView(
         gave_up,
         ..
     } = reading;
-    // Summary names only some accounts. One that changes and is neither
-    // named nor a signer gets a line of its own; Inspect lists every account.
+    // Summary names only some accounts, in sentences that say what moves, so
+    // a named account carries no balance change. One that changes and is
+    // neither named nor a signer gets a line of its own, with its change;
+    // Inspect lists every account.
     let deltas = try_use_context::<BalanceDeltas>();
     let unnamed: Vec<Pubkey> = match deltas {
         Some(deltas) if !inspect => {
             let mut named: HashSet<Pubkey> = signers.into_iter().collect();
             summary_addresses(&explained.instructions, &mut named);
             let deltas = deltas.0.read();
+            // The fee line states what the fee payer pays in fees.
+            let fee_payer = shown.fee_payer().filter(|_| fee_line);
+            let fee = shown.fee_lamports();
+            let only_the_fee = |pubkey: &Pubkey| {
+                Some(*pubkey) == fee_payer
+                    && deltas
+                        .get(pubkey)
+                        .is_some_and(|(before, after)| after < before && before - after <= fee)
+            };
             shown
                 .accounts
                 .iter()
                 .map(|account| account.pubkey)
-                .filter(|pubkey| deltas.contains_key(pubkey) && !named.contains(pubkey))
+                .filter(|pubkey| {
+                    deltas.contains_key(pubkey) && !named.contains(pubkey) && !only_the_fee(pubkey)
+                })
                 .collect()
         }
         _ => Vec::new(),
+    };
+    let last = unnamed.len().saturating_sub(1);
+    // What InstructionList leaves out of Summary at the top level.
+    let left_out = match on_inspect {
+        Some(on_inspect) if !inspect && !waiting => {
+            // Their places in the message, which the cards shown keep.
+            let places: Vec<String> = explained
+                .instructions
+                .iter()
+                .enumerate()
+                .filter(|(_, ix)| ix.program_id == COMPUTE_BUDGET_PROGRAM_ID)
+                .map(|(i, _)| (i + 1).to_string())
+                .collect();
+            (!places.is_empty()).then_some((places, on_inspect))
+        }
+        _ => None,
     };
 
     rsx! {
@@ -105,6 +139,23 @@ pub fn TxView(
         }
         RiskNotice { explained: explained.clone() }
         ReadingNote { waiting, gave_up }
+        // Above the cards, so the numbers they start at explain themselves.
+        if let Some((places, on_inspect)) = left_out {
+            p { class: "ix-left-out muted",
+                match places.as_slice() {
+                    [one] => rsx! { "Instruction {one} sets the compute budget and is not shown." },
+                    [rest @ .., last] => rsx! {
+                        "Instructions {rest.join(\", \")} and {last} set the compute budget and are not shown."
+                    },
+                    [] => rsx! {},
+                }
+                button { class: "link-btn",
+                    r#type: "button",
+                    onclick: move |_| on_inspect.call(()),
+                    "Inspect"
+                }
+            }
+        }
         if !waiting {
             InstructionList { instructions: explained.instructions.clone(), inspect }
         }
@@ -112,11 +163,12 @@ pub fn TxView(
             p { class: "fee-line muted",
                 "Also changes "
                 for (i, pubkey) in unnamed.into_iter().enumerate() {
+                    // The comma closes its own item: the line's gap follows it.
                     span { key: "{pubkey}",
-                        if i > 0 {
-                            ", "
+                        Address { pubkey, delta: true }
+                        if i < last {
+                            ","
                         }
-                        Address { pubkey }
                     }
                 }
             }
@@ -393,24 +445,26 @@ fn UnknownInstruction(ix: ExplainedIx, inspect: bool) -> Element {
             span { class: "muted", "program" }
             Address { pubkey: ix.program_id }
             if !inspect {
-                span { class: "muted", "{count} accounts · {bytes} bytes of data" }
+                span { class: "muted",
+                    "{group_thousands(&count.to_string())} accounts · {group_thousands(&bytes.to_string())} bytes of data"
+                }
             }
         }
         // Nothing names these accounts, so they are listed by position.
         if !ix.accounts.is_empty() {
-            ul { class: "ix-accounts",
-                for (i, account) in ix.accounts.iter().copied().enumerate() {
-                    li { class: "chip-row", key: "{i}",
-                        span { class: "muted ix-account-name", "#{i + 1}" }
-                        AddressRow { pubkey: account, full: true }
+            AccountRowDeltas { inspect,
+                ul { class: "ix-accounts",
+                    for (i, account) in ix.accounts.iter().copied().enumerate() {
+                        li { class: "chip-row", key: "{i}",
+                            span { class: "muted ix-account-name", "#{i + 1}" }
+                            AddressRow { pubkey: account, full: true }
+                        }
                     }
                 }
             }
         }
         if inspect {
-            if !hex.is_empty() {
-                code { class: "mono", "{hex}" }
-            }
+            DataBytes { hex }
         }
     }
 }

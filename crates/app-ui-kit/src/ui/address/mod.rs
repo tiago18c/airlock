@@ -30,8 +30,8 @@ pub use row::AddressRow;
 pub use select::AddressSelect;
 
 /// The SOL each account would gain or lose, as the last simulation said,
-/// before and after. A view that provides it gets the change drawn beside
-/// each address in it.
+/// before and after. A view that provides it gets the change drawn on each
+/// [`AddressRow`] in it, and on each [`Address`] that asks for it.
 #[derive(Clone, Copy)]
 pub struct BalanceDeltas(pub Memo<std::collections::HashMap<Pubkey, (u64, u64)>>);
 

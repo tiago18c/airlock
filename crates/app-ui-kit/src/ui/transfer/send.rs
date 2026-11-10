@@ -1,6 +1,6 @@
 use crate::platform::qr::render_svg;
 use crate::state::forms::QrPreview;
-use crate::ui::{CopyButton, Glyph, Icon};
+use crate::ui::{Glyph, Icon};
 use dioxus::prelude::*;
 use wallet_core::protocol::{
     encode_frames, encode_payload, hex_id, payload_json, QrObject, DEFAULT_CHUNK,
@@ -39,25 +39,24 @@ pub fn object_previews(objects: &[QrObject], chunk: usize) -> Result<Vec<QrPrevi
 }
 
 /// `objects`, one transfer, as QR codes and as text to copy. `children` go
-/// in the button row, after Copy.
+/// in a button row under the text. `collapsed` keeps the text behind "Show
+/// as text", with Copy text beside it. `caption`, when given, says in words
+/// what the codes carry, under the code.
 #[component]
 pub fn PayloadShare(
     objects: Vec<QrObject>,
     #[props(default)] short: bool,
+    #[props(default)] collapsed: bool,
+    #[props(default)] caption: Option<String>,
     #[props(default)] children: Element,
 ) -> Element {
     let text = payload_json(&objects).map_err(|e| e.to_string());
     rsx! {
-        QrCarousel { objects }
+        QrCarousel { objects, caption }
         match text {
             Ok(text) => rsx! {
-                label { "Text"
-                    textarea { class: if short { "short" } else { "" }, readonly: true, value: "{text}" }
-                }
-                div { class: "btn-row",
-                    CopyButton { text: text.clone() }
-                    {children}
-                }
+                CopyableText { label: "Text", text, short, collapsed }
+                div { class: "btn-row payload-actions", {children} }
             },
             Err(err) => rsx! {
                 p { class: "error", "{err}" }
@@ -67,10 +66,71 @@ pub fn PayloadShare(
     }
 }
 
-/// Plays `objects`, one transfer, as QR frames. The frames and the timer
-/// belong to this component, so both stop when it unmounts.
+/// `text` read-only in a box, under `label` and a "Copy text" button on the
+/// label's line. `collapsed` puts the box behind a disclosure, "Show as
+/// text" for the label "Text", that starts closed; Copy text stays in sight.
 #[component]
-pub fn QrCarousel(objects: Vec<QrObject>) -> Element {
+pub fn CopyableText(
+    label: &'static str,
+    text: String,
+    #[props(default)] short: bool,
+    #[props(default)] collapsed: bool,
+) -> Element {
+    let mut copied = use_signal(|| false);
+    let mut shown = use_signal(|| false);
+    let copy = text.clone();
+    let disclose = if label == "Text" {
+        "Show as text".to_string()
+    } else {
+        format!("Show as {label}")
+    };
+    rsx! {
+        div { class: "copy-field",
+            div { class: "copy-field-head",
+                if collapsed {
+                    button { class: "disclosure",
+                        r#type: "button",
+                        aria_expanded: "{shown()}",
+                        onclick: move |_| shown.toggle(),
+                        span { class: "disclosure-chevron", "aria-hidden": "true" }
+                        "{disclose}"
+                    }
+                } else {
+                    span { class: "copy-field-label", "{label}" }
+                }
+                button { class: "sm copy-text",
+                    r#type: "button",
+                    onclick: move |_| {
+                        let text = copy.clone();
+                        copied.set(true);
+                        spawn(async move {
+                            let _ = crate::platform::copy_text(&text).await;
+                            crate::rt::sleep(std::time::Duration::from_millis(1500)).await;
+                            copied.set(false);
+                        });
+                    },
+                    Icon { glyph: if copied() { Glyph::Check } else { Glyph::Copy } }
+                    if copied() { "Copied" } else { "Copy text" }
+                }
+            }
+            if !collapsed || shown() {
+                textarea {
+                    class: if short { "short" } else { "" },
+                    aria_label: "{label}",
+                    readonly: true,
+                    value: "{text}",
+                }
+            }
+        }
+    }
+}
+
+/// Plays `objects`, one transfer, as QR frames. The frames and the timer
+/// belong to this component, so both stop when it unmounts. `caption`, when
+/// given, is a line under the code, above its frame details, that says what
+/// it carries.
+#[component]
+pub fn QrCarousel(objects: Vec<QrObject>, #[props(default)] caption: Option<String>) -> Element {
     // A phone's screen is small: its codes start large, in more frames.
     let phone = crate::ui::use_phone_layout();
     let mut large = use_signal(move || phone);
@@ -120,25 +180,46 @@ pub fn QrCarousel(objects: Vec<QrObject>) -> Element {
             div { class: "qr-wrap",
                 div { class: "qr-svg", dangerous_inner_html: frame.svg }
             }
+            if let Some(caption) = caption {
+                p { class: "qr-caption", "{caption}" }
+            }
             div { class: "frame-status",
                 strong { "QR {frame.index + 1} of {frame.count}" }
                 span { class: "muted",
                     "v{frame.version} · {frame.modules}×{frame.modules} · {frame.encoded_bytes} bytes · id {frame.transfer_id}"
                 }
             }
-            div { class: "btn-row",
-                button { class: if large() { "sm on" } else { "sm" },
-                    aria_pressed: "{large()}",
-                    title: "Fewer modules in each code, in more frames, for a camera further away",
-                    onclick: move |_| {
-                        index.set(0);
-                        large.toggle();
-                    },
-                    "Larger codes"
+            div { class: "btn-row qr-size",
+                div { class: "segmented", role: "group", aria_label: "Code size",
+                    button {
+                        class: if large() { "tab" } else { "tab on" },
+                        title: "As many modules in each code as fit, in the fewest frames",
+                        onclick: move |_| {
+                            if large() {
+                                index.set(0);
+                                large.set(false);
+                            }
+                        },
+                        "Standard"
+                    }
+                    button {
+                        class: if large() { "tab on" } else { "tab" },
+                        title: "Fewer modules in each code, in more frames, for a camera further away",
+                        onclick: move |_| {
+                            if !large() {
+                                index.set(0);
+                                large.set(true);
+                            }
+                        },
+                        "Larger"
+                    }
+                }
+                span { class: "hint",
+                    "Bigger squares, over more codes, for a camera that is further away."
                 }
             }
             if frame_count > 1 {
-                div { class: "btn-row",
+                div { class: "btn-row qr-frames",
                     button { class: "icon-btn",
                         title: "Previous frame",
                         aria_label: "Previous frame",
