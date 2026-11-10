@@ -73,13 +73,6 @@ pub fn WalletsPanel() -> Element {
                         h2 { "Wallets" }
                     }
                     div { class: "btn-row",
-                        if !all.is_empty() {
-                            button {
-                                title: "Show the public keys of wallets here, for another device to add them",
-                                onclick: move |_| export_open.set(true),
-                                "Export keys"
-                            }
-                        }
                         button { class: "primary",
                             onclick: move |_| {
                                 session.when_unlocked("Unlock the vault to add a wallet to it.", move || modal_open.set(true));
@@ -87,25 +80,34 @@ pub fn WalletsPanel() -> Element {
                             Icon { glyph: Glyph::Plus }
                             "Add wallet"
                         }
-                        if online && !all.is_empty() {
+                        if !all.is_empty() {
                             PaneMenu { label: "More wallet actions",
                                 button { class: "pane-menu-item",
                                     role: "menuitem",
-                                    title: "Move everything a wallet holds to another address: to rotate a key, or to move to a programmatic signer, a Vector account or a multisig",
-                                    onclick: move |_| session.open_migrate(current),
-                                    Icon { glyph: Glyph::Send }
-                                    "Migrate wallet"
+                                    title: "Show the public keys of wallets here, for another device to add them",
+                                    onclick: move |_| export_open.set(true),
+                                    Icon { glyph: Glyph::Qr }
+                                    "Export keys"
                                 }
-                                button { class: "pane-menu-item",
-                                    role: "menuitem",
-                                    title: "Burn and close a wallet's token accounts, to get their rent back",
-                                    onclick: move |_| {
-                                        if let Some(wallet) = first_wallet {
-                                            session.open_cleanup(wallet);
-                                        }
-                                    },
-                                    Icon { glyph: Glyph::Trash }
-                                    "Manage tokens"
+                                if online {
+                                    button { class: "pane-menu-item",
+                                        role: "menuitem",
+                                        title: "Move everything a wallet holds to another address: to rotate a key, or to move to a programmatic signer, a Vector account or a multisig",
+                                        onclick: move |_| session.open_migrate(current),
+                                        Icon { glyph: Glyph::Send }
+                                        "Migrate wallet"
+                                    }
+                                    button { class: "pane-menu-item",
+                                        role: "menuitem",
+                                        title: "Burn and close a wallet's token accounts, to get their rent back",
+                                        onclick: move |_| {
+                                            if let Some(wallet) = first_wallet {
+                                                session.open_cleanup(wallet);
+                                            }
+                                        },
+                                        Icon { glyph: Glyph::Trash }
+                                        "Manage tokens"
+                                    }
                                 }
                             }
                         }
@@ -166,7 +168,7 @@ pub fn WalletsPanel() -> Element {
                     if session.hardware_offered().is_empty() {
                         div { class: "wallets-empty",
                             p {
-                                "None yet. A Ledger is offered once Pre-release hardware wallets is on in Settings, until Ledger releases the Solana app 1.18."
+                                "No hardware wallets yet. Ledger support is pre-release until Ledger ships the Solana app 1.18: turn on Pre-release hardware wallets in Settings to add one."
                             }
                             button { class: "ghost sm",
                                 title: "Go to Settings, where Pre-release hardware wallets is turned on",

@@ -2139,10 +2139,12 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 .wallet-row h3 .chip { margin-left: var(--space-2); vertical-align: middle; }
 /* A wallet's settings on one grid: names in the first column, controls in
    the second, every row as high as a field. A row is a .setting-row, or a
-   WalletPicker whose label is split over the two columns. */
+   WalletPicker whose label is split over the two columns. The name column
+   has one width on every card, so the controls line up down the pane. */
 .settings-grid {
+  --setting-label-w: 10rem;
   display: grid;
-  grid-template-columns: max-content minmax(0, 28rem);
+  grid-template-columns: var(--setting-label-w) minmax(0, 28rem);
   gap: var(--space-2) var(--space-5);
   align-items: center;
   margin-block: var(--space-2);
@@ -2158,10 +2160,13 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   min-height: var(--control-md);
 }
 .settings-grid > .picker > .picker-menu { grid-column: 2; }
+/* Every picker fills the control column, so all are one width. */
+.settings-grid .picker-button { width: 100%; }
 .setting-label {
   font-size: var(--text-md);
   font-weight: var(--weight-medium);
   color: var(--text-2);
+  overflow-wrap: anywhere;
 }
 .setting-value {
   display: flex;
@@ -2171,10 +2176,17 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   min-width: 0;
   overflow-wrap: anywhere;
 }
+/* Set up, Create nonce account, Make default: one height, centred on the row. */
+.setting-value > button.sm {
+  height: var(--control-sm);
+  align-self: center;
+  white-space: nowrap;
+}
 @media (pointer: coarse) {
   .settings-grid > .setting-row,
   .settings-grid > .picker,
   .settings-grid > .picker > label { min-height: var(--control-lg); }
+  .setting-value > button.sm { height: var(--control-md); }
 }
 @media (max-width: 639px) {
   /* A phone puts each name above its control. */
@@ -2197,6 +2209,47 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 .wallets-empty > p { flex: 1 1 20rem; min-width: 0; margin: 0; }
 /* A multisig's co-approvers grow with their rows; the pane scrolls. */
 .approves-together .derive-list { max-height: none; overflow: visible; }
+.checklist-head { display: grid; gap: var(--space-1); }
+/* Its checkboxes are drawn, not left to the platform, whose unticked box
+   reads as disabled in the dark theme: an outline on the card's surface,
+   and the brand fill with a check once ticked. */
+.approves-together input[type="checkbox"] {
+  appearance: none;
+  position: relative;
+  display: inline-grid;
+  place-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--border-control);
+  border-radius: calc(var(--radius-sm) / 2);
+  background: var(--surface);
+  transition: background var(--fast) var(--ease), border-color var(--fast) var(--ease);
+}
+.approves-together input[type="checkbox"]:hover { border-color: var(--border-strong); }
+.approves-together input[type="checkbox"]:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.approves-together input[type="checkbox"]:checked {
+  border-color: var(--brand);
+  background: var(--brand);
+}
+.approves-together input[type="checkbox"]:checked:hover {
+  border-color: var(--brand-hover);
+  background: var(--brand-hover);
+}
+.approves-together input[type="checkbox"]::after {
+  content: "";
+  width: 4px;
+  height: 8px;
+  margin-top: -2px;
+  border: solid var(--on-brand);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  opacity: 0;
+}
+.approves-together input[type="checkbox"]:checked::after { opacity: 1; }
+@media (pointer: coarse) {
+  .approves-together input[type="checkbox"] { width: 20px; height: 20px; }
+  .approves-together input[type="checkbox"]::after { width: 5px; height: 10px; }
+}
 /* Remove, in a wallet row's menu, keeps the danger colour. */
 .wallet-side .pane-menu-item.danger,
 .wallet-side .pane-menu-item.danger .icon { color: var(--danger-text); }

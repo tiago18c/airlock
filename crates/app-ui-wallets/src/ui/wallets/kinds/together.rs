@@ -41,6 +41,7 @@ pub(in crate::ui) fn ApprovesTogether(wallet: WalletSummary) -> Element {
         div { class: "stack approves-together",
             WalletChecklist {
                 label: "Approves together with",
+                hint: "A ticked wallet votes with the acting member, so a proposal they can finish together is approved and executed in one transaction.",
                 options,
                 selected: approves_with.clone(),
                 on_change: move |chosen: Vec<WalletId>| {

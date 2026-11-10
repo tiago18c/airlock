@@ -2,9 +2,10 @@
 
 pub const LAMPORTS_PER_SOL: u64 = 1_000_000_000;
 
-/// `1500000000` as "1.5 SOL". Trailing zeros are dropped.
+/// `1500000000` as "1.5 SOL", and `1250000000000` as "1,250 SOL". Trailing
+/// zeros are dropped, and the whole part has thousands separators.
 pub fn format_sol(lamports: u64) -> String {
-    let whole = lamports / LAMPORTS_PER_SOL;
+    let whole = group_thousands(lamports / LAMPORTS_PER_SOL);
     let frac = lamports % LAMPORTS_PER_SOL;
     if frac == 0 {
         format!("{whole} SOL")
@@ -13,6 +14,19 @@ pub fn format_sol(lamports: u64) -> String {
         let frac = frac.trim_end_matches('0');
         format!("{whole}.{frac} SOL")
     }
+}
+
+/// `1250000` as "1,250,000".
+fn group_thousands(value: u64) -> String {
+    let digits = value.to_string();
+    let mut grouped = String::with_capacity(digits.len() + digits.len() / 3);
+    for (at, digit) in digits.chars().enumerate() {
+        if at > 0 && (digits.len() - at).is_multiple_of(3) {
+            grouped.push(',');
+        }
+        grouped.push(digit);
+    }
+    grouped
 }
 
 /// A token amount in the token's own units, by its number of decimals.
@@ -81,6 +95,11 @@ mod tests {
         assert_eq!(format_sol(1_500_000_000), "1.5 SOL");
         assert_eq!(format_sol(2_000_000_000), "2 SOL");
         assert_eq!(format_sol(1), "0.000000001 SOL");
+        assert_eq!(format_sol(999 * LAMPORTS_PER_SOL), "999 SOL");
+        assert_eq!(format_sol(1_250 * LAMPORTS_PER_SOL), "1,250 SOL");
+        assert_eq!(format_sol(1_250_500_000_000), "1,250.5 SOL");
+        assert_eq!(format_sol(1_234_567 * LAMPORTS_PER_SOL), "1,234,567 SOL");
+        assert_eq!(format_sol(u64::MAX), "18,446,744,073.709551615 SOL");
         assert_eq!(format_token_amount(1_500_000, 6), "1.5");
         assert_eq!(format_token_amount(7, 0), "7");
         assert_eq!(format_token_amount(2_000_000, 6), "2");

@@ -3,16 +3,23 @@
 use super::*;
 
 /// One checkbox per wallet, showing its label and address. `selected` keeps
-/// the order the wallets were ticked in.
+/// the order the wallets were ticked in. `hint`, when given, is a line under
+/// the label that says what a tick does.
 #[component]
 pub(in crate::ui) fn WalletChecklist(
     label: String,
+    #[props(default)] hint: String,
     options: Vec<WalletSummary>,
     selected: Vec<WalletId>,
     on_change: EventHandler<Vec<WalletId>>,
 ) -> Element {
     rsx! {
-        p { class: "muted", "{label}" }
+        div { class: "checklist-head",
+            p { class: "muted", "{label}" }
+            if !hint.is_empty() {
+                p { class: "hint", "{hint}" }
+            }
+        }
         ul { class: "derive-list",
             for wallet in options {
                 li { class: "derive-row", key: "{wallet.id}",
