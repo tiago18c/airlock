@@ -190,7 +190,7 @@ fn ModalSimulation(simulation: Signal<SimState>) -> Element {
                                     if i > 0 {
                                         ", "
                                     }
-                                    Address { pubkey }
+                                    Address { pubkey, delta: true }
                                 }
                             }
                             "."

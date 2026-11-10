@@ -69,9 +69,9 @@ pub fn IdlInstruction(idl: IdlExplanation, data: Vec<u8>, inspect: bool) -> Elem
 }
 
 /// An instruction's account rows. In Inspect they are drawn without a balance
-/// change: an account's change is in the sentence and the Accounts list, and
-/// would repeat on every row it fills. In Summary, rows stand in for a
-/// sentence, so they keep it.
+/// change: an account's change is in the Accounts list, and would repeat on
+/// every row it fills. In Summary, rows stand in for a sentence that would
+/// say what moves, so they keep it.
 #[component]
 pub fn AccountRowDeltas(inspect: bool, children: Element) -> Element {
     if inspect {
