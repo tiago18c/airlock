@@ -8,8 +8,19 @@
 //! So the rotation is signed once for each, and the device that sends it
 //! picks the one the account holds. Each signature spends a leaf of the key
 //! that is being retired anyway.
+//!
+//! A wallet restored from its recovery phrase knows none of that: a lost
+//! copy signed for the account, and may have signed with any leaf it was
+//! allowed. So it signs at the one nonce the online device read, with a
+//! leaf no copy that kept its key ever signs with (`reserve_recovery_leaf`),
+//! and with a salt made from the key, so that the phrase typed in a second
+//! time makes the same signature rather than a second one. When the nonce
+//! moved before the rotation landed, the next state it takes gives it
+//! another attempt, with the leaf below.
 
-use super::leaves::{install_landed_rotations, reserve_leaf, LeafError, LeafFor, LeafMarks};
+use super::leaves::{
+    install_landed_rotations, reserve_leaf, reserve_recovery_leaf, LeafError, LeafFor, LeafMarks,
+};
 use crate::ids::WalletId;
 use crate::transport::protocol::AccountState;
 use crate::transport::protocol::{KeyRotation, RotationSignature, MAX_ROTATION_NONCES};
@@ -21,6 +32,7 @@ use crate::wallets::vector::{
 };
 use solana_pubkey::Pubkey;
 use wallet_vault::store::VaultStore;
+use zeroize::Zeroizing;
 
 /// Sign the move of `wallet`'s XMSS account to its next key, making that
 /// key first when there is none. What is about to be signed is recorded
@@ -87,6 +99,16 @@ pub fn sign_rotation<V: VaultStore, M: VaultStore>(
     let signer = VectorSigner::from_record(&data.wallets, wallet)
         .map_err(|err| LeafError::Rotation(err.to_string()))?;
     let key = signer.key();
+    // What a restored wallet's salt is made from.
+    let seed = data
+        .wallets
+        .iter()
+        .find(|record| record.id == wallet)
+        .and_then(|record| match record.kind.vector_settings()?.authority {
+            Authority::Held { secret, .. } => Some(Zeroizing::new(secret.0.clone())),
+            Authority::Wallet { .. } | Authority::Outside => None,
+        })
+        .ok_or(LeafError::NoWallet)?;
 
     let message = rotation_message(SchemeId::Xmss, &created_with, &next_key)
         .map_err(|err| LeafError::Rotation(err.to_string()))?;
@@ -109,17 +131,18 @@ pub fn sign_rotation<V: VaultStore, M: VaultStore>(
             });
             continue;
         }
-        if restored {
-            // A lost copy took leaves in rising order, so the last one is
-            // the one it cannot have used.
-            marks
-                .raise(&account, &key, XMSS_LEAVES - 1)
-                .map_err(LeafError::Mark)?;
+        let signature = if restored {
+            // A leaf no copy that kept its key signs with, and the salt
+            // the same phrase makes again for this digest.
+            let reserved = reserve_recovery_leaf(vault, marks, wallet, &key)?;
+            signer
+                .recovery_salt(&seed, reserved.leaf, digest)
+                .and_then(|salt| signer.sign_leaf_with_salt(reserved.leaf, digest, &salt))
+        } else {
+            let reserved = reserve_leaf(vault, marks, wallet, &key, None, LeafFor::Rotation)?;
+            signer.sign_leaf(reserved.leaf, digest)
         }
-        let reserved = reserve_leaf(vault, marks, wallet, &key, None, LeafFor::Rotation)?;
-        let signature = signer
-            .sign_leaf(reserved.leaf, digest)
-            .map_err(|err| LeafError::Rotation(err.to_string()))?;
+        .map_err(|err| LeafError::Rotation(err.to_string()))?;
         marks
             .keep_rotation_signature(&account, &next_key, nonce, &signature)
             .map_err(LeafError::Mark)?;
@@ -187,6 +210,14 @@ pub fn adopt_account_state<V: VaultStore, M: VaultStore>(
         .map(|settings| settings.scheme)
         .filter(|scheme| scheme.byte() == state.scheme && scheme.is_stateful())
         .ok_or_else(|| LeafError::NotStateful(label.clone()))?;
+    // More leaves than a key has is not something a chain says. Taken, it
+    // would count every leaf of the key as used here, for good.
+    if scheme == SchemeId::Xmss && state.leaf_floor > XMSS_LEAVES {
+        return Err(LeafError::FloorPastKey {
+            label,
+            floor: state.leaf_floor,
+        });
+    }
     install_landed_rotations(
         vault,
         marks,

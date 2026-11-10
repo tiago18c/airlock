@@ -18,7 +18,13 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - When no browser is connected, the **Extension** status at the bottom of the sidebar offers **Install the browser bridge**, for when you skipped it in the installer, and **Get the extension**, which opens the latest release with the steps to load the extension.
 
 ### Changed
+- **A Vector XMSS wallet restored from its recovery phrase gets four attempts at moving to its next key**, where it had one. If something signed before the key was lost lands first and the rotation can no longer land, scan the account state again and press **Rotate key** again. Its row says how many attempts are left. A device that kept its key no longer signs with the last four leaves of a key, which are kept for this.
+- The key device keeps a signed key rotation until it is shown that it landed, and shows it again from its row or from Sign without signing anything. The online device says on the wallet's row when a rotation it was given has not landed, and sends it again.
 - Programmatic signers work with the signer programs devnet runs since 2026-11-09. The executor now signs each advance of the nonce, so an authorization signed ahead of another can only run once the one before it has, and the nonce's authority cannot skip it. Authorizations signed before that date no longer run: sign them again.
+
+### Security
+- Restoring a Vector XMSS wallet from its recovery phrase a second time now signs the same rotation with the same signature. Before, each restore made a new signature with the key's last leaf, and two of those could give the key away.
+- An account state that claims more leaves than a key has is refused. Before, scanning one made the key unable to sign on that device.
 
 ### Fixed
 - **Mint tokens** and **Burn** now read as a sentence with the amount in whole tokens ("Mint 123456 t2 to …") in History, the Sign screen and the browser request. The online app reads the mint's decimals from your node. Before, it showed the raw amount and the accounts.

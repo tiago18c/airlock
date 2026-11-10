@@ -302,3 +302,38 @@ fn parse_personal_sign_normalizes_v_and_refuses_a_text_signature() {
         Err(VectorError::SignedDigestAsText)
     );
 }
+
+#[test]
+fn a_recovery_salt_is_pinned_and_is_the_same_whoever_makes_it() {
+    let seed = [7u8; 32];
+    let signer = VectorSigner::Xmss(Box::new(xmss_from_seed(&seed).unwrap()));
+    let public = signer.key();
+    let digest = [15u8; 32];
+    let leaf = XMSS_LEAVES - 1;
+    let salt = signer.recovery_salt(&seed, leaf, &digest).unwrap();
+    // Changing how the salt is made changes this, and with it every
+    // recovery signature: two builds would then sign one leaf twice.
+    assert_eq!(
+        hex::encode(salt),
+        "166eb3fe620aca81eafbb995d84e636f962f5e74d4"
+    );
+    // The same key made again makes the same salt, so the same signature.
+    let again = VectorSigner::Xmss(Box::new(xmss_from_seed(&seed).unwrap()));
+    assert_eq!(again.recovery_salt(&seed, leaf, &digest).unwrap(), salt);
+    let signature = signer.sign_leaf_with_salt(leaf, &digest, &salt).unwrap();
+    assert_eq!(
+        again.sign_leaf_with_salt(leaf, &digest, &salt).unwrap(),
+        signature
+    );
+    verify(SchemeId::Xmss, &public, &digest, &signature).unwrap();
+    // Another leaf, digest or key has a salt of its own.
+    assert_ne!(
+        signer.recovery_salt(&seed, leaf - 1, &digest).unwrap(),
+        salt
+    );
+    assert_ne!(signer.recovery_salt(&seed, leaf, &[16; 32]).unwrap(), salt);
+    assert_ne!(signer.recovery_salt(&[8; 32], leaf, &digest).unwrap(), salt);
+    // A key that keeps no state has none.
+    let plain = VectorSigner::Ed25519(KeypairSigner::new_random());
+    assert!(plain.recovery_salt(&seed, 0, &digest).is_err());
+}

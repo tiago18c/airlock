@@ -97,6 +97,9 @@ pub struct WalletsView {
     /// Rotations signed here that may not have landed: the account, and the key it
     /// moves to.
     pub pending_rotations: Vec<(Pubkey, Vec<u8>)>,
+    /// Each of those with the signatures kept of it, to show again without
+    /// signing: what the device that sends it takes.
+    pub kept_rotations: Vec<wallet_core::protocol::KeyRotation>,
 }
 
 /// The cluster in use, and whether its node answered.
@@ -238,6 +241,7 @@ pub fn wallets_view_from(data: Option<&VaultData>, marks: &AppLeafMarks) -> Arc<
         local_device_keys: data.local_device_keys(),
         local_vector_accounts: wallet_core::vector::held_vector_accounts(&data.wallets),
         pending_rotations: marks.pending_rotations(),
+        kept_rotations: marks.kept_rotations(),
     })
 }
 

@@ -220,6 +220,28 @@ impl Desk {
         wallet: WalletId,
         account: &Pubkey,
     ) -> wallet_core::vector::Adopted {
+        self.try_adopt(wallet, account, |_| {}).unwrap()
+    }
+
+    /// [`Self::adopt_state`], with the account said to be at `nonce`.
+    pub fn adopt_told_state(
+        &mut self,
+        wallet: WalletId,
+        account: &Pubkey,
+        nonce: [u8; 32],
+    ) -> wallet_core::vector::Adopted {
+        self.try_adopt(wallet, account, |state| state.nonce = nonce)
+            .unwrap()
+    }
+
+    /// [`Self::adopt_state`], with what the chain says changed by `told`
+    /// first, as an online device that is wrong or lies would show it.
+    pub fn try_adopt(
+        &mut self,
+        wallet: WalletId,
+        account: &Pubkey,
+        told: impl FnOnce(&mut wallet_core::protocol::AccountState),
+    ) -> Result<wallet_core::vector::Adopted, String> {
         let read =
             VectorAccount::parse(&PROGRAM_ID, &self.chain().account(account).unwrap()).unwrap();
         let created_with = self
@@ -230,15 +252,16 @@ impl Desk {
             .unwrap()
             .key
             .to_vec();
-        let state = wallet_core::vector::account_state(account, &read, &created_with);
+        let mut state = wallet_core::vector::account_state(account, &read, &created_with);
+        told(&mut state);
         let vault = self.vault.get_or_insert_with(|| {
             let mut vault = Vault::new(MemoryStore::new());
             vault.create("desk").unwrap();
             vault
         });
         vault.data_mut().unwrap().wallets = self.wallets.clone();
-        let adopted =
-            wallet_core::vector::adopt_account_state(vault, &mut self.leaf_marks, &state).unwrap();
+        let adopted = wallet_core::vector::adopt_account_state(vault, &mut self.leaf_marks, &state)
+            .map_err(|err| err.to_string());
         self.wallets = vault.data().unwrap().wallets.clone();
         adopted
     }
@@ -373,6 +396,35 @@ impl Desk {
             wallet_core::vector::sign_rotation(vault, &mut self.leaf_marks, wallet).unwrap();
         self.wallets = vault.data().unwrap().wallets.clone();
         rotation
+    }
+
+    /// [`Self::sign_rotation`], when it may be refused.
+    pub fn try_sign_rotation(
+        &mut self,
+        wallet: WalletId,
+    ) -> Result<wallet_core::protocol::KeyRotation, String> {
+        let vault = self.vault.get_or_insert_with(|| {
+            let mut vault = Vault::new(MemoryStore::new());
+            vault.create("desk").unwrap();
+            vault
+        });
+        vault.data_mut().unwrap().wallets = self.wallets.clone();
+        let rotation = wallet_core::vector::sign_rotation(vault, &mut self.leaf_marks, wallet)
+            .map_err(|err| err.to_string());
+        self.wallets = vault.data().unwrap().wallets.clone();
+        rotation
+    }
+
+    /// How many more times `wallet`, restored from its phrase, can sign its
+    /// move to the next key.
+    pub fn recovery_left(&mut self, wallet: WalletId) -> Option<u32> {
+        let vault = self.vault.get_or_insert_with(|| {
+            let mut vault = Vault::new(MemoryStore::new());
+            vault.create("desk").unwrap();
+            vault
+        });
+        vault.data_mut().unwrap().wallets = self.wallets.clone();
+        wallet_core::vector::recovery_attempts_left(vault, &self.leaf_marks, wallet)
     }
 
     /// Install `wallet`'s next key once the chain shows its account holding

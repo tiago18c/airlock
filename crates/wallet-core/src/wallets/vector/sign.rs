@@ -24,6 +24,10 @@ use solana_winternitz::hazmat::OneTime;
 /// Salts tried before a hash-based key gives up, as many as `hazmat` tries.
 const SALT_TRIALS: usize = 4096;
 
+/// What [`VectorSigner::recovery_salt`] hashes before the leaf. Changing it
+/// changes every recovery signature, so two builds would sign one leaf twice.
+const RECOVERY_SALT_TAG: &[u8] = b"Airlock XMSS recovery salt v1";
+
 /// A key of one scheme that this device holds.
 pub enum VectorSigner {
     Ed25519(KeypairSigner),
@@ -150,6 +154,45 @@ impl VectorSigner {
         Err(VectorError::SigningFailed {
             scheme: self.scheme().label(),
         })
+    }
+
+    /// The salt a wallet restored from its recovery phrase signs `digest`
+    /// with at `leaf`: made from the key's `seed`, the leaf and the digest,
+    /// so that the same phrase typed in again on another device signs the
+    /// same digest with the same salt, and so makes the same signature. A
+    /// salt from the OS would make a second, different signature with the
+    /// same leaf, which gives the key away.
+    ///
+    /// The first of a numbered run of candidates whose encoding meets the
+    /// scheme's target sum, as [`Self::accepted_salt`] takes the first of a
+    /// random run.
+    pub fn recovery_salt(
+        &self,
+        seed: &[u8],
+        leaf: u32,
+        digest: &[u8; 32],
+    ) -> Result<[u8; XMSS_SALT_LEN], VectorError> {
+        use hmac::{Hmac, Mac};
+        let failed = || VectorError::SigningFailed {
+            scheme: self.scheme().label(),
+        };
+        if !self.scheme().is_stateful() {
+            return Err(failed());
+        }
+        for trial in 0..SALT_TRIALS as u32 {
+            let mut mac = <Hmac<sha2::Sha512>>::new_from_slice(seed).map_err(|_| failed())?;
+            mac.update(RECOVERY_SALT_TAG);
+            mac.update(&leaf.to_le_bytes());
+            mac.update(digest);
+            mac.update(&trial.to_le_bytes());
+            let made = mac.finalize().into_bytes();
+            let mut salt = [0u8; XMSS_SALT_LEN];
+            salt.copy_from_slice(&made[..XMSS_SALT_LEN]);
+            if self.sign_leaf_with_salt(leaf, digest, &salt).is_ok() {
+                return Ok(salt);
+            }
+        }
+        Err(failed())
     }
 
     /// Reproduce a hash-based signature with a salt from a previous attempt.

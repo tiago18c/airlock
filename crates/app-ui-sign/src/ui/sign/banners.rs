@@ -242,3 +242,63 @@ pub(in crate::ui) fn PersonalSignBox(tx: std::rc::Rc<DecodedTx>, status: Signing
         }
     }
 }
+
+/// The rotations signed on this device that it has not been shown landed,
+/// each to show again for the online device. Showing one signs nothing, so
+/// a code that was lost on the way, or a transaction that did not land, costs
+/// no leaf.
+#[component]
+pub(in crate::ui) fn KeptRotations() -> Element {
+    let session = use_context::<Session>();
+    let mut shown = use_signal(|| None::<QrObject>);
+    let wallets = (session.wallets)();
+    if wallets.kept_rotations.is_empty() {
+        return rsx! {};
+    }
+    rsx! {
+        div { class: "callout",
+            p {
+                "Signed here, and not shown to have landed yet. Show one again for the online device to send, as often as needed: that signs nothing. Scan the account's state from the online device once it has landed."
+            }
+            for rotation in wallets.kept_rotations.iter().cloned() {
+                {
+                    let account = Pubkey::new_from_array(rotation.account);
+                    let signed = rotation.signed.len();
+                    rsx! {
+                        div { key: "{account}", class: "btn-row",
+                            span {
+                                "Key rotation of "
+                                Address { pubkey: account }
+                                if signed > 1 {
+                                    span { class: "muted", " · signed at {signed} nonces" }
+                                }
+                            }
+                            button { class: "sm",
+                                onclick: move |_| shown.set(Some(QrObject::KeyRotation(rotation.clone()))),
+                                "Show again"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if let Some(object) = shown() {
+            div { class: "modal-backdrop", onclick: move |_| shown.set(None),
+                div { class: "modal", onclick: move |evt| evt.stop_propagation(),
+                    div { class: "stack",
+                        h3 { "Key rotation" }
+                        p { class: "lede",
+                            "On the online device, scan this on Sign or paste the text there. It sends the move to the new key, paid by the wallet's fee payer. It carries the new public key and signatures, never a secret."
+                        }
+                        PayloadShare { objects: vec![object],
+                            button { class: "ghost",
+                                onclick: move |_| shown.set(None),
+                                "Close"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

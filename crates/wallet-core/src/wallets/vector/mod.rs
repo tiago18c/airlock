@@ -75,8 +75,8 @@ pub use scheme::{address, seed, SchemeId, HEADER_LEN, VECTOR_SEED};
 pub use sign::{verify, VectorKey, VectorSigner};
 pub use xmss::{
     leaf_status_note, leaves_left, leaves_used, must_rotate, salt_of_signature, warn_leaves,
-    XmssRetry, XmssRetryCache, XMSS_FORCE_ROTATE_USED, XMSS_LEAVES, XMSS_SALT_LEN,
-    XMSS_SALT_OFFSET, XMSS_WARN_USED,
+    XmssRetry, XmssRetryCache, XMSS_FORCE_ROTATE_USED, XMSS_LEAVES, XMSS_RECOVERY_FROM,
+    XMSS_RECOVERY_LEAVES, XMSS_SALT_LEN, XMSS_SALT_OFFSET, XMSS_WARN_USED,
 };
 
 // What a wallet of this device does with its Vector account, named under this
@@ -84,8 +84,9 @@ pub use xmss::{
 pub use crate::wallets::vector_wallets::{account_state, adopt_account_state, Adopted};
 pub use crate::wallets::vector_wallets::{
     held_vector_accounts, install_landed_rotations, keys_to_sign_with, local_vector_keys,
-    next_key_target, offered, reserve, reserve_leaf, sign_rotation, FloorsFrom, LeafError, LeafFor,
-    LeafMarks, Reserved, RotationError, LEAVES_SKIPPED_WITHOUT_MARK,
+    next_key_target, offered, recovery_attempts_left, reserve, reserve_leaf, reserve_recovery_leaf,
+    sign_rotation, FloorsFrom, LeafError, LeafFor, LeafMarks, Reserved, RotationError,
+    LEAVES_SKIPPED_WITHOUT_MARK,
 };
 
 /// Our deployment of the Vector program, on devnet. A wallet's record keeps

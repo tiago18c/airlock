@@ -22,6 +22,14 @@ pub const XMSS_WARN_USED: u32 = 205; // 80% of 256
 
 /// Past this many used leaves, every wrap must rotate to a new key.
 pub const XMSS_FORCE_ROTATE_USED: u32 = 244; // 95% of 256
+/// The last leaves of a key, which only a wallet restored from its recovery
+/// phrase signs with, and only to move the account to its next key. No
+/// device that kept its key from the start ever signs with one of them, so
+/// a restored copy knows they are unused whatever a lost copy signed. It
+/// takes them from the last one down, one for each attempt.
+pub const XMSS_RECOVERY_LEAVES: u32 = 4;
+/// The first leaf kept for recovery.
+pub const XMSS_RECOVERY_FROM: u32 = XMSS_LEAVES - XMSS_RECOVERY_LEAVES;
 
 /// How many leaves of one key have already signed, given the chain's floor.
 pub fn leaves_used(next_leaf: u32) -> u32 {
