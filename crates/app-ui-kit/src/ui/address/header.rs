@@ -28,6 +28,10 @@ pub fn AddressHeader(
     /// Leave the full address out, for a screen that draws it elsewhere.
     #[props(default)]
     no_address: bool,
+    /// The address shortened in the middle, on one line, where the whole
+    /// one would wrap: a wallet card on a phone. Copy still copies it whole.
+    #[props(default)]
+    short: bool,
     /// Under the address: a balance, and the like.
     children: Element,
 ) -> Element {
@@ -86,7 +90,11 @@ pub fn AddressHeader(
                 }
                 if let Some(pubkey) = pubkey.filter(|_| !no_address) {
                     div { class: "addr-full",
-                        code { class: "mono", "{pubkey}" }
+                        if short {
+                            code { class: "mono", title: "{pubkey}", "{short_pubkey(&pubkey)}" }
+                        } else {
+                            code { class: "mono", "{pubkey}" }
+                        }
                         CopyButton { text: pubkey.to_string() }
                     }
                 }

@@ -221,7 +221,7 @@ pub(in crate::ui) fn WalletSettingsDialog(
         // A click outside closes it, unless that would drop a choice.
         div { class: "modal-backdrop", onclick: move |_| if !dirty { on_close.call(()) },
             div {
-                class: "modal wide",
+                class: "modal wide wallet-dialog-modal",
                 role: "dialog",
                 aria_modal: "true",
                 aria_label: "Settings of {wallet.label}",
@@ -407,6 +407,40 @@ fn Fact(name: &'static str, children: Element) -> Element {
     }
 }
 
+/// The heading of a group of facts in the Details dialog, on a phone, where
+/// the facts are one long column: what the wallet is and where it lives,
+/// who is in it, and how this device uses it. A wider screen has room to
+/// show them all at a glance, and no headings.
+#[component]
+fn FactGroup(name: &'static str) -> Element {
+    let phone = app_ui_kit::ui::use_phone_layout();
+    rsx! {
+        if phone {
+            h4 { class: "eyebrow wallet-facts-group", "{name}" }
+        }
+    }
+}
+
+/// A wallet of this device named in the Details dialog. On a phone it is
+/// drawn as a wallet row, icon, name, short address and copy, as the
+/// members are, so a wallet looks the same wherever the dialog names it.
+/// A wider screen names it.
+#[component]
+fn FactWallet(id: WalletId) -> Element {
+    let session = use_context::<Session>();
+    let phone = app_ui_kit::ui::use_phone_layout();
+    let found = (session.wallets)()
+        .summaries
+        .iter()
+        .find(|other| other.id == id)
+        .map(|other| (other.label.clone(), other.address));
+    match found {
+        Some((_, Some(pubkey))) if phone => rsx! { AddressRow { pubkey } },
+        Some((label, _)) => rsx! { span { "{label}" } },
+        None => rsx! { span { "A wallet no longer on this device" } },
+    }
+}
+
 /// What a smart contract wallet is and how it is set up, to read. Nothing
 /// here can be changed: Settings does that.
 #[component]
@@ -429,17 +463,30 @@ pub(in crate::ui) fn WalletDetailsDialog(
         .route_of(wallet.id)
         .ok()
         .and_then(|route| route.fee_payer)
-        .map(|(payer, _)| label_of(payer));
+        .map(|(payer, _)| payer);
     let kind = wallet.contract.clone();
     let vector = vector_facts(&wallet, &wallets);
+    // The wallet that signs for a Vector account, where it is one of this
+    // device's wallets.
+    let vector_signer = kind
+        .as_ref()
+        .and_then(WalletKind::vector_settings)
+        .and_then(|settings| match settings.authority {
+            Authority::Wallet { wallet } => Some(*wallet),
+            Authority::Held { .. } | Authority::Outside => None,
+        });
     let authority = kind.as_ref().and_then(WalletKind::signer_authority);
     let executor_nonce = kind.as_ref().and_then(WalletKind::executor_nonce);
     let kind_name = kind.as_ref().and_then(kind_chip);
+    // A phone has no room for a name and a whole address on one line: it
+    // shortens the address, as the Members rows do, and copy still copies
+    // all of it.
+    let phone = app_ui_kit::ui::use_phone_layout();
 
     rsx! {
         div { class: "modal-backdrop", onclick: move |_| on_close.call(()),
             div {
-                class: "modal wide wallet-facts-modal",
+                class: "modal wide wallet-dialog-modal wallet-facts-modal",
                 role: "dialog",
                 aria_modal: "true",
                 aria_label: "Details of {wallet.label}",
@@ -450,6 +497,7 @@ pub(in crate::ui) fn WalletDetailsDialog(
                         span { class: "muted", "Details" }
                     }
                     div { class: "settings-grid wallet-facts",
+                        FactGroup { name: "What it is" }
                         if let Some(kind_name) = kind_name {
                             Fact { name: "Kind", span { "{kind_name}" } }
                         }
@@ -465,9 +513,10 @@ pub(in crate::ui) fn WalletDetailsDialog(
                                 approval_nonce,
                                 ..
                             }) => rsx! {
-                                Fact { name: "Vault", AddressRow { pubkey: vault, full: true } }
-                                Fact { name: "Multisig account", AddressRow { pubkey: multisig, full: true } }
-                                Fact { name: "Program", AddressRow { pubkey: program.program_id(), full: true } }
+                                Fact { name: "Vault", AddressRow { pubkey: vault, full: !phone } }
+                                Fact { name: "Multisig account", AddressRow { pubkey: multisig, full: !phone } }
+                                Fact { name: "Program", AddressRow { pubkey: program.program_id(), full: !phone } }
+                                FactGroup { name: "Who is in it" }
                                 Fact { name: "Threshold",
                                     if members.is_empty() {
                                         span { class: "muted", "Not read from the chain yet" }
@@ -484,15 +533,22 @@ pub(in crate::ui) fn WalletDetailsDialog(
                                         }
                                     }
                                 }
+                                FactGroup { name: "On this device" }
                                 Fact { name: "Proposes and votes as",
                                     match member_wallet {
-                                        Some(member) => rsx! { span { "{label_of(member)}" } },
+                                        Some(member) => rsx! { FactWallet { id: member } },
                                         None => rsx! { span { class: "muted", "No wallet chosen" } },
                                     }
                                 }
                                 Fact { name: "Approves together with",
                                     if approves_with.is_empty() {
                                         span { class: "muted", "No one" }
+                                    } else if phone {
+                                        ul { class: "wallet-fact-list",
+                                            for other in approves_with {
+                                                li { key: "{other}", FactWallet { id: other } }
+                                            }
+                                        }
                                     } else {
                                         span {
                                             {approves_with.iter().map(|other| label_of(*other)).collect::<Vec<_>>().join(", ")}
@@ -505,13 +561,13 @@ pub(in crate::ui) fn WalletDetailsDialog(
                             },
                             _ => rsx! {
                                 if let Some(address) = wallet.address {
-                                    Fact { name: "Address", AddressRow { pubkey: address, full: true } }
+                                    Fact { name: "Address", AddressRow { pubkey: address, full: !phone } }
                                 }
                                 if let Some(authority) = authority {
-                                    Fact { name: "Authority key", AddressRow { pubkey: authority, full: true } }
+                                    Fact { name: "Authority key", AddressRow { pubkey: authority, full: !phone } }
                                     Fact { name: "Nonce account",
                                         match executor_nonce {
-                                            Some(nonce) => rsx! { AddressRow { pubkey: nonce, full: true } },
+                                            Some(nonce) => rsx! { AddressRow { pubkey: nonce, full: !phone } },
                                             None => rsx! { span { class: "muted", "None yet" } },
                                         }
                                     }
@@ -519,13 +575,21 @@ pub(in crate::ui) fn WalletDetailsDialog(
                                 if let Some((scheme, key, held_by, _)) = vector.clone() {
                                     Fact { name: "Scheme", span { "{scheme.label()}" } }
                                     Fact { name: "Key", code { class: "mono", "{key}" } }
-                                    Fact { name: "Signs with", span { "{held_by}" } }
+                                    FactGroup { name: "On this device" }
+                                    Fact { name: "Signs with",
+                                        match vector_signer {
+                                            Some(signer) => rsx! { FactWallet { id: signer } },
+                                            None => rsx! { span { "{held_by}" } },
+                                        }
+                                    }
+                                } else {
+                                    FactGroup { name: "On this device" }
                                 }
                             },
                         }
                         Fact { name: "Pays fees",
                             match pays {
-                                Some(payer) => rsx! { span { "{payer}" } },
+                                Some(payer) => rsx! { FactWallet { id: payer } },
                                 None => rsx! { span { class: "muted", "Nothing on this device" } },
                             }
                         }
@@ -551,7 +615,8 @@ pub(in crate::ui) fn WalletDetailsDialog(
 }
 
 /// The two icon buttons that open a wallet's dialogs: an "i" in a circle for
-/// Details, on a smart contract wallet, and a wheel for Settings.
+/// Details, on a smart contract wallet, and a wheel for Settings. A phone
+/// lists both in the card's sheet of actions instead: see [`WalletRowMenu`].
 #[component]
 pub(in crate::ui) fn WalletDialogButtons(wallet: WalletSummary) -> Element {
     let mut settings_open = use_signal(|| false);
@@ -574,6 +639,22 @@ pub(in crate::ui) fn WalletDialogButtons(wallet: WalletSummary) -> Element {
             onclick: move |_| settings_open.set(true),
             Icon { glyph: Glyph::Gear }
         }
+        WalletDialogs { wallet: wallet.clone(), settings_open, details_open }
+    }
+}
+
+/// A wallet's Details and Settings dialogs, each shown while its signal is
+/// true, for whatever opens them: [`WalletDialogButtons`], or a card's sheet
+/// of actions on a phone. Details hands over to Settings.
+#[component]
+pub(in crate::ui) fn WalletDialogs(
+    wallet: WalletSummary,
+    settings_open: Signal<bool>,
+    details_open: Signal<bool>,
+) -> Element {
+    let mut settings_open = settings_open;
+    let mut details_open = details_open;
+    rsx! {
         if details_open() {
             WalletDetailsDialog {
                 wallet: wallet.clone(),

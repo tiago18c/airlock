@@ -2,7 +2,8 @@
 //!
 //! The card says what the wallet is and what needs attention. What can be
 //! changed about it opens from its wheel, and what it is made of from its
-//! magnifier: see [`WalletSettingsDialog`] and [`WalletDetailsDialog`].
+//! "i", or on a phone both from its sheet of actions: see
+//! [`WalletSettingsDialog`] and [`WalletDetailsDialog`].
 
 use super::*;
 /// One programmatic signer or multisig on the Wallets pane, with its settings.
@@ -41,6 +42,42 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
         });
     let vector = vector_facts(&wallet, &wallets);
     let dialogs_of = wallet.clone();
+    // A phone shortens the address to one line, puts the balance and the
+    // card's buttons on one line under it, and the three dots on the
+    // name's line: see [`WalletFoot`](crate::ui::wallets::WalletFoot).
+    let phone = app_ui_kit::ui::use_phone_layout();
+    let can_send = show_balances && wallet.address.is_some();
+    // A Vector wallet the chain has no account for yet cannot send, as its
+    // card says. Send stays where it is, disabled, and says why.
+    let reads = try_use_context::<super::vector_row::VectorReads>();
+    let cannot_send = (is_vector
+        && wallet
+            .address
+            .zip(reads)
+            .is_some_and(|(address, reads)| reads.uninitialized(&address)))
+    .then_some("This Vector wallet cannot send until its account is initialized on this cluster. Initialize it first.");
+    let send_title = "Send SOL or a token from this wallet. Sign rebuilds the transfer around it.";
+    let send = move |_| {
+        session.open_send(SendOpen {
+            from: Some(id),
+            ..SendOpen::default()
+        })
+    };
+    let proposals = squad.filter(|_| proposals_offered);
+    let buttons = rsx! {
+        if phone && can_send {
+            crate::ui::wallets::WalletSend { send_title, cannot_send, on_send: send }
+        }
+        if let Some(squad) = proposals {
+            button { class: "sm",
+                title: "Browse this multisig's proposals, and approve or execute them",
+                onclick: move |_| {
+                    session.open_proposals(id, proposals_label.clone(), squad);
+                },
+                "Proposals"
+            }
+        }
+    };
     rsx! {
         li { class: "wallet-row",
             div { class: "wallet-head wallet-card-head",
@@ -49,6 +86,7 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
                     title: wallet.label.clone(),
                     category: Category::Wallet(wallet.class.into()),
                     subtitle: String::new(),
+                    short: phone,
                     title_after: rsx! {
                         if let Some(kind) = kind {
                             span { class: "chip kind", "{kind}" }
@@ -57,32 +95,27 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
                             CurrentChip {}
                         }
                     },
-                    if show_balances && wallet.address.is_some() {
-                        crate::ui::wallets::WalletBalance {
-                            lamports,
-                            send_title: "Send SOL or a token from this wallet. Sign rebuilds the transfer around it.",
-                            on_send: move |_| session.open_send(SendOpen {
-                                from: Some(id),
-                                ..SendOpen::default()
-                            }),
+                    if phone {
+                        if can_send || proposals.is_some() {
+                            crate::ui::wallets::WalletFoot {
+                                balance: rsx! {
+                                    if can_send {
+                                        crate::ui::wallets::WalletBalance { lamports, send_title, cannot_send, on_send: send }
+                                    }
+                                },
+                                {buttons.clone()}
+                            }
                         }
+                    } else if can_send {
+                        crate::ui::wallets::WalletBalance { lamports, send_title, cannot_send, on_send: send }
                     }
                 }
                 div { class: "wallet-end",
                     div { class: "btn-row wallet-side",
-                        if proposals_offered {
-                            if let Some(squad) = squad {
-                                button { class: "sm",
-                                    title: "Browse this multisig's proposals, and approve or execute them",
-                                    onclick: move |_| {
-                                        session.open_proposals(id, proposals_label.clone(), squad);
-                                    },
-                                    "Proposals"
-                                }
-                            }
+                        if !phone {
+                            {buttons}
                         }
-                        WalletDialogButtons { wallet: dialogs_of }
-                        WalletRowMenu { id,
+                        WalletRowMenu { wallet: dialogs_of, dialogs: true,
                             on_remove: move |_| {
                                 session.when_unlocked("Unlock the vault to remove a wallet from it.", move || confirm_remove.set(true));
                             },

@@ -4194,29 +4194,203 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
 .app.phone .topbar { padding-top: env(safe-area-inset-top); }
 .app.phone.locked .content { padding-top: max(var(--space-4), env(safe-area-inset-top)); }
 
-/* More: a sheet above the tab bar, over a backdrop that closes it. */
-.more-backdrop {
+/* A phone's sheets (`PhoneSheet`): the wallet picker, the notifications and
+   More. One family: the same scrim, the dialog's radius, a grab handle, and
+   one inset for the title and the rows. A sheet from the top bar runs to
+   the bottom of the screen, over the status line and the tab bar, and keeps
+   room between its last row and the gesture bar. A finger scrolls it, so it
+   draws no scrollbar. */
+.app.phone .phone-scrim {
   position: fixed;
   inset: 0;
-  z-index: var(--z-nav);
+  z-index: var(--z-popover);
   background: var(--overlay);
   animation: fade var(--slow) var(--ease);
 }
-.more-sheet {
+.app.phone .phone-sheet {
   position: fixed;
-  left: var(--space-2);
-  right: var(--space-2);
-  bottom: calc(var(--tabbar-h) + max(var(--space-1), env(safe-area-inset-bottom)) + var(--space-2));
-  z-index: calc(var(--z-nav) + 1);
+  top: auto;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: calc(var(--z-popover) + 1);
   display: grid;
+  align-content: start;
   gap: var(--space-1);
-  padding: var(--space-2);
+  width: auto;
+  max-height: calc(100vh - var(--topbar-h) - env(safe-area-inset-top));
+  overflow: auto;
+  padding: 0 var(--space-3) calc(var(--space-4) + env(safe-area-inset-bottom));
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-width: 1px 0 0;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   background: var(--surface);
   box-shadow: var(--shadow-lg);
   animation: rise var(--slow) var(--ease);
 }
+.app.phone .phone-sheet,
+.app.phone .phone-sheet * { scrollbar-width: none; }
+.app.phone .phone-sheet::-webkit-scrollbar,
+.app.phone .phone-sheet *::-webkit-scrollbar { display: none; }
+/* More belongs to the tab bar, so it stays docked on it: the shell measures
+   the bar into --dock-h (the status line above the tabs counts). The bar
+   stays lit and live while it is open: only the pane above dims, and a tap
+   on another tab goes straight to it. */
+.app.phone .sidebar .phone-scrim { bottom: var(--dock-h, 0px); }
+.app.phone .sidebar .phone-sheet {
+  bottom: var(--dock-h, 0px);
+  max-height: calc(100vh - var(--dock-h, 0px) - var(--topbar-h) - env(safe-area-inset-top));
+  padding-bottom: var(--space-3);
+}
+/* The sticky top bar is a layer under the tab bar's, so a sheet it opens
+   lifts it: its scrim and sheet then cover the tab bar, and a tap on the
+   scrim there closes the sheet. */
+.app.phone .topbar:has(.phone-scrim) { z-index: var(--z-popover); }
+/* Only a cue that the sheet can be put away; it takes no taps. */
+.app.phone .phone-sheet-handle {
+  justify-self: center;
+  width: var(--space-10);
+  height: var(--space-1);
+  margin: var(--space-2) 0 var(--space-1);
+  border-radius: var(--radius-full);
+  background: var(--border-strong);
+  pointer-events: none;
+}
+/* Inset as far as the icons and text of the rows under it, which sit inside
+   their own padding: More's items, the wallets and the notices. */
+.phone-sheet-title {
+  margin: 0;
+  padding: var(--space-1) var(--space-3) var(--space-2);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+/* The notifications space their parts further apart; the list scrolls, not
+   the sheet. */
+.app.phone .phone-sheet.notice-panel {
+  /* The handle takes a row before the head, the filters and the list. */
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  gap: var(--space-3);
+  overflow: hidden;
+}
+/* With nothing filed yet there are no filters, and the sheet stays short. */
+.app.phone .phone-sheet.notice-panel:not(:has(.notice-filters)) {
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+.app.phone .phone-sheet.notice-panel .phone-sheet-handle { margin-bottom: 0; }
+/* The sheet's wider gap spaces the title as the other sheets' padding does. */
+.app.phone .notice-panel-head .phone-sheet-title { padding-block: 0; }
+.app.phone .phone-sheet.notice-panel .notice-filters { flex-wrap: nowrap; overflow-x: auto; }
+/* One quiet line, at the rows' inset, in place of the filters and the list. */
+.app.phone .notice-none {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0 var(--space-3);
+}
+.app.phone .notice-none .icon { flex-shrink: 0; width: 20px; height: 20px; color: var(--text-3); }
+
+/* The wallet picker's sheet: a row per wallet, picked by its button, with
+   its copy button at the end, apart from it, so a near miss does not switch
+   wallet. The copy button is a plain icon, quieter than the row it belongs
+   to, on a full finger's target. The current one is marked as More marks
+   its section, and with the chip its card has; the mark stops short of the
+   copy button. */
+.wallet-sheet-list { display: grid; gap: var(--space-1); }
+.wallet-sheet-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+/* The icon sits at the target's end, as far in from the sheet's edge as the
+   rows' icons and text are on the left (the border is transparent, but
+   takes its pixel). */
+.app.phone .wallet-sheet-row > .wallet-sheet-copy {
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+  height: var(--control-lg);
+  justify-content: flex-end;
+  padding-right: calc(var(--space-3) - 1px);
+}
+.wallet-sheet-pick {
+  flex: 1;
+  min-width: 0;
+  justify-content: flex-start;
+  min-height: var(--control-lg);
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: none;
+  text-align: left;
+}
+.wallet-sheet-row.on > .wallet-sheet-pick { background: var(--brand-soft); }
+.wallet-sheet-pick > .addr-row,
+.wallet-switch-btn > .addr-row,
+.wallet-sheet-pick .addr-row-main,
+.wallet-switch-btn .addr-row-main { flex: 0 1 auto; min-width: 0; }
+.wallet-sheet-pick .addr-row-rest:empty,
+.wallet-switch-btn .addr-row-rest:empty { display: none; }
+.wallet-sheet-pick .addr-label,
+.wallet-switch-btn .addr-label { white-space: nowrap; }
+.wallet-sheet-pick .addr-short,
+.wallet-switch-btn .addr-short { flex-shrink: 0; }
+.wallet-sheet-pick .chip { margin-left: auto; flex-shrink: 0; }
+
+/* The top bar's controls read as one row: the picker's two parts, the lock
+   and the bell are one height, a full finger, with the buttons' radius and
+   one gap between them. The icon buttons are square. */
+.app.phone .topbar-tools { flex: 1; gap: var(--space-2); }
+.app.phone .wallet-switch-group > *,
+.app.phone .topbar-tools > .lock-toggle,
+.app.phone .notice-bell {
+  height: var(--control-lg);
+  min-height: var(--control-lg);
+  border-radius: var(--radius-md);
+}
+.app.phone .topbar-tools > .lock-toggle:not(.locked),
+.app.phone .notice-bell {
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+}
+/* The picker takes the room the bar has left: one bordered control in two
+   parts, the wide one opening the sheet and the end one copying the current
+   wallet's address. */
+.app.phone .wallet-switch-group {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+}
+.app.phone .wallet-switch-group > .wallet-switch-btn {
+  flex: 1 1 0;
+  width: auto;
+  min-width: var(--control-lg);
+  /* Room for the arrow and no more: the name and address need the rest. */
+  padding-right: var(--space-6);
+}
+.app.phone .wallet-switch-group > .wallet-switch-btn:not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+/* Its left border is the line between the two parts. */
+.app.phone .wallet-switch-group > .wallet-switch-copy {
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+  margin-left: -1px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* The lock, on a phone: unlocked is the usual state, a quiet icon like the
+   bell. Locked is the one to notice, by more than colour: a filled warning
+   tint and the word. */
+.app.phone .lock-toggle.locked {
+  gap: var(--space-1);
+  background: var(--warn-soft);
+  border-color: var(--warn-line);
+  color: var(--warn-text);
+  font-weight: var(--weight-semibold);
+}
+.app.phone .lock-toggle.locked .icon { width: 16px; height: 16px; }
 .more-item {
   display: flex;
   align-items: center;
@@ -4253,6 +4427,9 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
   box-shadow: var(--shadow-md);
 }
 .app.phone .sidebar .brand { display: none; }
+/* The status line is there only while it has something to say (NetworkAlert):
+   empty, it takes no row and draws no edge. */
+.app.phone .sidebar-status:not(:has(.status)) { display: none; }
 .app.phone .nav { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0; }
 .app.phone .nav-item {
   flex-direction: column;
@@ -4270,3 +4447,190 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
 }
 /* The theme is in Settings; the top bar keeps its room for the wallet. */
 .app.phone .topbar-tools > .segmented { display: none; }
+
+/* Wallets on a phone. A card is three lines: the name with its chips and
+   the three dots at the far end, the address shortened to one line
+   (AddressHeader's `short`) with its copy button, and the balance with the
+   card's buttons, Send first, at the right of the same line (WalletFoot).
+   Every button is a full touch target. A card is padded as an address book
+   row is, so four of them fit a screen. */
+.app.phone .wallet-row { padding: var(--space-3) var(--space-4); }
+/* A group still has more room above it than inside it, but less than on a
+   wider screen, where nothing is gained by packing cards closer. */
+.app.phone .group-title.wallets-group:not(:first-of-type) { margin-top: var(--space-3); }
+.app.phone .wallet-card-head { position: relative; }
+.app.phone .wallet-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.app.phone .wallet-foot > .wallet-balance { margin-right: auto; }
+.app.phone .wallet-foot > .wallet-buttons { flex-wrap: nowrap; margin-left: auto; }
+/* The text column takes the rest of the card's width, or the foot would be
+   only as wide as its balance and buttons and they could not sit apart. */
+.app.phone .wallet-card-head .addr-head-body { flex: 1 1 auto; min-width: 0; }
+/* The three dots take no line of their own: they sit at the end of the
+   name's line, their target reaching into the card's padding, and the name
+   and chips leave them room. */
+.app.phone .wallet-card-head > .wallet-end {
+  position: absolute;
+  top: calc(-1 * var(--space-3));
+  right: calc(-1 * var(--space-3));
+  width: auto;
+  margin: 0;
+}
+.app.phone .wallet-card-head .addr-head-body > h3 { padding-right: var(--control-lg); }
+/* A card's dialogs and sheets are drawn inside its .wallet-side, so their
+   small buttons take the full target too. */
+.app.phone .wallet-buttons > .sm,
+.app.phone .wallet-side .sm { min-height: var(--control-lg); }
+.app.phone .wallet-side .icon-btn.sm,
+.app.phone .wallet-card-head .copy-btn,
+.app.phone .wallet-dialog .copy-btn {
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+  min-height: var(--control-lg);
+}
+/* The copy button keeps its full target but takes only the address's own
+   line: it reaches over the gaps above and below, so the name, address and
+   balance read as one block. Where a card's buttons reach under it, they
+   are drawn over it and take the press. */
+.app.phone .wallet-card-head .copy-btn { margin-block: calc(-1 * var(--space-3)); }
+/* A card's three dots open its sheet of actions (WalletRowMenu). Drawn at
+   the size of the sheet's own icons, with heavier dots, so they read as a
+   button and not as a smudge. */
+.app.phone .wallet-side .wallet-more .icon { width: 20px; height: 20px; stroke-width: 3; }
+/* Send, where a card cannot send now, such as a Vector wallet that is not
+   initialized, reads as off: the sunken fill and hint text of a disabled
+   field, not a faded copy of a live button. Only there: anything else
+   disabled, such as a dialog's Save, is the button dimmed, as everywhere. */
+.app.phone .wallet-buttons > .wallet-send:disabled {
+  opacity: 1;
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text-3);
+}
+/* A Vector wallet not initialized yet: what it means and Initialize, in
+   one notice, the button beside the words while they leave it room. */
+.app.phone .note.vector-init {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+.app.phone .note.vector-init > p { flex: 1 1 12rem; }
+.app.phone .note.vector-init > button { flex: none; }
+/* A sheet of actions (ActionSheet): a card's, or the pane's. One row each,
+   icon and name, as in More, and Close right under them in the same
+   rhythm, so the sheet is only as tall as what it holds. Remove keeps the
+   danger colour. */
+.app.phone .modal.wallet-actions > .stack { gap: var(--space-1); }
+.app.phone .modal.wallet-actions h3 { margin-bottom: var(--space-2); }
+.app.phone .modal.wallet-actions .btn-row:last-child { margin-top: 0; }
+.app.phone .wallet-action-list { display: grid; gap: var(--space-1); }
+.app.phone .wallet-action-list > .more-item.danger,
+.app.phone .wallet-action-list > .more-item.danger .icon { color: var(--danger-text); }
+/* The pane's three lines, beside Add wallet: a square touch target, not a
+   half of the row as the header's other buttons are. */
+.app.phone .wallets-head > .btn-row > .icon-btn {
+  flex: none;
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+}
+
+/* A wallet's Settings and Details on a phone: the sheet scrolls in one
+   place, its body, and its buttons stay pinned to its foot, however long
+   the body is: a multisig's members can be more than a screen. The body
+   scrolls edge to edge, the sheet's side padding moved into it, so the
+   foot can span the whole sheet: a line across its top, on the sheet's own
+   background, cuts what scrolls under it cleanly. */
+.app.phone .modal.wallet-dialog-modal { display: flex; flex-direction: column; overflow: hidden; padding-inline: 0; }
+.app.phone .wallet-dialog-modal > .wallet-dialog {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: none;
+  padding-inline: var(--space-4);
+}
+.app.phone .wallet-dialog-modal > .wallet-dialog > .btn-row:last-child {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin: 0 calc(-1 * var(--space-4));
+  padding: var(--space-2) var(--space-4) 0;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+/* A wallet's Settings and Details on a phone: each name on its own line,
+   its control or value under it, the full width of the sheet. A choice
+   too long for one line wraps rather than being cut off. */
+.app.phone .wallet-dialog .settings-grid { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-4); }
+.app.phone .wallet-dialog .settings-grid > .setting-row,
+.app.phone .wallet-dialog .settings-grid > .picker,
+.app.phone .wallet-dialog .settings-grid > .picker > label { row-gap: var(--space-1); }
+.app.phone .wallet-dialog .settings-grid > .picker > .picker-menu { grid-column: 1; }
+.app.phone .wallet-dialog .setting-value > button.sm { flex: 1; height: var(--control-lg); }
+.app.phone .wallet-dialog .picker-button { white-space: normal; }
+.app.phone .wallet-dialog .picker-none { overflow: visible; }
+
+/* A wallet's Details on a phone, on one screen where it fits. A fact's
+   name sits close above its value, and a clearly larger gap parts one fact
+   from the next: names and values are set on tight lines. The facts come
+   in groups, each under a quiet heading and a line, with more room above
+   the heading than below it: what the wallet is, who is in it, how this
+   device uses it. */
+.app.phone .wallet-facts-modal > .wallet-dialog { gap: var(--space-3); }
+.app.phone .wallet-dialog .settings-grid.wallet-facts { row-gap: var(--space-3); margin-block: 0; }
+.app.phone .wallet-dialog .wallet-facts > .setting-row { row-gap: var(--space-1); }
+.app.phone .wallet-facts .setting-label,
+.app.phone .wallet-facts .setting-value { line-height: var(--leading-tight); }
+.app.phone .wallet-facts .setting-value { overflow-wrap: break-word; }
+.app.phone .wallet-facts-group {
+  grid-column: 1 / -1;
+  margin-bottom: calc(var(--space-2) - var(--space-3));
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}
+.app.phone .wallet-facts-group:first-child { padding-top: 0; border-top: 0; }
+/* A line with a copy button, a member's as much as the vault's, is one
+   touch target high. The first and last line of a value reach over the
+   gaps around it, as the copy button on a card does, so the text sits as
+   close to its name as a plain value does. Members follow one another a
+   whole target apart. */
+.app.phone .wallet-facts .addr-row,
+.app.phone .wallet-facts .wallet-fact-list > li { display: flex; align-items: center; min-height: var(--control-lg); }
+.app.phone .wallet-facts .wallet-fact-list { gap: 0; }
+.app.phone .wallet-facts .setting-value > .addr-row,
+.app.phone .wallet-facts .setting-value > .wallet-fact-list { margin-block: calc(-1 * var(--space-3)); }
+/* A name and a shortened address share one line, the copy button at its
+   right end, in the same place on every line; a name too long for it is
+   cut with an ellipsis, and nothing breaks inside a word. */
+.app.phone .wallet-facts .setting-value > .addr-row,
+.app.phone .wallet-facts .wallet-fact-list,
+.app.phone .wallet-facts .wallet-fact-list > li > .addr-row { flex: 1; }
+.app.phone .wallet-facts .addr-label { white-space: nowrap; }
+.app.phone .wallet-facts .addr-short { flex-shrink: 0; }
+
+/* Add wallet on a phone. The kinds on an even grid of two columns, the
+   chosen one in the brand colour, as a selection is. The sheet is as tall
+   as its form, so the buttons follow the form with no gap. The buttons
+   read as in every other dialog, the way out on the left and the action
+   on the right: the forms list the action first, so the row is reversed
+   here rather than in each form. */
+.app.phone .modal.add-wallet { height: auto; }
+.app.phone .add-wallet-head > .segmented {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  justify-self: stretch;
+}
+.app.phone .add-wallet-head > .segmented > .tab { min-height: var(--control-lg); }
+/* An odd kind out at the end fills its row, rather than sit alone in half. */
+.app.phone .add-wallet-head > .segmented > .tab:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.app.phone .add-wallet-head > .segmented > .tab.on {
+  background: var(--brand-soft);
+  color: var(--brand-text);
+  box-shadow: inset 0 0 0 1px var(--brand-line);
+}
+.app.phone .add-wallet-frame > .btn-row:last-child,
+.app.phone .add-wallet-body > .btn-row:last-child { flex-direction: row-reverse; }

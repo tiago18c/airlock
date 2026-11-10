@@ -2,8 +2,8 @@ use super::lock::VaultUnlock;
 use crate::state::forms::{AddWalletMode, SendOpen, WalletForm};
 use crate::state::session::{Session, Tab, WalletSummary};
 use crate::ui::wallets::kinds::{
-    ContractWalletRow, CurrentChip, ExportKeysModal, HardwareForm, KeyImportForm, OfflineForm,
-    ProgrammaticForm, SquadsForm, VectorForm, WalletDialogButtons, WalletRowMenu,
+    ActionSheet, ContractWalletRow, CurrentChip, ExportKeysModal, HardwareForm, KeyImportForm,
+    OfflineForm, ProgrammaticForm, SquadsForm, VectorForm, WalletRowMenu,
 };
 use crate::ui::{format_sol, AddressHeader, CopyButton, Glyph, HelpTip, Icon, PaneMenu};
 use dioxus::prelude::*;
@@ -62,10 +62,50 @@ pub fn WalletsPanel() -> Element {
     // Burn and close opens on the wallet in use, and picks another there.
     let first_wallet = current.or_else(|| all.first().map(|wallet| wallet.id));
 
+    // The pane's less used actions. A wider screen lists them in a menu
+    // under the three lines. On a phone that menu would cover the first
+    // card, so the three lines open a bottom sheet with the same rows, as a
+    // card's three dots do: see `ActionSheet`.
+    let mut pane_sheet_open = use_signal(|| false);
+    let (item_class, item_role) = if phone {
+        ("more-item", None)
+    } else {
+        ("pane-menu-item", Some("menuitem"))
+    };
+    let pane_actions = rsx! {
+        button { class: item_class,
+            role: item_role,
+            title: "Show the public keys of wallets here, for another device to add them",
+            onclick: move |_| export_open.set(true),
+            Icon { glyph: Glyph::Qr }
+            "Export keys"
+        }
+        if online {
+            button { class: item_class,
+                role: item_role,
+                title: "Move everything a wallet holds to another address: to rotate a key, or to move to a programmatic signer, a Vector account or a multisig",
+                onclick: move |_| session.open_migrate(current),
+                Icon { glyph: Glyph::Migrate }
+                "Migrate wallet"
+            }
+            button { class: item_class,
+                role: item_role,
+                title: "Burn and close a wallet's token accounts, to get their rent back",
+                onclick: move |_| {
+                    if let Some(wallet) = first_wallet {
+                        session.open_cleanup(wallet);
+                    }
+                },
+                Icon { glyph: Glyph::Coin }
+                "Manage tokens"
+            }
+        }
+    };
+
     rsx! {
         section { class: "page",
             div { class: "stack",
-                div { class: "pane-head",
+                div { class: "pane-head wallets-head",
                     div {
                         h2 { "Wallets" }
                     }
@@ -77,36 +117,16 @@ pub fn WalletsPanel() -> Element {
                             Icon { glyph: Glyph::Plus }
                             "Add wallet"
                         }
-                        if !all.is_empty() {
-                            PaneMenu { label: "More wallet actions",
-                                button { class: "pane-menu-item",
-                                    role: "menuitem",
-                                    title: "Show the public keys of wallets here, for another device to add them",
-                                    onclick: move |_| export_open.set(true),
-                                    Icon { glyph: Glyph::Qr }
-                                    "Export keys"
-                                }
-                                if online {
-                                    button { class: "pane-menu-item",
-                                        role: "menuitem",
-                                        title: "Move everything a wallet holds to another address: to rotate a key, or to move to a programmatic signer, a Vector account or a multisig",
-                                        onclick: move |_| session.open_migrate(current),
-                                        Icon { glyph: Glyph::Send }
-                                        "Migrate wallet"
-                                    }
-                                    button { class: "pane-menu-item",
-                                        role: "menuitem",
-                                        title: "Burn and close a wallet's token accounts, to get their rent back",
-                                        onclick: move |_| {
-                                            if let Some(wallet) = first_wallet {
-                                                session.open_cleanup(wallet);
-                                            }
-                                        },
-                                        Icon { glyph: Glyph::Trash }
-                                        "Manage tokens"
-                                    }
-                                }
+                        if !all.is_empty() && phone {
+                            button { class: "icon-btn",
+                                title: "More wallet actions",
+                                aria_label: "More wallet actions",
+                                aria_haspopup: "dialog",
+                                onclick: move |_| pane_sheet_open.set(true),
+                                Icon { glyph: Glyph::Menu }
                             }
+                        } else if !all.is_empty() {
+                            PaneMenu { label: "More wallet actions", {pane_actions.clone()} }
                         }
                     }
                 }
@@ -204,6 +224,9 @@ pub fn WalletsPanel() -> Element {
                 }
             }
         }
+        ActionSheet { open: pane_sheet_open, title: "All wallets", label: "More wallet actions",
+            {pane_actions}
+        }
         if modal_open() {
             AddWalletModal {}
         }
@@ -216,23 +239,73 @@ pub fn WalletsPanel() -> Element {
 /// A wallet's SOL balance and the small button that sends from it. Shown only
 /// where balances are: the online build. What a balance is worth belongs to
 /// Portfolio, not here.
+///
+/// A phone draws Send with the card's other buttons instead, as
+/// [`WalletSend`], on the balance's line: see [`WalletFoot`].
 #[component]
 pub(in crate::ui) fn WalletBalance(
     lamports: Option<u64>,
     send_title: &'static str,
+    /// Why the wallet cannot send now, if it cannot: Send is disabled and
+    /// its title says why.
+    #[props(default)]
+    cannot_send: Option<&'static str>,
     on_send: EventHandler<()>,
 ) -> Element {
+    let phone = app_ui_kit::ui::use_phone_layout();
+    if phone && lamports.is_none() {
+        return rsx! {};
+    }
     rsx! {
         div { class: "wallet-balance",
             if let Some(lamports) = lamports {
                 span { class: "balance", "{format_sol(lamports)}" }
             }
-            button { class: "ghost sm wallet-send",
-                title: send_title,
-                onclick: move |_| on_send.call(()),
-                Icon { glyph: Glyph::Send }
-                "Send"
+            if !phone {
+                button { class: "ghost sm wallet-send",
+                    title: cannot_send.unwrap_or(send_title),
+                    disabled: cannot_send.is_some(),
+                    onclick: move |_| on_send.call(()),
+                    Icon { glyph: Glyph::Send }
+                    "Send"
+                }
             }
+        }
+    }
+}
+
+/// The last line of a wallet card on a phone: the balance at its left and
+/// the card's buttons (`children`: Send, then Proposals or Show on device)
+/// at its right, so a card is three lines high and more of them fit a
+/// screen. The buttons drop under the balance, still on the right, where
+/// the line has no room for both. The three dots sit on the name's line.
+#[component]
+pub(in crate::ui) fn WalletFoot(balance: Element, children: Element) -> Element {
+    rsx! {
+        div { class: "wallet-foot",
+            {balance}
+            div { class: "btn-row wallet-buttons", {children} }
+        }
+    }
+}
+
+/// Send, first in a wallet card's buttons on a phone, and drawn as they
+/// are. Elsewhere it follows the balance: see [`WalletBalance`].
+#[component]
+pub(in crate::ui) fn WalletSend(
+    send_title: &'static str,
+    /// As on [`WalletBalance`].
+    #[props(default)]
+    cannot_send: Option<&'static str>,
+    on_send: EventHandler<()>,
+) -> Element {
+    rsx! {
+        button { class: "sm wallet-send",
+            title: cannot_send.unwrap_or(send_title),
+            disabled: cannot_send.is_some(),
+            onclick: move |_| on_send.call(()),
+            Icon { glyph: Glyph::Send }
+            "Send"
         }
     }
 }

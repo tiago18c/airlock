@@ -18,6 +18,31 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
     let on_device = wallet.on_device;
     let dialogs_of = wallet.clone();
     let mut confirm_open = use_signal(|| false);
+    // A phone shortens the address to one line, puts the balance and the
+    // card's buttons on one line under it, and the three dots on the
+    // name's line: see [`WalletFoot`].
+    let phone = app_ui_kit::ui::use_phone_layout();
+    let can_send = show_balances && pubkey.is_some();
+    let show_on_device = on_device.and(pubkey);
+    let send_title = "Send SOL or a token from this wallet";
+    let send = move |_| {
+        session.open_send(SendOpen {
+            from: Some(id),
+            ..SendOpen::default()
+        })
+    };
+    let buttons = rsx! {
+        if phone && can_send {
+            WalletSend { send_title, on_send: send }
+        }
+        if let Some(address) = show_on_device {
+            button { class: "sm",
+                title: "Show this address on the device, to check it against the one on this screen",
+                onclick: move |_| crate::actions::device::show_on_device(session, address),
+                "Show on device"
+            }
+        }
+    };
 
     rsx! {
         li { class: "wallet-row",
@@ -27,37 +52,33 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                     title: label.clone(),
                     category: Category::Wallet(wallet.class.into()),
                     subtitle: String::new(),
+                    short: phone,
                     title_after: rsx! {
                         if current {
                             CurrentChip {}
                         }
                     },
-                    if show_balances && pubkey.is_some() {
-                        WalletBalance {
-                            lamports,
-                            send_title: "Send SOL or a token from this wallet",
-                            on_send: move |_| session.open_send(SendOpen {
-                                from: Some(id),
-                                ..SendOpen::default()
-                            }),
+                    if phone {
+                        if can_send || show_on_device.is_some() {
+                            WalletFoot {
+                                balance: rsx! {
+                                    if can_send {
+                                        WalletBalance { lamports, send_title, on_send: send }
+                                    }
+                                },
+                                {buttons.clone()}
+                            }
                         }
+                    } else if can_send {
+                        WalletBalance { lamports, send_title, on_send: send }
                     }
                 }
                 div { class: "wallet-end",
                     div { class: "btn-row wallet-side",
-                        if on_device.is_some() {
-                            if let Some(address) = pubkey {
-                                button { class: "sm",
-                                    title: "Show this address on the device, to check it against the one on this screen",
-                                    onclick: move |_| crate::actions::device::show_on_device(session, address),
-                                    "Show on device"
-                                }
-                            }
+                        if !phone {
+                            {buttons}
                         }
-                        if !can_sign {
-                            WalletDialogButtons { wallet: dialogs_of }
-                        }
-                        WalletRowMenu { id,
+                        WalletRowMenu { wallet: dialogs_of, dialogs: !can_sign,
                             on_remove: move |_| {
                                 session.when_unlocked("Unlock the vault to remove a wallet from it.", move || confirm_open.set(true));
                             },
