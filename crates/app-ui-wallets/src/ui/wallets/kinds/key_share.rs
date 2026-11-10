@@ -78,7 +78,10 @@ pub(in crate::ui) fn KeyExportModal(keys: Vec<WalletKey>, on_close: EventHandler
 /// too: one place for each, and the card keeps only what starts something.
 ///
 /// The dialogs live here, not in the menu or the sheet, so they outlast it.
-/// The sheet is an [`ActionSheet`], as the pane's menu is on a phone.
+/// The sheet is an [`ActionSheet`], as the pane's menu is on a phone. The
+/// three dots sit at the end of the card's name line, drawn without a box,
+/// as the copy button beside the address is: the card's boxed buttons are
+/// the ones that start something.
 #[component]
 pub(in crate::ui) fn WalletRowMenu(
     wallet: WalletSummary,
@@ -107,7 +110,7 @@ pub(in crate::ui) fn WalletRowMenu(
     });
     rsx! {
         if phone {
-            button { class: "icon-btn sm wallet-more",
+            button { class: "ghost icon-btn sm wallet-more",
                 title: "More actions",
                 aria_label: "More actions",
                 aria_haspopup: "dialog",

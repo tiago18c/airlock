@@ -42,8 +42,9 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
         });
     let vector = vector_facts(&wallet, &wallets);
     let dialogs_of = wallet.clone();
-    // A phone shortens the address to one line, and puts Send with the
-    // card's other buttons.
+    // A phone shortens the address to one line, puts the balance and the
+    // card's buttons on one line under it, and the three dots on the
+    // name's line: see [`WalletFoot`](crate::ui::wallets::WalletFoot).
     let phone = app_ui_kit::ui::use_phone_layout();
     let can_send = show_balances && wallet.address.is_some();
     // A Vector wallet the chain has no account for yet cannot send, as its
@@ -62,6 +63,21 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
             ..SendOpen::default()
         })
     };
+    let proposals = squad.filter(|_| proposals_offered);
+    let buttons = rsx! {
+        if phone && can_send {
+            crate::ui::wallets::WalletSend { send_title, cannot_send, on_send: send }
+        }
+        if let Some(squad) = proposals {
+            button { class: "sm",
+                title: "Browse this multisig's proposals, and approve or execute them",
+                onclick: move |_| {
+                    session.open_proposals(id, proposals_label.clone(), squad);
+                },
+                "Proposals"
+            }
+        }
+    };
     rsx! {
         li { class: "wallet-row",
             div { class: "wallet-head wallet-card-head",
@@ -79,25 +95,25 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
                             CurrentChip {}
                         }
                     },
-                    if can_send {
+                    if phone {
+                        if can_send || proposals.is_some() {
+                            crate::ui::wallets::WalletFoot {
+                                balance: rsx! {
+                                    if can_send {
+                                        crate::ui::wallets::WalletBalance { lamports, send_title, cannot_send, on_send: send }
+                                    }
+                                },
+                                {buttons.clone()}
+                            }
+                        }
+                    } else if can_send {
                         crate::ui::wallets::WalletBalance { lamports, send_title, cannot_send, on_send: send }
                     }
                 }
                 div { class: "wallet-end",
                     div { class: "btn-row wallet-side",
-                        if phone && can_send {
-                            crate::ui::wallets::WalletSend { send_title, cannot_send, on_send: send }
-                        }
-                        if proposals_offered {
-                            if let Some(squad) = squad {
-                                button { class: "sm",
-                                    title: "Browse this multisig's proposals, and approve or execute them",
-                                    onclick: move |_| {
-                                        session.open_proposals(id, proposals_label.clone(), squad);
-                                    },
-                                    "Proposals"
-                                }
-                            }
+                        if !phone {
+                            {buttons}
                         }
                         WalletRowMenu { wallet: dialogs_of, dialogs: true,
                             on_remove: move |_| {

@@ -4051,36 +4051,61 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
 /* The theme is in Settings; the top bar keeps its room for the wallet. */
 .app.phone .topbar-tools > .segmented { display: none; }
 
-/* Wallets on a phone. A card's buttons, Send first, share one row right
-   under the balance, each a full touch target. The address is shortened
-   to one line (AddressHeader's `short`), its copy button a touch target
-   too. A card is padded as an address book row is, and its buttons follow
-   the balance closely, so more cards fit a screen. */
+/* Wallets on a phone. A card is three lines: the name with its chips and
+   the three dots at the far end, the address shortened to one line
+   (AddressHeader's `short`) with its copy button, and the balance with the
+   card's buttons, Send first, at the right of the same line (WalletFoot).
+   Every button is a full touch target. A card is padded as an address book
+   row is, so four of them fit a screen. */
 .app.phone .wallet-row { padding: var(--space-3) var(--space-4); }
-.app.phone .wallet-card-head { row-gap: var(--space-1); }
-.app.phone .addr-head-body > .wallet-balance { margin-top: 0; }
-.app.phone .wallet-end { width: 100%; }
-.app.phone .wallet-end > .wallet-side { flex: 1; flex-wrap: wrap; margin-left: 0; }
-.app.phone .wallet-side > .wallet-send { margin-right: auto; }
+/* A group still has more room above it than inside it, but less than on a
+   wider screen, where nothing is gained by packing cards closer. */
+.app.phone .group-title.wallets-group:not(:first-of-type) { margin-top: var(--space-3); }
+.app.phone .wallet-card-head { position: relative; }
+.app.phone .wallet-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.app.phone .wallet-foot > .wallet-balance { margin-right: auto; }
+.app.phone .wallet-foot > .wallet-buttons { flex-wrap: nowrap; margin-left: auto; }
+/* The three dots take no line of their own: they sit at the end of the
+   name's line, their target reaching into the card's padding, and the name
+   and chips leave them room. */
+.app.phone .wallet-card-head > .wallet-end {
+  position: absolute;
+  top: calc(-1 * var(--space-3));
+  right: calc(-1 * var(--space-3));
+  width: auto;
+  margin: 0;
+}
+.app.phone .wallet-card-head .addr-head-body > h3 { padding-right: var(--control-lg); }
+/* A card's dialogs and sheets are drawn inside its .wallet-side, so their
+   small buttons take the full target too. */
+.app.phone .wallet-buttons > .sm,
 .app.phone .wallet-side .sm { min-height: var(--control-lg); }
 .app.phone .wallet-side .icon-btn.sm,
-.app.phone .wallet-card-head .copy-btn {
+.app.phone .wallet-card-head .copy-btn,
+.app.phone .wallet-dialog .copy-btn {
   width: var(--control-lg);
   min-width: var(--control-lg);
   min-height: var(--control-lg);
 }
 /* The copy button keeps its full target but takes only the address's own
    line: it reaches over the gaps above and below, so the name, address and
-   balance read as one block. Nothing under its reach can be pressed. */
+   balance read as one block. Where a card's buttons reach under it, they
+   are drawn over it and take the press. */
 .app.phone .wallet-card-head .copy-btn { margin-block: calc(-1 * var(--space-3)); }
 /* A card's three dots open its sheet of actions (WalletRowMenu). Drawn at
    the size of the sheet's own icons, with heavier dots, so they read as a
    button and not as a smudge. */
 .app.phone .wallet-side .wallet-more .icon { width: 20px; height: 20px; stroke-width: 3; }
-/* A button a card cannot use now, such as Send on a Vector wallet that is
-   not initialized, reads as off: the sunken fill and hint text of a
-   disabled field, not a faded copy of a live button. */
-.app.phone .wallet-side button:disabled {
+/* Send, where a card cannot send now, such as a Vector wallet that is not
+   initialized, reads as off: the sunken fill and hint text of a disabled
+   field, not a faded copy of a live button. Only there: anything else
+   disabled, such as a dialog's Save, is the button dimmed, as everywhere. */
+.app.phone .wallet-buttons > .wallet-send:disabled {
   opacity: 1;
   background: var(--surface-2);
   border-color: var(--border);
@@ -4116,15 +4141,24 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
 
 /* A wallet's Settings and Details on a phone: the sheet scrolls in one
    place, its body, and its buttons stay pinned to its foot, however long
-   the body is: a multisig's members can be more than a screen. */
-.app.phone .modal.wallet-dialog-modal { display: flex; flex-direction: column; overflow: hidden; }
-.app.phone .wallet-dialog-modal > .wallet-dialog { flex: 0 1 auto; min-height: 0; max-height: none; }
+   the body is: a multisig's members can be more than a screen. The body
+   scrolls edge to edge, the sheet's side padding moved into it, so the
+   foot can span the whole sheet: a line across its top, on the sheet's own
+   background, cuts what scrolls under it cleanly. */
+.app.phone .modal.wallet-dialog-modal { display: flex; flex-direction: column; overflow: hidden; padding-inline: 0; }
+.app.phone .wallet-dialog-modal > .wallet-dialog {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: none;
+  padding-inline: var(--space-4);
+}
 .app.phone .wallet-dialog-modal > .wallet-dialog > .btn-row:last-child {
   position: sticky;
   bottom: 0;
   z-index: 1;
-  margin-top: 0;
-  padding-top: var(--space-2);
+  margin: 0 calc(-1 * var(--space-4));
+  padding: var(--space-2) var(--space-4) 0;
+  border-top: 1px solid var(--border);
   background: var(--surface);
 }
 
@@ -4140,28 +4174,41 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
 .app.phone .wallet-dialog .picker-button { white-space: normal; }
 .app.phone .wallet-dialog .picker-none { overflow: visible; }
 
-/* A wallet's Details on a phone. Every value line is one touch target
-   high, a member's as much as the vault's, so the sheet has one rhythm.
-   The facts come in groups, each under a quiet heading and a line: what
-   the wallet is, who is in it, how this device uses it. A name and a
-   shortened address share one line, with the copy button at its end; a
-   name too long for it is cut with an ellipsis, and nothing breaks inside
-   a word. */
-.app.phone .wallet-dialog .settings-grid.wallet-facts { row-gap: var(--space-3); }
-.app.phone .wallet-dialog .wallet-facts > .setting-row { row-gap: 0; }
-.app.phone .wallet-facts .setting-value { min-height: var(--control-lg); overflow-wrap: break-word; }
-.app.phone .wallet-facts .wallet-fact-list { gap: 0; }
-.app.phone .wallet-facts .wallet-fact-list > li { display: flex; align-items: center; min-height: var(--control-lg); }
+/* A wallet's Details on a phone, on one screen where it fits. A fact's
+   name sits close above its value, and a clearly larger gap parts one fact
+   from the next: names and values are set on tight lines. The facts come
+   in groups, each under a quiet heading and a line, with more room above
+   the heading than below it: what the wallet is, who is in it, how this
+   device uses it. */
+.app.phone .wallet-facts-modal > .wallet-dialog { gap: var(--space-3); }
+.app.phone .wallet-dialog .settings-grid.wallet-facts { row-gap: var(--space-3); margin-block: 0; }
+.app.phone .wallet-dialog .wallet-facts > .setting-row { row-gap: var(--space-1); }
+.app.phone .wallet-facts .setting-label,
+.app.phone .wallet-facts .setting-value { line-height: var(--leading-tight); }
+.app.phone .wallet-facts .setting-value { overflow-wrap: break-word; }
 .app.phone .wallet-facts-group {
   grid-column: 1 / -1;
-  margin-top: var(--space-2);
-  margin-bottom: calc(-1 * var(--space-2));
-  padding-top: var(--space-4);
+  margin-bottom: calc(var(--space-2) - var(--space-3));
+  padding-top: var(--space-2);
   border-top: 1px solid var(--border);
 }
-.app.phone .wallet-facts-group:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.app.phone .wallet-facts-group:first-child { padding-top: 0; border-top: 0; }
+/* A line with a copy button, a member's as much as the vault's, is one
+   touch target high. The first and last line of a value reach over the
+   gaps around it, as the copy button on a card does, so the text sits as
+   close to its name as a plain value does. Members follow one another a
+   whole target apart. */
+.app.phone .wallet-facts .addr-row,
+.app.phone .wallet-facts .wallet-fact-list > li { display: flex; align-items: center; min-height: var(--control-lg); }
+.app.phone .wallet-facts .wallet-fact-list { gap: 0; }
 .app.phone .wallet-facts .setting-value > .addr-row,
-.app.phone .wallet-facts .wallet-fact-list { flex: 1; }
+.app.phone .wallet-facts .setting-value > .wallet-fact-list { margin-block: calc(-1 * var(--space-3)); }
+/* A name and a shortened address share one line, the copy button at its
+   right end, in the same place on every line; a name too long for it is
+   cut with an ellipsis, and nothing breaks inside a word. */
+.app.phone .wallet-facts .setting-value > .addr-row,
+.app.phone .wallet-facts .wallet-fact-list,
+.app.phone .wallet-facts .wallet-fact-list > li > .addr-row { flex: 1; }
 .app.phone .wallet-facts .addr-label { white-space: nowrap; }
 .app.phone .wallet-facts .addr-short { flex-shrink: 0; }
 

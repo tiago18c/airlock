@@ -241,7 +241,7 @@ pub fn WalletsPanel() -> Element {
 /// Portfolio, not here.
 ///
 /// A phone draws Send with the card's other buttons instead, as
-/// [`WalletSend`], so they share one row under the balance.
+/// [`WalletSend`], on the balance's line: see [`WalletFoot`].
 #[component]
 pub(in crate::ui) fn WalletBalance(
     lamports: Option<u64>,
@@ -274,8 +274,23 @@ pub(in crate::ui) fn WalletBalance(
     }
 }
 
-/// Send, first in a wallet card's row of buttons on a phone, and drawn as
-/// they are. Elsewhere it follows the balance: see [`WalletBalance`].
+/// The last line of a wallet card on a phone: the balance at its left and
+/// the card's buttons (`children`: Send, then Proposals or Show on device)
+/// at its right, so a card is three lines high and more of them fit a
+/// screen. The buttons drop under the balance, still on the right, where
+/// the line has no room for both. The three dots sit on the name's line.
+#[component]
+pub(in crate::ui) fn WalletFoot(balance: Element, children: Element) -> Element {
+    rsx! {
+        div { class: "wallet-foot",
+            {balance}
+            div { class: "btn-row wallet-buttons", {children} }
+        }
+    }
+}
+
+/// Send, first in a wallet card's buttons on a phone, and drawn as they
+/// are. Elsewhere it follows the balance: see [`WalletBalance`].
 #[component]
 pub(in crate::ui) fn WalletSend(
     send_title: &'static str,
