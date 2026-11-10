@@ -66,13 +66,35 @@ pub(in crate::ui) fn KeyExportModal(keys: Vec<WalletKey>, on_close: EventHandler
     }
 }
 
-/// A wallet row's less used actions, at the end of its buttons: Export key,
-/// when another device can add the wallet by its key, and Remove. The
-/// export dialog lives here, not in the menu, so it outlasts the menu.
+/// The end of a wallet card's buttons: its dialogs and its less used actions.
+///
+/// On a wider screen, the Details and Settings icon buttons where `dialogs`
+/// (see [`WalletDialogButtons`]), then a three-dot menu with Export key,
+/// when another device can add the wallet by its key, and Remove.
+///
+/// On a phone a menu under the button would cover the card it acts on, and
+/// five buttons do not fit one row. The three dots open a bottom sheet
+/// instead, titled with the wallet's name, that lists Details and Settings
+/// too: one place for each, and the card keeps only what starts something.
+///
+/// The dialogs live here, not in the menu or the sheet, so they outlast it.
 #[component]
-pub(in crate::ui) fn WalletRowMenu(id: WalletId, on_remove: EventHandler<()>) -> Element {
+pub(in crate::ui) fn WalletRowMenu(
+    wallet: WalletSummary,
+    /// The wallet has Settings, and Details where it is a smart contract
+    /// wallet: every wallet but a hot key.
+    dialogs: bool,
+    on_remove: EventHandler<()>,
+) -> Element {
     let session = use_context::<Session>();
+    let phone = app_ui_kit::ui::use_phone_layout();
     let mut export_open = use_signal(|| false);
+    let mut sheet_open = use_signal(|| false);
+    let mut settings_open = use_signal(|| false);
+    let mut details_open = use_signal(|| false);
+    let id = wallet.id;
+    let label = wallet.label.clone();
+    let has_details = dialogs && wallet.contract.is_some();
     let found = exportable(&(session.wallets)().summaries)
         .into_iter()
         .find(|one| one.id == id);
@@ -83,23 +105,110 @@ pub(in crate::ui) fn WalletRowMenu(id: WalletId, on_remove: EventHandler<()>) ->
         )
     });
     rsx! {
-        PaneMenu { label: "More actions", glyph: Glyph::More, small: true,
-            if let Some(title) = export_title {
-                button { class: "pane-menu-item",
+        if phone {
+            button { class: "icon-btn sm wallet-more",
+                title: "More actions",
+                aria_label: "More actions",
+                aria_haspopup: "dialog",
+                onclick: move |_| sheet_open.set(true),
+                Icon { glyph: Glyph::More }
+            }
+        } else {
+            if dialogs {
+                WalletDialogButtons { wallet: wallet.clone() }
+            }
+            PaneMenu { label: "More actions", glyph: Glyph::More, small: true,
+                if let Some(title) = export_title.clone() {
+                    button { class: "pane-menu-item",
+                        role: "menuitem",
+                        title,
+                        onclick: move |_| export_open.set(true),
+                        Icon { glyph: Glyph::Qr }
+                        "Export key"
+                    }
+                }
+                button { class: "pane-menu-item danger",
                     role: "menuitem",
-                    title,
-                    onclick: move |_| export_open.set(true),
-                    Icon { glyph: Glyph::Qr }
-                    "Export key"
+                    title: "Remove this wallet from this device",
+                    onclick: move |_| on_remove.call(()),
+                    Icon { glyph: Glyph::Trash }
+                    "Remove"
                 }
             }
-            button { class: "pane-menu-item danger",
-                role: "menuitem",
-                title: "Remove this wallet from this device",
-                onclick: move |_| on_remove.call(()),
-                Icon { glyph: Glyph::Trash }
-                "Remove"
+        }
+        if sheet_open() {
+            div { class: "modal-backdrop", onclick: move |_| sheet_open.set(false),
+                div {
+                    class: "modal wallet-actions",
+                    role: "dialog",
+                    aria_modal: "true",
+                    aria_label: "Actions of {label}",
+                    onclick: move |evt| evt.stop_propagation(),
+                    div { class: "stack",
+                        h3 { "{label}" }
+                        // Each row closes the sheet before it opens what it
+                        // names, so only one sheet is up at a time.
+                        div { class: "wallet-action-list",
+                            if has_details {
+                                button { class: "more-item",
+                                    title: "Details: its addresses, members and how it is set up",
+                                    aria_label: "Details of {label}",
+                                    aria_haspopup: "dialog",
+                                    onclick: move |_| {
+                                        sheet_open.set(false);
+                                        details_open.set(true);
+                                    },
+                                    Icon { glyph: Glyph::Info }
+                                    span { "Details" }
+                                }
+                            }
+                            if dialogs {
+                                button { class: "more-item",
+                                    title: "Settings: who pays its fees, and how it signs",
+                                    aria_label: "Settings of {label}",
+                                    aria_haspopup: "dialog",
+                                    onclick: move |_| {
+                                        sheet_open.set(false);
+                                        settings_open.set(true);
+                                    },
+                                    Icon { glyph: Glyph::Gear }
+                                    span { "Settings" }
+                                }
+                            }
+                            if let Some(title) = export_title {
+                                button { class: "more-item",
+                                    title,
+                                    onclick: move |_| {
+                                        sheet_open.set(false);
+                                        export_open.set(true);
+                                    },
+                                    Icon { glyph: Glyph::Qr }
+                                    span { "Export key" }
+                                }
+                            }
+                            button { class: "more-item danger",
+                                title: "Remove this wallet from this device",
+                                onclick: move |_| {
+                                    sheet_open.set(false);
+                                    on_remove.call(());
+                                },
+                                Icon { glyph: Glyph::Trash }
+                                span { "Remove" }
+                            }
+                        }
+                        div { class: "btn-row",
+                            button { class: "ghost",
+                                r#type: "button",
+                                onclick: move |_| sheet_open.set(false),
+                                "Close"
+                            }
+                        }
+                    }
+                }
             }
+        }
+        if dialogs {
+            WalletDialogs { wallet, settings_open, details_open }
         }
         if export_open() {
             if let Some(found) = found {

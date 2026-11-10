@@ -62,10 +62,7 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                                 }
                             }
                         }
-                        if !can_sign {
-                            WalletDialogButtons { wallet: dialogs_of }
-                        }
-                        WalletRowMenu { id,
+                        WalletRowMenu { wallet: dialogs_of, dialogs: !can_sign,
                             on_remove: move |_| {
                                 session.when_unlocked("Unlock the vault to remove a wallet from it.", move || confirm_open.set(true));
                             },

@@ -4054,8 +4054,10 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
 /* Wallets on a phone. A card's buttons, Send first, share one row right
    under the balance, each a full touch target. The address is shortened
    to one line (AddressHeader's `short`), its copy button a touch target
-   too. */
-.app.phone .wallet-card-head { row-gap: var(--space-2); }
+   too. A card is padded as an address book row is, and its buttons follow
+   the balance closely, so more cards fit a screen. */
+.app.phone .wallet-row { padding: var(--space-3) var(--space-4); }
+.app.phone .wallet-card-head { row-gap: var(--space-1); }
 .app.phone .addr-head-body > .wallet-balance { margin-top: 0; }
 .app.phone .wallet-end { width: 100%; }
 .app.phone .wallet-end > .wallet-side { flex: 1; flex-wrap: wrap; margin-left: 0; }
@@ -4067,14 +4069,38 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
   min-width: var(--control-lg);
   min-height: var(--control-lg);
 }
-/* The row is at the foot of the card's head, so a card's menu opens
-   upward, over its own card, not over the next card. */
-.app.phone .wallet-side .pane-menu-list { top: auto; bottom: calc(100% + 4px); }
+/* The copy button keeps its full target but takes only the address's own
+   line: it reaches over the gaps above and below, so the name, address and
+   balance read as one block. Nothing under its reach can be pressed. */
+.app.phone .wallet-card-head .copy-btn { margin-block: calc(-1 * var(--space-3)); }
+/* A card's three dots open its sheet of actions (WalletRowMenu). Drawn at
+   the size of the sheet's own icons, with heavier dots, so they read as a
+   button and not as a smudge. */
+.app.phone .wallet-side .wallet-more .icon { width: 20px; height: 20px; stroke-width: 3; }
+/* A card's sheet of actions: one row each, icon and name, as in More.
+   Remove keeps the danger colour. */
+.app.phone .wallet-action-list { display: grid; gap: var(--space-1); }
+.app.phone .wallet-action-list > .more-item.danger,
+.app.phone .wallet-action-list > .more-item.danger .icon { color: var(--danger-text); }
 /* The pane's menu spans the header's width, so it covers the first card's
    head whole instead of cutting through its name and chips. */
 .app.phone .wallets-head > .btn-row { position: relative; }
 .app.phone .wallets-head .pane-menu { position: static; }
 .app.phone .wallets-head .pane-menu-list { left: 0; }
+
+/* A wallet's Settings and Details on a phone: the sheet scrolls in one
+   place, its body, and its buttons stay pinned to its foot, however long
+   the body is: a multisig's members can be more than a screen. */
+.app.phone .modal.wallet-dialog-modal { display: flex; flex-direction: column; overflow: hidden; }
+.app.phone .wallet-dialog-modal > .wallet-dialog { flex: 0 1 auto; min-height: 0; max-height: none; }
+.app.phone .wallet-dialog-modal > .wallet-dialog > .btn-row:last-child {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin-top: 0;
+  padding-top: var(--space-2);
+  background: var(--surface);
+}
 
 /* A wallet's Details on a phone: each name on its own line, then its
    value. A name and a shortened address share one line, with the copy
@@ -4101,6 +4127,8 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
   justify-self: stretch;
 }
 .app.phone .add-wallet-head > .segmented > .tab { min-height: var(--control-lg); }
+/* An odd kind out at the end fills its row, rather than sit alone in half. */
+.app.phone .add-wallet-head > .segmented > .tab:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .app.phone .add-wallet-head > .segmented > .tab.on {
   background: var(--brand-soft);
   color: var(--brand-text);

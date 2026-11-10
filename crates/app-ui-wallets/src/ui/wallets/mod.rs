@@ -3,7 +3,7 @@ use crate::state::forms::{AddWalletMode, SendOpen, WalletForm};
 use crate::state::session::{Session, Tab, WalletSummary};
 use crate::ui::wallets::kinds::{
     ContractWalletRow, CurrentChip, ExportKeysModal, HardwareForm, KeyImportForm, OfflineForm,
-    ProgrammaticForm, SquadsForm, VectorForm, WalletDialogButtons, WalletRowMenu,
+    ProgrammaticForm, SquadsForm, VectorForm, WalletRowMenu,
 };
 use crate::ui::{format_sol, AddressHeader, CopyButton, Glyph, HelpTip, Icon, PaneMenu};
 use dioxus::prelude::*;
@@ -223,6 +223,10 @@ pub fn WalletsPanel() -> Element {
 pub(in crate::ui) fn WalletBalance(
     lamports: Option<u64>,
     send_title: &'static str,
+    /// Why the wallet cannot send now, if it cannot: Send is disabled and
+    /// its title says why.
+    #[props(default)]
+    cannot_send: Option<&'static str>,
     on_send: EventHandler<()>,
 ) -> Element {
     let phone = app_ui_kit::ui::use_phone_layout();
@@ -236,7 +240,8 @@ pub(in crate::ui) fn WalletBalance(
             }
             if !phone {
                 button { class: "ghost sm wallet-send",
-                    title: send_title,
+                    title: cannot_send.unwrap_or(send_title),
+                    disabled: cannot_send.is_some(),
                     onclick: move |_| on_send.call(()),
                     Icon { glyph: Glyph::Send }
                     "Send"
@@ -249,10 +254,17 @@ pub(in crate::ui) fn WalletBalance(
 /// Send, first in a wallet card's row of buttons on a phone, and drawn as
 /// they are. Elsewhere it follows the balance: see [`WalletBalance`].
 #[component]
-pub(in crate::ui) fn WalletSend(send_title: &'static str, on_send: EventHandler<()>) -> Element {
+pub(in crate::ui) fn WalletSend(
+    send_title: &'static str,
+    /// As on [`WalletBalance`].
+    #[props(default)]
+    cannot_send: Option<&'static str>,
+    on_send: EventHandler<()>,
+) -> Element {
     rsx! {
         button { class: "sm wallet-send",
-            title: send_title,
+            title: cannot_send.unwrap_or(send_title),
+            disabled: cannot_send.is_some(),
             onclick: move |_| on_send.call(()),
             Icon { glyph: Glyph::Send }
             "Send"

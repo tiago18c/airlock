@@ -221,7 +221,7 @@ pub(in crate::ui) fn WalletSettingsDialog(
         // A click outside closes it, unless that would drop a choice.
         div { class: "modal-backdrop", onclick: move |_| if !dirty { on_close.call(()) },
             div {
-                class: "modal wide",
+                class: "modal wide wallet-dialog-modal",
                 role: "dialog",
                 aria_modal: "true",
                 aria_label: "Settings of {wallet.label}",
@@ -443,7 +443,7 @@ pub(in crate::ui) fn WalletDetailsDialog(
     rsx! {
         div { class: "modal-backdrop", onclick: move |_| on_close.call(()),
             div {
-                class: "modal wide wallet-facts-modal",
+                class: "modal wide wallet-dialog-modal wallet-facts-modal",
                 role: "dialog",
                 aria_modal: "true",
                 aria_label: "Details of {wallet.label}",
@@ -555,7 +555,8 @@ pub(in crate::ui) fn WalletDetailsDialog(
 }
 
 /// The two icon buttons that open a wallet's dialogs: an "i" in a circle for
-/// Details, on a smart contract wallet, and a wheel for Settings.
+/// Details, on a smart contract wallet, and a wheel for Settings. A phone
+/// lists both in the card's sheet of actions instead: see [`WalletRowMenu`].
 #[component]
 pub(in crate::ui) fn WalletDialogButtons(wallet: WalletSummary) -> Element {
     let mut settings_open = use_signal(|| false);
@@ -578,6 +579,22 @@ pub(in crate::ui) fn WalletDialogButtons(wallet: WalletSummary) -> Element {
             onclick: move |_| settings_open.set(true),
             Icon { glyph: Glyph::Gear }
         }
+        WalletDialogs { wallet: wallet.clone(), settings_open, details_open }
+    }
+}
+
+/// A wallet's Details and Settings dialogs, each shown while its signal is
+/// true, for whatever opens them: [`WalletDialogButtons`], or a card's sheet
+/// of actions on a phone. Details hands over to Settings.
+#[component]
+pub(in crate::ui) fn WalletDialogs(
+    wallet: WalletSummary,
+    settings_open: Signal<bool>,
+    details_open: Signal<bool>,
+) -> Element {
+    let mut settings_open = settings_open;
+    let mut details_open = details_open;
+    rsx! {
         if details_open() {
             WalletDetailsDialog {
                 wallet: wallet.clone(),

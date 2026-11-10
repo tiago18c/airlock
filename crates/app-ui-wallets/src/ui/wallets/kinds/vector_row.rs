@@ -54,6 +54,13 @@ impl VectorReads {
         }
     }
 
+    /// The chain has no Vector account at `address` yet, so the wallet
+    /// cannot send: it has nothing to sign with on chain until it is
+    /// initialized. False while reading, or when the read failed.
+    pub(super) fn uninitialized(&self, address: &Pubkey) -> bool {
+        self.chain(address) == VectorChain::Uninitialized
+    }
+
     fn account(&self, address: &Pubkey) -> Option<VectorAccount> {
         match &*self.read.read() {
             Some(Ok(accounts)) => accounts.get(address).cloned().flatten(),
