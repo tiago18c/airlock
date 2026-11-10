@@ -4070,6 +4070,9 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
 }
 .app.phone .wallet-foot > .wallet-balance { margin-right: auto; }
 .app.phone .wallet-foot > .wallet-buttons { flex-wrap: nowrap; margin-left: auto; }
+/* The text column takes the rest of the card's width, or the foot would be
+   only as wide as its balance and buttons and they could not sit apart. */
+.app.phone .wallet-card-head .addr-head-body { flex: 1 1 auto; min-width: 0; }
 /* The three dots take no line of their own: they sit at the end of the
    name's line, their target reaching into the card's padding, and the name
    and chips leave them room. */
