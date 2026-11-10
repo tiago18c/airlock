@@ -22,6 +22,11 @@ pub fn AddressRow(
     /// No card on hover, where the list already says what every entry is.
     #[props(default)]
     no_card: bool,
+    /// Leave out the category icon, where every entry of the list is of
+    /// one kind and the icon would tell none apart. An address that needs
+    /// care keeps its icon, so colour is not the only sign of it.
+    #[props(default)]
+    no_icon: bool,
     /// Accounts the card lists under the address's own facts, each with
     /// what it is: the token accounts a balance sits in.
     #[props(default)]
@@ -53,7 +58,9 @@ pub fn AddressRow(
                     }
                 },
                 onmouseleave: move |_| card.leave(),
-                CategoryIcon { category: described.category }
+                if !no_icon || care {
+                    CategoryIcon { category: described.category }
+                }
                 if let Some(label) = label {
                     span { class: "addr-label", "{label}" }
                 }

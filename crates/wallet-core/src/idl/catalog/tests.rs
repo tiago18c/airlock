@@ -935,3 +935,11 @@ fn a_record_from_before_turns_were_kept_reads_as_the_oldest() {
     let written = serde_json::to_value(&record).unwrap();
     assert!(written.get("readTurn").is_none());
 }
+
+#[test]
+fn a_one_byte_number_has_no_byte_order() {
+    let number = |format: &str| serde_json::json!({ "kind": "numberTypeNode", "format": format, "endian": "le" });
+    assert_eq!(outline::type_text(&number("u8")), "u8");
+    assert_eq!(outline::type_text(&number("i8")), "i8");
+    assert_eq!(outline::type_text(&number("u64")), "u64 le");
+}

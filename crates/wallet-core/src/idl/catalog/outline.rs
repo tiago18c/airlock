@@ -254,7 +254,8 @@ pub(super) fn type_text(value: &serde_json::Value) -> String {
         "numberTypeNode" => {
             let format = text_at(value, "format");
             let endian = text_at(value, "endian");
-            if endian.is_empty() {
+            // A byte has no byte order, whatever the IDL says.
+            if endian.is_empty() || matches!(format.as_str(), "u8" | "i8") {
                 format
             } else {
                 format!("{format} {endian}")

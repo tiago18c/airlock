@@ -90,19 +90,23 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                         }
                         "{checksum}"
                     }
-                    span { class: status_class(status), title: status_tip(status), "{status.label()}" }
                     if record.origin == IdlOrigin::Builtin {
                         span { class: "chip", "built in" }
                     }
                     if let Some(host) = host_name.clone() {
                         span { class: "chip info", "from the {host} IDL" }
                     }
-                    span { class: "chip", title: "IDLs are kept per network: the cluster in use", "{network}" }
-                    button {
-                        class: "sm program-check",
-                        disabled: checking(),
-                        onclick: move |_| check_one(session, program_id, checking, check_note),
-                        if checking() { "Checking…" } else { "Check online" }
+                    span { class: "chip", title: "IDLs are kept per network: the cluster in use", "IDL for {network}" }
+                    // The state of the online check, and the action that
+                    // runs it, together at the end of the line.
+                    span { class: "program-check-group",
+                        span { class: status_class(status), title: status_tip(status), "{status_words(status)}" }
+                        button {
+                            class: "sm program-check",
+                            disabled: checking(),
+                            onclick: move |_| check_one(session, program_id, checking, check_note),
+                            if checking() { "Checking…" } else { "Check online" }
+                        }
                     }
                 }
                 if let Some(embedded) = embedded {
@@ -207,6 +211,18 @@ pub(in crate::ui) fn status_tip(status: IdlPinStatus) -> &'static str {
             "The last online check found a different IDL published on chain by the program than this file."
         }
         IdlPinStatus::NoIdl => "No IDL is stored on this device for this program.",
+    }
+}
+
+/// What a check state says, for the chip: what the stored file was compared
+/// with, the IDL the program publishes on chain, and what was found.
+pub(in crate::ui) fn status_words(status: IdlPinStatus) -> &'static str {
+    match status {
+        IdlPinStatus::NotChecked => "not compared with chain",
+        IdlPinStatus::Matches => "same as on chain",
+        IdlPinStatus::MatchesSource => "made from the IDL on chain",
+        IdlPinStatus::Differs => "differs from chain",
+        IdlPinStatus::NoIdl => "no IDL stored",
     }
 }
 

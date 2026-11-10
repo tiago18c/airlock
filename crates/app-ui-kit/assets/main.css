@@ -1580,33 +1580,57 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 
 /* The list of programs: a wider column than the address book's groups, that
    stays in view while the detail scrolls, with its own scroll when it is
-   taller than the window. */
+   taller than the window. It is one card, starting level with the detail:
+   the filter its first row, in place while the rows scroll under it. */
 .program-layout { grid-template-columns: minmax(220px, 300px) minmax(0, 1fr); }
 .program-side {
   position: sticky;
   top: var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
   min-width: 0;
   max-height: calc(100vh - var(--topbar-h) - var(--space-8));
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
 }
-.program-side > .muted { font-size: var(--text-md); }
+.program-filter {
+  flex-shrink: 0;
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+.program-side > .program-none {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-md);
+}
+.program-side > .group-list {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
 .program-list { flex: 0 1 auto; min-height: 0; overflow: auto; }
 .program-list .group-pick { padding-top: var(--space-2); padding-bottom: var(--space-2); }
-/* Each row: the name over the short address, the icon beside both. */
+/* Each row: the name over the short address. Every entry is a program, so
+   the icon is left out; an address that needs care keeps its own beside
+   both. */
 .program-list .addr-row { flex: 1; }
 .program-list .addr-row-main {
   flex: 1;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   column-gap: var(--space-2);
 }
-.program-list .addr-row-main > :first-child { grid-row: 1 / span 2; grid-column: 1; }
 .program-list .addr-row-main > .addr-label,
-.program-list .addr-row-main > .addr-short { grid-column: 2; }
-.program-list .addr-row-main > .addr-alert { grid-row: 1; grid-column: 3; }
+.program-list .addr-row-main > .addr-short { grid-column: 1; }
+.program-list .addr-row-main > .addr-alert { grid-row: 1; grid-column: 2; }
+.program-list .addr-row-main:has(> .cat) { grid-template-columns: auto minmax(0, 1fr) auto; }
+.program-list .addr-row-main > .cat { grid-row: 1 / span 2; grid-column: 1; }
+.program-list .addr-row-main:has(> .cat) > .addr-label,
+.program-list .addr-row-main:has(> .cat) > .addr-short { grid-column: 2; }
+.program-list .addr-row-main:has(> .cat) > .addr-alert { grid-column: 3; }
 .program-list .addr-label {
   overflow: visible;
   white-space: normal;
@@ -1620,7 +1644,14 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
    the tabs under it while the rest scrolls, so what is being read stays in
    sight. The name is one line, cut with an ellipsis; the tabs pin at its
    height. The address, facts and provenance scroll away. */
-.program-detail { --program-head-h: calc(32px + 2 * var(--space-2)); }
+.program-detail {
+  --program-head-h: calc(32px + 2 * var(--space-2));
+  /* One column no wider than the card, so a long line inside it (an
+     instruction's description) is cut where the card ends instead of
+     widening what holds it. */
+  grid-template-columns: minmax(0, 1fr);
+}
+.program-detail .idl-section { grid-template-columns: minmax(0, 1fr); }
 .program-head,
 .program-detail > .idl-tabs {
   position: sticky;
@@ -1656,20 +1687,29 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   font-weight: var(--weight-regular);
   color: var(--text-3);
 }
-/* The facts, then the chips that are states, then Check online at the end
-   of the line: the action apart from them. */
+/* The facts and the chips that describe the file on the left; the state
+   of the online check and Check online, which runs it, together at the
+   end of the line. */
 .program-facts {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-1) var(--space-2);
 }
-.program-facts .program-check { margin-left: auto; }
+.program-check-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  margin-left: auto;
+}
 
 /* An IDL's instructions, accounts, types and events: one bordered list,
    a divider between rows, each opening in place. */
 .idl-list {
   display: grid;
+  /* One column no wider than the list, so a row's text never sizes it. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 0;
   overflow: hidden;
   border: 1px solid var(--border);
@@ -1742,11 +1782,12 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 .idl-chevron .icon { width: 16px; height: 16px; }
 .idl-item[open] > summary .idl-chevron { transform: rotate(90deg); }
 .idl-name { min-width: 0; overflow-wrap: anywhere; }
-/* A collapsed instruction: its name in regular weight, the first sentence
-   of its description after it, cut where the row ends, and how many
-   accounts and arguments it takes at the end. Open, the description is in
-   full below, so the cut one goes. */
-.idl-ix > summary { font-weight: var(--weight-regular); }
+/* A collapsed instruction: its name in regular weight at its own width,
+   how many accounts and arguments it takes at the end, and between them
+   the first sentence of its description in what is left, ending in an
+   ellipsis where it does not fit. Open, the description is in full below,
+   so the cut one goes. */
+.idl-ix > summary { min-width: 0; font-weight: var(--weight-regular); }
 .idl-ix > summary .idl-name { flex: 0 1 auto; }
 .idl-gist,
 .idl-counts {

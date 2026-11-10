@@ -84,8 +84,10 @@ pub fn ProgramsPanel() -> Element {
                 }
                 div { class: "book-layout program-layout",
                     if any {
+                        // One card: the filter as its first row, staying in
+                        // place over the rows that scroll under it.
                         div { class: "program-side",
-                            div { class: "filter-bar",
+                            div { class: "filter-bar program-filter",
                                 label {
                                     span { class: "sr-only", "Filter programs" }
                                     input {
@@ -97,7 +99,7 @@ pub fn ProgramsPanel() -> Element {
                                 }
                             }
                             if shown.is_empty() {
-                                p { class: "muted", "No programs match this filter." }
+                                p { class: "muted program-none", "No programs match this filter." }
                             }
                             ul { class: "group-list program-list",
                                 for record in shown {
@@ -142,7 +144,8 @@ fn ProgramItem(record: IdlRecord) -> Element {
             button {
                 class: "group-pick",
                 onclick: move |_| selected.set(Some(id)),
-                AddressRow { pubkey: id, no_copy: true, no_card: true, class: "program-row" }
+                // Every entry is a program, so the icon is left out.
+                AddressRow { pubkey: id, no_copy: true, no_card: true, no_icon: true, class: "program-row" }
             }
             if record.origin != IdlOrigin::Builtin && record.host.is_none() {
             div { class: "group-actions",
@@ -251,6 +254,16 @@ mod tests {
             first_sentence("Closes an account\n\nSecond paragraph."),
             Some("Closes an account".into())
         );
+    }
+
+    #[test]
+    fn the_check_chip_says_what_was_compared() {
+        assert_eq!(
+            status_words(IdlPinStatus::NotChecked),
+            "not compared with chain"
+        );
+        assert_eq!(status_words(IdlPinStatus::Matches), "same as on chain");
+        assert_eq!(status_words(IdlPinStatus::Differs), "differs from chain");
     }
 
     #[test]
