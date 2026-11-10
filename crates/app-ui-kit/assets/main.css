@@ -2152,8 +2152,8 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 .stack > .group-title.wallets-group:first-of-type { margin-top: var(--space-2); }
 .group-title.wallets-group .help { margin-left: 0; }
 .group-count { color: var(--text-2); font-weight: var(--weight-regular); }
-/* A wallet card's head: the name and address on the left; the balance, its
-   value and Send, then the card's buttons, on the right of the name's row.
+/* A wallet card's head: the name and address on the left; the balance and
+   Send, then the card's buttons, on the right of the name's row.
    Where they do not fit beside the name they drop below, still on the right. */
 .wallet-card-head { flex-wrap: wrap; }
 .wallet-card-head > .addr-head { flex: 1 1 22rem; }
@@ -2167,7 +2167,6 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   min-width: 0;
 }
 .wallet-end > .wallet-side { flex-wrap: nowrap; margin-left: auto; }
-.wallet-value { color: var(--text-2); font-size: var(--text-md); font-variant-numeric: tabular-nums; }
 .wallet-send { gap: var(--space-1); }
 .wallet-send .icon { width: 15px; height: 15px; }
 @media (max-width: 639px) {

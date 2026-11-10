@@ -10,10 +10,9 @@ use crate::ui::{
 };
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
-use wallet_core::portfolio::{format_value, prices_apply_to, WRAPPED_SOL_MINT};
 use wallet_core::{
     Category, DerivedAccount, NewSigner, OfflinePath, WalletClass, WalletKind, WalletRecord,
-    DERIVE_BATCH, LAMPORTS_PER_SOL, SOLANA_PATH_TEMPLATE,
+    DERIVE_BATCH, SOLANA_PATH_TEMPLATE,
 };
 use zeroize::Zeroize;
 
@@ -229,27 +228,19 @@ fn GroupCount(count: usize) -> Element {
     }
 }
 
-/// A wallet's SOL balance, what it is worth when the session has a price for
-/// SOL, and the small button that sends from it. Shown only where balances
-/// are: the online build.
+/// A wallet's SOL balance and the small button that sends from it. Shown only
+/// where balances are: the online build. What a balance is worth belongs to
+/// Portfolio, not here.
 #[component]
 pub(in crate::ui) fn WalletBalance(
     lamports: Option<u64>,
     send_title: &'static str,
     on_send: EventHandler<()>,
 ) -> Element {
-    let session = use_context::<Session>();
-    let value = lamports
-        .filter(|lamports| *lamports > 0)
-        .zip(sol_price(session))
-        .map(|(lamports, price)| format_value(lamports as f64 / LAMPORTS_PER_SOL as f64 * price));
     rsx! {
         div { class: "wallet-balance",
             if let Some(lamports) = lamports {
                 span { class: "balance", "{format_sol(lamports)}" }
-            }
-            if let Some(value) = value {
-                span { class: "wallet-value", title: "At the last price the Tokens API gave", "≈ {value}" }
             }
             button { class: "ghost sm wallet-send",
                 title: send_title,
@@ -259,17 +250,4 @@ pub(in crate::ui) fn WalletBalance(
             }
         }
     }
-}
-
-/// The dollar price of one SOL the session already holds: on mainnet, with a
-/// Tokens API key, once the prices job has read it. Nothing is fetched here.
-fn sol_price(session: Session) -> Option<f64> {
-    if !prices_apply_to(&session.cluster()) || (session.settings)().tokens_api_key.is_none() {
-        return None;
-    }
-    (session.holdings_view)()
-        .market
-        .quote(&WRAPPED_SOL_MINT)
-        .and_then(|quote| quote.price_usd)
-        .filter(|price| price.is_finite() && *price > 0.0)
 }
