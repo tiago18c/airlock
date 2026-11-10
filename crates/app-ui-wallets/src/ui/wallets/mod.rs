@@ -6,7 +6,7 @@ use crate::ui::wallets::kinds::{
     KeyImportForm, OfflineForm, ProgrammaticForm, SquadsForm, VectorForm,
 };
 use crate::ui::{
-    format_sol, Address, AddressHeader, CopyButton, Glyph, HelpTip, Icon, WalletPicker,
+    format_sol, Address, AddressHeader, CopyButton, Glyph, HelpTip, Icon, PaneMenu, WalletPicker,
 };
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
@@ -73,17 +73,6 @@ pub fn WalletsPanel() -> Element {
                         h2 { "Wallets" }
                     }
                     div { class: "btn-row",
-                        if online && !all.is_empty() {
-                            button {
-                                title: "Burn and close a wallet's token accounts, to get their rent back",
-                                onclick: move |_| {
-                                    if let Some(wallet) = first_wallet {
-                                        session.open_cleanup(wallet);
-                                    }
-                                },
-                                "Burn and close…"
-                            }
-                        }
                         if !all.is_empty() {
                             button {
                                 title: "Show the public keys of wallets here, for another device to add them",
@@ -97,6 +86,21 @@ pub fn WalletsPanel() -> Element {
                             },
                             Icon { glyph: Glyph::Plus }
                             "Add wallet"
+                        }
+                        if online && !all.is_empty() {
+                            PaneMenu { label: "More wallet actions",
+                                button { class: "pane-menu-item",
+                                    role: "menuitem",
+                                    title: "Burn and close a wallet's token accounts, to get their rent back",
+                                    onclick: move |_| {
+                                        if let Some(wallet) = first_wallet {
+                                            session.open_cleanup(wallet);
+                                        }
+                                    },
+                                    Icon { glyph: Glyph::Trash }
+                                    "Burn and close…"
+                                }
+                            }
                         }
                     }
                 }

@@ -38,6 +38,8 @@ pub enum Glyph {
     Alert,
     X,
     More,
+    /// Three lines: a menu of a pane's less used actions.
+    Menu,
     /// A camera with arrows round it: the other camera.
     SwitchCamera,
     /// A viewfinder's corners round a point: autofocus.
@@ -186,6 +188,7 @@ impl Glyph {
             Glyph::Alert => &["M12 4 2.5 20h19L12 4Z", "M12 10v4", "M12 17h.01"],
             Glyph::X => &["M6 6l12 12", "M18 6 6 18"],
             Glyph::More => &["M5 12h.01", "M12 12h.01", "M19 12h.01"],
+            Glyph::Menu => &["M4 7h16", "M4 12h16", "M4 17h16"],
             Glyph::SwitchCamera => &[
                 "M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z",
                 "M9 13a3 3 0 0 1 5.3-1.9",
