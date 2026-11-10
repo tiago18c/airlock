@@ -9,8 +9,7 @@ use crate::ui::{format_sol, AddressHeader, CopyButton, Glyph, HelpTip, Icon, Pan
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use wallet_core::{
-    Category, DerivedAccount, NewSigner, OfflinePath, WalletClass, WalletKind, DERIVE_BATCH,
-    SOLANA_PATH_TEMPLATE,
+    Category, DerivedAccount, NewSigner, WalletClass, DERIVE_BATCH, SOLANA_PATH_TEMPLATE,
 };
 use zeroize::Zeroize;
 

@@ -224,12 +224,12 @@ sequenceDiagram
 
 #### Two paths that do not expire
 
-An offline wallet's Settings, the wheel on its card, offers two paths, side by side, and either can be its default:
+An offline wallet's Settings, the wheel on its card, offers two paths, side by side:
 
 - **Programmatic signer.** **Set up** adds the signer whose authority is this key. It is a wallet of its own, at another address (a PDA). What targets that address is rebuilt into an authorization the key signs, ordered by the signer's executor nonce. See [Programmatic signer](#programmatic-signer).
 - **Durable nonce.** **Create nonce account** opens a transaction that creates a system nonce account at an address derived from the fee payer (`airlock-dn:` and the first 16 characters of the key), paid by the fee payer, with the offline key as its authority, so only that key can advance it. A transaction from the key's own address is then compiled on it: `AdvanceNonce` first, the nonce's value as its lifetime, no expiry. This path is deprecated once the programmatic signer or Vector is on mainnet.
 
-The first path set up becomes the default, and **Make default** switches, once Save is pressed. The wallet the app acts as is picked in the top bar, where the key and its programmatic signer are separate entries, and a pick there selects exactly that entry: the default no longer changes it, since the row's **Use** button, which followed the default, is gone. A default whose target is gone (the signer was removed) is cleared, and the key acts as itself on a fresh blockhash.
+Neither is a default. The wallet the app acts as is picked in the top bar, where the key and its programmatic signer are separate entries: pick the signer to act through it, or the key to act as itself, on its durable nonce when it has one and on a fresh blockhash when it has not. A wallet's record still carries the default path an earlier version set (`default_path`, `wallet_core::acting_wallet`), which only steered the **Use** button a row had; nothing reads it now.
 
 The nonce holds one value at a time. Two transactions made on it are both valid until one lands; the other is then void. Nothing tracks a transaction that was prepared but not sent, so the wallet's Settings and the Sign screen say this instead.
 
@@ -257,7 +257,7 @@ Hardware wallets are offered while **Pre-release hardware wallets** is on in Set
 
 The signature is checked against the key and the message before it goes in. A rejection, a locked device, another app holding it or a version below the minimum each stop the press with their own sentence, and nothing the device did not sign is changed. Sign reads **Sign on Ledger** (or Trezor, or Keystone) when only the device signs. A Keystone wallet with a durable nonce takes a site's request as an offline wallet does.
 
-**An authority.** A key on a device can be a programmatic signer's authority. The Authorization press asks the device to sign `relay::authorization_to_sign`, a v1 message with no blockhash, blind, and the relay transaction is signed on the next press. A hardware wallet's Settings has **Set up** for its programmatic signer, a durable nonce, and the default path.
+**An authority.** A key on a device can be a programmatic signer's authority. The Authorization press asks the device to sign `relay::authorization_to_sign`, a v1 message with no blockhash, blind, and the relay transaction is signed on the next press. A hardware wallet's Settings has **Set up** for its programmatic signer, and a durable nonce.
 
 **Messages.** A Ledger or Trezor signs a site's message inside an offchain message, version 1, that names the account (`site_message::device_message`), and the site gets that whole message back as `signedMessage`. They sign only text, and cannot sign in: a site would read the header as the sign-in's text, so the bridge refuses a sign-in for them and the sign-in modal does not list them. A Keystone signs a message, and a sign-in, as a hot key does: the bytes as they are.
 

@@ -15,30 +15,9 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
     let lamports = show_balances
         .then(|| pubkey.and_then(|pk| (session.book)().get(&pk).and_then(|e| e.lamports)))
         .flatten();
-    let durable_nonce = wallet.durable_nonce;
     let on_device = wallet.on_device;
-    let default_path = wallet.default_path;
     let dialogs_of = wallet.clone();
     let mut confirm_open = use_signal(|| false);
-
-    let wallets = (session.wallets)().summaries.clone();
-    // The programmatic signer this key is the authority of.
-    let signer = wallets
-        .iter()
-        .find(|other| {
-            let authority = other
-                .contract
-                .as_ref()
-                .and_then(WalletKind::signer_authority);
-            authority.is_some() && authority == pubkey
-        })
-        .is_some();
-    // A default whose target is gone is not taken.
-    let lost_default = match default_path {
-        Some(OfflinePath::Programmatic) => !signer,
-        Some(OfflinePath::DurableNonce) => durable_nonce.is_none(),
-        None => false,
-    };
 
     rsx! {
         li { class: "wallet-row",
@@ -86,11 +65,6 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                     }
                 }
             }
-            if !can_sign && lost_default {
-                p { class: "warn",
-                    "The default path is no longer set up, so this key acts as itself, on a fresh blockhash."
-                }
-            }
             if !tags.is_empty() {
                 div { class: "chip-row",
                     for tag in tags {
@@ -109,27 +83,6 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                 "This removes the wallet from this device. No key is stored here, so none is lost. Its address stays in the address book.".to_string()
             },
             on_confirm: move |_| session.remove_wallet(id).is_ok(),
-        }
-    }
-}
-
-/// Marks the path an offline wallet takes by default, or offers to make it so.
-#[component]
-pub(in crate::ui) fn PathDefault(
-    path: OfflinePath,
-    chosen: Option<OfflinePath>,
-    on_choose: EventHandler<OfflinePath>,
-) -> Element {
-    if chosen == Some(path) {
-        return rsx! {
-            span { class: "chip ok", title: "What this key acts through when it is chosen", "Default" }
-        };
-    }
-    rsx! {
-        button { class: "sm ghost",
-            title: "Act through this path when this key is chosen",
-            onclick: move |_| on_choose.call(path),
-            "Make default"
         }
     }
 }

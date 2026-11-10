@@ -1,7 +1,7 @@
 //! The two dialogs of a wallet that is not a hot key.
 //!
 //! Settings holds what can be changed about it (who pays its fees; an
-//! offline key's programmatic signer, durable nonce and default path; a
+//! offline key's programmatic signer and durable nonce; a
 //! multisig's acting member and who approves together with it) and writes
 //! nothing until Save. What starts a transaction or adds a wallet (Set up,
 //! Create nonce account, a Vector wallet's steps) acts at once.
@@ -12,10 +12,9 @@
 
 use super::*;
 use crate::actions::wallets::{together_candidates, together_choice, TogetherNote};
-use crate::ui::wallets::PathDefault;
 use crate::ui::{Glyph, Icon};
 use wallet_core::vector::SchemeId;
-use wallet_core::{AddressKind, OfflinePath};
+use wallet_core::AddressKind;
 
 /// A Vector wallet's scheme, its key as shown, where the key that signs for
 /// it is, and whether that is with the wallet on this device.
@@ -100,35 +99,28 @@ pub(in crate::ui) fn WalletSettingsDialog(
         ),
         _ => (None, Vec::new(), 0, Vec::new(), None),
     };
-    let stored_path = wallet.default_path;
 
     // What Save would write.
     let mut payer = use_signal(|| stored_payer);
     let mut member = use_signal(|| stored_member);
     let mut with = use_signal(|| stored_with.clone());
     let mut approval_nonce = use_signal(|| stored_nonce);
-    let mut path = use_signal(|| stored_path);
     let mut error = use_signal(|| None::<String>);
     let mut busy = use_signal(|| false);
     let dirty = payer() != stored_payer
         || member() != stored_member
         || with() != stored_with
-        || approval_nonce() != stored_nonce
-        || path() != stored_path;
+        || approval_nonce() != stored_nonce;
 
     let save = move |_| {
         error.set(None);
-        let (payer, member, with, nonce, path) =
-            (payer(), member(), with(), approval_nonce(), path());
+        let (payer, member, with, nonce) = (payer(), member(), with(), approval_nonce());
         session.when_unlocked(CHANGE_WALLET, move || {
             let saved = session.update_wallet(id, |kind| {
                 kind.set_fee_payer(payer);
                 kind.set_member_wallet(member);
                 kind.set_approves_with(with);
                 kind.set_approval_nonce(nonce);
-                if !is_contract {
-                    kind.set_default_path(path);
-                }
             });
             match saved {
                 Ok(()) => on_close.call(()),
@@ -159,9 +151,6 @@ pub(in crate::ui) fn WalletSettingsDialog(
             "Unlock the vault to add the programmatic signer.",
             move || match session.add_contract_wallet(signer) {
                 Ok(()) => {
-                    let _ = session.update_wallet(id, |kind| {
-                        kind.default_path_unless_chosen(OfflinePath::Programmatic)
-                    });
                     crate::actions::network::start_refresh(session);
                     on_close.call(());
                 }
@@ -281,11 +270,6 @@ pub(in crate::ui) fn WalletSettingsDialog(
                                             } else {
                                                 span { "{signer.label}" }
                                             }
-                                            PathDefault {
-                                                path: OfflinePath::Programmatic,
-                                                chosen: path(),
-                                                on_choose: move |chosen| path.set(Some(chosen)),
-                                            }
                                         },
                                         None => rsx! {
                                             button { class: "sm",
@@ -303,11 +287,6 @@ pub(in crate::ui) fn WalletSettingsDialog(
                                     match durable_nonce {
                                         Some(account) => rsx! {
                                             Address { pubkey: account }
-                                            PathDefault {
-                                                path: OfflinePath::DurableNonce,
-                                                chosen: path(),
-                                                on_choose: move |chosen| path.set(Some(chosen)),
-                                            }
                                         },
                                         None => rsx! {
                                             button { class: "sm",

@@ -565,16 +565,6 @@ impl Session {
         }
     }
 
-    /// The wallet that acts when `id` is chosen: an offline wallet whose
-    /// default path is its programmatic signer hands over to that signer.
-    pub fn acting_wallet(&self, id: WalletId) -> WalletId {
-        self.track_wallets();
-        self.core().with_wallets(|data| match data {
-            Some(data) => wallet_core::acting_wallet(&data.wallets, id),
-            None => id,
-        })
-    }
-
     /// The offline key and its durable nonce, when `tx` waits on that one
     /// key alone: every other signer is a key of this device, the key's
     /// wallet has a durable nonce, and nothing has signed yet. Such a
