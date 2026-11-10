@@ -6,8 +6,16 @@ use dioxus::prelude::*;
 /// A menu button that opens `children`, each a `button.pane-menu-item`
 /// with `role: "menuitem"`, in a list under it. A press on an item, outside
 /// the list, or Escape closes it.
+///
+/// `glyph` is the button's icon, three lines unless given. `small` makes it
+/// a small button, for a menu at the end of a row's buttons.
 #[component]
-pub fn PaneMenu(label: &'static str, children: Element) -> Element {
+pub fn PaneMenu(
+    label: &'static str,
+    #[props(default = Glyph::Menu)] glyph: Glyph,
+    #[props(default)] small: bool,
+    children: Element,
+) -> Element {
     let mut open = use_signal(|| false);
     rsx! {
         div { class: "pane-menu",
@@ -16,13 +24,13 @@ pub fn PaneMenu(label: &'static str, children: Element) -> Element {
                     open.set(false);
                 }
             },
-            button { class: "icon-btn",
+            button { class: if small { "icon-btn sm" } else { "icon-btn" },
                 title: label,
                 aria_label: label,
                 aria_haspopup: "menu",
                 aria_expanded: "{open()}",
                 onclick: move |_| open.toggle(),
-                Icon { glyph: Glyph::Menu }
+                Icon { glyph }
             }
             if open() {
                 div {

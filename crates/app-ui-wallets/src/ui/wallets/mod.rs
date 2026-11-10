@@ -1,18 +1,15 @@
 use super::lock::VaultUnlock;
 use crate::state::forms::{AddWalletMode, SendOpen, WalletForm};
-use crate::state::session::{Session, WalletSummary};
+use crate::state::session::{Session, Tab, WalletSummary};
 use crate::ui::wallets::kinds::{
-    payers, ContractWalletRow, CurrentChip, ExportKeyButton, ExportKeysModal, HardwareForm,
-    KeyImportForm, OfflineForm, ProgrammaticForm, SquadsForm, VectorForm,
+    ContractWalletRow, CurrentChip, ExportKeysModal, HardwareForm, KeyImportForm, OfflineForm,
+    ProgrammaticForm, SquadsForm, VectorForm, WalletDialogButtons, WalletRowMenu,
 };
-use crate::ui::{
-    format_sol, Address, AddressHeader, CopyButton, Glyph, HelpTip, Icon, PaneMenu, WalletPicker,
-};
+use crate::ui::{format_sol, AddressHeader, CopyButton, Glyph, HelpTip, Icon, PaneMenu};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use wallet_core::{
-    Category, DerivedAccount, NewSigner, OfflinePath, WalletClass, WalletKind, WalletRecord,
-    DERIVE_BATCH, SOLANA_PATH_TEMPLATE,
+    Category, DerivedAccount, NewSigner, WalletClass, DERIVE_BATCH, SOLANA_PATH_TEMPLATE,
 };
 use zeroize::Zeroize;
 
@@ -73,13 +70,6 @@ pub fn WalletsPanel() -> Element {
                         h2 { "Wallets" }
                     }
                     div { class: "btn-row",
-                        if !all.is_empty() {
-                            button {
-                                title: "Show the public keys of wallets here, for another device to add them",
-                                onclick: move |_| export_open.set(true),
-                                "Export keys"
-                            }
-                        }
                         button { class: "primary",
                             onclick: move |_| {
                                 session.when_unlocked("Unlock the vault to add a wallet to it.", move || modal_open.set(true));
@@ -87,25 +77,34 @@ pub fn WalletsPanel() -> Element {
                             Icon { glyph: Glyph::Plus }
                             "Add wallet"
                         }
-                        if online && !all.is_empty() {
+                        if !all.is_empty() {
                             PaneMenu { label: "More wallet actions",
                                 button { class: "pane-menu-item",
                                     role: "menuitem",
-                                    title: "Move everything a wallet holds to another address: to rotate a key, or to move to a programmatic signer, a Vector account or a multisig",
-                                    onclick: move |_| session.open_migrate(current),
-                                    Icon { glyph: Glyph::Send }
-                                    "Migrate wallet"
+                                    title: "Show the public keys of wallets here, for another device to add them",
+                                    onclick: move |_| export_open.set(true),
+                                    Icon { glyph: Glyph::Qr }
+                                    "Export keys"
                                 }
-                                button { class: "pane-menu-item",
-                                    role: "menuitem",
-                                    title: "Burn and close a wallet's token accounts, to get their rent back",
-                                    onclick: move |_| {
-                                        if let Some(wallet) = first_wallet {
-                                            session.open_cleanup(wallet);
-                                        }
-                                    },
-                                    Icon { glyph: Glyph::Trash }
-                                    "Manage tokens"
+                                if online {
+                                    button { class: "pane-menu-item",
+                                        role: "menuitem",
+                                        title: "Move everything a wallet holds to another address: to rotate a key, or to move to a programmatic signer, a Vector account or a multisig",
+                                        onclick: move |_| session.open_migrate(current),
+                                        Icon { glyph: Glyph::Send }
+                                        "Migrate wallet"
+                                    }
+                                    button { class: "pane-menu-item",
+                                        role: "menuitem",
+                                        title: "Burn and close a wallet's token accounts, to get their rent back",
+                                        onclick: move |_| {
+                                            if let Some(wallet) = first_wallet {
+                                                session.open_cleanup(wallet);
+                                            }
+                                        },
+                                        Icon { glyph: Glyph::Trash }
+                                        "Manage tokens"
+                                    }
                                 }
                             }
                         }
@@ -129,7 +128,7 @@ pub fn WalletsPanel() -> Element {
                 }
 
                 if !hot.is_empty() {
-                    h3 { class: "group-title",
+                    h3 { class: "group-title wallets-group",
                         "Hot wallets"
                         HelpTip { text: "A hot wallet's private key or seed phrase is stored in this device's vault, so the app can sign with it here." }
                     }
@@ -141,12 +140,12 @@ pub fn WalletsPanel() -> Element {
                 }
 
                 if !phone || !offline.is_empty() {
-                h3 { class: "group-title",
+                h3 { class: "group-title wallets-group",
                     "Offline wallets"
                     HelpTip { text: "An offline wallet is the address of a key kept on another device. This device prepares its transactions and the other one signs them, from a QR code or pasted text. A hot wallet can pay its fees, and a programmatic signer lets it act without signing a transaction itself." }
                 }
                 if offline.is_empty() {
-                    p { class: "note",
+                    p { class: "wallets-empty",
                         "None yet. Add the address of a key kept on another device to prepare its transactions here."
                     }
                 }
@@ -158,15 +157,24 @@ pub fn WalletsPanel() -> Element {
                 }
 
                 if !phone || !hardware.is_empty() {
-                h3 { class: "group-title",
+                h3 { class: "group-title wallets-group",
                     "Hardware wallets"
                     HelpTip { text: "A hardware wallet keeps its key on a separate signing device that is plugged in or paired when it is time to sign." }
                 }
                 if hardware.is_empty() {
-                    p { class: "note",
-                        if session.hardware_offered().is_empty() {
-                            "None yet. A Ledger is offered once Pre-release hardware wallets is on in Settings, until Ledger releases the Solana app 1.18."
-                        } else {
+                    if session.hardware_offered().is_empty() {
+                        div { class: "wallets-empty",
+                            p {
+                                "No hardware wallets yet. Ledger support is pre-release until Ledger ships the Solana app 1.18."
+                            }
+                            button { class: "sm",
+                                title: "Go to Settings and turn on Pre-release hardware wallets, to add one",
+                                onclick: move |_| session.goto(Tab::Settings),
+                                "Turn on in Settings"
+                            }
+                        }
+                    } else {
+                        p { class: "wallets-empty",
                             "None yet. Add one with Add wallet, Hardware or Seed Vault."
                         }
                     }
@@ -179,12 +187,12 @@ pub fn WalletsPanel() -> Element {
                 }
 
                 if !phone || !contracts.is_empty() {
-                h3 { class: "group-title",
+                h3 { class: "group-title wallets-group",
                     "Smart contract wallets"
                     HelpTip { text: "A smart contract wallet has no key of its own. A program on chain decides who may act: a programmatic signer acts when its authority key signs a message, and a Squads multisig acts when enough of its members approve." }
                 }
                 if contracts.is_empty() {
-                    p { class: "note",
+                    p { class: "wallets-empty",
                         "None yet. Add a programmatic signer to sign offline and let a hot wallet pay, or a Squads multisig to share control."
                     }
                 }
@@ -205,8 +213,9 @@ pub fn WalletsPanel() -> Element {
     }
 }
 
-/// A wallet's SOL balance, with the small button that sends from it. Shown
-/// only where balances are: the online build.
+/// A wallet's SOL balance and the small button that sends from it. Shown only
+/// where balances are: the online build. What a balance is worth belongs to
+/// Portfolio, not here.
 #[component]
 pub(in crate::ui) fn WalletBalance(
     lamports: Option<u64>,
@@ -216,13 +225,13 @@ pub(in crate::ui) fn WalletBalance(
     rsx! {
         div { class: "wallet-balance",
             if let Some(lamports) = lamports {
-                p { class: "balance", "{format_sol(lamports)}" }
+                span { class: "balance", "{format_sol(lamports)}" }
             }
-            button { class: "ghost icon-btn sm",
+            button { class: "ghost sm wallet-send",
                 title: send_title,
-                aria_label: "Send SOL",
                 onclick: move |_| on_send.call(()),
                 Icon { glyph: Glyph::Send }
+                "Send"
             }
         }
     }

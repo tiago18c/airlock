@@ -2,9 +2,10 @@
 
 pub const LAMPORTS_PER_SOL: u64 = 1_000_000_000;
 
-/// `1500000000` as "1.5 SOL". Trailing zeros are dropped.
+/// `1500000000` as "1.5 SOL", and `1250000000000` as "1,250 SOL". Trailing
+/// zeros are dropped, and the whole part has thousands separators.
 pub fn format_sol(lamports: u64) -> String {
-    let whole = lamports / LAMPORTS_PER_SOL;
+    let whole = group_thousands(&(lamports / LAMPORTS_PER_SOL).to_string());
     let frac = lamports % LAMPORTS_PER_SOL;
     if frac == 0 {
         format!("{whole} SOL")
@@ -13,6 +14,47 @@ pub fn format_sol(lamports: u64) -> String {
         let frac = frac.trim_end_matches('0');
         format!("{whole}.{frac} SOL")
     }
+}
+
+/// `text` with a comma between each group of three digits of the number it
+/// starts with: "1250" as "1,250", "200000 CUs" as "200,000 CUs", "1250.5
+/// USDC" as "1,250.5 USDC". The fraction is left as it is. Text that does not
+/// start with a number standing on its own, such as "2026-11-10", "0x1f" or
+/// "v23", comes back unchanged, and so does a number with a leading zero.
+pub fn group_thousands(text: &str) -> String {
+    let (sign, rest) = match text.strip_prefix('-') {
+        Some(rest) => ("-", rest),
+        None => ("", text),
+    };
+    let whole_len = rest.bytes().take_while(u8::is_ascii_digit).count();
+    let whole = &rest[..whole_len];
+    let after = &rest[whole_len..];
+    let fraction_len = match after.strip_prefix('.') {
+        Some(frac) => {
+            let digits = frac.bytes().take_while(u8::is_ascii_digit).count();
+            if digits == 0 {
+                return text.to_string();
+            }
+            1 + digits
+        }
+        None => 0,
+    };
+    let tail = &after[fraction_len..];
+    let stands_alone = tail.is_empty() || tail.starts_with(' ');
+    if whole_len < 4 || whole.starts_with('0') || !stands_alone {
+        return text.to_string();
+    }
+    let mut grouped = String::with_capacity(text.len() + whole_len / 3);
+    grouped.push_str(sign);
+    for (i, digit) in whole.chars().enumerate() {
+        if i > 0 && (whole_len - i) % 3 == 0 {
+            grouped.push(',');
+        }
+        grouped.push(digit);
+    }
+    grouped.push_str(&after[..fraction_len]);
+    grouped.push_str(tail);
+    grouped
 }
 
 /// A token amount in the token's own units, by its number of decimals.
@@ -81,9 +123,48 @@ mod tests {
         assert_eq!(format_sol(1_500_000_000), "1.5 SOL");
         assert_eq!(format_sol(2_000_000_000), "2 SOL");
         assert_eq!(format_sol(1), "0.000000001 SOL");
+        assert_eq!(format_sol(999 * LAMPORTS_PER_SOL), "999 SOL");
+        assert_eq!(format_sol(1_250 * LAMPORTS_PER_SOL), "1,250 SOL");
+        assert_eq!(format_sol(1_250_500_000_000), "1,250.5 SOL");
+        assert_eq!(format_sol(1_234_567 * LAMPORTS_PER_SOL), "1,234,567 SOL");
+        assert_eq!(format_sol(u64::MAX), "18,446,744,073.709551615 SOL");
         assert_eq!(format_token_amount(1_500_000, 6), "1.5");
         assert_eq!(format_token_amount(7, 0), "7");
         assert_eq!(format_token_amount(2_000_000, 6), "2");
+    }
+
+    #[test]
+    fn numbers_are_grouped_by_thousands() {
+        assert_eq!(group_thousands("1250"), "1,250");
+        assert_eq!(group_thousands("200000 CUs"), "200,000 CUs");
+        assert_eq!(
+            group_thousands("5000 micro-lamports/CU"),
+            "5,000 micro-lamports/CU"
+        );
+        assert_eq!(group_thousands("1234567.891 USDC"), "1,234,567.891 USDC");
+        assert_eq!(group_thousands("-1250000"), "-1,250,000");
+        assert_eq!(group_thousands("1000000000 (raw)"), "1,000,000,000 (raw)");
+        assert_eq!(
+            group_thousands("18446744073709551615"),
+            "18,446,744,073,709,551,615"
+        );
+        // Short numbers, fractions and text that is not a number stay as they are.
+        for same in [
+            "999",
+            "2.5 SOL",
+            "0.000006 SOL",
+            "",
+            "none",
+            "2026-11-10",
+            "1234abcd",
+            "0x1234",
+            "v23",
+            "0123",
+            "1250.",
+            "12:3456",
+        ] {
+            assert_eq!(group_thousands(same), same, "{same}");
+        }
     }
 
     #[test]
