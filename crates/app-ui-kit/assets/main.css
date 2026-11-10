@@ -3975,9 +3975,10 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
 .app.phone.locked .content { padding-top: max(var(--space-4), env(safe-area-inset-top)); }
 
 /* A phone's sheets (`PhoneSheet`): the wallet picker, the notifications and
-   More. One family: the same scrim over everything else, the dialog's
-   radius, and flush on the tab bar, whose height the shell measures into
-   --dock-h (the status line above the tabs counts). */
+   More. One family: the same scrim, the dialog's radius, a grab handle and
+   a title. A sheet from the top bar runs to the bottom of the screen, over
+   the status line and the tab bar, and keeps its last row clear of the
+   gesture bar. */
 .app.phone .phone-scrim {
   position: fixed;
   inset: 0;
@@ -3990,15 +3991,15 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
   top: auto;
   left: 0;
   right: 0;
-  bottom: var(--dock-h, 0px);
+  bottom: 0;
   z-index: calc(var(--z-popover) + 1);
   display: grid;
   align-content: start;
   gap: var(--space-1);
   width: auto;
-  max-height: calc(100vh - var(--dock-h, 0px) - var(--topbar-h) - env(safe-area-inset-top));
+  max-height: calc(100vh - var(--topbar-h) - env(safe-area-inset-top));
   overflow: auto;
-  padding: var(--space-3);
+  padding: 0 var(--space-3) max(var(--space-3), env(safe-area-inset-bottom));
   border: 1px solid var(--border);
   border-width: 1px 0 0;
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
@@ -4006,12 +4007,30 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
   box-shadow: var(--shadow-lg);
   animation: rise var(--slow) var(--ease);
 }
-/* Locked, there is no tab bar: the sheet keeps clear of the gesture bar. */
-.app.phone.locked .phone-sheet { padding-bottom: max(var(--space-3), env(safe-area-inset-bottom)); }
+/* More belongs to the tab bar, so it stays docked on it: the shell measures
+   the bar into --dock-h (the status line above the tabs counts). The bar
+   stays lit and live while it is open: only the pane above dims, and a tap
+   on another tab goes straight to it. */
+.app.phone .sidebar .phone-scrim { bottom: var(--dock-h, 0px); }
+.app.phone .sidebar .phone-sheet {
+  bottom: var(--dock-h, 0px);
+  max-height: calc(100vh - var(--dock-h, 0px) - var(--topbar-h) - env(safe-area-inset-top));
+  padding-bottom: var(--space-3);
+}
 /* The sticky top bar is a layer under the tab bar's, so a sheet it opens
-   lifts it: its scrim then covers the tab bar too, as More's does, and a tap
-   there closes the sheet. */
+   lifts it: its scrim and sheet then cover the tab bar, and a tap on the
+   scrim there closes the sheet. */
 .app.phone .topbar:has(.phone-scrim) { z-index: var(--z-popover); }
+/* Only a cue that the sheet can be put away; it takes no taps. */
+.app.phone .phone-sheet-handle {
+  justify-self: center;
+  width: var(--space-10);
+  height: var(--space-1);
+  margin: var(--space-2) 0 var(--space-1);
+  border-radius: var(--radius-full);
+  background: var(--border-strong);
+  pointer-events: none;
+}
 .phone-sheet-title {
   margin: 0;
   padding: var(--space-1) var(--space-3) var(--space-2);
@@ -4019,19 +4038,36 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
   font-weight: var(--weight-semibold);
 }
 /* The notifications keep their own spacing; the list scrolls, not the sheet. */
-.app.phone .phone-sheet.notice-panel { gap: var(--space-3); padding: var(--space-4); overflow: hidden; }
+.app.phone .phone-sheet.notice-panel {
+  /* The handle takes a row before the head, the filters and the list. */
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: 0 var(--space-4) max(var(--space-4), env(safe-area-inset-bottom));
+  overflow: hidden;
+}
+.app.phone .phone-sheet.notice-panel .phone-sheet-handle { margin-bottom: 0; }
+/* Its title lines up with the filters under it. */
+.app.phone .notice-panel-head .phone-sheet-title { padding-inline: 0; }
 .app.phone .phone-sheet.notice-panel .notice-filters { flex-wrap: nowrap; overflow-x: auto; }
 
 /* The wallet picker's sheet: a row per wallet, picked by its button, with
-   its copy button beside it. The current one is marked as More marks its
-   section, and with the chip its card has. */
+   its copy button beside it behind a divider, a full target of its own so a
+   near miss does not switch wallet. The current one is marked as More marks
+   its section, and with the chip its card has. */
 .wallet-sheet-list { display: grid; gap: var(--space-1); }
 .wallet-sheet-row {
   display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding-right: var(--space-1);
+  align-items: stretch;
   border-radius: var(--radius-lg);
+}
+.wallet-sheet-row > .wallet-sheet-copy,
+.wallet-sheet-row > .wallet-sheet-copy:hover {
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+  min-height: var(--control-lg);
+  border-width: 0 0 0 1px;
+  border-color: var(--border);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
 }
 .wallet-sheet-row.on { background: var(--brand-soft); }
 .wallet-sheet-pick {
@@ -4056,18 +4092,40 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
 .wallet-switch-btn .addr-short { flex-shrink: 0; }
 .wallet-sheet-pick .chip { margin-left: auto; flex-shrink: 0; }
 
-/* The picker's button in the top bar takes the room the bar has left, and
-   shows the address only where it fits beside the name: not beside the
-   Locked button, which takes its room. */
+/* The picker in the top bar takes the room the bar has left: one bordered
+   control in two parts, the wide one opening the sheet and the end one
+   copying the current wallet's address. Each part is a full finger wide. */
 .app.phone .topbar-tools { flex: 1; }
-.app.phone .topbar-tools > .wallet-switch-btn {
+.app.phone .wallet-switch-group {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+}
+.app.phone .wallet-switch-group > .wallet-switch-btn {
   flex: 1 1 0;
   width: auto;
-  min-width: 0;
+  min-width: var(--control-lg);
+  /* Room for the arrow and no more: the name and address need the rest. */
+  padding-right: var(--space-6);
   container-type: inline-size;
 }
-@container (max-width: 13rem) {
-  .wallet-switch-btn .addr-short { display: none; }
+.app.phone .wallet-switch-group > .wallet-switch-btn:not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+/* Its left border is the line between the two parts. */
+.app.phone .wallet-switch-group > .wallet-switch-copy {
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+  margin-left: -1px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+/* Beside the Locked button the name and address have less room: the
+   address loses two more characters at each end rather than going. The
+   query measures the room inside the button's padding. */
+@container (max-width: 10rem) {
+  .app.phone .wallet-switch-btn .addr-short-more { display: none; }
 }
 
 /* The lock, on a phone: unlocked is the usual state, a quiet icon like the

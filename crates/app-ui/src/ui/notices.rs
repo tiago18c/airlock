@@ -144,7 +144,9 @@ fn NoticesBody() -> Element {
 
     rsx! {
         div { class: "notice-panel-head",
-            h2 { "Notifications" }
+            // Its head holds buttons too, so the sheet's heading is its own,
+            // in the style of the other sheets' titles.
+            h2 { class: if phone { "phone-sheet-title" }, "Notifications" }
             if show_mark || show_clear {
                 div { class: "btn-row",
                     if show_mark {

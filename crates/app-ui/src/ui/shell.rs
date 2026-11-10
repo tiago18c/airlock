@@ -85,9 +85,9 @@ pub fn AppShell(
     if phone {
         class.push_str(" phone");
     }
-    // A phone's sheets sit flush on its tab bar, whose height changes with
-    // the status line and the system's gesture bar, so the bar is measured.
-    // Locked, there is no tab bar and the sheets rest on the bottom edge.
+    // A phone's More sheet sits flush on its tab bar, whose height changes
+    // with the status line and the system's gesture bar, so the bar is
+    // measured. Locked, there is no tab bar.
     let dock = use_signal(|| 0.0_f64);
     let style = if phone && !gated {
         format!("--dock-h: {}px", dock())
@@ -205,8 +205,8 @@ pub fn Sidebar(
     tabs: &'static [Tab],
     more: Option<&'static [Tab]>,
     status: Option<Element>,
-    /// Given on a phone: kept at the tab bar's height, for the sheets that
-    /// sit on it.
+    /// Given on a phone: kept at the tab bar's height, for the More sheet
+    /// that sits on it.
     #[props(default)]
     dock: Option<Signal<f64>>,
 ) -> Element {
@@ -231,7 +231,10 @@ pub fn Sidebar(
                         let shown = if phone { short_label(tab) } else { label };
                         rsx! {
                             button {
-                                class: if current == tab { "nav-item on" } else { "nav-item" },
+                                // While More is open it is the one selected:
+                                // two lit tabs would leave which one the
+                                // sheet belongs to unclear.
+                                class: if current == tab && !more_open() { "nav-item on" } else { "nav-item" },
                                 key: "{label}",
                                 onclick: move |_| {
                                     more_open.set(false);
@@ -255,6 +258,7 @@ pub fn Sidebar(
                         PhoneSheet {
                             label: "More",
                             role: "menu",
+                            title: "More",
                             class: "more-sheet",
                             on_close: move |_| more_open.set(false),
                             for &tab in more {

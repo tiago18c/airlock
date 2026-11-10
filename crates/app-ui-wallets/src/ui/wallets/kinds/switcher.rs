@@ -48,8 +48,9 @@ pub fn WalletSwitcher() -> Element {
 
 /// On a phone, a `<select>` opens the system's own list, white in a dark app
 /// and with names alone. A button opens the app's sheet instead, where each
-/// wallet shows its kind and address and copies it, so the top bar needs no
-/// copy button of its own.
+/// wallet shows its kind and address and copies it. The current wallet's
+/// address is the one copied most, so the button's end copies it without
+/// opening the sheet: one bordered control in two parts.
 #[component]
 fn PhoneWalletSwitcher(wallets: Vec<WalletSummary>, selected: Option<WalletId>) -> Element {
     let session = use_context::<Session>();
@@ -58,26 +59,36 @@ fn PhoneWalletSwitcher(wallets: Vec<WalletSummary>, selected: Option<WalletId>) 
         .iter()
         .find(|wallet| Some(wallet.id) == selected)
         .cloned();
+    let current_address = current.as_ref().and_then(|wallet| wallet.address);
     rsx! {
-        button {
-            class: "picker-button sm wallet-switch wallet-switch-btn",
-            r#type: "button",
-            title: "The wallet the app is acting as",
-            "aria-haspopup": "dialog",
-            "aria-expanded": "{open()}",
-            onclick: move |_| open.toggle(),
-            span { class: "sr-only", "Current wallet: " }
-            match current {
-                Some(wallet) => rsx! { WalletLine { wallet } },
-                None => rsx! { span { class: "picker-none", "Choose a wallet" } },
+        div { class: "wallet-switch-group",
+            button {
+                class: "picker-button sm wallet-switch wallet-switch-btn",
+                r#type: "button",
+                title: "The wallet the app is acting as",
+                "aria-haspopup": "dialog",
+                "aria-expanded": "{open()}",
+                onclick: move |_| open.toggle(),
+                span { class: "sr-only", "Current wallet: " }
+                match current {
+                    Some(wallet) => rsx! { WalletLine { wallet, shrinks: true } },
+                    None => rsx! { span { class: "picker-none", "Choose a wallet" } },
+                }
+            }
+            if let Some(address) = current_address {
+                CopyButton {
+                    text: address.to_string(),
+                    label: "Copy wallet address",
+                    class: "sm wallet-switch-copy",
+                }
             }
         }
         if open() {
             PhoneSheet {
                 label: "Wallets",
+                title: "Act as",
                 class: "wallet-sheet",
                 on_close: move |_| open.set(false),
-                h2 { class: "phone-sheet-title", "Act as" }
                 div { class: "wallet-sheet-list",
                     for wallet in wallets {
                         div {
@@ -100,9 +111,15 @@ fn PhoneWalletSwitcher(wallets: Vec<WalletSummary>, selected: Option<WalletId>) 
                                 }
                             }
                             // Beside the row's button, not in it: a button
-                            // inside a button is not a button to a screen reader.
+                            // inside a button is not a button to a screen
+                            // reader. A target of its own behind a divider,
+                            // so a near miss does not switch wallet.
                             if let Some(address) = wallet.address {
-                                CopyButton { text: address.to_string(), label: "Copy wallet address" }
+                                CopyButton {
+                                    text: address.to_string(),
+                                    label: "Copy wallet address",
+                                    class: "ghost wallet-sheet-copy",
+                                }
                             }
                         }
                     }
@@ -114,11 +131,12 @@ fn PhoneWalletSwitcher(wallets: Vec<WalletSummary>, selected: Option<WalletId>) 
 
 /// A wallet as one line: the icon its card on the Wallets pane has, its name,
 /// and its address shortened in the middle. A wallet with no address yet,
-/// such as a hardware wallet, shows its icon and name.
+/// such as a hardware wallet, shows its icon and name. `shrinks`: where room
+/// is short, the address is shortened further rather than left out.
 #[component]
-fn WalletLine(wallet: WalletSummary) -> Element {
+fn WalletLine(wallet: WalletSummary, #[props(default)] shrinks: bool) -> Element {
     match wallet.address {
-        Some(pubkey) => rsx! { AddressRow { pubkey, no_copy: true, no_card: true } },
+        Some(pubkey) => rsx! { AddressRow { pubkey, no_copy: true, no_card: true, shrinks } },
         None => rsx! {
             span { class: "addr-row",
                 span { class: "addr-row-main",
