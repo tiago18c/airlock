@@ -50,6 +50,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - A token whose mint claims more than 19 decimals now shows its amount correctly. Before, the amount was wrong, and a mint with 64 or more decimals could stop the app.
 - Auto-lock now counts the time the computer was asleep. Before, a laptop closed partway through the timeout woke still unlocked on Linux and macOS, with the rest of the timeout to go. A shorter timeout chosen in Settings now applies at once instead of at the next lock cycle.
 - The browser bridge keeps serving sites after a connection fails to open. Before, one failed connection stopped it until Airlock restarted.
+- In an address chip, the name, the short address and a balance change sit on one line of text, the line of the sentence the chip is in. Before, the short address sat almost two pixels higher than the name and the amount beside it.
 
 ### Security
 - On Linux and macOS, Airlock's data folder is now only readable by you: the folder is created `0700`, so other accounts on the computer cannot read the vault, settings, site grants or logs, and the files Airlock saves are `0600`. It has also moved to where the platform keeps app data: `~/.local/share/airlock` on Linux (or `$XDG_DATA_HOME/airlock`), `~/Library/Application Support/airlock` on macOS. A folder at `~/airlock` from an earlier build is moved there on first start.

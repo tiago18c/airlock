@@ -685,7 +685,10 @@ input[type="range"] { width: 100%; accent-color: var(--brand); }
 .addr {
   position: relative;
   display: inline-flex;
-  align-items: center;
+  /* The name, the short address and a balance change are text of two fonts
+     and two sizes: they share a baseline, where centring each box left the
+     address almost two pixels above the rest. */
+  align-items: baseline;
   gap: 5px;
   max-width: 100%;
   min-height: 22px;
@@ -698,9 +701,16 @@ input[type="range"] { width: 100%; accent-color: var(--brand); }
   font-weight: var(--weight-medium);
   line-height: 1.3;
   white-space: nowrap;
-  vertical-align: middle;
+  /* On the baseline of the sentence the chip is in, as its words are. */
+  vertical-align: baseline;
   cursor: default;
 }
+/* What the text lines up on: an empty line as tall as the inside of the chip
+   (its 22px less the border), which puts the baseline where text centred in
+   the chip has it. It takes no room: its margin takes back the gap. */
+.addr::before { content: "\200b"; width: 0; margin-right: -5px; line-height: 20px; }
+/* The icons have no baseline: they stay centred. */
+.addr > .cat, .addr > .addr-alert { align-self: center; }
 .addr:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .addr.warn { background: var(--warn-soft); border-color: var(--warn-line); }
 .addr-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
