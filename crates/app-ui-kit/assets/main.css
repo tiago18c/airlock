@@ -2929,9 +2929,9 @@ textarea.short { min-height: 64px; }
 .pf-share > .pf-share-main { flex: 1; min-width: 0; min-height: var(--control-sm); font-size: var(--text-md); }
 /* A holder's send button is quieter than the asset's until its line is
  * pointed at: several of them stack under one. */
-.pf-share > .pf-send { flex: none; color: var(--text-3); opacity: 0.7; }
-.pf-share > .pf-send .icon { width: 14px; height: 14px; }
-.pf-share:hover > .pf-send, .pf-share > .pf-send:focus-visible { color: var(--text); opacity: 1; }
+.pf-share > .pf-send { flex: none; color: var(--text-3); }
+.pf-share > .pf-send .icon { width: 15px; height: 15px; }
+.pf-share:hover > .pf-send, .pf-share > .pf-send:focus-visible { color: var(--text); }
 /* The wallet takes the asset's column and the holders' one: its name under
  * the asset's, its address under In, so both line up down the list. The
  * address row's own parts are laid on those two tracks. */
