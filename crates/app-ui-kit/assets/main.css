@@ -2554,40 +2554,44 @@ textarea.short { min-height: 64px; }
   color: var(--text-2);
 }
 .pf-swatch { width: 10px; height: 10px; border-radius: 3px; }
+/* Where the prices come from, then what the total leaves out. */
+.pf-source { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--space-3); }
+.pf-source > .pf-excludes { font-size: var(--text-md); color: var(--text-3); }
 
-/* Avatar tints, picked from the mint: a soft fill and a strong letter of
-   one hue, at least 7:1 in each theme. The two letters stay the label. */
+/* Avatar tints, picked from the mint: a full-strength fill, so the hue
+   reads at a glance, and a letter of the same hue at least 7:1 on it in
+   each theme. The two letters stay the label. */
 :root {
-  --pf-t0-bg: #dce9fb; --pf-t0-fg: #1b4c8c;
-  --pf-t1-bg: #fde4d7; --pf-t1-fg: #8a3510;
-  --pf-t2-bg: #d6f2e5; --pf-t2-fg: #0f5e3b;
-  --pf-t3-bg: #fbedc9; --pf-t3-fg: #6e4800;
-  --pf-t4-bg: #fbdeea; --pf-t4-fg: #872049;
-  --pf-t5-bg: #e6e2fb; --pf-t5-fg: #4031a0;
-  --pf-t6-bg: #d3eff0; --pf-t6-fg: #0c5a5e;
-  --pf-t7-bg: #e7efd0; --pf-t7-fg: #43560f;
+  --pf-t0-bg: #b3d1f7; --pf-t0-fg: #0d3366;
+  --pf-t1-bg: #f9c4a8; --pf-t1-fg: #6b2405;
+  --pf-t2-bg: #a9e3c8; --pf-t2-fg: #0a4a2e;
+  --pf-t3-bg: #f5d687; --pf-t3-fg: #553700;
+  --pf-t4-bg: #f6b9d2; --pf-t4-fg: #6b1236;
+  --pf-t5-bg: #cbc3f6; --pf-t5-fg: #2f2180;
+  --pf-t6-bg: #a6dfe1; --pf-t6-fg: #08474a;
+  --pf-t7-bg: #d2e2a3; --pf-t7-fg: #34430a;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --pf-t0-bg: #16304f; --pf-t0-fg: #a3c8f6;
-    --pf-t1-bg: #3d2214; --pf-t1-fg: #f5b696;
-    --pf-t2-bg: #11352a; --pf-t2-fg: #8adfb9;
-    --pf-t3-bg: #3a2d0d; --pf-t3-fg: #f2cb74;
-    --pf-t4-bg: #3e1929; --pf-t4-fg: #f4aacb;
-    --pf-t5-bg: #27224f; --pf-t5-fg: #c3baf8;
-    --pf-t6-bg: #0f3436; --pf-t6-fg: #86d9dc;
-    --pf-t7-bg: #29330f; --pf-t7-fg: #c1da80;
+    --pf-t0-bg: #1c4b84; --pf-t0-fg: #e3eefd;
+    --pf-t1-bg: #7a3415; --pf-t1-fg: #fde5d8;
+    --pf-t2-bg: #14563f; --pf-t2-fg: #dcf6ea;
+    --pf-t3-bg: #614707; --pf-t3-fg: #fcefcc;
+    --pf-t4-bg: #7a2649; --pf-t4-fg: #fde1ec;
+    --pf-t5-bg: #43378f; --pf-t5-fg: #e9e5fd;
+    --pf-t6-bg: #115357; --pf-t6-fg: #d9f4f5;
+    --pf-t7-bg: #42520e; --pf-t7-fg: #eef6d4;
   }
 }
 :root[data-theme="dark"] {
-  --pf-t0-bg: #16304f; --pf-t0-fg: #a3c8f6;
-  --pf-t1-bg: #3d2214; --pf-t1-fg: #f5b696;
-  --pf-t2-bg: #11352a; --pf-t2-fg: #8adfb9;
-  --pf-t3-bg: #3a2d0d; --pf-t3-fg: #f2cb74;
-  --pf-t4-bg: #3e1929; --pf-t4-fg: #f4aacb;
-  --pf-t5-bg: #27224f; --pf-t5-fg: #c3baf8;
-  --pf-t6-bg: #0f3436; --pf-t6-fg: #86d9dc;
-  --pf-t7-bg: #29330f; --pf-t7-fg: #c1da80;
+  --pf-t0-bg: #1c4b84; --pf-t0-fg: #e3eefd;
+  --pf-t1-bg: #7a3415; --pf-t1-fg: #fde5d8;
+  --pf-t2-bg: #14563f; --pf-t2-fg: #dcf6ea;
+  --pf-t3-bg: #614707; --pf-t3-fg: #fcefcc;
+  --pf-t4-bg: #7a2649; --pf-t4-fg: #fde1ec;
+  --pf-t5-bg: #43378f; --pf-t5-fg: #e9e5fd;
+  --pf-t6-bg: #115357; --pf-t6-fg: #d9f4f5;
+  --pf-t7-bg: #42520e; --pf-t7-fg: #eef6d4;
 }
 .pf-mono.pf-t0 { background: var(--pf-t0-bg); color: var(--pf-t0-fg); }
 .pf-mono.pf-t1 { background: var(--pf-t1-bg); color: var(--pf-t1-fg); }
@@ -2640,8 +2644,8 @@ textarea.short { min-height: 64px; }
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
-/* The first row of a priced group, laid out as its rows are: the row's
- * avatar and asset tracks left empty, then a send slot. */
+/* Above the first holding of the first priced group, laid out as its rows
+ * are: the row's avatar and asset tracks left empty, then a send slot. */
 .pf-cols {
   display: flex;
   align-items: center;
@@ -2661,7 +2665,9 @@ textarea.short { min-height: 64px; }
   min-width: 0;
   min-height: 22px;
 }
-.pf-title > .chip, .pf-title > .pf-verified { flex: none; }
+.pf-title > .chip, .pf-title > .pf-verified, .pf-title > .copy-btn { flex: none; }
+/* A token nothing names goes by its mint, in monospace. */
+.pf-symbol.pf-mint { font-family: var(--font-mono); }
 .pf-line-toggle {
   display: block;
   min-width: 0;
@@ -2683,8 +2689,8 @@ textarea.short { min-height: 64px; }
 /* Where the name would be: a token with none shows its mint. */
 .pf-sub { display: flex; align-items: center; gap: var(--space-1); min-width: 0; font-size: var(--text-sm); }
 .pf-sub .pf-mint { font-size: var(--text-sm); color: var(--text-2); }
-.pf-sub .copy-btn { width: 20px; min-width: 20px; height: 18px; min-height: 0; }
-.pf-sub .copy-btn .icon { width: 13px; height: 13px; }
+.pf-sub .copy-btn, .pf-title > .copy-btn { width: 20px; min-width: 20px; height: 18px; min-height: 0; }
+.pf-sub .copy-btn .icon, .pf-title > .copy-btn .icon { width: 13px; height: 13px; }
 .pf-line-toggle:hover, .pf-line-toggle:active { background: transparent; }
 .pf-line-toggle:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .pf-mint { color: var(--text); word-break: normal; }
@@ -2798,7 +2804,7 @@ textarea.short { min-height: 64px; }
   .pf-line-toggle { white-space: normal; }
 }
 @media (pointer: coarse) {
-  .pf-sub .copy-btn { width: var(--control-md); min-width: var(--control-md); height: auto; min-height: var(--control-sm); }
+  .pf-sub .copy-btn, .pf-title > .copy-btn { width: var(--control-md); min-width: var(--control-md); height: auto; min-height: var(--control-sm); }
 }
 
 /* ---------- History ---------- */

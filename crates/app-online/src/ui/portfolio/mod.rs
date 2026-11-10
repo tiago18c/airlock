@@ -9,6 +9,7 @@ use app_ui_kit::ui::{CopyButton, PaneMenu};
 use app_ui_kit::{Address, AddressRow, Glyph, Icon, Session, Tab};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
+use std::collections::BTreeMap;
 use wallet_core::portfolio::{
     build, format_amount, format_usd, format_value, prices_apply_to, Group, HeldStake, Line, Owner,
     Portfolio,
@@ -71,6 +72,7 @@ pub fn PortfolioPanel() -> Element {
     let ago = market.quoted_at.map(|at| ago(unix_now() - at));
     let locked = !session.is_unlocked();
     let can_send = owners.iter().any(|owner| !owner.watched);
+    let monograms = monograms_of(&portfolio);
 
     let refresh = move |_| {
         refresh_error.set(None);
@@ -176,26 +178,36 @@ pub fn PortfolioPanel() -> Element {
                     }
                 } else {
                     Summary { portfolio: portfolio.clone(), priced, ago }
-                    for group in portfolio.groups.iter().cloned() {
-                        GroupBlock { key: "{group.key}", group, total: portfolio.total_usd, priced }
+                    for (at, group) in portfolio.groups.iter().cloned().enumerate() {
+                        GroupBlock {
+                            key: "{group.key}",
+                            group,
+                            total: portfolio.total_usd,
+                            priced,
+                            heads: at == 0,
+                            monograms: monograms.clone(),
+                        }
                     }
                     Section {
                         title: "Not priced",
                         hint: "The Tokens API has no market for these, so they are not in the total.",
                         lines: portfolio.unpriced.clone(),
                         priced,
+                        monograms: monograms.clone(),
                     }
                     Section {
                         title: "Collectibles",
                         hint: "One-of-a-kind tokens. They are not valued.",
                         lines: portfolio.collectibles.clone(),
                         priced,
+                        monograms: monograms.clone(),
                     }
                     Section {
                         title: "Left out",
                         hint: "Flagged red in the address book, or a token the Tokens API thinks passes itself off as another. Not in the total.",
                         lines: portfolio.left_out.clone(),
                         priced,
+                        monograms: monograms.clone(),
                     }
                 }
             }
@@ -257,10 +269,11 @@ fn ago(secs: i64) -> String {
     }
 }
 
-/// The total, its change today, and what it is made of.
+/// The total, its change in 24 hours, and what it is made of.
 #[component]
 fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>) -> Element {
     let allocation = allocation_parts(&portfolio);
+    let excludes = excludes_note(portfolio.unpriced.len(), portfolio.left_out.len());
     let change = portfolio.change_24h_usd;
     let pct = change.map(|change| {
         let before = portfolio.total_usd - change;
@@ -278,12 +291,19 @@ fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>) -> Element {
                     if let (Some(change), Some(pct)) = (change, pct) {
                         span {
                             class: change_class(pct),
-                            "{signed_pct(pct)} ({signed_usd(change)}) today"
+                            "{signed_pct(pct)} ({signed_usd(change)}) in 24h"
                         }
                     }
                 }
-                if let Some(ago) = ago {
-                    p { class: "hint", "Prices from the Tokens API · {ago}" }
+                if ago.is_some() || excludes.is_some() {
+                    div { class: "pf-source",
+                        if let Some(ago) = ago {
+                            p { class: "hint", "Prices from the Tokens API · {ago}" }
+                        }
+                        if let Some(excludes) = excludes {
+                            span { class: "pf-excludes", "{excludes}" }
+                        }
+                    }
                 }
                 if !allocation.is_empty() {
                     div { class: "pf-alloc", role: "img", aria_label: "Allocation",
@@ -351,8 +371,9 @@ fn allocation_parts(portfolio: &Portfolio) -> Vec<(String, f64, String)> {
     parts
 }
 
-/// What the numbers of a row are, at the top of a group's rows, on their
-/// columns. Hidden where the columns narrow, on a phone.
+/// What the numbers of a row are, on their columns, once: above the first
+/// holding of the first priced group. Hidden where the columns narrow, on a
+/// phone.
 #[component]
 fn ColumnHeads() -> Element {
     rsx! {
@@ -373,7 +394,13 @@ fn ColumnHeads() -> Element {
 /// Related assets under one heading: SOL with staked SOL and liquid staking
 /// tokens, or the variants of one asset.
 #[component]
-fn GroupBlock(group: Group, total: f64, priced: bool) -> Element {
+fn GroupBlock(
+    group: Group,
+    total: f64,
+    priced: bool,
+    heads: bool,
+    monograms: Monograms,
+) -> Element {
     let share = if total > 0.0 {
         group.usd / total * 100.0
     } else {
@@ -392,11 +419,16 @@ fn GroupBlock(group: Group, total: f64, priced: bool) -> Element {
                 }
             }
             div { class: "pf-lines",
-                if priced {
+                if priced && heads {
                     ColumnHeads {}
                 }
                 for line in group.lines.iter().cloned() {
-                    LineRow { key: "{line.symbol}-{line.raw}", line, priced }
+                    LineRow {
+                        key: "{line.symbol}-{line.raw}",
+                        monogram: monogram_for(&monograms, &line),
+                        line,
+                        priced,
+                    }
                 }
             }
         }
@@ -406,7 +438,13 @@ fn GroupBlock(group: Group, total: f64, priced: bool) -> Element {
 /// Lines that are not in the total, folded away. Where prices are shown,
 /// they keep the columns of the priced rows, with no value in them.
 #[component]
-fn Section(title: &'static str, hint: &'static str, lines: Vec<Line>, priced: bool) -> Element {
+fn Section(
+    title: &'static str,
+    hint: &'static str,
+    lines: Vec<Line>,
+    priced: bool,
+    monograms: Monograms,
+) -> Element {
     let mut open = use_signal(|| false);
     if lines.is_empty() {
         return rsx! {};
@@ -425,7 +463,13 @@ fn Section(title: &'static str, hint: &'static str, lines: Vec<Line>, priced: bo
                 p { class: "hint", "{hint}" }
                 div { class: "pf-lines",
                     for line in lines {
-                        LineRow { key: "{line.symbol}-{line.raw}", line, priced, valued: false }
+                        LineRow {
+                            key: "{line.symbol}-{line.raw}",
+                            monogram: monogram_for(&monograms, &line),
+                            line,
+                            priced,
+                            valued: false,
+                        }
                     }
                 }
             }
@@ -437,7 +481,12 @@ fn Section(title: &'static str, hint: &'static str, lines: Vec<Line>, priced: bo
 /// holds it. `priced` lays the row out on the price columns; `valued` fills
 /// them, and is off for lines that are not in the total.
 #[component]
-fn LineRow(line: Line, priced: bool, #[props(default = true)] valued: bool) -> Element {
+fn LineRow(
+    line: Line,
+    monogram: String,
+    priced: bool,
+    #[props(default = true)] valued: bool,
+) -> Element {
     let mut open = use_signal(|| false);
     let amount = format_amount(line.raw, line.decimals, AMOUNT_DIGITS);
     let session = use_context::<Session>();
@@ -445,29 +494,25 @@ fn LineRow(line: Line, priced: bool, #[props(default = true)] valued: bool) -> E
         wallet_core::portfolio::Asset::Token(mint) => Some(mint),
         _ => None,
     };
-    // A token the Tokens API gave no symbol or name for: its mint is no
-    // name, so it is an unknown token, with the mint under it.
-    let unknown = mint
-        .is_some_and(|mint| line.name.is_none() && line.symbol == wallet_core::short_pubkey(&mint));
-    // A token with no name shows its mint where the name would be.
-    let mint_below = mint.filter(|_| line.name.is_none());
+    // A token the Tokens API gave no symbol or name for goes by its short
+    // mint, with its copy button after it, and "Unknown token" under it.
+    let unknown = is_unknown(&line);
+    // A token with a symbol but no name shows its mint where the name would be.
+    let mint_below = mint.filter(|_| line.name.is_none() && !unknown);
     let (monogram, tint) = if unknown {
         ("?".to_string(), "pf-unknown".to_string())
     } else {
-        (
-            line.symbol
-                .chars()
-                .filter(|c| c.is_alphanumeric())
-                .take(2)
-                .collect::<String>()
-                .to_uppercase(),
-            tint_class(&line.asset.price_mint()),
-        )
+        (monogram, tint_class(&line.asset.price_mint()))
     };
-    let title = if unknown {
-        "Unknown token".to_string()
+    // The tooltip: all of the mint for an unknown token.
+    let title = match (unknown, mint) {
+        (true, Some(mint)) => mint.to_string(),
+        _ => line.symbol.clone(),
+    };
+    let title_class = if unknown {
+        "pf-symbol pf-mint"
     } else {
-        line.symbol.clone()
+        "pf-symbol"
     };
     let mark = verified_mark(&line);
     // Staked SOL is moved on Stake, not sent from here.
@@ -520,7 +565,10 @@ fn LineRow(line: Line, priced: bool, #[props(default = true)] valued: bool) -> E
                                 r#type: "button",
                                 title: "{title}",
                                 aria_expanded: "{open()}",
-                                span { class: "pf-symbol", "{title}" }
+                                span { class: "{title_class}", "{line.symbol}" }
+                            }
+                            if let (true, Some(mint)) = (unknown, mint) {
+                                CopyButton { text: mint.to_string(), label: "Copy mint address" }
                             }
                             if let Some(tip) = mark {
                                 span { class: "pf-verified",
@@ -539,6 +587,8 @@ fn LineRow(line: Line, priced: bool, #[props(default = true)] valued: bool) -> E
                                 code { class: "pf-mint", title: "{mint}", "{wallet_core::short_pubkey(&mint)}" }
                                 CopyButton { text: mint.to_string(), label: "Copy mint address" }
                             }
+                        } else if unknown {
+                            span { class: "muted pf-name", "Unknown token" }
                         } else if let Some(name) = line.name.clone() {
                             span { class: "muted pf-name", "{name}" }
                         }
@@ -618,6 +668,111 @@ fn LineRow(line: Line, priced: bool, #[props(default = true)] valued: bool) -> E
             }
         }
     }
+}
+
+/// A token the Tokens API gave no symbol or name for: its symbol is its
+/// short mint, which is no name.
+fn is_unknown(line: &Line) -> bool {
+    match line.asset {
+        wallet_core::portfolio::Asset::Token(mint) => {
+            line.name.is_none() && line.symbol == wallet_core::short_pubkey(&mint)
+        }
+        _ => false,
+    }
+}
+
+/// The note beside where the prices come from, when the total leaves
+/// holdings out: the tokens with no price, and those left out.
+fn excludes_note(unpriced: usize, left_out: usize) -> Option<String> {
+    let tokens = |n: usize| if n == 1 { "token" } else { "tokens" };
+    match (unpriced, left_out) {
+        (0, 0) => None,
+        (n, 0) => Some(format!("Excludes {n} {} with no price", tokens(n))),
+        (0, n) => Some(format!("Excludes {n} {} left out", tokens(n))),
+        (n, m) => Some(format!(
+            "Excludes {n} {} with no price and {m} left out",
+            tokens(n)
+        )),
+    }
+}
+
+/// The avatar letters of each line listed, by asset.
+type Monograms = BTreeMap<wallet_core::portfolio::Asset, String>;
+
+/// The avatar letters of a line: its own, or the first two of its symbol.
+fn monogram_for(monograms: &Monograms, line: &Line) -> String {
+    monograms
+        .get(&line.asset)
+        .cloned()
+        .unwrap_or_else(|| first_two(&letters(&line.symbol)))
+}
+
+/// The letters and digits of a symbol, upper case.
+fn letters(symbol: &str) -> Vec<char> {
+    symbol
+        .chars()
+        .filter(|c| c.is_alphanumeric())
+        .flat_map(char::to_uppercase)
+        .collect()
+}
+
+fn first_two(letters: &[char]) -> String {
+    letters.iter().take(2).collect()
+}
+
+/// The avatar letters of every line the screen lists, folded or not, so
+/// that no two of them read the same where their symbols allow it.
+fn monograms_of(portfolio: &Portfolio) -> Monograms {
+    let lines: Vec<&Line> = portfolio
+        .groups
+        .iter()
+        .flat_map(|group| group.lines.iter())
+        .chain(&portfolio.unpriced)
+        .chain(&portfolio.collectibles)
+        .chain(&portfolio.left_out)
+        .filter(|line| !is_unknown(line))
+        .collect();
+    let symbols: Vec<String> = lines.iter().map(|line| line.symbol.clone()).collect();
+    lines
+        .iter()
+        .zip(monograms(&symbols))
+        .map(|(line, monogram)| (line.asset, monogram))
+        .collect()
+}
+
+/// Two letters for each symbol. The first two where no other symbol starts
+/// with the same two; otherwise the first letter and the first later one
+/// that sets the symbol apart from those it shares its first two with: one
+/// none of them has at that place (USDC and USDT: "UC" and "UT"). A symbol
+/// nothing sets apart keeps its first two.
+fn monograms(symbols: &[String]) -> Vec<String> {
+    let letters: Vec<Vec<char>> = symbols.iter().map(|symbol| letters(symbol)).collect();
+    let firsts: Vec<String> = letters.iter().map(|l| first_two(l)).collect();
+    let shared = |at: usize| firsts.iter().filter(|f| **f == firsts[at]).count() > 1;
+    // Pairs already given: the unique ones, then each one picked.
+    let mut taken: Vec<String> = (0..firsts.len())
+        .filter(|at| !shared(*at))
+        .map(|at| firsts[at].clone())
+        .collect();
+    let mut out = firsts.clone();
+    for at in (0..letters.len()).filter(|at| shared(*at)) {
+        let own = &letters[at];
+        let Some(first) = own.first() else { continue };
+        let rivals: Vec<&Vec<char>> = (0..letters.len())
+            .filter(|other| *other != at && firsts[*other] == firsts[at])
+            .map(|other| &letters[other])
+            .collect();
+        let pick = own.iter().enumerate().skip(1).find_map(|(i, c)| {
+            let pair: String = [*first, *c].iter().collect();
+            let apart = rivals.iter().all(|rival| rival.get(i) != Some(c));
+            (apart && !taken.contains(&pair)).then_some(pair)
+        });
+        if let Some(pair) = pick {
+            taken.push(pair.clone());
+            out[at] = pair;
+        }
+    }
+    out
 }
 
 /// A share of the total, "<1%" when it rounds to nothing.
@@ -800,6 +955,40 @@ mod tests {
         assert_eq!(change_class(-0.006), "delta down");
         assert_eq!(signed_usd(-0.004), "$0.00");
         assert_eq!(signed_usd(0.5), "+$0.50");
+    }
+
+    #[test]
+    fn avatar_letters_differ_where_symbols_allow() {
+        let of = |symbols: &[&str]| {
+            monograms(&symbols.iter().map(|s| s.to_string()).collect::<Vec<_>>())
+        };
+        assert_eq!(of(&["USDC", "USDT", "SOL"]), ["UC", "UT", "SO"]);
+        assert_eq!(of(&["JitoSOL", "JUP"]), ["JI", "JU"]);
+        assert_eq!(of(&["JUP", "JUPSOL"]), ["JU", "JS"]);
+        // Two of one symbol cannot be told apart.
+        assert_eq!(of(&["USDC", "USDC"]), ["US", "US"]);
+        assert_eq!(of(&["$WIF", "w"]), ["WI", "W"]);
+    }
+
+    #[test]
+    fn the_note_counts_what_the_total_leaves_out() {
+        assert_eq!(excludes_note(0, 0), None);
+        assert_eq!(
+            excludes_note(4, 0).as_deref(),
+            Some("Excludes 4 tokens with no price")
+        );
+        assert_eq!(
+            excludes_note(1, 0).as_deref(),
+            Some("Excludes 1 token with no price")
+        );
+        assert_eq!(
+            excludes_note(0, 1).as_deref(),
+            Some("Excludes 1 token left out")
+        );
+        assert_eq!(
+            excludes_note(2, 3).as_deref(),
+            Some("Excludes 2 tokens with no price and 3 left out")
+        );
     }
 
     #[test]
