@@ -186,6 +186,55 @@ pub(in crate::ui) fn AddressModal() -> Element {
     }
 }
 
+/// What an entry is called in the list: what the directory calls its
+/// address, else the label the book gives it in its group.
+pub(in crate::ui) fn entry_name(
+    described: &Described,
+    entry: &wallet_core::AddressEntry,
+) -> Option<String> {
+    described.full_label().or_else(|| {
+        let label = entry.label.trim();
+        (!label.is_empty()).then(|| label.to_string())
+    })
+}
+
+/// What an address is, as the line under its name: "Hot wallet · private
+/// key". `None` when the line would only repeat the kind the entry is listed
+/// under, whose subheading or chip already says it: "Program", "Contact".
+fn kind_line(described: &Described) -> Option<String> {
+    let kind = described.facts.iter().find_map(|fact| match fact {
+        Fact::WalletKind(kind) => Some(kind.clone()),
+        _ => None,
+    });
+    match (described.category, kind) {
+        (category, Some(kind)) => Some(format!("{} · {kind}", category.name())),
+        (
+            Category::Nonce
+            | Category::Program
+            | Category::Validator
+            | Category::Token
+            | Category::Contact,
+            None,
+        ) => None,
+        (category, None) => Some(category.name().to_string()),
+    }
+}
+
+/// The name a token's mark is drawn from: its own label, without the group
+/// a full label adds.
+fn token_mark_name(described: &Described, entry: &wallet_core::AddressEntry) -> Option<String> {
+    described
+        .label
+        .clone()
+        .or_else(|| Some(entry.label.clone()))
+        .map(|label| label.trim().to_string())
+        .filter(|label| !label.is_empty())
+}
+
+/// One entry as a row of the list: its kind, name with its tags after it,
+/// address, balance and actions, each in a column that lines up from row to
+/// row. An owner's
+/// kind line ends in a toggle for its token accounts, which open under it.
 #[component]
 pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
     let session = use_context::<Session>();
@@ -197,35 +246,129 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
     let mut error = form.error;
     let mut editing = form.editing;
     let mut editing_group = form.editing_group;
+    let holdings_open = use_signal(|| false);
     let group_id = row.group_id.clone();
     let edit_group = group_id.clone();
     let remove_group = group_id;
     let entry = row.entry;
     let pubkey = entry.pubkey;
     let kind = entry.kind;
+    let owns_tokens = matches!(kind, AddressKind::Account);
     let tags: Vec<String> = entry.tags.iter().cloned().collect();
     let tags_csv = join_tags(&entry.tags);
     let can_remove = kind != AddressKind::Program;
     let label = entry.label.clone();
+    let described = (session.directory)().describe(&pubkey);
+    let category = described.category;
+    let collides = !described.collides_with.is_empty();
+    let name = entry_name(&described, &entry);
+    let what = kind_line(&described);
+    // The kind line is drawn when it says something, or ends in the toggle
+    // of the entry's token accounts.
+    let has_holdings = owns_tokens && session.holding_summary(&pubkey).total > 0;
+    let show_kind = what.is_some() || has_holdings;
+    // A token is marked by its name on a tint of its mint, else a plain "?".
+    let token_mark = (category == Category::Token).then(|| {
+        let mint = entry.mint.unwrap_or(pubkey);
+        (mint, token_mark_name(&described, &entry))
+    });
+    let has_balance = entry.lamports.is_some();
+    let address = pubkey.to_string();
+    let token_amount = match (kind, entry.token_amount, entry.decimals) {
+        (AddressKind::TokenAccount, Some(amount), Some(decimals)) => {
+            Some(format_token_amount(amount, decimals))
+        }
+        _ => None,
+    };
+    let edit_title = match name.as_deref() {
+        Some(name) => format!("Edit {name}"),
+        None => "Edit".to_string(),
+    };
+    let remove_title = match name.as_deref() {
+        Some(name) => format!("Remove {name}"),
+        None => "Remove".to_string(),
+    };
 
     rsx! {
-        li { class: "book-row",
-            div { class: "book-head",
-                AddressHeader { pubkey: Some(pubkey),
-                    if let Some(lamports) = entry.lamports {
-                        p { class: "balance", "{format_sol(lamports)}" }
+        li { class: "ab-row",
+            match token_mark {
+                Some((mint, Some(token))) => rsx! {
+                    TokenAvatar { mint, name: token, class: "ab-badge", title: category.name() }
+                },
+                Some((_, None)) => rsx! {
+                    span { class: "ab-badge ab-token-mark", title: category.name(), "?" }
+                },
+                None => rsx! {
+                    span { class: "ab-badge {category_class(category)}", title: category.name(),
+                        Icon { glyph: category_glyph(category) }
                     }
-                    if entry.kind == AddressKind::TokenAccount {
-                        if let (Some(amount), Some(decimals)) = (entry.token_amount, entry.decimals) {
-                            p { class: "balance", "{format_token_amount(amount, decimals)}" }
+                },
+            }
+            div { class: "ab-name",
+                p { class: "ab-title",
+                    if let Some(name) = name.as_ref() {
+                        span { class: "ab-label", title: "{name}", "{name}" }
+                    } else {
+                        span { class: "ab-label unnamed", "No name" }
+                    }
+                    if collides {
+                        span { class: "addr-alert", title: "Another address has this name",
+                            Icon { glyph: Glyph::Alert }
                         }
                     }
-                    if let Some(hash) = entry.nonce_hash {
-                        p { class: "muted mono", "nonce {hash}" }
+                    if !tags.is_empty() {
+                        span { class: "ab-tags",
+                            for tag in tags {
+                                span { class: "chip ab-tag", key: "{tag}", "{tag}" }
+                            }
+                        }
                     }
                 }
-                div { class: "book-actions",
-                    button { class: "sm",
+                if show_kind {
+                    p { class: "ab-kind",
+                        if let Some(what) = what.as_ref() {
+                            "{what}"
+                        }
+                        if has_holdings {
+                            HoldingsToggle {
+                                owner: pubkey,
+                                open: holdings_open,
+                                alone: what.is_none(),
+                            }
+                        }
+                    }
+                }
+            }
+            div { class: "ab-address",
+                code { class: "mono", title: "{address}", "{address}" }
+                if let Some(hash) = entry.nonce_hash {
+                    p { class: "ab-nonce mono", title: "nonce {hash}", "nonce {hash}" }
+                }
+            }
+            div { class: "ab-copy",
+                CopyButton { text: address.clone() }
+            }
+            div { class: "ab-balance",
+                if let Some(lamports) = entry.lamports {
+                    p { class: "balance", "{format_sol(lamports)}" }
+                }
+                if let Some(amount) = token_amount.as_ref() {
+                    p { class: "balance", "{amount}" }
+                }
+                // Nothing to weigh: a dash, so the column does not read as
+                // missing data. A balance of zero still says "0 SOL".
+                if !has_balance && token_amount.is_none() {
+                    p { class: "ab-no-balance",
+                        span { aria_hidden: "true", "–" }
+                        span { class: "sr-only", "No balance" }
+                    }
+                }
+            }
+            div { class: "ab-actions",
+                PaneMenu { label: "More actions", glyph: Glyph::More, small: true,
+                    button { class: "pane-menu-item",
+                        role: "menuitem",
+                        title: "{edit_title}",
                         onclick: move |_| {
                             pubkey_field.set(pubkey.to_string());
                             label_field.set(label.clone());
@@ -235,30 +378,27 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                             editing_group.set(edit_group.clone());
                             modal_open.set(true);
                         },
+                        Icon { glyph: Glyph::Pencil }
                         "Edit"
                     }
                     if can_remove {
-                        button { class: "danger sm",
+                        button { class: "pane-menu-item danger",
+                            role: "menuitem",
+                            title: "{remove_title}",
                             onclick: move |_| {
                                 let group = remove_group.clone();
                                 session.edit_workspace(|ws| {
                                     ws.book.remove_in(&group, &pubkey);
                                 });
                             },
+                            Icon { glyph: Glyph::Trash }
                             "Remove"
                         }
                     }
                 }
             }
-            if !tags.is_empty() {
-                div { class: "chip-row",
-                    for tag in tags {
-                        span { class: "chip", key: "{tag}", "{tag}" }
-                    }
-                }
-            }
-            if matches!(kind, AddressKind::Account) {
-                OwnerHoldings { owner: pubkey }
+            if owns_tokens {
+                OwnerHoldings { owner: pubkey, open: holdings_open }
             }
         }
     }

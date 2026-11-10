@@ -1,12 +1,16 @@
 use crate::actions::addresses::*;
 use crate::actions::network::refresh_from_chain;
 use crate::state::session::Session;
-use crate::ui::{format_sol, format_token_amount, Address, AddressHeader, AddressRow, Glyph, Icon};
+use crate::ui::{
+    category_class, category_glyph, format_sol, format_token_amount, Address, AddressRow,
+    CopyButton, Glyph, Icon, PaneMenu,
+};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use std::str::FromStr;
 use wallet_core::{
-    AddressKind, BookGroupInfo, BookRow, Group, TokenFlag, TokenHolding, LOCAL_GROUP_ID,
+    AddressKind, BookGroupInfo, BookRow, Category, Described, Fact, Group, TokenFlag, TokenHolding,
+    LOCAL_GROUP_ID,
 };
 
 mod entry;
@@ -19,7 +23,21 @@ pub(in crate::ui) use groups::*;
 pub(in crate::ui) use holdings::*;
 pub(in crate::ui) use transfer::*;
 
-const PAGE_SIZE: usize = 10;
+const PAGE_SIZE: usize = 25;
+
+/// One line of the list: a kind's subheading, or an entry.
+enum ListItem {
+    Heading { name: &'static str, count: usize },
+    Entry(Box<BookRow>),
+}
+
+/// Where a kind comes in the list with every kind shown: the order of the
+/// chips, and what has no kind last.
+fn group_rank(group: Option<Group>) -> usize {
+    group
+        .and_then(|group| Group::ALL.iter().position(|of| *of == group))
+        .unwrap_or(Group::ALL.len())
+}
 
 #[component]
 pub fn AddressBookPanel() -> Element {
@@ -44,16 +62,23 @@ pub fn AddressBookPanel() -> Element {
                         h2 { "Address Book" }
                     }
                     div { class: "btn-row",
-                        button {
-                            onclick: move |_| export_open.set(true),
-                            "Export"
-                        }
-                        button {
-                            onclick: move |_| {
-                                import_error.set(None);
-                                import_open.set(true);
-                            },
-                            "Import"
+                        if online {
+                            button {
+                                disabled: fetching(),
+                                onclick: move |_| {
+                                    error.set(None);
+                                    fetch_note.set(None);
+                                    fetching.set(true);
+                                    spawn(async move {
+                                        match refresh_from_chain(session).await {
+                                            Ok(note) => fetch_note.set(Some(note)),
+                                            Err(err) => error.set(Some(err)),
+                                        }
+                                        fetching.set(false);
+                                    });
+                                },
+                                if fetching() { "Refreshing…" } else { "Refresh from chain" }
+                            }
                         }
                         button { class: "primary",
                             onclick: move |_| {
@@ -63,29 +88,29 @@ pub fn AddressBookPanel() -> Element {
                             Icon { glyph: Glyph::Plus }
                             "Add address"
                         }
+                        PaneMenu { label: "More address book actions",
+                            button { class: "pane-menu-item",
+                                role: "menuitem",
+                                title: "Write this device's address book out, for another device to import",
+                                onclick: move |_| export_open.set(true),
+                                Icon { glyph: Glyph::Send }
+                                "Export"
+                            }
+                            button { class: "pane-menu-item",
+                                role: "menuitem",
+                                title: "Paste another device's export, as a group of its own",
+                                onclick: move |_| {
+                                    import_error.set(None);
+                                    import_open.set(true);
+                                },
+                                Icon { glyph: Glyph::Book }
+                                "Import"
+                            }
+                        }
                     }
                 }
 
-                if online {
-                    div { class: "btn-row",
-                        button {
-                            disabled: fetching(),
-                            onclick: move |_| {
-                                error.set(None);
-                                fetch_note.set(None);
-                                fetching.set(true);
-                                spawn(async move {
-                                    match refresh_from_chain(session).await {
-                                        Ok(note) => fetch_note.set(Some(note)),
-                                        Err(err) => error.set(Some(err)),
-                                    }
-                                    fetching.set(false);
-                                });
-                            },
-                            if fetching() { "Refreshing…" } else { "Refresh from chain" }
-                        }
-                    }
-                } else {
+                if !online {
                     p { class: "hint", "Offline: token accounts and nonce hashes stay local until getGenesisHash succeeds." }
                 }
                 if let Some(err) = error() {
@@ -121,28 +146,91 @@ fn AddressBookList() -> Element {
     let group_id = form.group;
     let directory = (session.directory)();
     let wanted = kind_filter();
-    let entries: Vec<BookRow> = (session.book)()
+    let grouped = wanted.is_none();
+    // Each entry of the group and text filter with the kind it is listed
+    // under.
+    let matching: Vec<(Option<Group>, BookRow)> = (session.book)()
         .rows_in(&group_id(), &filter(), None)
         .into_iter()
-        .filter(|row| {
-            wanted.is_none() || directory.describe(&row.entry.pubkey).category.group() == wanted
+        .map(|row| {
+            let group = directory.describe(&row.entry.pubkey).category.group();
+            (group, row)
         })
         .collect();
+    // How many of them each chip would show.
+    let all_count = matching.len();
+    let chip_counts: Vec<(Group, usize)> = Group::ALL
+        .iter()
+        .map(|of| {
+            let count = matching
+                .iter()
+                .filter(|(group, _)| *group == Some(*of))
+                .count();
+            (*of, count)
+        })
+        .collect();
+    let mut entries: Vec<(Option<Group>, BookRow)> = matching
+        .into_iter()
+        .filter(|(group, _)| grouped || *group == wanted)
+        .collect();
+    // With every kind listed, by kind in the order of the chips; then by
+    // name, ignoring case; the unnamed last, by address.
+    entries.sort_by_cached_key(|(group, row)| {
+        let rank = if grouped { group_rank(*group) } else { 0 };
+        let name = entry_name(&directory.describe(&row.entry.pubkey), &row.entry);
+        match name {
+            Some(name) => (rank, false, name.to_lowercase(), String::new()),
+            None => (rank, true, String::new(), row.entry.pubkey.to_string()),
+        }
+    });
     let collisions = directory.collisions();
     let total = entries.len();
     let pages = total.div_ceil(PAGE_SIZE).max(1);
     let page_i = page().min(pages - 1);
     let start = page_i * PAGE_SIZE;
-    let shown: Vec<BookRow> = entries.into_iter().skip(start).take(PAGE_SIZE).collect();
+    let counts: Vec<(Option<Group>, usize)> = if grouped {
+        let mut counts: Vec<(Option<Group>, usize)> = Vec::new();
+        for (group, _) in &entries {
+            match counts.last_mut() {
+                Some((last, count)) if last == group => *count += 1,
+                _ => counts.push((*group, 1)),
+            }
+        }
+        counts
+    } else {
+        Vec::new()
+    };
+    let shown: Vec<(Option<Group>, BookRow)> =
+        entries.into_iter().skip(start).take(PAGE_SIZE).collect();
     let from = if total == 0 { 0 } else { start + 1 };
     let to = (start + shown.len()).min(total);
+    // The page's rows, each kind's first under its subheading: the kind's
+    // name and how many entries of it the whole list holds.
+    let mut items: Vec<ListItem> = Vec::with_capacity(shown.len() + counts.len());
+    let mut previous: Option<Option<Group>> = None;
+    for (group, row) in shown {
+        if grouped && previous != Some(group) {
+            let count = counts
+                .iter()
+                .find(|(of, _)| *of == group)
+                .map_or(0, |(_, count)| *count);
+            items.push(ListItem::Heading {
+                name: group.map_or("Other", Group::name),
+                count,
+            });
+        }
+        previous = Some(group);
+        items.push(ListItem::Entry(Box::new(row)));
+    }
 
     rsx! {
-        div { class: "book-layout",
-            GroupSidebar {}
-            div { class: "stack",
+        div { class: "stack",
+            GroupBar {}
             div { class: "filter-bar",
-                label { "Filter"
+                // The placeholder says what to type; the label is for screen
+                // readers.
+                label {
+                    span { class: "sr-only", "Filter" }
                     input {
                         r#type: "search",
                         placeholder: "Address, label, or tag",
@@ -161,8 +249,14 @@ fn AddressBookList() -> Element {
                             page.set(0);
                         },
                         "All"
+                        if all_count > 0 {
+                            " "
+                            span { class: "ab-chip-count", "{all_count}" }
+                        }
                     }
-                    for group in Group::ALL {
+                    // Each kind with how many entries of it the group and the
+                    // text filter leave; none when it has none.
+                    for (group, count) in chip_counts {
                         button {
                             class: if kind_filter() == Some(group) { "tab on" } else { "tab" },
                             key: "{group.name()}",
@@ -171,6 +265,10 @@ fn AddressBookList() -> Element {
                                 page.set(0);
                             },
                             "{group.name()}"
+                            if count > 0 {
+                                " "
+                                span { class: "ab-chip-count", "{count}" }
+                            }
                         }
                     }
                 }
@@ -200,17 +298,42 @@ fn AddressBookList() -> Element {
                 }
             }
 
-            ul { class: "book-list",
-                for row in shown {
-                    BookEntry {
-                        key: "{row.group_id}:{row.entry.pubkey}",
-                        row,
+            if total > 0 {
+                // One card: the column labels as its first row, then the
+                // entries.
+                div { class: "ab-table",
+                    // What each column holds, in the columns of the rows.
+                    // Hidden where the rows wrap.
+                    div { class: "ab-columns", aria_hidden: "true",
+                        span { class: "ab-col-name", "Name" }
+                        span { class: "ab-col-address", "Address" }
+                        span { class: "ab-col-balance", "Balance" }
+                    }
+                    ul { class: "book-list ab-list",
+                        for item in items {
+                            match item {
+                                ListItem::Heading { name, count } => rsx! {
+                                    li { class: "ab-kind-head", key: "kind:{name}",
+                                        span { class: "ab-kind-head-name", "{name}" }
+                                        span { class: "ab-kind-head-count", "{count}" }
+                                    }
+                                },
+                                ListItem::Entry(row) => rsx! {
+                                    BookEntry {
+                                        key: "{row.group_id}:{row.entry.pubkey}",
+                                        row: *row,
+                                    }
+                                },
+                            }
+                        }
                     }
                 }
             }
 
-            if total > 0 {
-                div { class: "pager",
+            // Only with more than one page: each kind's subheading already
+            // carries its count.
+            if pages > 1 {
+                div { class: "pager ab-pager",
                     button {
                         disabled: page_i == 0,
                         onclick: move |_| page.set(page_i.saturating_sub(1)),
@@ -223,7 +346,6 @@ fn AddressBookList() -> Element {
                         "Next"
                     }
                 }
-            }
             }
         }
     }

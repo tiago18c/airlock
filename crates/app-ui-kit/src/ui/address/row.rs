@@ -31,11 +31,15 @@ pub fn AddressRow(
     /// what it is: the token accounts a balance sits in.
     #[props(default)]
     card_accounts: Vec<(&'static str, Pubkey)>,
+    /// Leave out the label, where the list shows the name in a column of
+    /// its own.
+    #[props(default)]
+    no_label: bool,
 ) -> Element {
     let described = use_described(pubkey);
     let care = needs_care(&described);
     let collides = !described.collides_with.is_empty();
-    let label = described.full_label();
+    let label = described.full_label().filter(|_| !no_label);
     let card = use_card();
     let row_class = format!(
         "addr-row{}{}",
