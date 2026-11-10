@@ -2244,6 +2244,13 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   font-size: var(--text-md);
 }
 .wallets-empty > p { flex: 1 1 20rem; min-width: 0; margin: 0; }
+/* A multisig's or a Vector wallet's details are in the card's markup and
+   open from its Details button as a dialog. Closed, only their warnings
+   show, as lines of the card, so nothing that needs attention is hidden. */
+.wallet-details-closed,
+.wallet-details-closed > .wallet-details { display: contents; }
+.wallet-details-closed > .wallet-details > :not(.warn) { display: none; }
+.wallet-details-title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 /* A multisig's co-approvers grow with their rows; the pane scrolls. */
 .approves-together .derive-list { max-height: none; overflow: visible; }
 .checklist-head { display: grid; gap: var(--space-1); }
