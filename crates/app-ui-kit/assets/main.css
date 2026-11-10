@@ -1323,6 +1323,17 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 .ab-group-rename { display: flex; gap: 6px; align-items: center; padding: var(--space-1) 0; }
 .ab-group-rename input { min-width: 0; width: 12rem; }
 
+/* Each kind's count on its filter chip: muted, after the name. */
+.ab-chip-count {
+  /* The pill's gap is a word space wider than a count wants. */
+  margin-inline-start: calc(var(--space-1) * -1);
+  color: var(--text-3);
+  font-weight: var(--weight-regular);
+  font-variant-numeric: tabular-nums;
+}
+.tab:hover .ab-chip-count { color: var(--text-2); }
+.tab.on .ab-chip-count { color: inherit; }
+
 /* The entries: one bordered list, a row each, under a line that names the
    columns. Every row is the same grid, and no column takes its width from
    what is in it, so the columns line up from row to row and with the line
@@ -1338,21 +1349,24 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
     var(--control-sm) minmax(12rem, 1.6fr) minmax(0, var(--ab-address-w)) var(--ab-btn)
     minmax(6.5rem, 0.4fr) calc(var(--ab-btn) * 2 + var(--space-1));
   display: grid;
-  gap: var(--space-1);
   min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
   container-type: inline-size;
 }
 @media (pointer: coarse) {
   .ab-table { --ab-btn: var(--control-md); }
 }
-/* The column labels: as wide as a row, the list's border included. */
+/* The column labels: the card's first row, on the rows' columns, with a
+   divider under it. */
 .ab-columns {
   display: grid;
   grid-template-columns: var(--ab-cols);
   grid-template-areas: "icon name address copy balance actions";
   column-gap: var(--space-3);
-  padding: 0 var(--space-3) 0 var(--space-4);
-  border-inline: 1px solid transparent;
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--border);
   color: var(--text-3);
   font-size: var(--text-xs);
   font-weight: var(--weight-medium);
@@ -1361,12 +1375,7 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 .ab-col-name { grid-area: name; }
 .ab-col-address { grid-area: address; }
 .ab-col-balance { grid-area: balance; text-align: right; }
-.book-list.ab-list {
-  gap: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-}
+.book-list.ab-list { gap: 0; }
 .ab-row {
   display: grid;
   grid-template-columns: var(--ab-cols);
@@ -1376,7 +1385,7 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   align-items: center;
   column-gap: var(--space-3);
   min-width: 0;
-  min-height: 56px;
+  min-height: var(--control-lg);
   padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
   transition: background var(--fast) var(--ease);
 }
@@ -1384,6 +1393,8 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 .ab-row:first-child { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
 .ab-row:last-child { border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
 .ab-row:only-child { border-radius: var(--radius-lg); }
+/* Under the column labels the first row has square top corners. */
+.ab-columns + .ab-list > .ab-row:first-child { border-top-left-radius: 0; border-top-right-radius: 0; }
 .ab-row:hover { background: var(--surface-2); }
 .ab-row p { margin: 0; }
 /* With every kind listed, each kind's rows come under its name and count. */
@@ -1428,11 +1439,17 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   min-width: 0;
   margin-inline-start: var(--space-1);
 }
+/* Secondary text at the small size on the sunken surface: at least 7:1 in
+   both themes. */
 .ab-tag.chip {
-  min-height: 18px;
-  padding: 0 6px;
-  font-size: var(--text-xs);
-  line-height: 16px;
+  min-height: 20px;
+  padding: 0 var(--space-2);
+  border-color: var(--border-control);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: 18px;
 }
 /* The kind line wraps rather than being cut: "Smart contract wallet ·
    Squads v4 · 2 of 3". */
@@ -1471,6 +1488,8 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 .ab-row:has(.ab-nonce) > .ab-copy { align-self: start; }
 .ab-balance { grid-area: balance; display: grid; justify-items: end; min-width: 0; text-align: right; }
 .ab-balance .balance { white-space: nowrap; }
+/* No balance to show: a muted dash, so the column does not read as blank. */
+.ab-no-balance { color: var(--text-3); }
 .ab-actions { grid-area: actions; display: flex; justify-content: flex-end; }
 /* A row's menu button is bare until it is pointed at: a list of them is quiet. */
 .ab-actions .pane-menu > .icon-btn:not(:hover):not(:focus-visible):not([aria-expanded="true"]) {
@@ -1512,23 +1531,23 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   margin-top: var(--space-1);
 }
 .ab-holdings > * { grid-column: 1 / -1; }
-/* The toggle that opens them ends the owner's kind line: a small outlined
-   pill of the count and a chevron, so it reads as something to press. Its
-   border is taken back by its margin, so it leaves the line its height.
-   The separator before it keeps to it: when the line wraps, the two go to
-   the next line together. */
+/* The toggle that opens them ends the owner's kind line: the count and a
+   chevron as a text button in the link colour, unlike the tags, which are
+   labels. Its padding is taken back by its margin, so its text stays in
+   line with the rest. The separator before it keeps to it: when the line
+   wraps, the two go to the next line together. */
 .ab-holdings-more { white-space: nowrap; }
 .ab-holdings-toggle {
   display: inline-flex;
   align-items: center;
   gap: 2px;
   min-height: 0;
-  margin: -1px 0;
-  padding: 0 var(--space-1) 0 var(--space-2);
-  border: 1px solid var(--border-control);
-  border-radius: var(--radius-full);
+  margin: 0 calc(var(--space-1) * -1);
+  padding: 0 var(--space-1);
+  border: 0;
+  border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--text-2);
+  color: var(--brand-text);
   font-size: inherit;
   font-weight: var(--weight-medium);
   line-height: inherit;
@@ -1536,7 +1555,13 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   white-space: nowrap;
   cursor: pointer;
 }
-.ab-holdings-toggle:hover { background: var(--surface-3); border-color: var(--border-strong); color: var(--text); }
+.ab-holdings-toggle:hover {
+  background: var(--brand-soft);
+  color: var(--brand-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.ab-holdings-toggle:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
 .ab-holdings-toggle .icon { width: 14px; height: 14px; transition: transform var(--fast) var(--ease); }
 .ab-holdings-toggle.open .icon { transform: rotate(90deg); }
 .ab-holdings .holding-list,
@@ -1581,8 +1606,32 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   min-width: 0;
 }
 /* Every token account leads with a mark of one size, so the names line up. */
-.ab-token-icon { width: 18px; height: 18px; flex-shrink: 0; }
+.ab-token-icon { width: 22px; height: 22px; flex-shrink: 0; }
 .ab-token-icon .icon { width: 16px; height: 16px; }
+/* A named token's mark: its initials on a tint picked from its mint, in a
+   circle, so tokens differ at a glance. The tints are category hues, which
+   carry no status, and each is drawn at full strength on a faint wash of
+   itself, readable in both themes. */
+.ab-tint-0 { --ab-tint: var(--cat-wallet); }
+.ab-tint-1 { --ab-tint: var(--cat-nonce); }
+.ab-tint-2 { --ab-tint: var(--cat-program); }
+.ab-tint-3 { --ab-tint: var(--cat-token); }
+.ab-tint-4 { --ab-tint: var(--cat-contact); }
+.ab-token-avatar {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--ab-tint) 40%, transparent);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--ab-tint) 12%, var(--surface));
+  color: var(--ab-tint);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+}
+.ab-badge.ab-token-avatar { font-size: var(--text-sm); }
 /* A token nothing names: a plain round "?", not a coloured coin. */
 .ab-token-mark {
   display: inline-grid;
@@ -1595,6 +1644,7 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   font-weight: var(--weight-semibold);
   line-height: 1;
 }
+.ab-badge.ab-token-mark { font-size: var(--text-sm); }
 .ab-token-name {
   min-width: 0;
   overflow: hidden;
@@ -1634,6 +1684,10 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
    go, and the copy button follows its own address. */
 @container (max-width: 840px) {
   .ab-columns { display: none; }
+  .ab-columns + .ab-list > .ab-row:first-child {
+    border-top-left-radius: var(--radius-lg);
+    border-top-right-radius: var(--radius-lg);
+  }
   .ab-row {
     grid-template-columns:
       var(--control-sm) minmax(0, max-content) var(--ab-btn) minmax(0, 1fr) max-content;

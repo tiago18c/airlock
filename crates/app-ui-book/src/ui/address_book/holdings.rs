@@ -4,10 +4,66 @@ use super::*;
 
 pub(in crate::ui) const HOLDING_PAGE: usize = 20;
 
-/// How many token accounts an owner has, at the end of its kind line: a
-/// button that opens them under the row. Nothing when it has none.
+/// How many tints a token's mark is drawn on: the `ab-tint-*` classes.
+const TOKEN_TINTS: usize = 5;
+
+/// The letters of a token's mark: the first two letters or digits of its
+/// name, in capitals; its first two characters when it has none.
+pub(in crate::ui) fn token_initials(name: &str) -> String {
+    let letters: String = name
+        .chars()
+        .filter(|c| c.is_alphanumeric())
+        .take(2)
+        .collect();
+    let letters = if letters.is_empty() {
+        name.trim().chars().take(2).collect()
+    } else {
+        letters
+    };
+    letters.to_uppercase()
+}
+
+/// Which tint a token's mark takes: picked from its mint, so a token keeps
+/// its tint wherever it shows and two tokens of one name may differ.
+pub(in crate::ui) fn token_tint(mint: &Pubkey) -> usize {
+    let hash = mint.to_bytes().iter().fold(0u32, |hash, byte| {
+        hash.wrapping_mul(31).wrapping_add(u32::from(*byte))
+    });
+    hash as usize % TOKEN_TINTS
+}
+
+/// A named token's mark: a small round avatar of its initials on a tint of
+/// its mint. A token nothing names has the plain "?" mark instead.
 #[component]
-pub(in crate::ui) fn HoldingsToggle(owner: Pubkey, open: Signal<bool>) -> Element {
+pub(in crate::ui) fn TokenAvatar(
+    mint: Pubkey,
+    name: String,
+    #[props(into, default)] class: String,
+    #[props(into, default)] title: String,
+) -> Element {
+    let initials = token_initials(&name);
+    let tint = token_tint(&mint);
+    let title = if title.is_empty() { name } else { title };
+    rsx! {
+        span {
+            class: "{class} ab-token-avatar ab-tint-{tint}",
+            title: "{title}",
+            aria_hidden: "true",
+            "{initials}"
+        }
+    }
+}
+
+/// How many token accounts an owner has, at the end of its kind line: a
+/// button that opens them under the row. Nothing when it has none. `alone`
+/// when it is all the line holds, so nothing separates it from what is
+/// before it.
+#[component]
+pub(in crate::ui) fn HoldingsToggle(
+    owner: Pubkey,
+    open: Signal<bool>,
+    #[props(default)] alone: bool,
+) -> Element {
     let session = use_context::<Session>();
     let summary = session.holding_summary(&owner);
     if summary.total == 0 {
@@ -27,9 +83,13 @@ pub(in crate::ui) fn HoldingsToggle(owner: Pubkey, open: Signal<bool>) -> Elemen
     // The separator does not break from the toggle: when the line wraps, the
     // two go to the next line together.
     rsx! {
-        " "
+        if !alone {
+            " "
+        }
         span { class: "ab-holdings-more",
-            span { class: "ab-kind-sep", aria_hidden: "true", "·\u{a0}" }
+            if !alone {
+                span { class: "ab-kind-sep", aria_hidden: "true", "·\u{a0}" }
+            }
             button {
                 class: if open() { "ab-holdings-toggle open" } else { "ab-holdings-toggle" },
                 r#type: "button",
@@ -140,9 +200,10 @@ pub(in crate::ui) fn HoldingRow(owner: Pubkey, holding: TokenHolding) -> Element
         li { class: "holding-row",
             div { class: "ab-holding-token",
                 // Every row leads with a mark, so the names line up: the
-                // token's coin, or a plain "?" for a token nothing names.
+                // token's initials on its tint, or a plain "?" for a token
+                // nothing names.
                 if let Some(name) = name {
-                    span { class: "cat cat-token ab-token-icon", Icon { glyph: Glyph::Coin } }
+                    TokenAvatar { mint, name: name.clone(), class: "ab-token-icon" }
                     span { class: "ab-token-name", title: "{mint_text}", "{name}" }
                 } else {
                     span { class: "ab-token-icon ab-token-mark", aria_hidden: "true", "?" }
@@ -203,5 +264,26 @@ pub(in crate::ui) fn HoldingRow(owner: Pubkey, holding: TokenHolding) -> Element
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn initials_are_the_first_two_letters_in_capitals() {
+        assert_eq!(token_initials("JitoSOL"), "JI");
+        assert_eq!(token_initials("usdc"), "US");
+        assert_eq!(token_initials("$WIF"), "WI");
+        assert_eq!(token_initials("X"), "X");
+        assert_eq!(token_initials("★★★"), "★★");
+    }
+
+    #[test]
+    fn a_mint_always_takes_the_same_tint() {
+        let mint = Pubkey::new_unique();
+        assert_eq!(token_tint(&mint), token_tint(&mint));
+        assert!(token_tint(&mint) < TOKEN_TINTS);
     }
 }

@@ -198,17 +198,37 @@ pub(in crate::ui) fn entry_name(
     })
 }
 
-/// What an address is, as the line under its name: "Contact", "Hot wallet ·
-/// private key".
-fn kind_line(described: &Described) -> String {
+/// What an address is, as the line under its name: "Hot wallet · private
+/// key". `None` when the line would only repeat the kind the entry is listed
+/// under, whose subheading or chip already says it: "Program", "Contact".
+fn kind_line(described: &Described) -> Option<String> {
     let kind = described.facts.iter().find_map(|fact| match fact {
         Fact::WalletKind(kind) => Some(kind.clone()),
         _ => None,
     });
-    match kind {
-        Some(kind) => format!("{} · {kind}", described.category.name()),
-        None => described.category.name().to_string(),
+    match (described.category, kind) {
+        (category, Some(kind)) => Some(format!("{} · {kind}", category.name())),
+        (
+            Category::Nonce
+            | Category::Program
+            | Category::Validator
+            | Category::Token
+            | Category::Contact,
+            None,
+        ) => None,
+        (category, None) => Some(category.name().to_string()),
     }
+}
+
+/// The name a token's mark is drawn from: its own label, without the group
+/// a full label adds.
+fn token_mark_name(described: &Described, entry: &wallet_core::AddressEntry) -> Option<String> {
+    described
+        .label
+        .clone()
+        .or_else(|| Some(entry.label.clone()))
+        .map(|label| label.trim().to_string())
+        .filter(|label| !label.is_empty())
 }
 
 /// One entry as a row of the list: its kind, name with its tags after it,
@@ -243,6 +263,16 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
     let collides = !described.collides_with.is_empty();
     let name = entry_name(&described, &entry);
     let what = kind_line(&described);
+    // The kind line is drawn when it says something, or ends in the toggle
+    // of the entry's token accounts.
+    let has_holdings = owns_tokens && session.holding_summary(&pubkey).total > 0;
+    let show_kind = what.is_some() || has_holdings;
+    // A token is marked by its name on a tint of its mint, else a plain "?".
+    let token_mark = (category == Category::Token).then(|| {
+        let mint = entry.mint.unwrap_or(pubkey);
+        (mint, token_mark_name(&described, &entry))
+    });
+    let has_balance = entry.lamports.is_some();
     let address = pubkey.to_string();
     let token_amount = match (kind, entry.token_amount, entry.decimals) {
         (AddressKind::TokenAccount, Some(amount), Some(decimals)) => {
@@ -261,8 +291,18 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
 
     rsx! {
         li { class: "ab-row",
-            span { class: "ab-badge {category_class(category)}", title: category.name(),
-                Icon { glyph: category_glyph(category) }
+            match token_mark {
+                Some((mint, Some(token))) => rsx! {
+                    TokenAvatar { mint, name: token, class: "ab-badge", title: category.name() }
+                },
+                Some((_, None)) => rsx! {
+                    span { class: "ab-badge ab-token-mark", title: category.name(), "?" }
+                },
+                None => rsx! {
+                    span { class: "ab-badge {category_class(category)}", title: category.name(),
+                        Icon { glyph: category_glyph(category) }
+                    }
+                },
             }
             div { class: "ab-name",
                 p { class: "ab-title",
@@ -284,10 +324,18 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                         }
                     }
                 }
-                p { class: "ab-kind",
-                    "{what}"
-                    if owns_tokens {
-                        HoldingsToggle { owner: pubkey, open: holdings_open }
+                if show_kind {
+                    p { class: "ab-kind",
+                        if let Some(what) = what.as_ref() {
+                            "{what}"
+                        }
+                        if has_holdings {
+                            HoldingsToggle {
+                                owner: pubkey,
+                                open: holdings_open,
+                                alone: what.is_none(),
+                            }
+                        }
                     }
                 }
             }
@@ -304,8 +352,16 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                 if let Some(lamports) = entry.lamports {
                     p { class: "balance", "{format_sol(lamports)}" }
                 }
-                if let Some(amount) = token_amount {
+                if let Some(amount) = token_amount.as_ref() {
                     p { class: "balance", "{amount}" }
+                }
+                // Nothing to weigh: a dash, so the column does not read as
+                // missing data. A balance of zero still says "0 SOL".
+                if !has_balance && token_amount.is_none() {
+                    p { class: "ab-no-balance",
+                        span { aria_hidden: "true", "–" }
+                        span { class: "sr-only", "No balance" }
+                    }
                 }
             }
             div { class: "ab-actions",

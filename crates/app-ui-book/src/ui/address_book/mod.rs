@@ -9,7 +9,7 @@ use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use std::str::FromStr;
 use wallet_core::{
-    AddressKind, BookGroupInfo, BookRow, Described, Fact, Group, TokenFlag, TokenHolding,
+    AddressKind, BookGroupInfo, BookRow, Category, Described, Fact, Group, TokenFlag, TokenHolding,
     LOCAL_GROUP_ID,
 };
 
@@ -147,14 +147,30 @@ fn AddressBookList() -> Element {
     let directory = (session.directory)();
     let wanted = kind_filter();
     let grouped = wanted.is_none();
-    // Each entry with the kind it is listed under.
-    let mut entries: Vec<(Option<Group>, BookRow)> = (session.book)()
+    // Each entry of the group and text filter with the kind it is listed
+    // under.
+    let matching: Vec<(Option<Group>, BookRow)> = (session.book)()
         .rows_in(&group_id(), &filter(), None)
         .into_iter()
         .map(|row| {
             let group = directory.describe(&row.entry.pubkey).category.group();
             (group, row)
         })
+        .collect();
+    // How many of them each chip would show.
+    let all_count = matching.len();
+    let chip_counts: Vec<(Group, usize)> = Group::ALL
+        .iter()
+        .map(|of| {
+            let count = matching
+                .iter()
+                .filter(|(group, _)| *group == Some(*of))
+                .count();
+            (*of, count)
+        })
+        .collect();
+    let mut entries: Vec<(Option<Group>, BookRow)> = matching
+        .into_iter()
         .filter(|(group, _)| grouped || *group == wanted)
         .collect();
     // With every kind listed, by kind in the order of the chips; then by
@@ -233,8 +249,14 @@ fn AddressBookList() -> Element {
                             page.set(0);
                         },
                         "All"
+                        if all_count > 0 {
+                            " "
+                            span { class: "ab-chip-count", "{all_count}" }
+                        }
                     }
-                    for group in Group::ALL {
+                    // Each kind with how many entries of it the group and the
+                    // text filter leave; none when it has none.
+                    for (group, count) in chip_counts {
                         button {
                             class: if kind_filter() == Some(group) { "tab on" } else { "tab" },
                             key: "{group.name()}",
@@ -243,6 +265,10 @@ fn AddressBookList() -> Element {
                                 page.set(0);
                             },
                             "{group.name()}"
+                            if count > 0 {
+                                " "
+                                span { class: "ab-chip-count", "{count}" }
+                            }
                         }
                     }
                 }
@@ -273,6 +299,8 @@ fn AddressBookList() -> Element {
             }
 
             if total > 0 {
+                // One card: the column labels as its first row, then the
+                // entries.
                 div { class: "ab-table",
                     // What each column holds, in the columns of the rows.
                     // Hidden where the rows wrap.
