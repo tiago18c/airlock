@@ -6,6 +6,7 @@
 
 pub mod addresses;
 pub mod build;
+pub mod cleanup;
 pub mod device;
 pub mod idl_check;
 pub mod network;

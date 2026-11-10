@@ -409,6 +409,21 @@ impl Session {
         slot.set(None);
     }
 
+    /// Open the Burn and close modal on `wallet`'s token accounts (online
+    /// shell mounts it).
+    pub fn open_cleanup(&self, wallet: WalletId) {
+        let form = self.forms.cleanup;
+        let (mut slot, mut notice) = (form.open, form.notice);
+        notice.set(None);
+        slot.set(Some(wallet));
+    }
+
+    /// Close the Burn and close modal.
+    pub fn close_cleanup(&self) {
+        let mut slot = self.forms.cleanup.open;
+        slot.set(None);
+    }
+
     /// Run a core command, then bring the pumped signals up to date, so a
     /// read right after it sees the change.
     pub(crate) fn command<R>(&self, run: impl FnOnce(&Core) -> R) -> R {

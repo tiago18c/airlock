@@ -6,7 +6,7 @@ use crate::ui::wallets::kinds::{
     KeyImportForm, OfflineForm, ProgrammaticForm, SquadsForm, VectorForm,
 };
 use crate::ui::{
-    format_sol, Address, AddressHeader, CopyButton, Glyph, HelpTip, Icon, WalletPicker,
+    format_sol, Address, AddressHeader, CopyButton, Glyph, HelpTip, Icon, PaneMenu, WalletPicker,
 };
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
@@ -60,6 +60,10 @@ pub fn WalletsPanel() -> Element {
     let contracts = of_class(WalletClass::SmartContract);
     // A phone lists only the groups that hold a wallet.
     let phone = app_ui_kit::ui::use_phone_layout();
+    // What reads the chain and sends is only offered in the online build.
+    let online = crate::state::use_network().is_some();
+    // Burn and close opens on the wallet in use, and picks another there.
+    let first_wallet = current.or_else(|| all.first().map(|wallet| wallet.id));
 
     rsx! {
         section { class: "page",
@@ -82,6 +86,21 @@ pub fn WalletsPanel() -> Element {
                             },
                             Icon { glyph: Glyph::Plus }
                             "Add wallet"
+                        }
+                        if online && !all.is_empty() {
+                            PaneMenu { label: "More wallet actions",
+                                button { class: "pane-menu-item",
+                                    role: "menuitem",
+                                    title: "Burn and close a wallet's token accounts, to get their rent back",
+                                    onclick: move |_| {
+                                        if let Some(wallet) = first_wallet {
+                                            session.open_cleanup(wallet);
+                                        }
+                                    },
+                                    Icon { glyph: Glyph::Trash }
+                                    "Manage tokens"
+                                }
+                            }
                         }
                     }
                 }

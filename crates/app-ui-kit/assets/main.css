@@ -2364,6 +2364,7 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 .callout.warn-callout { border-color: var(--warn-line); background: var(--warn-soft); }
 .callout.warn-callout > p:first-child { display: flex; gap: 6px; align-items: flex-start; color: var(--warn-text); }
 .callout.warn-callout > p:first-child .icon { width: 16px; height: 16px; margin-top: 2px; }
+.callout.danger-callout { border-color: var(--danger-line); border-left-color: var(--danger-solid); background: var(--danger-soft); }
 
 
 /* Instructions, numbered within their own level. One carried inside another
@@ -2634,6 +2635,48 @@ textarea.short { min-height: 64px; }
   cursor: pointer;
 }
 .pf-watch-list { max-height: 50vh; overflow: auto; }
+.cleanup-list { max-height: 45vh; overflow: auto; }
+/* A row picked with a box at its start, so a column of them is quick to
+   go down. What explains the row sits under it, past the box. */
+.pick-row { grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: var(--space-3); }
+.pick-row > :not(input) { grid-column: 2; }
+
+/* ---------- Pane menu ---------- */
+
+.pane-menu { position: relative; }
+.pane-menu-backdrop { position: fixed; inset: 0; z-index: var(--z-popover); }
+.pane-menu-list {
+  position: absolute;
+  z-index: calc(var(--z-popover) + 1);
+  top: calc(100% + 4px);
+  right: 0;
+  display: grid;
+  gap: 2px;
+  min-width: 14rem;
+  padding: var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+}
+.pane-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text);
+  font-weight: var(--weight-medium);
+  text-align: left;
+  white-space: nowrap;
+}
+.pane-menu-item:hover, .pane-menu-item:focus-visible { background: var(--surface-2); box-shadow: inset 3px 0 0 var(--brand); }
+.pane-menu-item .icon { width: 16px; height: 16px; color: var(--text-2); }
+.cleanup-amount { white-space: nowrap; }
 .pf-controls select { width: auto; max-width: 16rem; }
 .pf-chevron { display: inline-flex; margin-left: auto; transition: transform var(--fast) var(--ease); }
 .pf-fold[aria-expanded="true"] .pf-chevron { transform: rotate(90deg); }

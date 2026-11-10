@@ -361,7 +361,7 @@ fn holdings_of(session: Session, owner: Pubkey) -> Vec<Holding> {
 
 /// A mint's symbol from the Tokens API, else its label in the book, else
 /// its short address.
-fn symbol_of(session: Session, mint: &Pubkey) -> String {
+pub(super) fn symbol_of(session: Session, mint: &Pubkey) -> String {
     let holdings = (session.holdings_view)();
     holdings
         .market

@@ -1,5 +1,6 @@
 mod support;
 
+mod cleanup;
 mod combined_approvals;
 mod mixed_approvals;
 mod offline_nonce;

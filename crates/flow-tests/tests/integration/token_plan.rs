@@ -17,11 +17,11 @@ use wallet_core::{
 };
 
 const MINT_LEN: usize = 82;
-const ACCOUNT_LEN: usize = 165;
+pub(crate) const ACCOUNT_LEN: usize = 165;
 const FEE_BPS: u16 = 100;
 
 /// A Token mint with `supply` and 6 decimals, and no authorities.
-fn mint_data(supply: u64) -> Vec<u8> {
+pub(crate) fn mint_data(supply: u64) -> Vec<u8> {
     let mut data = vec![0u8; MINT_LEN];
     data[36..44].copy_from_slice(&supply.to_le_bytes());
     data[44] = 6;
@@ -50,7 +50,7 @@ fn tlv(data: &mut Vec<u8>, kind: u16, value: &[u8]) {
     data.extend_from_slice(value);
 }
 
-fn account_data(mint: &Pubkey, owner: &Pubkey, amount: u64, frozen: bool) -> Vec<u8> {
+pub(crate) fn account_data(mint: &Pubkey, owner: &Pubkey, amount: u64, frozen: bool) -> Vec<u8> {
     let mut data = vec![0u8; ACCOUNT_LEN];
     data[0..32].copy_from_slice(mint.as_ref());
     data[32..64].copy_from_slice(owner.as_ref());

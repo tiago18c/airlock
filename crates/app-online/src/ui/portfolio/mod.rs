@@ -99,6 +99,18 @@ pub fn PortfolioPanel() -> Element {
                                 }),
                                 "Send"
                             }
+                            button {
+                                title: "Burn and close token accounts of the wallet shown, or the one in use, to get their rent back",
+                                onclick: move |_| {
+                                    let wallet = selected
+                                        .and_then(|owner| wallet_at(session, owner))
+                                        .or_else(|| session.selected_wallet());
+                                    if let Some(wallet) = wallet {
+                                        session.open_cleanup(wallet);
+                                    }
+                                },
+                                "Manage tokens"
+                            }
                         }
                         select {
                             aria_label: "Whose holdings",
