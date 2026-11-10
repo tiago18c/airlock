@@ -3328,6 +3328,55 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 .inner-block .inner-block .ix-card { background: var(--surface); }
 .fee-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); }
 
+/* What Summary leaves out, with a link to Inspect. */
+.ix-left-out {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-2);
+  font-size: var(--text-md);
+}
+/* A button that reads as a link, inside a line of text. */
+.link-btn {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--brand-text);
+  font-size: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.link-btn:hover, .link-btn:active { background: transparent; color: var(--text); }
+@media (pointer: coarse) {
+  .link-btn { min-height: var(--control-md); }
+}
+
+/* A dialog's footer on Review and Sign: Close, set off from what it holds. */
+.modal .btn-row.modal-foot {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+/* Text to copy: its name and Copy text on one line, the box under them. */
+.copy-field { display: grid; gap: 6px; min-width: 0; }
+.copy-field-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.copy-field-label {
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  color: var(--text-2);
+}
+.copy-text .icon { width: 14px; height: 14px; }
+/* The row under the text holds only what the caller adds. */
+.payload-actions:not(:has(*)) { display: none; }
+
 .signer-role {
   min-width: 5.5rem;
   font-size: var(--text-sm);

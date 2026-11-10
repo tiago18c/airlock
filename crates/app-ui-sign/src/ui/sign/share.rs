@@ -230,12 +230,7 @@ fn TransactionShare(tx: std::rc::Rc<DecodedTx>) -> Element {
             p { class: "error", "{err}" }
         }
         QrCarousel { objects }
-        label { "Base64"
-            textarea { readonly: true, value: "{tx_b64}" }
-        }
-        div { class: "btn-row",
-            CopyButton { text: tx_b64.clone() }
-        }
+        CopyableText { label: "Base64", text: tx_b64 }
     }
 }
 

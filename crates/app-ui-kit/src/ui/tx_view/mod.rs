@@ -61,13 +61,15 @@ pub fn SimulatedDeltas(
 /// `reading` is [`use_explained`] of `tx`. `signers` are the addresses the
 /// screen lists under its signatures, inside the same [`SimulatedDeltas`]. Their
 /// changes are drawn there, so Summary does not repeat them. `children` sit
-/// beside the heading.
+/// beside the heading. With `on_inspect`, Summary says which instructions it
+/// leaves out, with a button that calls it to show them.
 #[component]
 pub fn TxView(
     tx: DecodedTx,
     reading: TxReading,
     inspect: bool,
     #[props(default)] signers: Vec<Pubkey>,
+    #[props(default)] on_inspect: Option<EventHandler<()>>,
     children: Element,
 ) -> Element {
     let shown = tx.clone();
@@ -94,6 +96,18 @@ pub fn TxView(
         }
         _ => Vec::new(),
     };
+    // What InstructionList leaves out of Summary at the top level.
+    let left_out = match on_inspect {
+        Some(on_inspect) if !inspect && !waiting => {
+            let count = explained
+                .instructions
+                .iter()
+                .filter(|ix| ix.program_id == COMPUTE_BUDGET_PROGRAM_ID)
+                .count();
+            (count > 0).then_some((count, on_inspect))
+        }
+        _ => None,
+    };
 
     rsx! {
         if inspect {
@@ -107,6 +121,20 @@ pub fn TxView(
         ReadingNote { waiting, gave_up }
         if !waiting {
             InstructionList { instructions: explained.instructions.clone(), inspect }
+        }
+        if let Some((count, on_inspect)) = left_out {
+            p { class: "ix-left-out muted",
+                if count == 1 {
+                    "1 compute budget instruction is not shown."
+                } else {
+                    "{count} compute budget instructions are not shown."
+                }
+                button { class: "link-btn",
+                    r#type: "button",
+                    onclick: move |_| on_inspect.call(()),
+                    "Inspect"
+                }
+            }
         }
         if !unnamed.is_empty() {
             p { class: "fee-line muted",

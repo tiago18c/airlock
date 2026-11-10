@@ -51,18 +51,38 @@ pub fn TxFacts(tx: DecodedTx) -> Element {
 }
 
 /// The most the fee payer pays in fees: the base fee for each signature and
-/// the priority fee.
+/// the priority fee, which is named when there is one. The payer is drawn
+/// without its balance change, which is more than the fee and is shown in
+/// the sentences and under the signatures.
 #[component]
 pub fn FeeLine(tx: DecodedTx) -> Element {
+    let fee = match tx.budget.priority_fee.filter(|fee| *fee > 0) {
+        Some(priority) => format!(
+            "Fee up to {}, of which {} priority",
+            format_sol(tx.fee_lamports()),
+            format_sol(priority)
+        ),
+        None => format!("Fee up to {}", format_sol(tx.fee_lamports())),
+    };
     rsx! {
         p { class: "fee-line muted",
-            "Fee up to {format_sol(tx.fee_lamports())}"
+            "{fee}"
             if let Some(payer) = tx.fee_payer() {
                 " · paid by "
-                Address { pubkey: payer }
+                WithoutDeltas {
+                    Address { pubkey: payer }
+                }
             }
         }
     }
+}
+
+/// Addresses in `children` drawn without a balance change.
+#[component]
+fn WithoutDeltas(children: Element) -> Element {
+    let none = use_memo(HashMap::new);
+    use_context_provider(|| BalanceDeltas(none));
+    rsx! { {children} }
 }
 
 #[component]

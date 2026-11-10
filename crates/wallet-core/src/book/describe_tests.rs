@@ -174,6 +174,43 @@ fn a_token_account_takes_its_mints_name() {
 }
 
 #[test]
+fn a_token_account_whose_owner_has_a_name_says_whose_it_is() {
+    let mut book = AddressBook::new();
+    book.insert_kind(pk(4), "USDC", AddressKind::Mint, Origin::Imported, None);
+    book.insert_contact(pk(2), "Alice");
+    let mut holdings = Holdings::default();
+    holdings.replace_owners(
+        &[pk(2), pk(5)],
+        &[
+            DiscoveredTokenAccount {
+                pubkey: pk(3),
+                owner: pk(2),
+                mint: pk(4),
+                amount: 10,
+                decimals: 6,
+            },
+            DiscoveredTokenAccount {
+                pubkey: pk(6),
+                owner: pk(5),
+                mint: pk(7),
+                amount: 1,
+                decimals: 0,
+            },
+        ],
+    );
+    let found = directory(vec![WalletRecord::offline("Main", pk(5))], book, holdings);
+    let alice = found.describe(&pk(3));
+    assert_eq!(alice.label.as_deref(), Some("Alice · USDC"));
+    assert_eq!(alice.category, Category::Token);
+    assert!(alice.collides_with.is_empty());
+    // A wallet's account of a mint nothing names.
+    assert_eq!(
+        found.describe(&pk(6)).label.as_deref(),
+        Some("Main · token account")
+    );
+}
+
+#[test]
 fn a_nonce_account_is_named_from_its_authority() {
     let mut book = AddressBook::new();
     book.apply_discovered_nonce(crate::chain::DiscoveredNonce {

@@ -1,6 +1,6 @@
 use crate::platform::qr::render_svg;
 use crate::state::forms::QrPreview;
-use crate::ui::{CopyButton, Glyph, Icon};
+use crate::ui::{Glyph, Icon};
 use dioxus::prelude::*;
 use wallet_core::protocol::{
     encode_frames, encode_payload, hex_id, payload_json, QrObject, DEFAULT_CHUNK,
@@ -39,7 +39,7 @@ pub fn object_previews(objects: &[QrObject], chunk: usize) -> Result<Vec<QrPrevi
 }
 
 /// `objects`, one transfer, as QR codes and as text to copy. `children` go
-/// in the button row, after Copy.
+/// in a button row under the text.
 #[component]
 pub fn PayloadShare(
     objects: Vec<QrObject>,
@@ -51,18 +51,48 @@ pub fn PayloadShare(
         QrCarousel { objects }
         match text {
             Ok(text) => rsx! {
-                label { "Text"
-                    textarea { class: if short { "short" } else { "" }, readonly: true, value: "{text}" }
-                }
-                div { class: "btn-row",
-                    CopyButton { text: text.clone() }
-                    {children}
-                }
+                CopyableText { label: "Text", text, short }
+                div { class: "btn-row payload-actions", {children} }
             },
             Err(err) => rsx! {
                 p { class: "error", "{err}" }
                 div { class: "btn-row", {children} }
             },
+        }
+    }
+}
+
+/// `text` read-only in a box, under `label` and a "Copy text" button on the
+/// label's line.
+#[component]
+pub fn CopyableText(label: &'static str, text: String, #[props(default)] short: bool) -> Element {
+    let mut copied = use_signal(|| false);
+    let copy = text.clone();
+    rsx! {
+        div { class: "copy-field",
+            div { class: "copy-field-head",
+                span { class: "copy-field-label", "{label}" }
+                button { class: "sm copy-text",
+                    r#type: "button",
+                    onclick: move |_| {
+                        let text = copy.clone();
+                        copied.set(true);
+                        spawn(async move {
+                            let _ = crate::platform::copy_text(&text).await;
+                            crate::rt::sleep(std::time::Duration::from_millis(1500)).await;
+                            copied.set(false);
+                        });
+                    },
+                    Icon { glyph: if copied() { Glyph::Check } else { Glyph::Copy } }
+                    if copied() { "Copied" } else { "Copy text" }
+                }
+            }
+            textarea {
+                class: if short { "short" } else { "" },
+                aria_label: "{label}",
+                readonly: true,
+                value: "{text}",
+            }
         }
     }
 }
@@ -135,6 +165,9 @@ pub fn QrCarousel(objects: Vec<QrObject>) -> Element {
                         large.toggle();
                     },
                     "Larger codes"
+                }
+                span { class: "hint",
+                    "Bigger squares, over more codes, for a camera that is further away."
                 }
             }
             if frame_count > 1 {
