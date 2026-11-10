@@ -315,7 +315,7 @@ pub(super) fn VectorFacts(
             }
         }
         if !online && held_here {
-            p { class: "note",
+            p { class: "note on-card",
                 "Initializing the account needs a fee payer and a recent blockhash, so it is done from an online device. Use Export key, add the key there under Add wallet, From another device, and initialize it from that row. This device then signs what that one prepares."
             }
         } else if !online {
@@ -369,7 +369,7 @@ pub(super) fn VectorFacts(
                     }
                     if due && !held_here {
                         p { class: "note",
-                            "On the device that holds this key, press Rotate key on this wallet's row, then scan or paste what it shows on Sign here. This device sends it, paid by the fee payer."
+                            "On the device that holds this key, press Rotate key in this wallet's Settings, then scan or paste what it shows on Sign here. This device sends it, paid by the fee payer."
                         }
                     }
                 }
@@ -524,7 +524,7 @@ pub(super) fn VectorFacts(
                 }
             } else if next_key.is_none() || next_is_current {
                 p { class: "note",
-                    "Before the next transaction, store the next public key of the device that holds this key: scan or paste what Show next key on its row shows on Sign here. After a transaction landed, give that device this account's state first, so it moves to its next key."
+                    "Before the next transaction, store the next public key of the device that holds this key: scan or paste what Show next key in its Settings shows on Sign here. After a transaction landed, give that device this account's state first, so it moves to its next key."
                 }
             } else {
                 p { class: "note", "A next public key from the device that holds this key is stored for the next transaction." }

@@ -175,12 +175,12 @@ pub fn ProposalsModal(
                                 }
                             }
                             if payer.is_none() {
-                                p { class: "warn", "Nothing on this device can pay fees for this wallet. Pick a hot wallet on its row." }
+                                p { class: "warn", "Nothing on this device can pay fees for this wallet. Pick a hot wallet in its Settings, on Wallets." }
                             }
                         },
                         None => rsx! {
                             p { class: "warn",
-                                {route_problem.clone().unwrap_or_else(|| "Choose which wallet acts as a member on this wallet's row.".into())}
+                                {route_problem.clone().unwrap_or_else(|| "Choose which wallet acts as a member in this wallet's Settings, on Wallets.".into())}
                             }
                         },
                     }
