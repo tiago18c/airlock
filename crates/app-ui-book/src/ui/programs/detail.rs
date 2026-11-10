@@ -18,6 +18,7 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
     let checking = use_signal(|| false);
     let check_note = use_signal(|| None::<String>);
     let view = use_memo(move || program_view(session, (form.selected)()));
+    let phone = use_phone_layout();
 
     let Some(record) = record else {
         return rsx! {
@@ -79,7 +80,13 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
             }
             div { class: "stack program-about",
                 div { class: "addr-full program-address",
-                    code { class: "mono", "{program_id}" }
+                    // A phone has no room for it on one line: cut in the
+                    // middle, in full in the tooltip and in what Copy copies.
+                    if phone {
+                        code { class: "mono", title: "{program_id}", "{middle_cut(&program_id.to_string(), 12)}" }
+                    } else {
+                        code { class: "mono", "{program_id}" }
+                    }
                     CopyButton { text: program_id.to_string() }
                 }
                 // Two lines: what the file is, then the state of the online
@@ -170,6 +177,18 @@ fn program_view(session: Session, id: Option<Pubkey>) -> ProgramView {
             error: Some(err.to_string()),
         },
     }
+}
+
+/// `text` with its middle left out past `keep` characters at each end, so
+/// both ends of an address stay to check it by.
+pub(in crate::ui) fn middle_cut(text: &str, keep: usize) -> String {
+    let chars: Vec<char> = text.chars().collect();
+    if chars.len() <= 2 * keep + 1 {
+        return text.to_string();
+    }
+    let head: String = chars[..keep].iter().collect();
+    let tail: String = chars[chars.len() - keep..].iter().collect();
+    format!("{head}…{tail}")
 }
 
 /// Where an embedded file was taken from.

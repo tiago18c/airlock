@@ -89,8 +89,12 @@ pub fn AppShell(
     // with the status line and the system's gesture bar, so the bar is
     // measured. Locked, there is no tab bar.
     let dock = use_signal(|| 0.0_f64);
+    // The top bar is measured too, into --top-h, for what a pane pins right
+    // under it as the page scrolls: its height grows with the system's
+    // status bar and the bar's touch-sized buttons.
+    let top = use_signal(|| 0.0_f64);
     let style = if phone && !gated {
-        format!("--dock-h: {}px", dock())
+        format!("--dock-h: {}px; --top-h: {}px", dock(), top())
     } else {
         String::new()
     };
@@ -112,7 +116,11 @@ pub fn AppShell(
                 Sidebar { tabs, more, status: sidebar_status, dock }
             }
             div { class: "main",
-                TopBar { extra: top_bar_extra, controls: window_controls }
+                TopBar {
+                    extra: top_bar_extra,
+                    controls: window_controls,
+                    height: phone.then_some(top),
+                }
                 // Scrolls the pane under the top bar in a frameless window;
                 // otherwise it is not a box, and the page scrolls.
                 div { class: "pane-scroll",
@@ -291,13 +299,27 @@ pub fn Sidebar(
 }
 
 #[component]
-pub fn TopBar(extra: Option<Element>, controls: Option<Element>) -> Element {
+pub fn TopBar(
+    extra: Option<Element>,
+    controls: Option<Element>,
+    /// Given on a phone: kept at the bar's height, for what a pane pins
+    /// under it.
+    #[props(default)]
+    height: Option<Signal<f64>>,
+) -> Element {
     // A phone's bar has no room to spare for a mark that says which app
     // this is: the wallet picker takes its place and the bar's whole width.
     let phone = use_phone_layout();
     rsx! {
         // `data-drag`: in a frameless window, empty space here moves it.
-        header { class: "topbar", "data-drag": "true",
+        header {
+            class: "topbar",
+            "data-drag": "true",
+            onresize: move |e| {
+                if let (Some(mut height), Ok(size)) = (height, e.get_border_box_size()) {
+                    height.set(size.height);
+                }
+            },
             if !phone {
                 Brand {}
             }

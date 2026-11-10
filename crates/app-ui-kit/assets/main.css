@@ -2401,6 +2401,87 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 .idl-error-name { font-family: var(--font-mono); font-size: var(--text-md); font-weight: var(--weight-medium); overflow-wrap: anywhere; }
 .idl-error .muted { font-size: var(--text-md); }
 
+/* ---------- Programs on a phone ----------
+   The list and the program it opens take the screen in turn. The list runs
+   down the page, no scroll of its own: a row a thumb can hit, a rule
+   between rows, and a chevron at its end that says it opens. The program
+   starts under a way back to the list, its address on one line, what the
+   file is in one small block, and its tabs pinned right under the top bar
+   (the shell measures the bar into --top-h), a layer below it, on the
+   card's own opaque background. */
+.app.phone .program-list { max-height: none; overflow: visible; gap: 0; padding: 0; }
+.app.phone .program-list .group-item { padding-right: 0; border-radius: 0; }
+.app.phone .program-list .group-item + .group-item { border-top: 1px solid var(--border); }
+.app.phone .program-list .group-pick {
+  min-height: 56px;
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
+  border-radius: 0;
+}
+.app.phone .program-chevron { display: inline-flex; flex-shrink: 0; color: var(--text-3); }
+.app.phone .program-chevron .icon { width: 18px; height: 18px; }
+
+/* Back on the left, at the page's edge, and Remove at the right end. */
+.app.phone .program-back-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-2)) 0 calc(-1 * var(--space-3));
+}
+.app.phone .program-back,
+.app.phone .program-remove {
+  min-height: var(--control-lg);
+  gap: var(--space-1);
+  padding: 0 var(--space-3);
+}
+.app.phone .program-back { color: var(--text); font-size: var(--text-base); font-weight: var(--weight-semibold); }
+.app.phone .program-back .icon { width: 18px; height: 18px; }
+
+/* The head: the address cut in the middle on one line, then what the file
+   is in small type with its chips, then the check and Check online. */
+.app.phone .program-address { gap: var(--space-2); }
+.app.phone .program-address .mono {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.app.phone .program-facts-block { gap: var(--space-3); }
+.app.phone .program-facts { font-size: var(--text-sm); }
+.app.phone .program-facts-text { flex-basis: 100%; }
+
+.app.phone .program-detail > .idl-tabs {
+  position: sticky;
+  top: max(var(--top-h, 0px), calc(var(--topbar-h) + env(safe-area-inset-top)));
+  z-index: calc(var(--z-sticky) - 1);
+  background: var(--surface);
+}
+
+/* Rows of instructions, accounts, types and the rest a thumb can hit. A
+   name stays whole: cut with an ellipsis while its row is closed, and
+   broken only where it is longer than the row once open. */
+.app.phone .idl-item > summary { min-height: var(--control-lg); }
+.app.phone .idl-item:not([open]) > summary .idl-name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.app.phone .idl-item[open] > summary .idl-name,
+.app.phone .idl-row-name,
+.app.phone .idl-error-name { overflow-wrap: break-word; }
+.app.phone .idl-leaf {
+  min-height: var(--control-lg);
+  padding-top: 12px;
+  padding-bottom: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* What an opened item says wraps inside the card, a long name included. */
+.app.phone .idl-body > p,
+.app.phone .idl-docs { min-width: 0; overflow-wrap: anywhere; }
+
 /* ---------- Account inspector ---------- */
 
 .modal.inspect { width: min(48rem, 100%); }
