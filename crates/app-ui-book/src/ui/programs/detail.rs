@@ -63,33 +63,41 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
         .flatten();
 
     rsx! {
-        div { class: "card",
-            div { class: "stack",
+        div { class: "card program-detail",
+            // The name stays pinned while the rest scrolls, the tabs under it.
+            // Every entry here is a program, so the kind line is left out.
+            div { class: "program-head",
                 AddressHeader {
                     pubkey: Some(record.program_id),
                     title,
+                    subtitle: String::new(),
+                    no_address: true,
                     title_after: idl_name.map(|name| rsx! {
                         code { class: "program-idl-name", title: "Its name in the IDL", "{name}" }
                     }),
                 }
+            }
+            div { class: "stack program-about",
+                div { class: "addr-full program-address",
+                    code { class: "mono", "{program_id}" }
+                    CopyButton { text: program_id.to_string() }
+                }
                 p { class: "muted program-facts",
-                    "{spec} · "
-                    if let Some(version) = version {
-                        "version {version} · "
+                    span { class: "program-facts-text",
+                        "{spec} · "
+                        if let Some(version) = version {
+                            "version {version} · "
+                        }
+                        "{checksum}"
                     }
-                    "{checksum} "
                     span { class: status_class(status), title: status_tip(status), "{status.label()}" }
                     if record.origin == IdlOrigin::Builtin {
-                        " "
                         span { class: "chip", "built in" }
                     }
                     if let Some(host) = host_name.clone() {
-                        " "
                         span { class: "chip info", "from the {host} IDL" }
                     }
-                    " "
                     span { class: "chip", title: "IDLs are kept per network: the cluster in use", "{network}" }
-                    " "
                     button {
                         class: "sm program-check",
                         disabled: checking(),

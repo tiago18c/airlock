@@ -155,7 +155,8 @@ fn InstructionList(instructions: Vec<IdlIxOutline>) -> Element {
                 p { class: "muted", "This IDL describes no instructions." }
             } else {
                 div { class: "filter-bar",
-                    label { "Filter instructions"
+                    label {
+                        span { class: "sr-only", "Filter instructions" }
                         input {
                             r#type: "search",
                             placeholder: "Instruction name",
@@ -170,8 +171,15 @@ fn InstructionList(instructions: Vec<IdlIxOutline>) -> Element {
             }
             div { class: "idl-list",
                 for ix in shown {
-                    details { class: "idl-item", key: "{ix.name}",
-                        IdlSummary { name: ix.name.clone() }
+                    details { class: "idl-item idl-ix", key: "{ix.name}",
+                        summary {
+                            span { class: "idl-chevron", aria_hidden: "true", Icon { glyph: Glyph::ChevronRight } }
+                            span { class: "idl-name", "{ix.name}" }
+                            if let Some(gist) = first_sentence(&ix.docs) {
+                                span { class: "idl-gist", "{gist}" }
+                            }
+                            span { class: "idl-counts", "{shape(ix.accounts.len(), ix.arguments.len())}" }
+                        }
                         div { class: "idl-body",
                             if !ix.docs.is_empty() {
                                 p { class: "idl-docs", "{ix.docs}" }
@@ -185,7 +193,7 @@ fn InstructionList(instructions: Vec<IdlIxOutline>) -> Element {
                                                 span { class: "idl-row-name", "{account.name}" }
                                                 span { class: "idl-flags",
                                                     for flag in account_flags(&account) {
-                                                        span { class: "chip", key: "{flag}", "{flag}" }
+                                                        span { class: flag_class(&flag), key: "{flag}", "{flag}" }
                                                     }
                                                 }
                                             }
@@ -238,6 +246,47 @@ fn NamedItem(name: String, detail: String) -> Element {
             div { class: "idl-body", p { "{detail}" } }
         }
     }
+}
+
+/// The pill a flag is drawn in: the account that signs in the accent, as
+/// the transaction view's account list draws it.
+pub(in crate::ui) fn flag_class(flag: &str) -> &'static str {
+    match flag {
+        "signer" | "signer optional" => "chip kind",
+        _ => "chip",
+    }
+}
+
+/// What a collapsed instruction says it takes: "4 accounts · 3 args".
+pub(in crate::ui) fn shape(accounts: usize, args: usize) -> String {
+    fn count(n: usize, one: &str) -> String {
+        if n == 1 {
+            format!("1 {one}")
+        } else {
+            format!("{n} {one}s")
+        }
+    }
+    format!("{} · {}", count(accounts, "account"), count(args, "arg"))
+}
+
+/// The first sentence of an instruction's description, for its collapsed
+/// row; `None` when it has none. An IDL's docs are lines, often one
+/// sentence wrapped over several, so the lines of the first paragraph are
+/// read as one.
+pub(in crate::ui) fn first_sentence(docs: &str) -> Option<String> {
+    let paragraph = docs
+        .lines()
+        .map(str::trim)
+        .skip_while(|line| line.is_empty())
+        .take_while(|line| !line.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ");
+    let end = paragraph
+        .match_indices(". ")
+        .next()
+        .map_or(paragraph.len(), |(at, _)| at + 1);
+    let sentence = paragraph[..end].trim();
+    (!sentence.is_empty()).then(|| sentence.to_string())
 }
 
 /// What an instruction's account is drawn with, as the transaction view

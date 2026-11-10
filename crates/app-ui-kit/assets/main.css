@@ -1616,16 +1616,55 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 .program-list .addr-row-rest:empty { display: none; }
 .group-item.on .program-row .addr-short { color: inherit; opacity: 0.8; }
 
-/* The detail header: the IDL's own name beside the one the list uses. */
+/* The detail header: the program's name, pinned at the top of the pane with
+   the tabs under it while the rest scrolls, so what is being read stays in
+   sight. The name is one line, cut with an ellipsis; the tabs pin at its
+   height. The address, facts and provenance scroll away. */
+.program-detail { --program-head-h: calc(32px + 2 * var(--space-2)); }
+.program-head,
+.program-detail > .idl-tabs {
+  position: sticky;
+  z-index: var(--z-sticky);
+  background: var(--surface);
+}
+.program-head {
+  top: 0;
+  display: flex;
+  align-items: center;
+  height: var(--program-head-h);
+  margin-top: calc(-1 * var(--space-2));
+  min-width: 0;
+}
+.program-detail > .idl-tabs { top: var(--program-head-h); }
+.program-head .addr-head { flex: 1; align-items: center; }
+.program-head .addr-badge { width: 32px; height: 32px; }
+.program-head .addr-badge .icon { width: 18px; height: 18px; }
+.program-head .addr-head-body h3 {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.program-head .addr-head-body h3 > * { margin-left: var(--space-2); vertical-align: middle; }
+/* The address under the name, lined up with it past the badge. */
+.program-about { margin-top: calc(-1 * var(--space-4) - var(--space-1)); }
+.program-address { padding-left: calc(32px + var(--space-3)); }
+/* The IDL's own name beside the one the list uses. */
 .program-idl-name {
   font-family: var(--font-mono);
   font-size: var(--text-sm);
   font-weight: var(--weight-regular);
   color: var(--text-3);
 }
-.program-facts .chip { vertical-align: middle; }
-/* Check online, small, on the line of the chips it updates. */
-.program-facts .program-check { vertical-align: middle; margin-left: var(--space-1); }
+/* The facts, then the chips that are states, then Check online at the end
+   of the line: the action apart from them. */
+.program-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+.program-facts .program-check { margin-left: auto; }
 
 /* An IDL's instructions, accounts, types and events: one bordered list,
    a divider between rows, each opening in place. */
@@ -1703,6 +1742,31 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 .idl-chevron .icon { width: 16px; height: 16px; }
 .idl-item[open] > summary .idl-chevron { transform: rotate(90deg); }
 .idl-name { min-width: 0; overflow-wrap: anywhere; }
+/* A collapsed instruction: its name in regular weight, the first sentence
+   of its description after it, cut where the row ends, and how many
+   accounts and arguments it takes at the end. Open, the description is in
+   full below, so the cut one goes. */
+.idl-ix > summary { font-weight: var(--weight-regular); }
+.idl-ix > summary .idl-name { flex: 0 1 auto; }
+.idl-gist,
+.idl-counts {
+  font-family: var(--font-sans);
+  color: var(--text-3);
+}
+.idl-gist {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.idl-counts {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+.idl-ix[open] > summary .idl-gist { visibility: hidden; }
 /* What an item opens to lines up with its name, past the chevron. An opened
    instruction is its description, then its accounts and arguments, each a
    block of two-column rows under a small label. */
@@ -1733,6 +1797,8 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 .idl-flags { display: flex; flex-wrap: wrap; gap: var(--space-1); }
 /* The open panel is sunken; the flags keep the card's surface to stand out. */
 .idl-flags .chip { background: var(--surface); }
+/* The account that signs keeps its accent, as in the transaction view. */
+.idl-flags .chip.kind { background: var(--brand-soft); }
 
 /* The IDL's tabs: the open one underlined in the brand colour, in full (the
    shared tabs hang 1px over the border, which this row clips), and each
@@ -2159,6 +2225,11 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   .idl-body { padding-left: var(--space-3); }
   .idl-row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   .idl-rows { gap: var(--space-2); }
+  /* The top bar is the one thing pinned here; the program's name and tabs
+     scroll with the page. A collapsed instruction is its name and what it
+     takes, without the description. */
+  .program-head, .program-detail > .idl-tabs { position: static; }
+  .idl-ix > summary .idl-gist { display: none; }
 }
 
 /* Below 640px navigation moves to a bar along the bottom edge. */

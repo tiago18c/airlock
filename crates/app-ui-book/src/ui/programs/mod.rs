@@ -1,7 +1,7 @@
 use crate::actions::programs::*;
 use crate::state::forms::IdlSection;
 use crate::state::session::Session;
-use crate::ui::{short_checksum, AddressHeader, AddressRow, Glyph, Icon};
+use crate::ui::{short_checksum, AddressHeader, AddressRow, CopyButton, Glyph, Icon, PaneMenu};
 use dioxus::prelude::*;
 use wallet_core::{
     pretty_idl, IdlAccountUse, IdlIxOutline, IdlOrigin, IdlOutline, IdlPinStatus, IdlRecord,
@@ -45,18 +45,24 @@ pub fn ProgramsPanel() -> Element {
                         h2 { "Programs" }
                     }
                     if files {
+                        // A screen mostly for reading: no primary action, and
+                        // the bundle actions behind the menu.
                         div { class: "btn-row",
-                            button { class: "primary",
+                            button {
                                 onclick: move |_| import_one(session, note, error),
                                 "Import IDL"
                             }
-                            button {
-                                onclick: move |_| import_folder(session, note, error),
-                                "Import bundle"
-                            }
-                            button {
-                                onclick: move |_| export_folder(session, note, error),
-                                "Export"
+                            PaneMenu { label: "More program actions",
+                                button { class: "pane-menu-item",
+                                    role: "menuitem",
+                                    onclick: move |_| import_folder(session, note, error),
+                                    "Import bundle"
+                                }
+                                button { class: "pane-menu-item",
+                                    role: "menuitem",
+                                    onclick: move |_| export_folder(session, note, error),
+                                    "Export IDLs"
+                                }
                             }
                         }
                     }
@@ -80,7 +86,8 @@ pub fn ProgramsPanel() -> Element {
                     if any {
                         div { class: "program-side",
                             div { class: "filter-bar",
-                                label { "Filter programs"
+                                label {
+                                    span { class: "sr-only", "Filter programs" }
                                     input {
                                         r#type: "search",
                                         placeholder: "Name or address",
@@ -210,6 +217,39 @@ mod tests {
         assert_eq!(
             account_flags(&account(false, "either", true)),
             ["readonly", "signer optional", "optional"]
+        );
+    }
+
+    #[test]
+    fn the_account_that_signs_is_drawn_in_the_accent() {
+        assert_eq!(flag_class("signer"), "chip kind");
+        assert_eq!(flag_class("signer optional"), "chip kind");
+        assert_eq!(flag_class("readonly"), "chip");
+        assert_eq!(flag_class("optional"), "chip");
+    }
+
+    #[test]
+    fn a_collapsed_instruction_says_what_it_takes() {
+        assert_eq!(shape(4, 3), "4 accounts · 3 args");
+        assert_eq!(shape(1, 1), "1 account · 1 arg");
+        assert_eq!(shape(0, 0), "0 accounts · 0 args");
+    }
+
+    #[test]
+    fn a_collapsed_instruction_shows_the_first_sentence_of_its_docs() {
+        assert_eq!(first_sentence(""), None);
+        assert_eq!(first_sentence(" \n "), None);
+        assert_eq!(
+            first_sentence("Transfers tokens from one account to another. If this account"),
+            Some("Transfers tokens from one account to another.".into())
+        );
+        assert_eq!(
+            first_sentence("Transfers tokens from one\naccount to another. More."),
+            Some("Transfers tokens from one account to another.".into())
+        );
+        assert_eq!(
+            first_sentence("Closes an account\n\nSecond paragraph."),
+            Some("Closes an account".into())
         );
     }
 
