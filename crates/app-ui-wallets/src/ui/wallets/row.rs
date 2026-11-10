@@ -18,6 +18,17 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
     let on_device = wallet.on_device;
     let dialogs_of = wallet.clone();
     let mut confirm_open = use_signal(|| false);
+    // A phone shortens the address to one line, and puts Send with the
+    // card's other buttons.
+    let phone = app_ui_kit::ui::use_phone_layout();
+    let can_send = show_balances && pubkey.is_some();
+    let send_title = "Send SOL or a token from this wallet";
+    let send = move |_| {
+        session.open_send(SendOpen {
+            from: Some(id),
+            ..SendOpen::default()
+        })
+    };
 
     rsx! {
         li { class: "wallet-row",
@@ -27,24 +38,21 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                     title: label.clone(),
                     category: Category::Wallet(wallet.class.into()),
                     subtitle: String::new(),
+                    short: phone,
                     title_after: rsx! {
                         if current {
                             CurrentChip {}
                         }
                     },
-                    if show_balances && pubkey.is_some() {
-                        WalletBalance {
-                            lamports,
-                            send_title: "Send SOL or a token from this wallet",
-                            on_send: move |_| session.open_send(SendOpen {
-                                from: Some(id),
-                                ..SendOpen::default()
-                            }),
-                        }
+                    if can_send {
+                        WalletBalance { lamports, send_title, on_send: send }
                     }
                 }
                 div { class: "wallet-end",
                     div { class: "btn-row wallet-side",
+                        if phone && can_send {
+                            WalletSend { send_title, on_send: send }
+                        }
                         if on_device.is_some() {
                             if let Some(address) = pubkey {
                                 button { class: "sm",

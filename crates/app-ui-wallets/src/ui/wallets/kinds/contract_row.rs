@@ -41,6 +41,17 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
         });
     let vector = vector_facts(&wallet, &wallets);
     let dialogs_of = wallet.clone();
+    // A phone shortens the address to one line, and puts Send with the
+    // card's other buttons.
+    let phone = app_ui_kit::ui::use_phone_layout();
+    let can_send = show_balances && wallet.address.is_some();
+    let send_title = "Send SOL or a token from this wallet. Sign rebuilds the transfer around it.";
+    let send = move |_| {
+        session.open_send(SendOpen {
+            from: Some(id),
+            ..SendOpen::default()
+        })
+    };
     rsx! {
         li { class: "wallet-row",
             div { class: "wallet-head wallet-card-head",
@@ -49,6 +60,7 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
                     title: wallet.label.clone(),
                     category: Category::Wallet(wallet.class.into()),
                     subtitle: String::new(),
+                    short: phone,
                     title_after: rsx! {
                         if let Some(kind) = kind {
                             span { class: "chip kind", "{kind}" }
@@ -57,19 +69,15 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
                             CurrentChip {}
                         }
                     },
-                    if show_balances && wallet.address.is_some() {
-                        crate::ui::wallets::WalletBalance {
-                            lamports,
-                            send_title: "Send SOL or a token from this wallet. Sign rebuilds the transfer around it.",
-                            on_send: move |_| session.open_send(SendOpen {
-                                from: Some(id),
-                                ..SendOpen::default()
-                            }),
-                        }
+                    if can_send {
+                        crate::ui::wallets::WalletBalance { lamports, send_title, on_send: send }
                     }
                 }
                 div { class: "wallet-end",
                     div { class: "btn-row wallet-side",
+                        if phone && can_send {
+                            crate::ui::wallets::WalletSend { send_title, on_send: send }
+                        }
                         if proposals_offered {
                             if let Some(squad) = squad {
                                 button { class: "sm",

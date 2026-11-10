@@ -53,6 +53,10 @@ pub enum Glyph {
     Qr,
     /// The wheel that opens settings.
     Gear,
+    /// An arrow from one box over to another: move what one holds to the other.
+    Migrate,
+    /// Two coins, one over the other: a wallet's tokens.
+    Coins,
 }
 
 impl Glyph {
@@ -227,6 +231,18 @@ impl Glyph {
             Glyph::Gear => &[
                 "M10.4 5.08L10.69 2.69L13.31 2.69L13.6 5.08L15.76 5.98L17.66 4.49L19.51 6.34L18.02 8.24L18.92 10.4L21.31 10.69L21.31 13.31L18.92 13.6L18.02 15.76L19.51 17.66L17.66 19.51L15.76 18.02L13.6 18.92L13.31 21.31L10.69 21.31L10.4 18.92L8.24 18.02L6.34 19.51L4.49 17.66L5.98 15.76L5.08 13.6L2.69 13.31L2.69 10.69L5.08 10.4L5.98 8.24L4.49 6.34L6.34 4.49L8.24 5.98Z",
                 "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z",
+            ],
+            Glyph::Migrate => &[
+                "M4 11h4a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Z",
+                "M16 11h4a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Z",
+                "M6 11V7a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v2.5",
+                "M15.5 7 18 9.5 20.5 7",
+            ],
+            Glyph::Coins => &[
+                "M9 3a6 6 0 1 0 0 12 6 6 0 0 0 0-12Z",
+                "M15 9a6 6 0 1 1-6 6",
+                "M9 6.5v5",
+                "M16 14v4",
             ],
         }
     }

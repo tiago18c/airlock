@@ -435,6 +435,10 @@ pub(in crate::ui) fn WalletDetailsDialog(
     let authority = kind.as_ref().and_then(WalletKind::signer_authority);
     let executor_nonce = kind.as_ref().and_then(WalletKind::executor_nonce);
     let kind_name = kind.as_ref().and_then(kind_chip);
+    // A phone has no room for a name and a whole address on one line: it
+    // shortens the address, as the Members rows do, and copy still copies
+    // all of it.
+    let phone = app_ui_kit::ui::use_phone_layout();
 
     rsx! {
         div { class: "modal-backdrop", onclick: move |_| on_close.call(()),
@@ -465,9 +469,9 @@ pub(in crate::ui) fn WalletDetailsDialog(
                                 approval_nonce,
                                 ..
                             }) => rsx! {
-                                Fact { name: "Vault", AddressRow { pubkey: vault, full: true } }
-                                Fact { name: "Multisig account", AddressRow { pubkey: multisig, full: true } }
-                                Fact { name: "Program", AddressRow { pubkey: program.program_id(), full: true } }
+                                Fact { name: "Vault", AddressRow { pubkey: vault, full: !phone } }
+                                Fact { name: "Multisig account", AddressRow { pubkey: multisig, full: !phone } }
+                                Fact { name: "Program", AddressRow { pubkey: program.program_id(), full: !phone } }
                                 Fact { name: "Threshold",
                                     if members.is_empty() {
                                         span { class: "muted", "Not read from the chain yet" }
@@ -505,13 +509,13 @@ pub(in crate::ui) fn WalletDetailsDialog(
                             },
                             _ => rsx! {
                                 if let Some(address) = wallet.address {
-                                    Fact { name: "Address", AddressRow { pubkey: address, full: true } }
+                                    Fact { name: "Address", AddressRow { pubkey: address, full: !phone } }
                                 }
                                 if let Some(authority) = authority {
-                                    Fact { name: "Authority key", AddressRow { pubkey: authority, full: true } }
+                                    Fact { name: "Authority key", AddressRow { pubkey: authority, full: !phone } }
                                     Fact { name: "Nonce account",
                                         match executor_nonce {
-                                            Some(nonce) => rsx! { AddressRow { pubkey: nonce, full: true } },
+                                            Some(nonce) => rsx! { AddressRow { pubkey: nonce, full: !phone } },
                                             None => rsx! { span { class: "muted", "None yet" } },
                                         }
                                     }

@@ -4050,3 +4050,61 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
 }
 /* The theme is in Settings; the top bar keeps its room for the wallet. */
 .app.phone .topbar-tools > .segmented { display: none; }
+
+/* Wallets on a phone. A card's buttons, Send first, share one row right
+   under the balance, each a full touch target. The address is shortened
+   to one line (AddressHeader's `short`), its copy button a touch target
+   too. */
+.app.phone .wallet-card-head { row-gap: var(--space-2); }
+.app.phone .addr-head-body > .wallet-balance { margin-top: 0; }
+.app.phone .wallet-end { width: 100%; }
+.app.phone .wallet-end > .wallet-side { flex: 1; flex-wrap: wrap; margin-left: 0; }
+.app.phone .wallet-side > .wallet-send { margin-right: auto; }
+.app.phone .wallet-side .sm { min-height: var(--control-lg); }
+.app.phone .wallet-side .icon-btn.sm,
+.app.phone .wallet-card-head .copy-btn {
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+  min-height: var(--control-lg);
+}
+/* The row is at the foot of the card's head, so a card's menu opens
+   upward, over its own card, not over the next card. */
+.app.phone .wallet-side .pane-menu-list { top: auto; bottom: calc(100% + 4px); }
+/* The pane's menu spans the header's width, so it covers the first card's
+   head whole instead of cutting through its name and chips. */
+.app.phone .wallets-head > .btn-row { position: relative; }
+.app.phone .wallets-head .pane-menu { position: static; }
+.app.phone .wallets-head .pane-menu-list { left: 0; }
+
+/* A wallet's Details on a phone: each name on its own line, then its
+   value. A name and a shortened address share one line, with the copy
+   button at its end; a name too long for it is cut with an ellipsis, and
+   nothing breaks inside a word. */
+.app.phone .wallet-dialog .settings-grid.wallet-facts { grid-template-columns: minmax(0, 1fr); }
+.app.phone .wallet-facts > .setting-row { row-gap: var(--space-1); }
+.app.phone .wallet-facts .setting-value { overflow-wrap: break-word; }
+.app.phone .wallet-facts .setting-value > .addr-row,
+.app.phone .wallet-facts .wallet-fact-list { flex: 1; }
+.app.phone .wallet-facts .addr-label { white-space: nowrap; }
+.app.phone .wallet-facts .addr-short { flex-shrink: 0; }
+
+/* Add wallet on a phone. The kinds on an even grid of two columns, the
+   chosen one in the brand colour, as a selection is. The sheet is as tall
+   as its form, so the buttons follow the form with no gap. The buttons
+   read as in every other dialog, the way out on the left and the action
+   on the right: the forms list the action first, so the row is reversed
+   here rather than in each form. */
+.app.phone .modal.add-wallet { height: auto; }
+.app.phone .add-wallet-head > .segmented {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  justify-self: stretch;
+}
+.app.phone .add-wallet-head > .segmented > .tab { min-height: var(--control-lg); }
+.app.phone .add-wallet-head > .segmented > .tab.on {
+  background: var(--brand-soft);
+  color: var(--brand-text);
+  box-shadow: inset 0 0 0 1px var(--brand-line);
+}
+.app.phone .add-wallet-frame > .btn-row:last-child,
+.app.phone .add-wallet-body > .btn-row:last-child { flex-direction: row-reverse; }

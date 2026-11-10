@@ -65,7 +65,7 @@ pub fn WalletsPanel() -> Element {
     rsx! {
         section { class: "page",
             div { class: "stack",
-                div { class: "pane-head",
+                div { class: "pane-head wallets-head",
                     div {
                         h2 { "Wallets" }
                     }
@@ -91,7 +91,7 @@ pub fn WalletsPanel() -> Element {
                                         role: "menuitem",
                                         title: "Move everything a wallet holds to another address: to rotate a key, or to move to a programmatic signer, a Vector account or a multisig",
                                         onclick: move |_| session.open_migrate(current),
-                                        Icon { glyph: Glyph::Send }
+                                        Icon { glyph: Glyph::Migrate }
                                         "Migrate wallet"
                                     }
                                     button { class: "pane-menu-item",
@@ -102,7 +102,7 @@ pub fn WalletsPanel() -> Element {
                                                 session.open_cleanup(wallet);
                                             }
                                         },
-                                        Icon { glyph: Glyph::Trash }
+                                        Icon { glyph: Glyph::Coins }
                                         "Manage tokens"
                                     }
                                 }
@@ -216,23 +216,46 @@ pub fn WalletsPanel() -> Element {
 /// A wallet's SOL balance and the small button that sends from it. Shown only
 /// where balances are: the online build. What a balance is worth belongs to
 /// Portfolio, not here.
+///
+/// A phone draws Send with the card's other buttons instead, as
+/// [`WalletSend`], so they share one row under the balance.
 #[component]
 pub(in crate::ui) fn WalletBalance(
     lamports: Option<u64>,
     send_title: &'static str,
     on_send: EventHandler<()>,
 ) -> Element {
+    let phone = app_ui_kit::ui::use_phone_layout();
+    if phone && lamports.is_none() {
+        return rsx! {};
+    }
     rsx! {
         div { class: "wallet-balance",
             if let Some(lamports) = lamports {
                 span { class: "balance", "{format_sol(lamports)}" }
             }
-            button { class: "ghost sm wallet-send",
-                title: send_title,
-                onclick: move |_| on_send.call(()),
-                Icon { glyph: Glyph::Send }
-                "Send"
+            if !phone {
+                button { class: "ghost sm wallet-send",
+                    title: send_title,
+                    onclick: move |_| on_send.call(()),
+                    Icon { glyph: Glyph::Send }
+                    "Send"
+                }
             }
+        }
+    }
+}
+
+/// Send, first in a wallet card's row of buttons on a phone, and drawn as
+/// they are. Elsewhere it follows the balance: see [`WalletBalance`].
+#[component]
+pub(in crate::ui) fn WalletSend(send_title: &'static str, on_send: EventHandler<()>) -> Element {
+    rsx! {
+        button { class: "sm wallet-send",
+            title: send_title,
+            onclick: move |_| on_send.call(()),
+            Icon { glyph: Glyph::Send }
+            "Send"
         }
     }
 }
