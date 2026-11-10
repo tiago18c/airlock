@@ -4525,12 +4525,12 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
    icon and name, as in More, and Close right under them in the same
    rhythm, so the sheet is only as tall as what it holds. Remove keeps the
    danger colour. */
-.app.phone .modal.wallet-actions > .stack { gap: var(--space-1); }
-.app.phone .modal.wallet-actions h3 { margin-bottom: var(--space-2); }
-.app.phone .modal.wallet-actions .btn-row:last-child { margin-top: 0; }
-.app.phone .wallet-action-list { display: grid; gap: var(--space-1); }
-.app.phone .wallet-action-list > .more-item.danger,
-.app.phone .wallet-action-list > .more-item.danger .icon { color: var(--danger-text); }
+.app.phone .modal.action-sheet > .stack { gap: var(--space-1); }
+.app.phone .modal.action-sheet h3 { margin-bottom: var(--space-2); }
+.app.phone .modal.action-sheet .btn-row:last-child { margin-top: 0; }
+.app.phone .action-list { display: grid; gap: var(--space-1); }
+.app.phone .action-list > .more-item.danger,
+.app.phone .action-list > .more-item.danger .icon { color: var(--danger-text); }
 /* The pane's three lines, beside Add wallet: a square touch target, not a
    half of the row as the header's other buttons are. */
 .app.phone .wallets-head > .btn-row > .icon-btn {
