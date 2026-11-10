@@ -136,6 +136,18 @@ pub const TOKEN_2022_PROGRAM_ID: Pubkey =
 pub const ASSOCIATED_TOKEN_PROGRAM_ID: Pubkey =
     solana_pubkey::Pubkey::from_str_const("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
 
+/// The SPL Memo program (v2).
+pub const MEMO_PROGRAM_ID: Pubkey =
+    solana_pubkey::Pubkey::from_str_const("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
+
+/// Wrapped SOL under Token.
+pub const NATIVE_MINT: Pubkey =
+    solana_pubkey::Pubkey::from_str_const("So11111111111111111111111111111111111111112");
+
+/// Wrapped SOL under Token-2022.
+pub const NATIVE_MINT_2022: Pubkey =
+    solana_pubkey::Pubkey::from_str_const("9pan9bMn5HatX4EJdBwg9VgCa7Uz5HL8N1m5D3NdXejP");
+
 pub const COMPUTE_BUDGET_PROGRAM_ID: Pubkey =
     solana_pubkey::Pubkey::from_str_const("ComputeBudget111111111111111111111111111111");
 

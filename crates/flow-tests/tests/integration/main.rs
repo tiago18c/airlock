@@ -9,6 +9,7 @@ mod proposals;
 mod sign_panel;
 mod site_request;
 mod stake;
+mod token_plan;
 mod use_cases;
 mod vector;
 mod vector_squads;
