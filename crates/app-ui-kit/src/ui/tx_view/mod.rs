@@ -11,9 +11,9 @@ use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use std::collections::{HashMap, HashSet};
 use wallet_core::{
-    display_note, explain_with_note, ContextPinMatch, DecodedTx, ExplainedIx, ExplainedTx,
-    IdlExplanation, IdlOrigin, IdlPinStatus, InnerKind, InnerMessage, IntentBody, IntentSpan,
-    IntentValue, NextKey, ScaleSource, COMPUTE_BUDGET_PROGRAM_ID, MAX_TRANSACTION_SIZE,
+    display_note, explain_with_note, group_thousands, ContextPinMatch, DecodedTx, ExplainedIx,
+    ExplainedTx, IdlExplanation, IdlOrigin, IdlPinStatus, InnerKind, InnerMessage, IntentBody,
+    IntentSpan, IntentValue, NextKey, ScaleSource, COMPUTE_BUDGET_PROGRAM_ID, MAX_TRANSACTION_SIZE,
 };
 
 mod facts;
@@ -421,7 +421,9 @@ fn UnknownInstruction(ix: ExplainedIx, inspect: bool) -> Element {
             span { class: "muted", "program" }
             Address { pubkey: ix.program_id }
             if !inspect {
-                span { class: "muted", "{count} accounts · {bytes} bytes of data" }
+                span { class: "muted",
+                    "{group_thousands(&count.to_string())} accounts · {group_thousands(&bytes.to_string())} bytes of data"
+                }
             }
         }
         // Nothing names these accounts, so they are listed by position.
@@ -436,9 +438,7 @@ fn UnknownInstruction(ix: ExplainedIx, inspect: bool) -> Element {
             }
         }
         if inspect {
-            if !hex.is_empty() {
-                code { class: "mono", "{hex}" }
-            }
+            DataBytes { hex }
         }
     }
 }

@@ -81,7 +81,7 @@ A multisig's wallet holds three settings: the wallet that acts as its member, th
 
 The first step not behind is the current one. A simulation runs once there is no rebuild left and every authorization is in, so Simulate sits after those steps; it runs by itself and is never the current step, and a failed one does not hold signing back. When a Vector key here signs after authorizations from elsewhere, Collect authorizations comes first. An expired blockhash holds the current step back when the transaction signature covers it.
 
-When the steps are only Simulate and Sign transaction, then Submit or Return to site, there is nothing to follow and Sign hides the row (`only_simulate_and_sign`). In a batch the row of transactions stays, and only the steps of the one on screen are hidden. Share to submit keeps the row, since an offline device has to act on it.
+Sign shows the row for every transaction, even when its steps are only Simulate and Sign transaction, then Submit or Return to site, so the screen reads the same from one transaction to the next. In a batch the row of transactions stays, and the steps of the one on screen are left out when they are only those (`only_simulate_and_sign`).
 
 ### Rebuilding for a wallet without a key
 

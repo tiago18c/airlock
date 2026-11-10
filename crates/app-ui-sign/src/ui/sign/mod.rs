@@ -22,7 +22,9 @@ use crate::state::use_network;
 use crate::ui::clock::BlockhashCountdown;
 use crate::ui::transfer::receive::QrScanner;
 use crate::ui::transfer::send::{CopyableText, PayloadShare, QrCarousel};
-use crate::ui::tx_view::{use_explained, FeeLine, ReadInstructions, SimulatedDeltas, TxView};
+use crate::ui::tx_view::{
+    use_explained, FeeLine, ReadInstructions, SimulatedDeltas, TxView, WithoutDeltas,
+};
 use crate::ui::{Address, AddressRow, CopyButton};
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
@@ -373,16 +375,6 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             SimState::Done(_) | SimState::Failed(_)
         );
     let simulating = online && !simulated;
-    // Every address a signature row draws. The change the simulation finds
-    // for one is shown on its row.
-    let signer_rows: Vec<Pubkey> = status
-        .lines
-        .iter()
-        .flat_map(|line| match line.role {
-            SignerRole::Authority { address } => vec![line.authority_chip(), address],
-            _ => vec![line.authority_chip()],
-        })
-        .collect();
     let site_waiting = match &source {
         Some(TxSource::Browser { id, .. }) => session.bridge.read().get(id).is_some(),
         _ => false,
@@ -456,6 +448,12 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         && !needs_rebuild
         && signable_here == 0
         && (status.missing_elsewhere() > site_signs || (status.complete() && !online));
+    // Signatures are coming from other devices: what they return goes in
+    // through Add a signature, which then follows the primary button.
+    let collecting = tx.format == TxFormat::V1
+        && !needs_rebuild
+        && (status.missing_elsewhere() > site_signs || status.waiting_for_authority);
+    let mut inbox_title = use_signal(|| "Add a signature");
     let mut view = form.view;
 
     // In a batch, the return is the batch's, not this transaction's.
@@ -472,9 +470,11 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     });
 
     rsx! {
+        // Every transaction shows its steps, however few, so the screen
+        // reads the same from one to the next.
         if let Some((states, signed, on_screen, own)) = batch_steps {
             BatchSteps { states, signed, on_screen, steps: own }
-        } else if !wallet_core::only_simulate_and_sign(&steps) {
+        } else {
             SignSteps { steps }
         }
 
@@ -492,7 +492,9 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         PersonalSignBox { tx: tx.clone(), status: status.clone() }
 
         SimulatedDeltas {
-            TxView { tx: tx.as_ref().clone(), reading: reading.clone(), inspect, signers: signer_rows,
+            // The signature rows draw no balance change, so a signer's change
+            // that no sentence names is listed under the transaction.
+            TxView { tx: tx.as_ref().clone(), reading: reading.clone(), inspect,
                 on_inspect: move |_| view.set(SignView::Inspect),
                 if let Some(source) = source.clone() {
                     SourceChip { source }
@@ -508,7 +510,11 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
                     "{status.signed()} of {status.total()} signed"
                 }
             }
-            SignerList { status: status.clone(), inspect }
+            // What signing changes in a signer's balance is not a matter of
+            // signing: it stays in the sentences and the Accounts list.
+            WithoutDeltas {
+                SignerList { status: status.clone(), inspect }
+            }
         }
 
         SimulationStrip { tx: tx.clone(), inspect }
@@ -543,61 +549,88 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             from_site: from_browser,
             share_next,
             share_open,
-        }
+            add_signature_first: collecting,
+            on_add_signature: move |_| {
+                inbox_title.set("Add a signature");
+                inbox_open.set(true);
+            },
 
-        if let Some(batch) = batch.as_ref().filter(|_| site_waiting) {
-            if batch_signed {
-                p { class: "hint",
-                    "Signed. It goes back to the site with the others, once all {batch.len()} are signed."
-                }
-            } else if batch_keepable {
-                div { class: "btn-row",
-                    button {
-                        class: "primary",
-                        onclick: move |_| keep_batch_item(session),
-                        if batch.signed() + 1 == batch.len() {
-                            "Keep as is and return all {batch.len()}"
-                        } else {
-                            "Keep as is and go to the next"
+            if let Some(batch) = batch.as_ref().filter(|_| site_waiting) {
+                if batch_signed {
+                    p { class: "hint",
+                        "Signed. It goes back to the site with the others, once all {batch.len()} are signed."
+                    }
+                } else if batch_keepable {
+                    div { class: "btn-row",
+                        button {
+                            class: "primary",
+                            onclick: move |_| keep_batch_item(session),
+                            if batch.signed() + 1 == batch.len() {
+                                "Keep as is and return all {batch.len()}"
+                            } else {
+                                "Keep as is and go to the next"
+                            }
                         }
                     }
-                }
-                p { class: "hint",
-                    "This device has nothing to sign in this transaction. The site gets it back as it is, with the others."
+                    p { class: "hint",
+                        "This device has nothing to sign in this transaction. The site gets it back as it is, with the others."
+                    }
                 }
             }
-        }
 
-        div { class: "btn-row",
-            button {
-                onclick: move |_| inbox_open.set(true),
-                "Add a signature, or load another transaction"
-            }
-            button {
-                title: if from_browser {
-                    "Change it on Build. What Build compiles is a new transaction, and it does not go back to the site."
-                } else {
-                    "Change it on Build. What Build compiles is a new transaction, signed again."
-                },
-                onclick: move |_| edit_on_build(&session, &editable),
-                "Edit on Build"
-            }
-            // When sharing is the next step, it leads the row above.
-            if tx.format == TxFormat::V1 && !share_next {
+            div { class: "btn-row",
+                // While signatures come from other devices, it follows the
+                // primary button in the row above.
+                if !collecting {
+                    button {
+                        onclick: move |_| {
+                            inbox_title.set("Add a signature");
+                            inbox_open.set(true);
+                        },
+                        "Add a signature"
+                    }
+                }
                 button {
-                    onclick: move |_| share_open.set(true),
-                    "Share with another device"
+                    onclick: move |_| {
+                        inbox_title.set("Load another transaction");
+                        inbox_open.set(true);
+                    },
+                    "Load another transaction"
+                }
+                button {
+                    title: if from_browser {
+                        "Change it on Build. What Build compiles is a new transaction, and it does not go back to the site."
+                    } else {
+                        "Change it on Build. What Build compiles is a new transaction, signed again."
+                    },
+                    onclick: move |_| edit_on_build(&session, &editable),
+                    "Edit on Build"
+                }
+                // When sharing is the next step, it leads the row above.
+                if tx.format == TxFormat::V1 && !share_next {
+                    button {
+                        onclick: move |_| share_open.set(true),
+                        "Share with another device"
+                    }
                 }
             }
         }
-        if tx.format != TxFormat::V1 {
-            p { class: "hint",
-                "Sharing is only for v1 transactions. This one is signed only with hot keys on this device."
-            }
+        match tx.format {
+            TxFormat::V1 => rsx! {},
+            TxFormat::Legacy => rsx! {
+                p { class: "hint",
+                    "This transaction is in the legacy format, which cannot be handed to another device. Only keys on this device can sign it."
+                }
+            },
+            TxFormat::V0 => rsx! {
+                p { class: "hint",
+                    "This transaction is in the older v0 format, which cannot be handed to another device. Only keys on this device can sign it."
+                }
+            },
         }
 
         if inbox_open() {
-            SignModal { title: "Add a signature, or load another transaction", open: inbox_open,
+            SignModal { title: inbox_title(), open: inbox_open,
                 Inbox { loaded: true }
                 if let Some(text) = (form.error)() {
                     p { class: "error", role: "alert", "{text}" }
@@ -605,8 +638,8 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             }
         }
         if share_open() && tx.format == TxFormat::V1 {
-            SignModal { title: "Share with another device", open: share_open,
-                Share { tx: tx.clone() }
+            SignModal { title: "Share with another device", class: "share", open: share_open,
+                Share { tx: tx.clone(), complete: status.complete() }
             }
         }
     }
@@ -632,11 +665,18 @@ fn simulation_stage(state: &SimState, online: bool) -> SimulationStage {
 
 /// A dialog over the Sign screen, closed by its button or the backdrop.
 #[component]
-fn SignModal(title: &'static str, mut open: Signal<bool>, children: Element) -> Element {
+fn SignModal(
+    title: &'static str,
+    /// A class of its own beside `modal wide`, for what it holds.
+    #[props(default)]
+    class: &'static str,
+    mut open: Signal<bool>,
+    children: Element,
+) -> Element {
     rsx! {
         div { class: "modal-backdrop",
             onclick: move |_| open.set(false),
-            div { class: "modal wide",
+            div { class: "modal wide {class}",
                 role: "dialog",
                 aria_label: title,
                 onclick: move |evt| evt.stop_propagation(),
@@ -687,6 +727,12 @@ fn SignActions(
     /// Share leads the row.
     share_next: bool,
     mut share_open: Signal<bool>,
+    /// Signatures are coming from other devices: Add a signature follows the
+    /// primary button.
+    add_signature_first: bool,
+    on_add_signature: EventHandler<()>,
+    /// The rows under these buttons, pinned with them.
+    children: Element,
 ) -> Element {
     let session = use_context::<Session>();
     let rebuilding = session.forms.sign.rebuilding;
@@ -768,32 +814,63 @@ fn SignActions(
         )
     });
 
+    // Add a signature goes right after whichever button is primary.
+    let add_after_share = add_signature_first && share_next;
+    let add_after_sign = add_signature_first && !share_next && sign_shown;
+    let add_leads = add_signature_first && !share_next && !sign_shown;
+    let add_signature = rsx! {
+        button {
+            onclick: move |_| on_add_signature.call(()),
+            "Add a signature"
+        }
+    };
+
     rsx! {
-        div { class: "btn-row",
-            if share_next {
-                button {
-                    class: "primary",
-                    onclick: move |_| share_open.set(true),
-                    "Share with another device"
+        // Pinned to the bottom of the pane, so the next step is in reach
+        // however long the transaction is.
+        div { class: "sign-actions",
+            div { class: "sign-actions-bar",
+                div { class: "btn-row",
+                    if add_leads {
+                        {add_signature.clone()}
+                    }
+                    if share_next {
+                        button {
+                            class: "primary",
+                            onclick: move |_| share_open.set(true),
+                            "Share with another device"
+                        }
+                    }
+                    if add_after_share {
+                        {add_signature.clone()}
+                    }
+                    if sign_shown {
+                        button {
+                            class: if share_next { "" } else { "primary" },
+                            disabled: !can_sign,
+                            onclick: move |_| sign_loaded(session, busy, blockhash_on_sign),
+                            "{sign_label}"
+                        }
+                    }
+                    if add_after_sign {
+                        {add_signature.clone()}
+                    }
+                    // Submit could not be pressed while a signature is missing,
+                    // so it waits until every one is in.
+                    if status.complete() {
+                        button {
+                            class: if share_next { "" } else { "primary" },
+                            disabled: !can_submit,
+                            title: submit_waits,
+                            onclick: move |_| submit_loaded(session, busy),
+                            "Submit"
+                        }
+                    }
+                    if show_refresh {
+                        RefreshBlockhash {}
+                    }
                 }
-            }
-            if sign_shown {
-                button {
-                    class: if share_next { "" } else { "primary" },
-                    disabled: !can_sign,
-                    onclick: move |_| sign_loaded(session, busy, blockhash_on_sign),
-                    "{sign_label}"
-                }
-            }
-            button {
-                class: if status.complete() && !share_next { "primary" } else { "" },
-                disabled: !can_submit,
-                title: submit_waits,
-                onclick: move |_| submit_loaded(session, busy),
-                "Submit"
-            }
-            if show_refresh {
-                RefreshBlockhash {}
+                {children}
             }
         }
         if let Some((send, origin)) = site_send.filter(|_| status.complete()) {

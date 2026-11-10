@@ -39,11 +39,13 @@ pub fn object_previews(objects: &[QrObject], chunk: usize) -> Result<Vec<QrPrevi
 }
 
 /// `objects`, one transfer, as QR codes and as text to copy. `children` go
-/// in a button row under the text.
+/// in a button row under the text. `collapsed` keeps the text behind "Show
+/// as text", with Copy text beside it.
 #[component]
 pub fn PayloadShare(
     objects: Vec<QrObject>,
     #[props(default)] short: bool,
+    #[props(default)] collapsed: bool,
     #[props(default)] children: Element,
 ) -> Element {
     let text = payload_json(&objects).map_err(|e| e.to_string());
@@ -51,7 +53,7 @@ pub fn PayloadShare(
         QrCarousel { objects }
         match text {
             Ok(text) => rsx! {
-                CopyableText { label: "Text", text, short }
+                CopyableText { label: "Text", text, short, collapsed }
                 div { class: "btn-row payload-actions", {children} }
             },
             Err(err) => rsx! {
@@ -63,15 +65,37 @@ pub fn PayloadShare(
 }
 
 /// `text` read-only in a box, under `label` and a "Copy text" button on the
-/// label's line.
+/// label's line. `collapsed` puts the box behind a disclosure, "Show as
+/// text" for the label "Text", that starts closed; Copy text stays in sight.
 #[component]
-pub fn CopyableText(label: &'static str, text: String, #[props(default)] short: bool) -> Element {
+pub fn CopyableText(
+    label: &'static str,
+    text: String,
+    #[props(default)] short: bool,
+    #[props(default)] collapsed: bool,
+) -> Element {
     let mut copied = use_signal(|| false);
+    let mut shown = use_signal(|| false);
     let copy = text.clone();
+    let disclose = if label == "Text" {
+        "Show as text".to_string()
+    } else {
+        format!("Show as {label}")
+    };
     rsx! {
         div { class: "copy-field",
             div { class: "copy-field-head",
-                span { class: "copy-field-label", "{label}" }
+                if collapsed {
+                    button { class: "disclosure",
+                        r#type: "button",
+                        aria_expanded: "{shown()}",
+                        onclick: move |_| shown.toggle(),
+                        span { class: "disclosure-chevron", "aria-hidden": "true" }
+                        "{disclose}"
+                    }
+                } else {
+                    span { class: "copy-field-label", "{label}" }
+                }
                 button { class: "sm copy-text",
                     r#type: "button",
                     onclick: move |_| {
@@ -87,11 +111,13 @@ pub fn CopyableText(label: &'static str, text: String, #[props(default)] short: 
                     if copied() { "Copied" } else { "Copy text" }
                 }
             }
-            textarea {
-                class: if short { "short" } else { "" },
-                aria_label: "{label}",
-                readonly: true,
-                value: "{text}",
+            if !collapsed || shown() {
+                textarea {
+                    class: if short { "short" } else { "" },
+                    aria_label: "{label}",
+                    readonly: true,
+                    value: "{text}",
+                }
             }
         }
     }

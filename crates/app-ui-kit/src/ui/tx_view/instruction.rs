@@ -61,7 +61,19 @@ pub fn IdlInstruction(idl: IdlExplanation, data: Vec<u8>, inspect: bool) -> Elem
             }
         }
         if inspect {
-            if !hex.is_empty() {
+            DataBytes { hex }
+        }
+    }
+}
+
+/// An instruction's raw data, as hex behind a "Data" disclosure that starts
+/// closed. Nothing is drawn for an instruction with no data.
+#[component]
+pub fn DataBytes(hex: String) -> Element {
+    rsx! {
+        if !hex.is_empty() {
+            details { class: "ix-data",
+                summary { "Data" }
                 code { class: "mono", "{hex}" }
             }
         }

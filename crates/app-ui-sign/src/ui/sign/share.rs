@@ -16,8 +16,9 @@ fn note_for(session: Session, tx: &DecodedTx) -> Result<wallet_core::protocol::T
 
 /// What another device needs: the transaction, the signatures made here, a
 /// note saying which IDLs this device read it with, or all of them at once.
+/// `complete`: every signature is in, and the other device is to submit it.
 #[component]
-pub(in crate::ui) fn Share(tx: std::rc::Rc<DecodedTx>) -> Element {
+pub(in crate::ui) fn Share(tx: std::rc::Rc<DecodedTx>, complete: bool) -> Element {
     let session = use_context::<Session>();
     let form = session.forms.sign;
     let mut tab = form.share;
@@ -74,9 +75,11 @@ pub(in crate::ui) fn Share(tx: std::rc::Rc<DecodedTx>) -> Element {
         match tab() {
             ShareTab::Everything => rsx! {
                 EverythingShare { tx: shown.clone(), signatures: all_signed.clone() }
+                NextOnOtherDevice { complete }
             },
             ShareTab::Transaction => rsx! {
                 TransactionShare { tx: shown.clone() }
+                NextOnOtherDevice { complete }
             },
             ShareTab::Signatures => rsx! {
                 SignaturesShare { signatures }
@@ -84,6 +87,24 @@ pub(in crate::ui) fn Share(tx: std::rc::Rc<DecodedTx>) -> Element {
             ShareTab::Context => rsx! {
                 ContextShare { tx: shown.clone() }
             },
+        }
+    }
+}
+
+/// What to do with the transaction once it is shown: where the other device
+/// takes it, and how what it adds comes back.
+#[component]
+fn NextOnOtherDevice(complete: bool) -> Element {
+    rsx! {
+        p { class: "share-next",
+            "Next: the other device scans this on its Review and Sign screen. "
+            if complete {
+                "It can submit the transaction from there."
+            } else {
+                "Its signature comes back here through "
+                strong { "Add a signature" }
+                "."
+            }
         }
     }
 }
@@ -166,7 +187,7 @@ fn SignaturesShare(signatures: Vec<ShownSignature>) -> Element {
                                 Address { key: "{item.pubkey}", pubkey: item.pubkey }
                             }
                         }
-                        PayloadShare { objects: local_signed.clone(), short: true }
+                        PayloadShare { objects: local_signed.clone(), short: true, collapsed: true }
                     }
                 }
             },
@@ -179,7 +200,7 @@ fn SignaturesShare(signatures: Vec<ShownSignature>) -> Element {
                         strong { "All {count} signatures" }
                         span { class: "chip", "one transfer" }
                     }
-                    PayloadShare { objects: all_signed.clone(), short: true }
+                    PayloadShare { objects: all_signed.clone(), short: true, collapsed: true }
                 }
             },
             SignaturesTab::Individual => rsx! {
@@ -215,7 +236,7 @@ fn TransactionShare(tx: std::rc::Rc<DecodedTx>) -> Element {
     let tx_b64 = STANDARD.encode(&tx.wire);
     rsx! {
         p { class: "hint",
-            "The whole transaction, with every signature it has so far. The other device loads it on its Sign screen."
+            "The whole transaction, with every signature it has so far. The other device loads it on its Review and Sign screen."
         }
         label { class: "check",
             input {
@@ -230,7 +251,7 @@ fn TransactionShare(tx: std::rc::Rc<DecodedTx>) -> Element {
             p { class: "error", "{err}" }
         }
         QrCarousel { objects }
-        CopyableText { label: "Base64", text: tx_b64 }
+        CopyableText { label: "Base64", text: tx_b64, collapsed: true }
     }
 }
 
@@ -248,12 +269,12 @@ fn EverythingShare(tx: std::rc::Rc<DecodedTx>, signatures: Vec<QrObject>) -> Ele
     objects.extend(signatures);
     rsx! {
         p { class: "hint",
-            "The transaction, its context note and every signature it has so far, in one transfer. The other device loads it on its Sign screen and takes each part in turn."
+            "The transaction, its context note and every signature it has so far, in one transfer. The other device loads it on its Review and Sign screen and takes each part in turn."
         }
         if let Err(err) = &note {
             p { class: "error", "Sent without its context note: {err}" }
         }
-        PayloadShare { objects }
+        PayloadShare { objects, collapsed: true }
     }
 }
 
@@ -270,7 +291,7 @@ pub(in crate::ui) fn SignatureCard(pubkey: Pubkey, signed: Signed, authorization
                     span { class: "chip", "transaction signature" }
                 }
             }
-            PayloadShare { objects, short: true }
+            PayloadShare { objects, short: true, collapsed: true }
         }
     }
 }
@@ -303,7 +324,7 @@ pub(in crate::ui) fn ContextShare(tx: std::rc::Rc<DecodedTx>) -> Element {
         }
         match built {
             Ok(objects) => rsx! {
-                PayloadShare { objects, short: true }
+                PayloadShare { objects, short: true, collapsed: true }
             },
             Err(err) => rsx! { p { class: "error", "{err}" } },
         }

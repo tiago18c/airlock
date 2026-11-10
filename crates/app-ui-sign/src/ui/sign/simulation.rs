@@ -2,6 +2,7 @@
 
 use super::*;
 use crate::ui::{Glyph, Icon};
+use wallet_core::group_thousands;
 
 /// One quiet line about what the transaction would do, with the details a
 /// click away.
@@ -110,9 +111,9 @@ pub(in crate::ui) fn SimulationDetails(
         div { class: "sim-details",
             if let Some(units) = simulation.units_consumed {
                 p {
-                    "Used {units} compute units"
+                    "Used {group_thousands(&units.to_string())} compute units"
                     if let Some(limit) = limit {
-                        " of the {limit} the transaction allows"
+                        " of the {group_thousands(&limit.to_string())} the transaction allows"
                     }
                     "."
                 }

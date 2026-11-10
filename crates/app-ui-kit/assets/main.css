@@ -3087,6 +3087,30 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 
 .sign-status { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 
+/* Review and Sign's rows of buttons. On a wide screen they are pinned to the
+   bottom of the pane, over the pane's background, with the transaction
+   scrolling under them. A shadow of that background paints the margin round
+   them, so where they fit they sit and look as any other row. Once pinned,
+   a line sets them off from what scrolls under them. */
+.sign-actions-bar { display: grid; gap: var(--space-4); min-width: 0; }
+@media (min-width: 640px) {
+  .app:not(.phone) .sign-actions {
+    position: sticky;
+    bottom: var(--space-3);
+    z-index: var(--z-sticky);
+    container-type: scroll-state;
+  }
+  .app:not(.phone) .sign-actions-bar {
+    background: var(--bg);
+    box-shadow: 0 0 0 var(--space-3) var(--bg);
+  }
+  @container scroll-state(stuck: bottom) {
+    .sign-actions-bar {
+      box-shadow: 0 0 0 var(--space-3) var(--bg), 0 -1px 0 var(--space-3) var(--border);
+    }
+  }
+}
+
 /* The steps a transaction goes through. Behind is green, the one the user is
    on carries the brand ring, the rest wait in grey. */
 .sign-steps {
@@ -3105,8 +3129,8 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   align-items: center;
   gap: 2px;
   text-align: center;
-  color: var(--text-3);
-  font-size: var(--text-xs);
+  color: var(--text-2);
+  font-size: var(--text-sm);
 }
 /* The line to the next step, from mark to mark. */
 .sign-step:not(:last-child)::after {
@@ -3136,7 +3160,7 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 }
 .sign-step-mark .icon { width: 14px; height: 14px; stroke-width: 2.5; }
 .sign-step-label { color: var(--text-2); font-weight: var(--weight-medium); overflow-wrap: anywhere; }
-.sign-step-detail { color: var(--text-3); }
+.sign-step-detail { color: var(--text-2); }
 
 .sign-step.done .sign-step-mark { border-color: var(--ok-solid); background: var(--ok-solid); color: var(--on-ok); }
 .sign-step.done:not(:last-child)::after { background: var(--ok-solid); }
@@ -3328,6 +3352,60 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 .inner-block .inner-block .ix-card { background: var(--surface); }
 .fee-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); }
 
+/* An instruction's raw data: hex behind a small "Data" disclosure. */
+.ix-data { min-width: 0; }
+.ix-data > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: fit-content;
+  margin-left: calc(-1 * var(--space-1));
+  padding: 2px var(--space-1);
+  border-radius: var(--radius-sm);
+  list-style: none;
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  user-select: none;
+}
+.ix-data > summary::-webkit-details-marker,
+.ix-data > summary::marker { display: none; content: ""; }
+.ix-data > summary:hover { background: var(--surface-2); color: var(--text); }
+.ix-data > code { display: block; margin-top: var(--space-1); overflow-wrap: anywhere; }
+
+/* A chevron that turns down when what it discloses is open. */
+.ix-data > summary::before,
+.disclosure-chevron {
+  content: "";
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--slow) var(--ease);
+}
+.ix-data[open] > summary::before,
+[aria-expanded="true"] > .disclosure-chevron { transform: rotate(45deg); }
+
+/* The transaction's accounts and programs: one bordered list, a line
+   between rows. */
+.book-list.tx-rows {
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.tx-rows > .book-row {
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.tx-rows > .book-row + .book-row { border-top: 1px solid var(--border); }
+.tx-rows > .book-row:hover { border-color: var(--border); box-shadow: none; }
+
 /* What Summary leaves out, with a link to Inspect. */
 .ix-left-out {
   display: flex;
@@ -3374,6 +3452,25 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   color: var(--text-2);
 }
 .copy-text .icon { width: 14px; height: 14px; }
+/* The box closed behind "Show as text", with Copy text still beside it. */
+.copy-field .disclosure {
+  min-height: var(--control-sm);
+  padding: 0 var(--space-2);
+  margin-left: calc(-1 * var(--space-2));
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--text-md);
+}
+.copy-field .disclosure:hover { background: var(--surface-2); color: var(--text); }
+
+/* Share with another device: the panel is as wide as its code, which keeps
+   its own white margin, and a code fits a window 900px high. */
+.share-next { margin: 0; color: var(--text-2); font-size: var(--text-md); }
+@media (min-width: 640px) {
+  .modal.share .qr-wrap { justify-self: center; padding: var(--space-2); }
+  .modal.share .qr-svg svg { width: min(360px, max(200px, calc(100vh - 560px))); }
+}
 /* The row under the text holds only what the caller adds. */
 .payload-actions:not(:has(*)) { display: none; }
 
