@@ -21,6 +21,7 @@ const LAYERS: &[&[&str]] = &[
         "holdings",
         "workspace",
         "token_plan",
+        "migrate",
     ],
     &["squads", "programmatic", "offline_nonce", "hardware"],
     &["record", "record_kind", "record_keys", "vault", "listing"],
