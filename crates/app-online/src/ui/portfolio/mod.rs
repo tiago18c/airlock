@@ -764,7 +764,11 @@ fn LineRow(
                                     span { class: "pf-share-gap pf-price" }
                                     span { class: "pf-share-gap pf-change" }
                                     span { class: "pf-value",
-                                        if let (Some(usd), true) = (share.usd, several) { "{format_value(usd)}" }
+                                        if let (Some(usd), true) = (share.usd, several) {
+                                            "{format_value(usd)}"
+                                        } else if !valued {
+                                            "–"
+                                        }
                                     }
                                 }
                             }
@@ -795,7 +799,10 @@ fn LineRow(
                                 span { class: "pf-share-gap" }
                                 span { class: "pf-share-who",
                                     span { class: "pf-mint-label", "Mint" }
-                                    Address { pubkey: mint }
+                                    span { class: "pf-mint-chip",
+                                        Address { pubkey: mint }
+                                        CopyButton { text: mint.to_string(), label: "Copy mint address" }
+                                    }
                                 }
                             }
                             span { class: "pf-send-slot" }

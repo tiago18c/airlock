@@ -2833,19 +2833,21 @@ textarea.short { min-height: 64px; }
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
-/* Who holds the asset: quiet, cut short; the tooltip names them all. A small
- * chevron after it says the row opens to list them, and turns when it has. */
+/* Who holds the asset: quiet, cut short; the tooltip names them all. A
+ * chevron at the end of the column says the row opens to list them: down
+ * while it is closed, up once it is open. */
 .pf-holders {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  justify-content: space-between;
+  gap: var(--space-2);
   min-width: 0;
   font-size: var(--text-sm);
 }
 .pf-holders-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pf-open-mark { display: inline-flex; flex: none; color: var(--text-3); transition: transform var(--fast) var(--ease); }
-.pf-open-mark .icon { width: 13px; height: 13px; }
-.pf-line.open .pf-open-mark { transform: rotate(90deg); }
+.pf-open-mark { display: inline-flex; flex: none; color: var(--text-2); transform: rotate(90deg); transition: transform var(--fast) var(--ease); }
+.pf-open-mark .icon { width: 14px; height: 14px; }
+.pf-line.open .pf-open-mark { transform: rotate(-90deg); color: var(--text); }
 /* At the top of the table of priced groups, laid out as its rows are: the
  * row's avatar and asset tracks left empty, then a send slot. */
 .pf-cols {
@@ -2922,23 +2924,66 @@ textarea.short { min-height: 64px; }
 /* A holder's line is laid out as the asset's row is, so its amount, value
  * and send button sit under the asset's. It is a step smaller and quieter:
  * the asset's row stays the line that leads. */
-.pf-share { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+.pf-share { display: flex; align-items: center; gap: var(--space-3); min-width: 0; border-radius: var(--radius-sm); }
+.pf-share:not(.pf-share-mint):hover { background: var(--surface-3); }
 .pf-share > .pf-share-main { flex: 1; min-width: 0; min-height: var(--control-sm); font-size: var(--text-md); }
-.pf-share > .pf-send { flex: none; color: var(--text-3); }
-.pf-share > .pf-send:hover { background: var(--surface-3); color: var(--text); }
-.pf-share:hover > .pf-send { color: var(--text-2); }
-/* The wallet takes the asset's column and the holders' one. */
+/* A holder's send button is quieter than the asset's until its line is
+ * pointed at: several of them stack under one. */
+.pf-share > .pf-send { flex: none; color: var(--text-3); opacity: 0.7; }
+.pf-share > .pf-send .icon { width: 14px; height: 14px; }
+.pf-share:hover > .pf-send, .pf-share > .pf-send:focus-visible { color: var(--text); opacity: 1; }
+/* The wallet takes the asset's column and the holders' one: its name under
+ * the asset's, its address under In, so both line up down the list. The
+ * address row's own parts are laid on those two tracks. */
 .pf-share-who { grid-column: 2 / span 2; min-width: 0; }
-.pf-share-who .addr-label { font-weight: var(--weight-medium); }
-.pf-share-who .addr-row-rest { flex: none; }
+.pf-share-who.addr-row,
+.pf-share-who.addr-row > .addr-row-main,
+.pf-share-mint .pf-share-who {
+  display: grid;
+  grid-template-columns: subgrid;
+  column-gap: var(--space-3);
+  align-items: center;
+}
+.pf-share-who.addr-row > .addr-row-main { grid-column: 1 / -1; grid-row: 1; }
+.pf-share-who.addr-row .addr-row-main > * { grid-row: 1; }
+.pf-share-who.addr-row .addr-row-main > :first-child { grid-column: 1; justify-self: start; }
+.pf-share-who.addr-row .addr-label { grid-column: 1; padding-left: calc(16px + var(--space-2)); font-weight: var(--weight-medium); white-space: nowrap; }
+.pf-share-who.addr-row .addr-alert { grid-column: 1; justify-self: end; }
+.pf-share-who.addr-row .addr-short { grid-column: 2; justify-self: start; }
+/* The copy button follows the address, whose short form is always eleven
+ * characters of the monospace face. */
+.pf-share-who.addr-row > .addr-row-rest {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: start;
+  display: block;
+  margin-left: calc(11ch + var(--space-1));
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1;
+}
 .pf-share-who .copy-btn { width: 22px; min-width: 22px; height: 20px; min-height: 0; color: var(--text-3); }
 .pf-share-who .copy-btn .icon { width: 13px; height: 13px; }
 .pf-share:hover .copy-btn { color: var(--text-2); }
+/* A holder's figures are parts of the asset's: a tone below them. */
+.pf-share-main > .pf-amount,
 .pf-share-main > .pf-value { font-weight: var(--weight-regular); color: var(--text-2); }
-/* The asset's mint, last and smallest: a caption of the block. */
+/* The asset's mint, last and smallest, under a hairline: a caption of the
+ * block, not one more holder. */
+.pf-share-mint { position: relative; margin-top: var(--space-2); padding-top: var(--space-1); }
+.pf-share-mint::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: calc(var(--space-1) + 28px + var(--space-3));
+  right: var(--space-1);
+  border-top: 1px solid var(--border);
+}
 .pf-share-mint > .pf-share-main { font-size: var(--text-sm); }
-.pf-share-mint .pf-share-who { display: flex; align-items: center; gap: var(--space-2); }
-.pf-mint-label { color: var(--text-3); }
+.pf-mint-label { grid-column: 1; color: var(--text-3); }
+/* The chip keeps its whole name: the line has nothing in the columns after it. */
+.pf-mint-chip { grid-column: 2; display: inline-flex; align-items: center; gap: var(--space-1); width: max-content; white-space: nowrap; }
+.pf-mint-chip .addr, .pf-mint-chip .addr-label { flex: none; overflow: visible; }
 .pf-fold {
   display: flex;
   align-items: center;
@@ -3021,7 +3066,13 @@ textarea.short { min-height: 64px; }
   .pf-line-main > .pf-holders,
   .pf-share-main > .pf-price,
   .pf-share-main > .pf-change { display: none; }
+  /* One track for the wallet here: its name, address and copy button run on. */
   .pf-share-who { grid-column: 2; }
+  .pf-share-who.addr-row,
+  .pf-share-who.addr-row > .addr-row-main,
+  .pf-share-mint .pf-share-who { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-2); }
+  .pf-share-who.addr-row .addr-label { padding-left: 0; }
+  .pf-share-who.addr-row > .addr-row-rest { margin-left: 0; }
   /* The rows' columns size to their content here, so heads would not line up. */
   .pf-cols { display: none; }
   /* The asset is narrow here: its chips go under the symbol. */
