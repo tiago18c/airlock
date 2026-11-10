@@ -24,15 +24,20 @@ pub(in crate::ui) fn HoldingsToggle(owner: Pubkey, open: Signal<bool>) -> Elemen
         format!("{} {noun}", summary.total)
     };
 
+    // The separator does not break from the toggle: when the line wraps, the
+    // two go to the next line together.
     rsx! {
-        span { class: "ab-kind-sep", aria_hidden: "true", " · " }
-        button {
-            class: if open() { "ab-holdings-toggle open" } else { "ab-holdings-toggle" },
-            r#type: "button",
-            aria_expanded: "{open()}",
-            onclick: move |_| open.set(!open()),
-            "{count}"
-            Icon { glyph: Glyph::ChevronRight }
+        " "
+        span { class: "ab-holdings-more",
+            span { class: "ab-kind-sep", aria_hidden: "true", "·\u{a0}" }
+            button {
+                class: if open() { "ab-holdings-toggle open" } else { "ab-holdings-toggle" },
+                r#type: "button",
+                aria_expanded: "{open()}",
+                onclick: move |_| open.set(!open()),
+                "{count}"
+                Icon { glyph: Glyph::ChevronRight }
+            }
         }
     }
 }
@@ -56,6 +61,13 @@ pub(in crate::ui) fn OwnerHoldings(owner: Pubkey, open: Signal<bool>) -> Element
     rsx! {
         div { class: "ab-holdings",
             ul { class: "holding-list",
+                // What each column holds, in the columns of the rows.
+                // Hidden where the rows wrap.
+                li { class: "ab-holdings-head", aria_hidden: "true",
+                    span { class: "ab-holdings-head-token", "Token" }
+                    span { class: "ab-holdings-head-account", "Account" }
+                    span { class: "ab-holdings-head-amount", "Amount" }
+                }
                 for holding in shown {
                     HoldingRow { key: "{holding.pubkey}", owner, holding }
                 }
@@ -127,10 +139,13 @@ pub(in crate::ui) fn HoldingRow(owner: Pubkey, holding: TokenHolding) -> Element
     rsx! {
         li { class: "holding-row",
             div { class: "ab-holding-token",
+                // Every row leads with a mark, so the names line up: the
+                // token's coin, or a plain "?" for a token nothing names.
                 if let Some(name) = name {
-                    span { class: "cat cat-token", Icon { glyph: Glyph::Coin } }
+                    span { class: "cat cat-token ab-token-icon", Icon { glyph: Glyph::Coin } }
                     span { class: "ab-token-name", title: "{mint_text}", "{name}" }
                 } else {
+                    span { class: "ab-token-icon ab-token-mark", aria_hidden: "true", "?" }
                     AddressRow { pubkey: mint, no_copy: true, no_label: true, class: "ab-holding-mint",
                         span { class: "ab-token-unknown", "Unknown token" }
                     }

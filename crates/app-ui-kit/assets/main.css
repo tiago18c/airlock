@@ -1327,13 +1327,16 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
    columns. Every row is the same grid, and no column takes its width from
    what is in it, so the columns line up from row to row and with the line
    above. The address column fits a whole address, 44 characters of mono
-   at --text-sm, each at most 0.6em wide; the copy button sits after it. */
+   at --text-sm, each at most 0.6em wide; the copy button sits after it.
+   The name takes what is left, so a wallet's kind line and its toggle fit
+   on one line. The last column is two buttons wide: a row's menu button,
+   or the two flags of a token account under it. */
 .ab-table {
   --ab-btn: var(--control-sm);
   --ab-address-w: calc(var(--text-sm) * 26.6);
   --ab-cols:
-    var(--control-sm) minmax(10rem, 1.3fr) minmax(0, var(--ab-address-w)) var(--ab-btn)
-    minmax(6.5rem, 0.6fr) minmax(4rem, 1fr) var(--ab-btn);
+    var(--control-sm) minmax(12rem, 1.6fr) minmax(0, var(--ab-address-w)) var(--ab-btn)
+    minmax(6.5rem, 0.4fr) calc(var(--ab-btn) * 2 + var(--space-1));
   display: grid;
   gap: var(--space-1);
   min-width: 0;
@@ -1346,7 +1349,7 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 .ab-columns {
   display: grid;
   grid-template-columns: var(--ab-cols);
-  grid-template-areas: "icon name address copy balance tags actions";
+  grid-template-areas: "icon name address copy balance actions";
   column-gap: var(--space-3);
   padding: 0 var(--space-3) 0 var(--space-4);
   border-inline: 1px solid transparent;
@@ -1358,9 +1361,6 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 .ab-col-name { grid-area: name; }
 .ab-col-address { grid-area: address; }
 .ab-col-balance { grid-area: balance; text-align: right; }
-/* The tags start well clear of the right-aligned balance before them: the
-   column gap and this margin make --space-8 together, in the rows too. */
-.ab-col-tags { grid-area: tags; margin-inline-start: calc(var(--space-8) - var(--space-3)); }
 .book-list.ab-list {
   gap: 0;
   border: 1px solid var(--border);
@@ -1371,8 +1371,8 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   display: grid;
   grid-template-columns: var(--ab-cols);
   grid-template-areas:
-    "icon name address copy balance tags actions"
-    ". holdings holdings holdings holdings holdings holdings";
+    "icon name address copy balance actions"
+    ". holdings holdings holdings holdings holdings";
   align-items: center;
   column-gap: var(--space-3);
   min-width: 0;
@@ -1409,15 +1409,31 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 }
 .ab-badge .icon { width: 16px; height: 16px; }
 .ab-name { grid-area: name; display: grid; min-width: 0; }
-.ab-title { display: flex; align-items: center; gap: var(--space-1); min-width: 0; }
+/* The name leads; its tags follow on its line, and go under it when they
+   do not fit beside it. */
+.ab-title { display: flex; flex-wrap: wrap; align-items: center; gap: 2px var(--space-1); min-width: 0; }
 .ab-label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--text);
   font-weight: var(--weight-semibold);
 }
 .ab-label.unnamed { color: var(--text-3); font-weight: var(--weight-regular); font-style: italic; }
+.ab-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  min-width: 0;
+  margin-inline-start: var(--space-1);
+}
+.ab-tag.chip {
+  min-height: 18px;
+  padding: 0 6px;
+  font-size: var(--text-xs);
+  line-height: 16px;
+}
 /* The kind line wraps rather than being cut: "Smart contract wallet ·
    Squads v4 · 2 of 3". */
 .ab-kind {
@@ -1455,14 +1471,6 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 .ab-row:has(.ab-nonce) > .ab-copy { align-self: start; }
 .ab-balance { grid-area: balance; display: grid; justify-items: end; min-width: 0; text-align: right; }
 .ab-balance .balance { white-space: nowrap; }
-.ab-tags {
-  grid-area: tags;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-  min-width: 0;
-  margin-inline-start: calc(var(--space-8) - var(--space-3));
-}
 .ab-actions { grid-area: actions; display: flex; justify-content: flex-end; }
 /* A row's menu button is bare until it is pointed at: a list of them is quiet. */
 .ab-actions .pane-menu > .icon-btn:not(:hover):not(:focus-visible):not([aria-expanded="true"]) {
@@ -1491,9 +1499,6 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   box-shadow: inset 3px 0 0 var(--danger-solid);
 }
 
-/* The count stays where Previous and Next would frame it. */
-.ab-pager > .muted:only-child { margin-inline: auto; }
-
 /* An owner's token accounts, under its row and indented to its name. Each
    is laid on the row's own columns: the token under the name, the account
    under the address, the amount under the balance. */
@@ -1507,17 +1512,21 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   margin-top: var(--space-1);
 }
 .ab-holdings > * { grid-column: 1 / -1; }
-/* The toggle that opens them ends the owner's kind line, as text with a
-   chevron, so it adds no line to the row. Its padding is taken back by its
-   margin: a larger target that leaves the line its height. */
+/* The toggle that opens them ends the owner's kind line: a small outlined
+   pill of the count and a chevron, so it reads as something to press. Its
+   border is taken back by its margin, so it leaves the line its height.
+   The separator before it keeps to it: when the line wraps, the two go to
+   the next line together. */
+.ab-holdings-more { white-space: nowrap; }
 .ab-holdings-toggle {
   display: inline-flex;
+  align-items: center;
   gap: 2px;
   min-height: 0;
-  margin: -2px calc(var(--space-1) * -1);
-  padding: 2px var(--space-1);
-  border: 0;
-  border-radius: var(--radius-sm);
+  margin: -1px 0;
+  padding: 0 var(--space-1) 0 var(--space-2);
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-full);
   background: transparent;
   color: var(--text-2);
   font-size: inherit;
@@ -1525,8 +1534,9 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   line-height: inherit;
   vertical-align: baseline;
   white-space: nowrap;
+  cursor: pointer;
 }
-.ab-holdings-toggle:hover { background: var(--surface-3); border-color: transparent; color: var(--text); }
+.ab-holdings-toggle:hover { background: var(--surface-3); border-color: var(--border-strong); color: var(--text); }
 .ab-holdings-toggle .icon { width: 14px; height: 14px; transition: transform var(--fast) var(--ease); }
 .ab-holdings-toggle.open .icon { transform: rotate(90deg); }
 .ab-holdings .holding-list,
@@ -1549,12 +1559,41 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   padding: 2px 0;
 }
 .ab-holdings .holding-row + .holding-row { border-top: 1px solid var(--border); }
+/* The column labels of the token accounts: quiet, on the rows' columns. */
+.ab-holdings-head {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  padding: var(--space-1) 0 2px;
+  color: var(--text-3);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+}
+.ab-holdings-head > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ab-holdings-head-token { grid-column: 1; }
+.ab-holdings-head-account { grid-column: 2 / span 2; }
+.ab-holdings-head-amount { grid-column: 4; text-align: right; }
 .ab-holding-token {
   grid-column: 1;
   display: flex;
   align-items: center;
   gap: var(--space-2);
   min-width: 0;
+}
+/* Every token account leads with a mark of one size, so the names line up. */
+.ab-token-icon { width: 18px; height: 18px; flex-shrink: 0; }
+.ab-token-icon .icon { width: 16px; height: 16px; }
+/* A token nothing names: a plain round "?", not a coloured coin. */
+.ab-token-mark {
+  display: inline-grid;
+  place-items: center;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface-2);
+  color: var(--text-3);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
 }
 .ab-token-name {
   min-width: 0;
@@ -1600,15 +1639,14 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
       var(--control-sm) minmax(0, max-content) var(--ab-btn) minmax(0, 1fr) max-content;
     grid-template-areas:
       "icon name name name balance"
-      ". address copy . ."
-      ". tags tags tags actions"
+      ". address copy . actions"
       ". holdings holdings holdings holdings";
     row-gap: var(--space-1);
     align-items: start;
   }
   .ab-badge { margin-top: 2px; }
-  .ab-tags { margin-inline-start: 0; }
   .ab-actions { align-self: center; }
+  .ab-holdings-head { display: none; }
   .ab-holdings,
   .ab-holdings .holding-list { grid-template-columns: minmax(0, 1fr); }
   .ab-holdings .holding-row {

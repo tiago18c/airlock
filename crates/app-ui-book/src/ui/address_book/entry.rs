@@ -211,8 +211,9 @@ fn kind_line(described: &Described) -> String {
     }
 }
 
-/// One entry as a row of the list: its kind, name, address, balance, tags
-/// and actions, each in a column that lines up from row to row. An owner's
+/// One entry as a row of the list: its kind, name with its tags after it,
+/// address, balance and actions, each in a column that lines up from row to
+/// row. An owner's
 /// kind line ends in a toggle for its token accounts, which open under it.
 #[component]
 pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
@@ -275,6 +276,13 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                             Icon { glyph: Glyph::Alert }
                         }
                     }
+                    if !tags.is_empty() {
+                        span { class: "ab-tags",
+                            for tag in tags {
+                                span { class: "chip ab-tag", key: "{tag}", "{tag}" }
+                            }
+                        }
+                    }
                 }
                 p { class: "ab-kind",
                     "{what}"
@@ -298,11 +306,6 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                 }
                 if let Some(amount) = token_amount {
                     p { class: "balance", "{amount}" }
-                }
-            }
-            div { class: "ab-tags",
-                for tag in tags {
-                    span { class: "chip", key: "{tag}", "{tag}" }
                 }
             }
             div { class: "ab-actions",

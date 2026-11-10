@@ -211,7 +211,10 @@ fn AddressBookList() -> Element {
         div { class: "stack",
             GroupBar {}
             div { class: "filter-bar",
-                label { "Filter"
+                // The placeholder says what to type; the label is for screen
+                // readers.
+                label {
+                    span { class: "sr-only", "Filter" }
                     input {
                         r#type: "search",
                         placeholder: "Address, label, or tag",
@@ -277,7 +280,6 @@ fn AddressBookList() -> Element {
                         span { class: "ab-col-name", "Name" }
                         span { class: "ab-col-address", "Address" }
                         span { class: "ab-col-balance", "Balance" }
-                        span { class: "ab-col-tags", "Tags" }
                     }
                     ul { class: "book-list ab-list",
                         for item in items {
@@ -300,22 +302,20 @@ fn AddressBookList() -> Element {
                 }
             }
 
-            if total > 0 {
+            // Only with more than one page: each kind's subheading already
+            // carries its count.
+            if pages > 1 {
                 div { class: "pager ab-pager",
-                    if pages > 1 {
-                        button {
-                            disabled: page_i == 0,
-                            onclick: move |_| page.set(page_i.saturating_sub(1)),
-                            "Previous"
-                        }
+                    button {
+                        disabled: page_i == 0,
+                        onclick: move |_| page.set(page_i.saturating_sub(1)),
+                        "Previous"
                     }
                     p { class: "muted", "{from}–{to} of {total}" }
-                    if pages > 1 {
-                        button {
-                            disabled: page_i + 1 >= pages,
-                            onclick: move |_| page.set(page_i + 1),
-                            "Next"
-                        }
+                    button {
+                        disabled: page_i + 1 >= pages,
+                        onclick: move |_| page.set(page_i + 1),
+                        "Next"
                     }
                 }
             }
