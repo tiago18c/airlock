@@ -6,6 +6,10 @@ use super::*;
 pub(in crate::ui) fn GroupBar() -> Element {
     let session = use_context::<Session>();
     let groups = (session.book)().groups();
+    // The local group alone has nothing to switch to or act on.
+    if groups.iter().all(|group| group.id == LOCAL_GROUP_ID) {
+        return rsx! {};
+    }
 
     rsx! {
         ul { class: "ab-groups", aria_label: "Groups",

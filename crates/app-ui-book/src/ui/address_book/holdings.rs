@@ -79,8 +79,22 @@ fn token_name(session: &Session, mint: &Pubkey) -> Option<String> {
     })
 }
 
+/// A token's symbol, to write after an amount: the market's, else the name
+/// the book gives its mint. `None` when neither has one.
+fn token_symbol(session: &Session, mint: &Pubkey) -> Option<String> {
+    let holdings = (session.holdings_view)();
+    holdings
+        .market
+        .quote(mint)
+        .and_then(|quote| quote.symbol.clone())
+        .or_else(|| (session.book)().get(mint).map(|entry| entry.label.clone()))
+        .map(|symbol| symbol.trim().to_string())
+        .filter(|symbol| !symbol.is_empty())
+}
+
 /// One token account on one line: the token, the account's address, and the
-/// amount, with its flags at the end.
+/// amount with the token's symbol, in the columns of the owner's row, with
+/// its flags at the end.
 #[component]
 pub(in crate::ui) fn HoldingRow(owner: Pubkey, holding: TokenHolding) -> Element {
     let session = use_context::<Session>();
@@ -93,6 +107,7 @@ pub(in crate::ui) fn HoldingRow(owner: Pubkey, holding: TokenHolding) -> Element
         usize::from(holding.decimals),
     );
     let name = token_name(&session, &mint);
+    let symbol = token_symbol(&session, &mint);
     let mint_text = mint.to_string();
 
     rsx! {
@@ -106,7 +121,12 @@ pub(in crate::ui) fn HoldingRow(owner: Pubkey, holding: TokenHolding) -> Element
                 }
             }
             AddressRow { pubkey: token, no_label: true, class: "ab-holding-account" }
-            span { class: "ab-holding-amount", "{amount}" }
+            span { class: "ab-holding-amount",
+                "{amount}"
+                if let Some(symbol) = symbol {
+                    span { class: "ab-holding-symbol", " {symbol}" }
+                }
+            }
             div { class: if flag.is_some() { "flag-actions visible" } else { "flag-actions" },
                 if flag != Some(TokenFlag::Red) {
                     button {

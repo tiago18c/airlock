@@ -3,7 +3,7 @@ use crate::actions::network::refresh_from_chain;
 use crate::state::session::Session;
 use crate::ui::{
     category_class, category_glyph, format_sol, format_token_amount, Address, AddressRow,
-    CopyButton, Glyph, Icon,
+    CopyButton, Glyph, Icon, PaneMenu,
 };
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
@@ -66,17 +66,6 @@ pub fn AddressBookPanel() -> Element {
                                 if fetching() { "Refreshing…" } else { "Refresh from chain" }
                             }
                         }
-                        button {
-                            onclick: move |_| export_open.set(true),
-                            "Export"
-                        }
-                        button {
-                            onclick: move |_| {
-                                import_error.set(None);
-                                import_open.set(true);
-                            },
-                            "Import"
-                        }
                         button { class: "primary",
                             onclick: move |_| {
                                 form.clear_draft();
@@ -84,6 +73,25 @@ pub fn AddressBookPanel() -> Element {
                             },
                             Icon { glyph: Glyph::Plus }
                             "Add address"
+                        }
+                        PaneMenu { label: "More address book actions",
+                            button { class: "pane-menu-item",
+                                role: "menuitem",
+                                title: "Write this device's address book out, for another device to import",
+                                onclick: move |_| export_open.set(true),
+                                Icon { glyph: Glyph::Send }
+                                "Export"
+                            }
+                            button { class: "pane-menu-item",
+                                role: "menuitem",
+                                title: "Paste another device's export, as a group of its own",
+                                onclick: move |_| {
+                                    import_error.set(None);
+                                    import_open.set(true);
+                                },
+                                Icon { glyph: Glyph::Book }
+                                "Import"
+                            }
                         }
                     }
                 }
@@ -211,28 +219,42 @@ fn AddressBookList() -> Element {
             }
 
             if total > 0 {
-                ul { class: "book-list ab-list",
-                    for row in shown {
-                        BookEntry {
-                            key: "{row.group_id}:{row.entry.pubkey}",
-                            row,
+                div { class: "ab-table",
+                    // What each column holds, in the columns of the rows.
+                    // Hidden where the rows wrap.
+                    div { class: "ab-columns", aria_hidden: "true",
+                        span { class: "ab-col-name", "Name" }
+                        span { class: "ab-col-address", "Address" }
+                        span { class: "ab-col-balance", "Balance" }
+                        span { class: "ab-col-tags", "Tags" }
+                    }
+                    ul { class: "book-list ab-list",
+                        for row in shown {
+                            BookEntry {
+                                key: "{row.group_id}:{row.entry.pubkey}",
+                                row,
+                            }
                         }
                     }
                 }
             }
 
             if total > 0 {
-                div { class: "pager",
-                    button {
-                        disabled: page_i == 0,
-                        onclick: move |_| page.set(page_i.saturating_sub(1)),
-                        "Previous"
+                div { class: "pager ab-pager",
+                    if pages > 1 {
+                        button {
+                            disabled: page_i == 0,
+                            onclick: move |_| page.set(page_i.saturating_sub(1)),
+                            "Previous"
+                        }
                     }
                     p { class: "muted", "{from}–{to} of {total}" }
-                    button {
-                        disabled: page_i + 1 >= pages,
-                        onclick: move |_| page.set(page_i + 1),
-                        "Next"
+                    if pages > 1 {
+                        button {
+                            disabled: page_i + 1 >= pages,
+                            onclick: move |_| page.set(page_i + 1),
+                            "Next"
+                        }
                     }
                 }
             }

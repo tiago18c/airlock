@@ -277,13 +277,13 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                 p { class: "ab-kind", "{what}" }
             }
             div { class: "ab-address",
-                div { class: "ab-address-line",
-                    code { class: "mono", title: "{address}", "{address}" }
-                    CopyButton { text: address.clone() }
-                }
+                code { class: "mono", title: "{address}", "{address}" }
                 if let Some(hash) = entry.nonce_hash {
                     p { class: "ab-nonce mono", title: "nonce {hash}", "nonce {hash}" }
                 }
+            }
+            div { class: "ab-copy",
+                CopyButton { text: address.clone() }
             }
             div { class: "ab-balance",
                 if let Some(lamports) = entry.lamports {
@@ -299,35 +299,36 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                 }
             }
             div { class: "ab-actions",
-                button { class: "ghost icon-btn sm",
-                    title: "Edit",
-                    aria_label: "{edit_title}",
-                    onclick: move |_| {
-                        pubkey_field.set(pubkey.to_string());
-                        label_field.set(label.clone());
-                        tags_field.set(tags_csv.clone());
-                        error.set(None);
-                        editing.set(Some(pubkey));
-                        editing_group.set(edit_group.clone());
-                        modal_open.set(true);
-                    },
-                    Icon { glyph: Glyph::Pencil }
-                }
-                if can_remove {
-                    button { class: "ghost danger icon-btn sm",
-                        title: "Remove",
-                        aria_label: "{remove_title}",
+                PaneMenu { label: "More actions", glyph: Glyph::More, small: true,
+                    button { class: "pane-menu-item",
+                        role: "menuitem",
+                        title: "{edit_title}",
                         onclick: move |_| {
-                            let group = remove_group.clone();
-                            session.edit_workspace(|ws| {
-                                ws.book.remove_in(&group, &pubkey);
-                            });
+                            pubkey_field.set(pubkey.to_string());
+                            label_field.set(label.clone());
+                            tags_field.set(tags_csv.clone());
+                            error.set(None);
+                            editing.set(Some(pubkey));
+                            editing_group.set(edit_group.clone());
+                            modal_open.set(true);
                         },
-                        Icon { glyph: Glyph::Trash }
+                        Icon { glyph: Glyph::Pencil }
+                        "Edit"
                     }
-                } else {
-                    // Keeps the column as wide as in the rows that can be removed.
-                    span { class: "icon-btn sm ab-act-slot", aria_hidden: "true" }
+                    if can_remove {
+                        button { class: "pane-menu-item danger",
+                            role: "menuitem",
+                            title: "{remove_title}",
+                            onclick: move |_| {
+                                let group = remove_group.clone();
+                                session.edit_workspace(|ws| {
+                                    ws.book.remove_in(&group, &pubkey);
+                                });
+                            },
+                            Icon { glyph: Glyph::Trash }
+                            "Remove"
+                        }
+                    }
                 }
             }
             if matches!(kind, AddressKind::Account) {
