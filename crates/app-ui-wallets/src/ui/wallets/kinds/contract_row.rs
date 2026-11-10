@@ -198,7 +198,6 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
                                     Address { pubkey: account }
                                 },
                                 None => rsx! {
-                                    span { class: "muted", "None" }
                                     button { class: "sm",
                                         title: "Create the nonce account this signer needs before it can act",
                                         disabled: busy(),

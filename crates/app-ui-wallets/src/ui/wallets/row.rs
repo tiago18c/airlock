@@ -178,7 +178,6 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                                     }
                                 },
                                 None => rsx! {
-                                    span { class: "muted", "Not set up" }
                                     button { class: "sm",
                                         title: "Add the programmatic signer this key is the authority of. It is listed under Smart contract wallets.",
                                         onclick: add_signer,
@@ -201,7 +200,6 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
                                     }
                                 },
                                 None => rsx! {
-                                    span { class: "muted", "None" }
                                     button { class: "sm",
                                         title: "Create a nonce account controlled by this key, paid by the fee payer above. What this key signs for itself then lives on it.",
                                         disabled: busy(),
