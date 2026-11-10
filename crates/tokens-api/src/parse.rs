@@ -46,7 +46,19 @@ fn quote_of(row: &Value) -> Option<MarketQuote> {
         name: text(token, "name").filter(|s| !s.is_empty()),
         price_usd: price,
         change_24h_pct: price.and(number(token, "priceChange24hPercent")),
+        logo_uri: text(token, "logoURI").filter(|uri| usable_logo_uri(uri)),
     })
+}
+
+/// Longest logo URL kept. The service's own are about 120 bytes.
+const LOGO_URI_MAX: usize = 512;
+
+/// A logo URL worth keeping: `https://`, not overlong, and with nothing in it
+/// that could be read as more than one URL.
+fn usable_logo_uri(uri: &str) -> bool {
+    uri.starts_with("https://")
+        && uri.len() <= LOGO_URI_MAX
+        && !uri.chars().any(|c| c.is_whitespace() || c.is_control())
 }
 
 /// Rows of one page of `/v1/assets/curated?groupBy=mint`, and the offset of
@@ -186,6 +198,46 @@ mod tests {
         assert_eq!(usdc.change_24h_pct, Some(0.01));
         // Not in the answer at all.
         assert!(quotes[2].1.is_none());
+    }
+
+    #[test]
+    fn a_logo_url_is_kept_only_when_it_is_plain_https() {
+        let logo = |uri: Value| {
+            let answer = json!([{
+                "address": USDC,
+                "token": { "symbol": "USDC", "logoURI": uri },
+                "hasMarket": true
+            }]);
+            parse_snapshots(&answer, &[pk(USDC)])[0]
+                .1
+                .clone()
+                .unwrap()
+                .logo_uri
+        };
+        let theirs =
+            format!("https://storage.googleapis.com/tokens-asset-logos-prd/solana/{USDC}.webp");
+        assert_eq!(logo(json!(theirs)), Some(theirs));
+        assert_eq!(
+            logo(json!("https://static.jup.ag/jup/icon.png")).as_deref(),
+            Some("https://static.jup.ag/jup/icon.png")
+        );
+        assert_eq!(logo(json!("http://static.jup.ag/jup/icon.png")), None);
+        assert_eq!(logo(json!("data:image/png;base64,AAAA")), None);
+        assert_eq!(logo(json!("ipfs://bafy")), None);
+        assert_eq!(
+            logo(json!(format!("https://a.example/{}", "x".repeat(500)))),
+            None
+        );
+        assert_eq!(
+            logo(json!(format!("https://a.example/{}", "x".repeat(400)))).map(|u| u.len()),
+            Some(418)
+        );
+        assert_eq!(logo(json!("https://a.example/icon.png two")), None);
+        assert_eq!(logo(json!("https://a.example/icon.png\n")), None);
+        assert_eq!(logo(json!("https://a.example/\u{0}icon.png")), None);
+        assert_eq!(logo(json!("")), None);
+        assert_eq!(logo(json!(7)), None);
+        assert_eq!(logo(Value::Null), None);
     }
 
     #[test]

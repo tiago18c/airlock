@@ -11,6 +11,7 @@
 mod activity;
 mod balances;
 mod history;
+mod logos;
 mod prices;
 mod scheduler;
 mod tokens;

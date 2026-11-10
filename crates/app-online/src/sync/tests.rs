@@ -976,6 +976,224 @@ async fn prices_wait_for_mainnet() {
     assert!(kit.core.slices().holdings.get().market.quotes.is_empty());
 }
 
+// ---- Token logos.
+
+/// Prices every mint asked, names a logo for each, and answers every logo
+/// download with `answer`, after `gate` lets it when there is one. Counts
+/// the downloads.
+struct LogoSource {
+    answer: wallet_core::portfolio::LogoFetch,
+    asked: Mutex<Vec<String>>,
+    gate: Option<Arc<tokio::sync::Notify>>,
+}
+
+impl LogoSource {
+    fn answering(answer: wallet_core::portfolio::LogoFetch) -> Arc<Self> {
+        Arc::new(Self {
+            answer,
+            asked: Mutex::new(Vec::new()),
+            gate: None,
+        })
+    }
+
+    fn asked(&self) -> usize {
+        self.asked.lock().unwrap().len()
+    }
+}
+
+fn logo_url(mint: &Pubkey) -> String {
+    format!("https://logos.example/{mint}.png")
+}
+
+const PNG: &[u8] = &[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A];
+
+fn png() -> wallet_core::portfolio::LogoFetch {
+    wallet_core::portfolio::LogoFetch::Image {
+        kind: wallet_core::portfolio::LogoKind::Png,
+        bytes: PNG.to_vec(),
+    }
+}
+
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+impl wallet_core::portfolio::MarketSource for LogoSource {
+    async fn quotes(
+        &self,
+        mints: &[Pubkey],
+    ) -> Result<
+        Vec<(Pubkey, Option<wallet_core::portfolio::MarketQuote>)>,
+        wallet_core::portfolio::MarketError,
+    > {
+        Ok(mints
+            .iter()
+            .map(|mint| {
+                (
+                    *mint,
+                    Some(wallet_core::portfolio::MarketQuote {
+                        price_usd: Some(1.0),
+                        logo_uri: Some(logo_url(mint)),
+                        ..Default::default()
+                    }),
+                )
+            })
+            .collect())
+    }
+
+    async fn groups(
+        &self,
+    ) -> Result<
+        Vec<(Pubkey, wallet_core::portfolio::AssetGroup)>,
+        wallet_core::portfolio::MarketError,
+    > {
+        Ok(Vec::new())
+    }
+
+    async fn check(
+        &self,
+        _mint: &Pubkey,
+    ) -> Result<wallet_core::portfolio::TokenCheck, wallet_core::portfolio::MarketError> {
+        Ok(Default::default())
+    }
+
+    async fn logo(&self, url: &str) -> wallet_core::portfolio::LogoFetch {
+        self.asked.lock().unwrap().push(url.to_string());
+        if let Some(gate) = &self.gate {
+            gate.notified().await;
+        }
+        self.answer.clone()
+    }
+}
+
+fn logos_scheduler(kit: &app_core::testing::Kit, source: Arc<LogoSource>) -> Scheduler {
+    let scheduler = Scheduler::new(kit.core.public());
+    super::register_prices_with(
+        &scheduler,
+        Arc::new(move |_key| source.clone() as Arc<dyn wallet_core::portfolio::MarketSource>),
+    );
+    scheduler.start();
+    scheduler
+}
+
+fn logo_of(
+    kit: &app_core::testing::Kit,
+    mint: &Pubkey,
+) -> Option<wallet_core::portfolio::LogoState> {
+    kit.core.slices().holdings.get().market.logo(mint)
+}
+
+#[tokio::test]
+async fn a_logo_is_downloaded_once_and_kept_on_disk() {
+    let kit = prices_kit(Cluster::MainnetBeta, true);
+    let source = LogoSource::answering(png());
+    let scheduler = logos_scheduler(&kit, source.clone());
+    settle().await;
+    scheduler.run_now(super::PRICES_JOB).await.unwrap();
+    settle().await;
+    // Wrapped SOL and the token held.
+    assert_eq!(source.asked(), 2);
+    let sol = wallet_core::portfolio::WRAPPED_SOL_MINT;
+    assert_eq!(
+        *source.asked.lock().unwrap(),
+        [logo_url(&sol), logo_url(&pk(9))]
+    );
+    let kept = Some(wallet_core::portfolio::LogoState::Kept {
+        kind: wallet_core::portfolio::LogoKind::Png,
+    });
+    for mint in [sol, pk(9)] {
+        assert_eq!(logo_of(&kit, &mint), kept);
+        assert_eq!(
+            kit.storage.read(&format!("logos/{mint}.png")).as_deref(),
+            Some(PNG)
+        );
+    }
+
+    // Prices are asked again later, naming the same logos: none is
+    // downloaded again.
+    kit.clock.advance(std::time::Duration::from_secs(120));
+    scheduler.run_now(super::PRICES_JOB).await.unwrap();
+    settle().await;
+    assert_eq!(source.asked(), 2);
+}
+
+#[tokio::test]
+async fn an_unusable_logo_is_recorded_and_not_asked_again() {
+    let kit = prices_kit(Cluster::MainnetBeta, true);
+    let source = LogoSource::answering(wallet_core::portfolio::LogoFetch::Unusable);
+    let scheduler = logos_scheduler(&kit, source.clone());
+    settle().await;
+    scheduler.run_now(super::PRICES_JOB).await.unwrap();
+    settle().await;
+    assert_eq!(source.asked(), 2);
+    assert_eq!(
+        logo_of(&kit, &pk(9)),
+        Some(wallet_core::portfolio::LogoState::Nothing)
+    );
+    assert!(kit.storage.read(&format!("logos/{}.png", pk(9))).is_none());
+    scheduler.run_now(super::PRICES_JOB).await.unwrap();
+    settle().await;
+    assert_eq!(source.asked(), 2);
+}
+
+#[tokio::test]
+async fn an_unreachable_logo_is_tried_once_more_on_a_later_run() {
+    let kit = prices_kit(Cluster::MainnetBeta, true);
+    let source = LogoSource::answering(wallet_core::portfolio::LogoFetch::Unreachable);
+    let scheduler = logos_scheduler(&kit, source.clone());
+    settle().await;
+    // A logo that cannot be reached does not fail the job.
+    scheduler.run_now(super::PRICES_JOB).await.unwrap();
+    settle().await;
+    assert_eq!(source.asked(), 2);
+    assert_eq!(logo_of(&kit, &pk(9)), None);
+    scheduler.run_now(super::PRICES_JOB).await.unwrap();
+    settle().await;
+    assert_eq!(source.asked(), 4);
+    // Twice is enough while the app runs.
+    scheduler.run_now(super::PRICES_JOB).await.unwrap();
+    settle().await;
+    assert_eq!(source.asked(), 4);
+    assert_eq!(logo_of(&kit, &pk(9)), None);
+}
+
+#[tokio::test]
+async fn prices_land_before_any_logo_does() {
+    let kit = prices_kit(Cluster::MainnetBeta, true);
+    let gate = Arc::new(tokio::sync::Notify::new());
+    let source = Arc::new(LogoSource {
+        answer: png(),
+        asked: Mutex::new(Vec::new()),
+        gate: Some(gate.clone()),
+    });
+    let scheduler = logos_scheduler(&kit, source.clone());
+    settle().await;
+    let run = tokio::spawn({
+        let scheduler = scheduler.clone();
+        async move { scheduler.run_now(super::PRICES_JOB).await }
+    });
+    settle().await;
+    // The first logo is still on its way, and the prices are in already.
+    assert_eq!(source.asked(), 1);
+    assert!(!run.is_finished());
+    assert!(kit
+        .core
+        .slices()
+        .holdings
+        .get()
+        .market
+        .quote(&pk(9))
+        .is_some());
+    assert_eq!(
+        logo_of(&kit, &wallet_core::portfolio::WRAPPED_SOL_MINT),
+        None
+    );
+    gate.notify_one();
+    settle().await;
+    gate.notify_one();
+    run.await.unwrap().unwrap();
+    settle().await;
+    assert!(logo_of(&kit, &pk(9)).is_some());
+}
+
 // ---- Pacing the token accounts.
 
 fn tokens_scheduler(kit: &app_core::testing::Kit, rpc: Arc<FakeRpc>) -> Scheduler {

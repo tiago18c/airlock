@@ -11,7 +11,7 @@ use app_core::bridge::{BridgeAnswer, BridgeQueue};
 use app_core::{Core, NoticeId, Notices, Settings, SyncStatus};
 use dioxus::prelude::{CopyValue, Memo, ReadSignal, ReadableExt, Signal, WritableExt};
 use solana_pubkey::Pubkey;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use wallet_core::{
     AddressBook, ChainSnapshot, Cluster, EnrollError, HoldingSummary, Holdings, IdlBundleReport,
@@ -110,6 +110,10 @@ pub struct Session {
     /// Programs a node said publish no IDL, by the node's URL. Not asked
     /// again while the app runs.
     pub idl_misses: CopyValue<HashSet<(String, Pubkey)>>,
+    /// Token logos read from the logos folder, as `data:` URLs, by mint.
+    /// `None` for a file that could not be read. Kept while the app runs,
+    /// so each file is read once. See [`Session::logo_url`].
+    pub logo_urls: CopyValue<HashMap<Pubkey, Option<String>>>,
     /// Last XMSS leaf and salt per account, so a second Sign press reuses them.
     pub xmss_retries: Signal<wallet_core::vector::XmssRetryCache>,
     /// Rotations this device was given to send, by the device that holds
@@ -178,6 +182,7 @@ impl Session {
         idls: Signal<AppIdls>,
         idl_pack: Signal<crate::platform::idl_pack::IdlPackState>,
         idl_misses: CopyValue<HashSet<(String, Pubkey)>>,
+        logo_urls: CopyValue<HashMap<Pubkey, Option<String>>>,
         xmss_retries: Signal<wallet_core::vector::XmssRetryCache>,
         received_rotations: Signal<Vec<wallet_core::protocol::KeyRotation>>,
         tab: Signal<Tab>,
@@ -200,6 +205,7 @@ impl Session {
             idls,
             idl_pack,
             idl_misses,
+            logo_urls,
             xmss_retries,
             received_rotations,
             tab,
@@ -288,6 +294,35 @@ impl Session {
     /// Turn away the site that made request `id` from now on.
     pub fn bridge_block(&self, id: &str) -> bool {
         self.command(|core| core.bridge_block(id))
+    }
+
+    /// The logo the prices job kept for `mint`, in `kind`, as a `data:` URL
+    /// for an `img`: the page never loads a remote image. The file is read
+    /// the first time it is asked for and kept in memory after, so a row
+    /// drawn again does not read it again. `None` when the file is gone,
+    /// and always in the browser build, which keeps no logos.
+    pub fn logo_url(
+        &self,
+        mint: &Pubkey,
+        kind: wallet_core::portfolio::LogoKind,
+    ) -> Option<String> {
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let mut urls = self.logo_urls;
+            if let Some(known) = urls.peek().get(mint) {
+                return known.clone();
+            }
+            let url =
+                app_core::storage::load_logo(self.core().ports().storage.as_ref(), mint, kind)
+                    .map(|bytes| app_core::storage::logo_data_url(kind, &bytes));
+            urls.write().insert(*mint, url.clone());
+            url
+        }
+        #[cfg(target_arch = "wasm32")]
+        {
+            let _ = (mint, kind);
+            None
+        }
     }
 
     /// The clock of the core, which a test can move.

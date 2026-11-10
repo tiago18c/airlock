@@ -1,6 +1,8 @@
 //! Prices for the portfolio: what the Tokens API says about the mints held by
 //! the wallets and the watched addresses. Public data: runs while the vault is
-//! locked, as long as a key is set and the cluster is mainnet.
+//! locked, as long as a key is set and the cluster is mainnet. Once the prices
+//! are applied, it downloads the logos of tokens it has none for (see
+//! [`super::logos`]).
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -9,6 +11,7 @@ use solana_pubkey::Pubkey;
 use wallet_core::portfolio::{prices_apply_to, MarketSource};
 use wallet_core::{AddressBook, AddressKind};
 
+use super::logos::{fetch_logos, LogoTries};
 use super::scheduler::{Cancelled, JobCtx, JobFn, JobOk, JobResult, Scheduler};
 
 /// Job id for portfolio prices.
@@ -30,14 +33,16 @@ pub fn register_prices(scheduler: &Scheduler) {
 
 /// [`register_prices`] with another service.
 pub fn register_prices_with(scheduler: &Scheduler, source: SourceFn) {
+    let tries = LogoTries::default();
     let work: JobFn = Arc::new(move |ctx| {
         let source = source.clone();
-        Box::pin(async move { run_prices(ctx, source).await })
+        let tries = tries.clone();
+        Box::pin(async move { run_prices(ctx, source, tries).await })
     });
     scheduler.register(PRICES_JOB, PRICES_INTERVAL, work);
 }
 
-async fn run_prices(ctx: JobCtx, source: SourceFn) -> JobResult {
+async fn run_prices(ctx: JobCtx, source: SourceFn, tries: LogoTries) -> JobResult {
     let slices = ctx.core.slices();
     let Some(key) = slices.settings.get().tokens_api_key.clone() else {
         return Ok(JobOk {
@@ -72,6 +77,9 @@ async fn run_prices(ctx: JobCtx, source: SourceFn) -> JobResult {
             let priced = update.quotes.as_ref().map_or(0, Vec::len);
             ctx.core
                 .holdings_deferred("market", |holdings| holdings.market.apply(update, now));
+            // After the prices, which are on screen by now, and with nothing
+            // to report: a logo that did not come is asked for again later.
+            fetch_logos(&ctx, source.as_ref(), &mints, &tries).await;
             Ok(JobOk {
                 note: Some(format!("Priced {priced} tokens.")),
                 ..JobOk::default()

@@ -4,6 +4,8 @@
 mod dirs;
 #[cfg(not(target_arch = "wasm32"))]
 mod file;
+#[cfg(not(target_arch = "wasm32"))]
+mod logos;
 #[cfg(target_arch = "wasm32")]
 mod web;
 
@@ -12,6 +14,8 @@ pub use dirs::{app_dirs, set_app_dirs, set_base_dir, AppDirs};
 pub(crate) use file::log_data_dir_move;
 #[cfg(not(target_arch = "wasm32"))]
 pub use file::{claim_data_dir, data_dir, logs_dir, DataDirClaim, FileStorage};
+#[cfg(not(target_arch = "wasm32"))]
+pub use logos::{load_logo, logo_data_url, logo_file, save_logo, LOGOS_DIR};
 #[cfg(target_arch = "wasm32")]
 pub use web::{claim_web_data, LocalStorage, WebDataClaim, WebIdlBodies};
 

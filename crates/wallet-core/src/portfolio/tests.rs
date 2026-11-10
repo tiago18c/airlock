@@ -19,6 +19,7 @@ fn quote(symbol: &str, price: f64, change: f64) -> MarketQuote {
         name: None,
         price_usd: Some(price),
         change_24h_pct: Some(change),
+        logo_uri: None,
     }
 }
 
