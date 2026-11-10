@@ -3511,8 +3511,9 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 /* Share with another device: the panel is as wide as its code, which keeps
    its own white margin. The code takes what the dialog leaves: as wide as
    the dialog, and as high as the window less the rest of the dialog, about
-   520px with the text closed, so the whole of it fits a window 900px high
-   without scrolling. The Play row and its hint of a code in several frames
+   580px with the text closed and the line that says what the code carries
+   on two lines, so the whole of it fits a window 900px high without
+   scrolling. The Play row and its hint of a code in several frames
    take about 90px more. */
 .share-next { margin: 0; color: var(--text-2); font-size: var(--text-md); }
 /* What the code carries, in words, between it and its frame details. */
@@ -3520,10 +3521,10 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 @media (min-width: 640px) {
   .modal.share .qr-wrap { justify-self: center; padding: var(--space-2); }
   .modal.share .qr-svg svg {
-    width: min(36rem, calc(100vw - 120px), max(200px, calc(100vh - 524px)));
+    width: min(36rem, calc(100vw - 120px), max(200px, calc(100vh - 584px)));
   }
   .modal.share:has(.qr-frames) .qr-svg svg {
-    width: min(36rem, calc(100vw - 120px), max(200px, calc(100vh - 614px)));
+    width: min(36rem, calc(100vw - 120px), max(200px, calc(100vh - 674px)));
   }
 }
 /* The row under the text holds only what the caller adds. */
