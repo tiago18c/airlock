@@ -141,6 +141,9 @@ fn NoticesBody() -> Element {
     // Clear keeps a transaction still in flight, so with only those left
     // it has nothing to act on.
     let show_clear = !phone || notices.items().iter().any(|n| !n.pinned());
+    // With nothing filed yet a phone leaves out the filters, which would
+    // narrow nothing, and says instead what will be filed here.
+    let none_yet = phone && empty;
 
     rsx! {
         div { class: "notice-panel-head",
@@ -170,24 +173,35 @@ fn NoticesBody() -> Element {
                 }
             }
         }
-        div { class: "segmented notice-filters", role: "group", aria_label: "Filter",
-            for option in [
-                NoticeFilter::All,
-                NoticeFilter::Transactions,
-                NoticeFilter::Browser,
-                NoticeFilter::Other,
-            ] {
-                button {
-                    class: if filter() == option { "tab on" } else { "tab" },
-                    r#type: "button",
-                    key: "{option.label()}",
-                    onclick: move |_| filter.set(option),
-                    "{option.label()}"
+        if !none_yet {
+            div { class: "segmented notice-filters", role: "group", aria_label: "Filter",
+                for option in [
+                    NoticeFilter::All,
+                    NoticeFilter::Transactions,
+                    NoticeFilter::Browser,
+                    NoticeFilter::Other,
+                ] {
+                    button {
+                        class: if filter() == option { "tab on" } else { "tab" },
+                        r#type: "button",
+                        key: "{option.label()}",
+                        onclick: move |_| filter.set(option),
+                        "{option.label()}"
+                    }
                 }
             }
         }
         div { class: "notice-list",
-            if groups.is_empty() {
+            if none_yet {
+                // What the filters sort: transactions, requests from other
+                // apps and sites, and the rest (the vault, syncs, saves).
+                p { class: "muted notice-none",
+                    Icon { glyph: Glyph::Bell }
+                    span {
+                        "Transactions you send, requests from apps and sites, and the vault locking or a sync or save failing show up here."
+                    }
+                }
+            } else if groups.is_empty() {
                 p { class: "muted notice-empty", "No notifications yet." }
             } else {
                 for (day_label, day_items) in groups {

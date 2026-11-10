@@ -35,11 +35,6 @@ pub fn AddressRow(
     /// its own.
     #[props(default)]
     no_label: bool,
-    /// The short address can lose two more characters at each end where
-    /// room is short: they are marked `addr-short-more`, for the caller's
-    /// styles to hide. It reads the same to a screen reader either way.
-    #[props(default)]
-    shrinks: bool,
 ) -> Element {
     let described = use_described(pubkey);
     let care = needs_care(&described);
@@ -75,14 +70,6 @@ pub fn AddressRow(
                 }
                 if full {
                     code { class: "addr-short mono", "{pubkey}" }
-                } else if let (true, Some([head, more_head, more_tail, tail])) = (shrinks, short_parts(&pubkey)) {
-                    code { class: "addr-short",
-                        "{head}"
-                        span { class: "addr-short-more", "{more_head}" }
-                        "…"
-                        span { class: "addr-short-more", "{more_tail}" }
-                        "{tail}"
-                    }
                 } else {
                     code { class: "addr-short", "{short_pubkey(&pubkey)}" }
                 }
@@ -102,21 +89,4 @@ pub fn AddressRow(
             }
         }
     }
-}
-
-/// `short_pubkey`'s form in four parts: what a tighter form keeps at each
-/// end, and the two characters beside the ellipsis that it leaves out. None
-/// for an address too short to have been shortened.
-fn short_parts(pubkey: &Pubkey) -> Option<[String; 4]> {
-    let short = short_pubkey(pubkey);
-    let (head, tail) = short.split_once('…')?;
-    // Base58 is ASCII, so these are character boundaries.
-    let (keep_head, more_head) = head.split_at(head.len().checked_sub(2)?);
-    let (more_tail, keep_tail) = tail.split_at(2.min(tail.len()));
-    Some([
-        keep_head.to_string(),
-        more_head.to_string(),
-        more_tail.to_string(),
-        keep_tail.to_string(),
-    ])
 }
