@@ -131,7 +131,7 @@ pub fn PortfolioPanel() -> Element {
 
     rsx! {
         section { class: "page",
-            div { class: "stack",
+            div { class: "stack pf-stack",
                 div { class: "pane-head",
                     div {
                         h2 { "Portfolio" }
@@ -375,8 +375,11 @@ fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>, colors: Colo
                             span { class: "pf-excludes", "{excludes}" }
                         }
                         if let Some(stale) = stale {
+                            // The rows' own dot in front, so this line is the
+                            // legend of the dots further down.
                             span { class: "pf-stale-note",
                                 title: "The Tokens API says the market data of these tokens has not been updated lately, so their prices and 24h changes may be out of date. A dot at a value marks each one.",
+                                span { class: "pf-stale-mark", aria_hidden: "true" }
                                 "{stale}"
                             }
                         }
@@ -784,11 +787,15 @@ fn Section(
     let common = common_warnings(&lines, &tip_only);
     let skip: Vec<String> = common.iter().chain(&tip_only).cloned().collect();
     let now = unix_now();
-    let common_words = common
-        .iter()
-        .map(|code| warning_text(code))
-        .collect::<Vec<_>>()
-        .join(", ");
+    let common_words = and_list(common.iter().map(|code| warning_text(code)).collect());
+    // The hint may already have named the Tokens API: the sentence after it
+    // then says "It".
+    let common_who = if hint.starts_with("The Tokens API") {
+        "It"
+    } else {
+        "The Tokens API"
+    };
+    let common_all = all_of(count);
     let common_tip = common
         .iter()
         .filter_map(|code| warning_tip(code, "these tokens", 0, now))
@@ -807,12 +814,15 @@ fn Section(
                 if phone {
                     p { class: "hint pf-hint",
                         "{hint}"
+                        // One plain sentence, the warning's words alone in
+                        // the warning colour.
                         if !common.is_empty() {
-                            " "
+                            " {common_who} lists {common_all} as "
                             span { class: "pf-common-warn",
                                 title: if !common_tip.is_empty() { "{common_tip}" },
-                                "The Tokens API flags each one: {common_words}."
+                                "{common_words}"
                             }
+                            "."
                         }
                     }
                 } else {
@@ -1067,6 +1077,15 @@ fn LineRow(
                     span { class: "pf-send-slot" }
                 }
             }
+            // On a phone the dot's tooltip cannot be read, so the opened
+            // asset says it in words: a tap on the row answers what the dot
+            // at its value means.
+            if open() && stale && !stale_tip.is_empty() {
+                p { class: "pf-stale-line",
+                    span { class: "pf-stale-mark", aria_hidden: "true" }
+                    "{stale_tip}"
+                }
+            }
             if open() {
                 // One line per wallet, on the table's columns: the wallet
                 // where the asset and its holders are, its amount under
@@ -1160,6 +1179,29 @@ fn stale_note(count: usize) -> Option<String> {
         0 => None,
         1 => Some("1 price is outdated".into()),
         n => Some(format!("{n} prices are outdated")),
+    }
+}
+
+/// Words for every one of `count` things, two or more: "both", "all four".
+fn all_of(count: usize) -> String {
+    const WORDS: [&str; 9] = [
+        "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+    ];
+    match count {
+        2 => "both".into(),
+        3..=10 => format!("all {}", WORDS[count - 2]),
+        n => format!("all {n}"),
+    }
+}
+
+/// Phrases as a list in a sentence: "a", "a and b", "a, b and c".
+fn and_list(mut items: Vec<String>) -> String {
+    match items.len() {
+        0 | 1 => items.pop().unwrap_or_default(),
+        _ => {
+            let last = items.pop().unwrap_or_default();
+            format!("{} and {last}", items.join(", "))
+        }
     }
 }
 
@@ -1633,6 +1675,14 @@ mod tests {
         assert_eq!(stale_note(0), None);
         assert_eq!(stale_note(1).as_deref(), Some("1 price is outdated"));
         assert_eq!(stale_note(3).as_deref(), Some("3 prices are outdated"));
+        assert_eq!(all_of(2), "both");
+        assert_eq!(all_of(4), "all four");
+        assert_eq!(all_of(12), "all 12");
+        assert_eq!(and_list(vec!["unverified".into()]), "unverified");
+        assert_eq!(
+            and_list(vec!["a".into(), "b".into(), "c".into()]),
+            "a, b and c"
+        );
     }
 
     #[test]

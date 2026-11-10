@@ -4090,8 +4090,28 @@ textarea.short { min-height: 64px; }
    tinted block. An outdated price is a dot at the value, and the total card
    says once how many there are. */
 .app.phone .pf-table, .app.phone .pf-group { --pf-send-w: var(--control-lg); }
-.app.phone .pf-summary { gap: var(--space-2); }
+/* A tighter pane, so that the first screen reaches the head of the first
+   folded group under the holdings. */
+.app.phone .pf-stack { gap: var(--space-3); }
+.app.phone .pf-summary { gap: var(--space-2); padding-block: var(--space-3); }
+.app.phone .pf-source { line-height: 1.35; }
+/* The cards' gap would come between the table's groups, on top of each
+   group's own padding: the space after a group is its padding alone, as
+   after the last one. The column heads are hidden here, so the first group
+   is the one at the top of the table. */
+.app.phone .pf-table { gap: 0; }
+.app.phone .pf-table > .pf-cols + .pf-section { padding-top: 0; }
+/* The wallet picker reads as one of the buttons beside it. */
+.app.phone .pf-controls select { font-size: var(--text-base); font-weight: var(--weight-medium); }
 .app.phone .pf-stale-note { font-size: var(--text-md); color: var(--warn-text); }
+/* An opened asset whose price is outdated says so, past the logo column. */
+.app.phone .pf-stale-line {
+  margin: 0;
+  padding: 0 var(--space-3) var(--space-1) calc(var(--space-1) + 32px + var(--space-3));
+  font-size: var(--text-sm);
+  line-height: var(--leading-tight);
+  color: var(--warn-text);
+}
 .app.phone .pf-stale-mark {
   display: inline-block;
   width: 7px;
@@ -4174,15 +4194,18 @@ textarea.short { min-height: 64px; }
 .app.phone .pf-send { height: var(--control-lg); min-height: var(--control-lg); }
 .app.phone .pf-line-head > .pf-send .icon { width: 18px; height: 18px; }
 /* An opened asset: its wallets on the rows' grid, past a rail in the logo's
-   column that ties them to the asset above. */
+   column that ties them to the asset above. The rail is one line down all
+   of them, drawn by the list and not by each row, so it has no breaks. */
 .app.phone .pf-share > .pf-share-main { min-height: 48px; padding-block: var(--space-1); font-size: var(--text-base); }
-.app.phone .pf-share-main > .pf-share-gap:first-child {
-  grid-column: 1;
-  grid-row: 1 / span 2;
-  justify-self: center;
-  align-self: stretch;
+.app.phone .pf-share-main > .pf-share-gap:first-child { grid-column: 1; grid-row: 1 / span 2; }
+.app.phone .pf-shares { position: relative; }
+.app.phone .pf-shares::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: var(--space-2);
+  left: calc(var(--space-1) + 15px);
   width: 2px;
-  margin-block: calc(-1 * var(--space-1));
   border-radius: var(--radius-full);
   background: var(--border-strong);
 }
