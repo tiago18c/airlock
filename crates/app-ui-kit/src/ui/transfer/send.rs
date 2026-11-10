@@ -40,17 +40,19 @@ pub fn object_previews(objects: &[QrObject], chunk: usize) -> Result<Vec<QrPrevi
 
 /// `objects`, one transfer, as QR codes and as text to copy. `children` go
 /// in a button row under the text. `collapsed` keeps the text behind "Show
-/// as text", with Copy text beside it.
+/// as text", with Copy text beside it. `caption`, when given, says in words
+/// what the codes carry, under the code.
 #[component]
 pub fn PayloadShare(
     objects: Vec<QrObject>,
     #[props(default)] short: bool,
     #[props(default)] collapsed: bool,
+    #[props(default)] caption: Option<String>,
     #[props(default)] children: Element,
 ) -> Element {
     let text = payload_json(&objects).map_err(|e| e.to_string());
     rsx! {
-        QrCarousel { objects }
+        QrCarousel { objects, caption }
         match text {
             Ok(text) => rsx! {
                 CopyableText { label: "Text", text, short, collapsed }
@@ -124,9 +126,11 @@ pub fn CopyableText(
 }
 
 /// Plays `objects`, one transfer, as QR frames. The frames and the timer
-/// belong to this component, so both stop when it unmounts.
+/// belong to this component, so both stop when it unmounts. `caption`, when
+/// given, is a line under the code, above its frame details, that says what
+/// it carries.
 #[component]
-pub fn QrCarousel(objects: Vec<QrObject>) -> Element {
+pub fn QrCarousel(objects: Vec<QrObject>, #[props(default)] caption: Option<String>) -> Element {
     // A phone's screen is small: its codes start large, in more frames.
     let phone = crate::ui::use_phone_layout();
     let mut large = use_signal(move || phone);
@@ -175,6 +179,9 @@ pub fn QrCarousel(objects: Vec<QrObject>) -> Element {
         } else if let Some(frame) = current {
             div { class: "qr-wrap",
                 div { class: "qr-svg", dangerous_inner_html: frame.svg }
+            }
+            if let Some(caption) = caption {
+                p { class: "qr-caption", "{caption}" }
             }
             div { class: "frame-status",
                 strong { "QR {frame.index + 1} of {frame.count}" }

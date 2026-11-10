@@ -137,33 +137,44 @@ pub fn ProgramList(explained_programs: Vec<wallet_core::ProgramLine>) -> Element
     let checking = use_signal(|| false);
     let check_note = use_signal(|| None::<String>);
     rsx! {
-        h3 { "Programs" }
+        // Check programs is the list's own action, at the end of its heading.
+        div { class: "program-list-head",
+            h3 { "Programs" }
+            div { class: "program-list-check",
+                if let Some(text) = check_note() {
+                    span { class: "muted", "{text}" }
+                }
+                button { class: "sm",
+                    disabled: checking() || no_idl_to_check,
+                    onclick: move |_| {
+                        check_many(session, check_ids.clone(), checking, check_note)
+                    },
+                    if checking() { "Checking…" } else { "Check programs" }
+                }
+            }
+        }
         if let Some(text) = session.idl_pack_note() {
             p { class: "hint", "{text}" }
-        }
-        div { class: "btn-row",
-            button {
-                disabled: checking() || no_idl_to_check,
-                onclick: move |_| {
-                    check_many(session, check_ids.clone(), checking, check_note)
-                },
-                if checking() { "Checking…" } else { "Check programs" }
-            }
-            if let Some(text) = check_note() {
-                span { class: "muted", "{text}" }
-            }
         }
         ul { class: "book-list tx-rows",
             for line in explained_programs {
                 li { class: "book-row",
                     key: "{line.program_id}",
                     div { class: "chip-row",
-                        if let Some(name) = line.name.clone() {
-                            span { "{name}" }
+                        // The chip names the program. The IDL's name is
+                        // written only where nothing else names it.
+                        if session.label_of(&line.program_id).is_none() {
+                            if let Some(name) = line.name.clone() {
+                                span { "{name}" }
+                            }
                         }
                         Address { pubkey: line.program_id }
                         if let Some(sha) = line.sha256 {
-                            code { class: "mono", "{short_checksum(&sha)}" }
+                            span { class: "idl-checksum",
+                                title: "The first bytes of the SHA-256 checksum of the IDL this device read the program's instructions with",
+                                "IDL "
+                                code { "{short_checksum(&sha)}" }
+                            }
                         }
                         match line.origin {
                             Some(IdlOrigin::Builtin) => rsx! { span { class: "chip", "built in" } },

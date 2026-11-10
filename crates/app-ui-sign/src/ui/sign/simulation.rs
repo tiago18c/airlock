@@ -91,7 +91,7 @@ pub(in crate::ui) fn SimulationDetails(
     limit: Option<u32>,
     inspect: bool,
 ) -> Element {
-    let logs = simulation.logs.join("\n");
+    let logs = &simulation.logs;
     let calls: Vec<(usize, Vec<wallet_core::Instruction>)> = simulation
         .inner
         .iter()
@@ -132,9 +132,92 @@ pub(in crate::ui) fn SimulationDetails(
                 }
             }
             if !logs.is_empty() {
-                h4 { "Program log" }
-                pre { class: "logs", "{logs}" }
+                ProgramLog { lines: simulation.logs.clone() }
             }
         }
+    }
+}
+
+/// The program log, with each program the app knows by name written by
+/// that name, its address in the line's tooltip. "Raw" shows the log as the
+/// node returned it.
+#[component]
+fn ProgramLog(lines: Vec<String>) -> Element {
+    let session = use_context::<Session>();
+    let mut raw = use_signal(|| false);
+    let named: Vec<(String, Option<String>)> = lines
+        .iter()
+        .map(
+            |line| match name_programs(line, |pubkey| session.label_of(pubkey)) {
+                Some((shown, address)) => (shown, Some(address)),
+                None => (line.clone(), None),
+            },
+        )
+        .collect();
+    let raw_text = lines.join("\n");
+    rsx! {
+        div { class: "log-head",
+            h4 { "Program log" }
+            button {
+                class: if raw() { "sm log-raw on" } else { "sm log-raw" },
+                r#type: "button",
+                aria_pressed: "{raw()}",
+                title: "Show the log exactly as the node returned it, with every program by its address",
+                onclick: move |_| raw.toggle(),
+                "Raw"
+            }
+        }
+        if raw() {
+            pre { class: "logs", "{raw_text}" }
+        } else {
+            pre { class: "logs",
+                for (i, (text, title)) in named.into_iter().enumerate() {
+                    span { key: "{i}", class: "log-line", title, "{text}" }
+                }
+            }
+        }
+    }
+}
+
+/// `line` with the address of the program it is about written as that
+/// program's name, and the address, or `None` when `name` does not know
+/// it. A program's
+/// address is the word after "Program " and after "Program return: ", as
+/// the runtime writes them; what a program logs itself is left as it is.
+fn name_programs(line: &str, name: impl Fn(&Pubkey) -> Option<String>) -> Option<(String, String)> {
+    let (prefix, rest) = ["Program return: ", "Program "]
+        .into_iter()
+        .find_map(|prefix| Some((prefix, line.strip_prefix(prefix)?)))?;
+    let (word, tail) = rest.split_at(rest.find(' ').unwrap_or(rest.len()));
+    let label = name(&word.parse::<Pubkey>().ok()?)?;
+    Some((format!("{prefix}{label}{tail}"), word.to_string()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_known_program_is_named_and_the_rest_of_the_log_is_left() {
+        let system = Pubkey::default();
+        let name = |pubkey: &Pubkey| (*pubkey == system).then(|| "System Program".to_string());
+        assert_eq!(
+            name_programs(&format!("Program {system} invoke [1]"), name),
+            Some((
+                "Program System Program invoke [1]".to_string(),
+                system.to_string()
+            ))
+        );
+        assert_eq!(
+            name_programs(&format!("Program return: {system} AQID"), name).map(|(text, _)| text),
+            Some("Program return: System Program AQID".to_string())
+        );
+        // A program the app does not know, and what a program logs itself.
+        let other = Pubkey::new_from_array([7; 32]);
+        assert_eq!(
+            name_programs(&format!("Program {other} success"), name),
+            None
+        );
+        assert_eq!(name_programs(&format!("Program log: {system}"), name), None);
     }
 }

@@ -710,6 +710,9 @@ input[type="range"] { width: 100%; accent-color: var(--brand); }
   color: var(--text-3);
   word-break: normal;
 }
+/* Inside a chip the short address sits on the chip's grey: the secondary
+   text colour keeps it legible there. A row's stays in the hint colour. */
+.addr .addr-short { color: var(--text-2); }
 .addr-alert { display: inline-grid; color: var(--warn-text); }
 .addr-alert .icon { width: 13px; height: 13px; }
 
@@ -3109,9 +3112,29 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
     z-index: var(--z-sticky);
   }
   .app:not(.phone) .sign-actions-bar {
+    position: relative;
     padding: var(--space-3) 0 var(--space-4);
     border-top: 1px solid var(--border);
     background: var(--bg);
+  }
+  /* While the transaction runs on under the bar, it fades out above the
+     line, so the row there reads as continuing beneath. Only while the bar
+     is pinned: when everything fits, nothing changes. */
+  .app:not(.phone) .sign-actions { container-type: scroll-state; }
+  .app:not(.phone) .sign-actions-bar::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: var(--space-6);
+    background: linear-gradient(to bottom, transparent, var(--bg));
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--fast) var(--ease);
+  }
+  @container scroll-state(stuck: bottom) {
+    .sign-actions-bar::before { opacity: 1; }
   }
 }
 
@@ -3299,6 +3322,11 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+/* The program log's heading, with its Raw toggle beside it. A line that
+   names a program by name keeps its address in the tooltip. */
+.log-head { display: flex; align-items: center; gap: var(--space-2); }
+.log-raw.on { background: var(--surface-3); border-color: var(--border-strong); color: var(--text); }
+.logs .log-line { display: block; }
 
 .callout {
   display: grid;
@@ -3409,6 +3437,18 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 }
 .tx-rows > .book-row + .book-row { border-top: 1px solid var(--border); }
 .tx-rows > .book-row:hover { border-color: var(--border); box-shadow: none; }
+/* The Programs heading, with Check programs at the end of its line, and the
+   checksum of the IDL each program is read with. */
+.program-list-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.program-list-check {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+.idl-checksum { color: var(--text-2); font-size: var(--text-sm); white-space: nowrap; }
+.idl-checksum code { font-size: var(--text-sm); }
 
 /* What Summary leaves out, with a link to Inspect. */
 .ix-left-out {
@@ -3475,6 +3515,8 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
    without scrolling. The Play row and its hint of a code in several frames
    take about 90px more. */
 .share-next { margin: 0; color: var(--text-2); font-size: var(--text-md); }
+/* What the code carries, in words, between it and its frame details. */
+.qr-caption { color: var(--text); }
 @media (min-width: 640px) {
   .modal.share .qr-wrap { justify-self: center; padding: var(--space-2); }
   .modal.share .qr-svg svg {
@@ -3498,6 +3540,8 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 /* A signer whose signature comes from elsewhere offers the share dialog at
    the end of its row. */
 .signer-share { margin-left: auto; }
+/* What is still needed of others, under the signatures it is about. */
+.signer-hint { color: var(--text-2); }
 /* What the transaction's format allows, above its signatures. */
 .note.format-note { display: flex; align-items: flex-start; gap: var(--space-2); }
 .format-note .icon { flex: none; width: 16px; height: 16px; margin-top: 1px; }

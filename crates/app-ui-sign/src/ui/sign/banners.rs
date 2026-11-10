@@ -92,7 +92,8 @@ pub(in crate::ui) fn RefreshBlockhash() -> Element {
 }
 
 /// `share` opens the share dialog, for a signature that has to come from
-/// another device: such a row offers it at its end.
+/// another device: such a row offers it at its end. `None` while Share is
+/// the screen's primary button, so it is offered once.
 #[component]
 fn SignerRow(
     line: wallet_core::SignerLine,
@@ -132,7 +133,9 @@ fn SignerRow(
                 if !phone {
                     span { class: "signer-role", "{role}" }
                 }
-                AddressRow { pubkey: line.authority_chip(), full: inspect,
+                // Copy sits right after the address it copies, before the chip.
+                AddressRow { pubkey: line.authority_chip(), full: inspect, no_copy: true,
+                    CopyButton { text: line.authority_chip().to_string() }
                     if let SignerRole::Authority { address } = line.role {
                         // A Vector row without the controlling key only knows the
                         // account; do not print it twice around "for".
