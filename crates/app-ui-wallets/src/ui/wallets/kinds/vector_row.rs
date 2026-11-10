@@ -464,7 +464,7 @@ pub(super) fn VectorFacts(
                     if kept_nonces == 1 {
                         "A rotation to the next key is signed, and this device has not been shown that it landed."
                     } else {
-                        "A rotation to the next key is signed, at each of {kept_nonces} nonces the account may be at, and this device has not been shown that it landed."
+                        "A rotation to the next key is signed, once at each of {kept_nonces} nonces, and this device has not been shown that it landed."
                     }
                     " Show it again for the online device as often as needed: that signs nothing. Once it has landed, scan the account's state from the online device on Sign, and this device signs with the next key."
                 }

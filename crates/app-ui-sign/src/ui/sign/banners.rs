@@ -263,19 +263,11 @@ pub(in crate::ui) fn KeptRotations() -> Element {
             for rotation in wallets.kept_rotations.iter().cloned() {
                 {
                     let account = Pubkey::new_from_array(rotation.account);
-                    let label = wallets
-                        .summaries
-                        .iter()
-                        .find(|wallet| wallet.address == Some(account))
-                        .map(|wallet| wallet.label.clone());
                     let signed = rotation.signed.len();
                     rsx! {
                         div { key: "{account}", class: "btn-row",
                             span {
                                 "Key rotation of "
-                                if let Some(label) = label {
-                                    "{label} "
-                                }
                                 Address { pubkey: account }
                                 if signed > 1 {
                                     span { class: "muted", " · signed at {signed} nonces" }
