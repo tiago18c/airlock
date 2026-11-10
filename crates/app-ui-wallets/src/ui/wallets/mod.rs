@@ -2,8 +2,8 @@ use super::lock::VaultUnlock;
 use crate::state::forms::{AddWalletMode, SendOpen, WalletForm};
 use crate::state::session::{Session, Tab, WalletSummary};
 use crate::ui::wallets::kinds::{
-    ContractWalletRow, CurrentChip, ExportKeysModal, HardwareForm, KeyImportForm, OfflineForm,
-    ProgrammaticForm, SquadsForm, VectorForm, WalletRowMenu,
+    ActionSheet, ContractWalletRow, CurrentChip, ExportKeysModal, HardwareForm, KeyImportForm,
+    OfflineForm, ProgrammaticForm, SquadsForm, VectorForm, WalletRowMenu,
 };
 use crate::ui::{format_sol, AddressHeader, CopyButton, Glyph, HelpTip, Icon, PaneMenu};
 use dioxus::prelude::*;
@@ -62,6 +62,46 @@ pub fn WalletsPanel() -> Element {
     // Burn and close opens on the wallet in use, and picks another there.
     let first_wallet = current.or_else(|| all.first().map(|wallet| wallet.id));
 
+    // The pane's less used actions. A wider screen lists them in a menu
+    // under the three lines. On a phone that menu would cover the first
+    // card, so the three lines open a bottom sheet with the same rows, as a
+    // card's three dots do: see `ActionSheet`.
+    let mut pane_sheet_open = use_signal(|| false);
+    let (item_class, item_role) = if phone {
+        ("more-item", None)
+    } else {
+        ("pane-menu-item", Some("menuitem"))
+    };
+    let pane_actions = rsx! {
+        button { class: item_class,
+            role: item_role,
+            title: "Show the public keys of wallets here, for another device to add them",
+            onclick: move |_| export_open.set(true),
+            Icon { glyph: Glyph::Qr }
+            "Export keys"
+        }
+        if online {
+            button { class: item_class,
+                role: item_role,
+                title: "Move everything a wallet holds to another address: to rotate a key, or to move to a programmatic signer, a Vector account or a multisig",
+                onclick: move |_| session.open_migrate(current),
+                Icon { glyph: Glyph::Migrate }
+                "Migrate wallet"
+            }
+            button { class: item_class,
+                role: item_role,
+                title: "Burn and close a wallet's token accounts, to get their rent back",
+                onclick: move |_| {
+                    if let Some(wallet) = first_wallet {
+                        session.open_cleanup(wallet);
+                    }
+                },
+                Icon { glyph: Glyph::Coins }
+                "Manage tokens"
+            }
+        }
+    };
+
     rsx! {
         section { class: "page",
             div { class: "stack",
@@ -77,36 +117,16 @@ pub fn WalletsPanel() -> Element {
                             Icon { glyph: Glyph::Plus }
                             "Add wallet"
                         }
-                        if !all.is_empty() {
-                            PaneMenu { label: "More wallet actions",
-                                button { class: "pane-menu-item",
-                                    role: "menuitem",
-                                    title: "Show the public keys of wallets here, for another device to add them",
-                                    onclick: move |_| export_open.set(true),
-                                    Icon { glyph: Glyph::Qr }
-                                    "Export keys"
-                                }
-                                if online {
-                                    button { class: "pane-menu-item",
-                                        role: "menuitem",
-                                        title: "Move everything a wallet holds to another address: to rotate a key, or to move to a programmatic signer, a Vector account or a multisig",
-                                        onclick: move |_| session.open_migrate(current),
-                                        Icon { glyph: Glyph::Migrate }
-                                        "Migrate wallet"
-                                    }
-                                    button { class: "pane-menu-item",
-                                        role: "menuitem",
-                                        title: "Burn and close a wallet's token accounts, to get their rent back",
-                                        onclick: move |_| {
-                                            if let Some(wallet) = first_wallet {
-                                                session.open_cleanup(wallet);
-                                            }
-                                        },
-                                        Icon { glyph: Glyph::Coins }
-                                        "Manage tokens"
-                                    }
-                                }
+                        if !all.is_empty() && phone {
+                            button { class: "icon-btn",
+                                title: "More wallet actions",
+                                aria_label: "More wallet actions",
+                                aria_haspopup: "dialog",
+                                onclick: move |_| pane_sheet_open.set(true),
+                                Icon { glyph: Glyph::Menu }
                             }
+                        } else if !all.is_empty() {
+                            PaneMenu { label: "More wallet actions", {pane_actions.clone()} }
                         }
                     }
                 }
@@ -203,6 +223,9 @@ pub fn WalletsPanel() -> Element {
                 }
                 }
             }
+        }
+        ActionSheet { open: pane_sheet_open, title: "All wallets", label: "More wallet actions",
+            {pane_actions}
         }
         if modal_open() {
             AddWalletModal {}

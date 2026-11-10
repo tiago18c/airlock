@@ -78,6 +78,7 @@ pub(in crate::ui) fn KeyExportModal(keys: Vec<WalletKey>, on_close: EventHandler
 /// too: one place for each, and the card keeps only what starts something.
 ///
 /// The dialogs live here, not in the menu or the sheet, so they outlast it.
+/// The sheet is an [`ActionSheet`], as the pane's menu is on a phone.
 #[component]
 pub(in crate::ui) fn WalletRowMenu(
     wallet: WalletSummary,
@@ -136,75 +137,40 @@ pub(in crate::ui) fn WalletRowMenu(
                 }
             }
         }
-        if sheet_open() {
-            div { class: "modal-backdrop", onclick: move |_| sheet_open.set(false),
-                div {
-                    class: "modal wallet-actions",
-                    role: "dialog",
-                    aria_modal: "true",
-                    aria_label: "Actions of {label}",
-                    onclick: move |evt| evt.stop_propagation(),
-                    div { class: "stack",
-                        h3 { "{label}" }
-                        // Each row closes the sheet before it opens what it
-                        // names, so only one sheet is up at a time.
-                        div { class: "wallet-action-list",
-                            if has_details {
-                                button { class: "more-item",
-                                    title: "Details: its addresses, members and how it is set up",
-                                    aria_label: "Details of {label}",
-                                    aria_haspopup: "dialog",
-                                    onclick: move |_| {
-                                        sheet_open.set(false);
-                                        details_open.set(true);
-                                    },
-                                    Icon { glyph: Glyph::Info }
-                                    span { "Details" }
-                                }
-                            }
-                            if dialogs {
-                                button { class: "more-item",
-                                    title: "Settings: who pays its fees, and how it signs",
-                                    aria_label: "Settings of {label}",
-                                    aria_haspopup: "dialog",
-                                    onclick: move |_| {
-                                        sheet_open.set(false);
-                                        settings_open.set(true);
-                                    },
-                                    Icon { glyph: Glyph::Gear }
-                                    span { "Settings" }
-                                }
-                            }
-                            if let Some(title) = export_title {
-                                button { class: "more-item",
-                                    title,
-                                    onclick: move |_| {
-                                        sheet_open.set(false);
-                                        export_open.set(true);
-                                    },
-                                    Icon { glyph: Glyph::Qr }
-                                    span { "Export key" }
-                                }
-                            }
-                            button { class: "more-item danger",
-                                title: "Remove this wallet from this device",
-                                onclick: move |_| {
-                                    sheet_open.set(false);
-                                    on_remove.call(());
-                                },
-                                Icon { glyph: Glyph::Trash }
-                                span { "Remove" }
-                            }
-                        }
-                        div { class: "btn-row",
-                            button { class: "ghost",
-                                r#type: "button",
-                                onclick: move |_| sheet_open.set(false),
-                                "Close"
-                            }
-                        }
-                    }
+        ActionSheet { open: sheet_open, title: label.clone(), label: "Actions of {label}",
+            if has_details {
+                button { class: "more-item",
+                    title: "Details: its addresses, members and how it is set up",
+                    aria_label: "Details of {label}",
+                    aria_haspopup: "dialog",
+                    onclick: move |_| details_open.set(true),
+                    Icon { glyph: Glyph::Info }
+                    span { "Details" }
                 }
+            }
+            if dialogs {
+                button { class: "more-item",
+                    title: "Settings: who pays its fees, and how it signs",
+                    aria_label: "Settings of {label}",
+                    aria_haspopup: "dialog",
+                    onclick: move |_| settings_open.set(true),
+                    Icon { glyph: Glyph::Gear }
+                    span { "Settings" }
+                }
+            }
+            if let Some(title) = export_title {
+                button { class: "more-item",
+                    title,
+                    onclick: move |_| export_open.set(true),
+                    Icon { glyph: Glyph::Qr }
+                    span { "Export key" }
+                }
+            }
+            button { class: "more-item danger",
+                title: "Remove this wallet from this device",
+                onclick: move |_| on_remove.call(()),
+                Icon { glyph: Glyph::Trash }
+                span { "Remove" }
             }
         }
         if dialogs {
@@ -213,6 +179,53 @@ pub(in crate::ui) fn WalletRowMenu(
         if export_open() {
             if let Some(found) = found {
                 KeyExportModal { keys: vec![found.key.clone()], on_close: move |_| export_open.set(false) }
+            }
+        }
+    }
+}
+
+/// A bottom sheet of actions on a phone, in place of a menu that would
+/// open over what it acts on: a title, one row per action (`children`, each
+/// a `button.more-item` with its icon and name) and Close right under them.
+/// The Wallets pane's menu and a wallet card's three dots both open one.
+///
+/// A press on a row runs it, then bubbles up to the list and closes the
+/// sheet, as a menu closes on a choice: only one sheet is up at a time, and
+/// what the row opens is never under this one.
+#[component]
+pub(in crate::ui) fn ActionSheet(
+    open: Signal<bool>,
+    title: String,
+    /// What a screen reader calls the sheet.
+    label: String,
+    children: Element,
+) -> Element {
+    let mut open = open;
+    if !open() {
+        return rsx! {};
+    }
+    rsx! {
+        div { class: "modal-backdrop", onclick: move |_| open.set(false),
+            div {
+                class: "modal wallet-actions",
+                role: "dialog",
+                aria_modal: "true",
+                aria_label: "{label}",
+                onclick: move |evt| evt.stop_propagation(),
+                div { class: "stack",
+                    h3 { "{title}" }
+                    div { class: "wallet-action-list",
+                        onclick: move |_| open.set(false),
+                        {children}
+                    }
+                    div { class: "btn-row",
+                        button { class: "ghost",
+                            r#type: "button",
+                            onclick: move |_| open.set(false),
+                            "Close"
+                        }
+                    }
+                }
             }
         }
     }

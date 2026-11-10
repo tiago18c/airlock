@@ -4077,16 +4077,42 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
    the size of the sheet's own icons, with heavier dots, so they read as a
    button and not as a smudge. */
 .app.phone .wallet-side .wallet-more .icon { width: 20px; height: 20px; stroke-width: 3; }
-/* A card's sheet of actions: one row each, icon and name, as in More.
-   Remove keeps the danger colour. */
+/* A button a card cannot use now, such as Send on a Vector wallet that is
+   not initialized, reads as off: the sunken fill and hint text of a
+   disabled field, not a faded copy of a live button. */
+.app.phone .wallet-side button:disabled {
+  opacity: 1;
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text-3);
+}
+/* A Vector wallet not initialized yet: what it means and Initialize, in
+   one notice, the button beside the words while they leave it room. */
+.app.phone .note.vector-init {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+.app.phone .note.vector-init > p { flex: 1 1 12rem; }
+.app.phone .note.vector-init > button { flex: none; }
+/* A sheet of actions (ActionSheet): a card's, or the pane's. One row each,
+   icon and name, as in More, and Close right under them in the same
+   rhythm, so the sheet is only as tall as what it holds. Remove keeps the
+   danger colour. */
+.app.phone .modal.wallet-actions > .stack { gap: var(--space-1); }
+.app.phone .modal.wallet-actions h3 { margin-bottom: var(--space-2); }
+.app.phone .modal.wallet-actions .btn-row:last-child { margin-top: 0; }
 .app.phone .wallet-action-list { display: grid; gap: var(--space-1); }
 .app.phone .wallet-action-list > .more-item.danger,
 .app.phone .wallet-action-list > .more-item.danger .icon { color: var(--danger-text); }
-/* The pane's menu spans the header's width, so it covers the first card's
-   head whole instead of cutting through its name and chips. */
-.app.phone .wallets-head > .btn-row { position: relative; }
-.app.phone .wallets-head .pane-menu { position: static; }
-.app.phone .wallets-head .pane-menu-list { left: 0; }
+/* The pane's three lines, beside Add wallet: a square touch target, not a
+   half of the row as the header's other buttons are. */
+.app.phone .wallets-head > .btn-row > .icon-btn {
+  flex: none;
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+}
 
 /* A wallet's Settings and Details on a phone: the sheet scrolls in one
    place, its body, and its buttons stay pinned to its foot, however long
@@ -4102,13 +4128,38 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
   background: var(--surface);
 }
 
-/* A wallet's Details on a phone: each name on its own line, then its
-   value. A name and a shortened address share one line, with the copy
-   button at its end; a name too long for it is cut with an ellipsis, and
-   nothing breaks inside a word. */
-.app.phone .wallet-dialog .settings-grid.wallet-facts { grid-template-columns: minmax(0, 1fr); }
-.app.phone .wallet-facts > .setting-row { row-gap: var(--space-1); }
-.app.phone .wallet-facts .setting-value { overflow-wrap: break-word; }
+/* A wallet's Settings and Details on a phone: each name on its own line,
+   its control or value under it, the full width of the sheet. A choice
+   too long for one line wraps rather than being cut off. */
+.app.phone .wallet-dialog .settings-grid { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-4); }
+.app.phone .wallet-dialog .settings-grid > .setting-row,
+.app.phone .wallet-dialog .settings-grid > .picker,
+.app.phone .wallet-dialog .settings-grid > .picker > label { row-gap: var(--space-1); }
+.app.phone .wallet-dialog .settings-grid > .picker > .picker-menu { grid-column: 1; }
+.app.phone .wallet-dialog .setting-value > button.sm { flex: 1; height: var(--control-lg); }
+.app.phone .wallet-dialog .picker-button { white-space: normal; }
+.app.phone .wallet-dialog .picker-none { overflow: visible; }
+
+/* A wallet's Details on a phone. Every value line is one touch target
+   high, a member's as much as the vault's, so the sheet has one rhythm.
+   The facts come in groups, each under a quiet heading and a line: what
+   the wallet is, who is in it, how this device uses it. A name and a
+   shortened address share one line, with the copy button at its end; a
+   name too long for it is cut with an ellipsis, and nothing breaks inside
+   a word. */
+.app.phone .wallet-dialog .settings-grid.wallet-facts { row-gap: var(--space-3); }
+.app.phone .wallet-dialog .wallet-facts > .setting-row { row-gap: 0; }
+.app.phone .wallet-facts .setting-value { min-height: var(--control-lg); overflow-wrap: break-word; }
+.app.phone .wallet-facts .wallet-fact-list { gap: 0; }
+.app.phone .wallet-facts .wallet-fact-list > li { display: flex; align-items: center; min-height: var(--control-lg); }
+.app.phone .wallet-facts-group {
+  grid-column: 1 / -1;
+  margin-top: var(--space-2);
+  margin-bottom: calc(-1 * var(--space-2));
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.app.phone .wallet-facts-group:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
 .app.phone .wallet-facts .setting-value > .addr-row,
 .app.phone .wallet-facts .wallet-fact-list { flex: 1; }
 .app.phone .wallet-facts .addr-label { white-space: nowrap; }

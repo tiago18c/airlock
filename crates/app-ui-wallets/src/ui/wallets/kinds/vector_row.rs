@@ -133,6 +133,7 @@ pub(super) fn VectorFacts(
 ) -> Element {
     let session = use_context::<Session>();
     let network = crate::state::use_network();
+    let phone = app_ui_kit::ui::use_phone_layout();
     let mut error = use_signal(|| None::<String>);
     let note = use_signal(|| None::<String>);
     let mut busy = use_signal(|| false);
@@ -345,6 +346,19 @@ pub(super) fn VectorFacts(
             },
             VectorChain::Failed(problem) => rsx! {
                 p { class: "warn", "{problem}" }
+            },
+            // On a phone, Initialize is the one thing to do with this wallet,
+            // so it sits in the notice itself, the facts said in fewer words.
+            // On the card it is the primary button; in Settings, Save is.
+            VectorChain::Uninitialized if phone => rsx! {
+                div { class: "note on-card vector-init",
+                    p { "Not initialized on this cluster. It can receive now, and send once initialized; it keeps what it holds." }
+                    button { class: (!state_only).then_some("primary"),
+                        disabled: busy(),
+                        onclick: initialize,
+                        if busy() { "Preparing…" } else { "Initialize" }
+                    }
+                }
             },
             VectorChain::Uninitialized => rsx! {
                 p { class: "note on-card",
