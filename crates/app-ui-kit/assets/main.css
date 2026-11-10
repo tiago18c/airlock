@@ -4082,6 +4082,145 @@ textarea.short { min-height: 64px; }
   .pf-sub .copy-btn, .pf-title > .copy-btn { width: var(--control-md); min-width: var(--control-md); height: auto; min-height: var(--control-sm); }
 }
 
+/* Portfolio on a phone. A holding is a two-line row on fixed columns: its
+   logo; its symbol over its name; its value over its amount, right-aligned
+   to one edge that the group headings' totals share; and its send button in
+   a full-finger slot of its own, at the same place on every row. An opened
+   asset's wallets are rows of the same grid, on a rail inside the asset's
+   tinted block. An outdated price is a dot at the value, and the total card
+   says once how many there are. */
+.app.phone .pf-table, .app.phone .pf-group { --pf-send-w: var(--control-lg); }
+.app.phone .pf-summary { gap: var(--space-2); }
+.app.phone .pf-stale-note { font-size: var(--text-md); color: var(--warn-text); }
+.app.phone .pf-stale-mark {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: var(--space-1);
+  border-radius: var(--radius-full);
+  background: var(--warn-solid);
+  vertical-align: middle;
+}
+/* What every row of a folded group carries, as the end of its sentence. */
+.app.phone .pf-hint { margin: 0; }
+.app.phone .pf-common-warn { color: var(--warn-text); }
+/* The pane's three lines, beside Refresh: a square touch target, not a
+   share of the row as the header's other buttons are. */
+.app.phone .pf-controls > .icon-btn {
+  flex: none;
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+}
+.app.phone .pf-lines { gap: 0; }
+.app.phone .pf-line-main,
+.app.phone .pf-share-main {
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  column-gap: var(--space-3);
+  row-gap: 2px;
+}
+.app.phone .pf-line-main { min-height: 54px; padding: var(--space-2) var(--space-1); }
+.app.phone .pf-line-main > .pf-mono { grid-column: 1; grid-row: 1 / span 2; }
+.app.phone .pf-mono, .app.phone .pf-logo { width: 32px; height: 32px; }
+.app.phone .pf-line-main > .pf-asset { grid-column: 2; grid-row: 1 / span 2; }
+/* The price, its 24h change and who holds it are left to the opened row
+   and the column-wide screens, whatever the phone's width. */
+.app.phone .pf-line-main > .pf-holders,
+.app.phone .pf-line-main > .pf-price,
+.app.phone .pf-line-main > .pf-change,
+.app.phone .pf-share-main > .pf-price,
+.app.phone .pf-share-main > .pf-change { display: none; }
+.app.phone .pf-line-main > .pf-value,
+.app.phone .pf-share-main > .pf-value { grid-column: 3; grid-row: 1; align-self: end; white-space: nowrap; }
+.app.phone .pf-line-main > .pf-amount,
+.app.phone .pf-share-main > .pf-amount {
+  grid-column: 3;
+  grid-row: 2;
+  align-self: start;
+  font-size: var(--text-sm);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+/* A row with no value, in a group outside the total or before prices are
+   known: no dash, and the amount alone fills the figures' column. */
+.app.phone .pf-line-main > .pf-value.muted,
+.app.phone .pf-share-main > .pf-value.pf-none { display: none; }
+.app.phone .pf-line-main:not(:has(> .pf-value:not(.muted))) > .pf-amount {
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-size: var(--text-base);
+  color: var(--text);
+}
+.app.phone .pf-share-main:not(:has(> .pf-value:not(.pf-none))) > .pf-amount { grid-row: 1 / span 2; align-self: center; }
+/* The symbol and its marks keep to one line: a long symbol and a chip
+   shorten rather than push the row to three lines. */
+.app.phone .pf-title { flex-wrap: nowrap; }
+.app.phone .pf-title > .chip { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.app.phone .pf-line-toggle { white-space: nowrap; }
+.app.phone .pf-symbol { overflow-wrap: normal; }
+/* A mint's copy button keeps a full target but takes only its text's line. */
+.app.phone .pf-sub .copy-btn,
+.app.phone .pf-title > .copy-btn {
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+  height: var(--control-lg);
+  min-height: var(--control-lg);
+  margin-block: -12px;
+}
+/* The send button, and the empty slot of a row that cannot send: one full
+   target at the same place on every row. */
+.app.phone .pf-send,
+.app.phone .pf-send-slot { width: var(--control-lg); min-width: var(--control-lg); }
+.app.phone .pf-send { height: var(--control-lg); min-height: var(--control-lg); }
+.app.phone .pf-line-head > .pf-send .icon { width: 18px; height: 18px; }
+/* An opened asset: its wallets on the rows' grid, past a rail in the logo's
+   column that ties them to the asset above. */
+.app.phone .pf-share > .pf-share-main { min-height: 48px; padding-block: var(--space-1); font-size: var(--text-base); }
+.app.phone .pf-share-main > .pf-share-gap:first-child {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  justify-self: center;
+  align-self: stretch;
+  width: 2px;
+  margin-block: calc(-1 * var(--space-1));
+  border-radius: var(--radius-full);
+  background: var(--border-strong);
+}
+.app.phone .pf-share-main > .pf-share-who { grid-column: 2; grid-row: 1 / span 2; }
+/* The wallet's kind icon and name, then its short address with the copy
+   button right after it on its own line. The short form is always eleven
+   characters of the monospace face, so the button sits at 11ch. */
+.app.phone .pf-share-who.addr-row { display: block; position: relative; }
+.app.phone .pf-share-who.addr-row > .addr-row-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--space-2);
+}
+.app.phone .pf-share-who.addr-row .addr-label { overflow: hidden; text-overflow: ellipsis; }
+.app.phone .pf-share-who.addr-row .addr-short { order: 1; flex-basis: 100%; line-height: 16px; }
+.app.phone .pf-share-who.addr-row > .addr-row-rest {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  height: 16px;
+  margin-left: 11ch;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+.app.phone .pf-share-who.addr-row > .addr-row-rest > .copy-btn {
+  justify-content: flex-start;
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+  height: var(--control-lg);
+  min-height: var(--control-lg);
+  margin-block: -14px;
+  padding: 0 var(--space-1);
+}
+.app.phone .pf-share-mint::before { left: calc(var(--space-1) + 32px + var(--space-3)); }
+
 /* ---------- History ---------- */
 
 .history-list { display: grid; gap: var(--space-2); }

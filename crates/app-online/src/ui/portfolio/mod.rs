@@ -5,7 +5,7 @@
 use crate::actions::stake_screen::{load_key, refresh as refresh_stakes};
 use app_ui_kit::actions::unix_now;
 use app_ui_kit::state::forms::{SendAsset, SendOpen};
-use app_ui_kit::ui::{CopyButton, PaneMenu};
+use app_ui_kit::ui::{use_phone_layout, ActionSheet, CopyButton, PaneMenu};
 use app_ui_kit::{AddressRow, Glyph, Icon, Session, Tab};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
@@ -92,6 +92,43 @@ pub fn PortfolioPanel() -> Element {
         });
     };
 
+    // The pane's less used actions. A wider screen lists them in a menu
+    // under the three lines; on a phone that menu would cover the total, so
+    // the three lines open a bottom sheet with the same rows, as the Wallets
+    // pane's do: see `ActionSheet`.
+    let phone = use_phone_layout();
+    let mut menu_sheet_open = use_signal(|| false);
+    let (item_class, item_role) = if phone {
+        ("more-item", None)
+    } else {
+        ("pane-menu-item", Some("menuitem"))
+    };
+    let menu_items = rsx! {
+        if can_send {
+            button { class: item_class,
+                role: item_role,
+                title: "Burn and close token accounts of the wallet shown, or the one in use, to get their rent back",
+                onclick: move |_| {
+                    let wallet = selected
+                        .and_then(|owner| wallet_at(session, owner))
+                        .or_else(|| session.selected_wallet());
+                    if let Some(wallet) = wallet {
+                        session.open_cleanup(wallet);
+                    }
+                },
+                Icon { glyph: Glyph::Coin }
+                "Manage tokens"
+            }
+        }
+        button { class: item_class,
+            role: item_role,
+            title: "Pick the address book accounts counted here beside this device's wallets",
+            onclick: move |_| watch_open.set(true),
+            Icon { glyph: Glyph::Book }
+            "Watched addresses"
+        }
+    };
+
     rsx! {
         section { class: "page",
             div { class: "stack",
@@ -127,30 +164,16 @@ pub fn PortfolioPanel() -> Element {
                             onclick: refresh,
                             if refreshing() { "Refreshing…" } else { "Refresh" }
                         }
-                        PaneMenu { label: "More portfolio actions",
-                            if can_send {
-                                button { class: "pane-menu-item",
-                                    role: "menuitem",
-                                    title: "Burn and close token accounts of the wallet shown, or the one in use, to get their rent back",
-                                    onclick: move |_| {
-                                        let wallet = selected
-                                            .and_then(|owner| wallet_at(session, owner))
-                                            .or_else(|| session.selected_wallet());
-                                        if let Some(wallet) = wallet {
-                                            session.open_cleanup(wallet);
-                                        }
-                                    },
-                                    Icon { glyph: Glyph::Trash }
-                                    "Manage tokens"
-                                }
+                        if phone {
+                            button { class: "icon-btn",
+                                title: "More portfolio actions",
+                                aria_label: "More portfolio actions",
+                                aria_haspopup: "dialog",
+                                onclick: move |_| menu_sheet_open.set(true),
+                                Icon { glyph: Glyph::Menu }
                             }
-                            button { class: "pane-menu-item",
-                                role: "menuitem",
-                                title: "Pick the address book accounts counted here beside this device's wallets",
-                                onclick: move |_| watch_open.set(true),
-                                Icon { glyph: Glyph::Book }
-                                "Watched addresses"
-                            }
+                        } else {
+                            PaneMenu { label: "More portfolio actions", {menu_items.clone()} }
                         }
                     }
                 }
@@ -225,6 +248,9 @@ pub fn PortfolioPanel() -> Element {
                     }
                 }
             }
+        }
+        ActionSheet { open: menu_sheet_open, title: "Portfolio", label: "More portfolio actions",
+            {menu_items}
         }
         WatchModal { open: watch_open }
     }
@@ -305,6 +331,20 @@ fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>, colors: Colo
         })
         .collect();
     let excludes = excludes_note(portfolio.unpriced.len(), portfolio.left_out.len());
+    // On a phone the rows mark an outdated price only with a dot at the
+    // value, so the total says once how many there are.
+    let stale = if use_phone_layout() {
+        stale_note(
+            portfolio
+                .groups
+                .iter()
+                .flat_map(|group| group.lines.iter())
+                .filter(|line| is_stale(line))
+                .count(),
+        )
+    } else {
+        None
+    };
     let change = portfolio.change_24h_usd;
     let pct = change.map(|change| {
         let before = portfolio.total_usd - change;
@@ -326,13 +366,19 @@ fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>, colors: Colo
                         }
                     }
                 }
-                if ago.is_some() || excludes.is_some() {
+                if ago.is_some() || excludes.is_some() || stale.is_some() {
                     div { class: "pf-source",
                         if let Some(ago) = ago {
                             p { class: "hint", "Prices from the Tokens API · {ago}" }
                         }
                         if let Some(excludes) = excludes {
                             span { class: "pf-excludes", "{excludes}" }
+                        }
+                        if let Some(stale) = stale {
+                            span { class: "pf-stale-note",
+                                title: "The Tokens API says the market data of these tokens has not been updated lately, so their prices and 24h changes may be out of date. A dot at a value marks each one.",
+                                "{stale}"
+                            }
                         }
                     }
                 }
@@ -722,6 +768,9 @@ fn Section(
     names: Names,
 ) -> Element {
     let mut open = use_signal(|| false);
+    // On a phone what every row carries is a sentence of the hint, so it
+    // reads as being about the rows and not as a chip apart from them.
+    let phone = use_phone_layout();
     if lines.is_empty() {
         return rsx! {};
     }
@@ -735,6 +784,16 @@ fn Section(
     let common = common_warnings(&lines, &tip_only);
     let skip: Vec<String> = common.iter().chain(&tip_only).cloned().collect();
     let now = unix_now();
+    let common_words = common
+        .iter()
+        .map(|code| warning_text(code))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let common_tip = common
+        .iter()
+        .filter_map(|code| warning_tip(code, "these tokens", 0, now))
+        .collect::<Vec<_>>()
+        .join(" ");
     rsx! {
         div { class: "card pf-group",
             button { class: "pf-fold",
@@ -745,14 +804,27 @@ fn Section(
                 span { class: "pf-chevron", Icon { glyph: Glyph::ChevronRight } }
             }
             if open() {
-                div { class: "pf-hint-row",
-                    p { class: "hint", "{hint}" }
-                    for code in common {
-                        span {
-                            key: "{code}",
-                            class: "chip warn",
-                            title: warning_tip(&code, "these tokens", 0, now),
-                            "{warning_text(&code)}"
+                if phone {
+                    p { class: "hint pf-hint",
+                        "{hint}"
+                        if !common.is_empty() {
+                            " "
+                            span { class: "pf-common-warn",
+                                title: if !common_tip.is_empty() { "{common_tip}" },
+                                "The Tokens API flags each one: {common_words}."
+                            }
+                        }
+                    }
+                } else {
+                    div { class: "pf-hint-row",
+                        p { class: "hint", "{hint}" }
+                        for code in common.iter() {
+                            span {
+                                key: "{code}",
+                                class: "chip warn",
+                                title: warning_tip(code, "these tokens", 0, now),
+                                "{warning_text(code)}"
+                            }
                         }
                     }
                 }
@@ -859,6 +931,17 @@ fn LineRow(
     let only_sender = (senders.len() == 1).then(|| senders[0].1);
     let symbol = line.symbol.clone();
     let now = unix_now();
+    // On a phone an outdated price is a dot at the value, not a chip under
+    // the symbol: a chip on most rows would make them three lines and say
+    // nothing by being everywhere. The total card counts them.
+    let phone = use_phone_layout();
+    let stale = phone && priced && valued && is_stale(&line);
+    let stale_tip = line
+        .check
+        .as_ref()
+        .filter(|_| stale)
+        .and_then(|check| warning_tip(STALE, &symbol, check.checked_at, now))
+        .unwrap_or_default();
     let warnings: Vec<(String, Option<String>)> = line
         .check
         .as_ref()
@@ -867,6 +950,7 @@ fn LineRow(
                 .warnings
                 .iter()
                 .filter(|code| !skip.contains(code) && !tip_only.contains(code))
+                .filter(|code| !(stale && *code == STALE))
                 .map(|code| {
                     (
                         warning_text(code),
@@ -952,6 +1036,13 @@ fn LineRow(
                             }
                         }
                         span { class: "pf-value",
+                            if stale {
+                                span { class: "pf-stale-mark",
+                                    role: "img",
+                                    title: "{stale_tip}",
+                                    aria_label: "outdated price",
+                                }
+                            }
                             if let Some(usd) = line.usd { "{format_value(usd)}" } else { "–" }
                         }
                     } else if priced {
@@ -994,10 +1085,14 @@ fn LineRow(
                                 if priced {
                                     span { class: "pf-share-gap pf-price" }
                                     span { class: "pf-share-gap pf-change" }
-                                    span { class: "pf-value",
+                                    // `pf-none` when it shows nothing: a
+                                    // phone then gives the amount its line.
+                                    span {
+                                        class: if (share.usd.is_some() && several) || (!valued && !phone) { "pf-value" } else { "pf-value pf-none" },
+                                        // A phone leaves the dash out.
                                         if let (Some(usd), true) = (share.usd, several) {
                                             "{format_value(usd)}"
-                                        } else if !valued {
+                                        } else if !valued && !phone {
                                             "–"
                                         }
                                     }
@@ -1049,6 +1144,24 @@ fn LineRow(
 
 /// The Tokens API's code for a token it has no market for.
 const NO_MARKET: &str = "no_market_data";
+
+/// The Tokens API's code for a token whose market has not moved its price
+/// lately.
+const STALE: &str = "stale_data";
+
+/// A line whose price the Tokens API says is out of date.
+fn is_stale(line: &Line) -> bool {
+    warning_codes(line).any(|code| code == STALE)
+}
+
+/// The total card's word on outdated prices, when there are any.
+fn stale_note(count: usize) -> Option<String> {
+    match count {
+        0 => None,
+        1 => Some("1 price is outdated".into()),
+        n => Some(format!("{n} prices are outdated")),
+    }
+}
 
 /// The warning codes the Tokens API gave a line.
 fn warning_codes(line: &Line) -> impl Iterator<Item = &String> {
@@ -1517,6 +1630,9 @@ mod tests {
             excludes_note(2, 3).as_deref(),
             Some("Excludes 2 tokens with no price and 3 left out")
         );
+        assert_eq!(stale_note(0), None);
+        assert_eq!(stale_note(1).as_deref(), Some("1 price is outdated"));
+        assert_eq!(stale_note(3).as_deref(), Some("3 prices are outdated"));
     }
 
     #[test]
