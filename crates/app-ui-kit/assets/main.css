@@ -2615,12 +2615,13 @@ textarea.short { min-height: 64px; }
 .pf-line-head { display: flex; align-items: center; gap: var(--space-1); min-width: 0; }
 .pf-line-head > .pf-line-main { flex: 1; min-width: 0; }
 .pf-send-slot { flex: none; width: var(--control-sm); }
-/* Avatar, asset, amount, price, 24 h, value. The column heads above the
- * groups use the same tracks; their minimums are fixed, so separate grids
- * of one width line up. */
+/* Avatar, asset, amount, price, 24 h, value. The column heads at the top of
+ * each group use the same tracks; their minimums are fixed, so separate
+ * grids of one width line up. The asset gets the most room, so its symbol
+ * and chips stay on one line. */
 .pf-line-main, .pf-cols-main {
   display: grid;
-  grid-template-columns: 28px minmax(8rem, 2fr) minmax(5rem, 1.2fr) minmax(4.5rem, 1fr) minmax(4rem, 0.8fr) minmax(5rem, 1fr);
+  grid-template-columns: 28px minmax(8rem, 2.6fr) minmax(5rem, 1fr) minmax(4.5rem, 1fr) minmax(4rem, 0.8fr) minmax(5rem, 1fr);
   align-items: center;
   gap: var(--space-3);
   padding: 0 var(--space-1);
@@ -2639,28 +2640,31 @@ textarea.short { min-height: 64px; }
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
-/* Lined up with the rows inside the cards: the card's border and padding. */
+/* The first row of a priced group, laid out as its rows are: the row's
+ * avatar and asset tracks left empty, then a send slot. */
 .pf-cols {
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  margin-bottom: calc(-1 * var(--space-2));
-  padding: 0 calc(var(--space-4) + 1px);
+  padding-top: var(--space-1);
   color: var(--text-3);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 .pf-cols > .pf-cols-main { flex: 1; min-width: 0; }
-/* The symbol, then what the Tokens API says of it, on one line. */
+/* The symbol, then what the Tokens API says of it, on one line. A symbol
+ * too long for the room left shortens; its tooltip holds all of it. */
 .pf-title {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--space-1) var(--space-2);
   min-width: 0;
   min-height: 22px;
 }
+.pf-title > .chip, .pf-title > .pf-verified { flex: none; }
 .pf-line-toggle {
-  display: inline;
+  display: block;
+  min-width: 0;
   min-height: 0;
   padding: 0;
   border: 0;
@@ -2669,13 +2673,21 @@ textarea.short { min-height: 64px; }
   color: inherit;
   font: inherit;
   text-align: left;
-  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+/* The Tokens API verified the token, or it is SOL itself. */
+.pf-verified { display: inline-flex; margin-left: calc(-1 * var(--space-1)); color: var(--ok-text); }
+.pf-verified .icon { width: 14px; height: 14px; stroke-width: 2.5; }
+/* Where the name would be: a token with none shows its mint. */
+.pf-sub { display: flex; align-items: center; gap: var(--space-1); min-width: 0; font-size: var(--text-sm); }
+.pf-sub .pf-mint { font-size: var(--text-sm); color: var(--text-2); }
+.pf-sub .copy-btn { width: 20px; min-width: 20px; height: 18px; min-height: 0; }
+.pf-sub .copy-btn .icon { width: 13px; height: 13px; }
 .pf-line-toggle:hover, .pf-line-toggle:active { background: transparent; }
 .pf-line-toggle:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .pf-mint { color: var(--text); word-break: normal; }
-.pf-title .copy-btn { width: 22px; min-width: 22px; min-height: 22px; }
-.pf-title .copy-btn .icon { width: 14px; height: 14px; }
 .pf-flat { color: var(--text-3); font-weight: var(--weight-regular); }
 .pf-mono {
   display: grid;
@@ -2688,6 +2700,8 @@ textarea.short { min-height: 64px; }
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
 }
+/* A token nothing names: a plain avatar, not one tinted from its mint. */
+.pf-mono.pf-unknown { border: 1px dashed var(--border-strong); background: var(--surface-2); color: var(--text-3); font-size: var(--text-sm); }
 .pf-asset { display: grid; min-width: 0; }
 .pf-symbol { font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
 .pf-name { font-size: var(--text-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -2779,9 +2793,12 @@ textarea.short { min-height: 64px; }
   .pf-line-main > .pf-change { display: none; }
   /* The rows' columns size to their content here, so heads would not line up. */
   .pf-cols { display: none; }
+  /* The asset is narrow here: its chips go under the symbol. */
+  .pf-title { flex-wrap: wrap; }
+  .pf-line-toggle { white-space: normal; }
 }
 @media (pointer: coarse) {
-  .pf-title .copy-btn { width: var(--control-md); min-width: var(--control-md); min-height: var(--control-sm); }
+  .pf-sub .copy-btn { width: var(--control-md); min-width: var(--control-md); height: auto; min-height: var(--control-sm); }
 }
 
 /* ---------- History ---------- */

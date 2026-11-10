@@ -176,9 +176,6 @@ pub fn PortfolioPanel() -> Element {
                     }
                 } else {
                     Summary { portfolio: portfolio.clone(), priced, ago }
-                    if priced && !portfolio.groups.is_empty() {
-                        ColumnHeads {}
-                    }
                     for group in portfolio.groups.iter().cloned() {
                         GroupBlock { key: "{group.key}", group, total: portfolio.total_usd, priced }
                     }
@@ -354,7 +351,7 @@ fn allocation_parts(portfolio: &Portfolio) -> Vec<(String, f64, String)> {
     parts
 }
 
-/// What the numbers of a row are, once above the groups, on the rows'
+/// What the numbers of a row are, at the top of a group's rows, on their
 /// columns. Hidden where the columns narrow, on a phone.
 #[component]
 fn ColumnHeads() -> Element {
@@ -395,6 +392,9 @@ fn GroupBlock(group: Group, total: f64, priced: bool) -> Element {
                 }
             }
             div { class: "pf-lines",
+                if priced {
+                    ColumnHeads {}
+                }
                 for line in group.lines.iter().cloned() {
                     LineRow { key: "{line.symbol}-{line.raw}", line, priced }
                 }
@@ -440,19 +440,36 @@ fn Section(title: &'static str, hint: &'static str, lines: Vec<Line>, priced: bo
 fn LineRow(line: Line, priced: bool, #[props(default = true)] valued: bool) -> Element {
     let mut open = use_signal(|| false);
     let amount = format_amount(line.raw, line.decimals, AMOUNT_DIGITS);
-    let tint = tint_class(&line.asset.price_mint());
-    let monogram: String = line
-        .symbol
-        .chars()
-        .filter(|c| c.is_alphanumeric())
-        .take(2)
-        .collect::<String>()
-        .to_uppercase();
     let session = use_context::<Session>();
     let mint = match line.asset {
         wallet_core::portfolio::Asset::Token(mint) => Some(mint),
         _ => None,
     };
+    // A token the Tokens API gave no symbol or name for: its mint is no
+    // name, so it is an unknown token, with the mint under it.
+    let unknown = mint
+        .is_some_and(|mint| line.name.is_none() && line.symbol == wallet_core::short_pubkey(&mint));
+    // A token with no name shows its mint where the name would be.
+    let mint_below = mint.filter(|_| line.name.is_none());
+    let (monogram, tint) = if unknown {
+        ("?".to_string(), "pf-unknown".to_string())
+    } else {
+        (
+            line.symbol
+                .chars()
+                .filter(|c| c.is_alphanumeric())
+                .take(2)
+                .collect::<String>()
+                .to_uppercase(),
+            tint_class(&line.asset.price_mint()),
+        )
+    };
+    let title = if unknown {
+        "Unknown token".to_string()
+    } else {
+        line.symbol.clone()
+    };
+    let mark = verified_mark(&line);
     // Staked SOL is moved on Stake, not sent from here.
     let sendable = match line.asset {
         wallet_core::portfolio::Asset::Sol => Some(SendAsset::Sol),
@@ -466,10 +483,6 @@ fn LineRow(line: Line, priced: bool, #[props(default = true)] valued: bool) -> E
         .collect();
     let only_sender = (senders.len() == 1).then(|| senders[0].1);
     let symbol = line.symbol.clone();
-    // A token the Tokens API gave no symbol for goes by its mint.
-    let unnamed_mint =
-        mint.filter(|mint| line.name.is_none() && line.symbol == wallet_core::short_pubkey(mint));
-    let verified = line.check.as_ref().is_some_and(|check| check.verified);
     let now = unix_now();
     let warnings: Vec<(String, Option<String>)> = line
         .check
@@ -505,25 +518,29 @@ fn LineRow(line: Line, priced: bool, #[props(default = true)] valued: bool) -> E
                         span { class: "pf-title",
                             button { class: "pf-line-toggle",
                                 r#type: "button",
+                                title: "{title}",
                                 aria_expanded: "{open()}",
-                                if let Some(mint) = unnamed_mint {
-                                    code { class: "pf-mint", title: "{mint}", "{line.symbol}" }
-                                } else {
-                                    span { class: "pf-symbol", "{line.symbol}" }
+                                span { class: "pf-symbol", "{title}" }
+                            }
+                            if let Some(tip) = mark {
+                                span { class: "pf-verified",
+                                    role: "img",
+                                    title: tip,
+                                    aria_label: tip,
+                                    Icon { glyph: Glyph::Check }
                                 }
-                            }
-                            if let Some(mint) = unnamed_mint {
-                                CopyButton { text: mint.to_string(), label: "Copy mint address" }
-                            }
-                            if verified {
-                                span { class: "chip ok", "verified" }
                             }
                             for (warning, tip) in warnings {
                                 span { key: "{warning}", class: "chip warn", title: tip, "{warning}" }
                             }
                         }
-                        span { class: "muted pf-name",
-                            if let Some(name) = line.name.clone() { "{name}" } else { "No name" }
+                        if let Some(mint) = mint_below {
+                            span { class: "muted pf-sub",
+                                code { class: "pf-mint", title: "{mint}", "{wallet_core::short_pubkey(&mint)}" }
+                                CopyButton { text: mint.to_string(), label: "Copy mint address" }
+                            }
+                        } else if let Some(name) = line.name.clone() {
+                            span { class: "muted pf-name", "{name}" }
                         }
                     }
                     span { class: "pf-amount", "{amount}" }
@@ -664,6 +681,21 @@ fn tint_class(mint: &Pubkey) -> String {
     format!("pf-t{}", hash % TINTS)
 }
 
+/// The tooltip of the check after a line's symbol, if it has one: a token
+/// the Tokens API verified, or SOL itself, which needs no verifying.
+fn verified_mark(line: &Line) -> Option<&'static str> {
+    match line.asset {
+        wallet_core::portfolio::Asset::Sol | wallet_core::portfolio::Asset::StakedSol => {
+            Some("SOL is the network's own asset, not a token")
+        }
+        wallet_core::portfolio::Asset::Token(_) => line
+            .check
+            .as_ref()
+            .is_some_and(|check| check.verified)
+            .then_some("Verified by the Tokens API"),
+    }
+}
+
 /// A warning's tooltip, where its words alone leave out what it means.
 fn warning_tip(code: &str, symbol: &str, checked_at: i64, now: i64) -> Option<String> {
     match code {
@@ -691,7 +723,9 @@ fn warning_text(code: &str) -> String {
         "no_market_data" => "no market data".into(),
         "symbol_collision" => "shares its symbol".into(),
         "new_token" => "new token".into(),
-        "stale_data" => "stale data".into(),
+        // The prices were fetched just now; it is this token's market that
+        // has not moved them lately.
+        "stale_data" => "outdated price".into(),
         "high_bot_volume" => "mostly bot trading".into(),
         "concentrated_holders" => "few holders".into(),
         "unverified" => "unverified".into(),
@@ -720,6 +754,39 @@ mod tests {
             "may impersonate another token"
         );
         assert_eq!(warning_text("brand_new_code"), "brand new code");
+        assert_eq!(warning_text("stale_data"), "outdated price");
+    }
+
+    #[test]
+    fn sol_and_verified_tokens_carry_a_check() {
+        let line = |asset, verified: Option<bool>| Line {
+            asset,
+            symbol: "X".into(),
+            name: None,
+            raw: 1,
+            decimals: 0,
+            price_usd: None,
+            change_24h_pct: None,
+            usd: None,
+            check: verified.map(|verified| wallet_core::portfolio::TokenCheck {
+                verified,
+                ..Default::default()
+            }),
+            shares: Vec::new(),
+        };
+        use wallet_core::portfolio::Asset;
+        let mint: Pubkey = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+            .parse()
+            .unwrap();
+        assert!(verified_mark(&line(Asset::Sol, None))
+            .unwrap()
+            .contains("network's own asset"));
+        assert_eq!(
+            verified_mark(&line(Asset::Token(mint), Some(true))),
+            Some("Verified by the Tokens API")
+        );
+        assert_eq!(verified_mark(&line(Asset::Token(mint), Some(false))), None);
+        assert_eq!(verified_mark(&line(Asset::Token(mint), None)), None);
     }
 
     #[test]
