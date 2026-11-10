@@ -1,5 +1,5 @@
-//! Online-only UI: Portfolio, Stake, the Proposals, Send, Burn and close and
-//! Move wallet modals hosted for the other panes, and the top bar network chip.
+//! Online-only UI: Portfolio, Stake, the Proposals, Send, Manage tokens and
+//! Migrate wallet modals hosted for the other panes, and the top bar network chip.
 
 mod chips;
 mod cleanup;

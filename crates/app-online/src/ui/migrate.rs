@@ -1,7 +1,8 @@
-//! Moving everything a wallet holds to another address: to a wallet of this
-//! vault (another kind, or a new key), or to an address pasted in. Wallets
-//! opens it. Pick the wallet and where it goes, review what moves and what
-//! stays, then sign the steps one after another; the last sweeps the SOL.
+//! Migrate wallet: moving what a wallet holds to another address, to a
+//! wallet of this vault (another kind, or a new key) or to an address pasted
+//! in. Wallets opens it. Pick the wallet and where it goes, tick what moves
+//! by group and item, then sign the steps one after another; the last sends
+//! the SOL when it was ticked.
 
 use app_ui_kit::actions::migrate;
 use app_ui_kit::{
@@ -9,16 +10,16 @@ use app_ui_kit::{
 };
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
-use wallet_core::migrate::{NonceOutcome, StakeChoice, StakeOutcome};
+use wallet_core::migrate::{NonceBlocked, NonceOutcome, StakeBlocked, StakeChoice, StakeOutcome};
 use wallet_core::spl::is_native_mint;
-use wallet_core::token_plan::{Blocked, Outcome};
-use wallet_core::{short_pubkey, WalletId};
+use wallet_core::token_plan::{Blocked, Held, Outcome};
+use wallet_core::{short_pubkey, TokenFlag, WalletId};
 use wallet_flows::migrate::{Choices, DestinationCheck, MigrationPlan, Snapshot, TokenMove};
 
 /// What a burn asks to be typed before the move starts.
 const BURN_WORD: &str = "burn";
 
-/// Mounts the Move wallet modal while Wallets has it open.
+/// Mounts the Migrate wallet modal while Wallets has it open.
 #[component]
 pub fn MigrateHost() -> Element {
     let session = use_context::<Session>();
@@ -214,8 +215,8 @@ fn MigrateModal(from: Option<WalletId>) -> Element {
     let start_label = match (&run, waiting) {
         (Some(_), true) => "Check again".to_string(),
         (Some(run), false) => format!("Go on: step {}", run.done + 1),
-        (None, _) if burns > 0 => "Burn and move".to_string(),
-        (None, _) => "Move everything".to_string(),
+        (None, _) if burns > 0 => "Burn and migrate".to_string(),
+        (None, _) => "Migrate".to_string(),
     };
     let references = source()
         .map(|from| migrate::references(&session, from))
@@ -230,9 +231,9 @@ fn MigrateModal(from: Option<WalletId>) -> Element {
                 aria_modal: "true",
                 onclick: move |evt| evt.stop_propagation(),
                 div { class: "stack",
-                    h3 { "Move a wallet" }
+                    h3 { "Migrate wallet" }
                     p { class: "lede",
-                        "Move everything a wallet holds to another address: its tokens, its stake accounts, the nonce accounts it controls, then its SOL. Use it to rotate a key, or to move from a plain key to a programmatic signer, a Vector account or a multisig."
+                        "Move what a wallet holds to another address: any of its tokens, stake accounts, the nonce accounts it controls, and its SOL. Use it to rotate a key, or to move from a plain key to a programmatic signer, a Vector account or a multisig."
                     }
                     if let Some(text) = notice() {
                         p { class: "note", role: "status", "{text}" }
@@ -368,7 +369,8 @@ fn MigrateModal(from: Option<WalletId>) -> Element {
     }
 }
 
-/// What moves and what stays, with a choice for each.
+/// What moves, by group. A group's box ticks or unticks all of it; an
+/// item's box ticks that item alone, and with it its group.
 #[component]
 fn Review(
     snapshot: Snapshot,
@@ -378,55 +380,175 @@ fn Review(
 ) -> Element {
     let session = use_context::<Session>();
     let to = snapshot.to;
+    // What an item is when it is ticked: a token is moved, unless the user
+    // flagged it red; stake accounts hand both authorities over.
+    let token_pick = move |held: &Held| {
+        let flagged = session.flag_of(&held.address) == Some(TokenFlag::Red);
+        if flagged && held.account.amount > 0 && !is_native_mint(&held.account.mint) {
+            TokenMove::Burn
+        } else {
+            TokenMove::Move
+        }
+    };
+    let tokens_on = choices
+        .tokens
+        .values()
+        .filter(|pick| **pick != TokenMove::Leave)
+        .count();
+    let stakes_on = choices
+        .stakes
+        .values()
+        .filter(|pick| pick.staker || pick.withdrawer)
+        .count();
+    let closable: Vec<Pubkey> = plan
+        .nonces
+        .iter()
+        .filter(|(_, outcome)| {
+            !matches!(outcome, NonceOutcome::Left(why) if *why != NonceBlocked::Chosen)
+        })
+        .map(|(address, _)| *address)
+        .collect();
+    let nonces_on = choices.nonces.len();
+
+    let all_tokens = {
+        let (base, tokens) = (choices.clone(), snapshot.tokens.clone());
+        move |on: bool| {
+            let mut next = base.clone();
+            for held in &tokens {
+                let pick = if on {
+                    token_pick(held)
+                } else {
+                    TokenMove::Leave
+                };
+                next.tokens.insert(held.address, pick);
+            }
+            on_change.call(next);
+        }
+    };
+    let all_stakes = {
+        let (base, stakes) = (choices.clone(), snapshot.stakes.clone());
+        move |on: bool| {
+            let mut next = base.clone();
+            for stake in &stakes {
+                let pick = if on {
+                    StakeChoice::BOTH
+                } else {
+                    StakeChoice::default()
+                };
+                next.stakes.insert(stake.pubkey, pick);
+            }
+            on_change.call(next);
+        }
+    };
+    let all_nonces = {
+        let (base, closable) = (choices.clone(), closable.clone());
+        move |on: bool| {
+            let mut next = base.clone();
+            next.nonces = if on {
+                closable.iter().copied().collect()
+            } else {
+                Default::default()
+            };
+            on_change.call(next);
+        }
+    };
+    let sol_toggle = {
+        let base = choices.clone();
+        move |on: bool| {
+            let mut next = base.clone();
+            next.sol = on;
+            on_change.call(next);
+        }
+    };
+
     rsx! {
         if !snapshot.tokens.is_empty() {
-            h4 { "Token accounts" }
-            ul { class: "book-list migrate-tokens",
-                for held in snapshot.tokens.iter().cloned() {
-                    {
-                        let address = held.address;
-                        let native = is_native_mint(&held.account.mint);
-                        let decimals = held.mint.as_ref().map_or(0, |mint| mint.decimals);
-                        let amount = if native {
-                            format_sol(held.account.amount)
-                        } else {
-                            format_token_amount(held.account.amount, decimals)
-                        };
-                        let outcome = plan
-                            .tokens
-                            .accounts
-                            .iter()
-                            .find(|planned| planned.address == address)
-                            .map(|planned| planned.outcome.clone());
-                        let (chip, what) = token_chip(&outcome);
-                        let current = choices.tokens.get(&address).copied().unwrap_or(TokenMove::Leave);
-                        let base = choices.clone();
-                        rsx! {
-                            li { class: "book-row", key: "{address}",
-                                AddressRow { pubkey: held.account.mint,
-                                    span { class: "mono cleanup-amount", "{amount}" }
-                                    if let Some(chip) = chip {
-                                        span { class: "{chip}", title: "{what}", "{what}" }
-                                    }
-                                    select {
-                                        aria_label: "What happens to the account {address}",
-                                        onchange: move |evt| {
-                                            let pick = match evt.value().as_str() {
-                                                "burn" => TokenMove::Burn,
-                                                "leave" => TokenMove::Leave,
-                                                _ => TokenMove::Move,
-                                            };
-                                            let mut next = base.clone();
-                                            next.tokens.insert(address, pick);
-                                            on_change.call(next);
-                                        },
-                                        option { value: "move", selected: current == TokenMove::Move,
-                                            if held.account.amount == 0 || native { "Close" } else { "Move" }
+            Group {
+                title: "Token accounts",
+                on: tokens_on,
+                of: snapshot.tokens.len(),
+                hint: "Tokens go to the new address and each account is closed, its rent back to the wallet. Empty accounts are only closed.",
+                on_toggle: all_tokens,
+                ul { class: "book-list migrate-tokens",
+                    for held in snapshot.tokens.iter().cloned() {
+                        {
+                            let address = held.address;
+                            let native = is_native_mint(&held.account.mint);
+                            let decimals = held.mint.as_ref().map_or(0, |mint| mint.decimals);
+                            let amount = if native {
+                                format_sol(held.account.amount)
+                            } else {
+                                format_token_amount(held.account.amount, decimals)
+                            };
+                            let outcome = plan
+                                .tokens
+                                .accounts
+                                .iter()
+                                .find(|planned| planned.address == address)
+                                .map(|planned| planned.outcome.clone());
+                            let current = choices.tokens.get(&address).copied().unwrap_or(TokenMove::Leave);
+                            let ticked = current != TokenMove::Leave;
+                            // Only an account with tokens in it can go either way.
+                            let either = held.account.amount > 0 && !native;
+                            let blocked = match &outcome {
+                                Some(Outcome::Left(why)) if *why != Blocked::Chosen => Some(why.reason()),
+                                _ => None,
+                            };
+                            let what = if native {
+                                "Unwrap"
+                            } else if held.account.amount == 0 {
+                                "Close"
+                            } else {
+                                ""
+                            };
+                            let pick = token_pick(&held);
+                            let (base, base2, base3) = (choices.clone(), choices.clone(), choices.clone());
+                            rsx! {
+                                li { class: "book-row", key: "{address}",
+                                    AddressRow { pubkey: held.account.mint,
+                                        span { class: "mono cleanup-amount", "{amount}" }
+                                        if ticked && either {
+                                            div { class: "segmented",
+                                                role: "radiogroup",
+                                                aria_label: "Move or burn the tokens of {address}",
+                                                button { class: if current == TokenMove::Move { "tab on" } else { "tab" },
+                                                    role: "radio",
+                                                    aria_checked: "{current == TokenMove::Move}",
+                                                    onclick: move |_| {
+                                                        let mut next = base.clone();
+                                                        next.tokens.insert(address, TokenMove::Move);
+                                                        on_change.call(next);
+                                                    },
+                                                    "Move"
+                                                }
+                                                button { class: if current == TokenMove::Burn { "tab on" } else { "tab" },
+                                                    role: "radio",
+                                                    aria_checked: "{current == TokenMove::Burn}",
+                                                    onclick: move |_| {
+                                                        let mut next = base2.clone();
+                                                        next.tokens.insert(address, TokenMove::Burn);
+                                                        on_change.call(next);
+                                                    },
+                                                    "Burn"
+                                                }
+                                            }
+                                        } else if ticked && !what.is_empty() {
+                                            span { class: "muted", "{what}" }
                                         }
-                                        if held.account.amount > 0 && !native {
-                                            option { value: "burn", selected: current == TokenMove::Burn, "Burn" }
+                                        if let Some(why) = &blocked {
+                                            span { class: "chip warn", title: "{why}", "{why}" }
                                         }
-                                        option { value: "leave", selected: current == TokenMove::Leave, "Keep" }
+                                        input {
+                                            r#type: "checkbox",
+                                            checked: ticked,
+                                            title: "Include this account",
+                                            aria_label: "Include the account {address}",
+                                            onchange: move |evt| {
+                                                let mut next = base3.clone();
+                                                next.tokens.insert(address, if evt.checked() { pick } else { TokenMove::Leave });
+                                                on_change.call(next);
+                                            },
+                                        }
                                     }
                                 }
                             }
@@ -436,62 +558,52 @@ fn Review(
             }
         }
         if !snapshot.stakes.is_empty() {
-            h4 { "Stake accounts" }
-            p { class: "hint", "Their authorities go to the new address. The stake stays where it is, delegated or not." }
-            ul { class: "book-list",
-                for stake in snapshot.stakes.iter().cloned() {
-                    {
-                        let address = stake.pubkey;
-                        let picked = choices.stakes.get(&address).copied().unwrap_or_default();
-                        let outcome = plan.stakes.iter().find(|(pk, _)| *pk == address).map(|(_, o)| o.clone());
-                        let reason = match &outcome {
-                            Some(StakeOutcome::Left(why)) => Some(why.reason()),
-                            Some(StakeOutcome::Handed { staker, withdrawer })
-                                if (picked.staker && !staker) || (picked.withdrawer && !withdrawer) =>
-                            {
-                                Some(if picked.withdrawer && !withdrawer {
-                                    "Only the staker moves: this wallet cannot hand over the withdrawer.".to_string()
-                                } else {
-                                    "Only the withdrawer moves.".to_string()
-                                })
-                            }
-                            _ => None,
-                        };
-                        let base = choices.clone();
-                        let base2 = choices.clone();
-                        rsx! {
-                            li { class: "book-row", key: "{address}",
-                                AddressRow { pubkey: address,
-                                    span { class: "mono cleanup-amount", "{format_sol(stake.lamports)}" }
-                                    label { class: "check",
+            Group {
+                title: "Stake accounts",
+                on: stakes_on,
+                of: snapshot.stakes.len(),
+                hint: "Both authorities, staker and withdrawer, go to the new address. The stake stays where it is, delegated or not.",
+                on_toggle: all_stakes,
+                ul { class: "book-list",
+                    for stake in snapshot.stakes.iter().cloned() {
+                        {
+                            let address = stake.pubkey;
+                            let picked = choices.stakes.get(&address).copied().unwrap_or_default();
+                            let ticked = picked.staker || picked.withdrawer;
+                            let outcome = plan.stakes.iter().find(|(pk, _)| *pk == address).map(|(_, o)| o.clone());
+                            let reason = match &outcome {
+                                Some(StakeOutcome::Left(why)) if *why != StakeBlocked::Chosen => Some(why.reason()),
+                                Some(StakeOutcome::Handed { withdrawer: false, .. }) if ticked => {
+                                    Some("Only the staker moves: this wallet cannot hand over the withdrawer.".to_string())
+                                }
+                                Some(StakeOutcome::Handed { staker: false, .. }) if ticked => {
+                                    Some("Only the withdrawer moves.".to_string())
+                                }
+                                _ => None,
+                            };
+                            let base = choices.clone();
+                            rsx! {
+                                li { class: "book-row", key: "{address}",
+                                    AddressRow { pubkey: address,
+                                        span { class: "mono cleanup-amount", "{format_sol(stake.lamports)}" }
                                         input {
                                             r#type: "checkbox",
-                                            checked: picked.staker,
+                                            checked: ticked,
+                                            title: "Hand this stake account over",
+                                            aria_label: "Hand over the stake account {address}",
                                             onchange: move |evt| {
                                                 let mut next = base.clone();
-                                                let entry = next.stakes.entry(address).or_insert(StakeChoice::default());
-                                                entry.staker = evt.checked();
+                                                next.stakes.insert(
+                                                    address,
+                                                    if evt.checked() { StakeChoice::BOTH } else { StakeChoice::default() },
+                                                );
                                                 on_change.call(next);
                                             },
                                         }
-                                        " Staker"
                                     }
-                                    label { class: "check",
-                                        input {
-                                            r#type: "checkbox",
-                                            checked: picked.withdrawer,
-                                            onchange: move |evt| {
-                                                let mut next = base2.clone();
-                                                let entry = next.stakes.entry(address).or_insert(StakeChoice::default());
-                                                entry.withdrawer = evt.checked();
-                                                on_change.call(next);
-                                            },
-                                        }
-                                        " Withdrawer"
+                                    if let Some(reason) = reason {
+                                        p { class: "hint", "{reason}" }
                                     }
-                                }
-                                if let Some(reason) = reason {
-                                    p { class: "hint", "{reason}" }
                                 }
                             }
                         }
@@ -503,43 +615,48 @@ fn Review(
             p { class: "note", "Stake accounts could not be listed, so none are handed over: {why}" }
         }
         if !snapshot.nonces.is_empty() {
-            h4 { "Nonce accounts" }
-            ul { class: "book-list",
-                for nonce in snapshot.nonces.iter().cloned() {
-                    {
-                        let address = nonce.address;
-                        let outcome = plan.nonces.iter().find(|(pk, _)| *pk == address).map(|(_, o)| o.clone());
-                        let closing = matches!(outcome, Some(NonceOutcome::Closed { .. }));
-                        let blocked = match &outcome {
-                            Some(NonceOutcome::Left(why)) if *why != wallet_core::migrate::NonceBlocked::Chosen => Some(why.reason()),
-                            _ => None,
-                        };
-                        let base = choices.clone();
-                        rsx! {
-                            li { class: "book-row", key: "{address}",
-                                AddressRow { pubkey: address,
-                                    span { class: "mono cleanup-amount", "{format_sol(nonce.lamports)}" }
-                                    if blocked.is_none() {
-                                        label { class: "check",
-                                            input {
-                                                r#type: "checkbox",
-                                                checked: closing,
-                                                onchange: move |evt| {
-                                                    let mut next = base.clone();
-                                                    if evt.checked() {
-                                                        next.nonces.insert(address);
-                                                    } else {
-                                                        next.nonces.remove(&address);
-                                                    }
-                                                    on_change.call(next);
-                                                },
-                                            }
-                                            " Close"
+            Group {
+                title: "Nonce accounts",
+                on: nonces_on,
+                of: closable.len(),
+                hint: "Each is closed, and its rent goes back to the wallet.",
+                disabled: closable.is_empty(),
+                on_toggle: all_nonces,
+                ul { class: "book-list",
+                    for nonce in snapshot.nonces.iter().cloned() {
+                        {
+                            let address = nonce.address;
+                            let outcome = plan.nonces.iter().find(|(pk, _)| *pk == address).map(|(_, o)| o.clone());
+                            let blocked = match &outcome {
+                                Some(NonceOutcome::Left(why)) if *why != NonceBlocked::Chosen => Some(why.reason()),
+                                _ => None,
+                            };
+                            let ticked = choices.nonces.contains(&address);
+                            let base = choices.clone();
+                            rsx! {
+                                li { class: "book-row", key: "{address}",
+                                    AddressRow { pubkey: address,
+                                        span { class: "mono cleanup-amount", "{format_sol(nonce.lamports)}" }
+                                        input {
+                                            r#type: "checkbox",
+                                            checked: ticked,
+                                            disabled: blocked.is_some(),
+                                            title: "Close this nonce account",
+                                            aria_label: "Close the nonce account {address}",
+                                            onchange: move |evt| {
+                                                let mut next = base.clone();
+                                                if evt.checked() {
+                                                    next.nonces.insert(address);
+                                                } else {
+                                                    next.nonces.remove(&address);
+                                                }
+                                                on_change.call(next);
+                                            },
                                         }
                                     }
-                                }
-                                if let Some(reason) = blocked {
-                                    p { class: "hint", "{reason}" }
+                                    if let Some(reason) = blocked {
+                                        p { class: "hint", "{reason}" }
+                                    }
                                 }
                             }
                         }
@@ -550,14 +667,23 @@ fn Review(
         if snapshot.nonces_unread.is_some() {
             p { class: "hint", "This node does not list nonce accounts, so any this wallet controls besides its own stay as they are." }
         }
-        h4 { "SOL" }
-        p {
-            if plan.sweep_estimate > 0 {
-                "About {format_sol(plan.sweep_estimate)} goes to "
-                span { class: "mono", "{short_pubkey(&to)}" }
-                " in the last step, worked out exactly when that step is built."
-            } else {
-                "No SOL is left to move."
+        Group {
+            title: "SOL",
+            on: usize::from(choices.sol),
+            of: 1,
+            hint: "",
+            disabled: plan.sweep_estimate == 0,
+            on_toggle: sol_toggle,
+            p { class: "migrate-sol",
+                if plan.sweep_estimate == 0 {
+                    "No SOL is left to send."
+                } else if choices.sol {
+                    "About {format_sol(plan.sweep_estimate)} goes to "
+                    span { class: "mono", "{short_pubkey(&to)}" }
+                    " in the last step, worked out exactly when that step is built."
+                } else {
+                    "The SOL stays in the wallet."
+                }
             }
         }
         if !session.is_unlocked() {
@@ -566,14 +692,42 @@ fn Review(
     }
 }
 
-/// A chip for what the select alone does not say: a burn, an account that
-/// stays open after its tokens move, or why one cannot move.
-fn token_chip(outcome: &Option<Outcome>) -> (Option<&'static str>, String) {
-    match outcome {
-        Some(Outcome::Burned { .. }) => (Some("chip danger"), "Burned".into()),
-        Some(Outcome::Moved { closed: false, .. }) => (Some("chip"), "Stays open".into()),
-        Some(Outcome::Left(why)) if *why != Blocked::Chosen => (Some("chip warn"), why.reason()),
-        _ => (None, String::new()),
+/// One group of the review: a box for all of it, how many of its items are
+/// ticked, and the items.
+#[component]
+fn Group(
+    title: &'static str,
+    on: usize,
+    of: usize,
+    hint: &'static str,
+    #[props(default)] disabled: bool,
+    on_toggle: EventHandler<bool>,
+    children: Element,
+) -> Element {
+    let count = if of > 1 {
+        format!("{on} of {of}")
+    } else {
+        String::new()
+    };
+    rsx! {
+        section { class: if on > 0 { "migrate-group on" } else { "migrate-group" },
+            label { class: "check migrate-group-head",
+                input {
+                    r#type: "checkbox",
+                    checked: on > 0,
+                    disabled,
+                    onchange: move |evt| on_toggle.call(evt.checked()),
+                }
+                span { class: "migrate-group-title", "{title}" }
+                if !count.is_empty() {
+                    span { class: "muted", "{count}" }
+                }
+            }
+            if !hint.is_empty() && on > 0 {
+                p { class: "hint", "{hint}" }
+            }
+            {children}
+        }
     }
 }
 

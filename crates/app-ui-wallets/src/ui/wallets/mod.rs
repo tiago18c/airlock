@@ -94,7 +94,7 @@ pub fn WalletsPanel() -> Element {
                                     title: "Move everything a wallet holds to another address: to rotate a key, or to move to a programmatic signer, a Vector account or a multisig",
                                     onclick: move |_| session.open_migrate(current),
                                     Icon { glyph: Glyph::Send }
-                                    "Move wallet…"
+                                    "Migrate wallet"
                                 }
                                 button { class: "pane-menu-item",
                                     role: "menuitem",

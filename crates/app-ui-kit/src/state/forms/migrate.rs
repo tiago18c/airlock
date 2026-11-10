@@ -1,4 +1,4 @@
-//! Slot for the Move wallet modal, and the move it runs one step at a time:
+//! Slot for the Migrate wallet modal, and the move it runs one step at a time:
 //! Wallets opens it, the online shell mounts it.
 
 use dioxus::prelude::*;

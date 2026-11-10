@@ -114,7 +114,7 @@ fn App() -> Element {
             settings_extra: connections_card(),
             window_controls: window_controls(),
             // Outside the pane switch so toasts survive tab changes. Hosts
-            // the Proposals, Send, Burn and close and Move wallet modals
+            // the Proposals, Send, Burn and close and Migrate wallet modals
             // opened from other panes.
             overlays: rsx! {
                 ToastHost { pinned: request_toast() }
