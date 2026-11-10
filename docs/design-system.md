@@ -73,6 +73,7 @@ Contrast, checked for both themes: body and secondary text at least 7:1, hint te
 | Card | `.card`, `.card.auth` | Groups one topic on a page |
 | Stats | `.stats > .stat` | Transaction summary |
 | Row | `.book-row`, `.wallet-row` | List entries. Row actions appear on hover or focus, always on touch |
+| Table row | `.ab-table` holding `.ab-columns` and `ul.book-list.ab-list` of `li.ab-row` | The Address Book: one entry a row on shared columns (kind, name and tags, address, copy, balance, menu), under a row of column labels and, with every kind listed, a `li.ab-kind-head` per kind. A row's actions are in a `PaneMenu` at its end, in sight at rest |
 | Dialog | `.modal-backdrop > .modal` | A bottom sheet under 640px |
 | Accordion | `Accordion { title, open }` | Optional detail |
 | Pane menu | `PaneMenu { label }` holding `button.pane-menu-item` with `role: "menuitem"` | A pane's less used actions, behind a three-line button at the end of its header. It closes on a choice, a press outside or Escape. `glyph: Glyph::More, small: true` makes it the three-dot menu at the end of a row's buttons, as on a wallet card |
@@ -99,7 +100,7 @@ Every address goes through `ui/address` in `app-ui-kit`. What to call it comes f
 | Density | Component | Shows | Where |
 | --- | --- | --- | --- |
 | Inline | `Address { pubkey }` | icon · label · short | Sentences and chip rows: Sign, the transaction view and its intent sentences, Proposals, browser requests, fact rows, stake authorities |
-| Row | `AddressRow { pubkey }`, `AddressSelect` | icon · label · short · copy, then what the list adds | Pickers, checklists, lists. `full: true` shows the whole address: Inspect, and on Sign the accounts of an instruction no sentence explains (no IDL, or an IDL without a display form). `no_icon: true` leaves the kind icon out where every row has the same one (the Programs list); an address that needs care keeps it |
+| Row | `AddressRow { pubkey }`, `AddressSelect` | icon · label · short · copy, then what the list adds | Pickers, checklists, lists. `full: true` shows the whole address: Inspect, and on Sign the accounts of an instruction no sentence explains (no IDL, or an IDL without a display form). `no_icon: true` leaves the kind icon out where every row has the same one (the Programs list); an address that needs care keeps it. `no_label: true` leaves the label out where the list shows the name in a column of its own |
 | Full | `AddressHeader { pubkey }` | badge · label · what it is · whole address · copy | Wallet rows, address book entries, Programs detail, stake accounts. `no_address: true` leaves the address to the caller, as the Programs detail does to draw it under its pinned name |
 
 - Without a label, an address shows its icon and short form only.
