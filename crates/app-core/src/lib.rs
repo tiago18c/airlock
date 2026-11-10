@@ -19,6 +19,7 @@ pub mod storage;
 mod commands;
 mod public;
 mod ranked;
+mod sites;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub mod testing;
