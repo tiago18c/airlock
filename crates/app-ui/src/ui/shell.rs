@@ -292,10 +292,15 @@ pub fn Sidebar(
 
 #[component]
 pub fn TopBar(extra: Option<Element>, controls: Option<Element>) -> Element {
+    // A phone's bar has no room to spare for a mark that says which app
+    // this is: the wallet picker takes its place and the bar's whole width.
+    let phone = use_phone_layout();
     rsx! {
         // `data-drag`: in a frameless window, empty space here moves it.
         header { class: "topbar", "data-drag": "true",
-            Brand {}
+            if !phone {
+                Brand {}
+            }
             div { class: "topbar-tools",
                 WalletSwitcher {}
                 LockToggle {}

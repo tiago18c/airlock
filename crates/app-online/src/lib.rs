@@ -15,8 +15,8 @@ pub use sync::{
 };
 pub use tx::{Submitter, Tracker};
 pub use ui::{
-    CleanupHost, HistoryPanel, MigrateHost, NetworkChip, PortfolioPanel, ProposalsHost, SendHost,
-    StakePanel,
+    CleanupHost, HistoryPanel, MigrateHost, NetworkAlert, NetworkChip, PortfolioPanel,
+    ProposalsHost, SendHost, StakePanel,
 };
 
 use std::sync::Arc;

@@ -8,6 +8,23 @@ use app_ui_kit::Session;
 use dioxus::prelude::*;
 use wallet_core::{Cluster, KnownCluster};
 
+/// The network chip where a screen has no row to spare for it: a phone. It
+/// is there only while something is wrong, the node not answering or the
+/// background sync failing, and gone while all is well, which is nearly
+/// always. Settings names the cluster.
+#[component]
+pub fn NetworkAlert() -> Element {
+    let session = use_context::<Session>();
+    let unreachable = (session.network)().reach == Reach::Unreachable;
+    let sync = (session.sync)();
+    let sync_failed = job_to_show(&sync).is_some_and(|job| job.last_error.is_some());
+    if unreachable || sync_failed {
+        rsx! { NetworkChip {} }
+    } else {
+        rsx! {}
+    }
+}
+
 /// "Online · devnet": the network, never the provider or the name a custom
 /// cluster was given. Hovering or focusing it shows those, the node's URL,
 /// and what the background sync last did. The dot turns red when the sync failed.

@@ -10,7 +10,7 @@ mod proposals;
 mod send;
 mod stake;
 
-pub use chips::NetworkChip;
+pub use chips::{NetworkAlert, NetworkChip};
 pub use cleanup::CleanupHost;
 pub use history::HistoryPanel;
 pub use migrate::MigrateHost;

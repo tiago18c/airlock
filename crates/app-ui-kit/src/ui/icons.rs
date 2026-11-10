@@ -55,8 +55,6 @@ pub enum Glyph {
     Gear,
     /// An arrow from one box over to another: move what one holds to the other.
     Migrate,
-    /// Two coins, one over the other: a wallet's tokens.
-    Coins,
 }
 
 impl Glyph {
@@ -237,12 +235,6 @@ impl Glyph {
                 "M16 11h4a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Z",
                 "M6 11V7a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v2.5",
                 "M15.5 7 18 9.5 20.5 7",
-            ],
-            Glyph::Coins => &[
-                "M9 3a6 6 0 1 0 0 12 6 6 0 0 0 0-12Z",
-                "M15 9a6 6 0 1 1-6 6",
-                "M9 6.5v5",
-                "M16 14v4",
             ],
         }
     }

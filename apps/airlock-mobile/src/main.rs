@@ -12,7 +12,7 @@
 
 use app_mobile::Mode;
 use app_online::{
-    CleanupHost, HistoryPanel, MigrateHost, NetworkChip, PortfolioPanel, ProposalsHost, SendHost,
+    CleanupHost, HistoryPanel, MigrateHost, NetworkAlert, PortfolioPanel, ProposalsHost, SendHost,
     StakePanel,
 };
 use app_ui::{AppBrand, AppShell, Network, NoticeBell, OnlineHooks, SubmitHandle, Tab, ToastHost};
@@ -117,7 +117,9 @@ fn Online(core: CopyValue<app_core::Core>) -> Element {
             portfolio: rsx! { PortfolioPanel {} },
             history: rsx! { HistoryPanel {} },
             top_bar_extra: rsx! { NoticeBell {} },
-            sidebar_status: rsx! { NetworkChip {} },
+            // Only while the node does not answer or a sync failed: a
+            // phone has no row to spare for "Online".
+            sidebar_status: rsx! { NetworkAlert {} },
             above_panes: rsx! {
                 app_desktop::BridgeRequests {}
                 app_desktop::ConnectionsHost {}

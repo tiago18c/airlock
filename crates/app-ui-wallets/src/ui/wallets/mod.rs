@@ -96,7 +96,7 @@ pub fn WalletsPanel() -> Element {
                         session.open_cleanup(wallet);
                     }
                 },
-                Icon { glyph: Glyph::Coins }
+                Icon { glyph: Glyph::Coin }
                 "Manage tokens"
             }
         }
