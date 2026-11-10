@@ -75,7 +75,7 @@ Contrast, checked for both themes: body and secondary text at least 7:1, hint te
 | Row | `.book-row`, `.wallet-row` | List entries. Row actions appear on hover or focus, always on touch |
 | Dialog | `.modal-backdrop > .modal` | A bottom sheet under 640px |
 | Accordion | `Accordion { title, open }` | Optional detail |
-| Pane menu | `PaneMenu { label }` holding `button.pane-menu-item` with `role: "menuitem"` | A pane's less used actions, behind a three-line button at the end of its header. It closes on a choice, a press outside or Escape |
+| Pane menu | `PaneMenu { label }` holding `button.pane-menu-item` with `role: "menuitem"` | A pane's less used actions, behind a three-line button at the end of its header. It closes on a choice, a press outside or Escape. `glyph: Glyph::More, small: true` makes it the three-dot menu at the end of a row's buttons, as on a wallet card |
 | Copy | `CopyButton { text }` | An icon. Its tooltip and accessible name say "Copy to clipboard"; it shows a check for a moment after copying |
 
 ## Addresses
