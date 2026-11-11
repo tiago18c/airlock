@@ -197,7 +197,9 @@ fn LandedView(
     }));
     use_context_provider(|| BalanceDeltas(deltas));
     rsx! {
-        TxView { tx, reading, inspect }
+        // The page is titled "Transaction": its section is named for what
+        // it lists.
+        TxView { tx, reading, inspect, name_by_contents: true }
         if inspect && !logs.is_empty() {
             div { class: "card",
                 h3 { "Logs" }

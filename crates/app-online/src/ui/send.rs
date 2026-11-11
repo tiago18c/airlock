@@ -8,7 +8,7 @@ use app_ui_kit::{format_sol, format_token_amount, AddressPicker, Session, Wallet
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use std::collections::BTreeMap;
-use wallet_core::{parse_amount, short_pubkey, TokenFlag, WalletId};
+use wallet_core::{group_thousands, parse_amount, short_pubkey, TokenFlag, WalletId};
 use wallet_flows::token_transfer::{Destination, Resolved};
 
 /// Mounts the Send modal while a screen has it open.
@@ -271,7 +271,7 @@ fn SendModal(open: SendOpen) -> Element {
                     }
                     if let Some(holding) = chosen.clone().filter(|h| h.total > h.largest) {
                         p { class: "hint",
-                            "Holds {format_token_amount(holding.total, holding.decimals)} {holding.symbol} across several accounts. One transfer moves at most {format_token_amount(holding.largest, holding.decimals)}."
+                            "Holds {shown_amount(holding.total, holding.decimals)} {holding.symbol} across several accounts. One transfer moves at most {shown_amount(holding.largest, holding.decimals)}."
                         }
                     }
                     if let Some(err) = error() {
@@ -294,6 +294,13 @@ fn SendModal(open: SendOpen) -> Element {
     }
 }
 
+/// A token amount as the app shows amounts everywhere: digits grouped in
+/// thousands, every decimal kept. What goes into the amount field stays
+/// ungrouped, as typed.
+fn shown_amount(amount: u64, decimals: u8) -> String {
+    group_thousands(&format_token_amount(amount, decimals))
+}
+
 fn option_text(holding: &Holding) -> String {
     let flag = if holding.flagged { " (flagged)" } else { "" };
     if holding.total == 0 {
@@ -302,7 +309,7 @@ fn option_text(holding: &Holding) -> String {
         format!(
             "{}{flag} · {}",
             holding.symbol,
-            format_token_amount(holding.total, holding.decimals)
+            shown_amount(holding.total, holding.decimals)
         )
     }
 }

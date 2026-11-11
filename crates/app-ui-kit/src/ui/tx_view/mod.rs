@@ -64,7 +64,9 @@ pub fn SimulatedDeltas(
 /// beside the heading. With `on_inspect`, Summary says which instructions it
 /// leaves out, with a button that calls it to show them. `fee_line`: the
 /// screen draws [`FeeLine`] under this, so a fee payer whose only change is
-/// that fee is not listed again under "Also changes".
+/// that fee is not listed again under "Also changes". `name_by_contents`: the
+/// section is headed "Instructions" in Summary too, for a page already
+/// titled "Transaction", so a heading never repeats its page's title.
 #[component]
 pub fn TxView(
     tx: DecodedTx,
@@ -73,6 +75,7 @@ pub fn TxView(
     #[props(default)] signers: Vec<Pubkey>,
     #[props(default)] on_inspect: Option<EventHandler<()>>,
     #[props(default)] fee_line: bool,
+    #[props(default)] name_by_contents: bool,
     children: Element,
 ) -> Element {
     let shown = tx.clone();
@@ -134,7 +137,7 @@ pub fn TxView(
             TxFacts { tx: shown.clone() }
         }
         div { class: "sign-status",
-            h3 { if inspect { "Instructions" } else { "Transaction" } }
+            h3 { if inspect || name_by_contents { "Instructions" } else { "Transaction" } }
             {children}
         }
         RiskNotice { explained: explained.clone() }

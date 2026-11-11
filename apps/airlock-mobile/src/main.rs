@@ -35,8 +35,9 @@ const ONLINE_MORE: &[Tab] = &[
     Tab::Settings,
 ];
 
-/// Offline: everything that works without a node.
-const OFFLINE_TABS: &[Tab] = &[Tab::Wallets, Tab::Sign, Tab::Build];
+/// Offline: everything that works without a node, in the sidebar's order:
+/// Build before Review and Sign.
+const OFFLINE_TABS: &[Tab] = &[Tab::Wallets, Tab::Build, Tab::Sign];
 const OFFLINE_MORE: &[Tab] = &[Tab::AddressBook, Tab::Programs, Tab::Settings];
 
 fn main() {
