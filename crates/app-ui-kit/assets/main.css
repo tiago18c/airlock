@@ -2441,9 +2441,8 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
    drawn as a box of its own laid over the card's edge: that box's border
    fell a fraction of a pixel off the card's and broke the edge under the
    name. Everything under the name starts at the card's left edge, under
-   the icon: the address cut in the middle on one line, the check's state
-   and Check online, then where the file came from and the fold with the
-   rest. */
+   the icon: the address cut in the middle on one line, the check's state on
+   a line of its own, then Check online and the fold with the rest. */
 .app.phone .program-head {
   height: auto;
   margin: 0;
@@ -2461,30 +2460,49 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-/* The state is words with an icon in its colour, not a pill, so Check
-   online reads as the one control. */
-.app.phone .program-check-group { gap: var(--space-2) var(--space-3); }
+/* The state is the one caution or reassurance on the screen: words and
+   icon both in its colour, full width, not a pill, and on its own line so
+   neither control under it reads as its label. */
 .app.phone .program-check-state {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
   min-width: 0;
-  color: var(--text-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  line-height: 1.4;
 }
-.app.phone .program-check-state .icon { flex-shrink: 0; width: 16px; height: 16px; }
-.app.phone .program-check-state.warn .icon { color: var(--warn-text); }
-.app.phone .program-check-state.ok .icon { color: var(--ok-text); }
-.app.phone .program-check-state.danger,
-.app.phone .program-check-state.danger .icon { color: var(--danger-text); }
-/* The repository as a short link at the left, cut with an ellipsis where it
-   is long, and the fold at the right end. */
+.app.phone .program-check-state .icon { flex-shrink: 0; width: 18px; height: 18px; margin-top: 1px; }
+.app.phone .program-check-state.warn { color: var(--warn-text); }
+.app.phone .program-check-state.ok { color: var(--ok-text); }
+.app.phone .program-check-state.danger { color: var(--danger-text); }
+/* Check online at the left, the fold at the right end: two outlined
+   buttons a thumb can hit, the fold's chevron saying it opens in place. */
+.app.phone .program-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.app.phone .program-head-actions > button { min-height: var(--control-lg); padding: 0 var(--space-4); }
+.app.phone .program-about-toggle { gap: var(--space-1); padding-right: var(--space-3); }
+.app.phone .program-about-chevron {
+  display: inline-flex;
+  color: var(--text-2);
+  transition: transform var(--fast) var(--ease);
+}
+.app.phone .program-about-chevron .icon { width: 16px; height: 16px; }
+.app.phone .program-about-chevron.on { transform: rotate(90deg); }
+/* The fold opens with where the file came from: a muted caption, then the
+   repository as a short link, cut with an ellipsis where it is long. */
 .app.phone .program-source-row {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   min-width: 0;
 }
+.app.phone .program-source-label { flex-shrink: 0; color: var(--text-2); font-size: var(--text-sm); }
 .app.phone .program-source {
   display: block;
   min-width: 0;
@@ -2496,23 +2514,6 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   font-size: var(--text-sm);
   text-align: left;
 }
-.app.phone .program-about-toggle {
-  flex-shrink: 0;
-  min-height: var(--control-lg);
-  margin-left: auto;
-  margin-right: calc(-1 * var(--space-2));
-  gap: var(--space-1);
-  padding: 0 var(--space-2);
-  color: var(--text-2);
-  font-size: var(--text-sm);
-}
-.app.phone .program-about-chevron {
-  display: inline-flex;
-  color: var(--text-3);
-  transition: transform var(--fast) var(--ease);
-}
-.app.phone .program-about-chevron .icon { width: 16px; height: 16px; }
-.app.phone .program-about-chevron.on { transform: rotate(90deg); }
 .app.phone .program-about-more { display: grid; gap: var(--space-2); }
 .app.phone .program-facts { font-size: var(--text-sm); }
 .app.phone .program-facts-text { flex-basis: 100%; }
@@ -2568,6 +2569,41 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 }
 .app.phone .idl-row:has(> .idl-flags) > .idl-row-name { flex: 1 1 auto; }
 .app.phone .idl-row > .idl-flags { margin-left: auto; justify-content: flex-end; }
+/* A field, variant or argument the same way: its type on its name's line,
+   at the right end in the muted colour, and under the name only when the
+   two do not fit. */
+.app.phone .idl-row:has(> .idl-row-value) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+}
+.app.phone .idl-row:has(> .idl-row-value) > .idl-row-name { flex: 1 1 auto; }
+.app.phone .idl-row > .idl-row-value { margin-left: auto; justify-content: flex-end; text-align: right; }
+.app.phone .idl-row-type { color: var(--text-3); }
+/* An opened instruction's description is muted and held to three lines,
+   "more" under it where they cut it; then clear space before its
+   accounts. */
+.app.phone .idl-docs-block { display: grid; justify-items: start; min-width: 0; margin-bottom: var(--space-2); }
+.app.phone .idl-docs { color: var(--text-2); font-size: var(--text-md); line-height: 1.5; }
+.app.phone .idl-docs.clamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+.app.phone .idl-docs-more {
+  min-height: var(--control-lg);
+  margin-bottom: calc(-1 * var(--space-3));
+  padding-right: var(--space-4);
+  font-size: var(--text-md);
+}
+/* The rows of the Accounts, Types and Events tabs touch, as an
+   instruction's do, so a closed row is the same height (the section's own
+   gap set them apart), and an opened one has the same even padding. */
+.app.phone .idl-section.idl-list { gap: 0; }
+.app.phone .idl-list > .idl-item[open] > .idl-body { padding: var(--space-1) var(--space-3) var(--space-3); }
 
 /* ---------- Account inspector ---------- */
 

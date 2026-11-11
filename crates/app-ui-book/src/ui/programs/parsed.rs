@@ -1,6 +1,7 @@
 //! An IDL to browse: a tab for each kind of thing it describes.
 
 use super::*;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// The tabs over a program's IDL: each kind it has, with how many, then the
 /// raw file. A tab the IDL has nothing for is left out.
@@ -188,7 +189,7 @@ fn InstructionList(instructions: Vec<IdlIxOutline>) -> Element {
                             // column, as wide as the longest of them.
                             style: "--idl-name-w: {row_names_width(&ix)}ch",
                             if !ix.docs.is_empty() {
-                                p { class: "idl-docs", "{ix.docs}" }
+                                IxDocs { docs: ix.docs.clone() }
                             }
                             if !ix.accounts.is_empty() {
                                 div { class: "idl-block",
@@ -240,6 +241,79 @@ fn InstructionList(instructions: Vec<IdlIxOutline>) -> Element {
             }
         }
     }
+}
+
+/// An opened instruction's description. On a phone it is held to three
+/// lines, so the accounts and arguments a person opened it for come first,
+/// with "more" to read the rest in place and "less" to fold it back. Only
+/// the page knows where the text wraps, so it says whether the three lines
+/// cut anything, again whenever the text's box changes size (the
+/// instruction opened, the phone turned); the control is there only when
+/// they do.
+#[component]
+fn IxDocs(docs: String) -> Element {
+    let phone = use_phone_layout();
+    let mut whole = use_signal(|| false);
+    let mut long = use_signal(|| false);
+    let id = use_hook(|| {
+        static NEXT: AtomicUsize = AtomicUsize::new(0);
+        format!("idl-docs-{}", NEXT.fetch_add(1, Ordering::Relaxed))
+    });
+    if !phone {
+        return rsx! { p { class: "idl-docs", "{docs}" } };
+    }
+    let watched = id.clone();
+    rsx! {
+        div { class: "idl-docs-block",
+            p {
+                id: "{id}",
+                class: if whole() { "idl-docs" } else { "idl-docs clamped" },
+                onmounted: move |_| {
+                    let script = clamp_watch_js(&watched);
+                    spawn(async move {
+                        let mut page = app_ui_kit::platform::eval(script);
+                        while let Ok(cut) = page.recv::<bool>().await {
+                            if *long.peek() != cut {
+                                long.set(cut);
+                            }
+                        }
+                    });
+                },
+                "{docs}"
+            }
+            if long() {
+                button {
+                    class: "link-btn idl-docs-more",
+                    r#type: "button",
+                    aria_expanded: whole(),
+                    onclick: move |_| whole.set(!whole()),
+                    if whole() { "less" } else { "more" }
+                }
+            }
+        }
+    }
+}
+
+/// The script that tells [`IxDocs`] whether its clamped text is cut: once
+/// now and on every change of the text's size while it is clamped. A text
+/// not laid out (its instruction closed) or shown whole says nothing, and
+/// the watch ends when the text leaves the page.
+fn clamp_watch_js(id: &str) -> String {
+    format!(
+        r#"const el = document.getElementById("{id}");
+        if (el) {{
+            let last = null;
+            const look = () => {{
+                if (!el.isConnected) {{ seen.disconnect(); return; }}
+                if (!el.classList.contains("clamped") || el.clientHeight === 0) return;
+                const cut = el.scrollHeight > el.clientHeight + 1;
+                if (cut !== last) {{ last = cut; dioxus.send(cut); }}
+            }};
+            const seen = new ResizeObserver(look);
+            seen.observe(el);
+            look();
+        }}"#
+    )
 }
 
 /// The row that opens an IDL item: the app's chevron, which turns when the

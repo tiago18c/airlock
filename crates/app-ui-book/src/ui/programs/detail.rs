@@ -19,8 +19,8 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
     let check_note = use_signal(|| None::<String>);
     let view = use_memo(move || program_view(session, (form.selected)()));
     let phone = use_phone_layout();
-    // On a phone, what the file is and where it came from beyond its
-    // repository, folded under the check so the tabs start high.
+    // On a phone, where the file came from and what it is, folded under the
+    // check so the tabs start high.
     let mut about = use_signal(|| false);
 
     let Some(record) = record else {
@@ -89,8 +89,9 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
             }
             if phone {
                 // One block on one left edge: the address, the state of the
-                // online check with the button that runs it, then where the
-                // file came from beside a fold for the rest.
+                // online check on a line of its own, then the two controls:
+                // the check, and a fold for where the file came from and the
+                // rest.
                 div { class: "stack program-about",
                     div { class: "addr-full program-address",
                         // No room for it on one line: cut in the middle, in
@@ -98,36 +99,22 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                         code { class: "mono", title: "{program_id}", "{middle_cut(&program_id.to_string(), 12)}" }
                         CopyButton { text: program_id.to_string() }
                     }
-                    div { class: "program-check-group",
-                        // A state, not a control: words with an icon in its
-                        // colour, so Check online is the one thing to press.
-                        span { class: "program-check-state {status_tone(status)}", title: status_tip(status),
-                            Icon { glyph: if status_tone(status) == "ok" { Glyph::Check } else { Glyph::Alert } }
-                            "{status_words(status)}"
-                        }
+                    // A state, not a control: words and icon both in its
+                    // colour, on their own line so no button reads as their
+                    // label.
+                    p { class: "program-check-state {status_tone(status)}", title: status_tip(status),
+                        Icon { glyph: if status_tone(status) == "ok" { Glyph::Check } else { Glyph::Alert } }
+                        span { "{status_words(status)}" }
+                    }
+                    div { class: "program-head-actions",
                         button {
                             class: "sm program-check",
                             disabled: checking(),
                             onclick: move |_| check_one(session, program_id, checking, check_note),
                             if checking() { "Checking…" } else { "Check online" }
                         }
-                    }
-                    div { class: "program-source-row",
-                        if let Some(url) = repository.clone() {
-                            button {
-                                class: "link-btn program-source",
-                                r#type: "button",
-                                title: "{url}",
-                                onclick: move |_| {
-                                    if let Err(err) = session.open_link(&url) {
-                                        session.show_problem(format!("Could not open link: {err}"));
-                                    }
-                                },
-                                "{short_source(repository.as_deref().unwrap_or_default())}"
-                            }
-                        }
                         button {
-                            class: "ghost sm program-about-toggle",
+                            class: "sm program-about-toggle",
                             r#type: "button",
                             aria_expanded: about(),
                             onclick: move |_| about.set(!about()),
@@ -141,6 +128,22 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                     }
                     if about() {
                         div { class: "program-about-more",
+                            if let Some(url) = repository.clone() {
+                                div { class: "program-source-row",
+                                    span { class: "program-source-label", "Source" }
+                                    button {
+                                        class: "link-btn program-source",
+                                        r#type: "button",
+                                        title: "{url}",
+                                        onclick: move |_| {
+                                            if let Err(err) = session.open_link(&url) {
+                                                session.show_problem(format!("Could not open link: {err}"));
+                                            }
+                                        },
+                                        "{short_source(repository.as_deref().unwrap_or_default())}"
+                                    }
+                                }
+                            }
                             p { class: "muted program-facts",
                                 span { class: "program-facts-text",
                                     "{spec} · "
@@ -158,7 +161,7 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                                 span { class: "chip", title: "IDLs are kept per network: the cluster in use", "IDL for {network}" }
                             }
                             if let Some(embedded) = embedded.clone() {
-                                // The repository is the link above: what was
+                                // The repository is the Source line: what was
                                 // changed after taking the file is said here.
                                 if repository.is_none() {
                                     p { class: "hint", "{source_sentence(&embedded.source)} {embedded.changes}" }
