@@ -152,7 +152,7 @@ The two size functions read the template's own enabled blocks, so the checkboxes
 
 ## Phases
 
-- [ ] **1. Build's fields.** Scaled amounts and folded fields on the Build form.
+- [x] **1. Build's fields.** Scaled amounts and folded fields on the Build form.
 - [ ] **2. The core.** The format, checking, expansion, functions and facts in `wallet-core` and `wallet-flows`; the shipped templates; their tests against the real programs.
 - [ ] **3. The form.** The picker and the template form on Build, "Show as blocks", compiling to Review and Sign.
 - [ ] **4. Your own.** Save as template, storage, import and export.

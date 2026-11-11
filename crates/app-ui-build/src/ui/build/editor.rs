@@ -1,6 +1,9 @@
 //! One instruction block: its program, its instruction, and its fields.
 
 use super::*;
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::rc::Rc;
 
 #[component]
 pub(in crate::ui) fn InstructionEditor(draft: IxDraft) -> Element {
@@ -73,6 +76,10 @@ pub(in crate::ui) fn IdlFields(draft: IxDraft) -> Element {
     let session = use_context::<Session>();
     let form = session.forms.build;
     let id = draft.id;
+    let filled_open = use_signal(|| false);
+    // Where each defaulted argument went when the block first showed it.
+    // It stays there, so a field never moves while it is being typed in.
+    let placed = use_hook(|| Rc::new(RefCell::new(HashMap::<String, bool>::new())));
     let Some(idl) = draft.idl().cloned() else {
         return rsx! {};
     };
@@ -120,10 +127,28 @@ pub(in crate::ui) fn IdlFields(draft: IxDraft) -> Element {
         .and_then(|(_, spec)| spec.as_ref().err())
         .cloned();
 
+    // What the IDL fills in folds away: an address it derived, and an
+    // argument left to its default.
+    let (filled_accounts, accounts): (Vec<_>, Vec<_>) = accounts
+        .into_iter()
+        .partition(|account| idl.filled_by_idl(account));
+    let (filled_arguments, arguments): (Vec<_>, Vec<_>) =
+        arguments.into_iter().partition(|argument| {
+            let key = format!(
+                "{}.{}.{}",
+                program_id.map(|pk| pk.to_string()).unwrap_or_default(),
+                idl.instruction,
+                argument.name
+            );
+            argument.blank_uses_default
+                && *placed
+                    .borrow_mut()
+                    .entry(key)
+                    .or_insert_with(|| idl.left_to_default(argument))
+        });
+    let filled = filled_accounts.len() + filled_arguments.len();
+
     rsx! {
-        p { class: "hint",
-            "Amounts are in the program's base units, such as lamports. PDA accounts are filled in. If a default cannot be derived, that account asks for an address."
-        }
         if let Some(origin) = origin {
             div { class: "chip-row",
                 if origin == IdlOrigin::Builtin {
@@ -203,6 +228,18 @@ pub(in crate::ui) fn IdlFields(draft: IxDraft) -> Element {
             }
             for argument in arguments {
                 { idl_argument_field(form, id, &idl, argument) }
+            }
+            if filled > 0 {
+                Accordion {
+                    title: format!("Filled in for you · {filled}"),
+                    open: filled_open,
+                    for account in filled_accounts {
+                        { idl_account_field(form, id, &idl, account) }
+                    }
+                    for argument in filled_arguments {
+                        { idl_argument_field(form, id, &idl, argument) }
+                    }
+                }
             }
         }
     }
