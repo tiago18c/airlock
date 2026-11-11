@@ -25,10 +25,11 @@ pub use instruction::*;
 pub use reading::*;
 
 /// What a transaction does that hands over control of something, however well
-/// it reads.
+/// it reads. What an instruction's own sentence already says gets no strip
+/// (`wallet_core::risks_told`).
 #[component]
 pub fn RiskNotice(explained: ExplainedTx) -> Element {
-    let risks = wallet_core::risks_in(&explained);
+    let risks = wallet_core::risks_told(&explained);
     rsx! {
         for risk in risks {
             p { key: "{risk}", class: "warn", role: "alert", "{risk}" }
