@@ -2280,13 +2280,12 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   border-radius: var(--radius-md);
 }
 
-/* Templates: the list to pick one from, and the form of the one open. */
+/* Templates: Build's short list under the rail, and the form of the one
+   open. */
 .template-list { gap: var(--space-2); }
-/* A row is a card: the template, which opens it, then its actions. */
+/* A row is a card that opens the template. */
 .template-item {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
@@ -2309,18 +2308,20 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 }
 .template-row:hover:not(:disabled) { background: none; }
 .template-row:disabled { opacity: 1; background: none; }
-.template-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); padding: var(--space-2) var(--space-3); }
-@media (max-width: 639px) {
-  .template-item { grid-template-columns: minmax(0, 1fr); }
-  .template-actions { justify-content: flex-start; padding: 0 var(--space-4) var(--space-3); }
-}
 .template-row-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 .template-row-name { font-weight: var(--weight-semibold); }
 .template-row:disabled .template-row-name,
 .template-item.off .template-row-name { color: var(--text-2); }
 .template-row-summary { color: var(--text-2); font-size: var(--text-md); font-weight: var(--weight-regular); }
 .template-row-problem { color: var(--warn-text); font-size: var(--text-md); font-weight: var(--weight-regular); }
-.template-start > h3 { font-size: var(--text-md); color: var(--text-2); }
+.template-start-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+}
+.template-start-head > h3 { font-size: var(--text-md); color: var(--text-2); }
 
 .template-head {
   display: flex;
@@ -2382,14 +2383,247 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   .save-field { grid-template-columns: minmax(0, 1fr); gap: var(--space-1); }
 }
 
-/* An imported template before it is kept. */
-.import-section { display: grid; gap: var(--space-2); }
-.import-section > h4 { font-size: var(--text-md); }
-.import-name { font-size: var(--text-lg); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
-.import-list, .import-blocks { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-2); font-size: var(--text-md); }
-.import-list > li, .import-blocks > li { display: grid; gap: 2px; min-width: 0; }
-.import-item-name { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-weight: var(--weight-medium); }
-.import-program { color: var(--text-2); font-size: var(--text-sm); }
+/* The Templates dialog: the list on the left and the template picked on
+   the right, as Programs lays out IDLs. The dialog has a height of its
+   own, and each pane scrolls inside it, so the head and the last row of
+   buttons stay in place. An imported file is read in the same reader. */
+.modal.template-browser {
+  width: min(64rem, 100%);
+  height: min(46rem, calc(100vh - 48px));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow: hidden;
+}
+/* An imported file is one template: the dialog is as tall as it needs. */
+.modal.template-browser.import-template { width: min(48rem, 100%); height: auto; max-height: min(46rem, calc(100vh - 48px)); }
+.import-template > .template-browser-body { flex: 0 1 auto; }
+.modal.template-browser > .btn-row:last-child { margin-top: 0; }
+.modal.template-browser > p { margin: 0; }
+.template-browser-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  min-height: var(--control-md);
+}
+.template-browser-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  gap: var(--space-4);
+}
+.template-browser-body.one { grid-template-columns: minmax(0, 1fr); }
+/* The list: one card, the filter as its first row, the rows scrolling under
+   it. */
+.template-side {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.template-filter {
+  flex-shrink: 0;
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+.template-none, .template-side-note { margin: 0; padding: var(--space-3) var(--space-4); font-size: var(--text-md); }
+.template-side > .group-list {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.template-side-note { flex-shrink: 0; border-top: 1px solid var(--border); }
+.template-pick {
+  min-height: 0;
+  padding: var(--space-2) var(--space-2) var(--space-2) 10px;
+  white-space: normal;
+}
+.template-pick-text { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.template-pick-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); }
+.template-pick-name { min-width: 0; overflow-wrap: anywhere; line-height: 1.35; }
+.template-pick-head > .chip { flex: none; }
+/* The summary cut to two lines; the reader has it whole. */
+.template-pick-summary {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  line-height: 1.4;
+}
+.template-pick-problem { color: var(--warn-text); font-size: var(--text-sm); font-weight: var(--weight-regular); }
+.template-pick-item.off .template-pick-name { color: var(--text-2); }
+.template-pick-item.on .template-pick-summary { color: inherit; opacity: 0.85; }
+/* The reader: one pane that scrolls, its tabs staying at its top. */
+.template-reader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.template-reader > .empty { margin: auto 0; }
+.reader-head { display: grid; gap: var(--space-2); min-width: 0; }
+.reader-head > p { margin: 0; }
+.reader-title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
+.reader-title > h3 { min-width: 0; overflow-wrap: anywhere; }
+.reader-summary { overflow-wrap: anywhere; }
+.reader-tabs {
+  position: sticky;
+  top: calc(-1 * var(--space-4));
+  z-index: var(--z-sticky);
+  flex-shrink: 0;
+  margin: 0 calc(-1 * var(--space-5));
+  padding: 0 var(--space-5);
+  background: var(--surface);
+}
+.reader-tabs > .tab { margin-bottom: 0; }
+.reader-panel { display: grid; gap: var(--space-3); align-content: start; min-width: 0; }
+.reader-eyebrow { margin-top: var(--space-2); }
+.reader-panel .eyebrow {
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.reader-questions, .reader-options, .reader-blocks, .reader-fields {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+/* Questions: one row each, the widget it takes at the row's end. */
+.reader-questions {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.reader-question { display: grid; gap: 2px; min-width: 0; padding: var(--space-2) var(--space-3); }
+.reader-question + .reader-question { border-top: 1px solid var(--border); }
+.reader-question > p { margin: 0; overflow-wrap: anywhere; }
+.reader-question-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 var(--space-3);
+}
+.reader-question-label { font-weight: var(--weight-medium); overflow-wrap: anywhere; }
+.reader-takes { color: var(--text-2); font-size: var(--text-sm); }
+.reader-until { color: var(--text-2); font-size: var(--text-md); }
+.reader-options { display: grid; gap: var(--space-4); }
+.reader-option { display: grid; gap: var(--space-1); min-width: 0; }
+.reader-option > p { margin: 0; }
+.reader-option-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.reader-option-label { font-weight: var(--weight-semibold); }
+/* An option's questions sit under it, past a rule, as the form shows them. */
+.reader-option-questions,
+.reader-option > .reader-option-none {
+  margin-left: var(--space-3);
+}
+.reader-option-questions { margin-top: var(--space-1); }
+.reader-option-none { font-size: var(--text-md); }
+/* Blocks: numbered cards, each field a row: its name, then where its value
+   comes from. */
+.reader-blocks { display: grid; gap: var(--space-3); }
+.reader-block {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.reader-block-head { display: flex; align-items: flex-start; gap: var(--space-3); min-width: 0; }
+.reader-block-number {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+.reader-block-what { display: grid; gap: 2px; min-width: 0; }
+.reader-block-what > p { margin: 0; }
+.reader-block-title { font-weight: var(--weight-semibold); overflow-wrap: anywhere; line-height: 24px; }
+.reader-block-title code { font-weight: var(--weight-medium); }
+.reader-program { gap: var(--space-1); }
+.reader-program code { color: var(--text-2); font-size: var(--text-sm); overflow-wrap: anywhere; }
+.reader-when { color: var(--text-2); font-size: var(--text-md); }
+.reader-block-none { margin: 0; font-size: var(--text-md); }
+.reader-fields-group { display: grid; gap: var(--space-1); min-width: 0; }
+.reader-fields-group > h5 { margin: 0; }
+.reader-fields {
+  display: grid;
+  grid-template-columns: minmax(7rem, max-content) minmax(0, 1fr);
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--text-md);
+}
+.reader-field { display: contents; }
+.reader-field-name { color: var(--text-2); font-size: var(--text-sm); line-height: 22px; overflow-wrap: anywhere; }
+.reader-field-from {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--space-2);
+  min-width: 0;
+  min-height: 22px;
+  overflow-wrap: anywhere;
+}
+/* Where a value comes from, as a word before it. */
+.reader-origin {
+  flex: none;
+  padding: 0 6px;
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-full);
+  color: var(--text-2);
+  font-size: var(--text-xs);
+  line-height: 18px;
+}
+.reader-origin.asked { border-color: var(--brand-line); background: var(--brand-soft); color: var(--brand-text); }
+.reader-ref { color: var(--text-3); font-family: var(--font-mono); font-size: var(--text-sm); }
+.reader-text { display: grid; gap: var(--space-2); min-width: 0; }
+.reader-text-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.reader-raw { max-height: none; }
+.template-cannot { align-self: center; }
+.template-back { gap: var(--space-1); margin-left: calc(-1 * var(--space-2)); padding: 0 var(--space-2); font-weight: var(--weight-semibold); }
+.template-back .icon { width: 18px; height: 18px; }
+/* A narrow window: the list over the reader, each scrolling; a phone shows
+   one of the two. */
+@media (max-width: 639px) {
+  .modal.template-browser { height: 92vh; }
+  .template-browser-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 2fr) minmax(0, 3fr); }
+  .template-browser-body.one { grid-template-rows: minmax(0, 1fr); }
+  .template-reader { padding: var(--space-3) var(--space-4) var(--space-4); }
+  .reader-tabs { top: calc(-1 * var(--space-3)); margin: 0 calc(-1 * var(--space-4)); padding: 0 var(--space-4); }
+  .reader-fields { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .reader-field-from { margin-bottom: var(--space-2); }
+  .modal.template-browser .btn-row:last-child { flex-wrap: wrap; }
+  .modal.template-browser .btn-row:last-child > .template-cannot { flex-basis: 100%; }
+}
+
 .import-problems {
   display: grid;
   gap: var(--space-1);

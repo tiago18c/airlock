@@ -3,7 +3,9 @@
 
 use super::*;
 use crate::actions::kept_templates::*;
-use std::collections::{BTreeMap, HashMap};
+use crate::actions::template_browser::template_view;
+use std::collections::BTreeMap;
+use std::sync::Arc;
 use wallet_core::template::{Choice, FieldAt, Locked, PlannedInput, SaveField, SavePlan};
 
 /// What the lists of templates and their dialogs share, provided by Build.
@@ -18,6 +20,12 @@ pub(in crate::ui) struct TemplateDesk {
     pub preview: Signal<Option<ImportPreview>>,
     /// Build's blocks, read for saving as a template.
     pub saving: Signal<Option<SavePlan>>,
+    /// The template the Templates dialog shows next, by its key: one just
+    /// kept from an import.
+    pub show: Signal<Option<String>>,
+    /// A file dialog for importing or exporting is open. It is awaited,
+    /// not modal to the window, so the buttons that open one wait for it.
+    pub dialog: Signal<bool>,
 }
 
 impl TemplateDesk {
@@ -339,20 +347,19 @@ pub(in crate::ui) fn RemoveTemplate() -> Element {
     }
 }
 
-/// An imported file before it is kept: what it asks, its options, and for
-/// every block everything it fixes and works out, open. A file that is not
-/// a template says why and can only be closed.
+/// An imported file before it is kept, read as the Templates dialog reads
+/// one: what it asks, every block with every field it sets, and its text.
+/// A file that is not a template says why and can only be closed.
 #[component]
 pub(in crate::ui) fn ImportDialog() -> Element {
     let session = use_context::<Session>();
     let desk = use_context::<TemplateDesk>();
     let mut preview = desk.preview;
-    let (mut note, mut error) = (desk.note, desk.error);
+    let (mut note, mut error, mut show) = (desk.note, desk.error, desk.show);
     let mut replacing = use_signal(|| None::<String>);
     let mut refused = use_signal(|| None::<String>);
-    let fixed_open = use_signal(|| true);
-    let worked_open = use_signal(|| true);
-    let Some(ImportPreview { read, problems }) = preview() else {
+    let tab = use_signal(|| ReaderTab::Questions);
+    let Some(ImportPreview { text, read, .. }) = preview() else {
         return rsx! {};
     };
     let mut close = move || {
@@ -361,9 +368,12 @@ pub(in crate::ui) fn ImportDialog() -> Element {
         refused.set(None);
     };
 
-    let template = match read {
-        Ok(template) => template,
-        Err(why) => {
+    let (template, text) = match (read, text) {
+        (Ok(template), Some(text)) => (template, text),
+        (read, _) => {
+            let why = read
+                .err()
+                .unwrap_or_else(|| "This file is not text, so it is not a template.".to_string());
             return rsx! {
                 div { class: "modal-backdrop",
                     onclick: move |_| close(),
@@ -389,42 +399,16 @@ pub(in crate::ui) fn ImportDialog() -> Element {
         }
     };
 
-    let blocks = preview_blocks(&session, &template);
-    let fixed: usize = blocks.iter().map(|block| block.fixed.len()).sum();
-    let worked: usize = blocks.iter().map(|block| block.worked_out.len()).sum();
-    let option_label = |name: &str| {
-        template
-            .option(name)
-            .map_or(name.to_string(), |option| option.label.clone())
-    };
-    let questions: Vec<(String, String, Option<String>)> = template
-        .inputs
-        .iter()
-        .map(|input| {
-            let mut label = input.label.clone();
-            if input.optional {
-                label.push_str(" (optional)");
-            }
-            let mut notes = Vec::new();
-            if let Some(default) = &input.default {
-                notes.push(format!(
-                    "Until answered: {}",
-                    term_words(&template, default)
-                ));
-            }
-            if let Some(option) = &input.option {
-                notes.push(format!("Asked only with “{}”", option_label(option)));
-            }
-            let notes = (!notes.is_empty()).then(|| notes.join(" · "));
-            (label, input.hint.clone().unwrap_or_default(), notes)
-        })
-        .collect();
-    let keep_template = template.clone();
-    let mut keep = move |replace: bool| match keep_import(&session, &keep_template, replace) {
+    let view = template_view(&session, Arc::clone(&template), Some(text.clone()));
+    let mut keep = move |replace: bool| match keep_import(&session, &text, replace) {
         Ok(Kept::Saved(name)) => {
             error.set(None);
             note.set(Some(format!(
                 "Kept “{name}”. It is listed with your templates."
+            )));
+            show.set(Some(format!(
+                "yours:{}",
+                wallet_core::template::template_slug(&name)
             )));
             close();
         }
@@ -441,142 +425,54 @@ pub(in crate::ui) fn ImportDialog() -> Element {
     rsx! {
         div { class: "modal-backdrop",
             onclick: move |_| close(),
-            div { class: "modal wide import-template",
+            div { class: "modal template-browser import-template",
                 role: "dialog",
                 aria_label: "Import a template",
                 onclick: move |evt| evt.stop_propagation(),
-                div { class: "stack",
+                div { class: "template-browser-head",
                     h3 { "Import a template" }
-                    p { class: "lede",
-                        "Check what it does before you keep it. Everything it fixes and works out is listed here."
-                    }
-                    div { class: "template-title",
-                        p { class: "import-name", "{template.name}" }
-                        if let Some(summary) = &template.summary {
-                            p { class: "muted", "{summary}" }
+                }
+                p { class: "lede",
+                    "Check what it does before you keep it. Every block is listed with every field it sets, and where each value comes from."
+                }
+                div { class: "template-browser-body one",
+                    div { class: "template-reader",
+                        ReaderHead {
+                            name: view.template.name.clone(),
+                            summary: view.template.summary.clone(),
+                            problems: view.problems.clone(),
                         }
-                    }
-                    if !problems.is_empty() {
-                        div { class: "warn import-problems",
-                            p { "It cannot be used on this network. You can keep it: it is listed greyed until it can." }
-                            ul {
-                                for problem in problems.iter() {
-                                    li { "{problem}" }
-                                }
-                            }
+                        if !view.problems.is_empty() {
+                            p { class: "hint", "You can keep it: it is listed greyed until it can be used." }
                         }
+                        TemplateReading { view: view.clone(), tab, text_note: "The file as it was read. It is kept as it is." }
                     }
-                    div { class: "import-section",
-                        h4 { "Questions · {questions.len()}" }
-                        if questions.is_empty() {
-                            p { class: "hint", "It asks nothing." }
-                        }
-                        ul { class: "import-list",
-                            for (label, hint, notes) in questions {
-                                li {
-                                    span { class: "import-item-name", "{label}" }
-                                    if !hint.is_empty() {
-                                        span { class: "hint", "{hint}" }
-                                    }
-                                    if let Some(notes) = notes {
-                                        span { class: "hint", "{notes}" }
-                                    }
-                                }
-                            }
-                        }
+                }
+                if let Some(why) = refused() {
+                    p { class: "error", "{why}" }
+                }
+                if let Some(existing) = replacing() {
+                    p { class: "warn",
+                        "You already have a template called “{existing}”. Keeping this one replaces it."
                     }
-                    if !template.options.is_empty() {
-                        div { class: "import-section",
-                            h4 { "Options · {template.options.len()}" }
-                            ul { class: "import-list",
-                                for option in template.options.iter() {
-                                    li {
-                                        span { class: "import-item-name",
-                                            "{option.label}"
-                                            if option.default {
-                                                span { class: "chip", "on at first" }
-                                            }
-                                        }
-                                        if let Some(hint) = &option.hint {
-                                            span { class: "hint", "{hint}" }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                }
+                div { class: "btn-row",
+                    button { class: "ghost",
+                        r#type: "button",
+                        onclick: move |_| close(),
+                        "Cancel"
                     }
-                    div { class: "import-section",
-                        h4 { "Blocks · {blocks.len()}" }
-                        ol { class: "import-blocks",
-                            for block in blocks.iter() {
-                                li { key: "{block.number}",
-                                    span { class: "import-item-name",
-                                        "{block.number}. {block.program} · {block.instruction}"
-                                    }
-                                    if let Some(id) = block.program_id {
-                                        span { class: "mono import-program", "{id}" }
-                                    }
-                                    if let Some(when) = &block.when {
-                                        span { class: "hint", "Only with “{when}”" }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if fixed > 0 {
-                        Accordion {
-                            title: format!("Fixed by this template · {fixed}"),
-                            open: fixed_open,
-                            for block in blocks.iter().filter(|block| !block.fixed.is_empty()) {
-                                WrittenBlock {
-                                    key: "{block.number}",
-                                    heading: format!("{}. {} · {}", block.number, block.program, block.instruction),
-                                    rows: block.fixed.clone(),
-                                    units: block.units.clone(),
-                                }
-                            }
-                        }
-                    }
-                    if worked > 0 {
-                        Accordion {
-                            title: format!("Worked out · {worked}"),
-                            open: worked_open,
-                            for block in blocks.iter().filter(|block| !block.worked_out.is_empty()) {
-                                WrittenBlock {
-                                    key: "{block.number}",
-                                    heading: format!("{}. {} · {}", block.number, block.program, block.instruction),
-                                    rows: block.worked_out.clone(),
-                                    units: HashMap::new(),
-                                }
-                            }
-                        }
-                    }
-                    if let Some(why) = refused() {
-                        p { class: "error", "{why}" }
-                    }
-                    if let Some(existing) = replacing() {
-                        p { class: "warn",
-                            "You already have a template called “{existing}”. Keeping this one replaces it."
-                        }
-                    }
-                    div { class: "btn-row",
-                        button { class: "ghost",
+                    if replacing().is_some() {
+                        button { class: "danger solid",
                             r#type: "button",
-                            onclick: move |_| close(),
-                            "Cancel"
+                            onclick: move |_| keep(true),
+                            "Replace"
                         }
-                        if replacing().is_some() {
-                            button { class: "danger solid",
-                                r#type: "button",
-                                onclick: move |_| keep(true),
-                                "Replace"
-                            }
-                        } else {
-                            button { class: "primary",
-                                r#type: "button",
-                                onclick: move |_| keep(false),
-                                "Keep this template"
-                            }
+                    } else {
+                        button { class: "primary",
+                            r#type: "button",
+                            onclick: move |_| keep(false),
+                            "Keep this template"
                         }
                     }
                 }

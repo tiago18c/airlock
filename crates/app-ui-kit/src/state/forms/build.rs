@@ -175,14 +175,21 @@ pub enum TemplateSource {
     /// [`wallet_core::BUILTIN_TEMPLATES`].
     Builtin(&'static str),
     /// One of the user's, saved here or imported, by the slug it is kept
-    /// under.
+    /// under, with the text it is kept as: the file that was imported,
+    /// comments and all, or what Save as template wrote. `template` is that
+    /// text read.
     Yours {
         slug: String,
         template: Arc<Template>,
+        text: Arc<str>,
     },
-    /// A file kept as one of the user's that is not a template, and why.
-    /// It can only be removed.
-    Broken { slug: String, why: String },
+    /// A file kept as one of the user's that is not a template, why, and
+    /// its text when it could be read as text. It can only be removed.
+    Broken {
+        slug: String,
+        why: String,
+        text: Option<Arc<str>>,
+    },
 }
 
 impl TemplateSource {
@@ -195,6 +202,16 @@ impl TemplateSource {
                 .map_err(|err| err.to_string()),
             Self::Yours { template, .. } => Ok(template.as_ref().clone()),
             Self::Broken { why, .. } => Err(why.clone()),
+        }
+    }
+
+    /// The text of its file, as it is kept: what Text shows, Copy copies and
+    /// Export writes. `None` for a file that could not be read as text.
+    pub fn text(&self) -> Option<&str> {
+        match self {
+            Self::Builtin(id) => wallet_core::builtin_template(id).map(|builtin| builtin.toml),
+            Self::Yours { text, .. } => Some(text),
+            Self::Broken { text, .. } => text.as_deref(),
         }
     }
 

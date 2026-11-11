@@ -15,6 +15,7 @@ use wallet_core::{
 };
 
 mod advanced;
+mod browser;
 mod carrier;
 mod editor;
 mod fields;
@@ -24,6 +25,7 @@ mod raw;
 mod template;
 
 pub(in crate::ui) use advanced::*;
+pub(in crate::ui) use browser::*;
 pub(in crate::ui) use carrier::*;
 pub(in crate::ui) use editor::*;
 pub(in crate::ui) use fields::*;
@@ -48,6 +50,8 @@ pub fn BuildPanel() -> Element {
         removing: Signal::new(None),
         preview: Signal::new(None),
         saving: Signal::new(None),
+        show: Signal::new(None),
+        dialog: Signal::new(false),
     });
     let mut saving = desk.saving;
 
@@ -104,7 +108,17 @@ pub fn BuildPanel() -> Element {
                     InstructionRail { parent: None }
                     if !holds_blocks {
                         div { class: "stack template-start",
-                            h3 { "Or start from a template" }
+                            div { class: "template-start-head",
+                                h3 { "Or start from a template" }
+                                button { class: "link-btn",
+                                    r#type: "button",
+                                    onclick: move |_| {
+                                        desk.clear();
+                                        picker_open.set(true);
+                                    },
+                                    "Browse templates"
+                                }
+                            }
                             TemplateList { on_pick: pick }
                         }
                     }
@@ -168,7 +182,7 @@ pub fn BuildPanel() -> Element {
             }
         }
         if picker_open() {
-            TemplatePicker { open: picker_open, on_pick: pick }
+            TemplateBrowser { open: picker_open, on_pick: pick }
         }
         DiscardBlocks { pending }
         SaveTemplateDialog {}

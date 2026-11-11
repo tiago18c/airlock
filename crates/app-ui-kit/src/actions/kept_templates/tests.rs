@@ -254,14 +254,17 @@ async fn an_imported_file_is_shown_before_it_is_kept() {
     assert!(preview.problems.is_empty());
     assert!(yours(&screen).is_empty(), "nothing kept before it is asked");
 
-    let kept = screen.act(|| keep_import(&screen.session, &template, false));
+    let text = preview.text.clone().unwrap();
+    let kept = screen.act(|| keep_import(&screen.session, &text, false));
     assert_eq!(kept, Ok(Kept::Saved("Pay a friend".into())));
+    // Kept as the file was written, and read back to what was shown.
+    assert_eq!(stored(&screen, "pay-a-friend").unwrap(), GOOD);
     assert_eq!(
         Template::parse(&stored(&screen, "pay-a-friend").unwrap()).unwrap(),
         *template
     );
     // The same again asks first.
-    let again = screen.act(|| keep_import(&screen.session, &template, false));
+    let again = screen.act(|| keep_import(&screen.session, &text, false));
     assert_eq!(again, Ok(Kept::WouldReplace("Pay a friend".into())));
 }
 
@@ -272,15 +275,13 @@ async fn an_imported_file_is_shown_before_it_is_kept() {
 #[tokio::test]
 async fn a_file_is_picked_after_the_click_that_asked_for_it_returns() {
     let mut screen = Screen::offline().await;
-    let (preview, error) = screen.act(|| (Signal::new(None), Signal::new(None)));
+    let (preview, error, busy) =
+        screen.act(|| (Signal::new(None), Signal::new(None), Signal::new(false)));
     let (pick, picked) = tokio::sync::oneshot::channel();
     screen.act(|| {
-        import_from(
-            screen.session,
-            preview,
-            error,
-            async move { picked.await.ok() },
-        )
+        import_from(screen.session, preview, error, busy, async move {
+            picked.await.ok()
+        })
     });
     screen.settle().await;
     assert_eq!(
@@ -288,6 +289,14 @@ async fn a_file_is_picked_after_the_click_that_asked_for_it_returns() {
         None,
         "nothing is read while the dialog is open"
     );
+    assert!(screen.act(|| *busy.peek()), "held while the dialog is open");
+    // Asking again while one is open opens nothing.
+    let (_, never) = tokio::sync::oneshot::channel();
+    screen.act(|| {
+        import_from(screen.session, preview, error, busy, async move {
+            never.await.ok()
+        })
+    });
 
     pick.send(Ok(GOOD.as_bytes().to_vec())).unwrap();
     screen.settle().await;
@@ -296,6 +305,7 @@ async fn a_file_is_picked_after_the_click_that_asked_for_it_returns() {
         .expect("read once picked");
     assert_eq!(read.read.unwrap().name, "Pay a friend");
     assert_eq!(screen.act(|| error.peek().clone()), None::<String>);
+    assert!(!screen.act(|| *busy.peek()), "let go once it returns");
 }
 
 #[tokio::test]
@@ -320,7 +330,7 @@ async fn a_file_that_does_not_fit_this_network_can_still_be_kept() {
         .replace("11111111111111111111111111111111", &pk(9).to_string())
         .replace("Pay a friend", "Elsewhere");
     let preview = screen.act(|| preview_import(&screen.session, text.as_bytes()));
-    let template = preview.read.clone().unwrap();
+    assert!(preview.read.is_ok());
     assert_eq!(preview.problems.len(), 1, "{:?}", preview.problems);
     assert!(
         preview.problems[0].contains("No IDL"),
@@ -328,7 +338,7 @@ async fn a_file_that_does_not_fit_this_network_can_still_be_kept() {
         preview.problems
     );
     screen
-        .act(|| keep_import(&screen.session, &template, false))
+        .act(|| keep_import(&screen.session, &text, false))
         .unwrap();
     let mine = yours(&screen);
     assert_eq!(mine.len(), 1);

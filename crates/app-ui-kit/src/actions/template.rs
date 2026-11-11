@@ -29,9 +29,12 @@ pub struct TemplateEntry {
     pub source: TemplateSource,
     pub name: String,
     pub summary: Option<String>,
-    /// Why it cannot be opened on the network in use, in words. `None` when
-    /// it can.
+    /// Why it cannot be opened on the network in use, in words: the first
+    /// problem, or why the file is not a template. `None` when it can.
     pub problem: Option<String>,
+    /// Every problem `check` finds on the network in use, in words. Empty
+    /// when it can be opened, and for a file that is not a template.
+    pub problems: Vec<String>,
 }
 
 impl TemplateEntry {
@@ -52,14 +55,18 @@ pub fn template_entries(session: &Session) -> Vec<TemplateEntry> {
         .map(|builtin| TemplateSource::Builtin(builtin.id))
         .chain(kept.kept)
         .map(|source| match source.template() {
-            Ok(template) => TemplateEntry {
-                problem: wallet_core::template::check(&template, &*idls)
+            Ok(template) => {
+                let problems = wallet_core::template::check(&template, &*idls)
                     .err()
-                    .map(|problems| first_problem(&problems)),
-                name: template.name,
-                summary: template.summary,
-                source,
-            },
+                    .unwrap_or_default();
+                TemplateEntry {
+                    problem: (!problems.is_empty()).then(|| first_problem(&problems)),
+                    problems: problems.iter().map(super::sentence).collect(),
+                    name: template.name,
+                    summary: template.summary,
+                    source,
+                }
+            }
             Err(err) => TemplateEntry {
                 name: match &source {
                     TemplateSource::Builtin(id) => id.to_string(),
@@ -67,6 +74,7 @@ pub fn template_entries(session: &Session) -> Vec<TemplateEntry> {
                 },
                 summary: None,
                 problem: Some(err),
+                problems: Vec::new(),
                 source,
             },
         })

@@ -2,8 +2,9 @@
 //! where they are kept, removing one, and importing and exporting their
 //! files.
 //!
-//! A template is kept as the text of its file (`Template::to_toml`), one per
-//! template, through `app_core::storage`: `templates/<slug>.toml` in the data
+//! A template is kept as the text of its file, one per template: an imported
+//! one as the file read, comments and all, and one saved from Build's blocks
+//! as `Template::to_toml` writes it. It goes through `app_core::storage`: `templates/<slug>.toml` in the data
 //! folder, or `airlock.template.<slug>` in a browser. A save is checked: one
 //! that fails is reported and the list shows only what is kept. The list is
 //! read once, the first time Build needs it, into `BuildForm::kept`.
@@ -11,11 +12,10 @@
 use crate::state::forms::{IxBody, KeptTemplates, TemplateSource};
 use crate::state::session::Session;
 use dioxus::prelude::*;
-use solana_pubkey::Pubkey;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::sync::Arc;
 use wallet_core::template::{
-    builtin_named, template_slug, Choice, FieldAt, Function, Row, SavePlan, Term,
+    builtin_named, template_slug, Choice, FieldAt, Function, SavePlan, Term,
 };
 use wallet_core::Template;
 
@@ -35,20 +35,24 @@ pub fn load_kept(session: &Session) {
             kept: read
                 .kept
                 .into_iter()
-                .map(|stored| {
-                    let template = stored
-                        .text
-                        .and_then(|text| Template::parse(&text).map_err(|err| err.to_string()));
-                    match template {
+                .map(|stored| match stored.text {
+                    Ok(text) => match Template::parse(&text) {
                         Ok(template) => TemplateSource::Yours {
                             slug: stored.slug,
                             template: Arc::new(template),
+                            text: text.into(),
                         },
-                        Err(why) => TemplateSource::Broken {
+                        Err(err) => TemplateSource::Broken {
                             slug: stored.slug,
-                            why,
+                            why: err.to_string(),
+                            text: Some(text.into()),
                         },
-                    }
+                    },
+                    Err(why) => TemplateSource::Broken {
+                        slug: stored.slug,
+                        why,
+                        text: None,
+                    },
                 })
                 .collect(),
             left_out: read.left_out,
@@ -156,13 +160,13 @@ fn place_for(session: &Session, name: &str, replace: bool) -> Result<Option<Kept
     })
 }
 
-/// Write `template` where the user's templates are kept, checked, and list
-/// it. A failed write is reported, and the list is left as it was.
-fn keep(session: &Session, template: Template) -> Result<Kept, String> {
+/// Write `text`, the file `template` was read from, where the user's
+/// templates are kept, checked, and list it. A failed write is reported,
+/// and the list is left as it was.
+fn keep(session: &Session, template: Template, text: &str) -> Result<Kept, String> {
     let slug = template_slug(&template.name);
     let storage = session.core().ports().storage.clone();
-    if let Err(err) = app_core::storage::save_template(storage.as_ref(), &slug, &template.to_toml())
-    {
+    if let Err(err) = app_core::storage::save_template(storage.as_ref(), &slug, text) {
         tracing::warn!(target: "airlock::ui", %slug, error = %err, "could not keep a template");
         return Err(format!(
             "The template was not saved: {}",
@@ -175,6 +179,7 @@ fn keep(session: &Session, template: Template) -> Result<Kept, String> {
         TemplateSource::Yours {
             slug,
             template: Arc::new(template),
+            text: text.into(),
         },
     );
     Ok(Kept::Saved(name))
@@ -199,7 +204,8 @@ pub fn save_as_template(
     if let Some(would) = place_for(session, &saved.template.name, replace).map_err(|e| vec![e])? {
         return Ok(would);
     }
-    let kept = keep(session, saved.template).map_err(|e| vec![e])?;
+    let text = saved.template.to_toml();
+    let kept = keep(session, saved.template, &text).map_err(|e| vec![e])?;
     if let Kept::Saved(name) = &kept {
         let mut note = session.forms.build.compiled_note;
         note.set(Some(format!(
@@ -224,6 +230,8 @@ pub fn remove_kept(session: &Session, slug: &str) -> Result<(), String> {
 /// A file offered for import, read before anything is kept.
 #[derive(Clone, Debug, PartialEq)]
 pub struct ImportPreview {
+    /// The file's text, when it is text. Kept as it is, comments and all.
+    pub text: Option<String>,
     /// The template, or why the file is not one.
     pub read: Result<Arc<Template>, String>,
     /// Why it cannot be opened on the network in use. Empty when it can.
@@ -233,9 +241,11 @@ pub struct ImportPreview {
 /// Read `bytes` as a template file and check it against the IDLs of the
 /// network in use. Nothing is kept.
 pub fn preview_import(session: &Session, bytes: &[u8]) -> ImportPreview {
-    let read = std::str::from_utf8(bytes)
-        .map_err(|_| "This file is not text, so it is not a template.".to_string())
-        .and_then(|text| Template::parse(text).map_err(|err| err.to_string()));
+    let text = std::str::from_utf8(bytes).ok().map(str::to_string);
+    let read = match &text {
+        Some(text) => Template::parse(text).map_err(|err| err.to_string()),
+        None => Err("This file is not text, so it is not a template.".to_string()),
+    };
     let problems = match &read {
         Ok(template) => {
             let idls = session.idls.read();
@@ -249,18 +259,22 @@ pub fn preview_import(session: &Session, bytes: &[u8]) -> ImportPreview {
         Err(_) => Vec::new(),
     };
     ImportPreview {
+        text,
         read: read.map(Arc::new),
         problems,
     }
 }
 
-/// Keep an imported template among the user's. One under the same slug is
-/// replaced only with `replace`; a built-in's name is refused.
-pub fn keep_import(session: &Session, template: &Template, replace: bool) -> Result<Kept, String> {
+/// Keep an imported file among the user's templates, as `text`, the file
+/// as it was read: kept as written, comments and all, and read again here,
+/// so what is kept is what was shown. One under the same slug is replaced
+/// only with `replace`; a built-in's name is refused.
+pub fn keep_import(session: &Session, text: &str, replace: bool) -> Result<Kept, String> {
+    let template = Template::parse(text).map_err(|err| err.to_string())?;
     if let Some(would) = place_for(session, &template.name, replace)? {
         return Ok(would);
     }
-    keep(session, template.clone())
+    keep(session, template, text)
 }
 
 /// The file `source` exports as: its name and its text.
@@ -269,19 +283,42 @@ pub fn export_file(source: &TemplateSource) -> Result<(String, String), String> 
         TemplateSource::Builtin(id) => wallet_core::builtin_template(id)
             .map(|builtin| (format!("{id}.toml"), builtin.toml.to_string()))
             .ok_or_else(|| format!("No template ships as “{id}”.")),
-        TemplateSource::Yours { slug, template } => {
-            Ok((format!("{slug}.toml"), template.to_toml()))
-        }
+        TemplateSource::Yours { slug, text, .. } => Ok((format!("{slug}.toml"), text.to_string())),
         TemplateSource::Broken { why, .. } => Err(why.clone()),
     }
 }
 
+/// Run `task`, a file dialog and what comes of it, in a task of its own
+/// while `busy` is held, so the screen can leave out every button that
+/// opens another: the dialog is awaited, not modal to the window, so those
+/// buttons could otherwise open a second one beside it. Does nothing while
+/// one is open already.
+///
+/// The task runs in the scope that owns `busy`, not the one that was
+/// clicked: the dialog that asked can close while the file dialog is open,
+/// and the task must still finish and let go of `busy`. A screen that owns
+/// `busy` and goes away takes the task with it.
+fn file_dialog(mut busy: Signal<bool>, task: impl std::future::Future<Output = ()> + 'static) {
+    if *busy.peek() {
+        return;
+    }
+    busy.set(true);
+    dioxus::core::Runtime::current().in_scope(busy.origin_scope(), || {
+        spawn(async move {
+            task.await;
+            busy.set(false);
+        })
+    });
+}
+
 /// Write `source`'s file where the user picks: a dialog on desktop, a
-/// download in a browser. Says how it went in `note` or `error`.
+/// download in a browser. Says how it went in `note` or `error`, and holds
+/// `busy` while the dialog is open.
 pub fn export_template(
     source: &TemplateSource,
     mut note: Signal<Option<String>>,
     mut error: Signal<Option<String>>,
+    busy: Signal<bool>,
 ) {
     let (file_name, text) = match export_file(source) {
         Ok(file) => file,
@@ -295,7 +332,7 @@ pub fn export_template(
     // for it: see `import_from`.
     #[cfg(not(target_arch = "wasm32"))]
     {
-        spawn(async move {
+        file_dialog(busy, async move {
             match crate::platform::template_files::save_template_file(&file_name, &text).await {
                 None => {}
                 Some(Ok(path)) => {
@@ -311,7 +348,7 @@ pub fn export_template(
     }
     #[cfg(target_arch = "wasm32")]
     {
-        spawn(async move {
+        file_dialog(busy, async move {
             let mut eval = crate::platform::eval(DOWNLOAD_JS);
             let sent = eval.send(serde_json::json!({ "name": file_name, "text": text }));
             let answer = match sent {
@@ -333,23 +370,27 @@ pub fn export_template(
 }
 
 /// Ask for a template file to import: a dialog on desktop, which reads it
-/// into `preview`; in a browser, the page's hidden file field, whose
-/// change reads it (see [`read_import`]).
+/// into `preview` and holds `busy` while it is open; in a browser, the
+/// page's hidden file field, whose change reads it (see [`read_import`]).
+/// A browser's picker is modal to the page and says nothing when it is
+/// cancelled, so `busy` is not held there.
 pub fn pick_import(
     session: Session,
     preview: Signal<Option<ImportPreview>>,
     error: Signal<Option<String>>,
+    busy: Signal<bool>,
 ) {
     #[cfg(not(target_arch = "wasm32"))]
     import_from(
         session,
         preview,
         error,
+        busy,
         crate::platform::template_files::pick_template_file(),
     );
     #[cfg(target_arch = "wasm32")]
     {
-        let _ = (session, preview, error);
+        let _ = (session, preview, error, busy);
         let _ = crate::platform::eval("document.getElementById('template-file').click()");
     }
 }
@@ -372,11 +413,12 @@ fn import_from(
     session: Session,
     mut preview: Signal<Option<ImportPreview>>,
     mut error: Signal<Option<String>>,
+    busy: Signal<bool>,
     picked: impl std::future::Future<
             Output = Option<Result<Vec<u8>, crate::platform::template_files::TemplateFileError>>,
         > + 'static,
 ) {
-    spawn(async move {
+    file_dialog(busy, async move {
         match picked.await {
             None => {}
             Some(Ok(bytes)) => {
@@ -421,123 +463,17 @@ pub fn read_import(
     });
 }
 
-/// One block of a template as its import preview shows it: everything it
-/// fixes and works out, read from the file itself, so a block under an
-/// option and a template that does not fit this network are shown too.
-#[derive(Clone, Debug, PartialEq)]
-pub struct PreviewBlock {
-    /// Its place in the file, from 1.
-    pub number: usize,
-    /// `None` while it is the token program of a mint not known yet.
-    pub program_id: Option<Pubkey>,
-    /// The program's name, as the app knows it.
-    pub program: String,
-    pub instruction: String,
-    /// The label of the option it runs under.
-    pub when: Option<String>,
-    /// Fields set to a literal or a program alias, as written.
-    pub fixed: Vec<Row>,
-    /// Fields set to a value, `$wallet` or `$fee-payer`, in words.
-    pub worked_out: Vec<Row>,
-    /// The unit each argument is typed in, from the IDL.
-    pub units: HashMap<String, String>,
-}
-
-/// Every block of `template`, as its import preview shows it.
-pub fn preview_blocks(session: &Session, template: &Template) -> Vec<PreviewBlock> {
-    let idls = session.idls.read();
-    let program_name = |program_id: &Pubkey| match wallet_core::pinned_program(program_id) {
-        Some(pinned) => pinned.label.to_string(),
-        None => idls
-            .records()
-            .iter()
-            .find(|record| record.program_id == *program_id)
-            .map(|record| record.name.clone())
-            .unwrap_or_else(|| "A program with no IDL here".to_string()),
-    };
-    template
-        .blocks
-        .iter()
-        .enumerate()
-        .map(|(index, block)| {
-            let program_id = template.programs.get(&block.program).copied();
-            let program = match &program_id {
-                Some(id) => program_name(id),
-                None => format!(
-                    "The token program of the mint {}",
-                    template
-                        .values
-                        .get(&block.program)
-                        .and_then(|call| call.args.first())
-                        .map(|arg| words_of(template, arg, true))
-                        .unwrap_or_default()
-                ),
-            };
-            let units = program_id
-                .and_then(|id| idls.program_client(&id))
-                .and_then(|client| {
-                    wallet_core::idl_instruction_form(
-                        &client,
-                        &block.instruction,
-                        &Default::default(),
-                    )
-                    .ok()
-                })
-                .map(|form| {
-                    form.arguments
-                        .iter()
-                        .filter_map(|field| {
-                            Some((field.name.clone(), field.scale.unit()?.to_string()))
-                        })
-                        .collect()
-                })
-                .unwrap_or_default();
-            let mut fixed = Vec::new();
-            let mut worked_out = Vec::new();
-            for (field, term) in block.accounts.iter().chain(&block.arguments) {
-                let row = |text: String, from: Option<String>| Row {
-                    field: field.clone(),
-                    text,
-                    from,
-                };
-                match term {
-                    Term::Literal(text) => fixed.push(row(text.clone(), None)),
-                    Term::Ref(name) if template.input(name).is_some() => {}
-                    Term::Ref(name) => match template.programs.get(name) {
-                        Some(address) => fixed.push(row(address.to_string(), Some(name.clone()))),
-                        None if template.values.contains_key(name) => worked_out.push(row(
-                            format!("${name}: {}", term_words(template, term)),
-                            Some(name.clone()),
-                        )),
-                        None => {
-                            worked_out.push(row(term_words(template, term), Some(name.clone())))
-                        }
-                    },
-                }
-            }
-            PreviewBlock {
-                number: index + 1,
-                program_id,
-                program,
-                instruction: block.instruction.clone(),
-                when: block.when.as_ref().map(|name| {
-                    template
-                        .option(name)
-                        .map_or(name.clone(), |o| o.label.clone())
-                }),
-                fixed,
-                worked_out,
-                units,
-            }
-        })
-        .collect()
-}
-
 /// What a reference or a literal stands for, in words: a value by what its
 /// function does, an input by its label. A value another value is worked
 /// out from is named as the file names it, `$name`.
 pub fn term_words(template: &Template, term: &Term) -> String {
     words_of(template, term, false)
+}
+
+/// What a reference or a literal stands for, as part of other words: a
+/// value by its name, `$mint`, rather than by what works it out.
+pub fn name_words(template: &Template, term: &Term) -> String {
+    words_of(template, term, true)
 }
 
 fn words_of(template: &Template, term: &Term, nested: bool) -> String {
