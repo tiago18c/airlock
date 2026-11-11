@@ -4101,16 +4101,32 @@ textarea.short { min-height: 64px; }
    is the one at the top of the table. */
 .app.phone .pf-table { gap: 0; }
 .app.phone .pf-table > .pf-cols + .pf-section { padding-top: 0; }
-/* The wallet picker reads as one of the buttons beside it. */
-.app.phone .pf-controls select { font-size: var(--text-base); font-weight: var(--weight-medium); }
+/* The wallet picker reads as one of the buttons beside it. Refresh is in
+   the menu's sheet here, so the row is Send at its own width, the picker in
+   all the room left, and the three lines. */
+.app.phone .pf-controls select {
+  flex: 1;
+  min-width: 0;
+  max-width: none;
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+}
+.app.phone .pf-controls > button.primary { flex: none; padding-inline: var(--space-5); }
+/* A refresh started from the sheet, said under the toolbar while it runs. */
+.app.phone .pf-refreshing { margin: 0; }
 .app.phone .pf-stale-note { font-size: var(--text-md); color: var(--warn-text); }
-/* An opened asset whose price is outdated says so, past the logo column. */
+/* An opened asset whose price is outdated says so in one quiet line past
+   the logo column, only its dot in the warning colour: the wallets under it
+   lead. The whole sentence is the line's tooltip. */
 .app.phone .pf-stale-line {
   margin: 0;
   padding: 0 var(--space-3) var(--space-1) calc(var(--space-1) + 32px + var(--space-3));
+  overflow: hidden;
   font-size: var(--text-sm);
   line-height: var(--leading-tight);
-  color: var(--warn-text);
+  color: var(--text-2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .app.phone .pf-stale-mark {
   display: inline-block;
@@ -4169,6 +4185,7 @@ textarea.short { min-height: 64px; }
   grid-row: 1 / span 2;
   align-self: center;
   font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
   color: var(--text);
 }
 .app.phone .pf-share-main:not(:has(> .pf-value:not(.pf-none))) > .pf-amount { grid-row: 1 / span 2; align-self: center; }
@@ -4243,6 +4260,31 @@ textarea.short { min-height: 64px; }
   padding: 0 var(--space-1);
 }
 .app.phone .pf-share-mint::before { left: calc(var(--space-1) + 32px + var(--space-3)); }
+/* An unknown token's title: its short mint and the copy mark right after
+   it, one target a finger's height that copies all of the mint, drawn as a
+   symbol is so the row reads as a priced one does. */
+.app.phone .pf-mint-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  min-height: var(--control-lg);
+  margin-block: -11px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.app.phone .pf-mint-copy:hover, .app.phone .pf-mint-copy:active { background: transparent; }
+.app.phone .pf-mint-copy:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.app.phone .pf-mint-copy > .pf-symbol { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app.phone .pf-mint-copy > .icon { flex: none; width: 15px; height: 15px; color: var(--text-3); }
+/* A folded group closed is one line, as tall as a holding's row; open, it
+   keeps room under its last row. */
+.app.phone .pf-group { padding-block: 0; }
+.app.phone .pf-fold { min-height: 52px; }
+.app.phone .pf-group:has(> .pf-fold[aria-expanded="true"]) { padding-bottom: var(--space-3); }
 
 /* ---------- History ---------- */
 
