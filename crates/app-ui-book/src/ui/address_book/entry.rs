@@ -282,9 +282,10 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
         _ => Vec::new(),
     };
     // The kind line is drawn when it says something, or ends in the toggle
-    // of the entry's token accounts.
+    // of the entry's token accounts. On a phone the toggle is on the
+    // address's line instead.
     let has_holdings = owns_tokens && session.holding_summary(&pubkey).total > 0;
-    let show_kind = what.is_some() || has_holdings;
+    let show_kind = what.is_some() || (has_holdings && !phone);
     // A token is marked by its name on a tint of its mint, else a plain "?".
     let token_mark = (category == Category::Token).then(|| {
         let mint = entry.mint.unwrap_or(pubkey);
@@ -308,8 +309,9 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
     };
     // On a phone every row has one shape: the name over its kind line, the
     // balance beside it when there is one, then the address shortened to one
-    // line with copy right after it, and the three dots at the right end of
-    // that line, where they are on every row. A row with nothing to weigh
+    // line with copy right after it, and at the right end of that line the
+    // toggle of its token accounts, if any, and the three dots, where they
+    // are on every row. A row with nothing to weigh
     // draws nothing there rather than a dash, and its name takes the room.
     // The three dots open a bottom sheet titled with the entry's name, as a
     // wallet card's do.
@@ -407,13 +409,11 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                         } else if let Some(what) = what.as_ref() {
                             "{what}"
                         }
-                        if has_holdings {
-                            // On a phone the toggle takes a line of its own,
-                            // so no separator is left to start it.
+                        if has_holdings && !phone {
                             HoldingsToggle {
                                 owner: pubkey,
                                 open: holdings_open,
-                                alone: what.is_none() || phone,
+                                alone: what.is_none(),
                             }
                         }
                     }
@@ -458,6 +458,9 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
             }
             div { class: "ab-actions",
                 if phone {
+                    if has_holdings {
+                        HoldingsToggle { owner: pubkey, open: holdings_open, alone: true, short: true }
+                    }
                     button { class: "ghost icon-btn ab-more",
                         title: "More actions",
                         aria_label: "More actions",

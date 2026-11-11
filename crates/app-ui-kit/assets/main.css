@@ -1728,12 +1728,13 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 /* Address Book on a phone. The header is one line where it fits: the title,
    Add address and the three lines, which open a sheet with Refresh from
    chain, Export and Import. The kind chips are one row that scrolls
-   sideways, running to the screen's edges, faded where they are cut so the
-   row says there is more. Every entry has one shape: the name over its
-   kind line with the balance beside it, then the address shortened to one
-   line with the copy icon right after it, one button, and the three dots
-   at the right end of that line. What ends a row at the right sits as far
-   from the card's edge as the kind icon does from the left. */
+   sideways, running to the screen's edges, faded out where they are cut so
+   the row says there is more. Every entry has one shape, three lines at
+   most: the name with the balance at the right, the kind, then the address
+   shortened in a capsule that copies it, and at the right end of that line
+   the token accounts toggle, if any, and the three dots. What ends a row at
+   the right sits as far from the card's edge as the kind icon does from the
+   left, and a token account's amount and three dots end there too. */
 .app.phone .ab-head { align-items: center; }
 .app.phone .ab-head > :first-child { flex: 1 1 auto; min-width: 0; }
 .app.phone .ab-head > .btn-row { width: auto; flex-wrap: nowrap; }
@@ -1741,25 +1742,30 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 .app.phone .ab-head > .btn-row > .icon-btn { width: var(--control-lg); min-width: var(--control-lg); }
 /* How far the chips fade at each end: nothing at the start until the row
    is scrolled, and nothing at the end once it is scrolled to the end.
-   Where scroll-driven animations are missing, the end stays faded. */
+   Where scroll-driven animations are missing, the end stays faded. The
+   row bleeds to the screen's edges and the mask covers its whole box, so
+   a cut chip fades out to nothing right at the edge. The fade falls fast
+   at first, so it reads as one at a glance rather than as a dim letter. */
 @property --ab-chips-lead { syntax: "<length>"; inherits: false; initial-value: 0px; }
-@property --ab-chips-trail { syntax: "<length>"; inherits: false; initial-value: 40px; }
+@property --ab-chips-trail { syntax: "<length>"; inherits: false; initial-value: 64px; }
 @keyframes ab-chips-fade {
-  0% { --ab-chips-lead: 0px; --ab-chips-trail: 40px; }
-  10% { --ab-chips-lead: 24px; }
-  90% { --ab-chips-trail: 40px; }
-  100% { --ab-chips-lead: 24px; --ab-chips-trail: 0px; }
+  0% { --ab-chips-lead: 0px; --ab-chips-trail: 64px; }
+  10% { --ab-chips-lead: 32px; }
+  90% { --ab-chips-trail: 64px; }
+  100% { --ab-chips-lead: 32px; --ab-chips-trail: 0px; }
 }
 .app.phone .ab-chips {
   --ab-chips-lead: 0px;
-  --ab-chips-trail: 40px;
+  --ab-chips-trail: 64px;
   flex-wrap: nowrap;
   overflow-x: auto;
   margin-inline: calc(-1 * var(--space-4));
   padding-inline: var(--space-4);
   scrollbar-width: none;
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--ab-chips-lead), #000 calc(100% - var(--ab-chips-trail)), transparent);
-  mask-image: linear-gradient(to right, transparent, #000 var(--ab-chips-lead), #000 calc(100% - var(--ab-chips-trail)), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--ab-chips-lead), #000 calc(100% - var(--ab-chips-trail)), rgb(0 0 0 / 0.35) calc(100% - var(--ab-chips-trail) * 0.5), rgb(0 0 0 / 0.1) calc(100% - var(--ab-chips-trail) * 0.2), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 var(--ab-chips-lead), #000 calc(100% - var(--ab-chips-trail)), rgb(0 0 0 / 0.35) calc(100% - var(--ab-chips-trail) * 0.5), rgb(0 0 0 / 0.1) calc(100% - var(--ab-chips-trail) * 0.2), transparent);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 @supports (animation-timeline: scroll()) {
   .app.phone .ab-chips {
@@ -1770,12 +1776,11 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 .app.phone .ab-chips::-webkit-scrollbar { display: none; }
 .app.phone .ab-chips > .tab { flex: none; white-space: nowrap; }
 .app.phone .ab-row {
-  grid-template-columns:
-    var(--control-sm) minmax(0, 1fr) max-content var(--control-lg);
+  grid-template-columns: var(--control-sm) minmax(0, 1fr) max-content;
   grid-template-areas:
-    "icon name balance balance"
-    ". address address actions"
-    "holdings holdings holdings holdings";
+    "icon name balance"
+    ". address actions"
+    "holdings holdings holdings";
   column-gap: var(--space-2);
   row-gap: var(--space-1);
   align-items: start;
@@ -1786,55 +1791,73 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 /* The kind line breaks only between its parts, never inside one. */
 .app.phone .ab-kind { overflow-wrap: normal; }
 .app.phone .ab-kind-part { white-space: nowrap; }
-.app.phone .ab-address { align-self: center; justify-items: start; }
-/* The short address and its copy icon: one target as tall as a finger,
-   reaching over the row's gaps so the line stays as tall as the three
-   dots'. Its padding is taken back by its margin, so the address starts
-   under the name. */
+.app.phone .ab-address { justify-items: start; }
+/* The short address and its copy icon in one capsule, a chip that can be
+   pressed, starting under the name. It is drawn as tall as the line, and
+   its target reaches over the row's gaps to a finger's height. */
 .app.phone .ab-copy-addr {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: var(--control-lg);
-  margin: calc(-1 * var(--space-2)) 0 calc(-1 * var(--space-2)) calc(-1 * var(--space-2));
-  padding: 0 var(--space-2);
-  border-color: transparent;
-  background: transparent;
+  min-height: var(--control-sm);
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--surface-2);
   color: var(--text-2);
   font-weight: var(--weight-regular);
 }
+.app.phone .ab-copy-addr::after {
+  content: "";
+  position: absolute;
+  inset: calc((var(--control-sm) - var(--control-lg)) / 2) 0;
+}
+.app.phone .ab-copy-addr:active { background: var(--surface-3); color: var(--text); }
+.app.phone .ab-copy-addr:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
 .app.phone .ab-copy-addr .addr-short { color: inherit; }
 .app.phone .ab-copy-addr .icon { width: 16px; height: 16px; flex: none; }
+/* The token accounts toggle and the three dots end the address's line,
+   as tall as its capsule and a gap from it however long the toggle reads. */
+.app.phone .ab-actions {
+  align-self: start;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-sm);
+}
 /* The three dots: a full target whose glyph ends where the balance does,
    its margin giving back what the target is wider than the glyph. */
 .app.phone .ab-actions > .ab-more {
   width: var(--control-lg);
   min-width: var(--control-lg);
   min-height: var(--control-lg);
-  margin: calc(-1 * var(--space-2)) calc((20px - var(--control-lg)) / 2) calc(-1 * var(--space-2)) 0;
+  margin: calc((var(--control-sm) - var(--control-lg)) / 2) calc((20px - var(--control-lg)) / 2) calc((var(--control-sm) - var(--control-lg)) / 2) 0;
   color: var(--text-2);
 }
 .app.phone .ab-actions > .ab-more .icon { width: 20px; height: 20px; stroke-width: 3; }
-/* An owner's token accounts toggle on a line of its own under the kind
-   line, its target as tall as a finger without making the line so. */
-.app.phone .ab-holdings-more { display: flex; }
-.app.phone .ab-holdings-toggle {
+/* An owner's token accounts toggle, its target as tall as a finger
+   without making the line so. */
+.app.phone .ab-actions .ab-holdings-more { display: flex; }
+.app.phone .ab-actions .ab-holdings-toggle {
   min-height: var(--control-lg);
-  margin-block: calc(-1 * var(--space-3));
+  margin-block: calc((var(--control-sm) - var(--control-lg)) / 2);
+  font-size: var(--text-sm);
 }
-/* The token accounts take the row's whole width. Each is two lines: the
-   token and its flag with the amount at the right, then the account's
-   short address and copy, under the name; the "…" spans both at the end.
-   An address on either line is captioned with what it is. */
+/* The token accounts take the row's whole width, their rail at the left.
+   Each is laid as its owner's row is: the token and its flag with the
+   amount at the right, then the account's short address in its capsule,
+   under the name, with the three dots at the right. The amount and the
+   three dots end where the owner's balance and three dots do. An address
+   on either line is captioned with what it is. */
 .app.phone .ab-holdings .holding-list { margin-left: 0; padding-left: var(--space-3); }
 .app.phone .ab-holdings .holding-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) max-content var(--control-lg);
+  grid-template-columns: minmax(0, 1fr) max-content;
   grid-template-areas:
-    "token amount more"
-    "account account more";
+    "token amount"
+    "account more";
   column-gap: var(--space-2);
-  row-gap: 0;
+  row-gap: var(--space-1);
   align-items: center;
   padding: var(--space-2) 0;
 }
@@ -1842,7 +1865,7 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 .app.phone .ab-caption { flex: none; color: var(--text-3); font-size: var(--text-xs); }
 .app.phone .ab-holding-mint { flex-wrap: nowrap; }
 .app.phone .ab-holding-mint .addr-short { color: var(--text-2); }
-.app.phone .ab-holding-amount { grid-area: amount; margin-left: 0; }
+.app.phone .ab-holding-amount { grid-area: amount; justify-self: end; margin-left: 0; }
 .app.phone .ab-holding-account {
   grid-area: account;
   display: flex;
@@ -1852,10 +1875,11 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 }
 .app.phone .ab-holding-more {
   grid-area: more;
+  justify-self: end;
   width: var(--control-lg);
   min-width: var(--control-lg);
   min-height: var(--control-lg);
-  margin-right: calc((20px - var(--control-lg)) / 2);
+  margin: calc((var(--control-sm) - var(--control-lg)) / 2) calc((20px - var(--control-lg)) / 2) calc((var(--control-sm) - var(--control-lg)) / 2) 0;
   color: var(--text-2);
 }
 .app.phone .ab-holding-more .icon { width: 20px; height: 20px; stroke-width: 3; }

@@ -57,27 +57,33 @@ pub(in crate::ui) fn TokenAvatar(
 /// How many token accounts an owner has, at the end of its kind line: a
 /// button that opens them under the row. Nothing when it has none. `alone`
 /// when it is all the line holds, so nothing separates it from what is
-/// before it.
+/// before it. `short` on a phone, where it shares the address's line: it
+/// reads "6 tokens", and says "token accounts" to a screen reader.
 #[component]
 pub(in crate::ui) fn HoldingsToggle(
     owner: Pubkey,
     open: Signal<bool>,
     #[props(default)] alone: bool,
+    #[props(default)] short: bool,
 ) -> Element {
     let session = use_context::<Session>();
     let summary = session.holding_summary(&owner);
     if summary.total == 0 {
         return rsx! {};
     }
-    let noun = if summary.total == 1 {
-        "token account"
-    } else {
-        "token accounts"
+    let count_of = |one: &str, many: &str| {
+        let noun = if summary.total == 1 { one } else { many };
+        if summary.red > 0 {
+            format!("{} {noun}, {} red", summary.total, summary.red)
+        } else {
+            format!("{} {noun}", summary.total)
+        }
     };
-    let count = if summary.red > 0 {
-        format!("{} {noun}, {} red", summary.total, summary.red)
+    let full = count_of("token account", "token accounts");
+    let (count, label) = if short {
+        (count_of("token", "tokens"), Some(full))
     } else {
-        format!("{} {noun}", summary.total)
+        (full, None)
     };
 
     // The separator does not break from the toggle: when the line wraps, the
@@ -94,6 +100,7 @@ pub(in crate::ui) fn HoldingsToggle(
                 class: if open() { "ab-holdings-toggle open" } else { "ab-holdings-toggle" },
                 r#type: "button",
                 aria_expanded: "{open()}",
+                aria_label: label,
                 onclick: move |_| open.set(!open()),
                 "{count}"
                 Icon { glyph: Glyph::ChevronRight }
