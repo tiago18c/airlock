@@ -115,9 +115,11 @@ arguments = { decimals = "$decimals", mintAuthority = "$authority", freezeAuthor
 | `name`, `summary` | Shown in the picker and at the head of the form. Never on Review and Sign |
 | `[programs]` | Alias to address. A block's `program` is an alias, or a value whose function returns a program |
 | `[[option]]` | A checkbox: `name`, `label`, optional `hint`, optional `default = true`. No nesting, no else |
-| `[[input]]` | A question: `name`, `label`, optional `hint`, `optional`, `default` (a literal or a reference), `option` (asked only while that option is on) |
+| `[[input]]` | A question: `name`, `label`, optional `hint`, `optional`, `default` (a literal, a built-in name or a program alias), `option` (asked only while that option is on) |
 | `[values]` | Derived values, one function call each: `name = "function arg arg"`. An argument is a reference or a literal. Calls do not nest; a value names another value instead |
 | `[[block]]` | One instruction, in the order written: `program`, `instruction`, `accounts`, `arguments`, optional `when` (an option name: the block exists only while it is on) |
+
+An input or value that nothing uses refuses the file, and so does one larger than 64 KiB or with more than 32 blocks, inputs or values, 16 options or 16 program aliases.
 
 Order is the order of the `[[block]]` entries, so an option's block sits where it must run (most extensions before `initializeMint2`, metadata after). TOML does not keep the order between two different arrays, which is why an option does not hold its own blocks.
 
@@ -146,14 +148,14 @@ The whole list. A function is pure, or names the chain fact it needs.
 | `decimals-of <mint>` | The mint's decimals | the mint account |
 | `token-program-of <mint>` | Token or Token-2022, whichever owns the mint | the mint account |
 
-The two size functions read the template's own enabled blocks, so the checkboxes and the size cannot disagree. A Token-2022 mint is created at the size without metadata and funded for the size with it, because `initializeTokenMetadata` grows the account itself. The extension sizes are a table in Rust, checked by running every shipped option against the real program ([Tests](#tests)).
+The two size functions read the template's own enabled blocks, so the checkboxes and the size cannot disagree. They count each enabled block whose program is a Token-2022 alias and whose `mint` is bound to the same reference as the function's argument, each extension once. A length that would equal a multisig's (355) is two bytes more, as Token-2022 makes it. An `initialize…` instruction on that mint the table does not know refuses the template when it is checked. A Token-2022 mint is created at the size without metadata and funded for the size with it, because `initializeTokenMetadata` grows the account itself. The extension sizes are a table in Rust, checked by running every shipped option against the real program ([Tests](#tests)).
 
 **Chain facts.** Expanding a template returns the facts it still needs. Online, the app reads them from the node (`wallet-flows`, over `SolanaRpc`) and expands again. With no node (Airlock Offline, or offline mode) each missing fact is a field of the form, labelled as what it is ("Rent for 234 bytes, in lamports"), under the template's own inputs. A block whose program is `token-program-of` is checked against both programs' IDLs.
 
 ## Phases
 
 - [x] **1. Build's fields.** Scaled amounts and folded fields on the Build form.
-- [ ] **2. The core.** The format, checking, expansion, functions and facts in `wallet-core` and `wallet-flows`; the shipped templates; their tests against the real programs.
+- [x] **2. The core.** The format, checking, expansion, functions and facts in `wallet-core` and `wallet-flows`; the shipped templates; their tests against the real programs.
 - [ ] **3. The form.** The picker and the template form on Build, "Show as blocks", compiling to Review and Sign.
 - [ ] **4. Your own.** Save as template, storage, import and export.
 
@@ -185,15 +187,17 @@ A new module `wallet_core::template`, placed in `layers.rs` above `idl` and `spl
 - `wallet_flows::template_facts(rpc, needs)`: reads rent, mint decimals and mint owners, one request each kind where the node allows.
 - `toml` is already in the lock file (`idl-pack`, `program-watch`); `wallet-core` takes the same version. It must build for wasm.
 
+As built: the module is public and its parts are reached as `wallet_core::template::{check, expand, Answers, Env, Facts, Fact, …}`; only `Template`, `TemplateError`, `BuiltinTemplate`, `BUILTIN_TEMPLATES` and `builtin_template` are also at the root (`Fact` is taken there). `check` takes the network's catalog as `&dyn IdlCatalog` and returns the inputs (with their kind and scale) and options; the rows the template fixes and works out come from `expand`, per block, with their resolved text. `Answers` tells an input with no answer (it takes its default) from one cleared on purpose (it stays blank). A `token-program-of` block whose mint is not known yet is laid out as Token's, with no program. `template_facts` asks rent one size at a time (the node has no call for several) and every mint in one request. The size table holds the extensions a test lands against the VM's Token-2022 (11.0.0): the six shipped ones and interest-bearing, transfer hook, group pointer, group member pointer, pausable and scaled UI amount. Default account state is left out because Build cannot fill its `state` argument (a defined type), and confidential transfer because it needs an ElGamal key no test makes.
+
 The shipped templates:
 
 | File | Asks | Options |
 | --- | --- | --- |
 | `create-token.toml` | decimals, mint authority, freeze authority (optional) | Mint a first supply (to, amount) |
 | `create-token-2022.toml` | the same | Name and symbol (metadata pointer to the mint itself, then token metadata: name, symbol, URI), Transfer fee (fee, maximum fee), Close authority, Permanent delegate, Non-transferable, Mint a first supply |
-| `mint-tokens.toml` | mint, to, amount | none. Uses `token-program-of` and `decimals-of`, creates the recipient's associated token account if missing (`createAssociatedTokenIdempotent`), then `mintToChecked` |
+| `mint-tokens.toml` | mint, to, amount | none. Uses `token-program-of` and `decimals-of`, creates the recipient's associated token account if missing (`createAssociatedTokenIdempotent`), then `mintToChecked`, with the wallet as mint authority |
 
-An option ships only if its test passes against the program the test VM carries.
+An option ships only if its test passes against the program the test VM carries. All of them did, and all six of `create-token-2022` land together: the VM's Token-2022 accepts a transfer fee on a non-transferable mint.
 
 ### 3. The form
 

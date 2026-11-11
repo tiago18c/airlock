@@ -12,6 +12,7 @@ mod sign_panel;
 mod site_request;
 mod squads_checks;
 mod stake;
+mod templates;
 mod token_plan;
 mod use_cases;
 mod vector;

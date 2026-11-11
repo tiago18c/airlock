@@ -30,6 +30,7 @@ pub mod sign;
 pub mod simulate;
 pub mod squads;
 pub mod stake;
+pub mod template;
 pub mod token_transfer;
 pub mod track;
 pub mod transfer;
@@ -38,3 +39,4 @@ pub mod vector;
 pub mod testing;
 
 pub use error::{FlowError, Prepared};
+pub use template::template_facts;
