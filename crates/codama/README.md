@@ -193,6 +193,10 @@ Display never changes signed bytes. Codecs walk the type tree and ignore display
 
 **Optional accounts and signers are not booleans.** `is_optional` is `Option<bool>`. `IsSigner` is `True`, `False`, or `Either`. For remaining accounts, `Either` matches every meta. Non-final groups take metas whose signer flag matches; the last group takes whatever is left. Those metas are `ParsedInstruction.remaining_accounts`, the accounts after the named ones. Named pairing is by position.
 
+**An optional account left out under `programId` is left out of the fields.** Under the `programId` strategy the program's own address stands in the position of an optional account the instruction does not pass. The field list skips an optional account whose address is the program's, rather than label the program as that account. A `${accounts.…}` placeholder for it still fills with the address.
+
+**The v01 converter leaves `optionalAccountStrategy` unset, and unset reads as omitted.** In TypeScript an unset strategy defaults to `programId`, which is what Anchor 0.30 does. Here the resolver and the display treat unset as `omitted`, so an IDL converted from a v01 Anchor IDL with optional accounts must set `programId` itself (the Jupiter file in the IDL pack does).
+
 **Skipped display members are still signed, and the sentence may still name them.** `initializeMint` hides the rent sysvar from the field list. The builder still puts that account on the instruction. A `${data.tag}` placeholder is filled even when that argument is `skip: always`.
 
 **Injected values have two maps.** `InstructionBuilder::inject` / `AddressResolver::inject` supply values while *building*. Display `provides` on the instruction node supply values while *rendering*. A display injection does not change encoded bytes. Build-time lookup order is the inject map, then the node's fallback, then `InjectedValueMissing`.

@@ -10,6 +10,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 ## [Unreleased]
 
 ### Added
+- **Jupiter swaps read as a sentence** when you sign: who swaps how much of which token for the quoted amount of which other, and the slippage allowed, with the platform fee and any account the output is sent to listed under it. Amounts are in the token's own units (1.5, not 1,500,000), from its mint as your node reads it. Jupiter's IDL now ships with the app, so it is not fetched from the chain.
 - **Portfolio shows token logos.** Each logo is downloaded once, from the address the Tokens API names for it and without your key, and kept on this device. A token the Tokens API flags as passing itself off as another keeps its lettered avatar.
 - The Windows installer now asks whether to install the **browser bridge**, which lets the Airlock extension reach the app. It is on unless you untick it, and uninstalling Airlock removes it. The portable zip carries it too.
 - The macOS app now has the browser bridge inside it. Install it from the **Extension** status once Airlock is in Applications.

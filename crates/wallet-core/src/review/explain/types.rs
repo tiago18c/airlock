@@ -275,9 +275,11 @@ impl ExplainedTx {
 
 /// What of `fetched`, a node's answer for the accounts in `needed` in the same
 /// order, the display may read. An IDL describes the accounts of its own
-/// program, so an account is kept only when the program that reads it owns it:
+/// program, so an account is kept when the program that reads it owns it:
 /// bytes anyone could have written to an account of their own must not set a
-/// mint's decimals.
+/// mint's decimals. A mint is kept for any reader: only the Token and
+/// Token-2022 programs can write an initialized mint they own, so its decimals
+/// are true whoever reads them, as a swap does for the mints it trades.
 pub fn display_accounts(
     needed: &[(Pubkey, Pubkey)],
     fetched: &[Option<crate::chain::RawAccount>],
@@ -287,7 +289,32 @@ pub fn display_accounts(
         .zip(fetched)
         .filter_map(|((address, reader), account)| {
             let account = account.as_ref()?;
-            (account.owner == *reader).then(|| (*address, account.data.clone()))
+            (account.owner == *reader || is_token_mint(account))
+                .then(|| (*address, account.data.clone()))
         })
         .collect()
+}
+
+/// Whether `account` is an initialized mint of the Token or Token-2022
+/// program. A Token mint is exactly 82 bytes. A Token-2022 mint is 82 bytes,
+/// or, with extensions, longer than an account's 165 bytes with account type 1
+/// at byte 165; Token-2022 never gives such an account a multisig's 355 bytes.
+fn is_token_mint(account: &crate::chain::RawAccount) -> bool {
+    const MINT_LEN: usize = 82;
+    const ACCOUNT_LEN: usize = 165;
+    const MULTISIG_LEN: usize = 355;
+    const IS_INITIALIZED: usize = 45;
+    const ACCOUNT_TYPE_MINT: u8 = 1;
+    let data = &account.data;
+    let shaped = if account.owner == crate::ids::TOKEN_PROGRAM_ID {
+        data.len() == MINT_LEN
+    } else if account.owner == crate::ids::TOKEN_2022_PROGRAM_ID {
+        data.len() == MINT_LEN
+            || (data.len() > ACCOUNT_LEN
+                && data.len() != MULTISIG_LEN
+                && data[ACCOUNT_LEN] == ACCOUNT_TYPE_MINT)
+    } else {
+        false
+    };
+    shaped && data[IS_INITIALIZED] == 1
 }

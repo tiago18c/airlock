@@ -86,6 +86,15 @@ idlSha256 = "d25cdb91210e54eff80954934af6d6e171dd7e371a0f35a942a3a8bc9ca2f3c6"
 reviewed = "2026-11-09"
 
 [[builds]]
+# jupiter (pack). Closed source. Every instruction the IDL lists is in this binary by its Anchor log name, as are all 211 Swap variants. Successful mainnet transactions decode with the IDL for route, routeV2, sharedAccountsRoute, sharedAccountsRouteV2, sharedAccountsExactOutRoute, routeWithTokenLedger, setTokenLedger and createIdempotentAssociatedTokenAccount. The IDL is the one the program publishes.
+programId = "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
+network = "mainnet"
+programHash = "4ccb8fa2475c22d9c974aa2dcca38aa5cc5664619ce2a1c1f43308612357ad41"
+authority = "CvQZZ23qYDWF2RUpxYJ8y9K4skmuvYEEjH7fK58jtipQ"
+idlSha256 = "322c273684609c07f4438fa90640c581a9c391a8d77518935f29382e1a7a25bf"
+reviewed = "2026-11-11"
+
+[[builds]]
 # splGovernance (pack). spl-governance v3.1.3. Every instruction the IDL keeps is in this binary by name (see the manifest for those it drops).
 programId = "GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw"
 network = "mainnet"

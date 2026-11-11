@@ -11,9 +11,9 @@ use codama_nodes::{
     EnumTypeNode, EnumVariantTypeNode, InjectableNumberValueNode, InjectableStringValueNode,
     InstructionAccountNode, InstructionArgumentNode, InstructionNode,
     InstructionRemainingAccountsNode, IsSigner, NestedTypeNodeTrait, Node, Number,
-    NumberDisplayNode, NumberTypeNode, NumberValueNode, RegisteredContextualValueNode,
-    RegisteredValueNode, RootNode, SolAmountTypeNode, StringTypeNode, StructTypeNode, TypeNode,
-    ValueNode,
+    NumberDisplayNode, NumberTypeNode, NumberValueNode, OptionalAccountStrategy,
+    RegisteredContextualValueNode, RegisteredValueNode, RootNode, SolAmountTypeNode,
+    StringTypeNode, StructTypeNode, TypeNode, ValueNode,
 };
 use codama_visitors_core::{LinkableDictionary, NodePath};
 use serde::{Deserialize, Serialize};
@@ -138,6 +138,7 @@ pub fn get_instruction_display(
         .collect();
     let ctx = Ctx {
         instruction,
+        program_id: Pubkey::from_str(&root.program.public_key).ok(),
         parsed,
         accounts,
         names,
@@ -209,6 +210,7 @@ pub fn required_accounts_for_display(root: &RootNode, parsed: &ParsedInstruction
         .collect();
     let ctx = Ctx {
         instruction,
+        program_id: Pubkey::from_str(&root.program.public_key).ok(),
         parsed,
         accounts: &HashMap::new(),
         names: &HashMap::new(),
@@ -256,6 +258,7 @@ enum SpanDetail {
 
 struct Ctx<'a> {
     instruction: &'a InstructionNode,
+    program_id: Option<Pubkey>,
     parsed: &'a ParsedInstruction,
     accounts: &'a HashMap<Pubkey, Vec<u8>>,
     names: &'a HashMap<Pubkey, String>,
@@ -529,6 +532,9 @@ fn push_accounts(
         let Some(pk) = find_account(ctx.parsed, account.name.as_str()) else {
             continue;
         };
+        if left_out(account, pk, ctx) {
+            continue;
+        }
         fields.push(DisplayField {
             label: member_label(
                 account.display.as_ref().and_then(|d| d.label.as_deref()),
@@ -584,6 +590,14 @@ fn push_remaining(
             }
         }
     }
+}
+
+/// Whether `pk` stands in for an optional account the instruction leaves out:
+/// under the `programId` strategy, the program's own address takes its place.
+fn left_out(account: &InstructionAccountNode, pk: Pubkey, ctx: &Ctx<'_>) -> bool {
+    account.is_optional.unwrap_or(false)
+        && ctx.instruction.optional_account_strategy == Some(OptionalAccountStrategy::ProgramId)
+        && ctx.program_id == Some(pk)
 }
 
 fn signer_matches(expected: Option<IsSigner>, is_signer: bool) -> bool {

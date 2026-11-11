@@ -58,18 +58,22 @@ const systemProgram = Buffer.alloc(32);
 // A program no IDL on the device describes.
 const unknownProgram = Buffer.alloc(32, 7);
 
-// A recent devnet blockhash, so the modal counts down. Offline, a zero one.
-let blockhash = Buffer.alloc(32);
-try {
-  const res = await fetch("https://api.devnet.solana.com", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "getLatestBlockhash", params: [{ commitment: "finalized" }] }),
-  });
-  blockhash = b58decode((await res.json()).result.value.blockhash);
-} catch {
-  console.log("no devnet blockhash, using a zero one");
-}
+/** A recent blockhash of `cluster`, so the modal counts down. Offline, a
+ * zero one. */
+const latestBlockhash = async (cluster) => {
+  try {
+    const res = await fetch(`https://api.${cluster}.solana.com`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "getLatestBlockhash", params: [{ commitment: "finalized" }] }),
+    });
+    return b58decode((await res.json()).result.value.blockhash);
+  } catch {
+    console.log(`no ${cluster} blockhash, using a zero one`);
+    return Buffer.alloc(32);
+  }
+};
+let blockhash = await latestBlockhash("devnet");
 
 const transferData = (lamports) => {
   const data = Buffer.alloc(12);
@@ -91,12 +95,12 @@ const shortVec = (n) => {
 /** A legacy transaction paid and signed by `payer`, unsigned. `accounts`
  * follow the payer: writable ones, then `readonly` read-only ones at the end.
  * Each instruction is `[programIndex, accountIndexes, data]`. */
-const legacy = (accounts, readonly, instructions) => {
+const legacy = (accounts, readonly, instructions, hash = blockhash) => {
   const keys = [payer, ...accounts];
   const compiled = instructions.map(([program, indexes, data]) =>
     Buffer.concat([Buffer.from([program, indexes.length, ...indexes]), shortVec(data.length), data]));
   const message = Buffer.concat([
-    Buffer.from([1, 0, readonly, keys.length]), ...keys, blockhash,
+    Buffer.from([1, 0, readonly, keys.length]), ...keys, hash,
     Buffer.from([instructions.length]), ...compiled,
   ]);
   return Buffer.concat([Buffer.from([1]), Buffer.alloc(64), message]);
@@ -201,6 +205,42 @@ const mintTo = () => {
   return legacy([mint, token, token2022], 1, [[3, [1, 2, 0], data]]);
 };
 
+/** A Jupiter `route_v2` on mainnet: the payer swaps 25 USDC for a quoted
+ * 0.162 wrapped SOL in one Whirlpool step, accepting up to 0.5% less. The
+ * amounts read the real mints' decimals from mainnet. */
+const jupiterSwap = () => {
+  const key = (s) => b58decode(s);
+  const jupiter = key("JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4");
+  const data = Buffer.alloc(8 + 8 * 2 + 2 * 3 + 4 + 6);
+  Buffer.from("bb64facc31c4af14", "hex").copy(data);
+  data.writeBigUInt64LE(25_000_000n, 8); // 25 USDC
+  data.writeBigUInt64LE(162_000_000n, 16); // 0.162 SOL
+  data.writeUInt16LE(50, 24); // slippage, in basis points
+  data.writeUInt16LE(0, 26); // platform fee
+  data.writeUInt16LE(0, 28); // positive slippage
+  data.writeUInt32LE(1, 30); // one route step:
+  data.set([17, 1], 34); // Whirlpool { a_to_b: true },
+  data.writeUInt16LE(10_000, 36); // all of the input,
+  data.set([0, 1], 38); // token 0 to token 1
+  // payer | source and destination token accounts, pool | USDC, wrapped SOL,
+  // Token, Jupiter, its event authority, Whirlpool
+  const accounts = [
+    Buffer.alloc(32, 21),
+    Buffer.alloc(32, 22),
+    Buffer.alloc(32, 23),
+    key("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"),
+    key("So11111111111111111111111111111111111111112"),
+    key("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"),
+    jupiter,
+    key("D8cy77BBepLMngZx6ZukaTff5hCt1HrWyKk3Hnd9oitf"),
+    key("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc"),
+  ];
+  // owner, source, destination, mints, token programs, no output account (the
+  // program in its place), event authority, program | the step's accounts
+  const order = [0, 1, 2, 4, 5, 6, 6, 7, 8, 7, 9, 3];
+  return legacy(accounts, 6, [[7, order, data]], mainnetBlockhash);
+};
+
 // ---- scenarios: the transactions of one signTransaction request each ----
 
 const scenarios = {
@@ -211,7 +251,12 @@ const scenarios = {
   metadata: () => [metadata()],
   cpPool: () => [cpPool()],
   mintTo: () => [mintTo()],
+  jupiter: () => [jupiterSwap()],
 };
+// Scenarios on mainnet. The app is switched to it before each, and stays
+// there for the rest of the run.
+const onMainnet = new Set(["jupiter"]);
+let mainnetBlockhash = Buffer.alloc(32);
 const chosen = process.argv.slice(3);
 for (const name of chosen) {
   if (!scenarios[name]) {
@@ -400,9 +445,32 @@ if (!(await replyTo("connect-1", 5000))?.result?.accounts?.length) {
   stop(1);
 }
 
+/** Switch the app to mainnet in Settings, and take a mainnet blockhash. */
+let mainnet = false;
+const useMainnet = async () => {
+  const state = await run(`
+    const nav = [...document.querySelectorAll('nav.nav button')].find((b) => b.innerText.trim() === 'Settings');
+    if (!nav) return 'no Settings in ' + buttons();
+    nav.click();
+    const select = await until(() => [...document.querySelectorAll('select')].find((s) => [...s.options].some((o) => o.value === 'mainnet-beta')));
+    if (!select) return 'no cluster select';
+    select.value = 'mainnet-beta';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    await w(2000);
+    return select.value;
+  `);
+  if (state !== "mainnet-beta") {
+    console.error(`mainnet: ${state}`);
+    stop(1);
+  }
+  mainnetBlockhash = await latestBlockhash("mainnet-beta");
+  mainnet = true;
+};
+
 let n = 0;
 for (const name of chosen.length ? chosen : Object.keys(scenarios)) {
   const id = `${(++n).toString(16).padStart(4, "a")}-${name}`;
+  if (onMainnet.has(name) && !mainnet) await useMainnet();
   frame({
     v: 1, id, origin: "https://drive.example", method: "signTransaction",
     expiresAt: Math.floor(Date.now() / 1000) + 600,
@@ -410,7 +478,7 @@ for (const name of chosen.length ? chosen : Object.keys(scenarios)) {
       transactions: scenarios[name]().map((wire) => ({
         account: b58encode(payer),
         transaction: wire.toString("base64"),
-        chain: "solana:devnet",
+        chain: onMainnet.has(name) ? "solana:mainnet" : "solana:devnet",
       })),
     },
   });
@@ -420,6 +488,9 @@ for (const name of chosen.length ? chosen : Object.keys(scenarios)) {
     await until(() => { const b = button('Review'); return b && !b.disabled; }, 30000);
     await until(() => !document.body.innerText.includes('Looking for the IDLs'), 30000);
     await w(1500);
+    // Sign arms a moment after the request is ready, again after the accounts
+    // a sentence reads come in. One that stays disabled is shown as it is.
+    await until(() => ![...document.querySelectorAll('.modal.request .btn-row button')].some((b) => visible(b) && b.disabled), 5000);
     return [...document.querySelectorAll('.modal.request .btn-row button')].filter(visible)
       .map((b) => b.innerText.trim() + (b.className ? ' [' + b.className + ']' : '') + (b.disabled ? ' (disabled)' : ''))
       .join(', ');
