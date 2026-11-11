@@ -373,7 +373,7 @@ fn LockToggle() -> Element {
                 if unlocked {
                     session.lock();
                 } else {
-                    session.when_unlocked("Unlock the vault to sign with its keys and change its wallets.", || {});
+                    session.when_unlocked(crate::ui::lock::UNLOCK_LINE, || {});
                 }
             },
             Icon { glyph }

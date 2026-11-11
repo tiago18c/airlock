@@ -4735,6 +4735,11 @@ textarea.short { min-height: 64px; }
 .history-row-text .addr { min-height: 0; font-weight: inherit; vertical-align: baseline; }
 .history-row-text .addr::before { line-height: inherit; }
 .history-row-sub { font-size: var(--text-sm); }
+/* An amount field and its Max: Max at the field's trailing end, on its
+   line, on a desktop and a phone alike. */
+.amount-row { display: flex; align-items: center; gap: var(--space-2); }
+.amount-row > input { flex: 1 1 auto; min-width: 0; }
+.amount-row > button { flex: none; }
 .history-row-side {
   display: grid;
   justify-items: end;

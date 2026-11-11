@@ -246,7 +246,9 @@ fn SendModal(open: SendOpen) -> Element {
                     }
                     {landing_line(landing(), &symbol)}
                     label { "Amount"
-                        div { class: "btn-row",
+                        // Max at the field's trailing end, on its line, on
+                        // every screen size.
+                        div { class: "amount-row",
                             input {
                                 r#type: "text",
                                 inputmode: "decimal",

@@ -9,7 +9,7 @@ use app_ui_kit::ui::local_time;
 use app_ui_kit::ui::tx_view::{use_worked_out, Worked, READING_DEADLINE};
 use app_ui_kit::ui::Empty;
 use app_ui_kit::ui::{use_phone_layout, RefreshButton};
-use app_ui_kit::{Glyph, PhraseView, Session};
+use app_ui_kit::{Address, Glyph, PhraseView, Session};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use solana_signature::Signature;
@@ -264,22 +264,21 @@ fn HistoryList(
                 .iter()
                 .find(|(signature, _)| *signature == entry.signature)
                 .map(|(_, words)| words.clone());
-            let wallets: Vec<String> = entry
+            // A wallet with a name is its name; one without is drawn as
+            // the address it is, as the title's addresses are, never a bare
+            // short key.
+            let wallets: Vec<(Pubkey, Option<String>)> = entry
                 .addresses
                 .iter()
                 .filter(|address| only.is_none_or(|only| only == **address))
-                .map(|address| name_or_short(&session, address))
+                .map(|address| (*address, session.label_of(address)))
                 .collect();
-            let mut sub = local_time::clock_text(when);
-            for name in wallets {
-                sub.push_str(" · ");
-                sub.push_str(&name);
-            }
             Row {
                 head,
                 signature: entry.signature,
                 text: row_text(&entry, row_words.as_ref()),
-                sub,
+                time: local_time::clock_text(when),
+                wallets,
                 changes: change_lines(&session, &entry, only),
                 outcome: entry.outcome,
             }
@@ -308,7 +307,18 @@ fn HistoryList(
                     },
                     div { class: "history-row-main",
                         span { class: "history-row-text", PhraseView { phrase: row.text.clone() } }
-                        span { class: "history-row-sub muted", "{row.sub}" }
+                        span { class: "history-row-sub muted",
+                            "{row.time}"
+                            for (address, name) in row.wallets.iter().cloned() {
+                                span { key: "{address}", class: "history-row-wallet",
+                                    " · "
+                                    match name {
+                                        Some(name) => rsx! { "{name}" },
+                                        None => rsx! { Address { pubkey: address } },
+                                    }
+                                }
+                            }
+                        }
                     }
                     div { class: "history-row-side",
                         for (i, line) in row.changes.iter().enumerate() {
@@ -334,7 +344,9 @@ struct Row {
     signature: Signature,
     /// What it did, its addresses drawn as addresses everywhere are.
     text: Phrase,
-    sub: String,
+    /// When, then the wallets it touched: a name, or the address itself.
+    time: String,
+    wallets: Vec<(Pubkey, Option<String>)>,
     changes: Vec<String>,
     outcome: Outcome,
 }

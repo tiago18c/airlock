@@ -134,9 +134,7 @@ pub fn WalletsPanel() -> Element {
                     }
                 }
                 if locked {
-                    p { class: "note",
-                        "The vault is locked. Its wallets and balances are shown; signing, and adding, removing or changing a wallet, ask for the password."
-                    }
+                    crate::ui::lock::LockedNote {}
                 }
 
                 if all.is_empty() {

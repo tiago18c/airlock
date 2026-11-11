@@ -198,9 +198,7 @@ pub fn PortfolioPanel() -> Element {
                     }
                 }
                 if locked {
-                    p { class: "hint",
-                        "The vault is locked: only watched addresses are counted. Unlock it to count this device's wallets."
-                    }
+                    app_ui_kit::ui::lock::LockedNote {}
                 }
                 if let Some(err) = refresh_error().or_else(|| market.error.clone()) {
                     p { class: "error", "{err}" }

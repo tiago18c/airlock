@@ -3,6 +3,21 @@ use crate::ui::{Glyph, Icon};
 use dioxus::prelude::*;
 use zeroize::{Zeroize, Zeroizing};
 
+/// What unlocking allows: the quiet line under the title of every unlock
+/// card that has no reason of its own, in one wording.
+pub const UNLOCK_LINE: &str = "Unlock the vault to sign with its keys and change its wallets.";
+
+/// What stays and what waits while the vault is locked, said once on every
+/// pane that says it: the Wallets pane and Portfolio, on a desktop and a
+/// phone alike.
+pub const LOCKED_NOTE: &str = "The vault is locked. Its wallets and balances are shown; signing, and adding, removing or changing a wallet, ask for the password.";
+
+/// [`LOCKED_NOTE`], as a pane's note.
+#[component]
+pub fn LockedNote() -> Element {
+    rsx! { p { class: "note", "{LOCKED_NOTE}" } }
+}
+
 #[component]
 pub fn LockScreen() -> Element {
     rsx! { VaultUnlock { show_skip: true } }
@@ -212,11 +227,14 @@ pub fn VaultUnlock(
             div { class: "stack",
                 span { class: "avatar", Icon { glyph: Glyph::Lock } }
                 h2 { if initialized { "Unlock vault" } else { "Create vault" } }
-                if show_skip && offline {
-                    p { class: "hint offline-note", "Offline: this app never connects." }
+                // Every unlock card has one quiet line under its title: what
+                // this unlock is for, or else what unlocking allows; then,
+                // in an app with no network, the offline line.
+                if initialized || reason.is_some() {
+                    p { class: "hint unlock-line", {reason.unwrap_or(UNLOCK_LINE)} }
                 }
-                if let Some(reason) = reason {
-                    p { class: "lede", "{reason}" }
+                if offline {
+                    p { class: "hint offline-note", "Offline: this app never connects." }
                 }
 
                 label { "Password"
