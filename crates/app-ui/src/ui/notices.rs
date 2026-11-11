@@ -135,15 +135,15 @@ fn NoticesBody() -> Element {
     let groups = group_by_day(&items, now);
     let unread = notices.unread_count();
     let empty = notices.is_empty();
-    // A phone has no room for an action with nothing to act on, so it
-    // leaves one out rather than showing it greyed.
-    let show_mark = !phone || unread > 0;
+    // No control with nothing to act on, on a desktop and a phone alike: an
+    // action that would do nothing is left out rather than shown greyed.
+    let show_mark = unread > 0;
     // Clear keeps a transaction still in flight, so with only those left
     // it has nothing to act on.
-    let show_clear = !phone || notices.items().iter().any(|n| !n.pinned());
-    // With nothing filed yet a phone leaves out the filters, which would
-    // narrow nothing, and says instead what will be filed here.
-    let none_yet = phone && empty;
+    let show_clear = notices.items().iter().any(|n| !n.pinned());
+    // With nothing filed yet the filters would narrow nothing, so they are
+    // left out, and the list says instead what will be filed here.
+    let none_yet = empty;
 
     rsx! {
         div { class: "notice-panel-head",
@@ -156,7 +156,6 @@ fn NoticesBody() -> Element {
                         button {
                             class: "ghost sm",
                             r#type: "button",
-                            disabled: unread == 0,
                             onclick: move |_| session.notices_mark_all_read(),
                             "Mark all read"
                         }
@@ -165,7 +164,6 @@ fn NoticesBody() -> Element {
                         button {
                             class: "ghost sm",
                             r#type: "button",
-                            disabled: empty,
                             onclick: move |_| session.notices_clear(),
                             "Clear"
                         }
