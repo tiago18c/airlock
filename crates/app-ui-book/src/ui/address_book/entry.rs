@@ -220,19 +220,6 @@ fn kind_line(described: &Described) -> Option<String> {
     }
 }
 
-/// The kind line on a phone, as the parts it is made of, each kept whole
-/// on one line: a line breaks only between them. A smart contract wallet's
-/// line drops its first part where a more specific one follows, "Squads v4
-/// · 2 of 3", since the row's icon already says what it is and the whole
-/// line would not fit on one line of a phone.
-fn phone_kind_parts(category: Category, line: &str) -> Vec<String> {
-    let mut parts: Vec<String> = line.split(" · ").map(str::to_string).collect();
-    if category == Category::Wallet(WalletSort::SmartContract) && parts.len() > 1 {
-        parts.remove(0);
-    }
-    parts
-}
-
 /// The name a token's mark is drawn from: its own label, without the group
 /// a full label adds.
 fn token_mark_name(described: &Described, entry: &wallet_core::AddressEntry) -> Option<String> {
@@ -277,10 +264,6 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
     let name = entry_name(&described, &entry);
     let what = kind_line(&described);
     let phone = crate::ui::use_phone_layout();
-    let kind_parts = match (phone, what.as_deref()) {
-        (true, Some(line)) => phone_kind_parts(category, line),
-        _ => Vec::new(),
-    };
     // The kind line is drawn when it says something, or ends in the toggle
     // of the entry's token accounts. On a phone the toggle is on the
     // address's line instead.
@@ -399,17 +382,12 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                     }
                 }
                 if show_kind {
+                    // The same words on a desktop and a phone, leading with
+                    // the kind. On a phone it is one line, cut at its end,
+                    // so the kind is what survives.
                     p { class: "ab-kind",
-                        if phone {
-                            // The separator keeps to the part before it, so a
-                            // line breaks after it, never before.
-                            for (i, part) in kind_parts.iter().enumerate() {
-                                span { class: "ab-kind-part", "{part}" }
-                                if i + 1 < kind_parts.len() {
-                                    "\u{a0}· "
-                                }
-                            }
-                        } else if let Some(what) = what.as_ref() {
+                        title: if phone { what.clone() } else { None },
+                        if let Some(what) = what.as_ref() {
                             "{what}"
                         }
                         if has_holdings && !phone {
@@ -462,7 +440,7 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
             div { class: "ab-actions",
                 if phone {
                     if has_holdings {
-                        HoldingsToggle { owner: pubkey, open: holdings_open, alone: true, short: true }
+                        HoldingsToggle { owner: pubkey, open: holdings_open, alone: true }
                     }
                     button { class: "ghost icon-btn ab-more",
                         title: "More actions",

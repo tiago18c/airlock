@@ -11,7 +11,7 @@ use solana_pubkey::Pubkey;
 use std::str::FromStr;
 use wallet_core::{
     AddressKind, BookGroupInfo, BookRow, Category, Described, Fact, Group, TokenFlag, TokenHolding,
-    WalletSort, LOCAL_GROUP_ID,
+    LOCAL_GROUP_ID,
 };
 
 mod entry;
