@@ -54,7 +54,7 @@ pub fn AddressBookPanel() -> Element {
     let import_text = use_signal(String::new);
     let mut import_error = use_signal(|| None::<String>);
     // On a phone the header keeps only the title, Add address and the three
-    // lines: Refresh from chain joins Export and Import in a bottom sheet,
+    // lines: Refresh joins Export and Import in a bottom sheet,
     // as the Wallets pane's menu does, and a line under the header says
     // while it runs, since the sheet is closed by then.
     let phone = crate::ui::use_phone_layout();
@@ -106,9 +106,10 @@ pub fn AddressBookPanel() -> Element {
                     div { class: "btn-row",
                         if online && !phone {
                             button {
+                                title: "Read balances, token accounts and nonce hashes again",
                                 disabled: fetching(),
                                 onclick: refresh,
-                                if fetching() { "Refreshing…" } else { "Refresh from chain" }
+                                if fetching() { "Refreshing…" } else { "Refresh" }
                             }
                         }
                         button { class: "primary",
@@ -134,7 +135,7 @@ pub fn AddressBookPanel() -> Element {
                 }
 
                 if phone && fetching() {
-                    p { class: "hint ab-refreshing", role: "status", "Refreshing from chain…" }
+                    p { class: "hint ab-refreshing", role: "status", "Refreshing…" }
                 }
                 if !online {
                     p { class: "hint", "Offline: this app never reads the chain, so it looks up no balances, token accounts or nonce hashes." }
@@ -156,7 +157,7 @@ pub fn AddressBookPanel() -> Element {
                     disabled: fetching(),
                     onclick: refresh,
                     Icon { glyph: Glyph::Refresh }
-                    if fetching() { "Refreshing…" } else { "Refresh from chain" }
+                    if fetching() { "Refreshing…" } else { "Refresh" }
                 }
             }
             {pane_actions}

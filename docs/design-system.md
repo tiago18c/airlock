@@ -117,6 +117,8 @@ Every address goes through `ui/address` in `app-ui-kit`. What to call it comes f
 
 `.app` is a sidebar and a main column. A page is `section.page` with a `.page-head` (title, lede, actions) and then cards or lists.
 
+A page's head is its title, with a lede under it if it has one, then its actions on one row at the trailing edge, in one order: what filters the page (a select), then secondary actions (Refresh, always named so), then the one primary, then the pane's menu. A phone lays the actions under the title or beside it, as each pane does, in the same order; a primary that is a row's wide thumb button stays wide.
+
 | Width | Navigation |
 | --- | --- |
 | 960px and up | 232px sidebar with labels |

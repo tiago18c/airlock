@@ -368,6 +368,12 @@ code { color: var(--text-2); }
   min-width: min(100%, 16rem);
   flex: 1 1 20rem;
 }
+/* A head's actions are one row: what filters the page (a select), then the
+   secondary actions, then the one primary, then the pane's menu. The select
+   is as wide as its choice, so nothing wraps under it. A phone keeps the
+   rows each pane lays out. */
+.app:not(.phone) .page-head > .btn-row > select,
+.app:not(.phone) .pane-head > .btn-row > select { width: auto; max-width: 16rem; }
 
 .card {
   display: grid;

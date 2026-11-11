@@ -136,16 +136,9 @@ pub fn PortfolioPanel() -> Element {
                     div {
                         h2 { "Portfolio" }
                     }
+                    // What filters the page, then Refresh, then the primary,
+                    // then the menu: the one order of a page's head.
                     div { class: "btn-row pf-controls",
-                        if can_send {
-                            button { class: "primary",
-                                onclick: move |_| session.open_send(SendOpen {
-                                    from: selected.and_then(|owner| wallet_at(session, owner)),
-                                    ..SendOpen::default()
-                                }),
-                                "Send"
-                            }
-                        }
                         select {
                             aria_label: "Whose holdings",
                             onchange: move |e| only.set(e.value().parse().ok()),
@@ -166,6 +159,15 @@ pub fn PortfolioPanel() -> Element {
                                 disabled: refreshing(),
                                 onclick: refresh,
                                 if refreshing() { "Refreshing…" } else { "Refresh" }
+                            }
+                        }
+                        if can_send {
+                            button { class: "primary",
+                                onclick: move |_| session.open_send(SendOpen {
+                                    from: selected.and_then(|owner| wallet_at(session, owner)),
+                                    ..SendOpen::default()
+                                }),
+                                "Send"
                             }
                         }
                         if phone {
