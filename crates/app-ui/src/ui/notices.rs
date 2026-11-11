@@ -198,7 +198,7 @@ fn NoticesBody() -> Element {
                 Empty {
                     glyph: Glyph::Bell,
                     compact: true,
-                    text: "Transactions you send, requests from apps and sites, and the vault locking or a sync or save failing show up here.",
+                    text: "No notifications yet. Transactions you send, requests from apps and sites, and the vault locking or a sync or save failing are listed here.",
                 }
             } else if groups.is_empty() {
                 Empty {

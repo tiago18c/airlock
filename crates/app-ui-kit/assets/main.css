@@ -425,32 +425,27 @@ code { color: var(--text-2); }
   gap: var(--space-2);
 }
 
+/* One arrangement everywhere: the icon at the left, the sentence, and the
+   action at the trailing end, in a dashed box. */
 .empty {
-  display: grid;
-  justify-items: center;
-  gap: var(--space-2);
-  padding: var(--space-8) var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-4);
   border: 1px dashed var(--border-control);
   border-radius: var(--radius-lg);
   color: var(--text-2);
-  text-align: center;
-}
-.empty .icon { width: 28px; height: 28px; color: var(--text-3); }
-.empty > p { margin: 0; }
-/* In a list of groups, such as the Wallets pane's, a row no taller than one
-   of its entries: the icon, the sentence, and the action at the end. */
-.empty.compact {
-  display: flex;
-  align-items: center;
-  justify-items: initial;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
   font-size: var(--text-md);
   text-align: start;
 }
-.empty.compact .icon { width: 20px; height: 20px; }
-.empty.compact > p { flex: 1 1 auto; min-width: 0; }
-.empty.compact > button { flex: none; }
+.empty .icon { flex: none; width: 20px; height: 20px; color: var(--text-3); }
+.empty > p { flex: 1 1 auto; min-width: 0; margin: 0; }
+.empty > button { flex: none; }
+/* In a list of groups, such as the Wallets pane's, a row no taller than one
+   of its entries: only the padding changes. */
+.empty.compact { padding: var(--space-3) var(--space-4); }
+/* The page that says the app cannot open: a heading over its reason. */
+.empty:has(> h2) { flex-direction: column; align-items: start; }
 
 .stats {
   display: grid;
@@ -2157,6 +2152,8 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 .ix-plus .icon { width: 20px; height: 20px; }
 .ix-new-label { font-weight: var(--weight-medium); color: var(--text-2); }
 .ix-block-new:hover .ix-new-label { color: inherit; }
+/* Alone, the tile starts the list: as wide as the column, as on a phone. */
+.ix-block-new:only-child { flex-basis: 100%; max-width: none; }
 
 .ix-block-program {
   font-size: var(--text-xs);

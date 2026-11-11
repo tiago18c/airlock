@@ -167,7 +167,7 @@ pub fn HistoryPanel() -> Element {
                 if wallets.is_empty() {
                     Empty {
                         glyph: Glyph::History,
-                        text: "Your wallets' transactions show here, once you add a wallet.",
+                        text: "No transactions yet. Add a wallet, and its transactions are listed here.",
                     }
                 } else if page.is_empty() && !read_once {
                     Empty {
@@ -178,7 +178,7 @@ pub fn HistoryPanel() -> Element {
                 } else if page.is_empty() {
                     Empty {
                         glyph: Glyph::History,
-                        text: "Your wallets' transactions on {cluster.name()} show here.",
+                        text: "No transactions on {cluster.name()} yet. Your wallets' transactions are listed here.",
                     }
                 } else {
                     HistoryList {

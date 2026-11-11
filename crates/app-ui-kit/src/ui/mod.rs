@@ -92,9 +92,11 @@ pub fn SelectedChip(text: &'static str, #[props(default)] title: Option<&'static
     }
 }
 
-/// What a list shows while it has nothing: an icon, one sentence saying what
-/// will appear there, and an optional action as its children. A dashed card
-/// with the three centred; `compact`, a row as tall as one of the list's
+/// What a list shows while it has nothing: an icon, a sentence that says it
+/// is empty and then what will be listed or how to add the first, and an
+/// optional action as its children. One arrangement: a dashed box with the
+/// icon at the left, the sentence, and the action at the trailing end.
+/// `compact` only tightens the padding, to a row as tall as one of the list's
 /// entries, for a group among others such as the Wallets pane's. `status`
 /// announces the sentence, for one that says something is being read.
 #[component]

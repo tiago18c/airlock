@@ -140,7 +140,7 @@ pub fn WalletsPanel() -> Element {
                 if all.is_empty() {
                     Empty {
                         glyph: Glyph::Wallet,
-                        text: "The wallets you add or create show here.",
+                        text: "No wallets yet. Add one that exists, by its key or its address, or create a new one.",
                     }
                 }
 
@@ -165,7 +165,7 @@ pub fn WalletsPanel() -> Element {
                     Empty {
                         glyph: Glyph::Snowflake,
                         compact: true,
-                        text: "Keys kept on another device show here, by their address, to prepare their transactions.",
+                        text: "No offline wallets yet. Add the address of a key kept on another device to prepare its transactions here.",
                     }
                 }
                 ul { class: "tree",
@@ -185,7 +185,7 @@ pub fn WalletsPanel() -> Element {
                         Empty {
                             glyph: Glyph::Device,
                             compact: true,
-                            text: "Hardware wallets show here once their pre-release support is on.",
+                            text: "No hardware wallets yet. They can be added once their pre-release support is on.",
                             button { class: "sm",
                                 title: "Go to Settings and turn on Pre-release hardware wallets, to add one",
                                 onclick: move |_| session.goto(Tab::Settings),
@@ -196,7 +196,7 @@ pub fn WalletsPanel() -> Element {
                         Empty {
                             glyph: Glyph::Device,
                             compact: true,
-                            text: "Hardware wallets added with Add wallet, Hardware or Seed Vault show here.",
+                            text: "No hardware wallets yet. Add one with Add wallet, Hardware or Seed Vault.",
                         }
                     }
                 }
@@ -216,7 +216,7 @@ pub fn WalletsPanel() -> Element {
                     Empty {
                         glyph: Glyph::Safe,
                         compact: true,
-                        text: "Programmatic signers and Squads multisigs show here.",
+                        text: "No smart contract wallets yet. Add a programmatic signer to sign offline and let a hot wallet pay, or a Squads multisig to share control.",
                     }
                 }
                 ul { class: "tree",

@@ -207,7 +207,7 @@ pub fn PortfolioPanel() -> Element {
                 if owners.is_empty() {
                     Empty {
                         glyph: Glyph::Pie,
-                        text: "What your wallets and watched addresses hold shows here.",
+                        text: "No wallets or watched addresses yet. Add a wallet, or watch an address from the Address Book.",
                     }
                 } else {
                     Summary { portfolio: portfolio.clone(), priced, ago, colors: colors.clone() }

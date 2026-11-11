@@ -199,7 +199,7 @@ pub fn ProposalsModal(
                             Empty {
                                 glyph: Glyph::Safe,
                                 compact: true,
-                                text: "The transactions proposed to this multisig show here.",
+                                text: "No proposals yet. The transactions proposed to this multisig are listed here.",
                             }
                         },
                         Some(current) => {

@@ -137,7 +137,7 @@ pub fn StakePanel() -> Element {
                 if wallets.is_empty() {
                     Empty {
                         glyph: Glyph::Growth,
-                        text: "The stake accounts your wallets control show here, once you add a wallet.",
+                        text: "No stake accounts yet. Add a wallet, and the stake accounts it controls are listed here.",
                     }
                 }
 
@@ -151,7 +151,7 @@ pub fn StakePanel() -> Element {
                     if groups.is_empty() && !wallets.is_empty() {
                         Empty {
                             glyph: Glyph::Growth,
-                            text: "The stake accounts your wallets control show here. New stake creates one.",
+                            text: "No stake accounts yet. New stake creates one, and delegates it to a validator.",
                         }
                     }
                     for (wallet, address, stakes) in groups {

@@ -128,7 +128,7 @@ pub fn ProgramsPanel() -> Element {
                     p { class: "note", "{text}" }
                 }
                 if !any {
-                    Empty { glyph: Glyph::Code, text: "The programs you add or import show here." }
+                    Empty { glyph: Glyph::Code, text: "No programs yet. The programs you add or import are listed here." }
                 }
                 div { class: "book-layout program-layout",
                     if any && !one_pane {
