@@ -127,7 +127,7 @@ pub(in crate::ui) fn WalletRowMenu(
                         role: "menuitem",
                         title,
                         onclick: move |_| export_open.set(true),
-                        Icon { glyph: Glyph::Qr }
+                        Icon { glyph: Glyph::Export }
                         "Export key"
                     }
                 }
@@ -165,7 +165,7 @@ pub(in crate::ui) fn WalletRowMenu(
                 button { class: "more-item",
                     title,
                     onclick: move |_| export_open.set(true),
-                    Icon { glyph: Glyph::Qr }
+                    Icon { glyph: Glyph::Export }
                     span { "Export key" }
                 }
             }
