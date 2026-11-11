@@ -69,6 +69,25 @@ pub struct Env {
     pub keypairs: BTreeMap<String, Pubkey>,
 }
 
+impl Template {
+    /// What input `input` holds until it is answered: its default, with a
+    /// built-in name or a program alias resolved against `env`. `None` for
+    /// an input with no default, or one whose default is not known yet (no
+    /// wallet selected for `$wallet`).
+    pub fn default_text(&self, input: &str, env: &Env) -> Option<String> {
+        let name = match self.input(input)?.default.as_ref()? {
+            Term::Literal(text) => return Some(text.clone()),
+            Term::Ref(name) => name.as_str(),
+        };
+        let address = match name {
+            WALLET => env.wallet,
+            FEE_PAYER => env.fee_payer,
+            alias => self.programs.get(alias).copied(),
+        };
+        address.map(|address| address.to_string())
+    }
+}
+
 /// Something only the node can say.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Fact {
@@ -167,6 +186,10 @@ pub struct Expansion {
     /// Chain facts still needed. A fact whose argument is not known yet is
     /// not needed yet.
     pub needs: Vec<Fact>,
+    /// Every chain fact the blocks rest on, known or not: `needs` and the
+    /// facts already answered. A form that asks for facts by hand keeps a
+    /// field for each of these, so a field does not go once it is filled.
+    pub uses: Vec<Fact>,
 }
 
 impl Expansion {
@@ -231,6 +254,7 @@ struct Run<'a> {
     values: BTreeMap<&'a str, Option<Val>>,
     missing: Vec<Missing>,
     needs: Vec<Fact>,
+    uses: Vec<Fact>,
 }
 
 /// Writes `template` out as blocks from `answers`. Fails only when the
@@ -251,6 +275,7 @@ pub fn expand(
         values: BTreeMap::new(),
         missing: Vec::new(),
         needs: Vec::new(),
+        uses: Vec::new(),
     };
 
     for input in &template.inputs {
@@ -387,6 +412,7 @@ pub fn expand(
         blocks,
         missing: run.missing,
         needs: run.needs,
+        uses: run.uses,
     })
 }
 
@@ -424,8 +450,13 @@ impl<'a> Run<'a> {
         }
     }
 
-    fn need(&mut self, fact: Fact) {
-        if !self.needs.contains(&fact) {
+    /// Notes that the blocks rest on `fact`, and that it is still needed
+    /// when it is not known.
+    fn rest_on(&mut self, fact: Fact) {
+        if !self.uses.contains(&fact) {
+            self.uses.push(fact);
+        }
+        if !self.facts.knows(&fact) && !self.needs.contains(&fact) {
             self.needs.push(fact);
         }
     }
@@ -514,33 +545,21 @@ impl<'a> Run<'a> {
             Function::Token2022MintFundedSpace => self.mint_size(&call.args[0], true),
             Function::RentFor => {
                 let bytes = u64::try_from(args.first()?.as_ref()?.integer()?).ok()?;
-                match self.facts.rent.get(&bytes) {
-                    Some(lamports) => Some(Val::Integer(u128::from(*lamports))),
-                    None => {
-                        self.need(Fact::Rent(bytes));
-                        None
-                    }
-                }
+                self.rest_on(Fact::Rent(bytes));
+                let lamports = self.facts.rent.get(&bytes)?;
+                Some(Val::Integer(u128::from(*lamports)))
             }
             Function::DecimalsOf => {
                 let mint = address(0)?;
-                match self.facts.decimals.get(&mint) {
-                    Some(decimals) => Some(Val::Integer(u128::from(*decimals))),
-                    None => {
-                        self.need(Fact::MintDecimals(mint));
-                        None
-                    }
-                }
+                self.rest_on(Fact::MintDecimals(mint));
+                let decimals = self.facts.decimals.get(&mint)?;
+                Some(Val::Integer(u128::from(*decimals)))
             }
             Function::TokenProgramOf => {
                 let mint = address(0)?;
-                match self.facts.token_programs.get(&mint) {
-                    Some(program) => Some(Val::Address(*program)),
-                    None => {
-                        self.need(Fact::TokenProgram(mint));
-                        None
-                    }
-                }
+                self.rest_on(Fact::TokenProgram(mint));
+                let program = self.facts.token_programs.get(&mint)?;
+                Some(Val::Address(*program))
             }
         }
     }

@@ -14,7 +14,7 @@
 //!
 //! Nothing here touches the network or a secret: the caller makes the
 //! keypair of a `new-keypair` value and passes its address in [`Env`].
-//! See `docs/plan-templates.md` for the format.
+//! See `docs/templates.md` for the format.
 
 mod builtin;
 mod check;

@@ -441,3 +441,90 @@ fn every_builtin_template_expands_and_builds_with_everything_on() {
         );
     }
 }
+
+#[test]
+fn an_inputs_default_reads_as_the_form_shows_it() {
+    let template = builtin("create-token-2022");
+    let env = env();
+    assert_eq!(
+        template.default_text("decimals", &env).as_deref(),
+        Some("9")
+    );
+    assert_eq!(
+        template.default_text("authority", &env),
+        Some(pk(1).to_string()),
+        "$wallet is the selected wallet's address"
+    );
+    assert_eq!(template.default_text("freeze_authority", &env), None);
+    assert_eq!(template.default_text("no_such_input", &env), None);
+    let no_wallet = Env {
+        wallet: None,
+        ..env.clone()
+    };
+    assert_eq!(template.default_text("authority", &no_wallet), None);
+
+    let aliased = Template::parse(
+        r#"
+format = 1
+name = "Aliased"
+
+[programs]
+token = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+system = "11111111111111111111111111111111"
+
+[[input]]
+name = "owner"
+label = "Owner"
+default = "$token"
+
+[[input]]
+name = "payer"
+label = "Payer"
+default = "$fee-payer"
+
+[[block]]
+program = "$system"
+instruction = "transferSol"
+accounts = { source = "$payer", destination = "$owner" }
+arguments = { amount = "1" }
+"#,
+    )
+    .unwrap();
+    assert_eq!(
+        aliased.default_text("owner", &no_wallet),
+        Some(TOKEN_PROGRAM_ID.to_string())
+    );
+    assert_eq!(
+        aliased.default_text("payer", &no_wallet),
+        Some(pk(2).to_string())
+    );
+}
+
+#[test]
+fn a_fact_answered_is_still_one_the_blocks_rest_on() {
+    let template = builtin("create-token");
+    let answers = Answers::for_template(&template);
+    let first = run(&template, &answers, &env(), &Facts::default());
+    let rent_fact = match first.needs.as_slice() {
+        [fact @ Fact::Rent(_)] => *fact,
+        other => panic!("{other:?}"),
+    };
+    assert_eq!(first.uses, first.needs);
+
+    let Fact::Rent(bytes) = rent_fact else {
+        unreachable!()
+    };
+    let answered = run(&template, &answers, &env(), &rent(bytes, 1_461_600));
+    assert!(answered.needs.is_empty());
+    assert_eq!(answered.uses, vec![rent_fact]);
+
+    // A mint not known yet rests on nothing: its facts are not asked for.
+    let mint = builtin("mint-tokens");
+    let blank = run(
+        &mint,
+        &Answers::for_template(&mint),
+        &env(),
+        &Facts::default(),
+    );
+    assert!(blank.uses.is_empty() && blank.needs.is_empty());
+}
