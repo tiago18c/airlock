@@ -1,6 +1,12 @@
 //! Desktop file dialogs for importing and exporting a template. Each
 //! function returns `None` when the dialog was cancelled.
 //!
+//! The dialogs are awaited, never waited on: call them from a task, not
+//! from inside an event handler. A blocking dialog runs its own message
+//! loop on the window's thread, which lets the window render while the
+//! handler that opened it is still running, and dioxus panics there (see
+//! `pick_import` in `actions/kept_templates.rs`).
+//!
 //! A debug build started with `AIRLOCK_DEBUG_FILE_DIR` set skips the dialog:
 //! importing reads `import.toml` from that folder and exporting writes the
 //! file there, so a script driving the app can do both. A release build
@@ -34,12 +40,15 @@ fn debug_folder() -> Option<PathBuf> {
 /// Ask for one template file and read it, refusing one larger than a
 /// template can be before reading it.
 #[cfg(not(target_os = "android"))]
-pub fn pick_template_file() -> Option<Result<Vec<u8>, TemplateFileError>> {
+pub async fn pick_template_file() -> Option<Result<Vec<u8>, TemplateFileError>> {
     let path = match debug_folder() {
         Some(folder) => folder.join("import.toml"),
-        None => rfd::FileDialog::new()
+        None => rfd::AsyncFileDialog::new()
             .add_filter("Template", &["toml"])
-            .pick_file()?,
+            .pick_file()
+            .await?
+            .path()
+            .to_path_buf(),
     };
     Some(read_limited(&path))
 }
@@ -47,16 +56,19 @@ pub fn pick_template_file() -> Option<Result<Vec<u8>, TemplateFileError>> {
 /// Ask where to save `text` as `file_name`, and write it there. Returns the
 /// file.
 #[cfg(not(target_os = "android"))]
-pub fn save_template_file(
+pub async fn save_template_file(
     file_name: &str,
     text: &str,
 ) -> Option<Result<PathBuf, TemplateFileError>> {
     let path = match debug_folder() {
         Some(folder) => folder.join(file_name),
-        None => rfd::FileDialog::new()
+        None => rfd::AsyncFileDialog::new()
             .add_filter("Template", &["toml"])
             .set_file_name(file_name)
-            .save_file()?,
+            .save_file()
+            .await?
+            .path()
+            .to_path_buf(),
     };
     Some(
         std::fs::write(&path, text)
@@ -69,12 +81,12 @@ pub fn save_template_file(
 // screen ask anyway (Build leaves its buttons out there).
 
 #[cfg(target_os = "android")]
-pub fn pick_template_file() -> Option<Result<Vec<u8>, TemplateFileError>> {
+pub async fn pick_template_file() -> Option<Result<Vec<u8>, TemplateFileError>> {
     Some(Err(TemplateFileError::NoDialog))
 }
 
 #[cfg(target_os = "android")]
-pub fn save_template_file(
+pub async fn save_template_file(
     _file_name: &str,
     _text: &str,
 ) -> Option<Result<PathBuf, TemplateFileError>> {

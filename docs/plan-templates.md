@@ -1,6 +1,6 @@
 # Plan: templates on Build
 
-Status: **built** (2026-11-11): all four phases are done; what is left is under [Open](#open). Decided with Tiago on 2026-11-11. Each phase below says what it adds; a phase is done when its tests pass and its line is ticked in [Phases](#phases).
+Status: phases 1 to 4 are **built** (2026-11-11). Phases 5 to 7 were added the same day, after Tiago used the first four: a crash on import, two extensions the size functions left out, and a browser for templates that reads and writes their text. What is left after those is under [Open](#open). Each phase below says what it adds; a phase is done when its tests pass and its line is ticked in [Phases](#phases).
 
 Build asks for every account and argument an IDL names, in the program's base units. That is the right tool for an instruction nobody planned for, and too raw for the things people do often. A template is a short text file that asks a few questions and writes the Build blocks from the answers. The blocks are compiled and read on Review and Sign exactly as blocks made by hand are.
 
@@ -49,6 +49,9 @@ The format, the built-in names, the functions and chain facts are in [templates.
 - [x] **2. The core.** The format, checking, expansion, functions and facts in `wallet-core` and `wallet-flows`; the shipped templates; their tests against the real programs.
 - [x] **3. The form.** The picker and the template form on Build, "Show as blocks", compiling to Review and Sign.
 - [x] **4. Your own.** Save as template, storage, import and export.
+- [ ] **5. Loose ends.** The crash on importing a name that exists; an enum behind a defined type as a choice on Build; default account state and confidential transfer in the size table.
+- [ ] **6. The browser.** The Templates dialog as a list and a reader, with each template's questions, blocks and text.
+- [ ] **7. Templates as text.** Writing, editing and importing a template as text in the same dialog, checked as it is typed.
 
 Each phase is one commit series on `t3/build-pane-templates`, in order. Each leaves `cargo fmt --all --check`, CI's Clippy step and the touched crates' tests green, and adds its line to `CHANGELOG.md` when people will notice it.
 
@@ -113,6 +116,32 @@ As built: Build's form holds `template: Signal<Option<OpenTemplate>>` (the sourc
 
 As built: the tick became a choice per field (keep, ask each time, the wallet in use, the fee payer), because a field that holds the wallet or the fee payer should follow whoever opens the template rather than be fixed or asked. A blank field is asked or left out, and one the program needs is always asked. Fields asked that hold the same value and take the same widget are one question. `wallet_core::template::SavePlan` makes the template, which reads back from its file to itself and checks against the IDLs; opened with the blocks' values as its answers it writes the same blocks, tested on transfers, a scaled token transfer, a mint with a key made here and an overridden account, and the blocks of every shipped template. Expanding now marks only a derived account as overridden (`IdlDraft::manual`), as Build's "Change" does; it marked an account the IDL cannot fill too, which Build never does. `Storage` in `app-core` gained `list` and `remove` for the store of templates. `TemplateSource` has `Yours` and `Broken` beside `Builtin`; the list is read into `BuildForm::kept` the first time Build is shown. The import preview is read from the file, not from an expansion, so it shows blocks under an option and a template that does not fit this network. A name a shipped template has, or its id, is refused for one of yours, saved or imported. The phone offers no import or export, as it offers no IDL import. [templates.md](templates.md#your-own-templates) has the whole of it.
 
+### 5. Loose ends
+
+- **The import crash.** Importing a template whose name is already taken panics with an `unwrap` on `None`. No code of ours on that path unwraps, so it is reproduced first, in a debug build with a backtrace, with a name one of the user's has and with a name a shipped one has, through the file dialog's debug seam and with the reasoning for the real dialog. The cause is fixed where it is, and a test holds it where a test can reach it. Phase 7 replaces the import dialog, which is no reason to skip this: the cause may be a pattern used elsewhere.
+- **An enum behind a defined type.** `classify` in `idl/build/form.rs` reads a `definedTypeLinkNode` as a field nobody can fill, so `initializeDefaultAccountState.state` and Token's `setAuthority.authorityType` cannot be built at all. It follows the link to the program's own defined type, to a bounded depth: an enum whose variants hold nothing becomes `IdlArgKind::Enum`, a choice. Anything else stays as it is. Building, opening for edit and building again gives the same bytes.
+- **The size table** gains `initializeDefaultAccountState` and `initializeConfidentialTransferMint`, each landed alone against the VM's Token-2022 as the others were. A confidential mint with no auditor needs no ElGamal key; with one, the key is 32 bytes the IDL types as an address. `initializeConfidentialTransferFee` joins them if it lands beside a transfer fee, and is left out with the reason if not.
+- The shipped templates do not change. A mint whose accounts start frozen cannot take a first supply, and a template has no way to say two options do not go together.
+
+### 6. The browser
+
+The Templates dialog becomes what Programs is for IDLs: a list on one side, the template picked on the other. On a phone it is one at a time, with a way back, as Programs is.
+
+- **The list.** Every template, shipped and the user's, with a filter over name and summary, the chip, and the greyed state of one that does not fit this network. A file of the user's that is not a template is listed too.
+- **The reader.** The name, the summary, where it comes from, and for one that does not fit this network every problem. Then tabs, as an IDL has: **Questions · n** (each question with its hint, what it holds until answered, and the options with the questions asked under each), **Blocks · n** (every block in order: program, address, instruction, the option it runs under, and every field it sets with where the value comes from: asked, fixed, worked out and how), and **Text**, the file as it is kept, with Copy.
+- **Actions** on the template picked: **Use this template** (asks first when Build holds blocks, as today), Export, and Remove for one of the user's. The rows of the list carry no buttons.
+- **Kept as written.** One of the user's is kept as the text it was saved from, so Text, Copy and Export give back the same bytes, comments included. Save as template still writes `to_toml`. `TemplateSource::Yours` and `Broken` carry the text.
+- Build's empty state keeps its short list: a row there opens the template at once.
+
+### 7. Templates as text
+
+The same dialog writes templates. Rule 3 holds: whatever is about to be kept, the dialog shows what it does beside the text, read from the text as it stands.
+
+- **Ways in.** **New template** (a short starter that parses), **Edit** on one of the user's, **Edit a copy** on a shipped one, **Import a file** (the file's text, not kept yet), and pasting. A broken file of the user's opens here to be mended. The import dialog of phase 4 goes: an imported file is a text not yet saved.
+- **The editor.** The text in a plain monospace field, and beside it (under it when the dialog is narrow) the Questions and Blocks of phase 6 for the text as typed. Checked as it is typed: the reader's error, with TOML's own line and excerpt; then every problem `check` finds on this network; then the name (a shipped one's is refused, another of the user's says saving replaces it).
+- **Saving.** Allowed when the text parses and the name is free or replaces one of the user's knowingly. Problems on this network do not stop it: it is listed greyed, as an import was. Editing one of the user's and changing its name renames it: the old file goes once the new one is kept. Leaving with changes not saved asks first.
+- **On a phone** there is still no file picker, and now no need: Copy on Text and paste into New template carry a template between devices.
+
 ## Tests
 
 - `wallet-core`: parsing (every refusal), `to_toml` round trip, checking against IDLs, expansion (blank answers, options on and off, each function), the scale and fold rules of phase 1, and every built-in template on every network.
@@ -123,5 +152,6 @@ As built: the tick became a choice per field (keep, ask each time, the wallet in
 
 - Token metadata's size depends on its text. If the program's check of the funded size disagrees with ours by a few bytes, the function is fixed against the VM, never padded.
 - Whether a saved template should record the checksum of each IDL it was made against, to say "this program's IDL changed since" on open. Not in v1: a name that no longer matches already refuses.
-- Import and export on a phone. Android has no file picker the app can open, so neither is offered there, as with IDLs; sharing a template's text (the system share sheet, or a QR) would be the way.
-- Hints and defaults for the questions of a saved template. Save writes each question with its field's name in words and no hint or default; editing a template's text by hand is the way to add them, then importing it.
+- Files on a phone. Android has no file picker the app can open; phase 7 carries a template as text instead. The system share sheet or a QR would be the next step.
+- Hints and defaults for the questions of a saved template. Save writes each question with its field's name in words and no hint or default; Edit, from phase 7, is the way to add them.
+- Token-2022's token group and group member, written onto the mint after it is initialized as metadata is, are not sized.

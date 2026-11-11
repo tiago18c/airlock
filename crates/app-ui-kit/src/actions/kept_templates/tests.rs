@@ -265,6 +265,39 @@ async fn an_imported_file_is_shown_before_it_is_kept() {
     assert_eq!(again, Ok(Kept::WouldReplace("Pay a friend".into())));
 }
 
+/// The click that asks for a file returns before the file is picked, and
+/// the preview comes from the task that waits for it. A dialog waited on
+/// inside the click let the window render under the handler on desktop,
+/// which crashed the app on a second import.
+#[tokio::test]
+async fn a_file_is_picked_after_the_click_that_asked_for_it_returns() {
+    let mut screen = Screen::offline().await;
+    let (preview, error) = screen.act(|| (Signal::new(None), Signal::new(None)));
+    let (pick, picked) = tokio::sync::oneshot::channel();
+    screen.act(|| {
+        import_from(
+            screen.session,
+            preview,
+            error,
+            async move { picked.await.ok() },
+        )
+    });
+    screen.settle().await;
+    assert_eq!(
+        screen.act(|| preview.peek().clone()),
+        None,
+        "nothing is read while the dialog is open"
+    );
+
+    pick.send(Ok(GOOD.as_bytes().to_vec())).unwrap();
+    screen.settle().await;
+    let read = screen
+        .act(|| preview.peek().clone())
+        .expect("read once picked");
+    assert_eq!(read.read.unwrap().name, "Pay a friend");
+    assert_eq!(screen.act(|| error.peek().clone()), None::<String>);
+}
+
 #[tokio::test]
 async fn a_file_that_does_not_parse_is_not_a_template() {
     let screen = Screen::offline().await;

@@ -291,19 +291,23 @@ pub fn export_template(
             return;
         }
     };
+    // The dialog is awaited in a task, never inside the handler that asked
+    // for it: see `import_from`.
     #[cfg(not(target_arch = "wasm32"))]
     {
-        match crate::platform::template_files::save_template_file(&file_name, &text) {
-            None => {}
-            Some(Ok(path)) => {
-                error.set(None);
-                note.set(Some(format!("Exported to {}.", path.display())));
+        spawn(async move {
+            match crate::platform::template_files::save_template_file(&file_name, &text).await {
+                None => {}
+                Some(Ok(path)) => {
+                    error.set(None);
+                    note.set(Some(format!("Exported to {}.", path.display())));
+                }
+                Some(Err(err)) => {
+                    note.set(None);
+                    error.set(Some(super::sentence(err)));
+                }
             }
-            Some(Err(err)) => {
-                note.set(None);
-                error.set(Some(super::sentence(err)));
-            }
-        }
+        });
     }
     #[cfg(target_arch = "wasm32")]
     {
@@ -337,9 +341,43 @@ pub fn pick_import(
     error: Signal<Option<String>>,
 ) {
     #[cfg(not(target_arch = "wasm32"))]
+    import_from(
+        session,
+        preview,
+        error,
+        crate::platform::template_files::pick_template_file(),
+    );
+    #[cfg(target_arch = "wasm32")]
     {
-        let (mut preview, mut error) = (preview, error);
-        match crate::platform::template_files::pick_template_file() {
+        let _ = (session, preview, error);
+        let _ = crate::platform::eval("document.getElementById('template-file').click()");
+    }
+}
+
+/// Await `picked` in a task of its own and read the file it gives into
+/// `preview`, so the click that asked for it returns before the dialog
+/// opens.
+///
+/// On desktop dioxus runs an event handler inside the webview's request
+/// for the event, holding the window's elements borrowed. A blocking file
+/// dialog opened there runs its own message loop on the same thread, which
+/// renders the window while the handler is still running: the first node
+/// that render makes panics ("RefCell already borrowed"), and the handler
+/// then panics on a scope that is gone (an `unwrap` on `None`), taking the
+/// app down. It took a change on screen before the dialog to show, such as
+/// the note of an import before it, so a second import crashed and a first
+/// did not.
+#[cfg(not(target_arch = "wasm32"))]
+fn import_from(
+    session: Session,
+    mut preview: Signal<Option<ImportPreview>>,
+    mut error: Signal<Option<String>>,
+    picked: impl std::future::Future<
+            Output = Option<Result<Vec<u8>, crate::platform::template_files::TemplateFileError>>,
+        > + 'static,
+) {
+    spawn(async move {
+        match picked.await {
             None => {}
             Some(Ok(bytes)) => {
                 error.set(None);
@@ -347,12 +385,7 @@ pub fn pick_import(
             }
             Some(Err(err)) => error.set(Some(super::sentence(err))),
         }
-    }
-    #[cfg(target_arch = "wasm32")]
-    {
-        let _ = (session, preview, error);
-        let _ = crate::platform::eval("document.getElementById('template-file').click()");
-    }
+    });
 }
 
 /// The id of the page's hidden file field a browser imports through.
