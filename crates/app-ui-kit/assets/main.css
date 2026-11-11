@@ -2404,6 +2404,10 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   overflow-wrap: anywhere;
 }
 .idl-section { display: grid; gap: var(--space-2); }
+/* The rows of the Accounts, Types and Events tabs touch, as an
+   instruction's do, so a closed row is the same height: the section's own
+   gap, which comes later, would otherwise set them apart. */
+.idl-section.idl-list { gap: 0; }
 .idl-section h4 {
   font-size: var(--text-xs);
   letter-spacing: 0.06em;
@@ -2772,10 +2776,8 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   padding-right: var(--space-4);
   font-size: var(--text-md);
 }
-/* The rows of the Accounts, Types and Events tabs touch, as an
-   instruction's do, so a closed row is the same height (the section's own
-   gap set them apart), and an opened one has the same even padding. */
-.app.phone .idl-section.idl-list { gap: 0; }
+/* An opened row of the Accounts, Types and Events tabs has the same even
+   padding as an instruction's. */
 .app.phone .idl-list > .idl-item[open] > .idl-body { padding: var(--space-1) var(--space-3) var(--space-3); }
 
 /* ---------- Account inspector ---------- */
@@ -4096,6 +4098,8 @@ textarea.short { min-height: 64px; }
 /* Where the prices come from, then what the total leaves out. */
 .pf-source { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--space-3); }
 .pf-source > .pf-excludes { font-size: var(--text-md); color: var(--text-3); }
+/* How many prices are outdated, in the warning colour. */
+.pf-source > .pf-stale-note { font-size: var(--text-md); color: var(--warn-text); }
 
 /* Avatar tints, picked from the mint: a full-strength fill, so the hue
    reads at a glance, and a letter of the same hue at least 7:1 on it in
@@ -4162,8 +4166,9 @@ textarea.short { min-height: 64px; }
 .pf-group-head > .pf-swatch { margin-right: calc(-1 * var(--space-1)); }
 .pf-group-title { flex: 1; font-weight: var(--weight-semibold); }
 /* A folded group's hint, then the chips every one of its rows would carry. */
-.pf-hint-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); }
-.pf-hint-row > .hint { margin: 0; }
+/* What every row of a folded group carries, as the end of its sentence. */
+.pf-hint { margin: 0; }
+.pf-common-warn { color: var(--warn-text); }
 .pf-value { font-weight: var(--weight-semibold); font-variant-numeric: tabular-nums; }
 .pf-lines { display: grid; gap: var(--space-1); }
 .pf-line { display: grid; gap: var(--space-1); min-width: 0; }
@@ -4491,7 +4496,6 @@ textarea.short { min-height: 64px; }
 .app.phone .pf-controls > button.primary { flex: none; padding-inline: var(--space-5); }
 /* A refresh started from the sheet, said under the toolbar while it runs. */
 .app.phone .pf-refreshing { margin: 0; }
-.app.phone .pf-stale-note { font-size: var(--text-md); color: var(--warn-text); }
 /* An opened asset whose price is outdated says so in one quiet line past
    the logo column, only its dot in the warning colour: the wallets under it
    lead. The whole sentence is the line's tooltip. */
@@ -4514,9 +4518,6 @@ textarea.short { min-height: 64px; }
   background: var(--warn-solid);
   vertical-align: middle;
 }
-/* What every row of a folded group carries, as the end of its sentence. */
-.app.phone .pf-hint { margin: 0; }
-.app.phone .pf-common-warn { color: var(--warn-text); }
 /* The pane's three lines, beside Refresh: a square touch target, not a
    share of the row as the header's other buttons are. */
 .app.phone .pf-controls > .icon-btn {

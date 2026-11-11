@@ -347,19 +347,23 @@ fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>, colors: Colo
         })
         .collect();
     let excludes = excludes_note(portfolio.unpriced.len(), portfolio.left_out.len());
-    // On a phone the rows mark an outdated price only with a dot at the
-    // value, so the total says once how many there are.
-    let stale = if use_phone_layout() {
-        stale_note(
-            portfolio
-                .groups
-                .iter()
-                .flat_map(|group| group.lines.iter())
-                .filter(|line| is_stale(line))
-                .count(),
-        )
+    // The total says once how many prices are outdated, as one more fact
+    // of where its prices come from. On a phone the rows mark each only
+    // with a dot at the value, so this is also the dots' legend; on desktop
+    // each row has its own "outdated price" pill.
+    let phone = use_phone_layout();
+    let stale = stale_note(
+        portfolio
+            .groups
+            .iter()
+            .flat_map(|group| group.lines.iter())
+            .filter(|line| is_stale(line))
+            .count(),
+    );
+    let stale_tip = if phone {
+        "The Tokens API says the market data of these tokens has not been updated lately, so their prices and 24h changes may be out of date. A dot at a value marks each one."
     } else {
-        None
+        "The Tokens API says the market data of these tokens has not been updated lately, so their prices and 24h changes may be out of date. Each one says \"outdated price\"."
     };
     let change = portfolio.change_24h_usd;
     let pct = change.map(|change| {
@@ -391,11 +395,13 @@ fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>, colors: Colo
                             span { class: "pf-excludes", "{excludes}" }
                         }
                         if let Some(stale) = stale {
-                            // The rows' own dot in front, so this line is the
-                            // legend of the dots further down.
+                            // On a phone the rows' own dot in front, so this
+                            // line is the legend of the dots further down.
                             span { class: "pf-stale-note",
-                                title: "The Tokens API says the market data of these tokens has not been updated lately, so their prices and 24h changes may be out of date. A dot at a value marks each one.",
-                                span { class: "pf-stale-mark", aria_hidden: "true" }
+                                title: stale_tip,
+                                if phone {
+                                    span { class: "pf-stale-mark", aria_hidden: "true" }
+                                }
                                 "{stale}"
                             }
                         }
@@ -787,9 +793,6 @@ fn Section(
     names: Names,
 ) -> Element {
     let mut open = use_signal(|| false);
-    // On a phone what every row carries is a sentence of the hint, so it
-    // reads as being about the rows and not as a chip apart from them.
-    let phone = use_phone_layout();
     if lines.is_empty() {
         return rsx! {};
     }
@@ -799,7 +802,8 @@ fn Section(
     } else {
         Vec::new()
     };
-    // What every row would say goes once on the hint line.
+    // What every row would say goes once in the hint, as a sentence of it,
+    // so it reads as being about the rows and not as a chip apart from them.
     let common = common_warnings(&lines, &tip_only);
     let skip: Vec<String> = common.iter().chain(&tip_only).cloned().collect();
     let now = unix_now();
@@ -827,31 +831,17 @@ fn Section(
                 span { class: "pf-chevron", Icon { glyph: Glyph::ChevronRight } }
             }
             if open() {
-                if phone {
-                    p { class: "hint pf-hint",
-                        "{hint}"
-                        // One plain sentence, the warning's words alone in
-                        // the warning colour.
-                        if !common.is_empty() {
-                            " {common_who} lists {common_all} as "
-                            span { class: "pf-common-warn",
-                                title: if !common_tip.is_empty() { "{common_tip}" },
-                                "{common_words}"
-                            }
-                            "."
+                p { class: "hint pf-hint",
+                    "{hint}"
+                    // One plain sentence, the warning's words alone in the
+                    // warning colour.
+                    if !common.is_empty() {
+                        " {common_who} lists {common_all} as "
+                        span { class: "pf-common-warn",
+                            title: if !common_tip.is_empty() { "{common_tip}" },
+                            "{common_words}"
                         }
-                    }
-                } else {
-                    div { class: "pf-hint-row",
-                        p { class: "hint", "{hint}" }
-                        for code in common.iter() {
-                            span {
-                                key: "{code}",
-                                class: "chip warn",
-                                title: warning_tip(code, "these tokens", 0, now),
-                                "{warning_text(code)}"
-                            }
-                        }
+                        "."
                     }
                 }
                 div { class: "pf-lines",

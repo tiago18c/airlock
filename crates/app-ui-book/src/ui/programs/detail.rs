@@ -131,17 +131,7 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                             if let Some(url) = repository.clone() {
                                 div { class: "program-source-row",
                                     span { class: "program-source-label", "Source" }
-                                    button {
-                                        class: "link-btn program-source",
-                                        r#type: "button",
-                                        title: "{url}",
-                                        onclick: move |_| {
-                                            if let Err(err) = session.open_link(&url) {
-                                                session.show_problem(format!("Could not open link: {err}"));
-                                            }
-                                        },
-                                        "{short_source(repository.as_deref().unwrap_or_default())}"
-                                    }
+                                    SourceLink { url }
                                 }
                             }
                             p { class: "muted program-facts",
@@ -216,7 +206,17 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                     }
                 }
                 if let Some(embedded) = embedded {
-                    p { class: "hint", "{source_sentence(&embedded.source)} {embedded.changes}" }
+                    // The repository as the same link a phone shows, in the
+                    // sentence that says where the file came from.
+                    if let Some(url) = repository {
+                        p { class: "hint",
+                            "Taken from "
+                            SourceLink { url }
+                            ". {embedded.changes}"
+                        }
+                    } else {
+                        p { class: "hint", "{source_sentence(&embedded.source)} {embedded.changes}" }
+                    }
                 }
                 if let Some(host) = host_name {
                     p { class: "hint",
@@ -289,7 +289,28 @@ pub(in crate::ui) fn middle_cut(text: &str, keep: usize) -> String {
     format!("{head}…{tail}")
 }
 
-/// A repository's URL as a phone shows it: on a known forge, the path
+/// A repository the IDL was taken from, as a link that opens it: shortened
+/// to its path on a known forge, in full in the tooltip.
+#[component]
+fn SourceLink(url: String) -> Element {
+    let session = use_context::<Session>();
+    let short = short_source(&url);
+    rsx! {
+        button {
+            class: "link-btn program-source",
+            r#type: "button",
+            title: "{url}",
+            onclick: move |_| {
+                if let Err(err) = session.open_link(&url) {
+                    session.show_problem(format!("Could not open link: {err}"));
+                }
+            },
+            "{short}"
+        }
+    }
+}
+
+/// A repository's URL as the app shows it: on a known forge, the path
 /// without the scheme and the host ("solana-program/token"); anything else
 /// as given.
 pub(in crate::ui) fn short_source(url: &str) -> String {
