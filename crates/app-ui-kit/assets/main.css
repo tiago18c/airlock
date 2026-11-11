@@ -4964,7 +4964,7 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
   min-height: var(--control-lg);
   border-radius: var(--radius-md);
 }
-.app.phone .topbar-tools > .lock-toggle:not(.locked),
+.app.phone .topbar-tools > .lock-toggle,
 .app.phone .notice-bell {
   width: var(--control-lg);
   min-width: var(--control-lg);

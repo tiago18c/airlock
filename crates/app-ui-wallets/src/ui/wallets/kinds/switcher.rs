@@ -50,15 +50,13 @@ pub fn WalletSwitcher() -> Element {
 /// and with names alone. A button opens the app's sheet instead, where each
 /// wallet shows its kind and address and copies it. The current wallet's
 /// address is the one copied most, so the button's end copies it without
-/// opening the sheet: one bordered control in two parts. While the vault is
-/// locked the Locked button takes the bar's room, and an address cut to a
-/// few characters identifies nothing, so the button shows the name alone;
-/// its end still copies the address.
+/// opening the sheet: one bordered control in two parts. It shows the name
+/// and the short address whether the vault is locked or not: locked, the
+/// lock beside it is an icon on a phone, so the address keeps its room.
 #[component]
 fn PhoneWalletSwitcher(wallets: Vec<WalletSummary>, selected: Option<WalletId>) -> Element {
     let session = use_context::<Session>();
     let mut open = use_signal(|| false);
-    let name_only = !session.is_unlocked();
     let current = wallets
         .iter()
         .find(|wallet| Some(wallet.id) == selected)
@@ -75,7 +73,7 @@ fn PhoneWalletSwitcher(wallets: Vec<WalletSummary>, selected: Option<WalletId>) 
                 onclick: move |_| open.toggle(),
                 span { class: "sr-only", "Current wallet: " }
                 match current {
-                    Some(wallet) => rsx! { WalletLine { wallet, name_only } },
+                    Some(wallet) => rsx! { WalletLine { wallet } },
                     None => rsx! { span { class: "picker-none", "Choose a wallet" } },
                 }
             }
@@ -136,11 +134,11 @@ fn PhoneWalletSwitcher(wallets: Vec<WalletSummary>, selected: Option<WalletId>) 
 
 /// A wallet as one line: the icon its card on the Wallets pane has, its name,
 /// and its address shortened in the middle. A wallet with no address yet,
-/// such as a hardware wallet, shows its icon and name, as does `name_only`.
+/// such as a hardware wallet, shows its icon and name.
 #[component]
-fn WalletLine(wallet: WalletSummary, #[props(default)] name_only: bool) -> Element {
+fn WalletLine(wallet: WalletSummary) -> Element {
     match wallet.address {
-        Some(pubkey) if !name_only => rsx! { AddressRow { pubkey, no_copy: true, no_card: true } },
+        Some(pubkey) => rsx! { AddressRow { pubkey, no_copy: true, no_card: true } },
         _ => rsx! {
             span { class: "addr-row",
                 span { class: "addr-row-main",
