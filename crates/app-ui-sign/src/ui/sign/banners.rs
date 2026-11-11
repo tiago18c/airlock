@@ -57,8 +57,11 @@ pub(in crate::ui) fn RebuildBanner(plan: Result<AdaptPlan, String>, online: bool
                 " pays the fee. This is the only change this screen makes to a transaction."
             }
             div { class: "btn-row",
+                // Not a second brand primary beside the action bar's: Sign
+                // stays disabled until the rebuild, so this is the one way
+                // forward, in the amber of a step to go ahead with.
                 button {
-                    class: "primary",
+                    class: "warn solid",
                     disabled: !online || busy(),
                     onclick: move |_| rebuild_loaded(session),
                     if busy() { "Rebuilding…" } else { "Rebuild the transaction" }
@@ -76,13 +79,17 @@ pub(in crate::ui) fn RebuildBanner(plan: Result<AdaptPlan, String>, online: bool
 /// Moves an expired transaction that this device has nothing left to sign
 /// to a fresh blockhash, for any transaction not on a durable nonce. Every
 /// other move happens on the Sign press.
+///
+/// A bare button beside the bar's primary. `only_way` while the bar has no
+/// primary that can be pressed: then it is the way forward, `.warn.solid`,
+/// never a second brand-filled button.
 #[component]
-pub(in crate::ui) fn RefreshBlockhash() -> Element {
+pub(in crate::ui) fn RefreshBlockhash(only_way: bool) -> Element {
     let session = use_context::<Session>();
     let busy = use_signal(|| false);
     rsx! {
         button {
-            class: "primary",
+            class: if only_way { "warn solid" } else { "" },
             disabled: busy(),
             title: "A transaction is only accepted for about 30 seconds after its blockhash. An authorization inside it does not expire.",
             onclick: move |_| refresh_loaded(session, busy),

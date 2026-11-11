@@ -876,7 +876,10 @@ fn SignActions(
                         }
                     }
                     if show_refresh {
-                        RefreshBlockhash {}
+                        RefreshBlockhash {
+                            only_way: !(share_next || (sign_shown && can_sign)
+                                || (status.complete() && online && can_submit)),
+                        }
                     }
                     // What else applies, outlined.
                     button {

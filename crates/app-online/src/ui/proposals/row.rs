@@ -112,12 +112,12 @@ pub(in crate::ui) fn ProposalRow(
                             let together = ProposalRequest::Combined(combined);
                             rsx! {
                                 div { class: "btn-row",
-                                    button { class: "primary", disabled: busy,
+                                    button { class: "primary sm", disabled: busy,
                                         onclick: move |_| on_act.call((for_together.clone(), together.clone(), payer)),
                                         "Approve as {votes} members and execute"
                                     }
                                     if let Ok(action) = verdict {
-                                        button { disabled: busy,
+                                        button { class: "sm", disabled: busy,
                                             onclick: move |_| on_act.call((
                                                 for_action.clone(),
                                                 ProposalRequest::Single { member, action },
@@ -152,7 +152,7 @@ pub(in crate::ui) fn ProposalRow(
                         }
                         (Some(Ok(action)), Some((member, Some(payer))), None) => rsx! {
                             div { class: "btn-row",
-                                button { class: "primary", disabled: busy,
+                                button { class: "primary sm", disabled: busy,
                                     onclick: move |_| on_act.call((
                                         for_action.clone(),
                                         ProposalRequest::Single { member, action },
