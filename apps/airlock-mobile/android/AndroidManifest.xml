@@ -50,8 +50,10 @@
           Mobile Wallet Adapter: other apps and Chrome's pages open a
           solana-wallet: link to ask Airlock to connect and sign. Off here;
           Airlock turns it on only in online mode, with Settings → Apps on
-          this phone on (MwaBridge.setEnabled). It has no window: it runs the
-          session in the asking app's task and brings Airlock forward.
+          this phone on (MwaBridge.setEnabled). It has no window: it starts
+          the session and brings Airlock forward. Opened by an app, it stays
+          in that app's task until the session ends; opened by a browser, it
+          finishes at once (see MwaActivity), so it leaves no card in recents.
         -->
         <activity android:name="dev.dioxus.main.MwaActivity"
             android:enabled="false"

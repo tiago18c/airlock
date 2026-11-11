@@ -655,7 +655,9 @@ object UsbBridge {
 object MwaBridge {
     private const val TAG = "AirlockMwa"
 
-    private class Session(val id: Long, val activity: MwaActivity, val pkg: String?) {
+    /// `activity` is the MwaActivity an app waits on, or null for a browser's
+    /// session, which no activity holds (see MwaActivity).
+    private class Session(val id: Long, val activity: MwaActivity?, val pkg: String?) {
         var scenario: Scenario? = null
     }
 
@@ -695,9 +697,11 @@ object MwaBridge {
         }
     }
 
+    /// Start a session for `activity`'s link. An app (`pkg` set) waits on the
+    /// activity until the session ends; a browser's session is not tied to it.
     fun start(activity: MwaActivity, association: LocalAssociationUri, pkg: String?): Long {
         val id = ids.getAndIncrement()
-        val session = Session(id, activity, pkg)
+        val session = Session(id, if (pkg != null) activity else null, pkg)
         sessions[id] = session
         val config = MobileWalletAdapterConfig(
             16, // transactions per request, as for a browser
@@ -719,27 +723,30 @@ object MwaBridge {
         return id
     }
 
-    /// MwaActivity went away before its session ended: the app gave up.
+    /// An app's MwaActivity went away before its session ended: the app gave
+    /// up. A browser's session does not end with the activity.
     fun activityGone(id: Long) {
-        sessions[id]?.scenario?.close()
+        val session = sessions[id] ?: return
+        if (session.activity != null) session.scenario?.close()
     }
 
     private fun ended(session: Session) {
         if (sessions.remove(session.id) == null) return
         pending.entries.removeIf { it.value.session == session.id }
         events.put(JSONObject().put("kind", "closed").put("session", session.id).toString())
+        Log.i(TAG, "session ${session.id} ended")
+        val activity = session.activity ?: return
         // Back to the app that asked, when Airlock is in front for it: its
         // task, which MwaActivity is in, comes forward, and MwaActivity
         // finishes there, which is the app's sign that the session is over.
         val front = SeedVaultBridge.activity?.hasWindowFocus() == true
-        session.activity.runOnUiThread {
+        activity.runOnUiThread {
             if (front) {
-                session.activity.getSystemService(android.app.ActivityManager::class.java)
-                    ?.moveTaskToFront(session.activity.taskId, 0)
+                activity.getSystemService(android.app.ActivityManager::class.java)
+                    ?.moveTaskToFront(activity.taskId, 0)
             }
-            session.activity.done()
+            activity.done()
         }
-        Log.i(TAG, "session ${session.id} ended")
     }
 
     private fun b64(bytes: ByteArray): String = Base64.encodeToString(bytes, Base64.NO_WRAP)
@@ -906,14 +913,29 @@ object MwaBridge {
 }
 
 /// What a `solana-wallet:` link opens. It has no window of its own: it
-/// starts the MWA session, brings Airlock forward for the request modal, and
-/// stays behind in the asking app's task until the session ends, when that
-/// app expects it to finish.
+/// starts the MWA session and brings Airlock forward for the request modal.
+///
+/// An app opens it for a result, in the app's own task, and waits on it: it
+/// stays behind until the session ends and then finishes, which is the app's
+/// sign that the session is over.
+///
+/// A browser opens it with NEW_TASK, in a task of its own, and waits on the
+/// session's WebSocket alone. It finishes at once: kept, that task would be a
+/// blank card in recents, or, excluded from recents, one Android trims as
+/// soon as Airlock is in front ("recent-task-trimmed"), which used to end the
+/// session before the user could answer.
 class MwaActivity : Activity() {
     private var session = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Restored after Airlock's process went away, or opened again from
+        // recents: the link is an old one that no app is waiting on any more.
+        val fromHistory = (intent?.flags ?: 0) and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY != 0
+        if (savedInstanceState != null || fromHistory) {
+            finishAndRemoveTask()
+            return
+        }
         val association = intent?.data?.let {
             try {
                 AssociationUri.parse(it)
@@ -927,8 +949,14 @@ class MwaActivity : Activity() {
             finish()
             return
         }
-        session = MwaBridge.start(this, association, callingPackage)
+        val pkg = callingPackage
+        session = MwaBridge.start(this, association, pkg)
         showAirlock()
+        if (pkg == null) {
+            // A browser: the session goes on without this activity.
+            session = 0L
+            finish()
+        }
     }
 
     /// Bring Airlock's own task forward. A running Airlock is moved to the
