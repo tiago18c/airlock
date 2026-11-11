@@ -371,6 +371,26 @@ code { color: var(--text-2); }
 /* A head's actions are one row: what filters the page (a select), then the
    secondary actions, then the one primary, then the pane's menu. The select
    is as wide as its choice, so nothing wraps under it. */
+/* Where the transaction on Sign came from, under the title: a site's
+   request names the site after a globe. */
+.page-source {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--text-sm);
+}
+.page-source .icon { flex: none; width: 16px; height: 16px; }
+.page-source .origin {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  color: var(--text);
+}
 .app:not(.phone) .page-head > .btn-row > select,
 .app:not(.phone) .pane-head > .btn-row > select { width: auto; max-width: 16rem; }
 /* A pane's head on a phone, one layout for every pane: the title on its own
@@ -4847,6 +4867,32 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
 .app.phone .page-head p.muted { display: none; }
 
 .app.phone .topbar { padding-top: env(safe-area-inset-top); }
+/* While a sheet or a dialog is open, a phone's toasts are put away, so none
+   covers its buttons; they come back when it closes. */
+.app.phone:has(.modal-backdrop, .phone-scrim) .toast-host { display: none; }
+/* A request set aside, on a phone: one slim bar at the top of the pane, in
+   its flow, held under the top bar as the page scrolls. The site and what it
+   asks on the left, Open and Reject on the right. */
+.app.phone .content > .request-toast {
+  position: sticky;
+  top: calc(var(--top-h, var(--topbar-h)) + var(--space-2));
+  z-index: calc(var(--z-sticky) - 1);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+}
+.app.phone .request-toast .toast-head { display: none; }
+.app.phone .request-toast .bridge-origin {
+  grid-column: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+}
+.app.phone .request-toast .toast-meta { grid-column: 1; font-size: var(--text-sm); }
+.app.phone .request-toast .toast-actions { grid-column: 2; grid-row: 1 / span 2; flex-wrap: nowrap; }
+
 .app.phone.locked .content { padding-top: max(var(--space-4), env(safe-area-inset-top)); }
 
 /* A phone's sheets (`PhoneSheet`): the wallet picker, the notifications and

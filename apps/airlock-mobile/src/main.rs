@@ -123,6 +123,9 @@ fn Online(core: CopyValue<app_core::Core>) -> Element {
             // phone has no row to spare for "Online".
             sidebar_status: rsx! { NetworkAlert {} },
             above_panes: rsx! {
+                // A request set aside: a bar at the top of the pane, under
+                // the top bar, that moves the pane down instead of covering it.
+                app_desktop::RequestToast {}
                 app_desktop::BridgeRequests {}
                 app_desktop::ConnectionsHost {}
             },
@@ -131,7 +134,7 @@ fn Online(core: CopyValue<app_core::Core>) -> Element {
                 app_mobile::AppsCard {}
             },
             overlays: rsx! {
-                ToastHost { pinned: rsx! { app_desktop::RequestToast {} } }
+                ToastHost {}
                 ProposalsHost {}
                 SendHost {}
                 CleanupHost {}
