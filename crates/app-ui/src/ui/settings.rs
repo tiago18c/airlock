@@ -117,19 +117,22 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                         if let Some(problem) = custom_error() {
                             p { class: "error", role: "alert", "{problem}" }
                         }
+                        // A state is a chip, not a button that cannot be pressed.
                         div { class: "btn-row",
-                            button {
-                                class: "primary",
-                                disabled: applied,
-                                onclick: move |_| match Cluster::custom(&custom_name(), &custom_url()) {
-                                    Ok(cluster) => {
-                                        custom_error.set(None);
-                                        picking_custom.set(false);
-                                        crate::actions::network::use_cluster(session, cluster);
-                                    }
-                                    Err(problem) => custom_error.set(Some(problem)),
-                                },
-                                if applied { "In use" } else { "Use this RPC" }
+                            if applied {
+                                span { class: "chip ok", "in use" }
+                            } else {
+                                button {
+                                    onclick: move |_| match Cluster::custom(&custom_name(), &custom_url()) {
+                                        Ok(cluster) => {
+                                            custom_error.set(None);
+                                            picking_custom.set(false);
+                                            crate::actions::network::use_cluster(session, cluster);
+                                        }
+                                        Err(problem) => custom_error.set(Some(problem)),
+                                    },
+                                    "Use this RPC"
+                                }
                             }
                         }
                         p { class: "hint wordy",
@@ -346,8 +349,10 @@ fn PasswordChange() -> Element {
                 oninput: move |e| confirm.set(e.value()),
             }
         }
+        // Settings is a page of cards with no one thing it is for, so no
+        // button on it is the primary.
         div { class: "btn-row",
-            button { class: "primary",
+            button {
                 disabled: working() || current().is_empty() || new().is_empty(),
                 onclick: move |_| change(),
                 if working() { "Changing…" } else { "Change password" }
@@ -391,7 +396,7 @@ fn PricesCard() -> Element {
                 }
             }
             div { class: "btn-row",
-                button { class: "primary",
+                button {
                     disabled: typed().trim().is_empty(),
                     onclick: move |_| {
                         let key = typed().trim().to_string();

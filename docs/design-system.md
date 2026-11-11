@@ -59,7 +59,7 @@ Contrast, checked for both themes: body and secondary text at least 7:1, hint te
 
 | Component | Classes | Notes |
 | --- | --- | --- |
-| Button | bare `button`, `.primary`, `.ghost`, `.danger`, `.danger.solid`, `.warn.solid` | A bare button is the secondary. One primary per view. `.ghost` is for Cancel, Clear, Dismiss. `.danger.solid` only confirms a destructive dialog. `.warn.solid` goes ahead with something the app could not check, such as Sign on a request it could not put in words. It sits beside the primary, which stays on the safer way forward |
+| Button | bare `button`, `.primary`, `.ghost`, `.danger`, `.danger.solid`, `.warn.solid` | A bare button is the secondary. One primary per view: on a page of cards, such as Settings, each card's action is a bare button unless it is the one thing the page is for. A state is never a button that cannot be pressed: it is a chip in the button's place, such as "in use" beside the RPC field. `.ghost` is for Cancel, Clear, Dismiss. `.danger.solid` only confirms a destructive dialog. `.warn.solid` goes ahead with something the app could not check, such as Sign on a request it could not put in words. It sits beside the primary, which stays on the safer way forward |
 | Button size | `.sm`, `.icon-btn` | An icon-only button needs `title` and `aria_label` |
 | Link button | `button.link-btn` | A button inside a line of text that reads as a link, such as Inspect under Summary's instructions |
 | Field | `label` wrapping `input`, `select` or `textarea` | `label.check` for a checkbox row |
