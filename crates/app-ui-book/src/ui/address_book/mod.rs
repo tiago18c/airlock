@@ -137,7 +137,7 @@ pub fn AddressBookPanel() -> Element {
                     p { class: "hint ab-refreshing", role: "status", "Refreshing from chain…" }
                 }
                 if !online {
-                    p { class: "hint", "Offline: token accounts and nonce hashes stay local until getGenesisHash succeeds." }
+                    p { class: "hint", "Offline: this app never reads the chain, so it looks up no balances, token accounts or nonce hashes." }
                 }
                 if let Some(err) = error() {
                     p { class: "error", "{err}" }
@@ -176,6 +176,7 @@ pub fn AddressBookPanel() -> Element {
 #[component]
 fn AddressBookList() -> Element {
     let session = use_context::<Session>();
+    let online = crate::state::use_network().is_some();
     let form = session.forms.contact;
     let mut filter = form.filter;
     let mut kind_filter = form.kind;
@@ -340,13 +341,17 @@ fn AddressBookList() -> Element {
             if total > 0 {
                 // One card: the column labels as its first row, then the
                 // entries.
-                div { class: "ab-table",
+                // With no network there is no balance to show, so there is
+                // no Balance column: the others take its room.
+                div { class: if online { "ab-table" } else { "ab-table no-balance" },
                     // What each column holds, in the columns of the rows.
                     // Hidden where the rows wrap.
                     div { class: "ab-columns", aria_hidden: "true",
                         span { class: "ab-col-name", "Name" }
                         span { class: "ab-col-address", "Address" }
-                        span { class: "ab-col-balance", "Balance" }
+                        if online {
+                            span { class: "ab-col-balance", "Balance" }
+                        }
                     }
                     ul { class: "book-list ab-list",
                         for item in items {

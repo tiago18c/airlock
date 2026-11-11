@@ -472,6 +472,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         step,
         site_signs,
         site_send: site_send_for_hint,
+        shareable,
     });
     // What is still needed of others is said under the signatures; what
     // holds the buttons back, under them.
@@ -857,8 +858,9 @@ fn SignActions(
                         }
                     }
                     // Submit could not be pressed while a signature is missing,
-                    // so it waits until every one is in.
-                    if status.complete() {
+                    // so it waits until every one is in. An app with no
+                    // network has no Submit at all.
+                    if status.complete() && online {
                         button {
                             class: if share_next || sign_shown { "" } else { "primary" },
                             disabled: !can_submit,
@@ -923,7 +925,11 @@ enum SignHint {
     OnDevice,
     /// Signatures still needed from other devices.
     Elsewhere(usize),
-    CompleteOffline,
+    /// Fully signed in an app with no network; `shareable` when it can be
+    /// handed to another device to submit.
+    CompleteOffline {
+        shareable: bool,
+    },
 }
 
 impl SignHint {
@@ -951,6 +957,8 @@ struct HintFacts<'a> {
     step: NextSignature,
     site_signs: usize,
     site_send: Option<(SiteSend, String)>,
+    /// It can be handed to another device.
+    shareable: bool,
 }
 
 /// The sentence that applies, the first of them in this order.
@@ -993,7 +1001,9 @@ fn sign_hint(facts: HintFacts) -> Option<SignHint> {
         return Some(SignHint::Elsewhere(elsewhere));
     }
     if status.complete() && !facts.online {
-        return Some(SignHint::CompleteOffline);
+        return Some(SignHint::CompleteOffline {
+            shareable: facts.shareable,
+        });
     }
     None
 }
@@ -1042,8 +1052,11 @@ fn SignHintText(hint: SignHint, class: &'static str) -> Element {
                         "{count} signatures are needed from other devices. Share the transaction, then add what they return."
                     }
                 },
-                SignHint::CompleteOffline => rsx! {
-                    "Fully signed. Go online to submit, or share it with a device that is."
+                SignHint::CompleteOffline { shareable: true } => rsx! {
+                    "Fully signed. This app never connects, so share it with an online device to submit it."
+                },
+                SignHint::CompleteOffline { shareable: false } => rsx! {
+                    "Fully signed. This app never connects, and a transaction in this format cannot be handed to another device, so it cannot be submitted from here."
                 },
             }
         }

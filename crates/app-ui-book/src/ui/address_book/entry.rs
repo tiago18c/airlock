@@ -292,6 +292,9 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
         (mint, token_mark_name(&described, &entry))
     });
     let has_balance = entry.lamports.is_some();
+    // With no network the table has no Balance column, and a row draws a
+    // balance only when it has one.
+    let online = crate::state::use_network().is_some();
     let address = pubkey.to_string();
     let token_amount = match (kind, entry.token_amount, entry.decimals) {
         (AddressKind::TokenAccount, Some(amount), Some(decimals)) => {
@@ -438,7 +441,7 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                     CopyButton { text: address.clone() }
                 }
             }
-            if !phone || weighed {
+            if (!phone && online) || weighed {
                 div { class: "ab-balance",
                     if let Some(lamports) = entry.lamports {
                         p { class: "balance", "{format_sol(lamports)}" }

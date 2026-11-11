@@ -1382,6 +1382,12 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 @media (pointer: coarse) {
   .ab-table { --ab-btn: var(--control-md); }
 }
+/* No network, no balances: the Balance column takes no room. */
+.ab-table.no-balance {
+  --ab-cols:
+    var(--control-sm) minmax(12rem, 1.6fr) minmax(0, var(--ab-address-w)) var(--ab-btn)
+    0 calc(var(--ab-btn) * 2 + var(--space-1));
+}
 /* The column labels: the card's first row, on the rows' columns, with a
    divider under it. */
 .ab-columns {
