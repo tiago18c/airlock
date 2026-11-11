@@ -117,7 +117,7 @@ Every address goes through `ui/address` in `app-ui-kit`. What to call it comes f
 
 `.app` is a sidebar and a main column. A page is `section.page` with a `.page-head` (title, lede, actions) and then cards or lists.
 
-A page's head is its title, with a lede under it if it has one, then its actions on one row at the trailing edge, in one order: what filters the page (a select), then secondary actions (Refresh, always named so), then the one primary, then the pane's menu. A phone lays the actions under the title or beside it, as each pane does, in the same order; a primary that is a row's wide thumb button stays wide.
+A page's head is its title, with a lede under it if it has one, then its actions on one row at the trailing edge, in one order: what filters the page (a select), then secondary actions (Refresh, always named so), then the one primary, then the pane's menu. On a phone every pane's head has one layout: the title on its own line, and under it one row in the same order, nothing stacked and nothing on the title's line. The filter takes the room that is left; with no filter the primary does (Add wallet, New stake), with the menu at the end. Refresh there is `RefreshButton`, an icon-only button named "Refresh", in that row on every pane that can refresh and never also in its menu; the pane says "Refreshing…" under the head while it runs. A head with neither filter nor primary keeps Refresh labelled.
 
 | Width | Navigation |
 | --- | --- |

@@ -5,7 +5,7 @@
 use crate::actions::stake_screen::{load_key, refresh as refresh_stakes};
 use app_ui_kit::actions::unix_now;
 use app_ui_kit::state::forms::{SendAsset, SendOpen};
-use app_ui_kit::ui::{use_phone_layout, ActionSheet, CopyButton, PaneMenu};
+use app_ui_kit::ui::{use_phone_layout, ActionSheet, CopyButton, PaneMenu, RefreshButton};
 use app_ui_kit::{AddressRow, Glyph, Icon, Session, Tab};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
@@ -152,15 +152,9 @@ pub fn PortfolioPanel() -> Element {
                                 }
                             }
                         }
-                        // On a phone Refresh is the first row of the menu's
-                        // sheet, so the wallet picker gets the room.
-                        if !phone {
-                            button {
-                                disabled: refreshing(),
-                                onclick: refresh,
-                                if refreshing() { "Refreshing…" } else { "Refresh" }
-                            }
-                        }
+                        // On a phone Refresh is an icon, so the wallet
+                        // picker gets the room.
+                        RefreshButton { busy: refreshing(), onclick: refresh }
                         if can_send {
                             button { class: "primary",
                                 onclick: move |_| session.open_send(SendOpen {
@@ -184,10 +178,10 @@ pub fn PortfolioPanel() -> Element {
                     }
                 }
 
-                // The sheet closes once its row is pressed: the pane says
-                // a refresh is running where the button used to.
+                // A phone's Refresh is an icon: the pane says in words that
+                // a refresh is running.
                 if phone && refreshing() {
-                    p { class: "hint pf-refreshing", role: "status", "Refreshing…" }
+                    p { class: "hint pane-refreshing", role: "status", "Refreshing…" }
                 }
                 if !mainnet {
                     p { class: "note",
@@ -261,13 +255,6 @@ pub fn PortfolioPanel() -> Element {
             }
         }
         ActionSheet { open: menu_sheet_open, title: "Portfolio", label: "More portfolio actions",
-            button { class: "more-item",
-                title: "Read the wallets' balances and the prices again",
-                disabled: refreshing(),
-                onclick: refresh,
-                Icon { glyph: Glyph::Refresh }
-                if refreshing() { "Refreshing…" } else { "Refresh" }
-            }
             {menu_items}
         }
         WatchModal { open: watch_open }

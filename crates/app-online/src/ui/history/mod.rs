@@ -7,6 +7,7 @@ use app_core::{HistoryEntry, Outcome};
 use app_ui_kit::ui::address::name_or_short;
 use app_ui_kit::ui::local_time;
 use app_ui_kit::ui::tx_view::{use_worked_out, Worked, READING_DEADLINE};
+use app_ui_kit::ui::{use_phone_layout, RefreshButton};
 use app_ui_kit::{Glyph, Icon, PhraseView, Session};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
@@ -30,6 +31,7 @@ const PAGE: usize = 50;
 #[component]
 pub fn HistoryPanel() -> Element {
     let session = use_context::<Session>();
+    let phone = use_phone_layout();
     let form = session.forms.history;
     let mut wallet = form.wallet;
     let mut selected = form.selected;
@@ -149,13 +151,12 @@ pub fn HistoryPanel() -> Element {
                             }
                         }
                         if can_refresh {
-                            button {
-                                disabled: refreshing(),
-                                onclick: refresh,
-                                if refreshing() { "Refreshing…" } else { "Refresh" }
-                            }
+                            RefreshButton { busy: refreshing(), onclick: refresh }
                         }
                     }
+                }
+                if phone && refreshing() {
+                    p { class: "hint pane-refreshing", role: "status", "Refreshing…" }
                 }
 
                 if let Some(err) = refresh_error().or(job_error) {

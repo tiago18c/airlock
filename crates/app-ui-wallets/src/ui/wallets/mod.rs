@@ -107,7 +107,7 @@ pub fn WalletsPanel() -> Element {
     rsx! {
         section { class: "page",
             div { class: "stack",
-                div { class: "pane-head wallets-head",
+                div { class: "pane-head",
                     div {
                         h2 { "Wallets" }
                     }

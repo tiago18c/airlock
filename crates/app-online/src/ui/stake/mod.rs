@@ -3,6 +3,7 @@
 
 use crate::actions::stake_screen::*;
 use app_ui_kit::actions::unix_now;
+use app_ui_kit::ui::{use_phone_layout, RefreshButton};
 use app_ui_kit::{
     format_sol, Address, AddressHeader, AddressPicker, Glyph, Icon, VaultUnlock, WalletPicker,
 };
@@ -53,6 +54,7 @@ pub(in crate::ui) struct Action {
 #[component]
 pub fn StakePanel() -> Element {
     let session = use_context::<Session>();
+    let phone = use_phone_layout();
     let form = session.forms.stake;
     let mut action = use_signal(|| None::<Action>);
 
@@ -111,10 +113,10 @@ pub fn StakePanel() -> Element {
                         h2 { "Stake" }
                     }
                     div { class: "btn-row",
-                        button {
-                            disabled: loading,
+                        RefreshButton {
+                            busy: loading,
+                            busy_text: "Reading…",
                             onclick: move |_| refresh(session),
-                            if loading { "Reading…" } else { "Refresh" }
                         }
                         button { class: "primary",
                             disabled: wallets.is_empty(),
@@ -125,6 +127,9 @@ pub fn StakePanel() -> Element {
                     }
                 }
 
+                if phone && loading {
+                    p { class: "hint pane-refreshing", role: "status", "Reading…" }
+                }
                 if let Some(err) = (form.error)() {
                     p { class: "error", "{err}" }
                 }

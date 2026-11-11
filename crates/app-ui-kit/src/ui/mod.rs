@@ -92,6 +92,44 @@ pub fn SelectedChip(text: &'static str, #[props(default)] title: Option<&'static
     }
 }
 
+/// A pane's Refresh, in its head's row of actions. On a desktop a labelled
+/// button that says "Refreshing…" (or `busy_text`) while it runs. On a phone
+/// an icon, so the filter and the primary beside it keep the row's room; its
+/// glyph turns while it runs, and the pane says so in a line under the head.
+/// `labelled` keeps the words on a phone too, for a head with nothing else.
+#[component]
+pub fn RefreshButton(
+    busy: bool,
+    onclick: EventHandler<MouseEvent>,
+    #[props(default)] title: Option<&'static str>,
+    #[props(default = "Refreshing…")] busy_text: &'static str,
+    #[props(default)] labelled: bool,
+) -> Element {
+    if phone::use_phone_layout() && !labelled {
+        return rsx! {
+            button {
+                class: if busy { "icon-btn refresh-btn busy" } else { "icon-btn refresh-btn" },
+                r#type: "button",
+                title: "Refresh",
+                aria_label: "Refresh",
+                aria_busy: "{busy}",
+                disabled: busy,
+                onclick: move |e| onclick.call(e),
+                Icon { glyph: Glyph::Refresh }
+            }
+        };
+    }
+    rsx! {
+        button {
+            r#type: "button",
+            title,
+            disabled: busy,
+            onclick: move |e| onclick.call(e),
+            if busy { "{busy_text}" } else { "Refresh" }
+        }
+    }
+}
+
 /// A question mark that explains the heading it sits beside, on hover, focus
 /// or tap.
 #[component]

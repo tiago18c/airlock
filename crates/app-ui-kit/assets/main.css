@@ -370,10 +370,33 @@ code { color: var(--text-2); }
 }
 /* A head's actions are one row: what filters the page (a select), then the
    secondary actions, then the one primary, then the pane's menu. The select
-   is as wide as its choice, so nothing wraps under it. A phone keeps the
-   rows each pane lays out. */
+   is as wide as its choice, so nothing wraps under it. */
 .app:not(.phone) .page-head > .btn-row > select,
 .app:not(.phone) .pane-head > .btn-row > select { width: auto; max-width: 16rem; }
+/* A pane's head on a phone, one layout for every pane: the title on its own
+   line, and under it one row in the same order. The filter takes the room
+   that is left; with no filter the primary does, or else the one labelled
+   button. Refresh (`RefreshButton`) and the menu are square icons. Nothing
+   stacks and nothing sits on the title's line. */
+.app.phone .pane-head > :first-child { flex: 1 1 100%; }
+.app.phone .pane-head > .btn-row { width: 100%; flex-wrap: nowrap; }
+.app.phone .pane-head > .btn-row > * { flex: none; }
+.app.phone .pane-head > .btn-row > select {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+}
+.app.phone .pane-head > .btn-row:not(:has(> select)) > button.primary,
+.app.phone .pane-head > .btn-row:not(:has(> select, > .primary)) > button:not(.icon-btn) { flex: 1; }
+.app.phone .pane-head > .btn-row > .icon-btn { width: var(--control-lg); min-width: var(--control-lg); }
+/* A phone's Refresh is an icon: its arrows turn while it runs, and the pane
+   says so in words under its head. */
+.refresh-btn.busy .icon { animation: toast-spin 0.9s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .refresh-btn.busy .icon { animation: none; } }
+.app.phone .pane-refreshing { margin: 0; }
 
 .card {
   display: grid;
@@ -1758,9 +1781,9 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   .ab-holding-amount { margin-left: auto; white-space: nowrap; }
 }
 
-/* Address Book on a phone. The header is one line where it fits: the title,
-   Add address and the three lines, which open a sheet with Refresh from
-   chain, Export and Import. The kind chips are one row that scrolls
+/* Address Book on a phone. The header is the one every pane has: the title,
+   then Refresh, Add address and the three lines, which open a sheet with
+   Export and Import. The kind chips are one row that scrolls
    sideways, running to the screen's edges, faded out where they are cut so
    the row says there is more. Every entry has one shape, three lines at
    most: the name with the balance at the right, the kind, then the address
@@ -1768,11 +1791,6 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
    the token accounts toggle, if any, and the three dots. What ends a row at
    the right sits as far from the card's edge as the kind icon does from the
    left, and a token account's amount and three dots end there too. */
-.app.phone .ab-head { align-items: center; }
-.app.phone .ab-head > :first-child { flex: 1 1 auto; min-width: 0; }
-.app.phone .ab-head > .btn-row { width: auto; flex-wrap: nowrap; }
-.app.phone .ab-head > .btn-row > button { flex: none; }
-.app.phone .ab-head > .btn-row > .icon-btn { width: var(--control-lg); min-width: var(--control-lg); }
 /* How far the chips fade at each end: nothing at the start until the row
    is scrolled, and nothing at the end once it is scrolled to the end.
    Where scroll-driven animations are missing, the end stays faded. The
@@ -4514,19 +4532,7 @@ textarea.short { min-height: 64px; }
    is the one at the top of the table. */
 .app.phone .pf-table { gap: 0; }
 .app.phone .pf-table > .pf-cols + .pf-section { padding-top: 0; }
-/* The wallet picker reads as one of the buttons beside it. Refresh is in
-   the menu's sheet here, so the row is Send at its own width, the picker in
-   all the room left, and the three lines. */
-.app.phone .pf-controls select {
-  flex: 1;
-  min-width: 0;
-  max-width: none;
-  font-size: var(--text-base);
-  font-weight: var(--weight-medium);
-}
-.app.phone .pf-controls > button.primary { flex: none; padding-inline: var(--space-5); }
-/* A refresh started from the sheet, said under the toolbar while it runs. */
-.app.phone .pf-refreshing { margin: 0; }
+.app.phone .pf-controls > button.primary { padding-inline: var(--space-5); }
 /* An opened asset whose price is outdated says so in one quiet line past
    the logo column, only its dot in the warning colour: the wallets under it
    lead. The whole sentence is the line's tooltip. */
@@ -4548,13 +4554,6 @@ textarea.short { min-height: 64px; }
   border-radius: var(--radius-full);
   background: var(--warn-solid);
   vertical-align: middle;
-}
-/* The pane's three lines, beside Refresh: a square touch target, not a
-   share of the row as the header's other buttons are. */
-.app.phone .pf-controls > .icon-btn {
-  flex: none;
-  width: var(--control-lg);
-  min-width: var(--control-lg);
 }
 .app.phone .pf-lines { gap: 0; }
 .app.phone .pf-line-main,
@@ -5146,13 +5145,6 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
 .app.phone .action-list { display: grid; gap: var(--space-1); }
 .app.phone .action-list > .more-item.danger,
 .app.phone .action-list > .more-item.danger .icon { color: var(--danger-text); }
-/* The pane's three lines, beside Add wallet: a square touch target, not a
-   half of the row as the header's other buttons are. */
-.app.phone .wallets-head > .btn-row > .icon-btn {
-  flex: none;
-  width: var(--control-lg);
-  min-width: var(--control-lg);
-}
 
 /* A wallet's Settings and Details on a phone: the sheet scrolls in one
    place, its body, and its buttons stay pinned to its foot, however long

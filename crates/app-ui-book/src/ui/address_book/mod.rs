@@ -3,7 +3,7 @@ use crate::actions::network::refresh_from_chain;
 use crate::state::session::Session;
 use crate::ui::{
     category_class, category_glyph, format_sol, format_token_amount, ActionSheet, Address,
-    AddressRow, CopyAddress, CopyButton, Glyph, Icon, PaneMenu,
+    AddressRow, CopyAddress, CopyButton, Glyph, Icon, PaneMenu, RefreshButton,
 };
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
@@ -99,17 +99,16 @@ pub fn AddressBookPanel() -> Element {
     rsx! {
         section { class: "page",
             div { class: "stack",
-                div { class: "pane-head ab-head",
+                div { class: "pane-head",
                     div {
                         h2 { "Address Book" }
                     }
                     div { class: "btn-row",
-                        if online && !phone {
-                            button {
+                        if online {
+                            RefreshButton {
+                                busy: fetching(),
                                 title: "Read balances, token accounts and nonce hashes again",
-                                disabled: fetching(),
                                 onclick: refresh,
-                                if fetching() { "Refreshing…" } else { "Refresh" }
                             }
                         }
                         button { class: "primary",
@@ -135,7 +134,7 @@ pub fn AddressBookPanel() -> Element {
                 }
 
                 if phone && fetching() {
-                    p { class: "hint ab-refreshing", role: "status", "Refreshing…" }
+                    p { class: "hint pane-refreshing", role: "status", "Refreshing…" }
                 }
                 if !online {
                     p { class: "hint", "Offline: this app never connects, so it looks up no balances, token accounts or nonce hashes." }
@@ -151,15 +150,6 @@ pub fn AddressBookPanel() -> Element {
             }
         }
         ActionSheet { open: pane_sheet_open, title: "Address Book", label: "More address book actions",
-            if online {
-                button { class: "more-item",
-                    title: "Read balances, token accounts and nonce hashes again",
-                    disabled: fetching(),
-                    onclick: refresh,
-                    Icon { glyph: Glyph::Refresh }
-                    if fetching() { "Refreshing…" } else { "Refresh" }
-                }
-            }
             {pane_actions}
         }
         if modal_open() {
