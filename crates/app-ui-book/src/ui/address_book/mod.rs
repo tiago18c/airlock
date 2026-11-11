@@ -138,7 +138,7 @@ pub fn AddressBookPanel() -> Element {
                     p { class: "hint ab-refreshing", role: "status", "Refreshing…" }
                 }
                 if !online {
-                    p { class: "hint", "Offline: this app never reads the chain, so it looks up no balances, token accounts or nonce hashes." }
+                    p { class: "hint", "Offline: this app never connects, so it looks up no balances, token accounts or nonce hashes." }
                 }
                 if let Some(err) = error() {
                     p { class: "error", "{err}" }

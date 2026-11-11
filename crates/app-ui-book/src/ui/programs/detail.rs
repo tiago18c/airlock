@@ -373,7 +373,7 @@ pub(in crate::ui) fn status_tip(status: IdlPinStatus, online: bool) -> &'static 
             "Not yet compared with the IDL the program publishes on chain: Check online compares them."
         }
         IdlPinStatus::NotChecked => {
-            "Not yet compared with the IDL the program publishes on chain. This app never connects; an online Airlock can compare them."
+            "Not compared with the IDL the program publishes on chain: this app never connects."
         }
         IdlPinStatus::Matches => {
             "The last online check found this exact file published on chain by the program."

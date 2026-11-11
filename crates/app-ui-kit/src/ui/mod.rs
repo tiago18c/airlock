@@ -66,8 +66,8 @@ pub fn OfflineMarker(#[props(default)] short: bool) -> Element {
         span {
             class: "status offline-mark",
             role: "note",
-            title: "Offline: this app never connects to a node.",
-            aria_label: "Offline: this app never connects to a node.",
+            title: "Offline: this app never connects.",
+            aria_label: "Offline: this app never connects.",
             span { class: "status-dot", aria_hidden: "true" }
             span { aria_hidden: "true",
                 "Offline"

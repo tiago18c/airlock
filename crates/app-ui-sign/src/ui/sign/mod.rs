@@ -40,8 +40,8 @@ use wallet_core::simulate::Simulation;
 use wallet_core::{
     context_note_for, missing_catalog_programs, next_step, sha256_bytes, sign_steps,
     signature_objects, signing_status_in, tx_lifetime, DecodedTx, LocalKeys, NextSignature,
-    SignFinish, SignStepInputs, SignStepKind, SignerRole, SignerState, SigningStatus,
-    SimulationStage, TxFormat,
+    SignFinish, SignStepInputs, SignStepKind, SignStepState, SignerRole, SignerState,
+    SigningStatus, SimulationStage, TxFormat,
 };
 use wallet_flows::offer::{
     batch_keepable, blockhash_plan, may_sign, may_submit, BatchFacts, BlockhashFacts,
@@ -440,6 +440,12 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     for step in &mut steps {
         if step.kind == SignStepKind::CollectSignatures {
             step.progress = Some((status.signed(), status.total()));
+        }
+        // With no network and a format no other device takes, sharing is
+        // not a way on, as the note above the signatures says: the step is
+        // passed over, with a word that agrees, never "next".
+        if step.kind == SignStepKind::ShareToSubmit && tx.format != TxFormat::V1 {
+            step.state = SignStepState::Skipped;
         }
     }
     // Nothing is left for this device to sign, and another device is next:
