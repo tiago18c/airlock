@@ -50,21 +50,16 @@
           Mobile Wallet Adapter: other apps and Chrome's pages open a
           solana-wallet: link to ask Airlock to connect and sign. Off here;
           Airlock turns it on only in online mode, with Settings → Apps on
-          this phone on (MwaBridge.setEnabled). It has no window: it holds the
-          session and brings Airlock forward.
-
-          Not excludeFromRecents. A browser opens the link with NEW_TASK, so
-          it runs in a task of its own, and Android keeps a task excluded from
-          recents only while it is the most recent one: once Airlock is in
-          front, the system trims it ("recent-task-trimmed"), which destroys
-          the activity and ends the session before the user can answer.
-          autoRemoveFromRecents takes the task away once the session ends.
+          this phone on (MwaBridge.setEnabled). It has no window: it starts
+          the session and brings Airlock forward. Opened by an app, it stays
+          in that app's task until the session ends; opened by a browser, it
+          finishes at once (see MwaActivity), so it leaves no card in recents.
         -->
         <activity android:name="dev.dioxus.main.MwaActivity"
             android:enabled="false"
             android:exported="true"
             android:taskAffinity=""
-            android:autoRemoveFromRecents="true"
+            android:excludeFromRecents="true"
             android:theme="@android:style/Theme.Translucent.NoTitleBar">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
