@@ -207,6 +207,16 @@ pub(in crate::ui) fn HoldingRow(owner: Pubkey, holding: TokenHolding) -> Element
             PhoneHoldingRow { owner, holding, name, symbol, amount }
         };
     }
+    let white_label = if flag == Some(TokenFlag::White) {
+        "Clear white flag".to_string()
+    } else {
+        format!("Flag white: {WHITE_FLAG_MEANS}")
+    };
+    let red_label = if flag == Some(TokenFlag::Red) {
+        "Clear red flag".to_string()
+    } else {
+        format!("Flag red: {RED_FLAG_MEANS}")
+    };
 
     rsx! {
         li { class: "holding-row",
@@ -231,15 +241,13 @@ pub(in crate::ui) fn HoldingRow(owner: Pubkey, holding: TokenHolding) -> Element
                     span { class: "ab-holding-symbol", " {symbol}" }
                 }
             }
+            // Each button says what its flag does, as the phone's sheet does.
             div { class: if flag.is_some() { "flag-actions visible" } else { "flag-actions" },
                 if flag != Some(TokenFlag::Red) {
                     button {
                         class: "ghost icon-btn sm flag white",
-                        title: if flag == Some(TokenFlag::White) {
-                            "Clear white flag"
-                        } else {
-                            "White flag"
-                        },
+                        title: "{white_label}",
+                        aria_label: "{white_label}",
                         onclick: move |_| {
                             let next = if flag == Some(TokenFlag::White) {
                                 None
@@ -256,11 +264,8 @@ pub(in crate::ui) fn HoldingRow(owner: Pubkey, holding: TokenHolding) -> Element
                 if flag != Some(TokenFlag::White) {
                     button {
                         class: "ghost icon-btn sm flag red",
-                        title: if flag == Some(TokenFlag::Red) {
-                            "Clear red flag"
-                        } else {
-                            "Red flag"
-                        },
+                        title: "{red_label}",
+                        aria_label: "{red_label}",
                         onclick: move |_| {
                             let next = if flag == Some(TokenFlag::Red) {
                                 None

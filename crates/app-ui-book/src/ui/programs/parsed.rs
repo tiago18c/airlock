@@ -331,7 +331,6 @@ fn IdlSummary(name: String) -> Element {
 /// An account, type or event: its name, opening to what it holds.
 #[component]
 fn NamedItem(item: IdlNamed) -> Element {
-    let phone = use_phone_layout();
     let IdlNamed {
         name,
         detail,
@@ -342,18 +341,10 @@ fn NamedItem(item: IdlNamed) -> Element {
     if detail.is_empty() {
         return rsx! { div { class: "idl-item idl-leaf", "{name}" } };
     }
-    if !phone {
-        return rsx! {
-            details { class: "idl-item",
-                IdlSummary { name }
-                div { class: "idl-body", p { "{detail}" } }
-            }
-        };
-    }
-    // On a phone it reads as an instruction does: what it holds at the end
-    // of its closed row, and opened, a row for each field or variant with
-    // its type. One with neither, a type that is another type's alias, says
-    // what it is in a word, closed and open.
+    // It reads as an instruction does: what it holds at the end of its
+    // closed row, and opened, a row for each field or variant with its type.
+    // One with neither, a type that is another type's alias, says what it is
+    // in a word, closed and open.
     let counts =
         held(fields.len(), variants, size).or_else(|| fields.is_empty().then(|| detail.clone()));
     let width = longest(fields.iter().map(|field| field.name.as_str()));
