@@ -133,10 +133,11 @@ fn InspectBody(pubkey: Pubkey, back: Option<Pubkey>) -> Element {
                     onclick: move |_| inspect.set(None),
                     "Close"
                 }
-                button {
-                    disabled: busy,
+                crate::ui::RefreshButton {
+                    busy,
+                    labelled: true,
+                    busy_text: "Reading…",
                     onclick: move |_| round += 1,
-                    "Refresh"
                 }
             }
         }

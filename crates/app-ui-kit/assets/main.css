@@ -392,8 +392,9 @@ code { color: var(--text-2); }
 .app.phone .pane-head > .btn-row:not(:has(> select)) > button.primary,
 .app.phone .pane-head > .btn-row:not(:has(> select, > .primary)) > button:not(.icon-btn) { flex: 1; }
 .app.phone .pane-head > .btn-row > .icon-btn { width: var(--control-lg); min-width: var(--control-lg); }
-/* A phone's Refresh is an icon: its arrows turn while it runs, and the pane
-   says so in words under its head. */
+/* Refresh is its arrows, then the word on a desktop; on a phone the arrows
+   alone, and the pane says so in words under its head. They turn while it
+   runs on both. */
 .refresh-btn.busy .icon { animation: toast-spin 0.9s linear infinite; }
 @media (prefers-reduced-motion: reduce) { .refresh-btn.busy .icon { animation: none; } }
 .app.phone .pane-refreshing { margin: 0; }

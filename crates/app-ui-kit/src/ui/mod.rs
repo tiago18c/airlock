@@ -114,11 +114,13 @@ pub fn Empty(
     }
 }
 
-/// A pane's Refresh, in its head's row of actions. On a desktop a labelled
-/// button that says "Refreshing…" (or `busy_text`) while it runs. On a phone
-/// an icon, so the filter and the primary beside it keep the row's room; its
-/// glyph turns while it runs, and the pane says so in a line under the head.
-/// `labelled` keeps the words on a phone too, for a head with nothing else.
+/// Every Refresh in the apps: the refresh glyph, then the word on a desktop
+/// ("Refreshing…", or `busy_text`, while it runs). On a phone the glyph
+/// alone, so the filter and the primary beside it keep the row's room, named
+/// "Refresh" for assistive tech and in its tooltip, and the pane says so in a
+/// line under the head while it runs. The glyph turns while it runs on both.
+/// `labelled` keeps the word on a phone too, for a dialog's row of buttons.
+/// `class` adds the button's look (`ghost sm` in a dialog's head).
 #[component]
 pub fn RefreshButton(
     busy: bool,
@@ -126,13 +128,15 @@ pub fn RefreshButton(
     #[props(default)] title: Option<&'static str>,
     #[props(default = "Refreshing…")] busy_text: &'static str,
     #[props(default)] labelled: bool,
+    #[props(default)] class: &'static str,
 ) -> Element {
+    let state = if busy { " busy" } else { "" };
     if phone::use_phone_layout() && !labelled {
         return rsx! {
             button {
-                class: if busy { "icon-btn refresh-btn busy" } else { "icon-btn refresh-btn" },
+                class: "{class} icon-btn refresh-btn{state}",
                 r#type: "button",
-                title: "Refresh",
+                title: title.unwrap_or("Refresh"),
                 aria_label: "Refresh",
                 aria_busy: "{busy}",
                 disabled: busy,
@@ -143,10 +147,13 @@ pub fn RefreshButton(
     }
     rsx! {
         button {
+            class: "{class} refresh-btn{state}",
             r#type: "button",
             title,
+            aria_busy: "{busy}",
             disabled: busy,
             onclick: move |e| onclick.call(e),
+            Icon { glyph: Glyph::Refresh }
             if busy { "{busy_text}" } else { "Refresh" }
         }
     }

@@ -15,7 +15,7 @@
 use crate::actions::proposals::{load_page, open_request};
 use app_ui_kit::actions::unix_now;
 use app_ui_kit::ui::tx_view::ReadInstructions;
-use app_ui_kit::ui::{Empty, Glyph};
+use app_ui_kit::ui::{Empty, Glyph, RefreshButton};
 use app_ui_kit::{Address, Session};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
@@ -143,9 +143,11 @@ pub fn ProposalsModal(
                             }
                         }
                         div { class: "btn-row",
-                            button { class: "ghost sm", disabled: loading(),
+                            RefreshButton {
+                                class: "ghost sm",
+                                busy: loading(),
+                                busy_text: "Reading…",
                                 onclick: move |_| fetch(None),
-                                if loading() { "Reading…" } else { "Refresh" }
                             }
                             button { class: "ghost sm", onclick: move |_| on_close.call(()), "Close" }
                         }
