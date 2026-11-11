@@ -2,15 +2,15 @@ use crate::actions::addresses::*;
 use crate::actions::network::refresh_from_chain;
 use crate::state::session::Session;
 use crate::ui::{
-    category_class, category_glyph, format_sol, format_token_amount, Address, AddressRow,
-    CopyButton, Glyph, Icon, PaneMenu,
+    category_class, category_glyph, format_sol, format_token_amount, ActionSheet, Address,
+    AddressRow, CopyAddress, CopyButton, Glyph, Icon, PaneMenu,
 };
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use std::str::FromStr;
 use wallet_core::{
     AddressKind, BookGroupInfo, BookRow, Category, Described, Fact, Group, TokenFlag, TokenHolding,
-    LOCAL_GROUP_ID,
+    WalletSort, LOCAL_GROUP_ID,
 };
 
 mod entry;
@@ -53,30 +53,61 @@ pub fn AddressBookPanel() -> Element {
     let export_label = use_signal(String::new);
     let import_text = use_signal(String::new);
     let mut import_error = use_signal(|| None::<String>);
+    // On a phone the header keeps only the title, Add address and the three
+    // lines: Refresh from chain joins Export and Import in a bottom sheet,
+    // as the Wallets pane's menu does, and a line under the header says
+    // while it runs, since the sheet is closed by then.
+    let phone = crate::ui::use_phone_layout();
+    let mut pane_sheet_open = use_signal(|| false);
+    let refresh = move |_: Event<MouseData>| {
+        error.set(None);
+        fetch_note.set(None);
+        fetching.set(true);
+        spawn(async move {
+            match refresh_from_chain(session).await {
+                Ok(note) => fetch_note.set(Some(note)),
+                Err(err) => error.set(Some(err)),
+            }
+            fetching.set(false);
+        });
+    };
+    let (item_class, item_role) = if phone {
+        ("more-item", None)
+    } else {
+        ("pane-menu-item", Some("menuitem"))
+    };
+    let pane_actions = rsx! {
+        button { class: item_class,
+            role: item_role,
+            title: "Write this device's address book out, for another device to import",
+            onclick: move |_| export_open.set(true),
+            Icon { glyph: Glyph::Export }
+            "Export"
+        }
+        button { class: item_class,
+            role: item_role,
+            title: "Paste another device's export, as a group of its own",
+            onclick: move |_| {
+                import_error.set(None);
+                import_open.set(true);
+            },
+            Icon { glyph: Glyph::Import }
+            "Import"
+        }
+    };
 
     rsx! {
         section { class: "page",
             div { class: "stack",
-                div { class: "pane-head",
+                div { class: "pane-head ab-head",
                     div {
                         h2 { "Address Book" }
                     }
                     div { class: "btn-row",
-                        if online {
+                        if online && !phone {
                             button {
                                 disabled: fetching(),
-                                onclick: move |_| {
-                                    error.set(None);
-                                    fetch_note.set(None);
-                                    fetching.set(true);
-                                    spawn(async move {
-                                        match refresh_from_chain(session).await {
-                                            Ok(note) => fetch_note.set(Some(note)),
-                                            Err(err) => error.set(Some(err)),
-                                        }
-                                        fetching.set(false);
-                                    });
-                                },
+                                onclick: refresh,
                                 if fetching() { "Refreshing…" } else { "Refresh from chain" }
                             }
                         }
@@ -88,28 +119,23 @@ pub fn AddressBookPanel() -> Element {
                             Icon { glyph: Glyph::Plus }
                             "Add address"
                         }
-                        PaneMenu { label: "More address book actions",
-                            button { class: "pane-menu-item",
-                                role: "menuitem",
-                                title: "Write this device's address book out, for another device to import",
-                                onclick: move |_| export_open.set(true),
-                                Icon { glyph: Glyph::Send }
-                                "Export"
+                        if phone {
+                            button { class: "icon-btn",
+                                title: "More address book actions",
+                                aria_label: "More address book actions",
+                                aria_haspopup: "dialog",
+                                onclick: move |_| pane_sheet_open.set(true),
+                                Icon { glyph: Glyph::Menu }
                             }
-                            button { class: "pane-menu-item",
-                                role: "menuitem",
-                                title: "Paste another device's export, as a group of its own",
-                                onclick: move |_| {
-                                    import_error.set(None);
-                                    import_open.set(true);
-                                },
-                                Icon { glyph: Glyph::Book }
-                                "Import"
-                            }
+                        } else {
+                            PaneMenu { label: "More address book actions", {pane_actions.clone()} }
                         }
                     }
                 }
 
+                if phone && fetching() {
+                    p { class: "hint ab-refreshing", role: "status", "Refreshing from chain…" }
+                }
                 if !online {
                     p { class: "hint", "Offline: token accounts and nonce hashes stay local until getGenesisHash succeeds." }
                 }
@@ -122,6 +148,18 @@ pub fn AddressBookPanel() -> Element {
 
                 AddressBookList {}
             }
+        }
+        ActionSheet { open: pane_sheet_open, title: "Address Book", label: "More address book actions",
+            if online {
+                button { class: "more-item",
+                    title: "Read balances, token accounts and nonce hashes again",
+                    disabled: fetching(),
+                    onclick: refresh,
+                    Icon { glyph: Glyph::Refresh }
+                    if fetching() { "Refreshing…" } else { "Refresh from chain" }
+                }
+            }
+            {pane_actions}
         }
         if modal_open() {
             AddressModal {}
@@ -241,7 +279,8 @@ fn AddressBookList() -> Element {
                         },
                     }
                 }
-                div { class: "chip-row",
+                // On a phone the chips are one row that scrolls sideways.
+                div { class: "chip-row ab-chips",
                     button {
                         class: if kind_filter().is_none() { "tab on" } else { "tab" },
                         onclick: move |_| {

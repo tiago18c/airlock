@@ -220,6 +220,19 @@ fn kind_line(described: &Described) -> Option<String> {
     }
 }
 
+/// The kind line on a phone, as the parts it is made of, each kept whole
+/// on one line: a line breaks only between them. A smart contract wallet's
+/// line drops its first part where a more specific one follows, "Squads v4
+/// · 2 of 3", since the row's icon already says what it is and the whole
+/// line would not fit on one line of a phone.
+fn phone_kind_parts(category: Category, line: &str) -> Vec<String> {
+    let mut parts: Vec<String> = line.split(" · ").map(str::to_string).collect();
+    if category == Category::Wallet(WalletSort::SmartContract) && parts.len() > 1 {
+        parts.remove(0);
+    }
+    parts
+}
+
 /// The name a token's mark is drawn from: its own label, without the group
 /// a full label adds.
 fn token_mark_name(described: &Described, entry: &wallet_core::AddressEntry) -> Option<String> {
@@ -263,10 +276,16 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
     let collides = !described.collides_with.is_empty();
     let name = entry_name(&described, &entry);
     let what = kind_line(&described);
+    let phone = crate::ui::use_phone_layout();
+    let kind_parts = match (phone, what.as_deref()) {
+        (true, Some(line)) => phone_kind_parts(category, line),
+        _ => Vec::new(),
+    };
     // The kind line is drawn when it says something, or ends in the toggle
-    // of the entry's token accounts.
+    // of the entry's token accounts. On a phone the toggle is on the
+    // address's line instead.
     let has_holdings = owns_tokens && session.holding_summary(&pubkey).total > 0;
-    let show_kind = what.is_some() || has_holdings;
+    let show_kind = what.is_some() || (has_holdings && !phone);
     // A token is marked by its name on a tint of its mint, else a plain "?".
     let token_mark = (category == Category::Token).then(|| {
         let mint = entry.mint.unwrap_or(pubkey);
@@ -288,9 +307,61 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
         Some(name) => format!("Remove {name}"),
         None => "Remove".to_string(),
     };
+    // On a phone every row has one shape: the name over its kind line, the
+    // balance beside it when there is one, then the address shortened to one
+    // line with copy right after it, and at the right end of that line the
+    // toggle of its token accounts, if any, and the three dots, where they
+    // are on every row. A row with nothing to weigh
+    // draws nothing there rather than a dash, and its name takes the room.
+    // The three dots open a bottom sheet titled with the entry's name, as a
+    // wallet card's do.
+    let mut sheet_open = use_signal(|| false);
+    let weighed = has_balance || token_amount.is_some();
+    let row_class = if phone && !weighed {
+        "ab-row ab-unweighed"
+    } else {
+        "ab-row"
+    };
+    let sheet_title = name.clone().unwrap_or_else(|| "No name".to_string());
+    let (item_class, item_role) = if phone {
+        ("more-item", None)
+    } else {
+        ("pane-menu-item", Some("menuitem"))
+    };
+    let row_actions = rsx! {
+        button { class: item_class,
+            role: item_role,
+            title: "{edit_title}",
+            onclick: move |_| {
+                pubkey_field.set(pubkey.to_string());
+                label_field.set(label.clone());
+                tags_field.set(tags_csv.clone());
+                error.set(None);
+                editing.set(Some(pubkey));
+                editing_group.set(edit_group.clone());
+                modal_open.set(true);
+            },
+            Icon { glyph: Glyph::Pencil }
+            "Edit"
+        }
+        if can_remove {
+            button { class: "{item_class} danger",
+                role: item_role,
+                title: "{remove_title}",
+                onclick: move |_| {
+                    let group = remove_group.clone();
+                    session.edit_workspace(|ws| {
+                        ws.book.remove_in(&group, &pubkey);
+                    });
+                },
+                Icon { glyph: Glyph::Trash }
+                "Remove"
+            }
+        }
+    };
 
     rsx! {
-        li { class: "ab-row",
+        li { class: row_class,
             match token_mark {
                 Some((mint, Some(token))) => rsx! {
                     TokenAvatar { mint, name: token, class: "ab-badge", title: category.name() }
@@ -326,10 +397,19 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                 }
                 if show_kind {
                     p { class: "ab-kind",
-                        if let Some(what) = what.as_ref() {
+                        if phone {
+                            // The separator keeps to the part before it, so a
+                            // line breaks after it, never before.
+                            for (i, part) in kind_parts.iter().enumerate() {
+                                span { class: "ab-kind-part", "{part}" }
+                                if i + 1 < kind_parts.len() {
+                                    "\u{a0}· "
+                                }
+                            }
+                        } else if let Some(what) = what.as_ref() {
                             "{what}"
                         }
-                        if has_holdings {
+                        if has_holdings && !phone {
                             HoldingsToggle {
                                 owner: pubkey,
                                 open: holdings_open,
@@ -340,65 +420,67 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                 }
             }
             div { class: "ab-address",
-                code { class: "mono", title: "{address}", "{address}" }
+                if phone {
+                    // Shortened in the middle, so both ends show, with the
+                    // copy icon right after it: one button that copies the
+                    // whole address. Every short address is as long, so the
+                    // icon lands at one x on every row.
+                    CopyAddress { pubkey, class: "ab-copy-addr" }
+                } else {
+                    code { class: "mono", title: "{address}", "{address}" }
+                }
                 if let Some(hash) = entry.nonce_hash {
                     p { class: "ab-nonce mono", title: "nonce {hash}", "nonce {hash}" }
                 }
             }
-            div { class: "ab-copy",
-                CopyButton { text: address.clone() }
+            if !phone {
+                div { class: "ab-copy",
+                    CopyButton { text: address.clone() }
+                }
             }
-            div { class: "ab-balance",
-                if let Some(lamports) = entry.lamports {
-                    p { class: "balance", "{format_sol(lamports)}" }
-                }
-                if let Some(amount) = token_amount.as_ref() {
-                    p { class: "balance", "{amount}" }
-                }
-                // Nothing to weigh: a dash, so the column does not read as
-                // missing data. A balance of zero still says "0 SOL".
-                if !has_balance && token_amount.is_none() {
-                    p { class: "ab-no-balance",
-                        span { aria_hidden: "true", "–" }
-                        span { class: "sr-only", "No balance" }
+            if !phone || weighed {
+                div { class: "ab-balance",
+                    if let Some(lamports) = entry.lamports {
+                        p { class: "balance", "{format_sol(lamports)}" }
+                    }
+                    if let Some(amount) = token_amount.as_ref() {
+                        p { class: "balance", "{amount}" }
+                    }
+                    // Nothing to weigh: a dash, so the column does not read
+                    // as missing data. A balance of zero still says "0 SOL".
+                    if !weighed {
+                        p { class: "ab-no-balance",
+                            span { aria_hidden: "true", "–" }
+                            span { class: "sr-only", "No balance" }
+                        }
                     }
                 }
             }
             div { class: "ab-actions",
-                PaneMenu { label: "More actions", glyph: Glyph::More, small: true,
-                    button { class: "pane-menu-item",
-                        role: "menuitem",
-                        title: "{edit_title}",
-                        onclick: move |_| {
-                            pubkey_field.set(pubkey.to_string());
-                            label_field.set(label.clone());
-                            tags_field.set(tags_csv.clone());
-                            error.set(None);
-                            editing.set(Some(pubkey));
-                            editing_group.set(edit_group.clone());
-                            modal_open.set(true);
-                        },
-                        Icon { glyph: Glyph::Pencil }
-                        "Edit"
+                if phone {
+                    if has_holdings {
+                        HoldingsToggle { owner: pubkey, open: holdings_open, alone: true, short: true }
                     }
-                    if can_remove {
-                        button { class: "pane-menu-item danger",
-                            role: "menuitem",
-                            title: "{remove_title}",
-                            onclick: move |_| {
-                                let group = remove_group.clone();
-                                session.edit_workspace(|ws| {
-                                    ws.book.remove_in(&group, &pubkey);
-                                });
-                            },
-                            Icon { glyph: Glyph::Trash }
-                            "Remove"
-                        }
+                    button { class: "ghost icon-btn ab-more",
+                        title: "More actions",
+                        aria_label: "More actions",
+                        aria_haspopup: "dialog",
+                        onclick: move |_| sheet_open.set(true),
+                        Icon { glyph: Glyph::More }
+                    }
+                } else {
+                    PaneMenu { label: "More actions", glyph: Glyph::More, small: true,
+                        {row_actions.clone()}
                     }
                 }
             }
             if owns_tokens {
                 OwnerHoldings { owner: pubkey, open: holdings_open }
+            }
+        }
+        if phone {
+            ActionSheet { open: sheet_open, title: sheet_title.clone(), label: "Actions of {sheet_title}",
+                {row_actions}
             }
         }
     }

@@ -57,27 +57,33 @@ pub(in crate::ui) fn TokenAvatar(
 /// How many token accounts an owner has, at the end of its kind line: a
 /// button that opens them under the row. Nothing when it has none. `alone`
 /// when it is all the line holds, so nothing separates it from what is
-/// before it.
+/// before it. `short` on a phone, where it shares the address's line: it
+/// reads "6 tokens", and says "token accounts" to a screen reader.
 #[component]
 pub(in crate::ui) fn HoldingsToggle(
     owner: Pubkey,
     open: Signal<bool>,
     #[props(default)] alone: bool,
+    #[props(default)] short: bool,
 ) -> Element {
     let session = use_context::<Session>();
     let summary = session.holding_summary(&owner);
     if summary.total == 0 {
         return rsx! {};
     }
-    let noun = if summary.total == 1 {
-        "token account"
-    } else {
-        "token accounts"
+    let count_of = |one: &str, many: &str| {
+        let noun = if summary.total == 1 { one } else { many };
+        if summary.red > 0 {
+            format!("{} {noun}, {} red", summary.total, summary.red)
+        } else {
+            format!("{} {noun}", summary.total)
+        }
     };
-    let count = if summary.red > 0 {
-        format!("{} {noun}, {} red", summary.total, summary.red)
+    let full = count_of("token account", "token accounts");
+    let (count, label) = if short {
+        (count_of("token", "tokens"), Some(full))
     } else {
-        format!("{} {noun}", summary.total)
+        (full, None)
     };
 
     // The separator does not break from the toggle: when the line wraps, the
@@ -94,6 +100,7 @@ pub(in crate::ui) fn HoldingsToggle(
                 class: if open() { "ab-holdings-toggle open" } else { "ab-holdings-toggle" },
                 r#type: "button",
                 aria_expanded: "{open()}",
+                aria_label: label,
                 onclick: move |_| open.set(!open()),
                 "{count}"
                 Icon { glyph: Glyph::ChevronRight }
@@ -195,6 +202,11 @@ pub(in crate::ui) fn HoldingRow(owner: Pubkey, holding: TokenHolding) -> Element
     let name = token_name(&session, &mint);
     let symbol = token_symbol(&session, &mint);
     let mint_text = mint.to_string();
+    if crate::ui::use_phone_layout() {
+        return rsx! {
+            PhoneHoldingRow { owner, holding, name, symbol, amount }
+        };
+    }
 
     rsx! {
         li { class: "holding-row",
@@ -260,6 +272,144 @@ pub(in crate::ui) fn HoldingRow(owner: Pubkey, holding: TokenHolding) -> Element
                             });
                         },
                         Icon { glyph: Glyph::Flag }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// What a white flag means, in words. It changes nothing but where the
+/// token account is listed: after the red ones, before the rest.
+const WHITE_FLAG_MEANS: &str =
+    "A mark of your own. It changes nothing but the order: listed after red ones, before the rest.";
+
+/// What a red flag means, in words: what the app does with such a token
+/// account (see Portfolio's total, Send's token list and Manage tokens).
+const RED_FLAG_MEANS: &str =
+    "Left out of Portfolio's total, listed last when sending, and offered to burn and close in Manage tokens.";
+
+/// One token account on a phone, in two lines that cannot run into each
+/// other: the token's mark and name (its short mint, captioned "Mint", when
+/// nothing names it), with its flag if it has one, and the amount at the
+/// right; under them the account's short address, captioned "Account", with
+/// the copy icon right after it. One "…" at the row's end opens a sheet to
+/// set or clear a flag, each choice with what it means, in place of two bare
+/// flag buttons.
+#[component]
+fn PhoneHoldingRow(
+    owner: Pubkey,
+    holding: TokenHolding,
+    name: Option<String>,
+    symbol: Option<String>,
+    amount: String,
+) -> Element {
+    let session = use_context::<Session>();
+    let mut sheet_open = use_signal(|| false);
+    let token = holding.pubkey;
+    let mint = holding.mint;
+    let flag = holding.flag;
+    let mint_text = mint.to_string();
+    let sheet_title = name.clone().unwrap_or_else(|| "Unknown token".to_string());
+    let set_flag = move |next: Option<TokenFlag>| {
+        session.edit_holdings(|holdings| {
+            holdings.set_flag(&owner, &token, next);
+        });
+    };
+
+    rsx! {
+        li { class: "holding-row",
+            div { class: "ab-holding-token",
+                if let Some(name) = name {
+                    TokenAvatar { mint, name: name.clone(), class: "ab-token-icon" }
+                    span { class: "ab-token-name", title: "{mint_text}", "{name}" }
+                } else {
+                    span { class: "ab-token-icon ab-token-mark", title: "Unknown token", "?" }
+                    span { class: "sr-only", "Unknown token" }
+                    span { class: "ab-caption", "Mint" }
+                    AddressRow {
+                        pubkey: mint,
+                        no_copy: true,
+                        no_label: true,
+                        no_icon: true,
+                        no_card: true,
+                        class: "ab-holding-mint",
+                    }
+                }
+                match flag {
+                    Some(TokenFlag::Red) => rsx! {
+                        span { class: "flag red ab-flag-mark",
+                            role: "img",
+                            title: "Flagged red: {RED_FLAG_MEANS}",
+                            aria_label: "Flagged red",
+                            Icon { glyph: Glyph::Flag }
+                        }
+                    },
+                    Some(TokenFlag::White) => rsx! {
+                        span { class: "flag white ab-flag-mark",
+                            role: "img",
+                            title: "Flagged white: {WHITE_FLAG_MEANS}",
+                            aria_label: "Flagged white",
+                            Icon { glyph: Glyph::Flag }
+                        }
+                    },
+                    None => rsx! {},
+                }
+            }
+            span { class: "ab-holding-amount",
+                "{amount}"
+                if let Some(symbol) = symbol {
+                    span { class: "ab-holding-symbol", " {symbol}" }
+                }
+            }
+            div { class: "ab-holding-account",
+                span { class: "ab-caption", "Account" }
+                CopyAddress { pubkey: token, class: "ab-copy-addr" }
+            }
+            button { class: "ghost icon-btn ab-holding-more",
+                title: "Token account actions",
+                aria_label: "Token account actions",
+                aria_haspopup: "dialog",
+                onclick: move |_| sheet_open.set(true),
+                Icon { glyph: Glyph::More }
+            }
+        }
+        ActionSheet { open: sheet_open, title: sheet_title.clone(), label: "Flags of {sheet_title}",
+            if flag == Some(TokenFlag::White) {
+                button { class: "more-item ab-flag-item",
+                    onclick: move |_| set_flag(None),
+                    span { class: "flag white", Icon { glyph: Glyph::Flag } }
+                    span { class: "ab-flag-text",
+                        span { "Clear white flag" }
+                        span { class: "ab-flag-means", "{WHITE_FLAG_MEANS}" }
+                    }
+                }
+            } else {
+                button { class: "more-item ab-flag-item",
+                    onclick: move |_| set_flag(Some(TokenFlag::White)),
+                    span { class: "flag white", Icon { glyph: Glyph::Flag } }
+                    span { class: "ab-flag-text",
+                        span { "Flag white" }
+                        span { class: "ab-flag-means", "{WHITE_FLAG_MEANS}" }
+                    }
+                }
+            }
+            if flag == Some(TokenFlag::Red) {
+                button { class: "more-item ab-flag-item",
+                    onclick: move |_| set_flag(None),
+                    span { class: "flag red", Icon { glyph: Glyph::Flag } }
+                    span { class: "ab-flag-text",
+                        span { "Clear red flag" }
+                        span { class: "ab-flag-means", "{RED_FLAG_MEANS}" }
+                    }
+                }
+            } else {
+                button { class: "more-item ab-flag-item",
+                    onclick: move |_| set_flag(Some(TokenFlag::Red)),
+                    span { class: "flag red", Icon { glyph: Glyph::Flag } }
+                    span { class: "ab-flag-text",
+                        span { "Flag red" }
+                        span { class: "ab-flag-means", "{RED_FLAG_MEANS}" }
                     }
                 }
             }
