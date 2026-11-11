@@ -7,7 +7,7 @@ use wallet_core::explorer;
 use crate::actions::unix_now;
 use crate::state::session::Session;
 use crate::ui::local_time;
-use crate::ui::{tx_status_chip, use_phone_layout, CopyButton, Glyph, Icon, PhoneSheet};
+use crate::ui::{tx_status_chip, use_phone_layout, CopyButton, Empty, Glyph, Icon, PhoneSheet};
 
 /// Filter chips in the notification panel.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -192,17 +192,20 @@ fn NoticesBody() -> Element {
             }
         }
         div { class: "notice-list",
-            if none_yet {
+            if empty {
                 // What the filters sort: transactions, requests from other
                 // apps and sites, and the rest (the vault, syncs, saves).
-                p { class: "muted notice-none",
-                    Icon { glyph: Glyph::Bell }
-                    span {
-                        "Transactions you send, requests from apps and sites, and the vault locking or a sync or save failing show up here."
-                    }
+                Empty {
+                    glyph: Glyph::Bell,
+                    compact: true,
+                    text: "Transactions you send, requests from apps and sites, and the vault locking or a sync or save failing show up here.",
                 }
             } else if groups.is_empty() {
-                p { class: "muted notice-empty", "No notifications yet." }
+                Empty {
+                    glyph: Glyph::Bell,
+                    compact: true,
+                    text: "No notifications of this kind.",
+                }
             } else {
                 for (day_label, day_items) in groups {
                     div { class: "notice-day", key: "{day_label}",

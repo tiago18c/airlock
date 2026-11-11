@@ -14,7 +14,7 @@ pub(in crate::ui) fn InstructionRail(parent: Option<u64>) -> Element {
     let new_tip = if parent.is_some() {
         "Add an instruction inside this one"
     } else {
-        "Add a new instruction"
+        "Add an instruction"
     };
 
     rsx! {
@@ -122,6 +122,9 @@ pub(in crate::ui) fn InstructionRail(parent: Option<u64>) -> Element {
                     );
                 },
                 span { class: "ix-plus", Icon { glyph: Glyph::Plus } }
+                // Named in words beside the plus, so the tile reads as the
+                // button it is.
+                span { class: "ix-new-label", "Add an instruction" }
             }
         }
     }

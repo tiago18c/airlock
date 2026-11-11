@@ -1,6 +1,7 @@
 use crate::actions::addresses::*;
 use crate::actions::network::refresh_from_chain;
 use crate::state::session::Session;
+use crate::ui::Empty;
 use crate::ui::{
     category_class, category_glyph, format_sol, format_token_amount, ActionSheet, Address,
     AddressRow, CopyAddress, CopyButton, Glyph, Icon, PaneMenu, RefreshButton,
@@ -323,10 +324,7 @@ fn AddressBookList() -> Element {
             }
 
             if total == 0 {
-                div { class: "empty",
-                    Icon { glyph: Glyph::Book }
-                    p { "No addresses match this filter." }
-                }
+                Empty { glyph: Glyph::Book, text: "No addresses match this filter." }
             }
 
             if total > 0 {

@@ -92,6 +92,28 @@ pub fn SelectedChip(text: &'static str, #[props(default)] title: Option<&'static
     }
 }
 
+/// What a list shows while it has nothing: an icon, one sentence saying what
+/// will appear there, and an optional action as its children. A dashed card
+/// with the three centred; `compact`, a row as tall as one of the list's
+/// entries, for a group among others such as the Wallets pane's. `status`
+/// announces the sentence, for one that says something is being read.
+#[component]
+pub fn Empty(
+    glyph: Glyph,
+    text: String,
+    #[props(default)] compact: bool,
+    #[props(default)] status: bool,
+    children: Element,
+) -> Element {
+    rsx! {
+        div { class: if compact { "empty compact" } else { "empty" },
+            Icon { glyph }
+            p { role: if status { "status" }, "{text}" }
+            {children}
+        }
+    }
+}
+
 /// A pane's Refresh, in its head's row of actions. On a desktop a labelled
 /// button that says "Refreshing…" (or `busy_text`) while it runs. On a phone
 /// an icon, so the filter and the primary beside it keep the row's room; its

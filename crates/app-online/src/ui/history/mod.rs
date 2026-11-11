@@ -7,8 +7,9 @@ use app_core::{HistoryEntry, Outcome};
 use app_ui_kit::ui::address::name_or_short;
 use app_ui_kit::ui::local_time;
 use app_ui_kit::ui::tx_view::{use_worked_out, Worked, READING_DEADLINE};
+use app_ui_kit::ui::Empty;
 use app_ui_kit::ui::{use_phone_layout, RefreshButton};
-use app_ui_kit::{Glyph, Icon, PhraseView, Session};
+use app_ui_kit::{Glyph, PhraseView, Session};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use solana_signature::Signature;
@@ -164,19 +165,20 @@ pub fn HistoryPanel() -> Element {
                 }
 
                 if wallets.is_empty() {
-                    div { class: "empty",
-                        Icon { glyph: Glyph::History }
-                        p { "Add a wallet to see what it did on chain." }
+                    Empty {
+                        glyph: Glyph::History,
+                        text: "Your wallets' transactions show here, once you add a wallet.",
                     }
                 } else if page.is_empty() && !read_once {
-                    div { class: "empty",
-                        Icon { glyph: Glyph::History }
-                        p { role: "status", "Reading the wallets' transactions…" }
+                    Empty {
+                        glyph: Glyph::History,
+                        status: true,
+                        text: "Reading the wallets' transactions…",
                     }
                 } else if page.is_empty() {
-                    div { class: "empty",
-                        Icon { glyph: Glyph::History }
-                        p { "No transactions on {cluster.name()} yet." }
+                    Empty {
+                        glyph: Glyph::History,
+                        text: "Your wallets' transactions on {cluster.name()} show here.",
                     }
                 } else {
                     HistoryList {

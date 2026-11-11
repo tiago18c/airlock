@@ -1,6 +1,7 @@
 use crate::actions::programs::*;
 use crate::state::forms::IdlSection;
 use crate::state::session::Session;
+use crate::ui::Empty;
 use crate::ui::{
     short_checksum, use_phone_layout, AddressHeader, AddressRow, CopyButton, Glyph, Icon, PaneMenu,
 };
@@ -127,10 +128,7 @@ pub fn ProgramsPanel() -> Element {
                     p { class: "note", "{text}" }
                 }
                 if !any {
-                    div { class: "empty",
-                        Icon { glyph: Glyph::Code }
-                        p { "No programs yet." }
-                    }
+                    Empty { glyph: Glyph::Code, text: "The programs you add or import show here." }
                 }
                 div { class: "book-layout program-layout",
                     if any && !one_pane {

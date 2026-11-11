@@ -5,6 +5,7 @@
 use crate::actions::stake_screen::{load_key, refresh as refresh_stakes};
 use app_ui_kit::actions::unix_now;
 use app_ui_kit::state::forms::{SendAsset, SendOpen};
+use app_ui_kit::ui::Empty;
 use app_ui_kit::ui::{use_phone_layout, ActionSheet, CopyButton, PaneMenu, RefreshButton};
 use app_ui_kit::{AddressRow, Glyph, Icon, Session, Tab};
 use dioxus::prelude::*;
@@ -206,9 +207,9 @@ pub fn PortfolioPanel() -> Element {
                 }
 
                 if owners.is_empty() {
-                    div { class: "empty",
-                        Icon { glyph: Glyph::Pie }
-                        p { "No wallets or watched addresses yet. Add a wallet, or watch an address from the address book." }
+                    Empty {
+                        glyph: Glyph::Pie,
+                        text: "What your wallets and watched addresses hold shows here.",
                     }
                 } else {
                     Summary { portfolio: portfolio.clone(), priced, ago, colors: colors.clone() }

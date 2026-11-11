@@ -3,6 +3,7 @@
 
 use crate::actions::stake_screen::*;
 use app_ui_kit::actions::unix_now;
+use app_ui_kit::ui::Empty;
 use app_ui_kit::ui::{use_phone_layout, RefreshButton};
 use app_ui_kit::{
     format_sol, Address, AddressHeader, AddressPicker, Glyph, Icon, VaultUnlock, WalletPicker,
@@ -134,9 +135,9 @@ pub fn StakePanel() -> Element {
                     p { class: "error", "{err}" }
                 }
                 if wallets.is_empty() {
-                    div { class: "empty",
-                        Icon { glyph: Glyph::Growth }
-                        p { "Add a wallet first. Stake accounts are found through the wallets that control them." }
+                    Empty {
+                        glyph: Glyph::Growth,
+                        text: "The stake accounts your wallets control show here, once you add a wallet.",
                     }
                 }
 
@@ -148,9 +149,9 @@ pub fn StakePanel() -> Element {
                         }
                     }
                     if groups.is_empty() && !wallets.is_empty() {
-                        div { class: "empty",
-                            Icon { glyph: Glyph::Growth }
-                            p { "No stake accounts yet. New stake creates one and delegates it to a validator." }
+                        Empty {
+                            glyph: Glyph::Growth,
+                            text: "The stake accounts your wallets control show here. New stake creates one.",
                         }
                     }
                     for (wallet, address, stakes) in groups {

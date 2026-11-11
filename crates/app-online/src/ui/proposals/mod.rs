@@ -15,6 +15,7 @@
 use crate::actions::proposals::{load_page, open_request};
 use app_ui_kit::actions::unix_now;
 use app_ui_kit::ui::tx_view::ReadInstructions;
+use app_ui_kit::ui::{Empty, Glyph};
 use app_ui_kit::{Address, Session};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
@@ -193,7 +194,11 @@ pub fn ProposalsModal(
                         },
                         None => rsx! {},
                         Some(current) if current.entries.is_empty() => rsx! {
-                            p { class: "muted", "This multisig has no transactions yet." }
+                            Empty {
+                                glyph: Glyph::Safe,
+                                compact: true,
+                                text: "The transactions proposed to this multisig show here.",
+                            }
                         },
                         Some(current) => {
                             let older = current.older();
