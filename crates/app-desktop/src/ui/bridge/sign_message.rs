@@ -252,7 +252,7 @@ pub(in crate::ui) fn SignInRequest(current: BridgePrompt, on_close: EventHandler
                     }
                     AddressRow { pubkey: account.pubkey, no_copy: true }
                     if start.choice.current == Some(account.pubkey) {
-                        span { class: "chip selected", "current" }
+                        SelectedChip { text: "current", title: "The wallet the app is acting as" }
                     }
                 }
             }

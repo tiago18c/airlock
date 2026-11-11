@@ -1,6 +1,6 @@
 use crate::state::forms::AddWalletMode;
 use crate::state::session::Session;
-use crate::ui::ThemeToggle;
+use crate::ui::{SelectedChip, ThemeToggle};
 use app_ui_kit::state::slices::VaultState;
 use dioxus::prelude::*;
 use wallet_core::{Cluster, LOCAL_RPC_URL};
@@ -120,7 +120,7 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                         // A state is a chip, not a button that cannot be pressed.
                         div { class: "btn-row",
                             if applied {
-                                span { class: "chip ok", "in use" }
+                                SelectedChip { text: "in use", title: "The RPC the app reads the chain through" }
                             } else {
                                 button {
                                     onclick: move |_| match Cluster::custom(&custom_name(), &custom_url()) {

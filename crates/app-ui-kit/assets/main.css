@@ -683,9 +683,13 @@ input[type="range"] { width: 100%; accent-color: var(--brand); }
   white-space: nowrap;
 }
 .chip code { font-size: var(--text-sm); color: var(--text-3); word-break: normal; }
-/* A kind, and a selection such as the wallet the app acts as ("current"):
-   the brand's colours, which never carry a status. */
-.chip.kind, .chip.selected { background: var(--brand-soft); border-color: var(--brand-line); color: var(--brand-text); }
+/* A kind is filled in the brand's colours, which never carry a status. The
+   active one of several ("current", "in use") is outlined instead, brand line
+   and text on the surface, with a check before its word: a filled brand chip
+   is always a kind. */
+.chip.kind { background: var(--brand-soft); border-color: var(--brand-line); color: var(--brand-text); }
+.chip.selected { gap: 3px; padding-left: 6px; background: var(--surface); border-color: var(--brand); color: var(--brand-text); }
+.chip.selected .icon { width: 1em; height: 1em; stroke-width: 2.5; }
 .chip.ok { background: var(--ok-soft); border-color: var(--ok-line); color: var(--ok-text); }
 .chip.warn { background: var(--warn-soft); border-color: var(--warn-line); color: var(--warn-text); }
 .chip.danger { background: var(--danger-soft); border-color: var(--danger-line); color: var(--danger-text); }

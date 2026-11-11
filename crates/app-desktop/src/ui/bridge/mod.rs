@@ -34,6 +34,7 @@ use app_ui_kit::ui::clock::BlockhashCountdown;
 use app_ui_kit::ui::tx_view::{
     use_explained_for_site, FeeLine, InstructionList, ReadingNote, RiskNotice, SimulatedDeltas,
 };
+use app_ui_kit::ui::SelectedChip;
 use app_ui_kit::{Address, AddressRow, Session};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;

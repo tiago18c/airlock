@@ -79,6 +79,19 @@ pub fn OfflineMarker(#[props(default)] short: bool) -> Element {
     }
 }
 
+/// Marks the active one of several: the wallet the app acts as, the RPC in
+/// use. A check before the word and an outline in the brand's colour, so it
+/// is told from a kind chip, which is filled, by more than colour.
+#[component]
+pub fn SelectedChip(text: &'static str, #[props(default)] title: Option<&'static str>) -> Element {
+    rsx! {
+        span { class: "chip selected", title,
+            Icon { glyph: Glyph::Check }
+            "{text}"
+        }
+    }
+}
+
 /// A question mark that explains the heading it sits beside, on hover, focus
 /// or tap.
 #[component]
