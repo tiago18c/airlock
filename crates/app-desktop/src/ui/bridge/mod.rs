@@ -35,7 +35,7 @@ use app_ui_kit::ui::tx_view::{
     use_explained_for_site, FeeLine, InstructionList, ReadingNote, RiskNotice, SimulatedDeltas,
 };
 use app_ui_kit::ui::SelectedChip;
-use app_ui_kit::{Address, AddressRow, Session};
+use app_ui_kit::{Address, AddressRow, Session, Tab};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use std::sync::Arc;
@@ -296,8 +296,17 @@ pub fn RequestToast() -> Element {
     let session = use_context::<Session>();
     let prompt = use_memo(move || BridgePrompt::head_of(&session.bridge.read()));
     let RequestModal { mut open } = use_context::<RequestModal>();
+    // On Sign with this request's transaction, the pane names the site and
+    // its head rejects it: a card saying so would only cover the page.
+    let on_sign = move |id: &str| {
+        session.current_tab() == Tab::Sign
+            && matches!(
+                (session.forms.sign.source)(),
+                Some(TxSource::Browser { id: shown, .. }) if shown == id
+            )
+    };
     match prompt() {
-        Some(current) if !open() => rsx! {
+        Some(current) if !open() && !on_sign(&current.id) => rsx! {
             RequestCard {
                 current,
                 on_open: move |_| open.set(true),

@@ -61,6 +61,8 @@ pub enum Glyph {
     Import,
     /// Two arrows round a circle: read again.
     Refresh,
+    /// A globe: a site on the web, beside what it asked for.
+    Globe,
 }
 
 impl Glyph {
@@ -257,6 +259,11 @@ impl Glyph {
                 "M4 12a8 8 0 0 1 14.3-4.9",
                 "M18.5 3v4.5H14",
                 "M5.5 21v-4.5H10",
+            ],
+            Glyph::Globe => &[
+                "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z",
+                "M3 12h18",
+                "M12 3a14 14 0 0 1 3.6 9A14 14 0 0 1 12 21a14 14 0 0 1-3.6-9A14 14 0 0 1 12 3Z",
             ],
         }
     }

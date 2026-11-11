@@ -26,6 +26,7 @@ use crate::ui::tx_view::{
     use_explained, FeeLine, ReadInstructions, SimulatedDeltas, TxView, WithoutDeltas,
 };
 use crate::ui::{Address, AddressRow, CopyButton, Glyph, Icon};
+use app_core::bridge::BridgeAnswer;
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
 use dioxus::prelude::*;
@@ -206,12 +207,25 @@ pub fn SignPanel() -> Element {
     let wire = form.wire.read().clone();
     let loaded = wire.is_some();
     let error = (form.error)();
+    let source = (form.source)();
+    // A site's request on screen: the head's button tells the site no.
+    let request = match &source {
+        Some(TxSource::Browser { id, .. }) => Some(id.clone()),
+        _ => None,
+    };
 
     rsx! {
         section { class: "page",
             div { class: "stack",
                 div { class: "page-head",
-                    h2 { "Review and Sign" }
+                    div {
+                        h2 { "Review and Sign" }
+                        if loaded {
+                            if let Some(source) = source {
+                                SourceLine { source }
+                            }
+                        }
+                    }
                     if loaded {
                         div { class: "btn-row",
                             div { class: "segmented", role: "group", aria_label: "How much to show",
@@ -226,9 +240,20 @@ pub fn SignPanel() -> Element {
                                     "Inspect"
                                 }
                             }
-                            button { class: "ghost",
-                                onclick: move |_| form.clear(),
-                                "Clear"
+                            if let Some(id) = request {
+                                button { class: "ghost",
+                                    title: "Tell the site no, and close the transaction",
+                                    onclick: move |_| {
+                                        session.bridge_answer(&id, BridgeAnswer::Rejected);
+                                        form.clear();
+                                    },
+                                    "Reject"
+                                }
+                            } else {
+                                button { class: "ghost",
+                                    onclick: move |_| form.clear(),
+                                    "Clear"
+                                }
                             }
                         }
                     }
@@ -530,9 +555,6 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             TxView { tx: tx.as_ref().clone(), reading: reading.clone(), inspect,
                 on_inspect: move |_| view.set(SignView::Inspect),
                 fee_line: true,
-                if let Some(source) = source.clone() {
-                    SourceChip { source }
-                }
             }
 
             FeeLine { tx: tx.as_ref().clone() }
@@ -1139,16 +1161,22 @@ fn and_list(items: &[String]) -> String {
     }
 }
 
+/// Where the transaction on screen came from, under the page's title. A
+/// site's request names the site, after a globe.
 #[component]
-fn SourceChip(source: TxSource) -> Element {
+fn SourceLine(source: TxSource) -> Element {
     match source {
-        TxSource::Build => rsx! { span { class: "chip", "from Build" } },
-        TxSource::Wallets => rsx! { span { class: "chip", "from Wallets" } },
-        TxSource::Stake => rsx! { span { class: "chip", "from Stake" } },
-        TxSource::Pasted => rsx! { span { class: "chip", "pasted" } },
-        TxSource::Scanned => rsx! { span { class: "chip", "scanned" } },
+        TxSource::Build => rsx! { p { class: "page-source", "From Build" } },
+        TxSource::Wallets => rsx! { p { class: "page-source", "From Wallets" } },
+        TxSource::Stake => rsx! { p { class: "page-source", "From Stake" } },
+        TxSource::Pasted => rsx! { p { class: "page-source", "Pasted" } },
+        TxSource::Scanned => rsx! { p { class: "page-source", "Scanned" } },
         TxSource::Browser { origin, .. } => rsx! {
-            span { class: "chip kind", title: "{origin}", "requested by {origin}" }
+            p { class: "page-source site", title: "{origin}",
+                Icon { glyph: Glyph::Globe }
+                span { "Requested by " }
+                span { class: "origin", "{origin}" }
+            }
         },
     }
 }
