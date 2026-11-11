@@ -12,7 +12,7 @@ pub const UNLOCK_LINE: &str = "Unlock the vault to sign with its keys and change
 /// panes say it word for word. A macro, as `concat!` takes only literals.
 macro_rules! locked_means {
     () => {
-        "wallets and balances are shown; signing, and adding, removing or changing a wallet, ask for the password."
+        "wallets and balances are shown; signing needs the password, and so does adding, removing or changing a wallet."
     };
 }
 
@@ -339,7 +339,7 @@ mod tests {
         assert!(SKIP_LINE.ends_with(clause));
         assert_eq!(
             SKIP_LINE,
-            "Skip opens the app locked: its wallets and balances are shown; signing, and adding, removing or changing a wallet, ask for the password."
+            "Skip opens the app locked: its wallets and balances are shown; signing needs the password, and so does adding, removing or changing a wallet."
         );
     }
 }
