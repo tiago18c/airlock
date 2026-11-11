@@ -43,7 +43,7 @@ pub fn OfflineForm(on_done: EventHandler<()>) -> Element {
         label { "Label"
             input {
                 r#type: "text",
-                placeholder: "Cold wallet",
+                placeholder: "Offline wallet",
                 value: "{label}",
                 oninput: move |evt| label.set(evt.value()),
             }

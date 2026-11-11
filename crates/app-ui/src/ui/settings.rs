@@ -98,7 +98,15 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                         }
                     }
                     if custom_shown {
-                        label { "RPC URL"
+                        label {
+                            // "in use" on the line of what it describes, as
+                            // "current" sits beside a wallet's name.
+                            span { class: "label-line",
+                                "RPC URL"
+                                if applied {
+                                    SelectedChip { text: "in use", title: "The RPC the app reads the chain through" }
+                                }
+                            }
                             input {
                                 r#type: "text",
                                 placeholder: "{LOCAL_RPC_URL}",
@@ -117,11 +125,11 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                         if let Some(problem) = custom_error() {
                             p { class: "error", role: "alert", "{problem}" }
                         }
-                        // A state is a chip, not a button that cannot be pressed.
-                        div { class: "btn-row",
-                            if applied {
-                                SelectedChip { text: "in use", title: "The RPC the app reads the chain through" }
-                            } else {
+                        // A state is a chip, not a button that cannot be
+                        // pressed: once in use, the chip beside RPC URL
+                        // says so and this button goes.
+                        if !applied {
+                            div { class: "btn-row",
                                 button {
                                     onclick: move |_| match Cluster::custom(&custom_name(), &custom_url()) {
                                         Ok(cluster) => {

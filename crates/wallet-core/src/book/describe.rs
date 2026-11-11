@@ -48,7 +48,7 @@ impl Category {
     pub fn name(self) -> &'static str {
         match self {
             Self::Wallet(WalletSort::Hot) => "Hot wallet",
-            Self::Wallet(WalletSort::Cold) => "Cold wallet",
+            Self::Wallet(WalletSort::Cold) => "Offline wallet",
             Self::Wallet(WalletSort::Hardware) => "Hardware wallet",
             Self::Wallet(WalletSort::SmartContract) => "Smart contract wallet",
             Self::Nonce => "Nonce account",

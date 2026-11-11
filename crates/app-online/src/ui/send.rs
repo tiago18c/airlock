@@ -263,7 +263,7 @@ fn SendModal(open: SendOpen) -> Element {
                                 },
                             }
                             if let Some(holding) = chosen.clone().filter(|h| h.largest > 0) {
-                                button { class: "ghost sm",
+                                button { class: "sm",
                                     r#type: "button",
                                     onclick: move |_| amount.set(format_token_amount(holding.largest, holding.decimals)),
                                     "Max"

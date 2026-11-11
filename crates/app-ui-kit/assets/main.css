@@ -559,6 +559,9 @@ label {
   color: var(--text-2);
 }
 
+/* A field's label with a chip on its line, such as "in use" beside RPC URL. */
+label > .label-line { display: flex; align-items: center; gap: var(--space-2); }
+
 label.check {
   display: flex;
   align-items: center;
