@@ -379,8 +379,9 @@ pub(in crate::ui) fn WalletSettingsDialog(
                         }
                         button { class: "ghost",
                             r#type: "button",
+                            title: if dirty { "Close without saving these choices" } else { "" },
                             onclick: move |_| on_close.call(()),
-                            if dirty { "Discard" } else { "Close" }
+                            "Cancel"
                         }
                         button { class: "primary",
                             r#type: "button",

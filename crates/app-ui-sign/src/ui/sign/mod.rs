@@ -696,7 +696,7 @@ fn SignModal(
                 div { class: "stack",
                     h3 { "{title}" }
                     {children}
-                    div { class: "btn-row modal-foot",
+                    div { class: "btn-row",
                         button { class: "ghost",
                             r#type: "button",
                             onclick: move |_| open.set(false),
