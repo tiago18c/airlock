@@ -2567,8 +2567,11 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 }
 .reader-block-what { display: grid; gap: 2px; min-width: 0; }
 .reader-block-what > p { margin: 0; }
-.reader-block-title { font-weight: var(--weight-semibold); overflow-wrap: anywhere; line-height: 24px; }
+.reader-block-title { font-weight: var(--weight-semibold); overflow-wrap: break-word; line-height: 24px; }
 .reader-block-title code { font-weight: var(--weight-medium); }
+/* A name breaks only when it is longer than the line, not wherever a
+   line ends, as an address may. */
+.reader-block-title .mono, .reader-field-name.mono { overflow-wrap: break-word; word-break: normal; }
 .reader-program { gap: var(--space-1); }
 .reader-program code { color: var(--text-2); font-size: var(--text-sm); overflow-wrap: anywhere; }
 .reader-when { color: var(--text-2); font-size: var(--text-md); }
