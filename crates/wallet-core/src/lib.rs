@@ -20,6 +20,7 @@ pub mod portfolio;
 pub mod program_code;
 pub mod review;
 pub mod spl;
+pub mod template;
 pub mod token_plan;
 pub mod transport;
 pub mod tx;
@@ -34,7 +35,8 @@ mod layers;
 // Every group is public, and the root names everything in them, so
 // `wallet_core::X` and `wallet_core::<group>::X` are the same item. Modules
 // whose functions need their module's name to make sense, such as `stake`
-// and `squads`, are reached as `wallet_core::stake::X`. The lists are
+// and `squads`, are reached as `wallet_core::stake::X`, and so are the
+// parts of a template (`wallet_core::template::expand`). The lists are
 // written out, not globbed, so the public surface reads here, and an item
 // can move between modules without its root name changing.
 pub use book::{
@@ -86,6 +88,7 @@ pub use review::{
     SigningStatus, SimulationStage, StoredTarget, TxLifetime, V4Vote, FRESH_BLOCKHASH_BLOCKS,
     SECONDS_PER_BLOCK,
 };
+pub use template::{builtin_template, BuiltinTemplate, Template, TemplateError, BUILTIN_TEMPLATES};
 pub use transport::{protocol, signature_objects, SignatureObject};
 pub use tx::site_message;
 pub use tx::{

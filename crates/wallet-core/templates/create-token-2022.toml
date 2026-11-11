@@ -1,0 +1,181 @@
+format = 1
+name = "Create a Token-2022 token"
+summary = "A new mint on the Token-2022 program, with the extensions you choose."
+
+[programs]
+associated_token = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+system = "11111111111111111111111111111111"
+token = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+
+[[option]]
+name = "metadata"
+label = "Name and symbol"
+hint = "Stores a name, a symbol and a link to more details in the mint itself."
+
+[[option]]
+name = "transfer_fee"
+label = "Transfer fee"
+hint = "Keeps a share of every transfer in the receiving account, for the mint authority to collect."
+
+[[option]]
+name = "closable"
+label = "Close authority"
+hint = "Lets an authority close the mint once no tokens are left."
+
+[[option]]
+name = "permanent_delegate"
+label = "Permanent delegate"
+hint = "Lets an authority move or burn tokens from any account of this mint."
+
+[[option]]
+name = "non_transferable"
+label = "Non-transferable"
+hint = "Tokens stay in the account they are minted to."
+
+[[option]]
+name = "first_supply"
+label = "Mint a first supply"
+hint = "Mints tokens right away. The mint authority signs this transaction too."
+
+[[input]]
+name = "decimals"
+label = "Decimals"
+hint = "How many decimal places an amount of this token has."
+default = "9"
+
+[[input]]
+name = "authority"
+label = "Mint authority"
+hint = "Can mint more of this token, and changes the extensions you turn on."
+default = "$wallet"
+
+[[input]]
+name = "freeze_authority"
+label = "Freeze authority"
+hint = "Can freeze accounts that hold this token. Leave blank for none."
+optional = true
+
+[[input]]
+name = "token_name"
+label = "Name"
+option = "metadata"
+
+[[input]]
+name = "symbol"
+label = "Symbol"
+option = "metadata"
+
+[[input]]
+name = "uri"
+label = "Details link"
+hint = "A link to a JSON file with the token's image and description."
+option = "metadata"
+
+[[input]]
+name = "fee"
+label = "Fee"
+hint = "The share of each transfer kept as a fee."
+option = "transfer_fee"
+
+[[input]]
+name = "max_fee"
+label = "Maximum fee"
+hint = "The most one transfer can be charged, in the token's base units."
+option = "transfer_fee"
+
+[[input]]
+name = "close_authority"
+label = "Close authority"
+default = "$wallet"
+option = "closable"
+
+[[input]]
+name = "delegate"
+label = "Permanent delegate"
+default = "$wallet"
+option = "permanent_delegate"
+
+[[input]]
+name = "to"
+label = "To"
+hint = "Receives the first supply in its token account, which is created if missing."
+default = "$wallet"
+option = "first_supply"
+
+[[input]]
+name = "amount"
+label = "Amount"
+option = "first_supply"
+
+[values]
+account = "associated-token-account $to $mint $token"
+funded = "token-2022-mint-funded-space $mint"
+lamports = "rent-for $funded"
+mint = "new-keypair"
+space = "token-2022-mint-space $mint"
+
+[[block]]
+program = "$system"
+instruction = "createAccount"
+accounts = { newAccount = "$mint", payer = "$fee-payer" }
+arguments = { lamports = "$lamports", programAddress = "$token", space = "$space" }
+
+[[block]]
+when = "metadata"
+program = "$token"
+instruction = "initializeMetadataPointer"
+accounts = { mint = "$mint" }
+arguments = { authority = "$authority", metadataAddress = "$mint" }
+
+[[block]]
+when = "transfer_fee"
+program = "$token"
+instruction = "initializeTransferFeeConfig"
+accounts = { mint = "$mint" }
+arguments = { maximumFee = "$max_fee", transferFeeBasisPoints = "$fee", transferFeeConfigAuthority = "$authority", withdrawWithheldAuthority = "$authority" }
+
+[[block]]
+when = "closable"
+program = "$token"
+instruction = "initializeMintCloseAuthority"
+accounts = { mint = "$mint" }
+arguments = { closeAuthority = "$close_authority" }
+
+[[block]]
+when = "permanent_delegate"
+program = "$token"
+instruction = "initializePermanentDelegate"
+accounts = { mint = "$mint" }
+arguments = { delegate = "$delegate" }
+
+[[block]]
+when = "non_transferable"
+program = "$token"
+instruction = "initializeNonTransferableMint"
+accounts = { mint = "$mint" }
+
+[[block]]
+program = "$token"
+instruction = "initializeMint2"
+accounts = { mint = "$mint" }
+arguments = { decimals = "$decimals", freezeAuthority = "$freeze_authority", mintAuthority = "$authority" }
+
+[[block]]
+when = "metadata"
+program = "$token"
+instruction = "initializeTokenMetadata"
+accounts = { metadata = "$mint", mint = "$mint", mintAuthority = "$authority", updateAuthority = "$authority" }
+arguments = { name = "$token_name", symbol = "$symbol", uri = "$uri" }
+
+[[block]]
+when = "first_supply"
+program = "$associated_token"
+instruction = "createAssociatedTokenIdempotent"
+accounts = { mint = "$mint", owner = "$to", payer = "$fee-payer", tokenProgram = "$token" }
+
+[[block]]
+when = "first_supply"
+program = "$token"
+instruction = "mintToChecked"
+accounts = { mint = "$mint", mintAuthority = "$authority", token = "$account" }
+arguments = { amount = "$amount", decimals = "$decimals" }

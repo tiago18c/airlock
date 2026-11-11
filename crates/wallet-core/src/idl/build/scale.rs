@@ -156,7 +156,7 @@ fn number_u8(number: &Number) -> Option<u8> {
 /// argument. `None` for a field in base units. A scale from another
 /// argument asks for that argument first when it is blank or not a number
 /// of decimals.
-pub(super) fn field_decimals(
+pub(crate) fn field_decimals(
     field: &IdlArgField,
     text: &HashMap<String, String>,
 ) -> Result<Option<u8>, String> {
@@ -182,7 +182,7 @@ pub(super) fn field_decimals(
 }
 
 /// The value of `field`, read from its text in `text`.
-pub(super) fn parse_field(
+pub(crate) fn parse_field(
     field: &IdlArgField,
     text: &HashMap<String, String>,
 ) -> Result<Option<Value>, String> {

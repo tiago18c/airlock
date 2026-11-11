@@ -1,0 +1,73 @@
+format = 1
+name = "Create a token"
+summary = "A new mint on the Token program."
+
+[programs]
+associated_token = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+system = "11111111111111111111111111111111"
+token = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+
+[[option]]
+name = "first_supply"
+label = "Mint a first supply"
+hint = "Mints tokens right away. The mint authority signs this transaction too."
+
+[[input]]
+name = "decimals"
+label = "Decimals"
+hint = "How many decimal places an amount of this token has."
+default = "9"
+
+[[input]]
+name = "authority"
+label = "Mint authority"
+hint = "Can mint more of this token."
+default = "$wallet"
+
+[[input]]
+name = "freeze_authority"
+label = "Freeze authority"
+hint = "Can freeze accounts that hold this token. Leave blank for none."
+optional = true
+
+[[input]]
+name = "to"
+label = "To"
+hint = "Receives the first supply in its token account, which is created if missing."
+default = "$wallet"
+option = "first_supply"
+
+[[input]]
+name = "amount"
+label = "Amount"
+option = "first_supply"
+
+[values]
+account = "associated-token-account $to $mint $token"
+lamports = "rent-for 82"
+mint = "new-keypair"
+
+[[block]]
+program = "$system"
+instruction = "createAccount"
+accounts = { newAccount = "$mint", payer = "$fee-payer" }
+arguments = { lamports = "$lamports", programAddress = "$token", space = "82" }
+
+[[block]]
+program = "$token"
+instruction = "initializeMint2"
+accounts = { mint = "$mint" }
+arguments = { decimals = "$decimals", freezeAuthority = "$freeze_authority", mintAuthority = "$authority" }
+
+[[block]]
+when = "first_supply"
+program = "$associated_token"
+instruction = "createAssociatedTokenIdempotent"
+accounts = { mint = "$mint", owner = "$to", payer = "$fee-payer" }
+
+[[block]]
+when = "first_supply"
+program = "$token"
+instruction = "mintToChecked"
+accounts = { mint = "$mint", mintAuthority = "$authority", token = "$account" }
+arguments = { amount = "$amount", decimals = "$decimals" }

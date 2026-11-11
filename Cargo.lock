@@ -12168,6 +12168,7 @@ dependencies = [
  "solana-winternitz",
  "tempfile",
  "thiserror 2.0.21",
+ "toml",
  "vector-core",
  "wallet-vault",
  "wincode",

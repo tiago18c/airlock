@@ -34,8 +34,8 @@ mod tests;
 use arguments::*;
 pub use form::*;
 use pda::*;
-pub(crate) use scale::scaled_text;
 use scale::*;
+pub(crate) use scale::{field_decimals, parse_field, scaled_text};
 pub use types::*;
 
 /// Builds the instruction and parses it back with the same client.
