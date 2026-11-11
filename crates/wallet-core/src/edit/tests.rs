@@ -85,7 +85,8 @@ fn a_transfer_reads_back_onto_its_form_and_the_budget_onto_build() {
     let draft = idl(&opened.instructions[0]);
     assert_eq!(draft.program_id, Some(SYSTEM_PROGRAM_ID));
     assert_eq!(draft.instruction, "transferSol");
-    assert_eq!(draft.argument("amount"), "5000");
+    // Typed in SOL, as the IDL shows the amount.
+    assert_eq!(draft.argument("amount"), "0.000005");
     assert_eq!(draft.account("source"), Some(payer));
     assert_eq!(draft.account("destination"), Some(dest));
     assert_eq!(build(&store, &opened.instructions[0]), payment);
@@ -203,7 +204,7 @@ fn a_payment_inside_a_squads_store_inside_a_submit_is_edited_in_place() {
             vault_index: 0,
         }
     );
-    assert_eq!(idl(&payments[0]).argument("amount"), "1000000000");
+    assert_eq!(idl(&payments[0]).argument("amount"), "1");
     // Unchanged, every level gives back its bytes.
     assert_eq!(build(&store, &opened.instructions[0]), submit);
 
@@ -220,7 +221,7 @@ fn a_payment_inside_a_squads_store_inside_a_submit_is_edited_in_place() {
     let OpenedIx::Idl(draft) = &mut payments[0] else {
         unreachable!()
     };
-    draft.set_argument("amount", "500000000".into());
+    draft.set_argument("amount", "0.5".into());
     let edited = build(&store, &opened.instructions[0]);
     assert_ne!(edited, submit);
 
@@ -278,7 +279,7 @@ fn a_vector_passthrough_is_written_again_around_its_edit() {
     assert!(matches!(carrier.kind, CarrierKind::Passthrough { .. }));
     // A transfer from the account runs as the program's `withdraw`.
     assert_eq!(idl(&inner[0]).instruction, "withdraw");
-    assert_eq!(idl(&inner[0]).argument("lamports"), "1000");
+    assert_eq!(idl(&inner[0]).argument("lamports"), "0.000001");
     assert_eq!(build(&store, &opened.instructions[1]), original);
 
     let OpenedIx::Carried { inner, .. } = &mut opened.instructions[1] else {

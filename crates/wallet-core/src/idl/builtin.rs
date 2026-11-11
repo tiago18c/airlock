@@ -490,7 +490,7 @@ mod tests {
         let (client, mut draft) = draft(SYSTEM_PROGRAM_ID, "transferSol");
         draft.set_account("source", Some(pk(1)));
         draft.set_account("destination", Some(pk(2)));
-        draft.set_argument("amount", "1500000000".into());
+        draft.set_argument("amount", "1.5".into());
         let built = draft.build(&client).unwrap();
         assert_eq!(built, transfer(pk(1), pk(2), 1_500_000_000));
     }
@@ -503,7 +503,7 @@ mod tests {
             draft.set_account("mint", Some(pk(2)));
             draft.set_account("destination", Some(pk(3)));
             draft.set_account("authority", Some(pk(4)));
-            draft.set_argument("amount", "250".into());
+            draft.set_argument("amount", "0.00025".into());
             draft.set_argument("decimals", "6".into());
             let built = draft.build(&client).unwrap();
             assert_eq!(

@@ -1,6 +1,8 @@
 //! An instruction read back onto its IDL's form.
 
-use crate::idl::build::{idl_instruction_form, IdlAccountSource, IdlArgKind};
+use crate::idl::build::{
+    idl_instruction_form, scaled_text, IdlAccountSource, IdlArgKind, IdlArgScale,
+};
 use crate::idl::draft::IdlDraft;
 use codama_dynamic_client::{NumberValue, ProgramClient, Value};
 use codama_nodes::Node;
@@ -27,12 +29,25 @@ pub fn idl_draft_for(
         draft.set_account(&account.name, Some(account.meta.pubkey));
     }
     let form = idl_instruction_form(client, &name, &draft.input()).ok()?;
+    let Value::Struct(fields) = &parsed.data else {
+        return None;
+    };
     for argument in &form.arguments {
-        let value = match &parsed.data {
-            Value::Struct(fields) => fields.get(&argument.name)?,
-            _ => return None,
+        let value = fields.get(&argument.name)?;
+        // A scaled field holds the amount in its unit, as it is typed.
+        let decimals = match &argument.scale {
+            IdlArgScale::None => None,
+            IdlArgScale::Fixed { decimals, .. } => Some(*decimals),
+            IdlArgScale::FromArgument { argument, .. } => match fields.get(argument)? {
+                Value::Number(NumberValue::Unsigned(n)) => Some(u8::try_from(*n).ok()?),
+                Value::Number(NumberValue::Signed(n)) => Some(u8::try_from(*n).ok()?),
+                _ => return None,
+            },
         };
-        draft.set_argument(&argument.name, argument_text(&argument.kind, value)?);
+        draft.set_argument(
+            &argument.name,
+            argument_text(&argument.kind, value, decimals)?,
+        );
     }
 
     // A derived account that is what the IDL derives stays derived, so it
@@ -70,13 +85,17 @@ fn builds_the_same(client: &ProgramClient, draft: &IdlDraft, instruction: &Instr
 }
 
 /// The text an argument field holds for `value`, as `parse_argument` reads it.
-fn argument_text(kind: &IdlArgKind, value: &Value) -> Option<String> {
+/// `decimals` is the field's scale: the integer is written in its unit.
+fn argument_text(kind: &IdlArgKind, value: &Value, decimals: Option<u8>) -> Option<String> {
     match (kind, value) {
         (IdlArgKind::Option(_), Value::Option(None)) => Some(String::new()),
         (IdlArgKind::Option(inner), Value::Option(Some(value))) => {
-            let text = argument_text(inner, value)?;
+            let text = argument_text(inner, value, decimals)?;
             // Blank reads as none.
             (!text.trim().is_empty()).then_some(text)
+        }
+        (IdlArgKind::Integer { float: false, .. }, Value::Number(number)) if decimals.is_some() => {
+            scaled_text(number, decimals?)
         }
         (IdlArgKind::Integer { .. }, Value::Number(number)) => Some(match number {
             NumberValue::Unsigned(n) => n.to_string(),

@@ -6,13 +6,14 @@
 //! instruction back. A different name refuses the instruction.
 
 use codama_dynamic_client::{
-    encode_constant_seed, encode_seed_literal, get_type_codec, DynamicError, ProgramClient, Value,
+    encode_constant_seed, encode_seed_literal, get_type_codec, DynamicError, NumberValue,
+    ProgramClient, Value,
 };
 use codama_nodes::{
     ConstantPdaSeedValue, DefaultValueStrategy, HasKind, InstructionAccountNode,
-    InstructionArgumentNode, InstructionInputValueNode, NestedTypeNodeTrait, Node, Number,
-    NumberFormat, PdaSeedNode, PdaSeedValueValue, PdaValueNode, PdaValuePda, PdaValueProgramId,
-    RootNode, TypeNode,
+    InstructionArgumentNode, InstructionInputValueNode, InstructionNode, NestedTypeNodeTrait, Node,
+    Number, NumberFormat, PdaSeedNode, PdaSeedValueValue, PdaValueNode, PdaValuePda,
+    PdaValueProgramId, RootNode, TypeNode,
 };
 use solana_instruction::Instruction;
 use solana_pubkey::Pubkey;
@@ -22,14 +23,19 @@ use std::str::FromStr;
 mod arguments;
 mod form;
 mod pda;
+mod scale;
 mod types;
 
+#[cfg(test)]
+mod scale_tests;
 #[cfg(test)]
 mod tests;
 
 use arguments::*;
 pub use form::*;
 use pda::*;
+pub(crate) use scale::scaled_text;
+use scale::*;
 pub use types::*;
 
 /// Builds the instruction and parses it back with the same client.
@@ -88,10 +94,7 @@ fn prepare(form: &IdlForm, input: &IdlBuildInput) -> Result<Ready, IdlBuildFailu
     let text = argument_text(input);
     let mut arguments = Vec::new();
     for field in &form.arguments {
-        let raw = text.get(&field.name).map(String::as_str).unwrap_or("");
-        if let Some(value) = parse_argument(&field.kind, raw, field.blank_uses_default)
-            .map_err(IdlBuildFailure::Message)?
-        {
+        if let Some(value) = parse_field(field, &text).map_err(IdlBuildFailure::Message)? {
             arguments.push((field.name.clone(), value))
         }
     }

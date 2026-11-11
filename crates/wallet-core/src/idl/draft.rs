@@ -1,7 +1,8 @@
 //! One instruction being filled in from a stored IDL.
 
 use crate::idl::build::{
-    build_idl_instruction, idl_instruction_form, IdlArgKind, IdlBuildFailure, IdlBuildInput,
+    build_idl_instruction, idl_instruction_form, IdlAccountField, IdlAccountSource, IdlArgField,
+    IdlArgKind, IdlBuildFailure, IdlBuildInput,
 };
 use codama_dynamic_client::ProgramClient;
 use solana_instruction::Instruction;
@@ -88,6 +89,20 @@ impl IdlDraft {
 
     pub fn is_manual(&self, name: &str) -> bool {
         self.manual.iter().any(|entry| entry == name)
+    }
+
+    /// An account the IDL fills in on its own: derived, its address known,
+    /// and not one the user chose to fill instead. Build folds these away.
+    pub fn filled_by_idl(&self, account: &IdlAccountField) -> bool {
+        account.source == IdlAccountSource::Derived
+            && account.address.is_some()
+            && !self.is_manual(&account.name)
+    }
+
+    /// An argument left blank that takes the IDL's default. Build folds
+    /// these away.
+    pub fn left_to_default(&self, argument: &IdlArgField) -> bool {
+        argument.blank_uses_default && self.argument(&argument.name).trim().is_empty()
     }
 
     /// Ask for a derived account instead of taking its default, or go back to

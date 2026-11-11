@@ -13,7 +13,7 @@ mod system_idl;
 
 pub use build::{
     build_idl_instruction, idl_instruction_form, IdlAccountField, IdlAccountSource, IdlArgField,
-    IdlArgKind, IdlBuildFailure, IdlBuildInput, IdlForm,
+    IdlArgKind, IdlArgScale, IdlBuildFailure, IdlBuildInput, IdlForm,
 };
 pub use builtin::{
     builtin_idl, pinned_program, BuiltinIdl, EmbeddedIdl, IdlSource, PinnedProgram, BUILTIN_IDLS,

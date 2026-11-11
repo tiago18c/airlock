@@ -171,7 +171,7 @@ pub(super) fn encode_seed(
             if matches!(kind, IdlArgKind::Raw { .. }) {
                 return SeedByte::Failed(format!("seed `{name}` cannot be derived offline"));
             }
-            match parse_argument(&kind, text, false) {
+            match parse_argument(&kind, text, false, None) {
                 Ok(Some(parsed)) => {
                     ready(get_type_codec(&variable.r#type).and_then(|c| c.encode_to_vec(&parsed)))
                 }
