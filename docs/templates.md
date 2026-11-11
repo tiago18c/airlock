@@ -92,7 +92,7 @@ arguments = { decimals = "$decimals", mintAuthority = "$authority", freezeAuthor
 | Key | Meaning |
 | --- | --- |
 | `format` | `1`. Any other number refuses the file |
-| `name`, `summary` | Shown in the picker and at the head of the form. Never on Review and Sign |
+| `name`, `summary` | Shown in the list, the reader and at the head of the form. Never on Review and Sign |
 | `[programs]` | Alias to address. A block's `program` is an alias, or a value whose function returns a program |
 | `[[option]]` | A checkbox: `name`, `label`, optional `hint`, optional `default = true`. No nesting, no else |
 | `[[input]]` | A question: `name`, `label`, optional `hint`, `optional`, `default` (a literal, a built-in name or a program alias), `option` (asked only while that option is on) |
@@ -100,6 +100,8 @@ arguments = { decimals = "$decimals", mintAuthority = "$authority", freezeAuthor
 | `[[block]]` | One instruction, in the order written: `program`, `instruction`, `accounts`, `arguments`, optional `when` (an option name: the block exists only while it is on) |
 
 An input or value that nothing uses refuses the file, and so does one larger than 64 KiB or with more than 32 blocks, inputs or values, 16 options or 16 program aliases.
+
+A file is shown and kept as it is written, so nothing in it may read as something other than what it is. A control character other than tab, line feed and carriage return, or a Unicode bidirectional control (U+202A to U+202E, U+2066 to U+2069, U+200E, U+200F, U+061C), anywhere in the text, comments included, refuses the file and names its line ("line 3: holds U+202E, a bidirectional control…"). One written as an escape inside a string (a backslash, `u` and the code) is refused too, naming its key.
 
 Order is the order of the `[[block]]` entries, so an option's block sits where it must run (most extensions before `initializeMint2`, metadata after). TOML does not keep the order between two different arrays, which is why an option does not hold its own blocks.
 
@@ -145,11 +147,12 @@ Some values only the node knows: the rent of an account of a given size, a mint'
 | Reading chain facts from a node | `wallet_flows::template_facts` (`crates/wallet-flows/src/template.rs`) |
 | The open template on Build's form | `OpenTemplate`, `TemplateSource`, `FactRead` in `app-ui-kit` (`state/forms/build.rs`) |
 | Opening, answering, reading facts, Show as blocks, compiling | `app-ui-kit` (`actions/template.rs`) |
-| The picker and the form | `app-ui-build` (`ui/build/template.rs`); the widgets are Build's own (`ui/build/fields.rs`) |
+| Build's short list and the form | `app-ui-build` (`ui/build/template.rs`); the widgets are Build's own (`ui/build/fields.rs`) |
+| The Templates dialog: the list, the filter and the reader | `app-ui-kit` (`actions/template_browser.rs`: `TemplateView`, `ReaderQuestions`, `ReaderBlock`, `template_matches`); `app-ui-build` (`ui/build/browser.rs`) |
 | Making a template from Build's blocks, the slug a file is kept by | `wallet_core::template` (`save.rs`): `SavePlan`, `Choice`, `template_slug` |
 | Keeping the user's templates on each platform | `app_core::storage` (`storage/templates.rs`) |
 | Saving, reading, removing, importing, exporting | `app-ui-kit` (`actions/kept_templates.rs`); the file dialogs in `platform/template_files.rs` |
-| The Save dialog, the import preview, the remove confirmation | `app-ui-build` (`ui/build/kept.rs`) |
+| The Save dialog, the import preview, the remove confirmation | `app-ui-build` (`ui/build/kept.rs`); the preview reads with the dialog's reader |
 
 The functions a caller uses:
 
@@ -160,14 +163,31 @@ The functions a caller uses:
 - `Env` holds `$wallet` (the address the selected wallet acts as: a multisig's vault, not its member), `$fee-payer` (Build's fee payer field) and the address of the keypair made for each `new-keypair` value. The core never sees a secret.
 - `BUILTIN_TEMPLATES` and `builtin_template(id)` give the shipped ones.
 
+## The Templates dialog
+
+**Templates**, in Build's head, opens a dialog that is to templates what Programs is to IDLs: the list on the left, the template picked on the right. It is large, and each side scrolls on its own, so its head and its last row of buttons stay in place. On a wide window it opens on the first template that can be used on the network in use. On a phone it is one side at a time, as Programs is: it opens on the list, a row opens the template in its place, and **‹ Templates** goes back.
+
+**The list** has every template: the shipped ones, then yours, by the file each is kept as. Each row shows the name, the summary cut to two lines and a chip, "built-in" or "yours". One that fails `check` on the network in use is greyed and says "Cannot be used on this network". A file of yours that is not a template is listed too, by its file name, and says "Not a template". Rows carry no buttons. The filter over the list reads names and summaries, whatever the case. Under the list stay the notes of what was not read: more than 64 files, or a store that could not be listed.
+
+**The reader** shows the template picked:
+
+- its name, summary and chip; for one of yours, the file it is kept as ("Kept on this device as `pay-a-friend.toml`."); for one that does not fit this network, "Cannot be used on this network." with every problem `check` gives;
+- **Questions · n**: every question in the order the form asks them, those asked always first. Each has its label, "(optional)", its hint, what it holds until answered ("Until answered: the wallet in use") and, when the template fits this network, the widget its fields give it in a few words ("an address", "a percentage", "a choice of uninitialized, initialized or frozen"). Then the options, each with its hint, "on at first" when it is, and the questions asked only with it. The count is the number of questions;
+- **Blocks · n**: every block in file order, numbered as the file numbers them: the program as this app names it, its whole address with Copy (a block on `token-program-of` reads "The token program of the mint “Mint”"), the instruction, and "Only with “Transfer fee”" for one under an option. Then every field the block sets, accounts apart from arguments as Build's own block editor shows them, in the IDL's order, each with where its value comes from: **asked** (the question's label), **fixed** (the literal, an address drawn as the app draws addresses, a program alias with its `$name`, an amount with its unit) or **worked out** (in words, "a new keypair, made when it is opened", "the fee payer", "rent for $funded bytes, from the node", with its `$name`). Nothing the template writes is left out of this tab: it is rule 3 for a template not opened yet;
+- **Text**: the file as it is kept, with Copy. For a shipped template that is its file in `crates/wallet-core/templates/`; for one of yours, the bytes kept, comments and all.
+
+The dialog's last row has **Close**; for the template picked, **Remove** (one of yours, asking first), **Export** (not on a phone) and **Use this template**, which closes the dialog and opens the template's form, asking first when Build holds blocks. A template that does not fit this network cannot be used, and the row says so. A file of yours that is not a template shows why, its text when it could be read, and **Remove**. **Import a template** sits in the dialog's head, beside the title. What the last export, import or removal did is said above the last row.
+
+The reader is drawn from a template and its text (`TemplateView`), not from where it is kept, so a template that is not kept yet reads the same way: the import preview uses it, and so will a template typed as text.
+
 ## The form
 
-"Templates", in Build's head, lists every template: its name, its summary and a chip, "built-in" for the shipped ones and then "yours" for those saved or imported here. One that fails `check` on the network in use is listed greyed, with the first problem in words. With no block on Build and no template open, the same list sits under the instruction rail. Opening a template while Build holds blocks asks before discarding them. Each row has **Export**; each of yours also has **Remove**, which asks first.
+With no block on Build and no template open, the templates that can be opened are listed under the instruction rail, under "Or start from a template", with **Browse templates** beside it to open the dialog. A row there opens its template at once; a greyed one says why it cannot be used. Opening a template while Build holds blocks asks before discarding them.
 
 An open template takes the place of the rail and the block editor. Fee payer stays above it and Advanced options under it. The form shows:
 
 - the template's name and summary, and **Close template**, which leaves Build empty;
-- each input not under an option, with its label, hint and the widget Build uses for its kind: the address picker, a select for an enum, a checkbox for a boolean, a text field for the rest, with an amount's unit in its label and its decimal places in the placeholder. An input with a default shows it (for `$wallet`, the wallet's address) until it is changed, and can be cleared;
+- each input not under an option, with its label, hint and the widget Build uses for its kind: the address picker, a select for an enum, a checkbox for a boolean, a text field for the rest, with an amount's unit in its label and its decimal places in the placeholder. An input with a default shows it (for `$wallet`, the wallet's address) until it is changed, and can be cleared. A required choice with no default starts on "Choose one", so what is shown is what is held; an optional one starts on "None";
 - each option as a checkbox with its hint; turning it on shows its inputs under it;
 - the chain facts, as described below;
 - **Fixed by this template · n** and **Worked out · n**, closed: for each block in the transaction, numbered as Review and Sign numbers it, every field the template sets to a literal and every field it works out, with its value (an address drawn as the app draws addresses, a value not known yet saying so).
@@ -205,7 +225,7 @@ The template's name may not be a shipped one's name or id. One of yours under th
 
 ### Where they are kept
 
-A template is kept as the text of its file, `Template::to_toml`, one file each, through `app_core::storage` as IDL bodies are:
+A template is kept as the text of its file, one file each, through `app_core::storage` as IDL bodies are. An imported file is kept as it was written, byte for byte, comments and all; one saved from Build's blocks is kept as `Template::to_toml` writes it. `TemplateSource::Yours` holds that text beside the template read from it, so the Text tab, Copy and Export give back what is kept, and what was shown is what is kept: the template is the text read.
 
 | App | Where |
 | --- | --- |
@@ -215,17 +235,17 @@ A template is kept as the text of its file, `Template::to_toml`, one file each, 
 
 The slug comes from the name (`template_slug`): lower case letters and digits joined by `-`, at most 48 characters, never empty, never a shipped template's id and never a name Windows keeps for a device (those get `-yours`). Nothing in a name can make it a path. Templates are not per network: `check` decides, per network, whether one can be opened.
 
-A save is checked, as anything only the person can recreate: a write that fails is reported, and the list shows only what is kept. The list is read once, the first time Build is shown: at most 64 files, each at most 64 KiB (`MAX_TEMPLATE_BYTES`). A file that does not parse is listed as broken, with why, and can be removed; it does not stop the others.
+A save is checked, as anything only the person can recreate: a write that fails is reported, and the list shows only what is kept. The list is read once, the first time Build is shown: at most 64 files, each at most 64 KiB (`MAX_TEMPLATE_BYTES`). A file that does not parse is listed as broken, with why and its text (`TemplateSource::Broken`), and can be removed; it does not stop the others.
 
 ### Import and export
 
-**Export** writes a template's file where the person picks (a save dialog on desktop, a download in a browser), named `<slug>.toml`, or `<id>.toml` for a shipped one. **Import a template**, at the foot of the list, picks one `.toml` file. The phone has no file picker for the app, so it offers neither, as Programs offers no IDL import there.
+**Export**, on the template picked in the dialog, writes its file as it is kept where the person picks (a save dialog on desktop, a download in a browser), named `<slug>.toml`, or `<id>.toml` for a shipped one. **Import a template**, in the dialog's head, picks one `.toml` file. The phone has no file picker for the app, so it offers neither, as Programs offers no IDL import there.
 
-Nothing is kept before the person has seen what the file does. The preview shows its name and summary, the questions it asks (with what each holds until answered and the option it is asked under), its options, and every block, numbered, with the program's name as this app knows it, its full address and the instruction. Then **Fixed by this template** and **Worked out**, open, drawn as the form draws them: every literal and program, and every value with what works it out ("$mint: a new keypair, made when it is opened", "the wallet in use"). It is read from the file itself, not from an expansion, so blocks under an option and a template that does not fit this network are shown too. This is rule 3 at the door: a file from somewhere else can write nothing the person did not see.
+Nothing is kept before the person has seen what the file does. The preview reads the file as the dialog's reader does: its name and summary, every problem it has on this network, then **Questions**, **Blocks** (every field of every block, with where its value comes from) and **Text**. It is read from the file itself, not from an expansion, so blocks under an option and a template that does not fit this network are shown too. This is rule 3 at the door: a file from somewhere else can write nothing the person did not see.
 
-A file that does not parse is refused with the reader's error ("line 6: unknown field `surprise`…"), and the dialog offers only **Close**. One that parses but does not check on the network in use says so, with every problem, and can still be kept: it is listed greyed, as a shipped one would be. **Keep this template** keeps the file as `to_toml` writes it, so what is kept is what was previewed. A name a shipped template has is refused; one of yours with the same slug asks before it is replaced.
+A file that does not parse is refused with the reader's error ("line 6: unknown field `surprise`…"), and the dialog offers only **Close**. One that parses but does not check on the network in use says so, with every problem, and can still be kept: it is listed greyed, as a shipped one would be. **Keep this template** keeps the file as it was read, and reads it again as it keeps it, so what is kept is what was previewed. The dialog then shows it in the list. A name a shipped template has is refused; one of yours with the same slug asks before it is replaced.
 
-A debug build started with `AIRLOCK_DEBUG_FILE_DIR` set skips the file dialogs: import reads `import.toml` from that folder and export writes there, so a script driving the app over CDP can do both. A release build has no such way around them. The dialogs are awaited from a task, never opened inside the click that asks for them: a blocking dialog runs its own message loop on the window's thread, which renders the window while dioxus still holds it for the click, and that render panics. Driving the app through the debug folder does not open a dialog, so it cannot show this; a check of the dialogs needs the real one.
+A debug build started with `AIRLOCK_DEBUG_FILE_DIR` set skips the file dialogs: import reads `import.toml` from that folder and export writes there, so a script driving the app over CDP can do both. A release build has no such way around them. The dialogs are awaited from a task, never opened inside the click that asks for them: a blocking dialog runs its own message loop on the window's thread, which renders the window while dioxus still holds it for the click, and that render panics. Driving the app through the debug folder does not open a dialog, so it cannot show this; a check of the dialogs needs the real one. An awaited dialog is not modal to the window, so while one is open **Import a template** and **Export** are disabled (`TemplateDesk::dialog`). The task runs in Build's scope, which owns that flag, so closing the Templates dialog while a file dialog is open still lets it finish.
 
 ## Adding a shipped template
 
