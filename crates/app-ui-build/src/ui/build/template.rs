@@ -320,16 +320,39 @@ pub(in crate::ui) fn TemplateForm() -> Element {
     }
 }
 
+/// What became of the file of one of the user's templates since the form
+/// opened it, in words: it changed, or it went (renamed or removed). The
+/// form keeps working on what it opened, and says so.
+fn file_since(session: &Session, open: &OpenTemplate) -> Option<&'static str> {
+    let TemplateSource::Yours { slug, text, .. } = &open.source else {
+        return None;
+    };
+    let kept = crate::actions::kept_templates::kept_templates(session);
+    match kept.kept.iter().find(|now| now.slug() == Some(slug.as_str())) {
+        Some(now) if now.text() == Some(&**text) => None,
+        Some(_) => Some(
+            "Its file has changed since this form opened it. The form keeps what it opened: close it and open the template again for the new text.",
+        ),
+        None => Some(
+            "Its file has been renamed or removed since this form opened it. The form keeps what it opened.",
+        ),
+    }
+}
+
 /// The template's name and summary, and the way out of it.
 #[component]
 fn TemplateHead(open: OpenTemplate) -> Element {
     let session = use_context::<Session>();
+    let since = file_since(&session, &open);
     rsx! {
         div { class: "template-head",
             div { class: "template-title",
                 h3 { "{open.template.name}" }
                 if let Some(summary) = &open.template.summary {
                     p { class: "muted", "{summary}" }
+                }
+                if let Some(since) = since {
+                    p { class: "hint template-since", "{since}" }
                 }
             }
             button { class: "ghost sm",
