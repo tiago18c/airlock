@@ -51,8 +51,10 @@ pub fn WalletSwitcher() -> Element {
 /// wallet shows its kind and address and copies it. The current wallet's
 /// address is the one copied most, so the button's end copies it without
 /// opening the sheet: one bordered control in two parts. It shows the name
-/// and the short address whether the vault is locked or not: locked, the
-/// lock beside it is an icon on a phone, so the address keeps its room.
+/// and the short address whether the vault is locked or not. Locked, the
+/// Locked button beside it takes more of the bar, and the short address is
+/// what gives way (the stylesheet cuts it first), never the name or the
+/// button's word.
 #[component]
 fn PhoneWalletSwitcher(wallets: Vec<WalletSummary>, selected: Option<WalletId>) -> Element {
     let session = use_context::<Session>();

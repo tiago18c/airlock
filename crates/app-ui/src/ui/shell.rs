@@ -351,23 +351,21 @@ fn LockToggle() -> Element {
         return rsx! {};
     }
     let unlocked = session.is_unlocked();
-    let phone = use_phone_layout();
     let (glyph, label) = if unlocked {
         (Glyph::Unlock, "Lock vault")
     } else {
         (Glyph::Lock, "Locked, unlock vault")
     };
     // The locked vault is the state to notice, and not by colour alone: an
-    // amber button with the closed padlock, against the open one while
-    // unlocked, and on a desktop the word. A phone's bar has no room for the
-    // word beside the wallet's name and address, so there it is the amber
-    // padlock alone, named for assistive tech and in its tooltip, and the bar
-    // reads the same locked and unlocked. Unlocked is the usual state, a
+    // amber button with the closed padlock and the word, the same on a
+    // desktop and on a phone, where an amber icon alone could be read as
+    // "tap to lock". On a phone the wallet picker beside it gives up its
+    // short address first, never this word. Unlocked is the usual state, a
     // quiet icon like the bell beside it.
-    let class = match (unlocked, phone) {
-        (true, _) => "icon-btn sm lock-toggle",
-        (false, true) => "icon-btn sm lock-toggle locked",
-        (false, false) => "sm lock-toggle locked",
+    let class = if unlocked {
+        "icon-btn sm lock-toggle"
+    } else {
+        "sm lock-toggle locked"
     };
     rsx! {
         button {
@@ -382,7 +380,7 @@ fn LockToggle() -> Element {
                 }
             },
             Icon { glyph }
-            if !unlocked && !phone {
+            if !unlocked {
                 span { "Locked" }
             }
         }
