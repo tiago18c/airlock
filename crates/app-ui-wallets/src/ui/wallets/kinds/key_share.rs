@@ -4,7 +4,7 @@
 use super::*;
 use crate::ui::transfer::receive::QrScanner;
 use crate::ui::transfer::send::PayloadShare;
-use crate::ui::{Glyph, Icon, PaneMenu};
+use crate::ui::{ActionSheet, Glyph, Icon, PaneMenu};
 use wallet_core::protocol::{
     decode_payload, encode_wallet_keys, parse_payload_text, QrObject, WalletKey,
 };
@@ -182,53 +182,6 @@ pub(in crate::ui) fn WalletRowMenu(
         if export_open() {
             if let Some(found) = found {
                 KeyExportModal { keys: vec![found.key.clone()], on_close: move |_| export_open.set(false) }
-            }
-        }
-    }
-}
-
-/// A bottom sheet of actions on a phone, in place of a menu that would
-/// open over what it acts on: a title, one row per action (`children`, each
-/// a `button.more-item` with its icon and name) and Close right under them.
-/// The Wallets pane's menu and a wallet card's three dots both open one.
-///
-/// A press on a row runs it, then bubbles up to the list and closes the
-/// sheet, as a menu closes on a choice: only one sheet is up at a time, and
-/// what the row opens is never under this one.
-#[component]
-pub(in crate::ui) fn ActionSheet(
-    open: Signal<bool>,
-    title: String,
-    /// What a screen reader calls the sheet.
-    label: String,
-    children: Element,
-) -> Element {
-    let mut open = open;
-    if !open() {
-        return rsx! {};
-    }
-    rsx! {
-        div { class: "modal-backdrop", onclick: move |_| open.set(false),
-            div {
-                class: "modal wallet-actions",
-                role: "dialog",
-                aria_modal: "true",
-                aria_label: "{label}",
-                onclick: move |evt| evt.stop_propagation(),
-                div { class: "stack",
-                    h3 { "{title}" }
-                    div { class: "wallet-action-list",
-                        onclick: move |_| open.set(false),
-                        {children}
-                    }
-                    div { class: "btn-row",
-                        button { class: "ghost",
-                            r#type: "button",
-                            onclick: move |_| open.set(false),
-                            "Close"
-                        }
-                    }
-                }
             }
         }
     }

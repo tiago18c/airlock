@@ -66,3 +66,50 @@ pub fn PhoneSheet(
         }
     }
 }
+
+/// A bottom sheet of actions on a phone, in place of a menu that would
+/// open over what it acts on: a title, one row per action (`children`, each
+/// a `button.more-item` with its icon and name) and Close right under them.
+/// A pane's menu and a row's three dots open one, whatever the pane.
+///
+/// A press on a row runs it, then bubbles up to the list and closes the
+/// sheet, as a menu closes on a choice: only one sheet is up at a time, and
+/// what the row opens is never under this one.
+#[component]
+pub fn ActionSheet(
+    open: Signal<bool>,
+    title: String,
+    /// What a screen reader calls the sheet.
+    label: String,
+    children: Element,
+) -> Element {
+    let mut open = open;
+    if !open() {
+        return rsx! {};
+    }
+    rsx! {
+        div { class: "modal-backdrop", onclick: move |_| open.set(false),
+            div {
+                class: "modal action-sheet",
+                role: "dialog",
+                aria_modal: "true",
+                aria_label: "{label}",
+                onclick: move |evt| evt.stop_propagation(),
+                div { class: "stack",
+                    h3 { "{title}" }
+                    div { class: "action-list",
+                        onclick: move |_| open.set(false),
+                        {children}
+                    }
+                    div { class: "btn-row",
+                        button { class: "ghost",
+                            r#type: "button",
+                            onclick: move |_| open.set(false),
+                            "Close"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

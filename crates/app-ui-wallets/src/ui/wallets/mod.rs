@@ -2,10 +2,12 @@ use super::lock::VaultUnlock;
 use crate::state::forms::{AddWalletMode, SendOpen, WalletForm};
 use crate::state::session::{Session, Tab, WalletSummary};
 use crate::ui::wallets::kinds::{
-    ActionSheet, ContractWalletRow, CurrentChip, ExportKeysModal, HardwareForm, KeyImportForm,
-    OfflineForm, ProgrammaticForm, SquadsForm, VectorForm, WalletRowMenu,
+    ContractWalletRow, CurrentChip, ExportKeysModal, HardwareForm, KeyImportForm, OfflineForm,
+    ProgrammaticForm, SquadsForm, VectorForm, WalletRowMenu,
 };
-use crate::ui::{format_sol, AddressHeader, CopyButton, Glyph, HelpTip, Icon, PaneMenu};
+use crate::ui::{
+    format_sol, ActionSheet, AddressHeader, CopyButton, Glyph, HelpTip, Icon, PaneMenu,
+};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use wallet_core::{

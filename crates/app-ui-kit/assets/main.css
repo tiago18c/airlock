@@ -4082,6 +4082,210 @@ textarea.short { min-height: 64px; }
   .pf-sub .copy-btn, .pf-title > .copy-btn { width: var(--control-md); min-width: var(--control-md); height: auto; min-height: var(--control-sm); }
 }
 
+/* Portfolio on a phone. A holding is a two-line row on fixed columns: its
+   logo; its symbol over its name; its value over its amount, right-aligned
+   to one edge that the group headings' totals share; and its send button in
+   a full-finger slot of its own, at the same place on every row. An opened
+   asset's wallets are rows of the same grid, on a rail inside the asset's
+   tinted block. An outdated price is a dot at the value, and the total card
+   says once how many there are. */
+.app.phone .pf-table, .app.phone .pf-group { --pf-send-w: var(--control-lg); }
+/* A tighter pane, so that the first screen reaches the head of the first
+   folded group under the holdings. */
+.app.phone .pf-stack { gap: var(--space-3); }
+.app.phone .pf-summary { gap: var(--space-2); padding-block: var(--space-3); }
+.app.phone .pf-source { line-height: 1.35; }
+/* The cards' gap would come between the table's groups, on top of each
+   group's own padding: the space after a group is its padding alone, as
+   after the last one. The column heads are hidden here, so the first group
+   is the one at the top of the table. */
+.app.phone .pf-table { gap: 0; }
+.app.phone .pf-table > .pf-cols + .pf-section { padding-top: 0; }
+/* The wallet picker reads as one of the buttons beside it. Refresh is in
+   the menu's sheet here, so the row is Send at its own width, the picker in
+   all the room left, and the three lines. */
+.app.phone .pf-controls select {
+  flex: 1;
+  min-width: 0;
+  max-width: none;
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+}
+.app.phone .pf-controls > button.primary { flex: none; padding-inline: var(--space-5); }
+/* A refresh started from the sheet, said under the toolbar while it runs. */
+.app.phone .pf-refreshing { margin: 0; }
+.app.phone .pf-stale-note { font-size: var(--text-md); color: var(--warn-text); }
+/* An opened asset whose price is outdated says so in one quiet line past
+   the logo column, only its dot in the warning colour: the wallets under it
+   lead. The whole sentence is the line's tooltip. */
+.app.phone .pf-stale-line {
+  margin: 0;
+  padding: 0 var(--space-3) var(--space-1) calc(var(--space-1) + 32px + var(--space-3));
+  overflow: hidden;
+  font-size: var(--text-sm);
+  line-height: var(--leading-tight);
+  color: var(--text-2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app.phone .pf-stale-mark {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: var(--space-1);
+  border-radius: var(--radius-full);
+  background: var(--warn-solid);
+  vertical-align: middle;
+}
+/* What every row of a folded group carries, as the end of its sentence. */
+.app.phone .pf-hint { margin: 0; }
+.app.phone .pf-common-warn { color: var(--warn-text); }
+/* The pane's three lines, beside Refresh: a square touch target, not a
+   share of the row as the header's other buttons are. */
+.app.phone .pf-controls > .icon-btn {
+  flex: none;
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+}
+.app.phone .pf-lines { gap: 0; }
+.app.phone .pf-line-main,
+.app.phone .pf-share-main {
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  column-gap: var(--space-3);
+  row-gap: 2px;
+}
+.app.phone .pf-line-main { min-height: 54px; padding: var(--space-2) var(--space-1); }
+.app.phone .pf-line-main > .pf-mono { grid-column: 1; grid-row: 1 / span 2; }
+.app.phone .pf-mono, .app.phone .pf-logo { width: 32px; height: 32px; }
+.app.phone .pf-line-main > .pf-asset { grid-column: 2; grid-row: 1 / span 2; }
+/* The price, its 24h change and who holds it are left to the opened row
+   and the column-wide screens, whatever the phone's width. */
+.app.phone .pf-line-main > .pf-holders,
+.app.phone .pf-line-main > .pf-price,
+.app.phone .pf-line-main > .pf-change,
+.app.phone .pf-share-main > .pf-price,
+.app.phone .pf-share-main > .pf-change { display: none; }
+.app.phone .pf-line-main > .pf-value,
+.app.phone .pf-share-main > .pf-value { grid-column: 3; grid-row: 1; align-self: end; white-space: nowrap; }
+.app.phone .pf-line-main > .pf-amount,
+.app.phone .pf-share-main > .pf-amount {
+  grid-column: 3;
+  grid-row: 2;
+  align-self: start;
+  font-size: var(--text-sm);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+/* A row with no value, in a group outside the total or before prices are
+   known: no dash, and the amount alone fills the figures' column. */
+.app.phone .pf-line-main > .pf-value.muted,
+.app.phone .pf-share-main > .pf-value.pf-none { display: none; }
+.app.phone .pf-line-main:not(:has(> .pf-value:not(.muted))) > .pf-amount {
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text);
+}
+.app.phone .pf-share-main:not(:has(> .pf-value:not(.pf-none))) > .pf-amount { grid-row: 1 / span 2; align-self: center; }
+/* The symbol and its marks keep to one line: a long symbol and a chip
+   shorten rather than push the row to three lines. */
+.app.phone .pf-title { flex-wrap: nowrap; }
+.app.phone .pf-title > .chip { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.app.phone .pf-line-toggle { white-space: nowrap; }
+.app.phone .pf-symbol { overflow-wrap: normal; }
+/* A mint's copy button keeps a full target but takes only its text's line. */
+.app.phone .pf-sub .copy-btn,
+.app.phone .pf-title > .copy-btn {
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+  height: var(--control-lg);
+  min-height: var(--control-lg);
+  margin-block: -12px;
+}
+/* The send button, and the empty slot of a row that cannot send: one full
+   target at the same place on every row. */
+.app.phone .pf-send,
+.app.phone .pf-send-slot { width: var(--control-lg); min-width: var(--control-lg); }
+.app.phone .pf-send { height: var(--control-lg); min-height: var(--control-lg); }
+.app.phone .pf-line-head > .pf-send .icon { width: 18px; height: 18px; }
+/* An opened asset: its wallets on the rows' grid, past a rail in the logo's
+   column that ties them to the asset above. The rail is one line down all
+   of them, drawn by the list and not by each row, so it has no breaks. */
+.app.phone .pf-share > .pf-share-main { min-height: 48px; padding-block: var(--space-1); font-size: var(--text-base); }
+.app.phone .pf-share-main > .pf-share-gap:first-child { grid-column: 1; grid-row: 1 / span 2; }
+.app.phone .pf-shares { position: relative; }
+.app.phone .pf-shares::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: var(--space-2);
+  left: calc(var(--space-1) + 15px);
+  width: 2px;
+  border-radius: var(--radius-full);
+  background: var(--border-strong);
+}
+.app.phone .pf-share-main > .pf-share-who { grid-column: 2; grid-row: 1 / span 2; }
+/* The wallet's kind icon and name, then its short address with the copy
+   button right after it on its own line. The short form is always eleven
+   characters of the monospace face, so the button sits at 11ch. */
+.app.phone .pf-share-who.addr-row { display: block; position: relative; }
+.app.phone .pf-share-who.addr-row > .addr-row-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--space-2);
+}
+.app.phone .pf-share-who.addr-row .addr-label { overflow: hidden; text-overflow: ellipsis; }
+.app.phone .pf-share-who.addr-row .addr-short { order: 1; flex-basis: 100%; line-height: 16px; }
+.app.phone .pf-share-who.addr-row > .addr-row-rest {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  height: 16px;
+  margin-left: 11ch;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+.app.phone .pf-share-who.addr-row > .addr-row-rest > .copy-btn {
+  justify-content: flex-start;
+  width: var(--control-lg);
+  min-width: var(--control-lg);
+  height: var(--control-lg);
+  min-height: var(--control-lg);
+  margin-block: -14px;
+  padding: 0 var(--space-1);
+}
+.app.phone .pf-share-mint::before { left: calc(var(--space-1) + 32px + var(--space-3)); }
+/* An unknown token's title: its short mint and the copy mark right after
+   it, one target a finger's height that copies all of the mint, drawn as a
+   symbol is so the row reads as a priced one does. */
+.app.phone .pf-mint-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  min-height: var(--control-lg);
+  margin-block: -11px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.app.phone .pf-mint-copy:hover, .app.phone .pf-mint-copy:active { background: transparent; }
+.app.phone .pf-mint-copy:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.app.phone .pf-mint-copy > .pf-symbol { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app.phone .pf-mint-copy > .icon { flex: none; width: 15px; height: 15px; color: var(--text-3); }
+/* A folded group closed is one line, as tall as a holding's row; open, it
+   keeps room under its last row. */
+.app.phone .pf-group { padding-block: 0; }
+.app.phone .pf-fold { min-height: 52px; }
+.app.phone .pf-group:has(> .pf-fold[aria-expanded="true"]) { padding-bottom: var(--space-3); }
+
 /* ---------- History ---------- */
 
 .history-list { display: grid; gap: var(--space-2); }
@@ -4525,12 +4729,12 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
    icon and name, as in More, and Close right under them in the same
    rhythm, so the sheet is only as tall as what it holds. Remove keeps the
    danger colour. */
-.app.phone .modal.wallet-actions > .stack { gap: var(--space-1); }
-.app.phone .modal.wallet-actions h3 { margin-bottom: var(--space-2); }
-.app.phone .modal.wallet-actions .btn-row:last-child { margin-top: 0; }
-.app.phone .wallet-action-list { display: grid; gap: var(--space-1); }
-.app.phone .wallet-action-list > .more-item.danger,
-.app.phone .wallet-action-list > .more-item.danger .icon { color: var(--danger-text); }
+.app.phone .modal.action-sheet > .stack { gap: var(--space-1); }
+.app.phone .modal.action-sheet h3 { margin-bottom: var(--space-2); }
+.app.phone .modal.action-sheet .btn-row:last-child { margin-top: 0; }
+.app.phone .action-list { display: grid; gap: var(--space-1); }
+.app.phone .action-list > .more-item.danger,
+.app.phone .action-list > .more-item.danger .icon { color: var(--danger-text); }
 /* The pane's three lines, beside Add wallet: a square touch target, not a
    half of the row as the header's other buttons are. */
 .app.phone .wallets-head > .btn-row > .icon-btn {
