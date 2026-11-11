@@ -5,6 +5,9 @@
 use super::*;
 use crate::actions::template::tests::Screen;
 use crate::actions::template::{expand_open, open_template, template_entries};
+use crate::actions::template_text::{
+    read_text, save_text, EditTarget, Refusal, TextRead, TextSaved,
+};
 use solana_pubkey::Pubkey;
 use wallet_core::edit::RawDraft;
 use wallet_core::{IdlDraft, SYSTEM_PROGRAM_ID};
@@ -245,18 +248,32 @@ async fn a_broken_file_is_listed_with_why_and_can_be_removed() {
     assert_eq!(stored(&screen, "bad"), None);
 }
 
+fn importing() -> EditTarget {
+    EditTarget::Import {
+        file: "pay-a-friend.toml".into(),
+    }
+}
+
+/// Read `text` as the editor reads an imported file.
+fn read(screen: &Screen, text: &str) -> TextRead {
+    screen.act(|| read_text(&screen.session, &importing(), text))
+}
+
+fn keep_text(screen: &Screen, text: &str, replace: bool) -> Result<TextSaved, String> {
+    screen.act(|| save_text(&screen.session, &importing(), text, replace))
+}
+
 #[tokio::test]
 async fn an_imported_file_is_shown_before_it_is_kept() {
     let screen = Screen::offline().await;
-    let preview = screen.act(|| preview_import(&screen.session, GOOD.as_bytes()));
-    let template = preview.read.clone().unwrap();
+    let read = read(&screen, GOOD);
+    let template = read.view().unwrap().template.clone();
     assert_eq!(template.name, "Pay a friend");
-    assert!(preview.problems.is_empty());
+    assert!(read.view().unwrap().problems.is_empty());
     assert!(yours(&screen).is_empty(), "nothing kept before it is asked");
 
-    let text = preview.text.clone().unwrap();
-    let kept = screen.act(|| keep_import(&screen.session, &text, false));
-    assert_eq!(kept, Ok(Kept::Saved("Pay a friend".into())));
+    let kept = keep_text(&screen, GOOD, false);
+    assert!(matches!(kept, Ok(TextSaved::Saved(_))), "{kept:?}");
     // Kept as the file was written, and read back to what was shown.
     assert_eq!(stored(&screen, "pay-a-friend").unwrap(), GOOD);
     assert_eq!(
@@ -264,63 +281,76 @@ async fn an_imported_file_is_shown_before_it_is_kept() {
         *template
     );
     // The same again asks first.
-    let again = screen.act(|| keep_import(&screen.session, &text, false));
-    assert_eq!(again, Ok(Kept::WouldReplace("Pay a friend".into())));
+    let again = keep_text(&screen, GOOD, false);
+    assert_eq!(again, Ok(TextSaved::WouldReplace("Pay a friend".into())));
 }
 
 /// The click that asks for a file returns before the file is picked, and
-/// the preview comes from the task that waits for it. A dialog waited on
+/// the editor opens from the task that waits for it. A dialog waited on
 /// inside the click let the window render under the handler on desktop,
 /// which crashed the app on a second import.
 #[tokio::test]
 async fn a_file_is_picked_after_the_click_that_asked_for_it_returns() {
     let mut screen = Screen::offline().await;
-    let (preview, error, busy) =
+    let (editing, error, busy) =
         screen.act(|| (Signal::new(None), Signal::new(None), Signal::new(false)));
     let (pick, picked) = tokio::sync::oneshot::channel();
-    screen.act(|| {
-        import_from(screen.session, preview, error, busy, async move {
-            picked.await.ok()
-        })
-    });
+    screen.act(|| import_from(editing, error, busy, async move { picked.await.ok() }));
     screen.settle().await;
     assert_eq!(
-        screen.act(|| preview.peek().clone()),
+        screen.act(|| editing.peek().clone()),
         None,
         "nothing is read while the dialog is open"
     );
     assert!(screen.act(|| *busy.peek()), "held while the dialog is open");
     // Asking again while one is open opens nothing.
     let (_, never) = tokio::sync::oneshot::channel();
-    screen.act(|| {
-        import_from(screen.session, preview, error, busy, async move {
-            never.await.ok()
-        })
-    });
+    screen.act(|| import_from(editing, error, busy, async move { never.await.ok() }));
 
-    pick.send(Ok(GOOD.as_bytes().to_vec())).unwrap();
+    pick.send(Ok(("pay.toml".to_string(), GOOD.as_bytes().to_vec())))
+        .unwrap();
     screen.settle().await;
-    let read = screen
-        .act(|| preview.peek().clone())
-        .expect("read once picked");
-    assert_eq!(read.read.unwrap().name, "Pay a friend");
+    let opened = screen
+        .act(|| editing.peek().clone())
+        .expect("open once picked");
+    assert_eq!(opened.text, GOOD);
+    assert_eq!(opened.target.title(), "Importing pay.toml");
+    assert!(!opened.dirty());
     assert_eq!(screen.act(|| error.peek().clone()), None::<String>);
     assert!(!screen.act(|| *busy.peek()), "let go once it returns");
+    assert!(yours(&screen).is_empty(), "nothing kept yet");
+
+    // A file that is not text opens nothing, and says why.
+    let (pick, picked) = tokio::sync::oneshot::channel();
+    screen.act(|| {
+        let mut editing = editing;
+        editing.set(None);
+        import_from(editing, error, busy, async move { picked.await.ok() })
+    });
+    pick.send(Ok(("bytes.toml".to_string(), vec![0xff, 0xfe])))
+        .unwrap();
+    screen.settle().await;
+    assert_eq!(screen.act(|| editing.peek().clone()), None);
+    assert_eq!(
+        screen.act(|| error.peek().clone()).as_deref(),
+        Some("bytes.toml is not text, so it is not a template.")
+    );
 }
 
 #[tokio::test]
 async fn a_file_that_does_not_parse_is_not_a_template() {
     let screen = Screen::offline().await;
-    let preview = screen.act(|| preview_import(&screen.session, b"format = 1\nname = 3"));
-    assert!(preview
-        .read
+    match read(&screen, "format = 1\nname = 3") {
+        TextRead::Refused(Refusal::NotATemplate { reason, excerpt }) => {
+            assert!(reason.contains("string"), "{reason}");
+            assert_eq!(excerpt.unwrap().line, 2);
+        }
+        other => panic!("{other:?}"),
+    }
+    assert!(keep_text(&screen, "format = 1\nname = 3", false)
         .unwrap_err()
         .starts_with("This is not a template file"));
-    let preview = screen.act(|| preview_import(&screen.session, &[0xff, 0xfe]));
-    assert_eq!(
-        preview.read.unwrap_err(),
-        "This file is not text, so it is not a template."
-    );
+    assert!(yours(&screen).is_empty());
 }
 
 #[tokio::test]
@@ -329,17 +359,15 @@ async fn a_file_that_does_not_fit_this_network_can_still_be_kept() {
     let text = GOOD
         .replace("11111111111111111111111111111111", &pk(9).to_string())
         .replace("Pay a friend", "Elsewhere");
-    let preview = screen.act(|| preview_import(&screen.session, text.as_bytes()));
-    assert!(preview.read.is_ok());
-    assert_eq!(preview.problems.len(), 1, "{:?}", preview.problems);
-    assert!(
-        preview.problems[0].contains("No IDL"),
-        "{:?}",
-        preview.problems
-    );
-    screen
-        .act(|| keep_import(&screen.session, &text, false))
-        .unwrap();
+    let read = read(&screen, &text);
+    assert!(read.can_save());
+    let problems = &read.view().unwrap().problems;
+    assert_eq!(problems.len(), 1, "{problems:?}");
+    assert!(problems[0].contains("No IDL"), "{problems:?}");
+    match keep_text(&screen, &text, false).unwrap() {
+        TextSaved::Saved(saved) => assert!(saved.note.contains("listed greyed"), "{saved:?}"),
+        other => panic!("{other:?}"),
+    }
     let mine = yours(&screen);
     assert_eq!(mine.len(), 1);
     assert!(mine[0].problem.as_deref().unwrap().contains("No IDL"));
@@ -355,8 +383,8 @@ async fn an_exported_file_imports_to_the_same_template() {
     for builtin in &wallet_core::BUILTIN_TEMPLATES {
         let (name, text) = export_file(&TemplateSource::Builtin(builtin.id)).unwrap();
         assert_eq!(name, format!("{}.toml", builtin.id));
-        let preview = screen.act(|| preview_import(&screen.session, text.as_bytes()));
-        assert_eq!(*preview.read.unwrap(), builtin.template().unwrap());
+        let read = read(&screen, &text);
+        assert_eq!(*read.view().unwrap().template, builtin.template().unwrap());
     }
 
     put_blocks(&screen, &[transfer(&screen, pk(5), "1")]);
@@ -364,9 +392,9 @@ async fn an_exported_file_imports_to_the_same_template() {
     let mine = yours(&screen).remove(0);
     let (name, text) = export_file(&mine.source).unwrap();
     assert_eq!(name, "pay-rent.toml");
-    let preview = screen.act(|| preview_import(&screen.session, text.as_bytes()));
+    let read = read(&screen, &text);
     assert_eq!(
-        Ok(preview.read.unwrap().as_ref().clone()),
+        Ok(read.view().unwrap().template.as_ref().clone()),
         mine.source.template()
     );
 }

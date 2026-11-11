@@ -9,6 +9,7 @@
 //! that fails is reported and the list shows only what is kept. The list is
 //! read once, the first time Build needs it, into `BuildForm::kept`.
 
+use super::template_text::{import_text, TextEdit};
 use crate::state::forms::{IxBody, KeptTemplates, TemplateSource};
 use crate::state::session::Session;
 use dioxus::prelude::*;
@@ -129,18 +130,26 @@ pub enum Kept {
     WouldReplace(String),
 }
 
-/// Refuses a name a built-in template has, and says what keeping `name`
-/// would replace.
-fn place_for(session: &Session, name: &str, replace: bool) -> Result<Option<Kept>, String> {
-    if let Some(builtin) = builtin_named(name) {
-        let shipped = builtin
-            .template()
-            .map(|template| template.name)
-            .unwrap_or_else(|_| builtin.id.to_string());
-        return Err(format!(
-            "“{shipped}” is a built-in template. Give yours another name."
-        ));
+/// Refuses a name a built-in template has, by its name or its id, in
+/// words that say so.
+pub(super) fn refuse_builtin_name(name: &str) -> Result<(), String> {
+    match builtin_named(name) {
+        Some(builtin) => {
+            let shipped = builtin
+                .template()
+                .map(|template| template.name)
+                .unwrap_or_else(|_| builtin.id.to_string());
+            Err(format!(
+                "“{shipped}” is a built-in template. Give yours another name."
+            ))
+        }
+        None => Ok(()),
     }
+}
+
+/// The one of the user's kept under the slug of `name`: its slug, and its
+/// name (its file name when it is not a template).
+pub(super) fn kept_under(session: &Session, name: &str) -> Option<(String, String)> {
     let slug = template_slug(name);
     ensure_kept(session);
     let existing = session.forms.build.kept.peek().as_ref().and_then(|kept| {
@@ -148,14 +157,20 @@ fn place_for(session: &Session, name: &str, replace: bool) -> Result<Option<Kept
             .iter()
             .find(|source| source.slug() == Some(slug.as_str()))
             .cloned()
-    });
-    Ok(match existing {
-        Some(existing) if !replace => Some(Kept::WouldReplace(
-            existing
-                .template()
-                .map(|template| template.name)
-                .unwrap_or(slug),
-        )),
+    })?;
+    let name = existing
+        .template()
+        .map(|template| template.name)
+        .unwrap_or_else(|_| format!("{slug}.toml"));
+    Some((slug, name))
+}
+
+/// Refuses a name a built-in template has, and says what keeping `name`
+/// would replace.
+fn place_for(session: &Session, name: &str, replace: bool) -> Result<Option<Kept>, String> {
+    refuse_builtin_name(name)?;
+    Ok(match kept_under(session, name) {
+        Some((_, existing)) if !replace => Some(Kept::WouldReplace(existing)),
         _ => None,
     })
 }
@@ -163,7 +178,7 @@ fn place_for(session: &Session, name: &str, replace: bool) -> Result<Option<Kept
 /// Write `text`, the file `template` was read from, where the user's
 /// templates are kept, checked, and list it. A failed write is reported,
 /// and the list is left as it was.
-fn keep(session: &Session, template: Template, text: &str) -> Result<Kept, String> {
+pub(super) fn keep(session: &Session, template: Template, text: &str) -> Result<Kept, String> {
     let slug = template_slug(&template.name);
     let storage = session.core().ports().storage.clone();
     if let Err(err) = app_core::storage::save_template(storage.as_ref(), &slug, text) {
@@ -225,56 +240,6 @@ pub fn remove_kept(session: &Session, slug: &str) -> Result<(), String> {
         kept.kept.retain(|source| source.slug() != Some(slug));
     }
     Ok(())
-}
-
-/// A file offered for import, read before anything is kept.
-#[derive(Clone, Debug, PartialEq)]
-pub struct ImportPreview {
-    /// The file's text, when it is text. Kept as it is, comments and all.
-    pub text: Option<String>,
-    /// The template, or why the file is not one.
-    pub read: Result<Arc<Template>, String>,
-    /// Why it cannot be opened on the network in use. Empty when it can.
-    pub problems: Vec<String>,
-}
-
-/// Read `bytes` as a template file and check it against the IDLs of the
-/// network in use. Nothing is kept.
-pub fn preview_import(session: &Session, bytes: &[u8]) -> ImportPreview {
-    let text = std::str::from_utf8(bytes).ok().map(str::to_string);
-    let read = match &text {
-        Some(text) => Template::parse(text).map_err(|err| err.to_string()),
-        None => Err("This file is not text, so it is not a template.".to_string()),
-    };
-    let problems = match &read {
-        Ok(template) => {
-            let idls = session.idls.read();
-            wallet_core::template::check(template, &*idls)
-                .err()
-                .unwrap_or_default()
-                .iter()
-                .map(ToString::to_string)
-                .collect()
-        }
-        Err(_) => Vec::new(),
-    };
-    ImportPreview {
-        text,
-        read: read.map(Arc::new),
-        problems,
-    }
-}
-
-/// Keep an imported file among the user's templates, as `text`, the file
-/// as it was read: kept as written, comments and all, and read again here,
-/// so what is kept is what was shown. One under the same slug is replaced
-/// only with `replace`; a built-in's name is refused.
-pub fn keep_import(session: &Session, text: &str, replace: bool) -> Result<Kept, String> {
-    let template = Template::parse(text).map_err(|err| err.to_string())?;
-    if let Some(would) = place_for(session, &template.name, replace)? {
-        return Ok(would);
-    }
-    keep(session, template, text)
 }
 
 /// The file `source` exports as: its name and its text.
@@ -369,34 +334,50 @@ pub fn export_template(
     }
 }
 
-/// Ask for a template file to import: a dialog on desktop, which reads it
-/// into `preview` and holds `busy` while it is open; in a browser, the
-/// page's hidden file field, whose change reads it (see [`read_import`]).
-/// A browser's picker is modal to the page and says nothing when it is
-/// cancelled, so `busy` is not held there.
+/// Ask for a template file to import: a dialog on desktop, which opens the
+/// file's text in the editor, `editing`, and holds `busy` while it is open;
+/// in a browser, the page's hidden file field, whose change reads it (see
+/// [`read_import`]). A browser's picker is modal to the page and says
+/// nothing when it is cancelled, so `busy` is not held there. Nothing is
+/// kept: the editor saves it, once the person has read it there.
 pub fn pick_import(
-    session: Session,
-    preview: Signal<Option<ImportPreview>>,
+    editing: Signal<Option<TextEdit>>,
     error: Signal<Option<String>>,
     busy: Signal<bool>,
 ) {
     #[cfg(not(target_arch = "wasm32"))]
     import_from(
-        session,
-        preview,
+        editing,
         error,
         busy,
         crate::platform::template_files::pick_template_file(),
     );
     #[cfg(target_arch = "wasm32")]
     {
-        let _ = (session, preview, error, busy);
+        let _ = (editing, error, busy);
         let _ = crate::platform::eval("document.getElementById('template-file').click()");
     }
 }
 
-/// Await `picked` in a task of its own and read the file it gives into
-/// `preview`, so the click that asked for it returns before the dialog
+/// Open the file `name`, read as `bytes`, in the editor, or say in `error`
+/// why it cannot be: it is not text.
+fn open_import(
+    name: &str,
+    bytes: Vec<u8>,
+    mut editing: Signal<Option<TextEdit>>,
+    mut error: Signal<Option<String>>,
+) {
+    match import_text(name, bytes) {
+        Ok(edit) => {
+            error.set(None);
+            editing.set(Some(edit));
+        }
+        Err(why) => error.set(Some(why)),
+    }
+}
+
+/// Await `picked` in a task of its own and open the file it gives in the
+/// editor, so the click that asked for it returns before the dialog
 /// opens.
 ///
 /// On desktop dioxus runs an event handler inside the webview's request
@@ -410,21 +391,19 @@ pub fn pick_import(
 /// did not.
 #[cfg(not(target_arch = "wasm32"))]
 fn import_from(
-    session: Session,
-    mut preview: Signal<Option<ImportPreview>>,
+    editing: Signal<Option<TextEdit>>,
     mut error: Signal<Option<String>>,
     busy: Signal<bool>,
     picked: impl std::future::Future<
-            Output = Option<Result<Vec<u8>, crate::platform::template_files::TemplateFileError>>,
+            Output = Option<
+                Result<(String, Vec<u8>), crate::platform::template_files::TemplateFileError>,
+            >,
         > + 'static,
 ) {
     file_dialog(busy, async move {
         match picked.await {
             None => {}
-            Some(Ok(bytes)) => {
-                error.set(None);
-                preview.set(Some(preview_import(&session, &bytes)));
-            }
+            Some(Ok((name, bytes))) => open_import(&name, bytes, editing, error),
             Some(Err(err)) => error.set(Some(super::sentence(err))),
         }
     });
@@ -433,11 +412,10 @@ fn import_from(
 /// The id of the page's hidden file field a browser imports through.
 pub const TEMPLATE_FILE_INPUT: &str = "template-file";
 
-/// Read the file picked in the page's hidden file field into `preview`.
+/// Open the file picked in the page's hidden file field in the editor.
 pub fn read_import(
     evt: Event<FormData>,
-    session: Session,
-    mut preview: Signal<Option<ImportPreview>>,
+    editing: Signal<Option<TextEdit>>,
     mut error: Signal<Option<String>>,
 ) {
     let files = evt.files();
@@ -453,11 +431,9 @@ pub fn read_import(
             )));
             return;
         }
+        let name = file.name();
         match file.read_bytes().await {
-            Ok(bytes) => {
-                error.set(None);
-                preview.set(Some(preview_import(&session, &bytes)));
-            }
+            Ok(bytes) => open_import(&name, bytes.to_vec(), editing, error),
             Err(err) => error.set(Some(super::sentence(err))),
         }
     });

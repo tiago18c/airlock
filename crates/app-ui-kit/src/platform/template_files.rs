@@ -38,9 +38,9 @@ fn debug_folder() -> Option<PathBuf> {
 }
 
 /// Ask for one template file and read it, refusing one larger than a
-/// template can be before reading it.
+/// template can be before reading it. Gives its file name and its bytes.
 #[cfg(not(target_os = "android"))]
-pub async fn pick_template_file() -> Option<Result<Vec<u8>, TemplateFileError>> {
+pub async fn pick_template_file() -> Option<Result<(String, Vec<u8>), TemplateFileError>> {
     let path = match debug_folder() {
         Some(folder) => folder.join("import.toml"),
         None => rfd::AsyncFileDialog::new()
@@ -50,7 +50,11 @@ pub async fn pick_template_file() -> Option<Result<Vec<u8>, TemplateFileError>> 
             .path()
             .to_path_buf(),
     };
-    Some(read_limited(&path))
+    let name = path
+        .file_name()
+        .map(|name| name.to_string_lossy().into_owned())
+        .unwrap_or_else(|| "the file".to_string());
+    Some(read_limited(&path).map(|bytes| (name, bytes)))
 }
 
 /// Ask where to save `text` as `file_name`, and write it there. Returns the
@@ -81,7 +85,7 @@ pub async fn save_template_file(
 // screen ask anyway (Build leaves its buttons out there).
 
 #[cfg(target_os = "android")]
-pub async fn pick_template_file() -> Option<Result<Vec<u8>, TemplateFileError>> {
+pub async fn pick_template_file() -> Option<Result<(String, Vec<u8>), TemplateFileError>> {
     Some(Err(TemplateFileError::NoDialog))
 }
 

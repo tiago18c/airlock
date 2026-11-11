@@ -1,20 +1,21 @@
-# A template asks a few questions and writes Build's blocks from the
-# answers. A line that starts with # is a comment: it is kept as you
-# write it and changes nothing.
+# A template asks a few questions and writes Build's
+# blocks from the answers. A line that starts with # is
+# a comment: it is kept as you write it, and does nothing.
 
 # The version of the format. Always 1.
 format = 1
-# Shown in the list of templates and at the head of its form.
+# Shown in the list of templates and on its form.
 name = "Send SOL"
-summary = "Sends SOL from the wallet in use to an address you give."
+summary = "Sends SOL from the wallet in use to an address."
 
-# The programs its blocks call, each under a short name of your own.
+# The programs its blocks call, each by a short name.
 [programs]
 system = "11111111111111111111111111111111"
 
-# A question. It takes the widget of the field it fills: an address
-# here, an amount in SOL below. `hint` and `default` are optional, and
-# `optional = true` lets it be left blank.
+# A question. It takes the widget of the field it fills:
+# an address here, an amount in SOL below. `hint` and
+# `default` can be left out, and `optional = true` lets
+# it be left blank.
 [[input]]
 name = "to"
 label = "To"
@@ -25,17 +26,18 @@ name = "amount"
 label = "Amount"
 default = "0.01"
 
-# An option is a checkbox. A question with `option = "<its name>"` is
-# asked, and a block with `when = "<its name>"` written, only while it
-# is on:
+# An option is a checkbox. A question with `option =
+# "<its name>"` is asked, and a block with `when =
+# "<its name>"` is written, only while it is on:
 #
 # [[option]]
 # name = "tip"
 # label = "Add a tip"
 
-# One instruction, in the order written, from the program's IDL. `$to`
-# is the answer to the question named `to`, `$system` the program named
-# above, `$wallet` the wallet in use and `$fee-payer` Build's fee payer.
+# One instruction, from the program's IDL, in the order
+# written. `$to` is the answer to the question `to`,
+# `$system` the program named above, `$wallet` the
+# wallet in use and `$fee-payer` Build's fee payer.
 # Anything else is written as you would type it on Build.
 [[block]]
 program = "$system"

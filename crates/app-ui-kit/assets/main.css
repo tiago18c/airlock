@@ -2394,10 +2394,8 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   flex-direction: column;
   gap: var(--space-3);
   overflow: hidden;
+  container: template-browser / inline-size;
 }
-/* An imported file is one template: the dialog is as tall as it needs. */
-.modal.template-browser.import-template { width: min(48rem, 100%); height: auto; max-height: min(46rem, calc(100vh - 48px)); }
-.import-template > .template-browser-body { flex: 0 1 auto; }
 .modal.template-browser > .btn-row:last-child { margin-top: 0; }
 .modal.template-browser > p { margin: 0; }
 .template-browser-head {
@@ -2408,6 +2406,8 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   gap: var(--space-2) var(--space-3);
   min-height: var(--control-md);
 }
+.template-browser-head > h3 { min-width: 0; overflow-wrap: anywhere; }
+.template-browser-ways { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .template-browser-body {
   flex: 1;
   min-height: 0;
@@ -2613,6 +2613,158 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 .template-cannot { align-self: center; }
 .template-back { gap: var(--space-1); margin-left: calc(-1 * var(--space-2)); padding: 0 var(--space-2); font-weight: var(--weight-semibold); }
 .template-back .icon { width: 18px; height: 18px; }
+.reader-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+/* The editor, in the Templates dialog's place of the list and the reader:
+   the text on the left and its reading on the right, each scrolling on its
+   own. A narrow dialog and a phone put the reading under the text, on one
+   page that scrolls. The status stays at the top of the reading, so the
+   field never moves as it changes. */
+.template-editor {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 6fr);
+  gap: var(--space-4);
+}
+.editor-text { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.editor-field {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.editor-field:hover { border-color: var(--border-strong); }
+.editor-field:focus-within { border-color: var(--brand); box-shadow: var(--focus-ring); }
+/* The numbers and the text share one font, size and line height, so each
+   number stays beside its line; the numbers follow the field's scrolling,
+   and have room past the last line for its horizontal scrollbar. */
+.editor-gutter, textarea.editor-input {
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  line-height: 20px;
+  tab-size: 4;
+}
+.editor-gutter {
+  margin: 0;
+  min-width: 3.5ch;
+  overflow: hidden;
+  padding: var(--space-2) var(--space-3) 64px var(--space-3);
+  border-right: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-3);
+  text-align: right;
+  user-select: none;
+  white-space: pre;
+}
+textarea.editor-input {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  /* Little room on the left: a field scrolled to show its caret at the
+     start of a line keeps it in sight but not its padding. */
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-1);
+  overflow: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  resize: none;
+  white-space: pre;
+  overflow-wrap: normal;
+}
+textarea.editor-input:focus { box-shadow: none; }
+.editor-reading {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.editor-status {
+  flex-shrink: 0;
+  display: grid;
+  gap: var(--space-2);
+  max-height: 45%;
+  overflow: auto;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}
+.editor-status p { margin: 0; }
+.editor-reads { color: var(--ok-text); font-weight: var(--weight-medium); }
+.editor-error { display: grid; gap: var(--space-2); justify-items: start; min-width: 0; }
+.editor-reason { white-space: pre-wrap; }
+/* The line a refusal points at, as it is in the text: its number, then the
+   line, the character pointed at marked. */
+.editor-excerpt {
+  justify-self: stretch;
+  display: flex;
+  gap: var(--space-3);
+  margin: 0;
+  overflow-x: auto;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--danger-line);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  line-height: 20px;
+  white-space: pre;
+}
+.editor-excerpt-line { flex: none; color: var(--text-3); user-select: none; }
+.editor-excerpt mark {
+  display: inline-block;
+  min-width: 1ch;
+  border-radius: 2px;
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  box-shadow: inset 0 -2px 0 var(--danger-solid);
+}
+.editor-view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow: auto;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+}
+.editor-view.stale > :not(.editor-stale-note) { opacity: 0.5; }
+.editor-stale-note {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--text-2);
+  font-size: var(--text-md);
+}
+.editor-section { display: flex; align-items: center; margin: var(--space-2) 0 0; }
+.editor-nothing { margin: 0; padding: var(--space-4) var(--space-5); }
+/* Narrow: one page that scrolls, the text first, then the status and the
+   reading, the last row of buttons staying in place under it. */
+@container template-browser (max-width: 720px) {
+  .template-editor { display: flex; flex-direction: column; gap: var(--space-3); overflow: auto; }
+  .editor-text { flex: none; }
+  .editor-field { flex: none; height: min(28rem, 58vh); min-height: 16rem; }
+  .editor-reading { flex: none; overflow: visible; }
+  .editor-status { max-height: none; overflow: visible; }
+  .editor-view { flex: none; overflow: visible; padding: var(--space-3) var(--space-4) var(--space-4); }
+}
+@media (pointer: coarse) {
+  .editor-gutter, textarea.editor-input { font-size: 0.875rem; line-height: 21px; }
+  textarea.editor-input { min-height: 0; }
+}
 /* A narrow window: the list over the reader, each scrolling; a phone shows
    one of the two. */
 @media (max-width: 639px) {

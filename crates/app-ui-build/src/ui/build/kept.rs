@@ -1,11 +1,11 @@
-//! The user's own templates on Build: saving the blocks as one, removing
-//! one, and the preview an imported file gets before it is kept.
+//! The user's own templates on Build: saving the blocks as one, and
+//! removing one. An imported file is read in the Templates dialog's editor
+//! before it is kept (`text.rs`).
 
 use super::*;
 use crate::actions::kept_templates::*;
-use crate::actions::template_browser::template_view;
+use crate::actions::template_text::TextEdit;
 use std::collections::BTreeMap;
-use std::sync::Arc;
 use wallet_core::template::{Choice, FieldAt, Locked, PlannedInput, SaveField, SavePlan};
 
 /// What the lists of templates and their dialogs share, provided by Build.
@@ -16,12 +16,13 @@ pub(in crate::ui) struct TemplateDesk {
     pub error: Signal<Option<String>>,
     /// The template whose removal waits to be confirmed: its slug and name.
     pub removing: Signal<Option<(String, String)>>,
-    /// A file read for import, shown before it is kept.
-    pub preview: Signal<Option<ImportPreview>>,
+    /// The Templates dialog's editor, while it is open: Build's form's, so
+    /// its text outlives the screen.
+    pub editing: Signal<Option<TextEdit>>,
     /// Build's blocks, read for saving as a template.
     pub saving: Signal<Option<SavePlan>>,
     /// The template the Templates dialog shows next, by its key: one just
-    /// kept from an import.
+    /// saved from the editor.
     pub show: Signal<Option<String>>,
     /// A file dialog for importing or exporting is open. It is awaited,
     /// not modal to the window, so the buttons that open one wait for it.
@@ -339,140 +340,6 @@ pub(in crate::ui) fn RemoveTemplate() -> Element {
                                 removing.set(None);
                             },
                             "Remove"
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-/// An imported file before it is kept, read as the Templates dialog reads
-/// one: what it asks, every block with every field it sets, and its text.
-/// A file that is not a template says why and can only be closed.
-#[component]
-pub(in crate::ui) fn ImportDialog() -> Element {
-    let session = use_context::<Session>();
-    let desk = use_context::<TemplateDesk>();
-    let mut preview = desk.preview;
-    let (mut note, mut error, mut show) = (desk.note, desk.error, desk.show);
-    let mut replacing = use_signal(|| None::<String>);
-    let mut refused = use_signal(|| None::<String>);
-    let tab = use_signal(|| ReaderTab::Questions);
-    let Some(ImportPreview { text, read, .. }) = preview() else {
-        return rsx! {};
-    };
-    let mut close = move || {
-        preview.set(None);
-        replacing.set(None);
-        refused.set(None);
-    };
-
-    let (template, text) = match (read, text) {
-        (Ok(template), Some(text)) => (template, text),
-        (read, _) => {
-            let why = read
-                .err()
-                .unwrap_or_else(|| "This file is not text, so it is not a template.".to_string());
-            return rsx! {
-                div { class: "modal-backdrop",
-                    onclick: move |_| close(),
-                    div { class: "modal",
-                        role: "dialog",
-                        aria_label: "Import a template",
-                        onclick: move |evt| evt.stop_propagation(),
-                        div { class: "stack",
-                            h3 { "This file is not a template" }
-                            p { class: "error", "{why}" }
-                            p { class: "hint", "Nothing was kept." }
-                            div { class: "btn-row",
-                                button { class: "ghost",
-                                    r#type: "button",
-                                    onclick: move |_| close(),
-                                    "Close"
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-        }
-    };
-
-    let view = template_view(&session, Arc::clone(&template), Some(text.clone()));
-    let mut keep = move |replace: bool| match keep_import(&session, &text, replace) {
-        Ok(Kept::Saved(name)) => {
-            error.set(None);
-            note.set(Some(format!(
-                "Kept “{name}”. It is listed with your templates."
-            )));
-            show.set(Some(format!(
-                "yours:{}",
-                wallet_core::template::template_slug(&name)
-            )));
-            close();
-        }
-        Ok(Kept::WouldReplace(existing)) => {
-            refused.set(None);
-            replacing.set(Some(existing));
-        }
-        Err(why) => {
-            replacing.set(None);
-            refused.set(Some(why));
-        }
-    };
-
-    rsx! {
-        div { class: "modal-backdrop",
-            onclick: move |_| close(),
-            div { class: "modal template-browser import-template",
-                role: "dialog",
-                aria_label: "Import a template",
-                onclick: move |evt| evt.stop_propagation(),
-                div { class: "template-browser-head",
-                    h3 { "Import a template" }
-                }
-                p { class: "lede",
-                    "Check what it does before you keep it. Every block is listed with every field it sets, and where each value comes from."
-                }
-                div { class: "template-browser-body one",
-                    div { class: "template-reader",
-                        ReaderHead {
-                            name: view.template.name.clone(),
-                            summary: view.template.summary.clone(),
-                            problems: view.problems.clone(),
-                        }
-                        if !view.problems.is_empty() {
-                            p { class: "hint", "You can keep it: it is listed greyed until it can be used." }
-                        }
-                        TemplateReading { view: view.clone(), tab, text_note: "The file as it was read. It is kept as it is." }
-                    }
-                }
-                if let Some(why) = refused() {
-                    p { class: "error", "{why}" }
-                }
-                if let Some(existing) = replacing() {
-                    p { class: "warn",
-                        "You already have a template called “{existing}”. Keeping this one replaces it."
-                    }
-                }
-                div { class: "btn-row",
-                    button { class: "ghost",
-                        r#type: "button",
-                        onclick: move |_| close(),
-                        "Cancel"
-                    }
-                    if replacing().is_some() {
-                        button { class: "danger solid",
-                            r#type: "button",
-                            onclick: move |_| keep(true),
-                            "Replace"
-                        }
-                    } else {
-                        button { class: "primary",
-                            r#type: "button",
-                            onclick: move |_| keep(false),
-                            "Keep this template"
                         }
                     }
                 }

@@ -5,15 +5,32 @@
 //!
 //! The reader's tabs ([`TemplateReading`]) are drawn from a
 //! [`TemplateView`], read from a template and its text, so a template that
-//! is not kept yet (an imported file, and in time one typed as text) reads
-//! the same way as one that is.
+//! is not kept yet reads the same way as one that is: the editor
+//! (`text.rs`), which takes the place of the list and the reader while a
+//! template is written, imported or mended as text, shows its Questions
+//! and Blocks from the same parts.
 
 use super::*;
 use crate::actions::kept_templates::{export_template, files_here, kept_templates, pick_import};
 use crate::actions::template::{template_entries, TemplateEntry};
 use crate::actions::template_browser::*;
+use crate::actions::template_text::{edit_copy, edit_kept, new_template, TextEdit};
 use crate::ui::{use_phone_layout, CopyButton};
 use std::sync::Arc;
+
+/// A way out of what the editor holds, which asks first when its text has
+/// changed.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Leave {
+    /// Close the dialog.
+    Close,
+    /// Back to the list and the reader.
+    Back,
+    /// The editor on the starter text.
+    New,
+    /// A file picked for import, in the editor.
+    Import,
+}
 
 /// The tabs of the reader.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -80,6 +97,43 @@ pub(in crate::ui) fn TemplateBrowser(
     let files = files_here();
     let busy = (desk.dialog)();
     let mut removing = desk.removing;
+    let mut editing = desk.editing;
+    let mut leaving = use_signal(|| None::<Leave>);
+    let editor = editing
+        .read()
+        .as_ref()
+        .map(|edit| (edit.opened, edit.target.title()));
+    // Where each way out goes, once the person has agreed to lose any
+    // changes.
+    let mut go = move |leave: Leave| match leave {
+        Leave::Close => {
+            editing.set(None);
+            open.set(false);
+        }
+        Leave::Back => editing.set(None),
+        Leave::New => {
+            desk.clear();
+            editing.set(Some(new_template()));
+        }
+        Leave::Import => {
+            desk.clear();
+            pick_import(editing, desk.error, desk.dialog);
+        }
+    };
+    // Each way out asks first when the editor holds changes.
+    let mut leave = move |leave: Leave| {
+        if editing.peek().as_ref().is_some_and(TextEdit::dirty) {
+            leaving.set(Some(leave));
+        } else {
+            go(leave);
+        }
+    };
+    let mut start = move |edit: Option<TextEdit>| {
+        if let Some(edit) = edit {
+            desk.clear();
+            editing.set(Some(edit));
+        }
+    };
 
     let all = entries();
     let shown: Vec<TemplateEntry> = all
@@ -105,14 +159,16 @@ pub(in crate::ui) fn TemplateBrowser(
 
     rsx! {
         div { class: "modal-backdrop",
-            onclick: move |_| open.set(false),
+            onclick: move |_| leave(Leave::Close),
             div {
                 class: if phone { "modal template-browser phone" } else { "modal template-browser" },
                 role: "dialog",
                 aria_label: "Templates",
                 onclick: move |evt| evt.stop_propagation(),
                 div { class: "template-browser-head",
-                    if phone && !show_list {
+                    if let Some((_, title)) = &editor {
+                        h3 { class: "editor-title", "{title}" }
+                    } else if phone && !show_list {
                         button {
                             class: "ghost template-back",
                             r#type: "button",
@@ -123,20 +179,31 @@ pub(in crate::ui) fn TemplateBrowser(
                     } else {
                         h3 { "Templates" }
                     }
-                    if files && show_list {
-                        button {
-                            class: "sm",
-                            r#type: "button",
-                            disabled: busy,
-                            title: if busy { "A file dialog is open" } else { "Read a template file, and see what it does before it is kept" },
-                            onclick: move |_| {
-                                desk.clear();
-                                pick_import(session, desk.preview, desk.error, desk.dialog);
-                            },
-                            "Import a template"
+                    if show_list || editor.is_some() {
+                        div { class: "template-browser-ways",
+                            button {
+                                class: "sm",
+                                r#type: "button",
+                                title: "Write a template as text, from a short example",
+                                onclick: move |_| leave(Leave::New),
+                                "New template"
+                            }
+                            if files {
+                                button {
+                                    class: "sm",
+                                    r#type: "button",
+                                    disabled: busy,
+                                    title: if busy { "A file dialog is open" } else { "Read a template file into the editor, and see what it does before it is kept" },
+                                    onclick: move |_| leave(Leave::Import),
+                                    "Import a template"
+                                }
+                            }
                         }
                     }
                 }
+                if let Some((opened, _)) = editor {
+                    TemplateEditor { key: "{opened}", on_cancel: move |_| leave(Leave::Back) }
+                } else {
                 div { class: if phone { "template-browser-body one" } else { "template-browser-body" },
                     if show_list {
                         div { class: "template-side",
@@ -186,10 +253,32 @@ pub(in crate::ui) fn TemplateBrowser(
                                         file: entry.source.slug().map(|slug| format!("{slug}.toml")),
                                         problems: view.problems.clone(),
                                     }
+                                    div { class: "reader-actions",
+                                        if let Some(edit) = edit_kept(&entry.source) {
+                                            button { class: "sm",
+                                                r#type: "button",
+                                                title: "Change its text. Saving writes over it",
+                                                onclick: move |_| start(Some(edit.clone())),
+                                                "Edit"
+                                            }
+                                        }
+                                        button { class: "sm",
+                                            r#type: "button",
+                                            title: "Write a template of your own from its text",
+                                            onclick: {
+                                                let source = entry.source.clone();
+                                                move |_| start(edit_copy(&source))
+                                            },
+                                            "Edit a copy"
+                                        }
+                                    }
                                     TemplateReading { view, tab }
                                 },
                                 (Some(entry), None) => rsx! {
-                                    BrokenReader { entry }
+                                    BrokenReader {
+                                        entry: entry.clone(),
+                                        on_edit: move |_| start(edit_kept(&entry.source)),
+                                    }
                                 },
                                 (None, _) => rsx! {
                                     div { class: "empty", p { "No template to show." } }
@@ -210,7 +299,7 @@ pub(in crate::ui) fn TemplateBrowser(
                     }
                     button { class: "ghost",
                         r#type: "button",
-                        onclick: move |_| open.set(false),
+                        onclick: move |_| leave(Leave::Close),
                         "Close"
                     }
                     if show_reader {
@@ -252,6 +341,54 @@ pub(in crate::ui) fn TemplateBrowser(
                                 },
                                 "Use this template"
                             }
+                        }
+                    }
+                }
+                }
+            }
+        }
+        if let Some(pending) = leaving() {
+            DiscardChanges {
+                title: editor.as_ref().map(|(_, title)| title.clone()).unwrap_or_default(),
+                on_keep: move |_| leaving.set(None),
+                on_discard: move |_| {
+                    leaving.set(None);
+                    go(pending);
+                },
+            }
+        }
+    }
+}
+
+/// Asks before text the editor holds is left without being saved.
+#[component]
+fn DiscardChanges(
+    title: String,
+    on_keep: EventHandler<()>,
+    on_discard: EventHandler<()>,
+) -> Element {
+    rsx! {
+        div { class: "modal-backdrop",
+            onclick: move |_| on_keep.call(()),
+            div { class: "modal",
+                role: "alertdialog",
+                aria_label: "Discard your changes?",
+                onclick: move |evt| evt.stop_propagation(),
+                div { class: "stack",
+                    h3 { "Discard your changes?" }
+                    p { class: "lede",
+                        "{title}: the text has changed and is not saved. Leaving loses the changes."
+                    }
+                    div { class: "btn-row",
+                        button { class: "ghost",
+                            r#type: "button",
+                            onclick: move |_| on_keep.call(()),
+                            "Cancel"
+                        }
+                        button { class: "danger solid",
+                            r#type: "button",
+                            onclick: move |_| on_discard.call(()),
+                            "Discard"
                         }
                     }
                 }
@@ -359,9 +496,9 @@ fn not_a_template(why: &str) -> String {
 }
 
 /// A file of the user's that is not a template: why, and its text when it
-/// could be read.
+/// could be read, which **Edit** opens in the editor to be mended.
 #[component]
-fn BrokenReader(entry: TemplateEntry) -> Element {
+fn BrokenReader(entry: TemplateEntry, on_edit: EventHandler<()>) -> Element {
     let text = entry.source.text().map(str::to_string);
     rsx! {
         div { class: "reader-head",
@@ -371,6 +508,16 @@ fn BrokenReader(entry: TemplateEntry) -> Element {
             }
             p { class: "error", "{not_a_template(entry.problem.as_deref().unwrap_or_default())}" }
             p { class: "hint", "It is kept, and stays out of the list of templates you can use until it is removed or mended." }
+        }
+        if text.is_some() {
+            div { class: "reader-actions",
+                button { class: "sm",
+                    r#type: "button",
+                    title: "Mend its text in the editor. Saving writes over it",
+                    onclick: move |_| on_edit.call(()),
+                    "Edit"
+                }
+            }
         }
         if let Some(text) = text {
             div { class: "reader-panel",
@@ -437,7 +584,7 @@ pub(in crate::ui) fn TemplateReading(
 /// Every question in the order the form asks them, then each option with
 /// the questions asked only under it.
 #[component]
-fn QuestionsTab(questions: ReaderQuestions) -> Element {
+pub(in crate::ui) fn QuestionsTab(questions: ReaderQuestions) -> Element {
     let count = questions.count();
     rsx! {
         if count == 0 && questions.options.is_empty() {
@@ -508,7 +655,7 @@ fn QuestionRow(question: ReaderQuestion) -> Element {
 /// Every block in file order, numbered, with every field it sets and where
 /// the value comes from.
 #[component]
-fn BlocksTab(blocks: Vec<ReaderBlock>) -> Element {
+pub(in crate::ui) fn BlocksTab(blocks: Vec<ReaderBlock>) -> Element {
     rsx! {
         if blocks.is_empty() {
             p { class: "muted", "It writes no block." }

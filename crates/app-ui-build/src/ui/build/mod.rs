@@ -23,6 +23,7 @@ mod kept;
 mod rail;
 mod raw;
 mod template;
+mod text;
 
 pub(in crate::ui) use advanced::*;
 pub(in crate::ui) use browser::*;
@@ -33,6 +34,7 @@ pub(in crate::ui) use kept::*;
 pub(in crate::ui) use rail::*;
 pub(in crate::ui) use raw::*;
 pub(in crate::ui) use template::*;
+pub(in crate::ui) use text::*;
 
 #[component]
 pub fn BuildPanel() -> Element {
@@ -42,13 +44,15 @@ pub fn BuildPanel() -> Element {
     let error = form.error;
     let compiling = use_signal(|| false);
     let compiled_note = form.compiled_note;
-    let mut picker_open = use_signal(|| false);
+    // Text the Templates dialog's editor held when Build was last left is
+    // still there: the dialog opens on it again.
+    let mut picker_open = use_signal(|| form.editing.peek().is_some());
     let mut pending = use_signal(|| None::<TemplateSource>);
     let desk = use_context_provider(|| TemplateDesk {
         note: Signal::new(None),
         error: Signal::new(None),
         removing: Signal::new(None),
-        preview: Signal::new(None),
+        editing: form.editing,
         saving: Signal::new(None),
         show: Signal::new(None),
         dialog: Signal::new(false),
@@ -186,7 +190,6 @@ pub fn BuildPanel() -> Element {
         }
         DiscardBlocks { pending }
         SaveTemplateDialog {}
-        ImportDialog {}
         RemoveTemplate {}
         // A browser picks the file to import through this field.
         input {
@@ -194,7 +197,7 @@ pub fn BuildPanel() -> Element {
             class: "file-hidden",
             r#type: "file",
             accept: ".toml",
-            onchange: move |evt| read_import(evt, session, desk.preview, desk.error),
+            onchange: move |evt| read_import(evt, desk.editing, desk.error),
         }
     }
 }

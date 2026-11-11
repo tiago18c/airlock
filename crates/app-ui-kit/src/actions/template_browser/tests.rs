@@ -3,9 +3,10 @@
 //! text of one of the user's kept as it was written.
 
 use super::*;
-use crate::actions::kept_templates::{export_file, keep_import, load_kept, preview_import};
+use crate::actions::kept_templates::{export_file, load_kept};
 use crate::actions::template::template_entries;
 use crate::actions::template::tests::Screen;
+use crate::actions::template_text::{save_text, EditTarget};
 use crate::state::forms::TemplateSource;
 use std::collections::BTreeSet;
 use wallet_core::BUILTIN_TEMPLATES;
@@ -272,13 +273,19 @@ accounts = { source = \"$wallet\", destination = \"$to\" }
 arguments = { amount = \"0.25\" }
 ";
 
+/// Keep `text` as an imported file is kept from the editor.
+fn keep_import(screen: &Screen, text: &str) {
+    let importing = EditTarget::Import {
+        file: "import.toml".into(),
+    };
+    let kept = screen.act(|| save_text(&screen.session, &importing, text, false));
+    assert!(kept.is_ok(), "{kept:?}");
+}
+
 #[tokio::test]
 async fn an_imported_template_is_kept_listed_and_exported_as_it_was_written() {
     let screen = Screen::offline().await;
-    let preview = screen.act(|| preview_import(&screen.session, COMMENTED.as_bytes()));
-    assert_eq!(preview.text.as_deref(), Some(COMMENTED));
-    let kept = screen.act(|| keep_import(&screen.session, preview.text.as_deref().unwrap(), false));
-    assert!(kept.is_ok(), "{kept:?}");
+    keep_import(&screen, COMMENTED);
 
     // Kept byte for byte, comments and all.
     let stored = screen
@@ -367,9 +374,7 @@ async fn the_dialog_opens_on_the_first_template_that_can_be_used() {
         &format!("{}\" #", Pubkey::new_from_array([9; 32])),
     );
     let mut entries = screen.act(|| template_entries(&screen.session));
-    screen
-        .act(|| keep_import(&screen.session, &elsewhere, false))
-        .unwrap();
+    keep_import(&screen, &elsewhere);
     let all = screen.act(|| template_entries(&screen.session));
     let greyed = all.last().unwrap().clone();
     assert!(greyed.problem.is_some());

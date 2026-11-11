@@ -240,6 +240,76 @@ impl TemplateSource {
     }
 }
 
+/// What the editor is writing.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum EditTarget {
+    /// A new template, from the starter text.
+    New,
+    /// One of the user's, kept as `slug`: saving writes over it, or renames
+    /// it when the name changes. `name` is its name, or its file name when
+    /// it is not a template yet.
+    Edit { slug: String, name: String },
+    /// The text of the template `name`, shipped or the user's, tied to no
+    /// kept file.
+    Copy { name: String },
+    /// A file read for import, by its file name. Nothing is kept yet.
+    Import { file: String },
+}
+
+impl EditTarget {
+    /// What the editor's head says is being done.
+    pub fn title(&self) -> String {
+        match self {
+            Self::New => "New template".to_string(),
+            Self::Edit { name, .. } => format!("Editing “{name}”"),
+            Self::Copy { name } => format!("A copy of “{name}”"),
+            Self::Import { file } => format!("Importing {file}"),
+        }
+    }
+
+    /// The slug of the file it writes over: one of the user's being edited.
+    pub fn own_slug(&self) -> Option<&str> {
+        match self {
+            Self::Edit { slug, .. } => Some(slug),
+            _ => None,
+        }
+    }
+}
+
+/// The editor, open on a text.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct TextEdit {
+    pub target: EditTarget,
+    /// The text it opened with. Leaving with other text asks first.
+    pub original: Arc<str>,
+    /// The text as it stands in the field.
+    pub text: String,
+    /// Tells this opening from every other, so the field is made anew for
+    /// each.
+    pub opened: u64,
+}
+
+static OPENINGS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
+
+impl TextEdit {
+    /// The editor on `text`, written as `target`.
+    pub fn open(target: EditTarget, text: String) -> Self {
+        Self {
+            target,
+            original: text.as_str().into(),
+            text,
+            opened: OPENINGS.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
+        }
+    }
+
+    /// Whether the text differs from what the editor opened with. A field
+    /// gives its lines back ending in a line feed alone, so a file written
+    /// with carriage returns is not changed by being typed in.
+    pub fn dirty(&self) -> bool {
+        self.text.replace("\r\n", "\n") != self.original.replace("\r\n", "\n")
+    }
+}
+
 /// The user's templates, as read from where they are kept.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct KeptTemplates {
@@ -381,6 +451,10 @@ pub struct BuildForm {
     /// The user's templates, once read. `None` until the list is first
     /// needed.
     pub kept: Signal<Option<KeptTemplates>>,
+    /// The Templates dialog's editor, while it is open. Kept here, not in
+    /// the dialog, so text not saved yet outlives the Build screen when
+    /// something else takes the window.
+    pub editing: Signal<Option<TextEdit>>,
 }
 
 impl BuildForm {
