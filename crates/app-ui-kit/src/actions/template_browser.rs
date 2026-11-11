@@ -8,7 +8,7 @@
 //! every field it sets and where the value comes from: nothing a template
 //! writes is left out.
 
-use super::kept_templates::{name_words, term_words};
+use super::kept_templates::{name_words, term_words, FactsFrom};
 use super::template::TemplateEntry;
 use crate::state::session::Session;
 use dioxus::prelude::*;
@@ -68,7 +68,7 @@ pub fn template_view(
         Err(problems) => problems.iter().map(super::sentence).collect(),
     };
     let questions = reader_questions(&template, checked.as_ref().ok());
-    let blocks = reader_blocks(&*idls, &template);
+    let blocks = reader_blocks(&*idls, &template, FactsFrom::of(session));
     drop(idls);
     TemplateView {
         template,
@@ -136,7 +136,9 @@ pub fn reader_questions(template: &Template, form: Option<&TemplateForm>) -> Rea
         until: input
             .default
             .as_ref()
-            .map(|default| term_words(template, default)),
+            // A default is a literal, a built-in name or a program, never a
+            // chain fact.
+            .map(|default| term_words(template, default, FactsFrom::Node)),
         takes: form
             .and_then(|form| form.inputs.iter().find(|asked| asked.name == input.name))
             .and_then(takes_words),
@@ -271,7 +273,12 @@ pub enum FieldOrigin {
 
 /// Every block of `template`, read from the file itself, so a block under
 /// an option and a template that does not fit this network are shown too.
-pub fn reader_blocks(idls: &dyn wallet_core::IdlCatalog, template: &Template) -> Vec<ReaderBlock> {
+/// A chain fact says where it comes from, `facts`.
+pub fn reader_blocks(
+    idls: &dyn wallet_core::IdlCatalog,
+    template: &Template,
+    facts: FactsFrom,
+) -> Vec<ReaderBlock> {
     let program_name = |program_id: &Pubkey| match wallet_core::pinned_program(program_id) {
         Some(pinned) => pinned.label.to_string(),
         None => idls
@@ -335,7 +342,7 @@ pub fn reader_blocks(idls: &dyn wallet_core::IdlCatalog, template: &Template) ->
                     .iter()
                     .map(|(field, term)| ReaderField {
                         field: field.clone(),
-                        origin: origin(template, term),
+                        origin: origin(template, term, facts),
                         unit: if units { unit(field) } else { None },
                     })
                     .collect();
@@ -367,7 +374,7 @@ pub fn reader_blocks(idls: &dyn wallet_core::IdlCatalog, template: &Template) ->
 }
 
 /// Where the value `term` gives a field comes from.
-fn origin(template: &Template, term: &Term) -> FieldOrigin {
+fn origin(template: &Template, term: &Term, facts: FactsFrom) -> FieldOrigin {
     match term {
         Term::Literal(text) => FieldOrigin::Fixed {
             address: Pubkey::from_str(text.trim()).ok(),
@@ -390,7 +397,7 @@ fn origin(template: &Template, term: &Term) -> FieldOrigin {
             }
             FieldOrigin::Worked {
                 value: (name != WALLET && name != FEE_PAYER).then(|| name.clone()),
-                words: term_words(template, term),
+                words: term_words(template, term, facts),
             }
         }
     }

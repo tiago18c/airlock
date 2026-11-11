@@ -205,7 +205,7 @@ async fn the_token_2022_template_reads_with_its_options_and_what_each_block_does
         lamports.origin,
         FieldOrigin::Worked {
             value: Some("lamports".into()),
-            words: "rent for $funded bytes, from the node".into()
+            words: "rent for $funded bytes, typed in as the chain has it".into()
         }
     );
     assert!(matches!(
@@ -242,7 +242,7 @@ async fn a_block_on_the_token_program_of_a_mint_says_so() {
             .origin,
         FieldOrigin::Worked {
             value: Some("decimals".into()),
-            words: "the decimals of the mint “Mint”, from the node".into()
+            words: "the decimals of the mint “Mint”, typed in as the chain has it".into()
         }
     );
     let amount = &shown_view.questions.always[2];

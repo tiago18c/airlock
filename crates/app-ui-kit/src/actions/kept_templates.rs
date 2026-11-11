@@ -463,20 +463,50 @@ pub fn read_import(
     });
 }
 
+/// Where a chain fact comes from in this app: the node, or the person
+/// where there is none (Airlock Offline, a phone in offline mode).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FactsFrom {
+    Node,
+    Person,
+}
+
+impl FactsFrom {
+    /// Where the facts of the session's app come from: the node when it has
+    /// one to ask.
+    pub fn of(session: &Session) -> Self {
+        if session.rpc().is_ok() {
+            Self::Node
+        } else {
+            Self::Person
+        }
+    }
+
+    /// What follows a chain fact in words.
+    fn words(self) -> &'static str {
+        match self {
+            Self::Node => "from the node",
+            Self::Person => "typed in as the chain has it",
+        }
+    }
+}
+
 /// What a reference or a literal stands for, in words: a value by what its
 /// function does, an input by its label. A value another value is worked
-/// out from is named as the file names it, `$name`.
-pub fn term_words(template: &Template, term: &Term) -> String {
-    words_of(template, term, false)
+/// out from is named as the file names it, `$name`. A chain fact says where
+/// it comes from, `facts`.
+pub fn term_words(template: &Template, term: &Term, facts: FactsFrom) -> String {
+    words_of(template, term, Some(facts))
 }
 
 /// What a reference or a literal stands for, as part of other words: a
 /// value by its name, `$mint`, rather than by what works it out.
 pub fn name_words(template: &Template, term: &Term) -> String {
-    words_of(template, term, true)
+    words_of(template, term, None)
 }
 
-fn words_of(template: &Template, term: &Term, nested: bool) -> String {
+/// `facts` is `None` for a value named inside other words.
+fn words_of(template: &Template, term: &Term, facts: Option<FactsFrom>) -> String {
     let name = match term {
         Term::Literal(text) => return text.clone(),
         Term::Ref(name) => name.as_str(),
@@ -493,13 +523,14 @@ fn words_of(template: &Template, term: &Term, nested: bool) -> String {
     if let Some(address) = template.programs.get(name) {
         return address.to_string();
     }
-    let Some(call) = template.values.get(name).filter(|_| !nested) else {
+    let (Some(call), Some(facts)) = (template.values.get(name), facts) else {
         return format!("${name}");
     };
+    let from = facts.words();
     let arg = |at: usize| {
         call.args
             .get(at)
-            .map(|arg| words_of(template, arg, true))
+            .map(|arg| words_of(template, arg, None))
             .unwrap_or_default()
     };
     match call.function {
@@ -511,10 +542,10 @@ fn words_of(template: &Template, term: &Term, nested: bool) -> String {
         Function::Token2022MintFundedSpace => {
             format!("the size of the mint {} with its metadata", arg(0))
         }
-        Function::RentFor => format!("rent for {} bytes, from the node", arg(0)),
-        Function::DecimalsOf => format!("the decimals of the mint {}, from the node", arg(0)),
+        Function::RentFor => format!("rent for {} bytes, {from}", arg(0)),
+        Function::DecimalsOf => format!("the decimals of the mint {}, {from}", arg(0)),
         Function::TokenProgramOf => {
-            format!("the token program of the mint {}, from the node", arg(0))
+            format!("the token program of the mint {}, {from}", arg(0))
         }
     }
 }
