@@ -7,14 +7,14 @@ use app_core::{HistoryEntry, Outcome};
 use app_ui_kit::ui::address::name_or_short;
 use app_ui_kit::ui::local_time;
 use app_ui_kit::ui::tx_view::{use_worked_out, Worked, READING_DEADLINE};
-use app_ui_kit::{Glyph, Icon, Session};
+use app_ui_kit::{Glyph, Icon, PhraseView, Session};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use solana_signature::Signature;
 use wallet_core::{
     change_for, decode_landed, decode_transaction, explain_with_note, format_sol,
     format_token_amount, CatalogView, DecodedTx, DisplayNote, ExplainedIx, IntentBody, IntentSpan,
-    IntentValue, LookupTables, COMPUTE_BUDGET_PROGRAM_ID,
+    IntentValue, LookupTables, Phrase, COMPUTE_BUDGET_PROGRAM_ID,
 };
 
 use crate::sync::HISTORY_JOB;
@@ -275,7 +275,7 @@ fn HistoryList(
             Row {
                 head,
                 signature: entry.signature,
-                text: row_text(&session, &entry, row_words.as_ref()),
+                text: row_text(&entry, row_words.as_ref()),
                 sub,
                 changes: change_lines(&session, &entry, only),
                 outcome: entry.outcome,
@@ -290,12 +290,21 @@ fn HistoryList(
                 if let Some(head) = row.head.clone() {
                     h3 { class: "history-day", "{head}" }
                 }
-                button {
+                // Not a `button`: its title holds addresses, which open their
+                // own card, and a button may not hold anything pressable.
+                div {
                     class: "history-row",
-                    r#type: "button",
+                    role: "button",
+                    tabindex: "0",
                     onclick: move |_| onopen.call(row.signature),
+                    onkeydown: move |e: KeyboardEvent| {
+                        if e.key() == Key::Enter || e.key() == Key::Character(" ".into()) {
+                            e.prevent_default();
+                            onopen.call(row.signature);
+                        }
+                    },
                     div { class: "history-row-main",
-                        span { class: "history-row-text", "{row.text}" }
+                        span { class: "history-row-text", PhraseView { phrase: row.text.clone() } }
                         span { class: "history-row-sub muted", "{row.sub}" }
                     }
                     div { class: "history-row-side",
@@ -320,7 +329,8 @@ struct Row {
     /// The day heading drawn above it, when it starts a day.
     head: Option<String>,
     signature: Signature,
-    text: String,
+    /// What it did, its addresses drawn as addresses everywhere are.
+    text: Phrase,
     sub: String,
     changes: Vec<String>,
     outcome: Outcome,
@@ -396,47 +406,47 @@ fn read_rows(view: &CatalogView, txs: &Vec<(Signature, DecodedTx)>) -> Vec<(Sign
         .collect()
 }
 
-/// One line for a row: what it did, in words when they are known.
-fn row_text(session: &Session, entry: &HistoryEntry, words: Option<&RowWords>) -> String {
+/// One line for a row: what it did, in words when they are known, each
+/// address in it an address, as in every other sentence of the app.
+fn row_text(entry: &HistoryEntry, words: Option<&RowWords>) -> Phrase {
     let Some(words) = words else {
         // The node said it does not have it, so often it is not asked again.
         if decoded(entry).is_none() && entry.misses >= app_core::history::MAX_MISSES {
-            return "The node did not return it in full".into();
+            return Phrase::text("The node did not return it in full");
         }
-        return match (&entry.label, decoded(entry).is_some()) {
+        return Phrase::text(match (&entry.label, decoded(entry).is_some()) {
             (_, true) => "Reading it…".into(),
             (Some(label), false) => format!("{label} · reading it from the node…"),
             (None, false) => "Reading it from the node…".into(),
-        };
+        });
     };
     let mut text = match (&words.sentence, &words.title, &words.program) {
-        (Some(spans), _, _) => sentence_text(session, spans),
-        (None, Some(title), _) => title.clone(),
-        (None, None, Some((_, Some(name)))) => format!("Calls {name}"),
-        (None, None, Some((program, None))) => {
-            format!("Calls {}", name_or_short(session, program))
-        }
-        (None, None, None) => "Does nothing".into(),
+        (Some(spans), _, _) => sentence_phrase(spans),
+        (None, Some(title), _) => Phrase::text(title.clone()),
+        (None, None, Some((program, _))) => Phrase::text("Calls ").a(*program),
+        (None, None, None) => Phrase::text("Does nothing"),
     };
     if words.more > 0 {
-        text.push_str(&format!(" · and {} more", words.more));
+        text.push_text(format!(" · and {} more", words.more));
     }
     text
 }
 
-/// A sentence as plain text, each address by its name.
-fn sentence_text(session: &Session, spans: &[IntentSpan]) -> String {
-    spans
-        .iter()
-        .map(|span| match span {
-            IntentSpan::Text(text) => text.clone(),
+/// A sentence as a phrase: its words and values as text, its addresses as
+/// addresses.
+fn sentence_phrase(spans: &[IntentSpan]) -> Phrase {
+    let mut phrase = Phrase::default();
+    for span in spans {
+        match span {
+            IntentSpan::Text(text) => phrase.push_text(text.clone()),
             IntentSpan::Value(IntentValue {
                 body: IntentBody::Address(pubkey),
                 ..
-            }) => name_or_short(session, pubkey),
-            IntentSpan::Value(value) => value.primary.clone(),
-        })
-        .collect()
+            }) => phrase.push_address(*pubkey),
+            IntentSpan::Value(value) => phrase.push_text(value.primary.clone()),
+        };
+    }
+    phrase
 }
 
 /// What it did to the balances of the wallet shown, or of each wallet it

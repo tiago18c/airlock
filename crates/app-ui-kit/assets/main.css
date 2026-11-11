@@ -4713,8 +4713,13 @@ textarea.short { min-height: 64px; }
   cursor: pointer;
 }
 .history-row:hover { background: var(--surface-2); border-color: var(--border-strong); }
+.history-row:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .history-row-main { display: grid; gap: var(--space-1); min-width: 0; flex: 1; }
 .history-row-text { font-weight: var(--weight-medium); overflow-wrap: anywhere; }
+/* An address in a row's title: the inline chip, no taller than the line it
+   is in and no louder than the words around it. */
+.history-row-text .addr { min-height: 0; font-weight: inherit; vertical-align: baseline; }
+.history-row-text .addr::before { line-height: inherit; }
 .history-row-sub { font-size: var(--text-sm); }
 .history-row-side {
   display: grid;

@@ -103,7 +103,7 @@ Every address goes through `ui/address` in `app-ui-kit`. What to call it comes f
 
 | Density | Component | Shows | Where |
 | --- | --- | --- | --- |
-| Inline | `Address { pubkey }` | icon · label · short | Sentences and chip rows: Sign, the transaction view and its intent sentences, Proposals, browser requests, fact rows, stake authorities |
+| Inline | `Address { pubkey }` | icon · label · short | Sentences and chip rows: Sign, the transaction view and its intent sentences, the titles of History's rows (no taller than their line), Proposals, browser requests, fact rows, stake authorities |
 | Row | `AddressRow { pubkey }`, `AddressSelect` | icon · label · short · copy, then what the list adds | Pickers, checklists, lists. `full: true` shows the whole address: Inspect, and on Sign the accounts of an instruction no sentence explains (no IDL, or an IDL without a display form). `no_icon: true` leaves the kind icon out where every row has the same one (the Programs list); an address that needs care keeps it. `no_label: true` leaves the label out where the list shows the name in a column of its own |
 | Copy capsule | `CopyAddress { pubkey }` | short · copy, one button | Where the address is the thing to press: an Address Book entry and a token account on a phone. It copies the whole address and shows a check for a moment |
 | Full | `AddressHeader { pubkey }` | badge · label · what it is · whole address · copy | Wallet rows, address book entries, Programs detail, stake accounts. `no_address: true` leaves the address to the caller, as the Programs detail does to draw it under its pinned name. `short: true` shortens the address to one line: a wallet card on a phone |
