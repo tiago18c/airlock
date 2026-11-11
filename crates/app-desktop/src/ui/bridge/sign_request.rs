@@ -425,7 +425,7 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
             if let (Some(tx), Some(explained), Some(verdict)) = (prep.shown.clone(), prep.explained.clone(), prep.verdict) {
                 if verdict.risky > 0 {
                     RiskNotice { explained: explained.clone() }
-                    p { class: "hint", "So it is signed from Review, not from here." }
+                    p { class: "hint", "So it is signed in Review and Sign, not from here." }
                 }
                 if fetching() {
                     p { class: "muted", role: "status", "Looking for the IDLs of its programs…" }
@@ -574,7 +574,7 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
         }
         if !locked && !can_sign && to_sign < count {
             p { class: "hint",
-                "Sign is offered when this device can finish every transaction. Review takes them to the Sign screen one at a time, and returns them together after the last."
+                "Sign is offered when this device can finish every transaction. Review opens them in Review and Sign one at a time, and returns them together after the last."
             }
         }
         div { class: "btn-row",

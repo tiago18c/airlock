@@ -356,7 +356,7 @@ pub(in crate::ui) fn ActionModal(action: Action, on_close: EventHandler<()>) -> 
                     div { class: "btn-row",
                         button { class: "ghost", onclick: move |_| on_close.call(()), "Cancel" }
                         button { class: "primary", disabled: busy(), onclick: submit,
-                            if busy() { "Preparing…" } else { "Review in Sign" }
+                            if busy() { "Preparing…" } else { "Review and Sign" }
                         }
                     }
                 }

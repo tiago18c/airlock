@@ -91,7 +91,7 @@ pub(in crate::ui) fn idl_account_field(
                 }
                 if made_here {
                     span { class: "hint",
-                        "Made on this device. It signs on Sign, and is kept in memory until the app closes."
+                        "Made on this device. It signs in Review and Sign, and is kept in memory until the app closes."
                     }
                 }
             }

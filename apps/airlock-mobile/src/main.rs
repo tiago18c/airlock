@@ -26,11 +26,12 @@ const BRAND: AppBrand = AppBrand {
 
 /// Online: the bottom bar, then what More lists.
 const ONLINE_TABS: &[Tab] = &[Tab::Portfolio, Tab::Wallets, Tab::Sign, Tab::History];
+/// In the sidebar's order, as the desktop lists them.
 const ONLINE_MORE: &[Tab] = &[
     Tab::Stake,
-    Tab::Build,
     Tab::AddressBook,
     Tab::Programs,
+    Tab::Build,
     Tab::Settings,
 ];
 

@@ -122,3 +122,5 @@ Every address goes through `ui/address` in `app-ui-kit`. What to call it comes f
 | 960px and up | 232px sidebar with labels |
 | 640 to 959px | 76px icon rail |
 | under 640px | Bar along the bottom edge, sticky top bar |
+
+A section has one name, the sidebar's, in buttons and running text alike: a button that takes a transaction to Review and Sign says "Review and Sign", and a hint says "in Review and Sign", never "in Sign" or "on Review". A tab's short label in a phone's tab bar ("Sign", "Contacts") is the only place a name is shortened. A phone's More sheet lists its sections in the sidebar's order.

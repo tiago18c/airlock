@@ -243,7 +243,7 @@ pub fn ProposalsModal(
                         }
                     }
                     p { class: "hint",
-                        "Approve, Execute and Together open a transaction on the Sign screen. Nothing is signed here. Stored instructions are read with the IDLs on this device, which are not vetted yet."
+                        "Approve, Execute and Together open a transaction in Review and Sign. Nothing is signed here. Stored instructions are read with the IDLs on this device, which are not vetted yet."
                     }
                 }
             }

@@ -185,7 +185,7 @@ pub fn SquadsForm(creating: bool, on_done: EventHandler<()>) -> Element {
                 }
             }
             p { class: "note",
-                "Every member may propose, approve and execute. Creating needs a connection: the app reads the program's settings and a recent blockhash, then opens the transaction in Sign."
+                "Every member may propose, approve and execute. Creating needs a connection: the app reads the program's settings and a recent blockhash, then opens the transaction in Review and Sign."
             }
         } else {
             label { "Multisig address"

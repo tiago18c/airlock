@@ -390,7 +390,7 @@ pub(super) fn VectorFacts(
                     }
                     if due && !held_here {
                         p { class: "note",
-                            "On the device that holds this key, press Rotate key in this wallet's Settings, then scan or paste what it shows on Sign here. This device sends it, paid by the fee payer."
+                            "On the device that holds this key, press Rotate key in this wallet's Settings, then scan or paste what it shows on Review and Sign here. This device sends it, paid by the fee payer."
                         }
                     }
                 }
@@ -403,7 +403,7 @@ pub(super) fn VectorFacts(
             }
             if restored {
                 p { class: "warn",
-                    "Restored from its recovery phrase. It signs nothing until it has moved to its next key: scan the account's state from the online device on Sign, then press Rotate key and send what it shows at once."
+                    "Restored from its recovery phrase. It signs nothing until it has moved to its next key: scan the account's state from the online device on Review and Sign, then press Rotate key and send what it shows at once."
                 }
                 p { class: "warn",
                     match recovery_left {
@@ -427,7 +427,7 @@ pub(super) fn VectorFacts(
                     }
                     div { class: "btn-row",
                         button { class: "sm",
-                            title: "Build the rotation's transaction again, on a new blockhash, and open it in Sign. The key device does not have to sign again.",
+                            title: "Build the rotation's transaction again, on a new blockhash, and open it in Review and Sign. The key device does not have to sign again.",
                             onclick: send_again,
                             "Send rotation again"
                         }
@@ -465,7 +465,7 @@ pub(super) fn VectorFacts(
                         div { class: "stack",
                             h3 { "Account state" }
                             p { class: "lede",
-                                "On the device that holds the key, scan this on Sign or paste the text there. It is read from the chain now, and goes out of date when the account acts."
+                                "On the device that holds the key, scan this on Review and Sign or paste the text there. It is read from the chain now, and goes out of date when the account acts."
                             }
                             PayloadShare { objects: vec![object],
                                 button { class: "ghost",
@@ -493,7 +493,7 @@ pub(super) fn VectorFacts(
                     } else {
                         "A rotation to the next key is signed, once at each of {kept_nonces} nonces, and this device has not been shown that it landed."
                     }
-                    " Show it again for the online device as often as needed: that signs nothing. Once it has landed, scan the account's state from the online device on Sign, and this device signs with the next key."
+                    " Show it again for the online device as often as needed: that signs nothing. Once it has landed, scan the account's state from the online device on Review and Sign, and this device signs with the next key."
                 }
                 if kept.is_some() {
                     div { class: "btn-row",
@@ -545,7 +545,7 @@ pub(super) fn VectorFacts(
                 }
             } else if next_key.is_none() || next_is_current {
                 p { class: "note",
-                    "Before the next transaction, store the next public key of the device that holds this key: scan or paste what Show next key in its Settings shows on Sign here. After a transaction landed, give that device this account's state first, so it moves to its next key."
+                    "Before the next transaction, store the next public key of the device that holds this key: scan or paste what Show next key in its Settings shows on Review and Sign here. After a transaction landed, give that device this account's state first, so it moves to its next key."
                 }
             } else {
                 p { class: "note", "A next public key from the device that holds this key is stored for the next transaction." }
@@ -564,7 +564,7 @@ pub(super) fn VectorFacts(
                         div { class: "stack",
                             h3 { "Next public key" }
                             p { class: "lede",
-                                "On the online device, scan this on Sign or paste the text there. It stores the key on this wallet, and the next transaction moves the account to it. It is a public key, never a secret."
+                                "On the online device, scan this on Review and Sign or paste the text there. It stores the key on this wallet, and the next transaction moves the account to it. It is a public key, never a secret."
                             }
                             PayloadShare { objects: vec![QrObject::PublicKey { scheme: scheme.byte(), key }],
                                 button { class: "ghost",
@@ -583,7 +583,7 @@ pub(super) fn VectorFacts(
                     div { class: "stack",
                         h3 { "Key rotation" }
                         p { class: "lede",
-                            "On the online device, scan this on Sign or paste the text there. It sends the move to the new key, paid by this wallet's fee payer. It carries the new public key and signatures, never a secret."
+                            "On the online device, scan this on Review and Sign or paste the text there. It sends the move to the new key, paid by this wallet's fee payer. It carries the new public key and signatures, never a secret."
                         }
                         PayloadShare { objects: vec![object],
                             button { class: "ghost",

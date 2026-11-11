@@ -332,7 +332,7 @@ pub(in crate::ui) fn KeptRotations() -> Element {
                     div { class: "stack",
                         h3 { "Key rotation" }
                         p { class: "lede",
-                            "On the online device, scan this on Sign or paste the text there. It sends the move to the new key, paid by the wallet's fee payer. It carries the new public key and signatures, never a secret."
+                            "On the online device, scan this on Review and Sign or paste the text there. It sends the move to the new key, paid by the wallet's fee payer. It carries the new public key and signatures, never a secret."
                         }
                         PayloadShare { objects: vec![object],
                             button { class: "ghost",

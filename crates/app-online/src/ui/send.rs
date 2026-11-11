@@ -285,7 +285,7 @@ fn SendModal(open: SendOpen) -> Element {
                         button { class: "primary",
                             disabled: busy(),
                             onclick: move |_| review(),
-                            if busy() { "Preparing…" } else { "Review in Sign" }
+                            if busy() { "Preparing…" } else { "Review and Sign" }
                         }
                     }
                 }
