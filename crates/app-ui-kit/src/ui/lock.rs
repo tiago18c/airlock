@@ -102,6 +102,8 @@ pub fn VaultUnlock(
 ) -> Element {
     let session = use_context::<Session>();
     let initialized = session.is_initialized();
+    // The lock screen of an app with no network says so, under its heading.
+    let offline = crate::state::online::use_offline_build();
     // Skipping lands on what works without a vault: the address book, or on
     // a phone, whose bar lists no address book, Review and Sign.
     let skip_to = if crate::ui::use_phone_layout() {
@@ -210,6 +212,9 @@ pub fn VaultUnlock(
             div { class: "stack",
                 span { class: "avatar", Icon { glyph: Glyph::Lock } }
                 h2 { if initialized { "Unlock vault" } else { "Create vault" } }
+                if show_skip && offline {
+                    p { class: "hint offline-note", "Offline: this app never connects to a node." }
+                }
                 if let Some(reason) = reason {
                     p { class: "lede", "{reason}" }
                 }

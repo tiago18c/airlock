@@ -68,7 +68,8 @@ Contrast, checked for both themes: body and secondary text at least 7:1, hint te
 | Filter pill | `.tab` in a `.chip-row` | Narrows a list |
 | Chip | `.chip` with `.kind`, `.ok`, `.warn`, `.danger`, `.info` | Read-only label |
 | Steps | `.sign-steps > .sign-step` with `.done`, `.current`, `.running`, `.blocked`, `.failed`, `.unanswered`, `.skipped` | Review and Sign. A mark, a name and a word for its state; on a phone only the current step keeps its name |
-| Network status | `.status` with `.online` (answered), `.offline` (unreachable), `.probing` | Top bar, online build |
+| Network status | `.status` with `.online` (answered), `.offline` (unreachable), `.probing` | An online app: the foot of the sidebar on a desktop (its dot alone in the icon rail); on a phone, above the tab bar and only while something is wrong |
+| Offline marker | `OfflineMarker { short }`: `.status.offline-mark` | An app with no network (Airlock Offline, the phone's offline mode), in the network status's place: the sidebar's foot on a desktop, "Offline · never connects"; on a phone the top bar, in the bell's place, "Offline" alone (`short`). A hollow mark, not a status colour: nothing is wrong. Its lock screen says so in one line under the heading |
 | Message | `p.note`, `p.warn`, `p.error` | Result, caution, failure |
 | Empty state | `.empty` | When a list has nothing to show |
 | Card | `.card`, `.card.auth` | Groups one topic on a page |

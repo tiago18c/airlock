@@ -6,8 +6,9 @@
 use crate::state::session::{Session, Tab};
 use crate::ui::{
     use_phone_layout, AccountInspector, AddressBookPanel, BuildPanel, DeviceDialog,
-    FingerprintOffer, Glyph, Icon, LockScreen, PhoneLayout, PhoneSheet, ProgramsPanel,
-    SettingsPanel, SignPanel, ThemeToggle, UnlockPrompt, WalletSwitcher, WalletsPanel,
+    FingerprintOffer, Glyph, Icon, LockScreen, OfflineMarker, PhoneLayout, PhoneSheet,
+    ProgramsPanel, SettingsPanel, SignPanel, ThemeToggle, UnlockPrompt, WalletSwitcher,
+    WalletsPanel,
 };
 use crate::{MAIN_CSS, TOKENS_CSS};
 use dioxus::prelude::*;
@@ -42,7 +43,8 @@ pub fn AppShell(
     /// Top bar items between the wallet switcher and the theme toggle: the
     /// cluster, status chips and the notification bell.
     top_bar_extra: Option<Element>,
-    /// The status bar at the bottom of the sidebar: the network chip.
+    /// The status bar at the bottom of the sidebar: the network chip. An app
+    /// with no network that passes nothing gets the Offline marker.
     sidebar_status: Option<Element>,
     /// In Settings, for what only this build has: browser connections.
     settings_extra: Option<Element>,
@@ -75,6 +77,13 @@ pub fn AppShell(
     let frameless = window_controls.is_some();
     let phone = more.is_some();
     use_context_provider(|| PhoneLayout(phone));
+    // An app with no network says so where an online one shows its network:
+    // the sidebar's foot, or on a phone the top bar, in the bell's place.
+    let offline = app_ui_kit::use_offline_build();
+    let sidebar_status =
+        sidebar_status.or_else(|| (offline && !phone).then(|| rsx! { OfflineMarker {} }));
+    let top_bar_extra = top_bar_extra
+        .or_else(|| (offline && phone).then(|| rsx! { OfflineMarker { short: true } }));
     let mut class = String::from("app");
     if gated {
         class.push_str(" locked");

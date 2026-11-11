@@ -32,3 +32,10 @@ impl Network {
 pub fn use_network() -> Option<Network> {
     use_context::<Option<Network>>()
 }
+
+/// Whether this is an app with no network at all: Airlock Offline, or the
+/// phone's offline mode. Its shell provides `None` for the network; one that
+/// provides nothing (a test) is not taken for offline.
+pub fn use_offline_build() -> bool {
+    try_use_context::<Option<Network>>().is_some_and(|network| network.is_none())
+}

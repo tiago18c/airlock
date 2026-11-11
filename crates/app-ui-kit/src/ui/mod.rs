@@ -56,6 +56,29 @@ pub fn Accordion(title: String, mut open: Signal<bool>, children: Element) -> El
     }
 }
 
+/// Where an online app shows its network status: the word Offline, in an
+/// app that has no network at all. A hollow mark in the text colour, not a
+/// status colour, since nothing is wrong. `short` leaves out "never
+/// connects", for a phone's top bar.
+#[component]
+pub fn OfflineMarker(#[props(default)] short: bool) -> Element {
+    rsx! {
+        span {
+            class: "status offline-mark",
+            role: "note",
+            title: "Offline: this app never connects to a node.",
+            aria_label: "Offline: this app never connects to a node.",
+            span { class: "status-dot", aria_hidden: "true" }
+            span { aria_hidden: "true",
+                "Offline"
+                if !short {
+                    span { class: "net-cluster", " · never connects" }
+                }
+            }
+        }
+    }
+}
+
 /// A question mark that explains the heading it sits beside, on hover, focus
 /// or tap.
 #[component]
