@@ -1,6 +1,7 @@
 //! An IDL to browse: a tab for each kind of thing it describes.
 
 use super::*;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// The tabs over a program's IDL: each kind it has, with how many, then the
 /// raw file. A tab the IDL has nothing for is left out.
@@ -82,14 +83,14 @@ pub(in crate::ui) fn ParsedIdl(tree: IdlOutline, section: IdlSection) -> Element
         IdlSection::Accounts => rsx! {
             div { class: "idl-section idl-list",
                 for account in tree.accounts {
-                    NamedItem { key: "{account.name}", name: account.name, detail: account.detail }
+                    NamedItem { key: "{account.name}", item: account }
                 }
             }
         },
         IdlSection::Types => rsx! {
             div { class: "idl-section idl-list",
                 for kind in tree.types {
-                    NamedItem { key: "{kind.name}", name: kind.name, detail: kind.detail }
+                    NamedItem { key: "{kind.name}", item: kind }
                 }
             }
         },
@@ -114,7 +115,7 @@ pub(in crate::ui) fn ParsedIdl(tree: IdlOutline, section: IdlSection) -> Element
         IdlSection::Events => rsx! {
             div { class: "idl-section idl-list",
                 for event in tree.events {
-                    NamedItem { key: "{event.name}", name: event.name, detail: event.detail }
+                    NamedItem { key: "{event.name}", item: event }
                 }
             }
         },
@@ -188,7 +189,7 @@ fn InstructionList(instructions: Vec<IdlIxOutline>) -> Element {
                             // column, as wide as the longest of them.
                             style: "--idl-name-w: {row_names_width(&ix)}ch",
                             if !ix.docs.is_empty() {
-                                p { class: "idl-docs", "{ix.docs}" }
+                                IxDocs { docs: ix.docs.clone() }
                             }
                             if !ix.accounts.is_empty() {
                                 div { class: "idl-block",
@@ -242,6 +243,79 @@ fn InstructionList(instructions: Vec<IdlIxOutline>) -> Element {
     }
 }
 
+/// An opened instruction's description. On a phone it is held to three
+/// lines, so the accounts and arguments a person opened it for come first,
+/// with "more" to read the rest in place and "less" to fold it back. Only
+/// the page knows where the text wraps, so it says whether the three lines
+/// cut anything, again whenever the text's box changes size (the
+/// instruction opened, the phone turned); the control is there only when
+/// they do.
+#[component]
+fn IxDocs(docs: String) -> Element {
+    let phone = use_phone_layout();
+    let mut whole = use_signal(|| false);
+    let mut long = use_signal(|| false);
+    let id = use_hook(|| {
+        static NEXT: AtomicUsize = AtomicUsize::new(0);
+        format!("idl-docs-{}", NEXT.fetch_add(1, Ordering::Relaxed))
+    });
+    if !phone {
+        return rsx! { p { class: "idl-docs", "{docs}" } };
+    }
+    let watched = id.clone();
+    rsx! {
+        div { class: "idl-docs-block",
+            p {
+                id: "{id}",
+                class: if whole() { "idl-docs" } else { "idl-docs clamped" },
+                onmounted: move |_| {
+                    let script = clamp_watch_js(&watched);
+                    spawn(async move {
+                        let mut page = app_ui_kit::platform::eval(script);
+                        while let Ok(cut) = page.recv::<bool>().await {
+                            if *long.peek() != cut {
+                                long.set(cut);
+                            }
+                        }
+                    });
+                },
+                "{docs}"
+            }
+            if long() {
+                button {
+                    class: "link-btn idl-docs-more",
+                    r#type: "button",
+                    aria_expanded: whole(),
+                    onclick: move |_| whole.set(!whole()),
+                    if whole() { "less" } else { "more" }
+                }
+            }
+        }
+    }
+}
+
+/// The script that tells [`IxDocs`] whether its clamped text is cut: once
+/// now and on every change of the text's size while it is clamped. A text
+/// not laid out (its instruction closed) or shown whole says nothing, and
+/// the watch ends when the text leaves the page.
+fn clamp_watch_js(id: &str) -> String {
+    format!(
+        r#"const el = document.getElementById("{id}");
+        if (el) {{
+            let last = null;
+            const look = () => {{
+                if (!el.isConnected) {{ seen.disconnect(); return; }}
+                if (!el.classList.contains("clamped") || el.clientHeight === 0) return;
+                const cut = el.scrollHeight > el.clientHeight + 1;
+                if (cut !== last) {{ last = cut; dioxus.send(cut); }}
+            }};
+            const seen = new ResizeObserver(look);
+            seen.observe(el);
+            look();
+        }}"#
+    )
+}
+
 /// The row that opens an IDL item: the app's chevron, which turns when the
 /// item is open, then the name.
 #[component]
@@ -256,16 +330,81 @@ fn IdlSummary(name: String) -> Element {
 
 /// An account, type or event: its name, opening to what it holds.
 #[component]
-fn NamedItem(name: String, detail: String) -> Element {
+fn NamedItem(item: IdlNamed) -> Element {
+    let phone = use_phone_layout();
+    let IdlNamed {
+        name,
+        detail,
+        fields,
+        variants,
+        size,
+    } = item;
     if detail.is_empty() {
         return rsx! { div { class: "idl-item idl-leaf", "{name}" } };
     }
+    if !phone {
+        return rsx! {
+            details { class: "idl-item",
+                IdlSummary { name }
+                div { class: "idl-body", p { "{detail}" } }
+            }
+        };
+    }
+    // On a phone it reads as an instruction does: what it holds at the end
+    // of its closed row, and opened, a row for each field or variant with
+    // its type. One with neither, a type that is another type's alias, says
+    // what it is in a word, closed and open.
+    let counts =
+        held(fields.len(), variants, size).or_else(|| fields.is_empty().then(|| detail.clone()));
+    let width = longest(fields.iter().map(|field| field.name.as_str()));
     rsx! {
-        details { class: "idl-item",
-            IdlSummary { name }
-            div { class: "idl-body", p { "{detail}" } }
+        details { class: "idl-item idl-named",
+            summary {
+                span { class: "idl-chevron", aria_hidden: "true", Icon { glyph: Glyph::ChevronRight } }
+                span { class: "idl-name", title: "{name}", "{name}" }
+                if let Some(counts) = counts {
+                    span { class: "idl-counts", "{counts}" }
+                }
+            }
+            div { class: "idl-body", style: "--idl-name-w: {width}ch",
+                if fields.is_empty() {
+                    p { "{detail}" }
+                } else {
+                    div { class: "idl-block",
+                        h4 { class: "eyebrow", if variants { "Variants" } else { "Fields" } }
+                        ul { class: "idl-rows",
+                            for field in fields {
+                                li { class: "idl-row", key: "{field.name}",
+                                    span { class: "idl-row-name", "{field.name}" }
+                                    if !field.ty.is_empty() {
+                                        span { class: "idl-row-value",
+                                            code { class: "idl-row-type", "{field.ty}" }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
+}
+
+/// What a closed account or type says it holds: "5 fields · 82 bytes",
+/// "3 variants"; `None` when it holds neither and has no size.
+pub(in crate::ui) fn held(fields: usize, variants: bool, size: Option<u64>) -> Option<String> {
+    let one = if variants { "variant" } else { "field" };
+    let mut parts = Vec::new();
+    match fields {
+        0 => {}
+        1 => parts.push(format!("1 {one}")),
+        n => parts.push(format!("{n} {one}s")),
+    }
+    if let Some(size) = size {
+        parts.push(format!("{size} bytes"));
+    }
+    (!parts.is_empty()).then(|| parts.join(" · "))
 }
 
 /// How many characters the longest of these names has, at least one.

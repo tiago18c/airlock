@@ -27,8 +27,8 @@ pub use catalog::{
     idl_bytes_from_program_metadata, inspect_idl, outline_idl, pretty_idl,
     program_metadata_account_data, program_metadata_idl_address, CatalogView, IdlAccountUse,
     IdlArgOutline, IdlBodies, IdlBundleReport, IdlCatalog, IdlChainSource, IdlCheck, IdlError,
-    IdlErrorOutline, IdlIxOutline, IdlNamed, IdlOrigin, IdlOutline, IdlPdaOutline, IdlRecord,
-    IdlSpec, IdlStore, InspectedIdl, MemoryBodies, NoIdls, MAX_IDL_BYTES,
+    IdlErrorOutline, IdlFieldOutline, IdlIxOutline, IdlNamed, IdlOrigin, IdlOutline, IdlPdaOutline,
+    IdlRecord, IdlSpec, IdlStore, InspectedIdl, MemoryBodies, NoIdls, MAX_IDL_BYTES,
 };
 pub use draft::IdlDraft;
 pub use inspect::{

@@ -18,6 +18,10 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
     let checking = use_signal(|| false);
     let check_note = use_signal(|| None::<String>);
     let view = use_memo(move || program_view(session, (form.selected)()));
+    let phone = use_phone_layout();
+    // On a phone, where the file came from and what it is, folded under the
+    // check so the tabs start high.
+    let mut about = use_signal(|| false);
 
     let Some(record) = record else {
         return rsx! {
@@ -61,6 +65,12 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
     let embedded = (record.origin == IdlOrigin::Builtin)
         .then(|| session.embedded_idl(&record.program_id))
         .flatten();
+    let repository = embedded
+        .as_ref()
+        .and_then(|embedded| match &embedded.source {
+            IdlSource::Repository { url } => Some(url.to_string()),
+            _ => None,
+        });
 
     rsx! {
         div { class: "card program-detail",
@@ -77,6 +87,100 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                     }),
                 }
             }
+            if phone {
+                // One block on one left edge: the address, the state of the
+                // online check on a line of its own, then the two controls:
+                // the check, and a fold for where the file came from and the
+                // rest.
+                div { class: "stack program-about",
+                    div { class: "addr-full program-address",
+                        // No room for it on one line: cut in the middle, in
+                        // full in the tooltip and in what Copy copies.
+                        code { class: "mono", title: "{program_id}", "{middle_cut(&program_id.to_string(), 12)}" }
+                        CopyButton { text: program_id.to_string() }
+                    }
+                    // A state, not a control: words and icon both in its
+                    // colour, on their own line so no button reads as their
+                    // label.
+                    p { class: "program-check-state {status_tone(status)}", title: status_tip(status),
+                        Icon { glyph: if status_tone(status) == "ok" { Glyph::Check } else { Glyph::Alert } }
+                        span { "{status_words(status)}" }
+                    }
+                    div { class: "program-head-actions",
+                        button {
+                            class: "sm program-check",
+                            disabled: checking(),
+                            onclick: move |_| check_one(session, program_id, checking, check_note),
+                            if checking() { "Checking…" } else { "Check online" }
+                        }
+                        button {
+                            class: "sm program-about-toggle",
+                            r#type: "button",
+                            aria_expanded: about(),
+                            onclick: move |_| about.set(!about()),
+                            "About this IDL"
+                            span {
+                                class: if about() { "program-about-chevron on" } else { "program-about-chevron" },
+                                aria_hidden: "true",
+                                Icon { glyph: Glyph::ChevronRight }
+                            }
+                        }
+                    }
+                    if about() {
+                        div { class: "program-about-more",
+                            if let Some(url) = repository.clone() {
+                                div { class: "program-source-row",
+                                    span { class: "program-source-label", "Source" }
+                                    button {
+                                        class: "link-btn program-source",
+                                        r#type: "button",
+                                        title: "{url}",
+                                        onclick: move |_| {
+                                            if let Err(err) = session.open_link(&url) {
+                                                session.show_problem(format!("Could not open link: {err}"));
+                                            }
+                                        },
+                                        "{short_source(repository.as_deref().unwrap_or_default())}"
+                                    }
+                                }
+                            }
+                            p { class: "muted program-facts",
+                                span { class: "program-facts-text",
+                                    "{spec} · "
+                                    if let Some(version) = version.clone() {
+                                        "version {version} · "
+                                    }
+                                    "{checksum}"
+                                }
+                                if record.origin == IdlOrigin::Builtin {
+                                    span { class: "chip", "built in" }
+                                }
+                                if let Some(host) = host_name.clone() {
+                                    span { class: "chip info", "from the {host} IDL" }
+                                }
+                                span { class: "chip", title: "IDLs are kept per network: the cluster in use", "IDL for {network}" }
+                            }
+                            if let Some(embedded) = embedded.clone() {
+                                // The repository is the Source line: what was
+                                // changed after taking the file is said here.
+                                if repository.is_none() {
+                                    p { class: "hint", "{source_sentence(&embedded.source)} {embedded.changes}" }
+                                } else if !embedded.changes.is_empty() {
+                                    p { class: "hint", "{embedded.changes}" }
+                                }
+                            }
+                            if let Some(host) = host_name.clone() {
+                                p { class: "hint",
+                                    "Read from the additional programs of the {host} IDL. Its checksum and online check are that file's, and it goes when that file goes."
+                                }
+                            }
+                        }
+                    }
+                    if let Some(text) = check_note() {
+                        p { class: "note", "{text}" }
+                    }
+                }
+            } else {
             div { class: "stack program-about",
                 div { class: "addr-full program-address",
                     code { class: "mono", "{program_id}" }
@@ -122,6 +226,7 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                 if let Some(text) = check_note() {
                     p { class: "note", "{text}" }
                 }
+            }
             }
             IdlTabs { outline: shown.outline.clone(), section }
             if tab == IdlSection::Raw {
@@ -170,6 +275,41 @@ fn program_view(session: Session, id: Option<Pubkey>) -> ProgramView {
             error: Some(err.to_string()),
         },
     }
+}
+
+/// `text` with its middle left out past `keep` characters at each end, so
+/// both ends of an address stay to check it by.
+pub(in crate::ui) fn middle_cut(text: &str, keep: usize) -> String {
+    let chars: Vec<char> = text.chars().collect();
+    if chars.len() <= 2 * keep + 1 {
+        return text.to_string();
+    }
+    let head: String = chars[..keep].iter().collect();
+    let tail: String = chars[chars.len() - keep..].iter().collect();
+    format!("{head}…{tail}")
+}
+
+/// A repository's URL as a phone shows it: on a known forge, the path
+/// without the scheme and the host ("solana-program/token"); anything else
+/// as given.
+pub(in crate::ui) fn short_source(url: &str) -> String {
+    const FORGES: [&str; 4] = ["github.com", "gitlab.com", "codeberg.org", "bitbucket.org"];
+    let Some(rest) = url
+        .strip_prefix("https://")
+        .or_else(|| url.strip_prefix("http://"))
+    else {
+        return url.to_string();
+    };
+    let rest = rest.strip_prefix("www.").unwrap_or(rest);
+    let Some((host, path)) = rest.split_once('/') else {
+        return url.to_string();
+    };
+    let path = path.trim_end_matches('/');
+    let path = path.strip_suffix(".git").unwrap_or(path);
+    if !FORGES.contains(&host) || path.is_empty() {
+        return url.to_string();
+    }
+    path.to_string()
 }
 
 /// Where an embedded file was taken from.
@@ -225,6 +365,15 @@ pub(in crate::ui) fn status_words(status: IdlPinStatus) -> &'static str {
         IdlPinStatus::MatchesSource => "made from the IDL on chain",
         IdlPinStatus::Differs => "differs from chain",
         IdlPinStatus::NoIdl => "no IDL stored",
+    }
+}
+
+/// The colour a check state is drawn in on a phone, as words with an icon.
+pub(in crate::ui) fn status_tone(status: IdlPinStatus) -> &'static str {
+    match status {
+        IdlPinStatus::Matches | IdlPinStatus::MatchesSource => "ok",
+        IdlPinStatus::Differs => "danger",
+        IdlPinStatus::NotChecked | IdlPinStatus::NoIdl => "warn",
     }
 }
 

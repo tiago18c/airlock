@@ -1,11 +1,13 @@
 use crate::actions::programs::*;
 use crate::state::forms::IdlSection;
 use crate::state::session::Session;
-use crate::ui::{short_checksum, AddressHeader, AddressRow, CopyButton, Glyph, Icon, PaneMenu};
+use crate::ui::{
+    short_checksum, use_phone_layout, AddressHeader, AddressRow, CopyButton, Glyph, Icon, PaneMenu,
+};
 use dioxus::prelude::*;
 use wallet_core::{
-    pretty_idl, IdlAccountUse, IdlIxOutline, IdlOrigin, IdlOutline, IdlPinStatus, IdlRecord,
-    IdlSource, IdlSpec,
+    pretty_idl, IdlAccountUse, IdlIxOutline, IdlNamed, IdlOrigin, IdlOutline, IdlPinStatus,
+    IdlRecord, IdlSource, IdlSpec,
 };
 
 mod detail;
@@ -23,6 +25,17 @@ pub fn ProgramsPanel() -> Element {
     let records = session.idl_records();
     let directory = (session.directory)();
     let any = !records.is_empty();
+    // A phone has room for one of the two panes: the list, or the program
+    // opened from it in its place, under a way back to the list.
+    let phone = use_phone_layout();
+    let mut selected = session.forms.program.selected;
+    let opened = selected().and_then(|id| records.iter().find(|record| record.program_id == id));
+    let can_remove = opened.is_some_and(removable);
+    let open_id = opened.map(|record| record.program_id);
+    let one_pane = phone && open_id.is_some();
+    // Back to the list puts it where it was left: the filter is kept here,
+    // the scroll offset in the page when the program was opened.
+    let mut came_back = use_signal(|| false);
     let shown: Vec<IdlRecord> = records
         .into_iter()
         .filter(|record| {
@@ -40,28 +53,65 @@ pub fn ProgramsPanel() -> Element {
     rsx! {
         section { class: "page",
             div { class: "stack",
-                div { class: "pane-head",
-                    div {
-                        h2 { "Programs" }
-                    }
-                    if files {
-                        // A screen mostly for reading: no primary action, and
-                        // the bundle actions behind the menu.
-                        div { class: "btn-row",
+                if let (true, Some(id)) = (one_pane, open_id) {
+                    // In place of the heading: the way back to the list, and
+                    // Remove, which a phone's row leaves to the program it
+                    // opens.
+                    div { class: "program-back-row",
+                        button {
+                            class: "ghost program-back",
+                            r#type: "button",
+                            // The program starts at its top, wherever the
+                            // list was scrolled to.
+                            onmounted: move |_| {
+                                let _ = app_ui_kit::platform::eval("window.scrollTo(0, 0);");
+                            },
+                            onclick: move |_| {
+                                came_back.set(true);
+                                selected.set(None);
+                            },
+                            Icon { glyph: Glyph::ChevronLeft }
+                            "Programs"
+                        }
+                        if can_remove {
                             button {
-                                onclick: move |_| import_one(session, note, error),
-                                "Import IDL"
+                                class: "ghost danger program-remove",
+                                r#type: "button",
+                                onclick: move |_| {
+                                    if session.remove_idl(&id).is_ok() {
+                                        came_back.set(true);
+                                        selected.set(None);
+                                    }
+                                },
+                                Icon { glyph: Glyph::Trash }
+                                "Remove"
                             }
-                            PaneMenu { label: "More program actions",
-                                button { class: "pane-menu-item",
-                                    role: "menuitem",
-                                    onclick: move |_| import_folder(session, note, error),
-                                    "Import bundle"
+                        }
+                    }
+                } else {
+                    div { class: "pane-head",
+                        div {
+                            h2 { "Programs" }
+                        }
+                        if files {
+                            // A screen mostly for reading: no primary action, and
+                            // the bundle actions behind the menu.
+                            div { class: "btn-row",
+                                button {
+                                    onclick: move |_| import_one(session, note, error),
+                                    "Import IDL"
                                 }
-                                button { class: "pane-menu-item",
-                                    role: "menuitem",
-                                    onclick: move |_| export_folder(session, note, error),
-                                    "Export IDLs"
+                                PaneMenu { label: "More program actions",
+                                    button { class: "pane-menu-item",
+                                        role: "menuitem",
+                                        onclick: move |_| import_folder(session, note, error),
+                                        "Import bundle"
+                                    }
+                                    button { class: "pane-menu-item",
+                                        role: "menuitem",
+                                        onclick: move |_| export_folder(session, note, error),
+                                        "Export IDLs"
+                                    }
                                 }
                             }
                         }
@@ -83,9 +133,10 @@ pub fn ProgramsPanel() -> Element {
                     }
                 }
                 div { class: "book-layout program-layout",
-                    if any {
+                    if any && !one_pane {
                         // One card: the filter as its first row, staying in
-                        // place over the rows that scroll under it.
+                        // place over the rows that scroll under it. On a
+                        // phone the rows run down the page.
                         div { class: "program-side",
                             div { class: "filter-bar program-filter",
                                 label {
@@ -102,13 +153,28 @@ pub fn ProgramsPanel() -> Element {
                                 p { class: "muted program-none", "No programs match this filter." }
                             }
                             ul { class: "group-list program-list",
+                                // Back from a program, the list is scrolled
+                                // to where it was when the program was opened.
+                                onmounted: move |_| {
+                                    if came_back() {
+                                        came_back.set(false);
+                                        let _ = app_ui_kit::platform::eval(
+                                            "const y = window.__airlockProgramsY; \
+                                             if (y != null) requestAnimationFrame(() => window.scrollTo(0, y));",
+                                        );
+                                    }
+                                },
                                 for record in shown {
                                     ProgramItem { key: "{record.program_id}", record }
                                 }
                             }
                         }
                     }
-                    ProgramDetail {}
+                    // A phone shows the list until a program is opened, with
+                    // no empty pane under it.
+                    if !phone || one_pane {
+                        ProgramDetail {}
+                    }
                 }
             }
         }
@@ -138,16 +204,27 @@ fn ProgramItem(record: IdlRecord) -> Element {
     let mut selected = form.selected;
     let id = record.program_id;
     let on = selected() == Some(id);
+    // On a phone a row opens the program in the list's place, as the
+    // chevron says; Remove is on the program it opens.
+    let phone = use_phone_layout();
 
     rsx! {
         li { class: if on { "group-item on" } else { "group-item" },
             button {
                 class: "group-pick",
-                onclick: move |_| selected.set(Some(id)),
+                onclick: move |_| {
+                    if phone {
+                        let _ = app_ui_kit::platform::eval("window.__airlockProgramsY = window.scrollY;");
+                    }
+                    selected.set(Some(id));
+                },
                 // Every entry is a program, so the icon is left out.
                 AddressRow { pubkey: id, no_copy: true, no_card: true, no_icon: true, class: "program-row" }
+                if phone {
+                    span { class: "program-chevron", aria_hidden: "true", Icon { glyph: Glyph::ChevronRight } }
+                }
             }
-            if record.origin != IdlOrigin::Builtin && record.host.is_none() {
+            if !phone && removable(&record) {
             div { class: "group-actions",
                 button {
                     class: "ghost danger icon-btn sm",
@@ -164,6 +241,12 @@ fn ProgramItem(record: IdlRecord) -> Element {
             }
         }
     }
+}
+
+/// Whether a program's IDL can be removed: one the app ships, or one read
+/// from another program's IDL, goes only with what holds it.
+fn removable(record: &IdlRecord) -> bool {
+    record.origin != IdlOrigin::Builtin && record.host.is_none()
 }
 
 /// Whether a program answers the filter: one of its names, or its address,
@@ -287,6 +370,39 @@ mod tests {
         assert_eq!(row_names_width(&ix), "discriminator".len());
         assert_eq!(longest(["burn", "transferChecked"].into_iter()), 15);
         assert_eq!(longest(std::iter::empty()), 1);
+    }
+
+    #[test]
+    fn a_long_address_keeps_both_ends() {
+        assert_eq!(middle_cut(TOKEN, 12), "TokenkegQfeZ…f9Ss623VQ5DA");
+        assert_eq!(middle_cut("short", 12), "short");
+    }
+
+    #[test]
+    fn a_forge_url_is_shown_as_its_path() {
+        assert_eq!(
+            short_source("https://github.com/solana-program/token"),
+            "solana-program/token"
+        );
+        assert_eq!(
+            short_source("https://gitlab.com/owner/repo.git/"),
+            "owner/repo"
+        );
+        assert_eq!(
+            short_source("https://example.org/owner/repo"),
+            "https://example.org/owner/repo"
+        );
+        assert_eq!(short_source("https://github.com/"), "https://github.com/");
+    }
+
+    #[test]
+    fn a_closed_account_says_what_it_holds() {
+        assert_eq!(
+            held(5, false, Some(82)).as_deref(),
+            Some("5 fields · 82 bytes")
+        );
+        assert_eq!(held(1, true, None).as_deref(), Some("1 variant"));
+        assert_eq!(held(0, false, None), None);
     }
 
     #[test]
