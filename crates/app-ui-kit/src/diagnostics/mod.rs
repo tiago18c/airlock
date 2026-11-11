@@ -6,7 +6,7 @@ use crate::state::forms::TxSource;
 
 pub fn source_name(source: &TxSource) -> &'static str {
     match source {
-        TxSource::Build => "build",
+        TxSource::Build { .. } => "build",
         TxSource::Wallets => "wallets",
         TxSource::Stake => "stake",
         TxSource::Browser { .. } => "browser",

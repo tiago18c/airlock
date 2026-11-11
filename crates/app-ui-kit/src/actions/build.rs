@@ -166,19 +166,29 @@ fn count_blocks(instructions: &[OpenedIx]) -> (usize, usize) {
         })
 }
 
-/// Hand a compiled transaction to Sign. `from` says what on Build it was
-/// compiled from, and `extra` is what compiling adds; both go in its note.
+/// Hand a compiled transaction to Sign. `template` is the name of the
+/// template it was compiled from, if any, and `extra` is what compiling
+/// adds; both go in its note, and the name in its source line, the only
+/// place Review and Sign names a template.
 fn review_compiled(
     session: &Session,
     compiled: CompiledTx,
-    from: &str,
+    template: Option<&str>,
     extra: &str,
     last_valid_height: Option<u64>,
 ) {
+    let from = template
+        .map(super::template::template_source_note)
+        .unwrap_or_default();
     session.open_in_sign(
-        SignLoad::new(compiled.wire, TxSource::Build)
-            .with_note(format!("Compiled on Build{from}{extra}."))
-            .expiring_at(last_valid_height),
+        SignLoad::new(
+            compiled.wire,
+            TxSource::Build {
+                template: template.map(str::to_string),
+            },
+        )
+        .with_note(format!("Compiled on Build{from}{extra}."))
+        .expiring_at(last_valid_height),
     );
 }
 
@@ -209,19 +219,19 @@ pub fn compile(session: Session, compiling: Signal<bool>) {
     compiled_note.set(None);
 
     match current_instructions(&session) {
-        Ok(instructions) => compile_instructions(session, instructions, String::new(), compiling),
+        Ok(instructions) => compile_instructions(session, instructions, None, compiling),
         Err(msg) => error.set(Some(msg)),
     }
 }
 
 /// Compile `instructions` with Build's fee payer and Advanced options, and
 /// open the transaction on Sign. Online, what Advanced options leave blank
-/// is filled from the node first. `from` follows "Compiled on Build" in the
-/// note Sign shows.
+/// is filled from the node first. `template` is the name of the template
+/// the instructions were written from, if any.
 pub(crate) fn compile_instructions(
     session: Session,
     instructions: Vec<Instruction>,
-    from: String,
+    template: Option<String>,
     mut compiling: Signal<bool>,
 ) {
     let form = session.forms.build;
@@ -235,7 +245,7 @@ pub(crate) fn compile_instructions(
         .filter(|_| settings.wants_blockhash() || settings.wants_limits());
     let Some(rpc) = rpc else {
         match compile_draft(fee_payer, instructions, &settings) {
-            Ok(tx) => review_compiled(&session, tx, &from, "", None),
+            Ok(tx) => review_compiled(&session, tx, template.as_deref(), "", None),
             Err(err) => error.set(Some(err.to_string())),
         }
         return;
@@ -256,7 +266,9 @@ pub(crate) fn compile_instructions(
             settings,
         };
         match compile_with_defaults(rpc.as_ref(), draft, &probe).await {
-            Ok((tx, note, height)) => review_compiled(&session, tx, &from, &note, height),
+            Ok((tx, note, height)) => {
+                review_compiled(&session, tx, template.as_deref(), &note, height)
+            }
             Err(err) => error.set(Some(err.to_string())),
         }
         compiling.set(false);

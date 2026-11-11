@@ -419,7 +419,7 @@ pub fn compile_template(session: Session, compiling: Signal<bool>) {
         Ok(instructions) => compile_instructions(
             session,
             instructions,
-            template_source_note(&open.template.name),
+            Some(open.template.name.to_string()),
             compiling,
         ),
         Err(msg) => error.set(Some(msg)),

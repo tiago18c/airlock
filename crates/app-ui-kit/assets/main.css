@@ -383,6 +383,9 @@ code { color: var(--text-2); }
   font-size: var(--text-sm);
 }
 .page-source .icon { flex: none; width: 16px; height: 16px; }
+/* A template's name, the one thing of it Review and Sign shows, on one
+   line cut at its end. */
+.page-source.from-template { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .page-source .origin {
   min-width: 0;
   overflow: hidden;

@@ -539,6 +539,14 @@ async fn the_sign_note_names_the_template_and_nothing_else_of_it() {
         note,
         "Compiled on Build from the template “Create a Token-2022 token”."
     );
+    // The source line Review and Sign draws names it too.
+    let source = screen.act(|| screen.session.forms.sign.source.peek().clone());
+    assert_eq!(
+        source,
+        Some(crate::state::forms::TxSource::Build {
+            template: Some("Create a Token-2022 token".into())
+        })
+    );
     let template = screen.open_template().unwrap().template;
     let mut words: Vec<&str> = template.summary.iter().map(String::as_str).collect();
     for input in &template.inputs {
