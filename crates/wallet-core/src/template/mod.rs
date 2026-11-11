@@ -32,15 +32,15 @@ mod save_tests;
 #[cfg(test)]
 mod tests;
 
-pub use builtin::{builtin_template, BuiltinTemplate, BUILTIN_TEMPLATES};
+pub use builtin::{builtin_template, BuiltinTemplate, BUILTIN_TEMPLATES, STARTER_TEMPLATE};
 pub use check::{check, FormInput, InputKind, InputScale, Problem, TemplateForm};
 pub use expand::{expand, Answers, Env, ExpandedBlock, Expansion, Fact, Facts, Missing, Row};
 pub use model::{
     Block, Call, Function, Input, Template, TemplateOption, Term, BUILT_IN_NAMES, FEE_PAYER, WALLET,
 };
 pub use parse::{
-    TemplateError, MAX_BLOCKS, MAX_INPUTS, MAX_OPTIONS, MAX_PROGRAMS, MAX_TEMPLATE_BYTES,
-    MAX_VALUES,
+    TemplateError, TextPlace, MAX_BLOCKS, MAX_INPUTS, MAX_OPTIONS, MAX_PROGRAMS,
+    MAX_TEMPLATE_BYTES, MAX_VALUES,
 };
 pub use save::{
     builtin_named, is_template_slug, template_slug, words, Choice, FieldAt, Locked, PlannedInput,

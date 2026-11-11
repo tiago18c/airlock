@@ -528,3 +528,26 @@ fn a_fact_answered_is_still_one_the_blocks_rest_on() {
     );
     assert!(blank.uses.is_empty() && blank.needs.is_empty());
 }
+
+#[test]
+fn the_starter_expands_to_a_transfer_that_builds() {
+    let template = Template::parse(STARTER_TEMPLATE).unwrap();
+    // Unanswered, the amount takes its default and only the address is
+    // missing.
+    let answers = Answers::for_template(&template);
+    let blank = run(&template, &answers, &env(), &Facts::default());
+    assert_eq!(blank.missing, [Missing::Input("to".into())]);
+    let answers = answers.answer("to", &pk(9).to_string());
+    let mut expansion = run(&template, &answers, &env(), &Facts::default());
+    assert!(expansion.missing.is_empty() && expansion.needs.is_empty());
+    assert_eq!(instructions(&expansion), ["transferSol"]);
+    let built = build_all(&mut expansion);
+    assert_eq!(
+        built,
+        [solana_system_interface::instruction::transfer(
+            &pk(1),
+            &pk(9),
+            10_000_000
+        )]
+    );
+}

@@ -26,9 +26,12 @@ const MAX_NAME_CHARS: usize = 48;
 pub enum TemplateError {
     /// Larger than [`MAX_TEMPLATE_BYTES`].
     TooLarge { bytes: usize },
-    /// Not TOML, or a key or type the format does not have. The text is the
-    /// TOML reader's, which names the key and its line.
-    Toml(String),
+    /// Not TOML, or a key or type the format does not have. `message` is
+    /// the TOML reader's, which names the key; `place` is where it points.
+    Toml {
+        message: String,
+        place: Option<TextPlace>,
+    },
     /// `key` holds something the format does not allow. Blocks, inputs and
     /// options are numbered from 1 in `key`, as `block[2].accounts.mint`.
     Invalid { key: String, expected: String },
@@ -37,7 +40,32 @@ pub enum TemplateError {
     /// return, or a Unicode bidirectional control. `at` is where: "line 3"
     /// when it is in the text itself, or the key whose string holds it when
     /// it was written as an escape (`block[1].arguments.name`).
-    Hidden { at: String, character: char },
+    /// `place` is where it is when it is in the text itself.
+    Hidden {
+        at: String,
+        character: char,
+        place: Option<TextPlace>,
+    },
+}
+
+/// A place in a template's text, both counted from 1: the line, and the
+/// character within it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct TextPlace {
+    pub line: usize,
+    pub column: usize,
+}
+
+impl TemplateError {
+    /// Where in the text it points, when it points somewhere: a TOML error
+    /// and a hidden character in the text do; a key that holds something
+    /// the format does not allow names its key instead.
+    pub fn place(&self) -> Option<TextPlace> {
+        match self {
+            Self::Toml { place, .. } | Self::Hidden { place, .. } => *place,
+            Self::TooLarge { .. } | Self::Invalid { .. } => None,
+        }
+    }
 }
 
 impl std::fmt::Display for TemplateError {
@@ -47,9 +75,20 @@ impl std::fmt::Display for TemplateError {
                 f,
                 "This template is {bytes} bytes. A template can be at most {MAX_TEMPLATE_BYTES}."
             ),
-            Self::Toml(message) => write!(f, "This is not a template file: {message}"),
+            Self::Toml {
+                message,
+                place: Some(place),
+            } => write!(
+                f,
+                "This is not a template file: line {}: {message}",
+                place.line
+            ),
+            Self::Toml {
+                message,
+                place: None,
+            } => write!(f, "This is not a template file: {message}"),
             Self::Invalid { key, expected } => write!(f, "{key}: {expected}"),
-            Self::Hidden { at, character } => write!(
+            Self::Hidden { at, character, .. } => write!(
                 f,
                 "{at}: holds U+{:04X}, {}. It can make the text read as something other than what it is, so a template may not hold one.",
                 *character as u32,
@@ -168,10 +207,18 @@ fn hidden_kind(c: char) -> Option<&'static str> {
 /// Refuses text that holds a hidden character, naming its line.
 fn hidden_in_text(text: &str) -> Result<(), TemplateError> {
     for (index, line) in text.split('\n').enumerate() {
-        if let Some(character) = line.chars().find(|c| hidden_kind(*c).is_some()) {
+        if let Some((column, character)) = line
+            .chars()
+            .enumerate()
+            .find(|(_, c)| hidden_kind(*c).is_some())
+        {
             return Err(TemplateError::Hidden {
                 at: format!("line {}", index + 1),
                 character,
+                place: Some(TextPlace {
+                    line: index + 1,
+                    column: column + 1,
+                }),
             });
         }
     }
@@ -189,7 +236,11 @@ fn hidden_in_table(table: &toml::Table, prefix: &str) -> Result<(), TemplateErro
             format!("{prefix}.{key}")
         };
         if let Some(character) = key.chars().find(|c| hidden_kind(*c).is_some()) {
-            return Err(TemplateError::Hidden { at, character });
+            return Err(TemplateError::Hidden {
+                at,
+                character,
+                place: None,
+            });
         }
         hidden_in_value(value, &at)?;
     }
@@ -202,6 +253,7 @@ fn hidden_in_value(value: &toml::Value, at: &str) -> Result<(), TemplateError> {
             Some(character) => Err(TemplateError::Hidden {
                 at: at.to_string(),
                 character,
+                place: None,
             }),
             None => Ok(()),
         },
@@ -214,15 +266,25 @@ fn hidden_in_value(value: &toml::Value, at: &str) -> Result<(), TemplateError> {
     }
 }
 
-/// The TOML reader's message, with the line it points at.
+/// The TOML reader's message, with the place it points at.
 fn toml_error(text: &str, err: &toml::de::Error) -> TemplateError {
-    let message = err.message().trim();
-    match err.span() {
-        Some(span) => {
-            let line = text[..span.start.min(text.len())].matches('\n').count() + 1;
-            TemplateError::Toml(format!("line {line}: {message}"))
-        }
-        None => TemplateError::Toml(message.to_string()),
+    TemplateError::Toml {
+        message: err.message().trim().to_string(),
+        place: err.span().map(|span| place_of(text, span.start)),
+    }
+}
+
+/// The line and character of byte `at` in `text`, both from 1.
+fn place_of(text: &str, at: usize) -> TextPlace {
+    let mut at = at.min(text.len());
+    while !text.is_char_boundary(at) {
+        at -= 1;
+    }
+    let before = &text[..at];
+    let line_start = before.rfind('\n').map_or(0, |newline| newline + 1);
+    TextPlace {
+        line: before.matches('\n').count() + 1,
+        column: before[line_start..].chars().count() + 1,
     }
 }
 

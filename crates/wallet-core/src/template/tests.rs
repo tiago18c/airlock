@@ -95,7 +95,10 @@ fn refused(text: &str) -> (String, String) {
 
 fn refused_toml(text: &str) -> String {
     match Template::parse(text) {
-        Err(TemplateError::Toml(message)) => message,
+        Err(err @ TemplateError::Toml { .. }) => err
+            .to_string()
+            .trim_start_matches("This is not a template file: ")
+            .to_string(),
         other => panic!("expected a TOML refusal, got {other:?}"),
     }
 }
@@ -225,9 +228,72 @@ fn not_toml_is_refused_with_its_line() {
     assert!(message.starts_with("line 2"), "{message}");
 }
 
+#[test]
+fn a_refusal_in_the_text_says_where_it_is() {
+    // TOML's own error: the line, and the character on it.
+    let err = Template::parse("format = 1\nname = \"T\"\n  surprise = = 1\n").unwrap_err();
+    assert_eq!(
+        err.place(),
+        Some(TextPlace {
+            line: 3,
+            column: 14
+        })
+    );
+    assert!(err.to_string().contains("line 3: "), "{err}");
+    // A key the format does not have is TOML's too, and points at it.
+    let err = Template::parse("format = 1\nname = \"T\"\nsurprise = 1\n").unwrap_err();
+    assert_eq!(err.place().map(|place| place.line), Some(3));
+    // Characters before it count as characters, not bytes.
+    let err = Template::parse("format = 1\nname = \"Été\" x\n").unwrap_err();
+    assert_eq!(
+        err.place(),
+        Some(TextPlace {
+            line: 2,
+            column: 14
+        })
+    );
+    // A hidden character in the text, where it is.
+    let err = Template::parse("format = 1\n# ab\u{202E}c\n").unwrap_err();
+    assert_eq!(err.place(), Some(TextPlace { line: 2, column: 5 }));
+    // One written as an escape, and a format error, name a key instead.
+    let err = Template::parse(
+        &format!("{EXAMPLE}\n").replace("Create a Token-2022 token", "Create a \\u202E token"),
+    )
+    .unwrap_err();
+    assert_eq!(err.place(), None, "{err}");
+    let err = Template::parse("format = 2\nname = \"T\"\n").unwrap_err();
+    assert_eq!(err.place(), None);
+}
+
+#[test]
+fn the_starter_reads_checks_on_every_network_and_is_no_shipped_template() {
+    let template = Template::parse(STARTER_TEMPLATE).unwrap();
+    assert_eq!(template.name, "Send SOL");
+    assert!(builtin_named(&template.name).is_none());
+    assert!(builtin_template(&template_slug(&template.name)).is_none());
+    // It teaches by its comments, which say what each part is.
+    let comments = STARTER_TEMPLATE
+        .lines()
+        .filter(|line| line.starts_with('#'))
+        .count();
+    assert!(comments >= 15, "{comments} lines of comments");
+    for network in IdlNetwork::ALL {
+        let store = crate::fixtures::shipped_catalog(network);
+        let form = check(&template, &store)
+            .unwrap_or_else(|problems| panic!("on {network}: {problems:#?}"));
+        let asked: Vec<&str> = form
+            .inputs
+            .iter()
+            .map(|input| input.name.as_str())
+            .collect();
+        assert_eq!(asked, ["to", "amount"], "on {network}");
+        assert_eq!(form.inputs[0].kind, InputKind::Address);
+    }
+}
+
 fn hidden(text: &str) -> (String, char) {
     match Template::parse(text) {
-        Err(TemplateError::Hidden { at, character }) => (at, character),
+        Err(TemplateError::Hidden { at, character, .. }) => (at, character),
         other => panic!("expected a hidden character refused, got {other:?}"),
     }
 }

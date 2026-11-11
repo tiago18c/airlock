@@ -36,6 +36,11 @@ pub static BUILTIN_TEMPLATES: [BuiltinTemplate; 3] = [
     },
 ];
 
+/// The text **New template** starts from: a short template that reads and
+/// checks on every network, with comments that say what each part is. It is
+/// not shipped as a template: it is only a first text to change.
+pub const STARTER_TEMPLATE: &str = include_str!("../../templates/starter/new-template.toml");
+
 /// The built-in template with this id.
 pub fn builtin_template(id: &str) -> Option<&'static BuiltinTemplate> {
     BUILTIN_TEMPLATES.iter().find(|builtin| builtin.id == id)
