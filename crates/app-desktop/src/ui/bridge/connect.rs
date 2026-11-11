@@ -45,7 +45,7 @@ pub(in crate::ui) fn ConnectRequest(current: BridgePrompt, on_close: EventHandle
                     }
                     AddressRow { pubkey: account.pubkey, no_copy: true }
                     if current_key == Some(account.pubkey) {
-                        span { class: "chip", "Current" }
+                        span { class: "chip selected", "current" }
                     }
                 }
             }

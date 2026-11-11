@@ -329,11 +329,11 @@ fn CleanupRow(
         Choice::Burn
     };
     let (chip_class, what) = match &outcome {
-        Some(Outcome::Closed) => ("chip ok", "Close".to_string()),
-        Some(Outcome::Unwrapped { .. }) => ("chip ok", "Unwrap and close".to_string()),
-        Some(Outcome::Burned { .. }) => ("chip danger", "Burn and close".to_string()),
-        Some(Outcome::Moved { .. }) => ("chip", "Move".to_string()),
-        Some(Outcome::Left(Blocked::Chosen)) | None => ("chip", "Keep".to_string()),
+        Some(Outcome::Closed) => ("chip ok", "close".to_string()),
+        Some(Outcome::Unwrapped { .. }) => ("chip ok", "unwrap and close".to_string()),
+        Some(Outcome::Burned { .. }) => ("chip danger", "burn and close".to_string()),
+        Some(Outcome::Moved { .. }) => ("chip", "move".to_string()),
+        Some(Outcome::Left(Blocked::Chosen)) | None => ("chip", "keep".to_string()),
         Some(Outcome::Left(why)) => ("chip warn", why.reason()),
     };
     let blocked = matches!(&outcome, Some(Outcome::Left(why)) if *why != Blocked::Chosen);

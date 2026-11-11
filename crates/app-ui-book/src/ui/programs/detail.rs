@@ -148,7 +148,7 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                                     "{checksum}"
                                 }
                                 if record.origin == IdlOrigin::Builtin {
-                                    span { class: "chip", "built in" }
+                                    span { class: "chip", "built-in" }
                                 }
                                 if let Some(host) = host_name.clone() {
                                     span { class: "chip info", "from the {host} IDL" }
@@ -193,7 +193,7 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                             "{checksum}"
                         }
                         if record.origin == IdlOrigin::Builtin {
-                            span { class: "chip", "built in" }
+                            span { class: "chip", "built-in" }
                         }
                         if let Some(host) = host_name.clone() {
                             span { class: "chip info", "from the {host} IDL" }

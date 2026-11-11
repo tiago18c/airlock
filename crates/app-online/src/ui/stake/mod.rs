@@ -222,10 +222,10 @@ fn Totals(snapshot: StakeSnapshot) -> Element {
 
 fn phase_chip(phase: StakePhase) -> (&'static str, &'static str) {
     match phase {
-        StakePhase::Undelegated => ("chip", "Not delegated"),
-        StakePhase::Activating => ("chip info", "Activating"),
-        StakePhase::Active => ("chip ok", "Active"),
-        StakePhase::Deactivating => ("chip warn", "Deactivating"),
-        StakePhase::Inactive => ("chip", "Inactive"),
+        StakePhase::Undelegated => ("chip", "not delegated"),
+        StakePhase::Activating => ("chip info", "activating"),
+        StakePhase::Active => ("chip ok", "active"),
+        StakePhase::Deactivating => ("chip warn", "deactivating"),
+        StakePhase::Inactive => ("chip", "inactive"),
     }
 }

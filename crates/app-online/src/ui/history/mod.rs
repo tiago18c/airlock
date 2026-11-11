@@ -342,11 +342,11 @@ pub(super) fn OutcomeChip(outcome: Outcome) -> Element {
         Outcome::Pending => rsx! {
             span { class: "chip info",
                 span { class: "toast-spin", "aria-hidden": "true" }
-                "Waiting"
+                "waiting"
             }
         },
-        Outcome::Succeeded => rsx! { span { class: "chip ok", "Succeeded" } },
-        Outcome::Failed { .. } => rsx! { span { class: "chip danger", "Failed" } },
+        Outcome::Succeeded => rsx! { span { class: "chip ok", "succeeded" } },
+        Outcome::Failed { .. } => rsx! { span { class: "chip danger", "failed" } },
     }
 }
 

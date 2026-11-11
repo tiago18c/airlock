@@ -683,12 +683,14 @@ input[type="range"] { width: 100%; accent-color: var(--brand); }
   white-space: nowrap;
 }
 .chip code { font-size: var(--text-sm); color: var(--text-3); word-break: normal; }
-.chip.kind { background: var(--brand-soft); border-color: var(--brand-line); color: var(--brand-text); }
+/* A kind, and a selection such as the wallet the app acts as ("current"):
+   the brand's colours, which never carry a status. */
+.chip.kind, .chip.selected { background: var(--brand-soft); border-color: var(--brand-line); color: var(--brand-text); }
 .chip.ok { background: var(--ok-soft); border-color: var(--ok-line); color: var(--ok-text); }
 .chip.warn { background: var(--warn-soft); border-color: var(--warn-line); color: var(--warn-text); }
 .chip.danger { background: var(--danger-soft); border-color: var(--danger-line); color: var(--danger-text); }
 .chip.info { background: var(--info-soft); border-color: var(--info-line); color: var(--info-text); }
-.chip.warn code, .chip.danger code, .chip.ok code, .chip.kind code { color: inherit; opacity: 0.8; }
+.chip.warn code, .chip.danger code, .chip.ok code, .chip.kind code, .chip.selected code { color: inherit; opacity: 0.8; }
 
 /* ---------- Addresses ---------- */
 

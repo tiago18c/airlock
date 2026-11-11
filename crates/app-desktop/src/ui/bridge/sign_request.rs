@@ -713,13 +713,13 @@ fn BatchCard(
     }));
 
     let (chip, chip_text) = match (&prep.state, prep.original.is_some()) {
-        (_, false) => ("chip danger", "Unreadable"),
-        (Prepared::Working, _) => ("chip", "Preparing…"),
-        (Prepared::Failed(_), _) => ("chip danger", "Cannot be prepared"),
-        (Prepared::Refused(_), _) => ("chip danger", "Refused"),
-        (Prepared::Ready { .. }, _) if prep.cautious_sign => ("chip warn", "Sign without summary"),
-        (Prepared::Ready { .. }, _) if prep.can_sign => ("chip ok", "Can sign here"),
-        (Prepared::Ready { .. }, _) => ("chip warn", "Review"),
+        (_, false) => ("chip danger", "unreadable"),
+        (Prepared::Working, _) => ("chip", "preparing…"),
+        (Prepared::Failed(_), _) => ("chip danger", "cannot be prepared"),
+        (Prepared::Refused(_), _) => ("chip danger", "refused"),
+        (Prepared::Ready { .. }, _) if prep.cautious_sign => ("chip warn", "sign without summary"),
+        (Prepared::Ready { .. }, _) if prep.can_sign => ("chip ok", "can sign here"),
+        (Prepared::Ready { .. }, _) => ("chip warn", "review"),
     };
     let number = index + 1;
     let count = current.transactions;

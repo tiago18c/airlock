@@ -175,7 +175,7 @@ pub fn ProgramList(explained_programs: Vec<wallet_core::ProgramLine>) -> Element
                             }
                         }
                         match line.origin {
-                            Some(IdlOrigin::Builtin) => rsx! { span { class: "chip", "built in" } },
+                            Some(IdlOrigin::Builtin) => rsx! { span { class: "chip", "built-in" } },
                             Some(_) => rsx! { span { class: "chip info", "imported" } },
                             None => rsx! {},
                         }

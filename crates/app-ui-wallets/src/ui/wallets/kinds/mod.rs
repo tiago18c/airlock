@@ -81,6 +81,6 @@ fn keys(wallets: &[WalletSummary]) -> Vec<WalletSummary> {
 #[component]
 pub(in crate::ui) fn CurrentChip() -> Element {
     rsx! {
-        span { class: "chip ok", title: "The wallet the app is acting as", "Current" }
+        span { class: "chip selected", title: "The wallet the app is acting as", "current" }
     }
 }
