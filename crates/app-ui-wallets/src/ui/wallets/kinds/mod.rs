@@ -6,7 +6,9 @@ use super::CHANGE_WALLET;
 use crate::actions::wallets::member_candidates;
 use crate::state::forms::SendOpen;
 use crate::state::session::{Session, WalletSummary};
-use crate::ui::{Address, AddressHeader, AddressRow, AddressSelect, CopyButton, WalletPicker};
+use crate::ui::{
+    Address, AddressHeader, AddressRow, AddressSelect, CopyButton, SelectedChip, WalletPicker,
+};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use std::str::FromStr;
@@ -81,6 +83,6 @@ fn keys(wallets: &[WalletSummary]) -> Vec<WalletSummary> {
 #[component]
 pub(in crate::ui) fn CurrentChip() -> Element {
     rsx! {
-        span { class: "chip ok", title: "The wallet the app is acting as", "Current" }
+        SelectedChip { text: "current", title: "The wallet the app is acting as" }
     }
 }

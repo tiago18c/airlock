@@ -170,6 +170,9 @@ fn detail(step: &SignStep) -> Option<String> {
         SignStepState::Running => "running".into(),
         SignStepState::Failed => "fails".into(),
         SignStepState::Unanswered => "no answer".into(),
+        SignStepState::Skipped if step.kind == SignStepKind::ShareToSubmit => {
+            "cannot be shared".into()
+        }
         SignStepState::Skipped => "offline".into(),
         SignStepState::Current | SignStepState::Upcoming => match step.progress {
             Some((signed, total)) if collects => format!("{signed} of {total} in"),

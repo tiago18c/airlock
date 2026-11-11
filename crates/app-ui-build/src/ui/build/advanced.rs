@@ -81,7 +81,11 @@ pub(in crate::ui) fn AdvancedOptions() -> Element {
                         }
                         if nonce_accounts.is_empty() {
                             p { class: "hint",
-                                "No nonce accounts in the book. Refresh from chain, or initialize one as an instruction."
+                                if online {
+                                    "No nonce accounts in the book. Refresh the Address Book, or initialize one as an instruction."
+                                } else {
+                                    "No nonce accounts in the book. Add one to the Address Book, or initialize one as an instruction."
+                                }
                             }
                         }
                         AddressPicker {

@@ -1,16 +1,17 @@
 use crate::actions::addresses::*;
 use crate::actions::network::refresh_from_chain;
 use crate::state::session::Session;
+use crate::ui::Empty;
 use crate::ui::{
     category_class, category_glyph, format_sol, format_token_amount, ActionSheet, Address,
-    AddressRow, CopyAddress, CopyButton, Glyph, Icon, PaneMenu,
+    AddressRow, CopyAddress, CopyButton, Glyph, Icon, PaneMenu, RefreshButton,
 };
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use std::str::FromStr;
 use wallet_core::{
     AddressKind, BookGroupInfo, BookRow, Category, Described, Fact, Group, TokenFlag, TokenHolding,
-    WalletSort, LOCAL_GROUP_ID,
+    LOCAL_GROUP_ID,
 };
 
 mod entry;
@@ -54,7 +55,7 @@ pub fn AddressBookPanel() -> Element {
     let import_text = use_signal(String::new);
     let mut import_error = use_signal(|| None::<String>);
     // On a phone the header keeps only the title, Add address and the three
-    // lines: Refresh from chain joins Export and Import in a bottom sheet,
+    // lines: Refresh joins Export and Import in a bottom sheet,
     // as the Wallets pane's menu does, and a line under the header says
     // while it runs, since the sheet is closed by then.
     let phone = crate::ui::use_phone_layout();
@@ -99,16 +100,16 @@ pub fn AddressBookPanel() -> Element {
     rsx! {
         section { class: "page",
             div { class: "stack",
-                div { class: "pane-head ab-head",
+                div { class: "pane-head",
                     div {
                         h2 { "Address Book" }
                     }
                     div { class: "btn-row",
-                        if online && !phone {
-                            button {
-                                disabled: fetching(),
+                        if online {
+                            RefreshButton {
+                                busy: fetching(),
+                                title: "Read balances, token accounts and nonce hashes again",
                                 onclick: refresh,
-                                if fetching() { "Refreshing…" } else { "Refresh from chain" }
                             }
                         }
                         button { class: "primary",
@@ -134,10 +135,10 @@ pub fn AddressBookPanel() -> Element {
                 }
 
                 if phone && fetching() {
-                    p { class: "hint ab-refreshing", role: "status", "Refreshing from chain…" }
+                    p { class: "hint pane-refreshing", role: "status", "Refreshing…" }
                 }
                 if !online {
-                    p { class: "hint", "Offline: token accounts and nonce hashes stay local until getGenesisHash succeeds." }
+                    p { class: "hint", "Offline: this app never connects, so it looks up no balances, token accounts or nonce hashes." }
                 }
                 if let Some(err) = error() {
                     p { class: "error", "{err}" }
@@ -150,15 +151,6 @@ pub fn AddressBookPanel() -> Element {
             }
         }
         ActionSheet { open: pane_sheet_open, title: "Address Book", label: "More address book actions",
-            if online {
-                button { class: "more-item",
-                    title: "Read balances, token accounts and nonce hashes again",
-                    disabled: fetching(),
-                    onclick: refresh,
-                    Icon { glyph: Glyph::Refresh }
-                    if fetching() { "Refreshing…" } else { "Refresh from chain" }
-                }
-            }
             {pane_actions}
         }
         if modal_open() {
@@ -176,6 +168,7 @@ pub fn AddressBookPanel() -> Element {
 #[component]
 fn AddressBookList() -> Element {
     let session = use_context::<Session>();
+    let online = crate::state::use_network().is_some();
     let form = session.forms.contact;
     let mut filter = form.filter;
     let mut kind_filter = form.kind;
@@ -331,22 +324,23 @@ fn AddressBookList() -> Element {
             }
 
             if total == 0 {
-                div { class: "empty",
-                    Icon { glyph: Glyph::Book }
-                    p { "No addresses match this filter." }
-                }
+                Empty { glyph: Glyph::Book, text: "No addresses match this filter." }
             }
 
             if total > 0 {
                 // One card: the column labels as its first row, then the
                 // entries.
-                div { class: "ab-table",
+                // With no network there is no balance to show, so there is
+                // no Balance column: the others take its room.
+                div { class: if online { "ab-table" } else { "ab-table no-balance" },
                     // What each column holds, in the columns of the rows.
                     // Hidden where the rows wrap.
                     div { class: "ab-columns", aria_hidden: "true",
                         span { class: "ab-col-name", "Name" }
                         span { class: "ab-col-address", "Address" }
-                        span { class: "ab-col-balance", "Balance" }
+                        if online {
+                            span { class: "ab-col-balance", "Balance" }
+                        }
                     }
                     ul { class: "book-list ab-list",
                         for item in items {

@@ -195,6 +195,7 @@
         <div class="ds-row">
           <span class="chip">devnet</span>
           <span class="chip kind">owner</span>
+          <span class="chip selected"><svg class="icon" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>current</span>
           <span class="chip ok">signed</span>
           <span class="chip warn">missing</span>
           <span class="chip danger">invalid</span>
@@ -204,8 +205,9 @@
         </div>
         <div class="ds-row">
           <span class="status online"><span class="status-dot"></span>Online</span>
-          <span class="status offline"><span class="status-dot"></span>Offline</span>
+          <span class="status offline"><span class="status-dot"></span>Unreachable</span>
           <span class="status probing"><span class="status-dot"></span>Detecting</span>
+          <span class="status offline-mark"><span class="status-dot"></span>Offline<span class="net-cluster"> · never connects</span></span>
         </div>
         <ol class="sign-steps" aria-label="Steps">
           <li class="sign-step done"><span class="sign-step-mark" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="sign-step-label">Sign authorization</span><span class="sign-step-detail">done</span></li>
@@ -236,7 +238,7 @@
             </div>
             <div class="empty">
               <svg class="icon" viewBox="0 0 24 24"><path d="M19 8V6a1 1 0 0 0-1-1H5.5a2.5 2.5 0 0 0 0 5" /><path d="M3 7.5v9A2.5 2.5 0 0 0 5.5 19H19a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2H5.5" /><path d="M16.5 13.5h.01" /></svg>
-              <p>No signer wallets yet. Import a private key or a seed phrase.</p>
+              <p>No wallets yet. Add one that exists, by its key or its address, or create a new one.</p>
             </div>
           </div>
         </div>
@@ -290,7 +292,7 @@
         <div class="ix-rail">
           <div class="ix-block"><span class="ix-block-program">System</span><span class="ix-block-name">Transfer</span></div>
           <div class="ix-block on"><span class="ix-block-program">Token</span><span class="ix-block-name">Transfer checked</span></div>
-          <button class="ix-block ix-block-new" aria-label="Add a new instruction"><span class="ix-plus"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14" /><path d="M5 12h14" /></svg></span></button>
+          <button class="ix-block ix-block-new" aria-label="Add an instruction"><span class="ix-plus"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14" /><path d="M5 12h14" /></svg></span><span class="ix-new-label">Add an instruction</span></button>
         </div>
       </section>
 
@@ -317,7 +319,7 @@
               <h3>Remove Treasury</h3>
               <p class="lede">This deletes the signer key from this device. The app does not keep a copy, so the key cannot be recovered after removal.</p>
               <label>Type Treasury to confirm<input type="text" /></label>
-              <div class="btn-row"><button class="danger solid">Remove wallet</button><button class="ghost">Cancel</button></div>
+              <div class="btn-row"><button class="ghost">Cancel</button><button class="danger solid">Remove wallet</button></div>
             </div>
           </div>
         </div>

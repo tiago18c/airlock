@@ -56,6 +56,111 @@ pub fn Accordion(title: String, mut open: Signal<bool>, children: Element) -> El
     }
 }
 
+/// Where an online app shows its network status: the word Offline, in an
+/// app that has no network at all. A hollow mark in the text colour, not a
+/// status colour, since nothing is wrong. `short` leaves out "never
+/// connects", for a phone's top bar.
+#[component]
+pub fn OfflineMarker(#[props(default)] short: bool) -> Element {
+    rsx! {
+        span {
+            class: "status offline-mark",
+            role: "note",
+            title: "Offline: this app never connects.",
+            aria_label: "Offline: this app never connects.",
+            span { class: "status-dot", aria_hidden: "true" }
+            span { aria_hidden: "true",
+                "Offline"
+                if !short {
+                    span { class: "net-cluster", " · never connects" }
+                }
+            }
+        }
+    }
+}
+
+/// Marks the active one of several: the wallet the app acts as, the RPC in
+/// use. A check before the word and an outline in the brand's colour, so it
+/// is told from a kind chip, which is filled, by more than colour.
+#[component]
+pub fn SelectedChip(text: &'static str, #[props(default)] title: Option<&'static str>) -> Element {
+    rsx! {
+        span { class: "chip selected", title,
+            Icon { glyph: Glyph::Check }
+            "{text}"
+        }
+    }
+}
+
+/// What a list shows while it has nothing: an icon, a sentence that says it
+/// is empty and then what will be listed or how to add the first, and an
+/// optional action as its children. One arrangement: a dashed box with the
+/// icon at the left, the sentence, and the action at the trailing end.
+/// `compact` only tightens the padding, to a row as tall as one of the list's
+/// entries, for a group among others such as the Wallets pane's. `status`
+/// announces the sentence, for one that says something is being read.
+#[component]
+pub fn Empty(
+    glyph: Glyph,
+    text: String,
+    #[props(default)] compact: bool,
+    #[props(default)] status: bool,
+    children: Element,
+) -> Element {
+    rsx! {
+        div { class: if compact { "empty compact" } else { "empty" },
+            Icon { glyph }
+            p { role: if status { "status" }, "{text}" }
+            {children}
+        }
+    }
+}
+
+/// Every Refresh in the apps: the refresh glyph, then the word on a desktop
+/// ("Refreshing…", or `busy_text`, while it runs). On a phone the glyph
+/// alone, so the filter and the primary beside it keep the row's room, named
+/// "Refresh" for assistive tech and in its tooltip, and the pane says so in a
+/// line under the head while it runs. The glyph turns while it runs on both.
+/// `labelled` keeps the word on a phone too, for a dialog's row of buttons.
+/// `class` adds the button's look (`ghost sm` in a dialog's head).
+#[component]
+pub fn RefreshButton(
+    busy: bool,
+    onclick: EventHandler<MouseEvent>,
+    #[props(default)] title: Option<&'static str>,
+    #[props(default = "Refreshing…")] busy_text: &'static str,
+    #[props(default)] labelled: bool,
+    #[props(default)] class: &'static str,
+) -> Element {
+    let state = if busy { " busy" } else { "" };
+    if phone::use_phone_layout() && !labelled {
+        return rsx! {
+            button {
+                class: "{class} icon-btn refresh-btn{state}",
+                r#type: "button",
+                title: title.unwrap_or("Refresh"),
+                aria_label: "Refresh",
+                aria_busy: "{busy}",
+                disabled: busy,
+                onclick: move |e| onclick.call(e),
+                Icon { glyph: Glyph::Refresh }
+            }
+        };
+    }
+    rsx! {
+        button {
+            class: "{class} refresh-btn{state}",
+            r#type: "button",
+            title,
+            aria_busy: "{busy}",
+            disabled: busy,
+            onclick: move |e| onclick.call(e),
+            Icon { glyph: Glyph::Refresh }
+            if busy { "{busy_text}" } else { "Refresh" }
+        }
+    }
+}
+
 /// A question mark that explains the heading it sits beside, on hover, focus
 /// or tap.
 #[component]

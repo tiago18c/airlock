@@ -3,6 +3,8 @@
 
 use crate::actions::stake_screen::*;
 use app_ui_kit::actions::unix_now;
+use app_ui_kit::ui::Empty;
+use app_ui_kit::ui::{use_phone_layout, RefreshButton};
 use app_ui_kit::{
     format_sol, Address, AddressHeader, AddressPicker, Glyph, Icon, VaultUnlock, WalletPicker,
 };
@@ -53,6 +55,7 @@ pub(in crate::ui) struct Action {
 #[component]
 pub fn StakePanel() -> Element {
     let session = use_context::<Session>();
+    let phone = use_phone_layout();
     let form = session.forms.stake;
     let mut action = use_signal(|| None::<Action>);
 
@@ -111,10 +114,10 @@ pub fn StakePanel() -> Element {
                         h2 { "Stake" }
                     }
                     div { class: "btn-row",
-                        button {
-                            disabled: loading,
+                        RefreshButton {
+                            busy: loading,
+                            busy_text: "Reading…",
                             onclick: move |_| refresh(session),
-                            if loading { "Reading…" } else { "Refresh" }
                         }
                         button { class: "primary",
                             disabled: wallets.is_empty(),
@@ -125,13 +128,16 @@ pub fn StakePanel() -> Element {
                     }
                 }
 
+                if phone && loading {
+                    p { class: "hint pane-refreshing", role: "status", "Reading…" }
+                }
                 if let Some(err) = (form.error)() {
                     p { class: "error", "{err}" }
                 }
                 if wallets.is_empty() {
-                    div { class: "empty",
-                        Icon { glyph: Glyph::Growth }
-                        p { "Add a wallet first. Stake accounts are found through the wallets that control them." }
+                    Empty {
+                        glyph: Glyph::Growth,
+                        text: "No stake accounts yet. Add a wallet, and the stake accounts it controls are listed here.",
                     }
                 }
 
@@ -143,9 +149,9 @@ pub fn StakePanel() -> Element {
                         }
                     }
                     if groups.is_empty() && !wallets.is_empty() {
-                        div { class: "empty",
-                            Icon { glyph: Glyph::Growth }
-                            p { "No stake accounts yet. New stake creates one and delegates it to a validator." }
+                        Empty {
+                            glyph: Glyph::Growth,
+                            text: "No stake accounts yet. New stake creates one, and delegates it to a validator.",
                         }
                     }
                     for (wallet, address, stakes) in groups {
@@ -222,10 +228,10 @@ fn Totals(snapshot: StakeSnapshot) -> Element {
 
 fn phase_chip(phase: StakePhase) -> (&'static str, &'static str) {
     match phase {
-        StakePhase::Undelegated => ("chip", "Not delegated"),
-        StakePhase::Activating => ("chip info", "Activating"),
-        StakePhase::Active => ("chip ok", "Active"),
-        StakePhase::Deactivating => ("chip warn", "Deactivating"),
-        StakePhase::Inactive => ("chip", "Inactive"),
+        StakePhase::Undelegated => ("chip", "not delegated"),
+        StakePhase::Activating => ("chip info", "activating"),
+        StakePhase::Active => ("chip ok", "active"),
+        StakePhase::Deactivating => ("chip warn", "deactivating"),
+        StakePhase::Inactive => ("chip", "inactive"),
     }
 }

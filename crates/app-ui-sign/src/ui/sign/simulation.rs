@@ -19,7 +19,7 @@ pub(in crate::ui) fn SimulationStrip(tx: std::rc::Rc<DecodedTx>, inspect: bool) 
         SimState::Idle if online => ("sim", "Not simulated yet.".to_string(), None, None),
         SimState::Idle => (
             "sim",
-            "Not simulated: this device is offline.".to_string(),
+            "Not simulated: this app never connects.".to_string(),
             None,
             None,
         ),

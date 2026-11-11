@@ -19,6 +19,9 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
     let check_note = use_signal(|| None::<String>);
     let view = use_memo(move || program_view(session, (form.selected)()));
     let phone = use_phone_layout();
+    // With no network nothing can be compared with chain, so Check online
+    // is not offered.
+    let online = crate::state::use_network().is_some();
     // On a phone, where the file came from and what it is, folded under the
     // check so the tabs start high.
     let mut about = use_signal(|| false);
@@ -102,16 +105,18 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                     // A state, not a control: words and icon both in its
                     // colour, on their own line so no button reads as their
                     // label.
-                    p { class: "program-check-state {status_tone(status)}", title: status_tip(status),
+                    p { class: "program-check-state {status_tone(status)}", title: status_tip(status, online),
                         Icon { glyph: if status_tone(status) == "ok" { Glyph::Check } else { Glyph::Alert } }
                         span { "{status_words(status)}" }
                     }
                     div { class: "program-head-actions",
-                        button {
-                            class: "sm program-check",
-                            disabled: checking(),
-                            onclick: move |_| check_one(session, program_id, checking, check_note),
-                            if checking() { "Checking…" } else { "Check online" }
+                        if online {
+                            button {
+                                class: "sm program-check",
+                                disabled: checking(),
+                                onclick: move |_| check_one(session, program_id, checking, check_note),
+                                if checking() { "Checking…" } else { "Check online" }
+                            }
                         }
                         button {
                             class: "sm program-about-toggle",
@@ -143,7 +148,7 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                                     "{checksum}"
                                 }
                                 if record.origin == IdlOrigin::Builtin {
-                                    span { class: "chip", "built in" }
+                                    span { class: "chip", "built-in" }
                                 }
                                 if let Some(host) = host_name.clone() {
                                     span { class: "chip info", "from the {host} IDL" }
@@ -188,7 +193,7 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                             "{checksum}"
                         }
                         if record.origin == IdlOrigin::Builtin {
-                            span { class: "chip", "built in" }
+                            span { class: "chip", "built-in" }
                         }
                         if let Some(host) = host_name.clone() {
                             span { class: "chip info", "from the {host} IDL" }
@@ -196,12 +201,14 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                         span { class: "chip", title: "IDLs are kept per network: the cluster in use", "IDL for {network}" }
                     }
                     div { class: "program-check-group",
-                        span { class: status_class(status), title: status_tip(status), "{status_words(status)}" }
-                        button {
-                            class: "sm program-check",
-                            disabled: checking(),
-                            onclick: move |_| check_one(session, program_id, checking, check_note),
-                            if checking() { "Checking…" } else { "Check online" }
+                        span { class: status_class(status), title: status_tip(status, online), "{status_words(status)}" }
+                        if online {
+                            button {
+                                class: "sm program-check",
+                                disabled: checking(),
+                                onclick: move |_| check_one(session, program_id, checking, check_note),
+                                if checking() { "Checking…" } else { "Check online" }
+                            }
                         }
                     }
                 }
@@ -358,11 +365,15 @@ pub(in crate::ui) fn pin_status(record: &IdlRecord) -> IdlPinStatus {
 
 /// What a check state means, in one sentence, for the chip's tooltip. The
 /// check compares the stored file with the IDL the program publishes on
-/// chain, in its program-metadata or Anchor IDL account.
-pub(in crate::ui) fn status_tip(status: IdlPinStatus) -> &'static str {
+/// chain, in its program-metadata or Anchor IDL account. `online` when this
+/// app can check: one with no network names no button it does not have.
+pub(in crate::ui) fn status_tip(status: IdlPinStatus, online: bool) -> &'static str {
     match status {
-        IdlPinStatus::NotChecked => {
+        IdlPinStatus::NotChecked if online => {
             "Not yet compared with the IDL the program publishes on chain: Check online compares them."
+        }
+        IdlPinStatus::NotChecked => {
+            "Not compared with the IDL the program publishes on chain: this app never connects."
         }
         IdlPinStatus::Matches => {
             "The last online check found this exact file published on chain by the program."

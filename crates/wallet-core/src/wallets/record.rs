@@ -444,7 +444,7 @@ impl WalletRecord {
     /// What kind of wallet this is, in a few words for a list.
     pub fn summary(&self) -> String {
         match &self.kind {
-            WalletKind::Offline { .. } => "offline key".into(),
+            WalletKind::Offline { .. } => "key on another device".into(),
             WalletKind::Keypair { .. } => "private key".into(),
             WalletKind::Seed { path, .. } => {
                 if path.is_empty() {

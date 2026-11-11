@@ -5,6 +5,7 @@ use crate::ui::wallets::kinds::{
     ContractWalletRow, CurrentChip, ExportKeysModal, HardwareForm, KeyImportForm, OfflineForm,
     ProgrammaticForm, SquadsForm, VectorForm, WalletRowMenu,
 };
+use crate::ui::Empty;
 use crate::ui::{
     format_sol, ActionSheet, AddressHeader, CopyButton, Glyph, HelpTip, Icon, PaneMenu,
 };
@@ -107,7 +108,7 @@ pub fn WalletsPanel() -> Element {
     rsx! {
         section { class: "page",
             div { class: "stack",
-                div { class: "pane-head wallets-head",
+                div { class: "pane-head",
                     div {
                         h2 { "Wallets" }
                     }
@@ -133,19 +134,13 @@ pub fn WalletsPanel() -> Element {
                     }
                 }
                 if locked {
-                    p { class: "note",
-                        "The vault is locked. Its wallets and balances are shown; signing, and adding, removing or changing a wallet, ask for the password."
-                    }
+                    crate::ui::lock::LockedNote {}
                 }
 
                 if all.is_empty() {
-                    div { class: "empty",
-                        Icon { glyph: Glyph::Wallet }
-                        if phone {
-                            p { "No wallets yet." }
-                        } else {
-                            p { "No wallets yet. Add one that exists, by its key or its address, or create a new one." }
-                        }
+                    Empty {
+                        glyph: Glyph::Wallet,
+                        text: "No wallets yet. Add one that exists, by its key or its address, or create a new one.",
                     }
                 }
 
@@ -167,8 +162,10 @@ pub fn WalletsPanel() -> Element {
                     HelpTip { text: "An offline wallet is the address of a key kept on another device. This device prepares its transactions and the other one signs them, from a QR code or pasted text. A hot wallet can pay its fees, and a programmatic signer lets it act without signing a transaction itself." }
                 }
                 if offline.is_empty() {
-                    p { class: "wallets-empty",
-                        "None yet. Add the address of a key kept on another device to prepare its transactions here."
+                    Empty {
+                        glyph: Glyph::Snowflake,
+                        compact: true,
+                        text: "No offline wallets yet. Add the address of a key kept on another device to prepare its transactions here.",
                     }
                 }
                 ul { class: "tree",
@@ -185,10 +182,10 @@ pub fn WalletsPanel() -> Element {
                 }
                 if hardware.is_empty() {
                     if session.hardware_offered().is_empty() {
-                        div { class: "wallets-empty",
-                            p {
-                                "No hardware wallets yet. Ledger support is pre-release until Ledger ships the Solana app 1.18."
-                            }
+                        Empty {
+                            glyph: Glyph::Device,
+                            compact: true,
+                            text: "No hardware wallets yet. They can be added once their pre-release support is on.",
                             button { class: "sm",
                                 title: "Go to Settings and turn on Pre-release hardware wallets, to add one",
                                 onclick: move |_| session.goto(Tab::Settings),
@@ -196,8 +193,10 @@ pub fn WalletsPanel() -> Element {
                             }
                         }
                     } else {
-                        p { class: "wallets-empty",
-                            "None yet. Add one with Add wallet, Hardware or Seed Vault."
+                        Empty {
+                            glyph: Glyph::Device,
+                            compact: true,
+                            text: "No hardware wallets yet. Add one with Add wallet, Hardware or Seed Vault.",
                         }
                     }
                 }
@@ -214,8 +213,10 @@ pub fn WalletsPanel() -> Element {
                     HelpTip { text: "A smart contract wallet has no key of its own. A program on chain decides who may act: a programmatic signer acts when its authority key signs a message, and a Squads multisig acts when enough of its members approve." }
                 }
                 if contracts.is_empty() {
-                    p { class: "wallets-empty",
-                        "None yet. Add a programmatic signer to sign offline and let a hot wallet pay, or a Squads multisig to share control."
+                    Empty {
+                        glyph: Glyph::Safe,
+                        compact: true,
+                        text: "No smart contract wallets yet. Add a programmatic signer to sign offline and let a hot wallet pay, or a Squads multisig to share control.",
                     }
                 }
                 ul { class: "tree",
@@ -263,14 +264,10 @@ pub(in crate::ui) fn WalletBalance(
             if let Some(lamports) = lamports {
                 span { class: "balance", "{format_sol(lamports)}" }
             }
+            // A small bordered button, as on a phone and as the card's
+            // other buttons are: one weight for a card's actions.
             if !phone {
-                button { class: "ghost sm wallet-send",
-                    title: cannot_send.unwrap_or(send_title),
-                    disabled: cannot_send.is_some(),
-                    onclick: move |_| on_send.call(()),
-                    Icon { glyph: Glyph::Send }
-                    "Send"
-                }
+                WalletSend { send_title, cannot_send, on_send }
             }
         }
     }
@@ -291,8 +288,8 @@ pub(in crate::ui) fn WalletFoot(balance: Element, children: Element) -> Element 
     }
 }
 
-/// Send, first in a wallet card's buttons on a phone, and drawn as they
-/// are. Elsewhere it follows the balance: see [`WalletBalance`].
+/// Send, drawn as a card's other buttons are: first in them on a phone,
+/// beside the balance elsewhere (see [`WalletBalance`]).
 #[component]
 pub(in crate::ui) fn WalletSend(
     send_title: &'static str,

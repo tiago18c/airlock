@@ -34,6 +34,7 @@ use app_ui_kit::ui::clock::BlockhashCountdown;
 use app_ui_kit::ui::tx_view::{
     use_explained_for_site, FeeLine, InstructionList, ReadingNote, RiskNotice, SimulatedDeltas,
 };
+use app_ui_kit::ui::SelectedChip;
 use app_ui_kit::{Address, AddressRow, Session};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
@@ -324,13 +325,13 @@ fn RequestCard(current: BridgePrompt, on_open: EventHandler<()>) -> Element {
         }
         (SiteCall::Send { .. }, _, _) => "asks you to sign and send a transaction".to_string(),
         (SiteCall::SignTransactions(_), count, true) if count > 1 => {
-            format!("asks to sign {count} transactions · open on Sign")
+            format!("asks to sign {count} transactions · open in Review and Sign")
         }
         (SiteCall::SignTransactions(_), count, false) if count > 1 => {
             format!("asks to sign {count} transactions")
         }
         (SiteCall::SignTransactions(_), _, true) => {
-            "asks for a signature · open on Sign".to_string()
+            "asks for a signature · open in Review and Sign".to_string()
         }
         (SiteCall::SignTransactions(_), _, false) => "asks for a signature".to_string(),
     };

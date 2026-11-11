@@ -66,6 +66,10 @@ pub(in crate::ui) fn ImportModal(
                         p { class: "error", "{message}" }
                     }
                     div { class: "btn-row",
+                        button { class: "ghost",
+                            onclick: move |_| open.set(false),
+                            "Cancel"
+                        }
                         button { class: "primary",
                             onclick: move |_| {
                                 let raw = text.read().clone();
@@ -97,10 +101,6 @@ pub(in crate::ui) fn ImportModal(
                                 open.set(false);
                             },
                             "Import"
-                        }
-                        button { class: "ghost",
-                            onclick: move |_| open.set(false),
-                            "Cancel"
                         }
                     }
                 }

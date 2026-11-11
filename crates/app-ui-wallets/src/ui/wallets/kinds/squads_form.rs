@@ -185,7 +185,7 @@ pub fn SquadsForm(creating: bool, on_done: EventHandler<()>) -> Element {
                 }
             }
             p { class: "note",
-                "Every member may propose, approve and execute. Creating needs a connection: the app reads the program's settings and a recent blockhash, then opens the transaction in Sign."
+                "Every member may propose, approve and execute. Creating needs a connection: the app reads the program's settings and a recent blockhash, then opens the transaction in Review and Sign."
             }
         } else {
             label { "Multisig address"
@@ -209,6 +209,7 @@ pub fn SquadsForm(creating: bool, on_done: EventHandler<()>) -> Element {
             p { class: "error", "{err}" }
         }
         div { class: "btn-row",
+            button { class: "ghost", onclick: move |_| on_done.call(()), "Cancel" }
             if creating {
                 button { class: "primary", disabled: busy(), onclick: create,
                     if busy() { "Preparing…" } else { "Create multisig" }
@@ -218,7 +219,6 @@ pub fn SquadsForm(creating: bool, on_done: EventHandler<()>) -> Element {
                     if busy() { "Reading…" } else { "Add multisig" }
                 }
             }
-            button { class: "ghost", onclick: move |_| on_done.call(()), "Cancel" }
         }
     }
 }

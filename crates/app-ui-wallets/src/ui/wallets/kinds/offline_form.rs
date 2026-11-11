@@ -43,7 +43,7 @@ pub fn OfflineForm(on_done: EventHandler<()>) -> Element {
         label { "Label"
             input {
                 r#type: "text",
-                placeholder: "Cold wallet",
+                placeholder: "Offline wallet",
                 value: "{label}",
                 oninput: move |evt| label.set(evt.value()),
             }
@@ -68,8 +68,8 @@ pub fn OfflineForm(on_done: EventHandler<()>) -> Element {
             p { class: "error", "{err}" }
         }
         div { class: "btn-row",
-            button { class: "primary", onclick: save, "Add offline wallet" }
             button { class: "ghost", onclick: move |_| on_done.call(()), "Cancel" }
+            button { class: "primary", onclick: save, "Add offline wallet" }
         }
     }
 }

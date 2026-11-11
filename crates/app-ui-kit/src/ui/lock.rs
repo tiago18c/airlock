@@ -3,6 +3,35 @@ use crate::ui::{Glyph, Icon};
 use dioxus::prelude::*;
 use zeroize::{Zeroize, Zeroizing};
 
+/// What unlocking allows: the quiet line under the title of every unlock
+/// card that has no reason of its own, in one wording.
+pub const UNLOCK_LINE: &str = "Unlock the vault to sign with its keys and change its wallets.";
+
+/// What locked means, in one clause: what stays and what waits. Both
+/// [`LOCKED_NOTE`] and [`SKIP_LINE`] end with it, so the lock screen and the
+/// panes say it word for word. A macro, as `concat!` takes only literals.
+macro_rules! locked_means {
+    () => {
+        "wallets and balances are shown; signing needs the password, and so does adding, removing or changing a wallet."
+    };
+}
+
+/// What stays and what waits while the vault is locked, said once on every
+/// pane that says it: the Wallets pane and Portfolio, on a desktop and a
+/// phone alike.
+pub const LOCKED_NOTE: &str = concat!("The vault is locked. Its ", locked_means!());
+
+/// What the lock screen's Skip gives, after [`UNLOCK_LINE`]: Skip cancels
+/// nothing, it opens the app with the vault locked, and then it is as
+/// [`LOCKED_NOTE`] says.
+pub const SKIP_LINE: &str = concat!("Skip opens the app locked: its ", locked_means!());
+
+/// [`LOCKED_NOTE`], as a pane's note.
+#[component]
+pub fn LockedNote() -> Element {
+    rsx! { p { class: "note", "{LOCKED_NOTE}" } }
+}
+
 #[component]
 pub fn LockScreen() -> Element {
     rsx! { VaultUnlock { show_skip: true } }
@@ -63,6 +92,7 @@ pub fn FingerprintOffer() -> Element {
                     p { class: "error", "{err}" }
                 }
                 div { class: "btn-row",
+                    button { class: "ghost", disabled: working(), onclick: move |_| close(), "Not now" }
                     button {
                         class: "primary",
                         disabled: working(),
@@ -84,7 +114,6 @@ pub fn FingerprintOffer() -> Element {
                         },
                         if working() { "Waiting for fingerprint…" } else { "Turn on" }
                     }
-                    button { disabled: working(), onclick: move |_| close(), "Not now" }
                 }
             }
         }
@@ -102,6 +131,8 @@ pub fn VaultUnlock(
 ) -> Element {
     let session = use_context::<Session>();
     let initialized = session.is_initialized();
+    // The lock screen of an app with no network says so, under its heading.
+    let offline = crate::state::online::use_offline_build();
     // Skipping lands on what works without a vault: the address book, or on
     // a phone, whose bar lists no address book, Review and Sign.
     let skip_to = if crate::ui::use_phone_layout() {
@@ -207,11 +238,23 @@ pub fn VaultUnlock(
     };
 
     let form = rsx! {
-            div { class: "stack",
+            div { class: "stack unlock-form",
                 span { class: "avatar", Icon { glyph: Glyph::Lock } }
                 h2 { if initialized { "Unlock vault" } else { "Create vault" } }
-                if let Some(reason) = reason {
-                    p { class: "lede", "{reason}" }
+                // Every unlock card has one quiet line under its title: what
+                // this unlock is for, or else what unlocking allows, and on
+                // the lock screen what Skip gives; then, in an app with no
+                // network, the offline line.
+                if initialized || reason.is_some() {
+                    p { class: "hint unlock-line",
+                        {reason.unwrap_or(UNLOCK_LINE)}
+                        if show_skip && initialized && reason.is_none() {
+                            " {SKIP_LINE}"
+                        }
+                    }
+                }
+                if offline {
+                    p { class: "hint offline-note", "Offline: this app never connects." }
                 }
 
                 label { "Password"
@@ -241,21 +284,10 @@ pub fn VaultUnlock(
                     p { class: "error", "{err}" }
                 }
                 div { class: "btn-row",
-                    button { class: "primary",
-                        disabled: working(),
-                        onclick: move |_| submit(),
-                        match (initialized, working()) {
-                            (true, false) => "Unlock",
-                            (true, true) => "Unlocking…",
-                            (false, false) => "Create vault",
-                            (false, true) => "Creating…",
-                        }
-                    }
-                    if fingerprint_offered {
-                        button {
-                            disabled: working(),
-                            onclick: move |_| fingerprint.call(()),
-                            "Use fingerprint"
+                    if let Some(cancel) = on_cancel {
+                        button { class: "ghost",
+                            onclick: move |_| cancel.call(()),
+                            "Cancel"
                         }
                     }
                     if show_skip {
@@ -267,10 +299,21 @@ pub fn VaultUnlock(
                             "Skip"
                         }
                     }
-                    if let Some(cancel) = on_cancel {
-                        button { class: "ghost",
-                            onclick: move |_| cancel.call(()),
-                            "Cancel"
+                    if fingerprint_offered {
+                        button {
+                            disabled: working(),
+                            onclick: move |_| fingerprint.call(()),
+                            "Use fingerprint"
+                        }
+                    }
+                    button { class: "primary",
+                        disabled: working(),
+                        onclick: move |_| submit(),
+                        match (initialized, working()) {
+                            (true, false) => "Unlock",
+                            (true, true) => "Unlocking…",
+                            (false, false) => "Create vault",
+                            (false, true) => "Creating…",
                         }
                     }
                 }
@@ -281,5 +324,22 @@ pub fn VaultUnlock(
     }
     rsx! {
         section { class: "card auth", {form} }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn skip_line_ends_with_the_locked_note_clause() {
+        let clause = LOCKED_NOTE
+            .strip_prefix("The vault is locked. Its ")
+            .unwrap();
+        assert!(SKIP_LINE.ends_with(clause));
+        assert_eq!(
+            SKIP_LINE,
+            "Skip opens the app locked: its wallets and balances are shown; signing needs the password, and so does adding, removing or changing a wallet."
+        );
     }
 }

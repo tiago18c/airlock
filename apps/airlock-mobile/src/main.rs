@@ -26,16 +26,18 @@ const BRAND: AppBrand = AppBrand {
 
 /// Online: the bottom bar, then what More lists.
 const ONLINE_TABS: &[Tab] = &[Tab::Portfolio, Tab::Wallets, Tab::Sign, Tab::History];
+/// In the sidebar's order, as the desktop lists them.
 const ONLINE_MORE: &[Tab] = &[
     Tab::Stake,
-    Tab::Build,
     Tab::AddressBook,
     Tab::Programs,
+    Tab::Build,
     Tab::Settings,
 ];
 
-/// Offline: everything that works without a node.
-const OFFLINE_TABS: &[Tab] = &[Tab::Wallets, Tab::Sign, Tab::Build];
+/// Offline: everything that works without a node, in the sidebar's order:
+/// Build before Review and Sign.
+const OFFLINE_TABS: &[Tab] = &[Tab::Wallets, Tab::Build, Tab::Sign];
 const OFFLINE_MORE: &[Tab] = &[Tab::AddressBook, Tab::Programs, Tab::Settings];
 
 fn main() {

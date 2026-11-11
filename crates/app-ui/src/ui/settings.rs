@@ -1,6 +1,6 @@
 use crate::state::forms::AddWalletMode;
 use crate::state::session::Session;
-use crate::ui::ThemeToggle;
+use crate::ui::{SelectedChip, ThemeToggle};
 use app_ui_kit::state::slices::VaultState;
 use dioxus::prelude::*;
 use wallet_core::{Cluster, LOCAL_RPC_URL};
@@ -98,7 +98,15 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                         }
                     }
                     if custom_shown {
-                        label { "RPC URL"
+                        label {
+                            // "in use" on the line of what it describes, as
+                            // "current" sits beside a wallet's name.
+                            span { class: "label-line",
+                                "RPC URL"
+                                if applied {
+                                    SelectedChip { text: "in use", title: "The RPC the app reads the chain through" }
+                                }
+                            }
                             input {
                                 r#type: "text",
                                 placeholder: "{LOCAL_RPC_URL}",
@@ -117,19 +125,22 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                         if let Some(problem) = custom_error() {
                             p { class: "error", role: "alert", "{problem}" }
                         }
-                        div { class: "btn-row",
-                            button {
-                                class: "primary",
-                                disabled: applied,
-                                onclick: move |_| match Cluster::custom(&custom_name(), &custom_url()) {
-                                    Ok(cluster) => {
-                                        custom_error.set(None);
-                                        picking_custom.set(false);
-                                        crate::actions::network::use_cluster(session, cluster);
-                                    }
-                                    Err(problem) => custom_error.set(Some(problem)),
-                                },
-                                if applied { "In use" } else { "Use this RPC" }
+                        // A state is a chip, not a button that cannot be
+                        // pressed: once in use, the chip beside RPC URL
+                        // says so and this button goes.
+                        if !applied {
+                            div { class: "btn-row",
+                                button {
+                                    onclick: move |_| match Cluster::custom(&custom_name(), &custom_url()) {
+                                        Ok(cluster) => {
+                                            custom_error.set(None);
+                                            picking_custom.set(false);
+                                            crate::actions::network::use_cluster(session, cluster);
+                                        }
+                                        Err(problem) => custom_error.set(Some(problem)),
+                                    },
+                                    "Use this RPC"
+                                }
                             }
                         }
                         p { class: "hint wordy",
@@ -346,8 +357,10 @@ fn PasswordChange() -> Element {
                 oninput: move |e| confirm.set(e.value()),
             }
         }
+        // Settings is a page of cards with no one thing it is for, so no
+        // button on it is the primary.
         div { class: "btn-row",
-            button { class: "primary",
+            button {
                 disabled: working() || current().is_empty() || new().is_empty(),
                 onclick: move |_| change(),
                 if working() { "Changing…" } else { "Change password" }
@@ -391,7 +404,7 @@ fn PricesCard() -> Element {
                 }
             }
             div { class: "btn-row",
-                button { class: "primary",
+                button {
                     disabled: typed().trim().is_empty(),
                     onclick: move |_| {
                         let key = typed().trim().to_string();

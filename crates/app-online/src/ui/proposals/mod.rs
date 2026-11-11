@@ -15,6 +15,7 @@
 use crate::actions::proposals::{load_page, open_request};
 use app_ui_kit::actions::unix_now;
 use app_ui_kit::ui::tx_view::ReadInstructions;
+use app_ui_kit::ui::{Empty, Glyph, RefreshButton};
 use app_ui_kit::{Address, Session};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
@@ -142,9 +143,11 @@ pub fn ProposalsModal(
                             }
                         }
                         div { class: "btn-row",
-                            button { class: "ghost sm", disabled: loading(),
+                            RefreshButton {
+                                class: "ghost sm",
+                                busy: loading(),
+                                busy_text: "Reading…",
                                 onclick: move |_| fetch(None),
-                                if loading() { "Reading…" } else { "Refresh" }
                             }
                             button { class: "ghost sm", onclick: move |_| on_close.call(()), "Close" }
                         }
@@ -193,7 +196,11 @@ pub fn ProposalsModal(
                         },
                         None => rsx! {},
                         Some(current) if current.entries.is_empty() => rsx! {
-                            p { class: "muted", "This multisig has no transactions yet." }
+                            Empty {
+                                glyph: Glyph::Safe,
+                                compact: true,
+                                text: "No proposals yet. The transactions proposed to this multisig are listed here.",
+                            }
                         },
                         Some(current) => {
                             let older = current.older();
@@ -243,7 +250,7 @@ pub fn ProposalsModal(
                         }
                     }
                     p { class: "hint",
-                        "Approve, Execute and Together open a transaction on the Sign screen. Nothing is signed here. Stored instructions are read with the IDLs on this device, which are not vetted yet."
+                        "Approve, Execute and Together open a transaction in Review and Sign. Nothing is signed here. Stored instructions are read with the IDLs on this device, which are not vetted yet."
                     }
                 }
             }

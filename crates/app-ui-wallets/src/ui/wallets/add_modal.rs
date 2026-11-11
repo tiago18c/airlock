@@ -213,6 +213,20 @@ pub(in crate::ui) fn AddWalletModal() -> Element {
                     }
                     if kind.imports_a_key() {
                     div { class: "btn-row",
+                        button { class: "ghost",
+                            onclick: move |_| modal_open.set(false),
+                            "Cancel"
+                        }
+                        if !creating() {
+                            button { class: "ghost",
+                                onclick: move |_| {
+                                    form.clear();
+                                    path_custom.set(false);
+                                    invalidate_seed(tail, generation);
+                                },
+                                "Clear"
+                            }
+                        }
                         if kind.imports_a_key() {
                             button { class: "primary",
                                 disabled: creating() && !written(),
@@ -230,20 +244,6 @@ pub(in crate::ui) fn AddWalletModal() -> Element {
                                     "Save wallet"
                                 }
                             }
-                        }
-                        if !creating() {
-                            button { class: "ghost",
-                                onclick: move |_| {
-                                    form.clear();
-                                    path_custom.set(false);
-                                    invalidate_seed(tail, generation);
-                                },
-                                "Clear"
-                            }
-                        }
-                        button { class: "ghost",
-                            onclick: move |_| modal_open.set(false),
-                            "Cancel"
                         }
                     }
                     }

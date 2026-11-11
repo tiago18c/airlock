@@ -425,7 +425,7 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
             if let (Some(tx), Some(explained), Some(verdict)) = (prep.shown.clone(), prep.explained.clone(), prep.verdict) {
                 if verdict.risky > 0 {
                     RiskNotice { explained: explained.clone() }
-                    p { class: "hint", "So it is signed from Review, not from here." }
+                    p { class: "hint", "So it is signed in Review and Sign, not from here." }
                 }
                 if fetching() {
                     p { class: "muted", role: "status", "Looking for the IDLs of its programs…" }
@@ -574,7 +574,7 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
         }
         if !locked && !can_sign && to_sign < count {
             p { class: "hint",
-                "Sign is offered when this device can finish every transaction. Review takes them to the Sign screen one at a time, and returns them together after the last."
+                "Sign is offered when this device can finish every transaction. Review opens them in Review and Sign one at a time, and returns them together after the last."
             }
         }
         div { class: "btn-row",
@@ -713,13 +713,13 @@ fn BatchCard(
     }));
 
     let (chip, chip_text) = match (&prep.state, prep.original.is_some()) {
-        (_, false) => ("chip danger", "Unreadable"),
-        (Prepared::Working, _) => ("chip", "Preparing…"),
-        (Prepared::Failed(_), _) => ("chip danger", "Cannot be prepared"),
-        (Prepared::Refused(_), _) => ("chip danger", "Refused"),
-        (Prepared::Ready { .. }, _) if prep.cautious_sign => ("chip warn", "Sign without summary"),
-        (Prepared::Ready { .. }, _) if prep.can_sign => ("chip ok", "Can sign here"),
-        (Prepared::Ready { .. }, _) => ("chip warn", "Review"),
+        (_, false) => ("chip danger", "unreadable"),
+        (Prepared::Working, _) => ("chip", "preparing…"),
+        (Prepared::Failed(_), _) => ("chip danger", "cannot be prepared"),
+        (Prepared::Refused(_), _) => ("chip danger", "refused"),
+        (Prepared::Ready { .. }, _) if prep.cautious_sign => ("chip warn", "sign without summary"),
+        (Prepared::Ready { .. }, _) if prep.can_sign => ("chip ok", "can sign here"),
+        (Prepared::Ready { .. }, _) => ("chip warn", "review"),
     };
     let number = index + 1;
     let count = current.transactions;

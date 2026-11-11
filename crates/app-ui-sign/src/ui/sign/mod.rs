@@ -40,8 +40,8 @@ use wallet_core::simulate::Simulation;
 use wallet_core::{
     context_note_for, missing_catalog_programs, next_step, sha256_bytes, sign_steps,
     signature_objects, signing_status_in, tx_lifetime, DecodedTx, LocalKeys, NextSignature,
-    SignFinish, SignStepInputs, SignStepKind, SignerRole, SignerState, SigningStatus,
-    SimulationStage, TxFormat,
+    SignFinish, SignStepInputs, SignStepKind, SignStepState, SignerRole, SignerState,
+    SigningStatus, SimulationStage, TxFormat,
 };
 use wallet_flows::offer::{
     batch_keepable, blockhash_plan, may_sign, may_submit, BatchFacts, BlockhashFacts,
@@ -441,6 +441,12 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         if step.kind == SignStepKind::CollectSignatures {
             step.progress = Some((status.signed(), status.total()));
         }
+        // With no network and a format no other device takes, sharing is
+        // not a way on, as the note above the signatures says: the step is
+        // passed over, with a word that agrees, never "next".
+        if step.kind == SignStepKind::ShareToSubmit && tx.format != TxFormat::V1 {
+            step.state = SignStepState::Skipped;
+        }
     }
     // Nothing is left for this device to sign, and another device is next:
     // it signs what is missing, or submits what this offline one cannot.
@@ -472,6 +478,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         step,
         site_signs,
         site_send: site_send_for_hint,
+        shareable,
     });
     // What is still needed of others is said under the signatures; what
     // holds the buttons back, under them.
@@ -695,8 +702,8 @@ fn SignModal(
                 div { class: "stack",
                     h3 { "{title}" }
                     {children}
-                    div { class: "btn-row modal-foot",
-                        button {
+                    div { class: "btn-row",
+                        button { class: "ghost",
                             r#type: "button",
                             onclick: move |_| open.set(false),
                             "Close"
@@ -857,8 +864,9 @@ fn SignActions(
                         }
                     }
                     // Submit could not be pressed while a signature is missing,
-                    // so it waits until every one is in.
-                    if status.complete() {
+                    // so it waits until every one is in. An app with no
+                    // network has no Submit at all.
+                    if status.complete() && online {
                         button {
                             class: if share_next || sign_shown { "" } else { "primary" },
                             disabled: !can_submit,
@@ -868,7 +876,10 @@ fn SignActions(
                         }
                     }
                     if show_refresh {
-                        RefreshBlockhash {}
+                        RefreshBlockhash {
+                            only_way: !(share_next || (sign_shown && can_sign)
+                                || (status.complete() && online && can_submit)),
+                        }
                     }
                     // What else applies, outlined.
                     button {
@@ -923,7 +934,11 @@ enum SignHint {
     OnDevice,
     /// Signatures still needed from other devices.
     Elsewhere(usize),
-    CompleteOffline,
+    /// Fully signed in an app with no network; `shareable` when it can be
+    /// handed to another device to submit.
+    CompleteOffline {
+        shareable: bool,
+    },
 }
 
 impl SignHint {
@@ -951,6 +966,8 @@ struct HintFacts<'a> {
     step: NextSignature,
     site_signs: usize,
     site_send: Option<(SiteSend, String)>,
+    /// It can be handed to another device.
+    shareable: bool,
 }
 
 /// The sentence that applies, the first of them in this order.
@@ -993,7 +1010,9 @@ fn sign_hint(facts: HintFacts) -> Option<SignHint> {
         return Some(SignHint::Elsewhere(elsewhere));
     }
     if status.complete() && !facts.online {
-        return Some(SignHint::CompleteOffline);
+        return Some(SignHint::CompleteOffline {
+            shareable: facts.shareable,
+        });
     }
     None
 }
@@ -1042,8 +1061,11 @@ fn SignHintText(hint: SignHint, class: &'static str) -> Element {
                         "{count} signatures are needed from other devices. Share the transaction, then add what they return."
                     }
                 },
-                SignHint::CompleteOffline => rsx! {
-                    "Fully signed. Go online to submit, or share it with a device that is."
+                SignHint::CompleteOffline { shareable: true } => rsx! {
+                    "Fully signed. This app never connects, so share it with an online device to submit it."
+                },
+                SignHint::CompleteOffline { shareable: false } => rsx! {
+                    "Fully signed. This app never connects, and a transaction in this format cannot be handed to another device, so it cannot be submitted from here."
                 },
             }
         }

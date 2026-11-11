@@ -5,7 +5,8 @@
 use crate::actions::stake_screen::{load_key, refresh as refresh_stakes};
 use app_ui_kit::actions::unix_now;
 use app_ui_kit::state::forms::{SendAsset, SendOpen};
-use app_ui_kit::ui::{use_phone_layout, ActionSheet, CopyButton, PaneMenu};
+use app_ui_kit::ui::Empty;
+use app_ui_kit::ui::{use_phone_layout, ActionSheet, CopyButton, PaneMenu, RefreshButton};
 use app_ui_kit::{AddressRow, Glyph, Icon, Session, Tab};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
@@ -136,16 +137,9 @@ pub fn PortfolioPanel() -> Element {
                     div {
                         h2 { "Portfolio" }
                     }
+                    // What filters the page, then Refresh, then the primary,
+                    // then the menu: the one order of a page's head.
                     div { class: "btn-row pf-controls",
-                        if can_send {
-                            button { class: "primary",
-                                onclick: move |_| session.open_send(SendOpen {
-                                    from: selected.and_then(|owner| wallet_at(session, owner)),
-                                    ..SendOpen::default()
-                                }),
-                                "Send"
-                            }
-                        }
                         select {
                             aria_label: "Whose holdings",
                             onchange: move |e| only.set(e.value().parse().ok()),
@@ -159,13 +153,16 @@ pub fn PortfolioPanel() -> Element {
                                 }
                             }
                         }
-                        // On a phone Refresh is the first row of the menu's
-                        // sheet, so the wallet picker gets the room.
-                        if !phone {
-                            button {
-                                disabled: refreshing(),
-                                onclick: refresh,
-                                if refreshing() { "Refreshing…" } else { "Refresh" }
+                        // On a phone Refresh is an icon, so the wallet
+                        // picker gets the room.
+                        RefreshButton { busy: refreshing(), onclick: refresh }
+                        if can_send {
+                            button { class: "primary",
+                                onclick: move |_| session.open_send(SendOpen {
+                                    from: selected.and_then(|owner| wallet_at(session, owner)),
+                                    ..SendOpen::default()
+                                }),
+                                "Send"
                             }
                         }
                         if phone {
@@ -182,10 +179,10 @@ pub fn PortfolioPanel() -> Element {
                     }
                 }
 
-                // The sheet closes once its row is pressed: the pane says
-                // a refresh is running where the button used to.
+                // A phone's Refresh is an icon: the pane says in words that
+                // a refresh is running.
                 if phone && refreshing() {
-                    p { class: "hint pf-refreshing", role: "status", "Refreshing…" }
+                    p { class: "hint pane-refreshing", role: "status", "Refreshing…" }
                 }
                 if !mainnet {
                     p { class: "note",
@@ -201,18 +198,16 @@ pub fn PortfolioPanel() -> Element {
                     }
                 }
                 if locked {
-                    p { class: "hint",
-                        "The vault is locked: only watched addresses are counted. Unlock it to count this device's wallets."
-                    }
+                    app_ui_kit::ui::lock::LockedNote {}
                 }
                 if let Some(err) = refresh_error().or_else(|| market.error.clone()) {
                     p { class: "error", "{err}" }
                 }
 
                 if owners.is_empty() {
-                    div { class: "empty",
-                        Icon { glyph: Glyph::Pie }
-                        p { "No wallets or watched addresses yet. Add a wallet, or watch an address from the address book." }
+                    Empty {
+                        glyph: Glyph::Pie,
+                        text: "No wallets or watched addresses yet. Add a wallet, or watch an address from the Address Book.",
                     }
                 } else {
                     Summary { portfolio: portfolio.clone(), priced, ago, colors: colors.clone() }
@@ -259,13 +254,6 @@ pub fn PortfolioPanel() -> Element {
             }
         }
         ActionSheet { open: menu_sheet_open, title: "Portfolio", label: "More portfolio actions",
-            button { class: "more-item",
-                title: "Read the wallets' balances and the prices again",
-                disabled: refreshing(),
-                onclick: refresh,
-                Icon { glyph: Glyph::Refresh }
-                if refreshing() { "Refreshing…" } else { "Refresh" }
-            }
             {menu_items}
         }
         WatchModal { open: watch_open }
@@ -348,9 +336,10 @@ fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>, colors: Colo
         .collect();
     let excludes = excludes_note(portfolio.unpriced.len(), portfolio.left_out.len());
     // The total says once how many prices are outdated, as one more fact
-    // of where its prices come from. On a phone the rows mark each only
-    // with a dot at the value, so this is also the dots' legend; on desktop
-    // each row has its own "outdated price" pill.
+    // of where its prices come from, after the alert glyph every outdated
+    // row carries. On a phone the rows mark each only with the glyph at the
+    // value, so this is also the marks' legend; on a desktop each row has
+    // its own "outdated price" pill, the same glyph before its words.
     let phone = use_phone_layout();
     let stale = stale_note(
         portfolio
@@ -361,7 +350,7 @@ fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>, colors: Colo
             .count(),
     );
     let stale_tip = if phone {
-        "The Tokens API says the market data of these tokens has not been updated lately, so their prices and 24h changes may be out of date. A dot at a value marks each one."
+        "The Tokens API says the market data of these tokens has not been updated lately, so their prices and 24h changes may be out of date. The alert mark at a value marks each one."
     } else {
         "The Tokens API says the market data of these tokens has not been updated lately, so their prices and 24h changes may be out of date. Each one says \"outdated price\"."
     };
@@ -395,13 +384,13 @@ fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>, colors: Colo
                             span { class: "pf-excludes", "{excludes}" }
                         }
                         if let Some(stale) = stale {
-                            // On a phone the rows' own dot in front, so this
-                            // line is the legend of the dots further down.
+                            // The rows' own mark in front, on a desktop and a
+                            // phone, so this line is the legend of the marks
+                            // further down. The words name it; the glyph is
+                            // hidden from assistive tech.
                             span { class: "pf-stale-note",
                                 title: stale_tip,
-                                if phone {
-                                    span { class: "pf-stale-mark", aria_hidden: "true" }
-                                }
+                                span { class: "pf-stale-mark", aria_hidden: "true", Icon { glyph: Glyph::Alert } }
                                 "{stale}"
                             }
                         }
@@ -947,9 +936,11 @@ fn LineRow(
     let only_sender = (senders.len() == 1).then(|| senders[0].1);
     let symbol = line.symbol.clone();
     let now = unix_now();
-    // On a phone an outdated price is a dot at the value, not a chip under
+    // On a phone an outdated price is a mark at the value, not a chip under
     // the symbol: a chip on most rows would make them three lines and say
-    // nothing by being everywhere. The total card counts them.
+    // nothing by being everywhere. The mark is the alert glyph, named
+    // "outdated price", so colour is not its only sign. The total card
+    // counts them.
     let phone = use_phone_layout();
     let stale = phone && priced && valued && is_stale(&line);
     let stale_tip = line
@@ -959,7 +950,9 @@ fn LineRow(
         .and_then(|check| warning_tip(STALE, &symbol, check.checked_at, now))
         .unwrap_or_default();
     let stale_short = stale_line(line.check.as_ref().map_or(0, |check| check.checked_at), now);
-    let warnings: Vec<(String, Option<String>)> = line
+    // Each warning with whether it is the outdated price, whose pill leads
+    // with the same alert glyph the phone's mark is.
+    let warnings: Vec<(String, Option<String>, bool)> = line
         .check
         .as_ref()
         .map(|check| {
@@ -972,6 +965,7 @@ fn LineRow(
                     (
                         warning_text(code),
                         warning_tip(code, &symbol, check.checked_at, now),
+                        code == STALE,
                     )
                 })
                 .collect()
@@ -1031,8 +1025,13 @@ fn LineRow(
                                     Icon { glyph: Glyph::Check }
                                 }
                             }
-                            for (warning, tip) in warnings {
-                                span { key: "{warning}", class: "chip warn", title: tip, "{warning}" }
+                            for (warning, tip, outdated) in warnings {
+                                span { key: "{warning}", class: "chip warn", title: tip,
+                                    if outdated {
+                                        span { class: "pf-stale-mark", aria_hidden: "true", Icon { glyph: Glyph::Alert } }
+                                    }
+                                    "{warning}"
+                                }
                             }
                         }
                         if let Some(mint) = mint_below {
@@ -1067,6 +1066,7 @@ fn LineRow(
                                     role: "img",
                                     title: "{stale_tip}",
                                     aria_label: "outdated price",
+                                    Icon { glyph: Glyph::Alert }
                                 }
                             }
                             if let Some(usd) = line.usd { "{format_value(usd)}" } else { "–" }
@@ -1093,15 +1093,15 @@ fn LineRow(
                     span { class: "pf-send-slot" }
                 }
             }
-            // On a phone the dot's tooltip cannot be read, so the opened
-            // asset says it in words: a tap on the row answers what the dot
+            // On a phone the mark's tooltip cannot be read, so the opened
+            // asset says it in words: a tap on the row answers what the mark
             // at its value means.
             // It is one quiet line, so it does not outweigh the wallets under
             // it; the whole sentence is its tooltip and what a screen reader
             // reads.
             if open() && stale && !stale_tip.is_empty() {
                 p { class: "pf-stale-line", title: "{stale_tip}",
-                    span { class: "pf-stale-mark", aria_hidden: "true" }
+                    span { class: "pf-stale-mark", aria_hidden: "true", Icon { glyph: Glyph::Alert } }
                     span { aria_hidden: "true", "{stale_short}" }
                     span { class: "sr-only", "{stale_tip}" }
                 }

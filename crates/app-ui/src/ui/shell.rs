@@ -6,8 +6,9 @@
 use crate::state::session::{Session, Tab};
 use crate::ui::{
     use_phone_layout, AccountInspector, AddressBookPanel, BuildPanel, DeviceDialog,
-    FingerprintOffer, Glyph, Icon, LockScreen, PhoneLayout, PhoneSheet, ProgramsPanel,
-    SettingsPanel, SignPanel, ThemeToggle, UnlockPrompt, WalletSwitcher, WalletsPanel,
+    FingerprintOffer, Glyph, Icon, LockScreen, OfflineMarker, PhoneLayout, PhoneSheet,
+    ProgramsPanel, SettingsPanel, SignPanel, ThemeToggle, UnlockPrompt, WalletSwitcher,
+    WalletsPanel,
 };
 use crate::{MAIN_CSS, TOKENS_CSS};
 use dioxus::prelude::*;
@@ -42,7 +43,8 @@ pub fn AppShell(
     /// Top bar items between the wallet switcher and the theme toggle: the
     /// cluster, status chips and the notification bell.
     top_bar_extra: Option<Element>,
-    /// The status bar at the bottom of the sidebar: the network chip.
+    /// The status bar at the bottom of the sidebar: the network chip. An app
+    /// with no network that passes nothing gets the Offline marker.
     sidebar_status: Option<Element>,
     /// In Settings, for what only this build has: browser connections.
     settings_extra: Option<Element>,
@@ -75,6 +77,13 @@ pub fn AppShell(
     let frameless = window_controls.is_some();
     let phone = more.is_some();
     use_context_provider(|| PhoneLayout(phone));
+    // An app with no network says so where an online one shows its network:
+    // the sidebar's foot, or on a phone the top bar, in the bell's place.
+    let offline = app_ui_kit::use_offline_build();
+    let sidebar_status =
+        sidebar_status.or_else(|| (offline && !phone).then(|| rsx! { OfflineMarker {} }));
+    let top_bar_extra = top_bar_extra
+        .or_else(|| (offline && phone).then(|| rsx! { OfflineMarker { short: true } }));
     let mut class = String::from("app");
     if gated {
         class.push_str(" locked");
@@ -338,7 +347,6 @@ pub fn TopBar(
 #[component]
 fn LockToggle() -> Element {
     let session = use_context::<Session>();
-    let phone = use_phone_layout();
     if !session.is_initialized() {
         return rsx! {};
     }
@@ -346,16 +354,18 @@ fn LockToggle() -> Element {
     let (glyph, label) = if unlocked {
         (Glyph::Unlock, "Lock vault")
     } else {
-        (Glyph::Lock, "Unlock vault")
+        (Glyph::Lock, "Locked, unlock vault")
     };
-    // On a phone the locked vault is the state to notice, and not by colour
-    // alone: a filled button that says so. Unlocked is the usual state, a
+    // The locked vault is the state to notice, and not by colour alone: an
+    // amber button with the closed padlock and the word, the same on a
+    // desktop and on a phone, where an amber icon alone could be read as
+    // "tap to lock". On a phone the wallet picker beside it gives up its
+    // short address first, never this word. Unlocked is the usual state, a
     // quiet icon like the bell beside it.
-    let class = match (phone, unlocked) {
-        (true, true) => "icon-btn sm lock-toggle",
-        (true, false) => "sm lock-toggle locked",
-        (false, true) => "icon-btn sm lock-toggle unlocked",
-        (false, false) => "icon-btn sm lock-toggle",
+    let class = if unlocked {
+        "icon-btn sm lock-toggle"
+    } else {
+        "sm lock-toggle locked"
     };
     rsx! {
         button {
@@ -366,11 +376,11 @@ fn LockToggle() -> Element {
                 if unlocked {
                     session.lock();
                 } else {
-                    session.when_unlocked("Unlock the vault to sign with its keys and change its wallets.", || {});
+                    session.when_unlocked(crate::ui::lock::UNLOCK_LINE, || {});
                 }
             },
             Icon { glyph }
-            if phone && !unlocked {
+            if !unlocked {
                 span { "Locked" }
             }
         }

@@ -7,14 +7,16 @@ use app_core::{HistoryEntry, Outcome};
 use app_ui_kit::ui::address::name_or_short;
 use app_ui_kit::ui::local_time;
 use app_ui_kit::ui::tx_view::{use_worked_out, Worked, READING_DEADLINE};
-use app_ui_kit::{Glyph, Icon, Session};
+use app_ui_kit::ui::Empty;
+use app_ui_kit::ui::{use_phone_layout, RefreshButton};
+use app_ui_kit::{Address, Glyph, PhraseView, Session};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use solana_signature::Signature;
 use wallet_core::{
     change_for, decode_landed, decode_transaction, explain_with_note, format_sol,
     format_token_amount, CatalogView, DecodedTx, DisplayNote, ExplainedIx, IntentBody, IntentSpan,
-    IntentValue, LookupTables, COMPUTE_BUDGET_PROGRAM_ID,
+    IntentValue, LookupTables, Phrase, COMPUTE_BUDGET_PROGRAM_ID,
 };
 
 use crate::sync::HISTORY_JOB;
@@ -30,6 +32,7 @@ const PAGE: usize = 50;
 #[component]
 pub fn HistoryPanel() -> Element {
     let session = use_context::<Session>();
+    let phone = use_phone_layout();
     let form = session.forms.history;
     let mut wallet = form.wallet;
     let mut selected = form.selected;
@@ -149,13 +152,12 @@ pub fn HistoryPanel() -> Element {
                             }
                         }
                         if can_refresh {
-                            button {
-                                disabled: refreshing(),
-                                onclick: refresh,
-                                if refreshing() { "Refreshing…" } else { "Refresh" }
-                            }
+                            RefreshButton { busy: refreshing(), onclick: refresh }
                         }
                     }
+                }
+                if phone && refreshing() {
+                    p { class: "hint pane-refreshing", role: "status", "Refreshing…" }
                 }
 
                 if let Some(err) = refresh_error().or(job_error) {
@@ -163,19 +165,20 @@ pub fn HistoryPanel() -> Element {
                 }
 
                 if wallets.is_empty() {
-                    div { class: "empty",
-                        Icon { glyph: Glyph::History }
-                        p { "Add a wallet to see what it did on chain." }
+                    Empty {
+                        glyph: Glyph::History,
+                        text: "No transactions yet. Add a wallet, and its transactions are listed here.",
                     }
                 } else if page.is_empty() && !read_once {
-                    div { class: "empty",
-                        Icon { glyph: Glyph::History }
-                        p { role: "status", "Reading the wallets' transactions…" }
+                    Empty {
+                        glyph: Glyph::History,
+                        status: true,
+                        text: "Reading the wallets' transactions…",
                     }
                 } else if page.is_empty() {
-                    div { class: "empty",
-                        Icon { glyph: Glyph::History }
-                        p { "No transactions on {cluster.name()} yet." }
+                    Empty {
+                        glyph: Glyph::History,
+                        text: "No transactions on {cluster.name()} yet. Your wallets' transactions are listed here.",
                     }
                 } else {
                     HistoryList {
@@ -261,22 +264,21 @@ fn HistoryList(
                 .iter()
                 .find(|(signature, _)| *signature == entry.signature)
                 .map(|(_, words)| words.clone());
-            let wallets: Vec<String> = entry
+            // A wallet with a name is its name; one without is drawn as
+            // the address it is, as the title's addresses are, never a bare
+            // short key.
+            let wallets: Vec<(Pubkey, Option<String>)> = entry
                 .addresses
                 .iter()
                 .filter(|address| only.is_none_or(|only| only == **address))
-                .map(|address| name_or_short(&session, address))
+                .map(|address| (*address, session.label_of(address)))
                 .collect();
-            let mut sub = local_time::clock_text(when);
-            for name in wallets {
-                sub.push_str(" · ");
-                sub.push_str(&name);
-            }
             Row {
                 head,
                 signature: entry.signature,
-                text: row_text(&session, &entry, row_words.as_ref()),
-                sub,
+                text: row_text(&entry, row_words.as_ref()),
+                time: local_time::clock_text(when),
+                wallets,
                 changes: change_lines(&session, &entry, only),
                 outcome: entry.outcome,
             }
@@ -290,13 +292,33 @@ fn HistoryList(
                 if let Some(head) = row.head.clone() {
                     h3 { class: "history-day", "{head}" }
                 }
-                button {
+                // Not a `button`: its title holds addresses, which open their
+                // own card, and a button may not hold anything pressable.
+                div {
                     class: "history-row",
-                    r#type: "button",
+                    role: "button",
+                    tabindex: "0",
                     onclick: move |_| onopen.call(row.signature),
+                    onkeydown: move |e: KeyboardEvent| {
+                        if e.key() == Key::Enter || e.key() == Key::Character(" ".into()) {
+                            e.prevent_default();
+                            onopen.call(row.signature);
+                        }
+                    },
                     div { class: "history-row-main",
-                        span { class: "history-row-text", "{row.text}" }
-                        span { class: "history-row-sub muted", "{row.sub}" }
+                        span { class: "history-row-text", PhraseView { phrase: row.text.clone() } }
+                        span { class: "history-row-sub muted",
+                            "{row.time}"
+                            for (address, name) in row.wallets.iter().cloned() {
+                                span { key: "{address}", class: "history-row-wallet",
+                                    " · "
+                                    match name {
+                                        Some(name) => rsx! { "{name}" },
+                                        None => rsx! { Address { pubkey: address } },
+                                    }
+                                }
+                            }
+                        }
                     }
                     div { class: "history-row-side",
                         for (i, line) in row.changes.iter().enumerate() {
@@ -320,8 +342,11 @@ struct Row {
     /// The day heading drawn above it, when it starts a day.
     head: Option<String>,
     signature: Signature,
-    text: String,
-    sub: String,
+    /// What it did, its addresses drawn as addresses everywhere are.
+    text: Phrase,
+    /// When, then the wallets it touched: a name, or the address itself.
+    time: String,
+    wallets: Vec<(Pubkey, Option<String>)>,
     changes: Vec<String>,
     outcome: Outcome,
 }
@@ -332,11 +357,11 @@ pub(super) fn OutcomeChip(outcome: Outcome) -> Element {
         Outcome::Pending => rsx! {
             span { class: "chip info",
                 span { class: "toast-spin", "aria-hidden": "true" }
-                "Waiting"
+                "waiting"
             }
         },
-        Outcome::Succeeded => rsx! { span { class: "chip ok", "Succeeded" } },
-        Outcome::Failed { .. } => rsx! { span { class: "chip danger", "Failed" } },
+        Outcome::Succeeded => rsx! { span { class: "chip ok", "succeeded" } },
+        Outcome::Failed { .. } => rsx! { span { class: "chip danger", "failed" } },
     }
 }
 
@@ -396,47 +421,47 @@ fn read_rows(view: &CatalogView, txs: &Vec<(Signature, DecodedTx)>) -> Vec<(Sign
         .collect()
 }
 
-/// One line for a row: what it did, in words when they are known.
-fn row_text(session: &Session, entry: &HistoryEntry, words: Option<&RowWords>) -> String {
+/// One line for a row: what it did, in words when they are known, each
+/// address in it an address, as in every other sentence of the app.
+fn row_text(entry: &HistoryEntry, words: Option<&RowWords>) -> Phrase {
     let Some(words) = words else {
         // The node said it does not have it, so often it is not asked again.
         if decoded(entry).is_none() && entry.misses >= app_core::history::MAX_MISSES {
-            return "The node did not return it in full".into();
+            return Phrase::text("The node did not return it in full");
         }
-        return match (&entry.label, decoded(entry).is_some()) {
+        return Phrase::text(match (&entry.label, decoded(entry).is_some()) {
             (_, true) => "Reading it…".into(),
             (Some(label), false) => format!("{label} · reading it from the node…"),
             (None, false) => "Reading it from the node…".into(),
-        };
+        });
     };
     let mut text = match (&words.sentence, &words.title, &words.program) {
-        (Some(spans), _, _) => sentence_text(session, spans),
-        (None, Some(title), _) => title.clone(),
-        (None, None, Some((_, Some(name)))) => format!("Calls {name}"),
-        (None, None, Some((program, None))) => {
-            format!("Calls {}", name_or_short(session, program))
-        }
-        (None, None, None) => "Does nothing".into(),
+        (Some(spans), _, _) => sentence_phrase(spans),
+        (None, Some(title), _) => Phrase::text(title.clone()),
+        (None, None, Some((program, _))) => Phrase::text("Calls ").a(*program),
+        (None, None, None) => Phrase::text("Does nothing"),
     };
     if words.more > 0 {
-        text.push_str(&format!(" · and {} more", words.more));
+        text.push_text(format!(" · and {} more", words.more));
     }
     text
 }
 
-/// A sentence as plain text, each address by its name.
-fn sentence_text(session: &Session, spans: &[IntentSpan]) -> String {
-    spans
-        .iter()
-        .map(|span| match span {
-            IntentSpan::Text(text) => text.clone(),
+/// A sentence as a phrase: its words and values as text, its addresses as
+/// addresses.
+fn sentence_phrase(spans: &[IntentSpan]) -> Phrase {
+    let mut phrase = Phrase::default();
+    for span in spans {
+        match span {
+            IntentSpan::Text(text) => phrase.push_text(text.clone()),
             IntentSpan::Value(IntentValue {
                 body: IntentBody::Address(pubkey),
                 ..
-            }) => name_or_short(session, pubkey),
-            IntentSpan::Value(value) => value.primary.clone(),
-        })
-        .collect()
+            }) => phrase.push_address(*pubkey),
+            IntentSpan::Value(value) => phrase.push_text(value.primary.clone()),
+        };
+    }
+    phrase
 }
 
 /// What it did to the balances of the wallet shown, or of each wallet it

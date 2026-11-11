@@ -252,7 +252,7 @@ pub(in crate::ui) fn SignInRequest(current: BridgePrompt, on_close: EventHandler
                     }
                     AddressRow { pubkey: account.pubkey, no_copy: true }
                     if start.choice.current == Some(account.pubkey) {
-                        span { class: "chip", "Current" }
+                        SelectedChip { text: "current", title: "The wallet the app is acting as" }
                     }
                 }
             }
@@ -284,7 +284,7 @@ pub(in crate::ui) fn SignInRequest(current: BridgePrompt, on_close: EventHandler
         }
         div { class: "btn-row",
             button {
-                class: "danger",
+                class: "danger btn-lead",
                 title: "Reject this request and every request this site makes from now on.",
                 onclick: move |_| {
                     session.bridge_block(&block_id);

@@ -98,6 +98,25 @@ pub(in crate::ui) fn AddressModal() -> Element {
                         p { class: "error", "{err}" }
                     }
                     div { class: "btn-row",
+                        button { class: "ghost",
+                            onclick: move |_| modal_open.set(false),
+                            "Cancel"
+                        }
+                        button { class: "ghost",
+                            onclick: move |_| {
+                                if let Some(pk) = editing {
+                                    let group_id = editing_group.read().clone();
+                                    if let Some(entry) = (session.book)().get_in(&group_id, &pk) {
+                                        label.set(entry.label.clone());
+                                        tags.set(join_tags(&entry.tags));
+                                        error.set(None);
+                                        return;
+                                    }
+                                }
+                                form.clear_draft();
+                            },
+                            "Clear"
+                        }
                         button { class: "primary",
                             onclick: move |_| {
                                 error.set(None);
@@ -160,25 +179,6 @@ pub(in crate::ui) fn AddressModal() -> Element {
                             },
                             if editing.is_some() { "Save" } else { "Add address" }
                         }
-                        button { class: "ghost",
-                            onclick: move |_| {
-                                if let Some(pk) = editing {
-                                    let group_id = editing_group.read().clone();
-                                    if let Some(entry) = (session.book)().get_in(&group_id, &pk) {
-                                        label.set(entry.label.clone());
-                                        tags.set(join_tags(&entry.tags));
-                                        error.set(None);
-                                        return;
-                                    }
-                                }
-                                form.clear_draft();
-                            },
-                            "Clear"
-                        }
-                        button { class: "ghost",
-                            onclick: move |_| modal_open.set(false),
-                            "Cancel"
-                        }
                     }
                 }
             }
@@ -218,19 +218,6 @@ fn kind_line(described: &Described) -> Option<String> {
         ) => None,
         (category, None) => Some(category.name().to_string()),
     }
-}
-
-/// The kind line on a phone, as the parts it is made of, each kept whole
-/// on one line: a line breaks only between them. A smart contract wallet's
-/// line drops its first part where a more specific one follows, "Squads v4
-/// · 2 of 3", since the row's icon already says what it is and the whole
-/// line would not fit on one line of a phone.
-fn phone_kind_parts(category: Category, line: &str) -> Vec<String> {
-    let mut parts: Vec<String> = line.split(" · ").map(str::to_string).collect();
-    if category == Category::Wallet(WalletSort::SmartContract) && parts.len() > 1 {
-        parts.remove(0);
-    }
-    parts
 }
 
 /// The name a token's mark is drawn from: its own label, without the group
@@ -277,10 +264,6 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
     let name = entry_name(&described, &entry);
     let what = kind_line(&described);
     let phone = crate::ui::use_phone_layout();
-    let kind_parts = match (phone, what.as_deref()) {
-        (true, Some(line)) => phone_kind_parts(category, line),
-        _ => Vec::new(),
-    };
     // The kind line is drawn when it says something, or ends in the toggle
     // of the entry's token accounts. On a phone the toggle is on the
     // address's line instead.
@@ -292,6 +275,9 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
         (mint, token_mark_name(&described, &entry))
     });
     let has_balance = entry.lamports.is_some();
+    // With no network the table has no Balance column, and a row draws a
+    // balance only when it has one.
+    let online = crate::state::use_network().is_some();
     let address = pubkey.to_string();
     let token_amount = match (kind, entry.token_amount, entry.decimals) {
         (AddressKind::TokenAccount, Some(amount), Some(decimals)) => {
@@ -396,17 +382,10 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                     }
                 }
                 if show_kind {
+                    // The same words on a desktop and a phone, leading with
+                    // the kind; it wraps where it does not fit.
                     p { class: "ab-kind",
-                        if phone {
-                            // The separator keeps to the part before it, so a
-                            // line breaks after it, never before.
-                            for (i, part) in kind_parts.iter().enumerate() {
-                                span { class: "ab-kind-part", "{part}" }
-                                if i + 1 < kind_parts.len() {
-                                    "\u{a0}· "
-                                }
-                            }
-                        } else if let Some(what) = what.as_ref() {
+                        if let Some(what) = what.as_ref() {
                             "{what}"
                         }
                         if has_holdings && !phone {
@@ -438,7 +417,7 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                     CopyButton { text: address.clone() }
                 }
             }
-            if !phone || weighed {
+            if (!phone && online) || weighed {
                 div { class: "ab-balance",
                     if let Some(lamports) = entry.lamports {
                         p { class: "balance", "{format_sol(lamports)}" }
@@ -459,7 +438,7 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
             div { class: "ab-actions",
                 if phone {
                     if has_holdings {
-                        HoldingsToggle { owner: pubkey, open: holdings_open, alone: true, short: true }
+                        HoldingsToggle { owner: pubkey, open: holdings_open, alone: true }
                     }
                     button { class: "ghost icon-btn ab-more",
                         title: "More actions",

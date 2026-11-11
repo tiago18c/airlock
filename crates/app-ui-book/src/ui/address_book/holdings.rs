@@ -57,14 +57,13 @@ pub(in crate::ui) fn TokenAvatar(
 /// How many token accounts an owner has, at the end of its kind line: a
 /// button that opens them under the row. Nothing when it has none. `alone`
 /// when it is all the line holds, so nothing separates it from what is
-/// before it. `short` on a phone, where it shares the address's line: it
-/// reads "6 tokens", and says "token accounts" to a screen reader.
+/// before it. It reads "N token accounts" on a desktop and a phone, where
+/// it shares the address's line and is kept from wrapping.
 #[component]
 pub(in crate::ui) fn HoldingsToggle(
     owner: Pubkey,
     open: Signal<bool>,
     #[props(default)] alone: bool,
-    #[props(default)] short: bool,
 ) -> Element {
     let session = use_context::<Session>();
     let summary = session.holding_summary(&owner);
@@ -79,12 +78,7 @@ pub(in crate::ui) fn HoldingsToggle(
             format!("{} {noun}", summary.total)
         }
     };
-    let full = count_of("token account", "token accounts");
-    let (count, label) = if short {
-        (count_of("token", "tokens"), Some(full))
-    } else {
-        (full, None)
-    };
+    let count = count_of("token account", "token accounts");
 
     // The separator does not break from the toggle: when the line wraps, the
     // two go to the next line together.
@@ -100,7 +94,6 @@ pub(in crate::ui) fn HoldingsToggle(
                 class: if open() { "ab-holdings-toggle open" } else { "ab-holdings-toggle" },
                 r#type: "button",
                 aria_expanded: "{open()}",
-                aria_label: label,
                 onclick: move |_| open.set(!open()),
                 "{count}"
                 Icon { glyph: Glyph::ChevronRight }

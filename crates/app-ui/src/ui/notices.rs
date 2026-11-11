@@ -7,7 +7,7 @@ use wallet_core::explorer;
 use crate::actions::unix_now;
 use crate::state::session::Session;
 use crate::ui::local_time;
-use crate::ui::{tx_status_chip, use_phone_layout, CopyButton, Glyph, Icon, PhoneSheet};
+use crate::ui::{tx_status_chip, use_phone_layout, CopyButton, Empty, Glyph, Icon, PhoneSheet};
 
 /// Filter chips in the notification panel.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -135,15 +135,15 @@ fn NoticesBody() -> Element {
     let groups = group_by_day(&items, now);
     let unread = notices.unread_count();
     let empty = notices.is_empty();
-    // A phone has no room for an action with nothing to act on, so it
-    // leaves one out rather than showing it greyed.
-    let show_mark = !phone || unread > 0;
+    // No control with nothing to act on, on a desktop and a phone alike: an
+    // action that would do nothing is left out rather than shown greyed.
+    let show_mark = unread > 0;
     // Clear keeps a transaction still in flight, so with only those left
     // it has nothing to act on.
-    let show_clear = !phone || notices.items().iter().any(|n| !n.pinned());
-    // With nothing filed yet a phone leaves out the filters, which would
-    // narrow nothing, and says instead what will be filed here.
-    let none_yet = phone && empty;
+    let show_clear = notices.items().iter().any(|n| !n.pinned());
+    // With nothing filed yet the filters would narrow nothing, so they are
+    // left out, and the list says instead what will be filed here.
+    let none_yet = empty;
 
     rsx! {
         div { class: "notice-panel-head",
@@ -156,7 +156,6 @@ fn NoticesBody() -> Element {
                         button {
                             class: "ghost sm",
                             r#type: "button",
-                            disabled: unread == 0,
                             onclick: move |_| session.notices_mark_all_read(),
                             "Mark all read"
                         }
@@ -165,7 +164,6 @@ fn NoticesBody() -> Element {
                         button {
                             class: "ghost sm",
                             r#type: "button",
-                            disabled: empty,
                             onclick: move |_| session.notices_clear(),
                             "Clear"
                         }
@@ -192,17 +190,20 @@ fn NoticesBody() -> Element {
             }
         }
         div { class: "notice-list",
-            if none_yet {
+            if empty {
                 // What the filters sort: transactions, requests from other
                 // apps and sites, and the rest (the vault, syncs, saves).
-                p { class: "muted notice-none",
-                    Icon { glyph: Glyph::Bell }
-                    span {
-                        "Transactions you send, requests from apps and sites, and the vault locking or a sync or save failing show up here."
-                    }
+                Empty {
+                    glyph: Glyph::Bell,
+                    compact: true,
+                    text: "No notifications yet. Transactions you send, requests from apps and sites, and the vault locking or a sync or save failing are listed here.",
                 }
             } else if groups.is_empty() {
-                p { class: "muted notice-empty", "No notifications yet." }
+                Empty {
+                    glyph: Glyph::Bell,
+                    compact: true,
+                    text: "No notifications of this kind.",
+                }
             } else {
                 for (day_label, day_items) in groups {
                     div { class: "notice-day", key: "{day_label}",
