@@ -206,6 +206,92 @@ fn signed_by_seed(wire: &[u8]) -> Vec<u8> {
     apply_local_signatures(wire, &signers).unwrap()
 }
 
+// ---- A site's request that something else takes the screen from.
+
+const SITE: &str = "https://site.example";
+
+#[tokio::test]
+async fn a_sites_request_replaced_by_the_apps_own_comes_back_with_its_signature() {
+    let mut screen = Screen::new().await;
+    let asked = screen.transfer(1);
+    let _reply = screen.request("aside-1", SITE, &asked);
+    screen.settle().await;
+    let signed = signed_by_seed(&asked);
+    screen.load(&signed, browser("aside-1", SITE));
+
+    let own = screen.transfer(2);
+    screen.act(|| {
+        screen
+            .session
+            .open_in_sign(SignLoad::new(own.clone(), TxSource::Wallets))
+    });
+    assert_eq!(screen.wire(), Some(own));
+    assert_eq!(
+        screen.act(|| screen.form().displaced.peek().clone()),
+        Some(("aside-1".to_string(), SITE.to_string()))
+    );
+
+    // The request modal prepares it again from what the site sent.
+    screen.act(|| {
+        screen
+            .session
+            .open_in_sign(SignLoad::new(asked.clone(), browser("aside-1", SITE)))
+    });
+    assert_eq!(screen.wire(), Some(signed));
+    assert_eq!(
+        screen.act(|| screen.form().source.peek().clone()),
+        Some(browser("aside-1", SITE))
+    );
+    assert_eq!(screen.act(|| screen.form().displaced.peek().clone()), None);
+    assert!(screen.act(|| screen.form().set_aside.peek().is_empty()));
+}
+
+#[tokio::test]
+async fn a_request_that_left_the_queue_is_not_kept() {
+    let mut screen = Screen::new().await;
+    let asked = screen.transfer(1);
+    let _reply = screen.request("aside-2", SITE, &asked);
+    screen.settle().await;
+    screen.load(&signed_by_seed(&asked), browser("aside-2", SITE));
+    let own = screen.transfer(2);
+    screen.act(|| {
+        screen
+            .session
+            .open_in_sign(SignLoad::new(own, TxSource::Build))
+    });
+
+    screen.act(|| {
+        screen
+            .session
+            .bridge_answer("aside-2", BridgeAnswer::Rejected)
+    });
+    screen.settle().await;
+    let other = screen.transfer(3);
+    let _other_reply = screen.request("aside-3", SITE, &other);
+    screen.settle().await;
+    screen.act(|| {
+        screen
+            .session
+            .open_in_sign(SignLoad::new(other.clone(), browser("aside-3", SITE)))
+    });
+    assert_eq!(screen.wire(), Some(other));
+    assert!(screen.act(|| screen.form().set_aside.peek().is_empty()));
+    assert_eq!(screen.act(|| screen.form().displaced.peek().clone()), None);
+}
+
+#[tokio::test]
+async fn only_a_signed_transaction_of_the_apps_own_would_be_lost() {
+    let screen = Screen::new().await;
+    let own = screen.transfer(1);
+    screen.load(&own, TxSource::Wallets);
+    assert!(!screen.act(|| screen.form().holds_signed_work()));
+    screen.load(&signed_by_seed(&own), TxSource::Pasted);
+    assert!(screen.act(|| screen.form().holds_signed_work()));
+    // A site's request is set aside instead.
+    screen.load(&signed_by_seed(&own), browser("aside-4", SITE));
+    assert!(!screen.act(|| screen.form().holds_signed_work()));
+}
+
 // ---- The keys a press of Sign builds.
 
 #[tokio::test]

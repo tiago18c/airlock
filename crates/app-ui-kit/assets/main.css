@@ -4034,6 +4034,11 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 /* What the transaction's format allows, above its signatures. */
 .note.format-note { display: flex; align-items: flex-start; gap: var(--space-2); }
 .format-note .icon { flex: none; width: 16px; height: 16px; margin-top: 1px; }
+/* A site's request set aside on Sign: said like a format note, the site in
+   its monospace. */
+.note.set-aside-note { display: flex; align-items: flex-start; gap: var(--space-2); margin: 0; }
+.set-aside-note .icon { flex: none; width: 16px; height: 16px; margin-top: 1px; }
+.set-aside-note .origin { font-family: var(--font-mono); overflow-wrap: anywhere; }
 textarea.short { min-height: 64px; }
 
 @media (max-width: 639px) {

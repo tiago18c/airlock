@@ -213,6 +213,10 @@ pub fn SignPanel() -> Element {
         Some(TxSource::Browser { id, .. }) => Some(id.clone()),
         _ => None,
     };
+    // A site's request something else took the screen from, while it waits.
+    let set_aside = (form.displaced)().filter(|(id, _)| {
+        request.as_deref() != Some(id.as_str()) && session.bridge.read().get(id).is_some()
+    });
 
     rsx! {
         section { class: "page",
@@ -254,6 +258,21 @@ pub fn SignPanel() -> Element {
                                     onclick: move |_| form.clear(),
                                     "Clear"
                                 }
+                            }
+                        }
+                    }
+                }
+
+                if let Some((_, origin)) = set_aside {
+                    p { class: "note set-aside-note", role: "status",
+                        Icon { glyph: Glyph::Info }
+                        span {
+                            "The request from "
+                            span { class: "origin", "{origin}" }
+                            if phone {
+                                " is set aside with what was done to it. Open it from the bar above to go on where you left off."
+                            } else {
+                                " is set aside with what was done to it. Open it from its card to go on where you left off."
                             }
                         }
                     }

@@ -204,6 +204,30 @@ impl SignLoad {
         self.flow = Some(flow);
         self
     }
+
+    /// The site's request it answers, when a site asked for it.
+    pub fn request_id(&self) -> Option<&str> {
+        match &self.from {
+            TxSource::Browser { id, .. } => Some(id),
+            _ => None,
+        }
+    }
+}
+
+/// A site's request that something else took the Sign screen from, as it
+/// stood then: its transaction with every signature added to it, its batch
+/// and what the screen knew of it. Opened again, it comes back as it was.
+#[derive(Clone, Debug, PartialEq)]
+pub struct SetAside {
+    pub id: String,
+    pub origin: String,
+    pub wire: Vec<u8>,
+    pub note: Option<wallet_core::Phrase>,
+    pub expiry: Option<BlockhashExpiry>,
+    pub tables: wallet_core::LookupTables,
+    pub vector: Vec<wallet_core::relay::VectorContext>,
+    pub flow: Option<u64>,
+    pub batch: Option<BrowserBatch>,
 }
 
 /// The one transaction the Sign screen is working on.
@@ -272,6 +296,12 @@ pub struct SignForm {
     /// signature. Kept in memory, like `made_here`, so it holds for every
     /// transaction of a batch.
     pub site_sends: Signal<Vec<(solana_signature::Signature, SiteSend)>>,
+    /// Sites' requests something else took the screen from, kept until they
+    /// are opened again or leave the queue. See [`SetAside`].
+    pub set_aside: Signal<Vec<SetAside>>,
+    /// The site and request id the screen last set aside, for the note that
+    /// says so, until that request is on screen again.
+    pub displaced: Signal<Option<(String, String)>>,
 }
 
 /// A key made here, and the site's one-time key it takes the place of.
@@ -405,6 +435,100 @@ impl SignForm {
         });
     }
 
+    /// Keep the site's request on screen, as it stands, when `next` is about
+    /// to take its place: anything but another transaction of the same
+    /// request. A request already answered keeps nothing.
+    fn set_aside_for(&self, next: &TxSource) {
+        let Some(TxSource::Browser { id, origin }) = self.source.peek().clone() else {
+            return;
+        };
+        if matches!(next, TxSource::Browser { id: next, .. } if *next == id) {
+            return;
+        }
+        if *self.returned.peek() {
+            return;
+        }
+        let Some(wire) = self.wire.peek().clone() else {
+            return;
+        };
+        self.save_batch_item();
+        let kept = SetAside {
+            id: id.clone(),
+            origin: origin.clone(),
+            wire,
+            note: self.note.peek().clone(),
+            expiry: *self.clock.expiry.peek(),
+            tables: self.tables.peek().clone(),
+            vector: self.vector.peek().clone(),
+            flow: *self.flow.peek(),
+            batch: self.batch.peek().clone(),
+        };
+        let mut set_aside = self.set_aside;
+        set_aside.with_mut(|set_aside| {
+            set_aside.retain(|other| other.id != id);
+            set_aside.push(kept);
+        });
+        let mut displaced = self.displaced;
+        displaced.set(Some((id, origin)));
+    }
+
+    /// The request `id` as it was set aside, taken out of what is kept.
+    pub fn take_set_aside(&self, id: &str) -> Option<SetAside> {
+        let mut set_aside = self.set_aside;
+        let mut taken = None;
+        set_aside.with_mut(|set_aside| {
+            if let Some(at) = set_aside.iter().position(|kept| kept.id == id) {
+                taken = Some(set_aside.remove(at));
+            }
+        });
+        let mut displaced = self.displaced;
+        if displaced
+            .peek()
+            .as_ref()
+            .is_some_and(|(other, _)| other == id)
+        {
+            displaced.set(None);
+        }
+        taken
+    }
+
+    /// Forget what was set aside for requests no longer `waiting`.
+    pub fn forget_set_aside(&self, waiting: impl Fn(&str) -> bool) {
+        let mut set_aside = self.set_aside;
+        if set_aside.peek().iter().any(|kept| !waiting(&kept.id)) {
+            set_aside.with_mut(|set_aside| set_aside.retain(|kept| waiting(&kept.id)));
+        }
+        let mut displaced = self.displaced;
+        if displaced
+            .peek()
+            .as_ref()
+            .is_some_and(|(id, _)| !waiting(id))
+        {
+            displaced.set(None);
+        }
+    }
+
+    /// Whether replacing the screen would throw away signatures this app
+    /// cannot put back: a transaction of the app's own, or one pasted or
+    /// scanned, with a signature on it already and not sent. A site's
+    /// request is set aside instead (see [`SetAside`]).
+    pub fn holds_signed_work(&self) -> bool {
+        if matches!(*self.source.peek(), None | Some(TxSource::Browser { .. })) {
+            return false;
+        }
+        if matches!(
+            *self.submission.peek(),
+            Some(Submission::Sending | Submission::Sent(_))
+        ) {
+            return false;
+        }
+        self.wire
+            .peek()
+            .as_deref()
+            .and_then(|wire| wallet_core::parse_wire(wire).ok())
+            .is_some_and(|view| view.valid_signatures() > 0)
+    }
+
     /// Which transaction is on screen, for a task about to take time.
     pub fn generation(&self) -> u64 {
         *self.generation.peek()
@@ -464,6 +588,7 @@ impl SignForm {
             .log_received(crate::diagnostics::source_name(&from), origin, code_ref);
             flow
         });
+        self.set_aside_for(&from);
         self.reset();
         let mut this = *self;
         this.wire.set(Some(wire));

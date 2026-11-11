@@ -15,6 +15,8 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
     let countdown_label = prep.countdown_label;
     let mut busy = use_signal(|| false);
     let mut error = use_signal(|| None::<String>);
+    // Review would replace signatures on Sign: said once, then it goes on.
+    let mut replacing = use_signal(|| false);
 
     let reject_id = current.id.clone();
     let review_id = current.id.clone();
@@ -70,6 +72,11 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
             } else {
                 SimulatedDeltas { from: prep.simulation, {prepared_body(&prep)} }
             }
+            if replacing() {
+                p { class: "warn", role: "alert",
+                    "Review and Sign holds a transaction with signatures on it. Reviewing this request puts it there in its place, and those signatures are lost."
+                }
+            }
             if let Some(text) = error() {
                 p { class: "error", role: "alert", "{text}" }
             }
@@ -85,6 +92,10 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                 class: review_class(prep.can_sign, prep.cautious_sign),
                 disabled: !prep.can_review,
                 onclick: move |_| {
+                    if !replacing() && session.forms.sign.holds_signed_work() {
+                        replacing.set(true);
+                        return;
+                    }
                     let Some(ReadyWire { wire, adapted, tables, flow, onto_nonce, .. }) = for_review.clone() else {
                         return;
                     };
@@ -111,7 +122,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                     );
                     on_close.call(());
                 },
-                "Review"
+                if replacing() { "Review anyway" } else { "Review" }
             }
             button {
                 class: sign_class(can_sign, prep.cautious_sign),
@@ -505,6 +516,8 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
     let reports = use_signal(|| vec![None::<BatchReport>; count]);
     let mut busy = use_signal(|| false);
     let mut error = use_signal(|| None::<String>);
+    // Review would replace signatures on Sign: said once, then it goes on.
+    let mut replacing = use_signal(|| false);
     // Preparing rebuilds around a wallet's keys, so nothing is prepared
     // until the vault is open.
     let locked = session.is_initialized() && !session.is_unlocked();
@@ -577,6 +590,11 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                 "Sign is offered when this device can finish every transaction. Review opens them in Review and Sign one at a time, and returns them together after the last."
             }
         }
+        if replacing() {
+            p { class: "warn", role: "alert",
+                "Review and Sign holds a transaction with signatures on it. Reviewing this request puts it there in its place, and those signatures are lost."
+            }
+        }
         div { class: "btn-row",
             button {
                 onclick: move |_| {
@@ -588,6 +606,10 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                 class: review_class(can_sign, cautious_sign),
                 disabled: !can_review,
                 onclick: move |_| {
+                    if !replacing() && session.forms.sign.holds_signed_work() {
+                        replacing.set(true);
+                        return;
+                    }
                     let Some(reports) = for_review.clone() else {
                         return;
                     };
@@ -621,7 +643,7 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                     });
                     on_close.call(());
                 },
-                "Review"
+                if replacing() { "Review anyway" } else { "Review" }
             }
             button {
                 class: sign_class(can_sign, cautious_sign),
