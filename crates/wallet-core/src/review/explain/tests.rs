@@ -1644,3 +1644,314 @@ fn fetched_bytes_count_only_from_an_account_the_reading_program_owns() {
     let fetched = [Some(raw_account(pk(3), MINT_WITH_METADATA)), None];
     assert!(display_accounts(&needed, &fetched).is_empty());
 }
+
+/// An instruction of a mainnet Jupiter transaction: its data and its accounts
+/// as `(address, signer, writable)`.
+fn jupiter_ix(data: &str, accounts: &[(&str, bool, bool)]) -> Instruction {
+    use crate::fixtures::JUPITER_PROGRAM_ID;
+
+    Instruction {
+        program_id: JUPITER_PROGRAM_ID,
+        accounts: accounts
+            .iter()
+            .map(|&(address, signer, writable)| AccountMeta {
+                pubkey: Pubkey::from_str_const(address),
+                is_signer: signer,
+                is_writable: writable,
+            })
+            .collect(),
+        data: hex::decode(data).unwrap(),
+    }
+}
+
+const JUP: &str = "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4";
+const JUP_EVENTS: &str = "D8cy77BBepLMngZx6ZukaTff5hCt1HrWyKk3Hnd9oitf";
+
+/// The 82 bytes of an initialized Token mint with `decimals`.
+fn token_mint(decimals: u8) -> Vec<u8> {
+    let mut data = vec![0; 82];
+    data[44] = decimals;
+    data[45] = 1;
+    data
+}
+
+/// How a Jupiter instruction reads on mainnet, the only network it runs on,
+/// once the node has given the accounts its sentence asks for: `mints`, each
+/// a Token mint with its decimals.
+fn jupiter_explained(payer: &str, ix: Instruction, mints: &[(&str, u8)]) -> IdlExplanation {
+    let store = crate::fixtures::shipped_catalog(crate::IdlNetwork::Mainnet);
+    let tx = decode_v1_transaction(&compile(Pubkey::from_str_const(payer), vec![ix]).wire).unwrap();
+    let needed = explain_transaction(&store, &tx).accounts_needed();
+    let fetched: Vec<_> = needed
+        .iter()
+        .map(|(address, _)| {
+            mints
+                .iter()
+                .find(|(mint, _)| Pubkey::from_str_const(mint) == *address)
+                .map(|(_, decimals)| raw_account(TOKEN_PROGRAM_ID, &token_mint(*decimals)))
+        })
+        .collect();
+    let note = DisplayNote {
+        accounts: display_accounts(&needed, &fetched),
+        ..DisplayNote::default()
+    };
+    explain_with_note(&store, &tx, &note).instructions[0]
+        .idl
+        .clone()
+        .expect("explained from an IDL")
+}
+
+/// A mainnet `route_v2` that sends its output to another account and takes a
+/// platform fee (transaction `5aH3BnmS…`), with the first accounts of its
+/// route plan.
+#[test]
+fn a_jupiter_swap_names_its_mints_quote_slippage_and_fee() {
+    let owner = "AER6GKt4reeBqQaQDzU7aHNqhVT3SnfZRFD1gBT4nZVr";
+    let input = "HwZSULZAMKyFyLaSLVVAAKGvgbau2ScnWEX7ozF7pump";
+    let output = "CASHx9KJUStyftLFWGvEVf59SGeG9sh5FfcnZMVPCASH";
+    let token_2022 = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
+    let swap = jupiter_ix(
+        "bb64facc31c4af14a7b3724111010000fe1d25010000000070085500000004000000c0001027000130ea040103a1010000000026220103740010270304",
+        &[
+            (owner, true, true),
+            ("61c1ZXYghfB1jipxy6W8xc3QmujERmq5RRRq5MziZma5", false, true),
+            ("FNuFCd7CFHniMyt7eYjbVsQkMAT9hmAVL9VKpqguDWJq", false, true),
+            (input, false, false),
+            (output, false, false),
+            (token_2022, false, false),
+            (token_2022, false, false),
+            ("79hbfuh1Y6zGrXkdGxCCxoZeUvsDAZwpcnjBCcqir8qm", false, true),
+            (JUP_EVENTS, false, false),
+            (JUP, false, false),
+            ("8ZjzUhmxDREvwhYfoGYsfsvhLHoKy2BLA5iLCm1GZGVT", false, true),
+            ("6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P", false, false),
+            ("4wTV1YmiEkRvAtNtsSGPtUrqRYQMe5SKy2uB4Jjaxnjf", false, false),
+        ],
+    );
+    let idl = jupiter_explained(owner, swap, &[(input, 6), (output, 6)]);
+    assert_eq!(idl.intent, "Swap tokens");
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "{owner} swaps 1,173,624.107943 of {input} for a quoted 19.209726 of \
+                 {output}, accepting up to 21.6 % less"
+            )
+            .as_str()
+        )
+    );
+    assert_eq!(field(&idl, "Platform Fee"), "0.85 %");
+    assert_eq!(field(&idl, "Positive Slippage"), "0 %");
+    assert_eq!(
+        field(&idl, "From"),
+        "61c1ZXYghfB1jipxy6W8xc3QmujERmq5RRRq5MziZma5"
+    );
+    assert_eq!(
+        field(&idl, "To"),
+        "FNuFCd7CFHniMyt7eYjbVsQkMAT9hmAVL9VKpqguDWJq"
+    );
+    assert_eq!(
+        field(&idl, "Output Sent To"),
+        "79hbfuh1Y6zGrXkdGxCCxoZeUvsDAZwpcnjBCcqir8qm"
+    );
+    // The route plan's accounts are a declared group, not unnamed extras.
+    assert_eq!(idl.unnamed_accounts, 0);
+    assert!(idl
+        .fields
+        .iter()
+        .all(|field| field.value != token_2022 && field.value != JUP_EVENTS));
+}
+
+/// A mainnet `route` that passes neither an output account nor a platform fee
+/// account (transaction `4dwR9Fv5…`): Anchor puts the program's own address in
+/// their place, and review leaves them out rather than show it. `route` names
+/// no input mint, so its input stays in base units.
+#[test]
+fn a_jupiter_swap_leaves_out_the_optional_accounts_it_does_not_pass() {
+    let owner = "3VTMBUmb6Bm8q1hhAWNRYqEadtLdj5UcBiNFkcC56h2L";
+    let usdc = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+    let swap = jupiter_ix(
+        "e517cb977ae3ad2a01000000b501640001e097c1110000000053da7c0100000000320000",
+        &[
+            ("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", false, false),
+            (owner, true, true),
+            ("2n3hGfs6QTfrJbPsrsBFv8XdFuG8kXzueC5Zt1vgVp41", false, true),
+            ("9FPcwpMEi4A4jJ8csQizHTviJcnUzRcUcDke1TExw6Zb", false, true),
+            (JUP, false, false),
+            (usdc, false, false),
+            (JUP, false, false),
+            (JUP_EVENTS, false, false),
+            (JUP, false, false),
+            ("3TK9D8aoBFYjYZtKCjciPrVrRStsnvo7KmpcJqDavpaU", false, false),
+        ],
+    );
+    let idl = jupiter_explained(owner, swap, &[(usdc, 6)]);
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "{owner} swaps 297,900,000 base units from \
+                 2n3hGfs6QTfrJbPsrsBFv8XdFuG8kXzueC5Zt1vgVp41 for a quoted 24.959571 of \
+                 {usdc}, accepting up to 0.5 % less"
+            )
+            .as_str()
+        )
+    );
+    assert_eq!(
+        field(&idl, "To"),
+        "9FPcwpMEi4A4jJ8csQizHTviJcnUzRcUcDke1TExw6Zb"
+    );
+    assert!(idl.fields.iter().all(|field| field.value != JUP));
+    assert!(idl
+        .fields
+        .iter()
+        .all(|field| field.label != "Output Sent To" && field.label != "Platform Fee Account"));
+}
+
+/// An `exact_out_route_v2` names the amount bought and the most it may cost.
+#[test]
+fn a_jupiter_exact_out_swap_names_what_it_buys_and_the_most_it_pays() {
+    let owner = pk(1).to_string();
+    let source = pk(4).to_string();
+    let destination = pk(5).to_string();
+    let mut data = hex::decode("9d8ab85215f4f324").unwrap();
+    data.extend(5_000_000u64.to_le_bytes());
+    data.extend(2_000_000_000u64.to_le_bytes());
+    data.extend(50u16.to_le_bytes());
+    data.extend(0u16.to_le_bytes());
+    data.extend(0u16.to_le_bytes());
+    // One step: `saber` (variant 0, no data), all of it, token 0 to token 1.
+    data.extend(1u32.to_le_bytes());
+    data.extend([0, 0x10, 0x27, 0, 1]);
+    let token = TOKEN_PROGRAM_ID.to_string();
+    let swap = jupiter_ix(
+        &hex::encode(data),
+        &[
+            (&owner, true, false),
+            (&pk(2).to_string(), false, true),
+            (&pk(3).to_string(), false, true),
+            (&source, false, false),
+            (&destination, false, false),
+            (&token, false, false),
+            (&token, false, false),
+            (JUP, false, false),
+            (JUP_EVENTS, false, false),
+            (JUP, false, false),
+        ],
+    );
+    let idl = jupiter_explained(&owner, swap, &[(&destination, 6), (&source, 9)]);
+    assert_eq!(idl.intent, "Buy tokens");
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "{owner} buys 5 of {destination} for a quoted 2 of {source}, paying up to \
+                 0.5 % more"
+            )
+            .as_str()
+        )
+    );
+    assert_eq!(idl.unnamed_accounts, 0);
+}
+
+/// Until the node gives a swap's mints, its amounts have no scale: no sentence,
+/// and the fields say so, as for any amount whose decimals are not known yet.
+#[test]
+fn a_jupiter_swap_reads_once_its_mints_are_fetched() {
+    let owner = pk(1).to_string();
+    let (input, output) = (pk(4).to_string(), pk(5).to_string());
+    let mut data = hex::decode("bb64facc31c4af14").unwrap();
+    data.extend(1_500_000u64.to_le_bytes());
+    data.extend(2_000_000_000u64.to_le_bytes());
+    data.extend(50u16.to_le_bytes());
+    data.extend(0u16.to_le_bytes());
+    data.extend(0u16.to_le_bytes());
+    data.extend(1u32.to_le_bytes());
+    data.extend([0, 0x10, 0x27, 0, 1]);
+    let data = hex::encode(data);
+    let (from, to) = (pk(2).to_string(), pk(3).to_string());
+    let token = TOKEN_PROGRAM_ID.to_string();
+    let swap = || {
+        jupiter_ix(
+            &data,
+            &[
+                (&owner, true, false),
+                (&from, false, true),
+                (&to, false, true),
+                (&input, false, false),
+                (&output, false, false),
+                (&token, false, false),
+                (&token, false, false),
+                (JUP, false, false),
+                (JUP_EVENTS, false, false),
+                (JUP, false, false),
+            ],
+        )
+    };
+
+    let bare = jupiter_explained(&owner, swap(), &[]);
+    assert_eq!(bare.interpolated_intent, None);
+    assert_eq!(field(&bare, "Amount In"), "1,500,000 (raw)");
+
+    let read = jupiter_explained(&owner, swap(), &[(&input, 6), (&output, 9)]);
+    assert_eq!(
+        read.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "{owner} swaps 1.5 of {input} for a quoted 2 of {output}, accepting up to \
+                 0.5 % less"
+            )
+            .as_str()
+        )
+    );
+}
+
+/// A mint is read for any program that names it, as a swap names the mints it
+/// trades: only the Token programs write an initialized mint they own.
+#[test]
+fn a_mint_is_read_whichever_program_reads_it() {
+    let reader = pk(3);
+    let needed = [(pk(7), reader), (pk(8), reader)];
+    let fetched = [
+        Some(raw_account(TOKEN_PROGRAM_ID, &token_mint(6))),
+        Some(raw_account(TOKEN_2022_PROGRAM_ID, MINT_WITH_METADATA)),
+    ];
+    let kept = display_accounts(&needed, &fetched);
+    assert_eq!(kept.get(&pk(7)), Some(&token_mint(6)));
+    assert_eq!(
+        kept.get(&pk(8)).map(Vec::as_slice),
+        Some(MINT_WITH_METADATA)
+    );
+}
+
+/// Nothing else the Token programs own is taken for a mint: not a token
+/// account, a multisig, or a mint not yet initialized. Nor is a mint's shape
+/// owned by any other program.
+#[test]
+fn only_an_initialized_token_mint_is_read_for_another_program() {
+    let reader = pk(3);
+    let mut uninitialized = token_mint(6);
+    uninitialized[45] = 0;
+    let mut extended_account = vec![0; 170];
+    extended_account[45] = 1;
+    extended_account[165] = 2;
+    let mut multisig = vec![1; 355];
+    multisig[165] = 1;
+    let cases = [
+        raw_account(TOKEN_PROGRAM_ID, &uninitialized),
+        raw_account(TOKEN_PROGRAM_ID, &[1; 165]),
+        raw_account(TOKEN_PROGRAM_ID, &[1; 355]),
+        raw_account(TOKEN_2022_PROGRAM_ID, &extended_account),
+        raw_account(TOKEN_2022_PROGRAM_ID, &multisig),
+        raw_account(pk(9), &token_mint(6)),
+    ];
+    for account in cases {
+        let kept = display_accounts(&[(pk(7), reader)], &[Some(account.clone())]);
+        assert!(
+            kept.is_empty(),
+            "{} bytes owned by {}",
+            account.data.len(),
+            account.owner
+        );
+    }
+}

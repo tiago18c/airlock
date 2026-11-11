@@ -55,6 +55,10 @@ pub const RAYDIUM_ROUTER_PROGRAM_ID: Pubkey =
 pub const ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey =
     Pubkey::from_str_const("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
 
+/// Jupiter's swap aggregator, on mainnet, from the IDL pack.
+pub const JUPITER_PROGRAM_ID: Pubkey =
+    Pubkey::from_str_const("JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4");
+
 /// The SPL Governance program Realms runs, on devnet and mainnet, from the IDL
 /// pack.
 pub const REALMS_GOVERNANCE_PROGRAM_ID: Pubkey =

@@ -143,3 +143,17 @@ name = "programMetadata"
 networks = ["mainnet", "devnet"]
 source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "f50187be5d750e48c71f394a06222edae97bdaaf1c8f73c63028a617e50c6e41" }
 changes = "Display nodes added by hand."
+
+# Jupiter's swap aggregator. It runs on mainnet only: on devnet its address is
+# a system account.
+[[idls]]
+file = "jupiter.json"
+programId = "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"
+name = "jupiter"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "11e04af55c8b102ac4230b55cb77df7ab1ce30295f18e5cdb2432d8279e7b981" }
+changes = """Converted from Anchor to Codama. The swaps declare the accounts their route \
+plan reads as one remaining-accounts group. Instructions with optional accounts set \
+optionalAccountStrategy to programId. The Token program's mint account is added, so token \
+amounts read their mint's decimals; slippage and fees are in percent. Display nodes added \
+by hand."""
