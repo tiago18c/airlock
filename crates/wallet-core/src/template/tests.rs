@@ -271,6 +271,9 @@ fn the_starter_reads_checks_on_every_network_and_is_no_shipped_template() {
     assert_eq!(template.name, "Send SOL");
     assert!(builtin_named(&template.name).is_none());
     assert!(builtin_template(&template_slug(&template.name)).is_none());
+    // `.gitattributes` pins the file to LF, so the editor opens on the same
+    // bytes whatever OS built the app.
+    assert!(!STARTER_TEMPLATE.contains('\r'));
     // It teaches by its comments, which say what each part is.
     let comments = STARTER_TEMPLATE
         .lines()

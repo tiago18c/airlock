@@ -10,3 +10,4 @@ resources/idls/* text eol=lf
 # bytes, and a built-in template exported on Windows is the same file as
 # one exported elsewhere.
 crates/wallet-core/templates/*.toml text eol=lf
+crates/wallet-core/templates/starter/*.toml text eol=lf
