@@ -63,6 +63,7 @@ pub fn FingerprintOffer() -> Element {
                     p { class: "error", "{err}" }
                 }
                 div { class: "btn-row",
+                    button { class: "ghost", disabled: working(), onclick: move |_| close(), "Not now" }
                     button {
                         class: "primary",
                         disabled: working(),
@@ -84,7 +85,6 @@ pub fn FingerprintOffer() -> Element {
                         },
                         if working() { "Waiting for fingerprint…" } else { "Turn on" }
                     }
-                    button { disabled: working(), onclick: move |_| close(), "Not now" }
                 }
             }
         }
@@ -241,21 +241,10 @@ pub fn VaultUnlock(
                     p { class: "error", "{err}" }
                 }
                 div { class: "btn-row",
-                    button { class: "primary",
-                        disabled: working(),
-                        onclick: move |_| submit(),
-                        match (initialized, working()) {
-                            (true, false) => "Unlock",
-                            (true, true) => "Unlocking…",
-                            (false, false) => "Create vault",
-                            (false, true) => "Creating…",
-                        }
-                    }
-                    if fingerprint_offered {
-                        button {
-                            disabled: working(),
-                            onclick: move |_| fingerprint.call(()),
-                            "Use fingerprint"
+                    if let Some(cancel) = on_cancel {
+                        button { class: "ghost",
+                            onclick: move |_| cancel.call(()),
+                            "Cancel"
                         }
                     }
                     if show_skip {
@@ -267,10 +256,21 @@ pub fn VaultUnlock(
                             "Skip"
                         }
                     }
-                    if let Some(cancel) = on_cancel {
-                        button { class: "ghost",
-                            onclick: move |_| cancel.call(()),
-                            "Cancel"
+                    if fingerprint_offered {
+                        button {
+                            disabled: working(),
+                            onclick: move |_| fingerprint.call(()),
+                            "Use fingerprint"
+                        }
+                    }
+                    button { class: "primary",
+                        disabled: working(),
+                        onclick: move |_| submit(),
+                        match (initialized, working()) {
+                            (true, false) => "Unlock",
+                            (true, true) => "Unlocking…",
+                            (false, false) => "Create vault",
+                            (false, true) => "Creating…",
                         }
                     }
                 }

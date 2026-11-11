@@ -209,6 +209,7 @@ pub fn SquadsForm(creating: bool, on_done: EventHandler<()>) -> Element {
             p { class: "error", "{err}" }
         }
         div { class: "btn-row",
+            button { class: "ghost", onclick: move |_| on_done.call(()), "Cancel" }
             if creating {
                 button { class: "primary", disabled: busy(), onclick: create,
                     if busy() { "Preparing…" } else { "Create multisig" }
@@ -218,7 +219,6 @@ pub fn SquadsForm(creating: bool, on_done: EventHandler<()>) -> Element {
                     if busy() { "Reading…" } else { "Add multisig" }
                 }
             }
-            button { class: "ghost", onclick: move |_| on_done.call(()), "Cancel" }
         }
     }
 }

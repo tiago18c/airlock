@@ -434,10 +434,10 @@ pub fn VectorForm(creating: bool, on_done: EventHandler<()>) -> Element {
             p { class: "error", "{err}" }
         }
         div { class: "btn-row",
+            button { class: "ghost", onclick: move |_| on_done.call(()), "Cancel" }
             button { class: "primary", onclick: save,
                 if creating { "Create Vector wallet" } else { "Add Vector wallet" }
             }
-            button { class: "ghost", onclick: move |_| on_done.call(()), "Cancel" }
         }
     }
 }

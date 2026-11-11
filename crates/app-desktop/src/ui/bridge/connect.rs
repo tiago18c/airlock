@@ -70,7 +70,7 @@ pub(in crate::ui) fn ConnectRequest(current: BridgePrompt, on_close: EventHandle
         }
         div { class: "btn-row",
             button {
-                class: "danger",
+                class: "danger btn-lead",
                 title: "Reject this request and every request this site makes from now on.",
                 onclick: move |_| {
                     session.bridge_block(&block_id);

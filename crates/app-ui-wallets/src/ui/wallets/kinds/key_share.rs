@@ -243,12 +243,12 @@ pub fn ExportKeysModal(on_close: EventHandler<()>) -> Element {
                         }
                     }
                     div { class: "btn-row",
+                        button { class: "ghost", onclick: move |_| on_close.call(()), "Cancel" }
                         button { class: "primary",
                             disabled: chosen.is_empty(),
                             onclick: move |_| showing.set(true),
                             "Show {chosen.len()} key(s)"
                         }
-                        button { class: "ghost", onclick: move |_| on_close.call(()), "Cancel" }
                     }
                 }
             }
@@ -440,12 +440,12 @@ pub fn KeyImportForm(on_done: EventHandler<()>) -> Element {
             p { class: "error", "{err}" }
         }
         div { class: "btn-row",
+            button { class: "ghost", onclick: move |_| on_done.call(()), "Cancel" }
             button { class: "primary",
                 disabled: seen.is_empty(),
                 onclick: save,
                 "Add selected"
             }
-            button { class: "ghost", onclick: move |_| on_done.call(()), "Cancel" }
         }
     }
 }

@@ -98,6 +98,25 @@ pub(in crate::ui) fn AddressModal() -> Element {
                         p { class: "error", "{err}" }
                     }
                     div { class: "btn-row",
+                        button { class: "ghost",
+                            onclick: move |_| modal_open.set(false),
+                            "Cancel"
+                        }
+                        button { class: "ghost",
+                            onclick: move |_| {
+                                if let Some(pk) = editing {
+                                    let group_id = editing_group.read().clone();
+                                    if let Some(entry) = (session.book)().get_in(&group_id, &pk) {
+                                        label.set(entry.label.clone());
+                                        tags.set(join_tags(&entry.tags));
+                                        error.set(None);
+                                        return;
+                                    }
+                                }
+                                form.clear_draft();
+                            },
+                            "Clear"
+                        }
                         button { class: "primary",
                             onclick: move |_| {
                                 error.set(None);
@@ -159,25 +178,6 @@ pub(in crate::ui) fn AddressModal() -> Element {
                                 modal_open.set(false);
                             },
                             if editing.is_some() { "Save" } else { "Add address" }
-                        }
-                        button { class: "ghost",
-                            onclick: move |_| {
-                                if let Some(pk) = editing {
-                                    let group_id = editing_group.read().clone();
-                                    if let Some(entry) = (session.book)().get_in(&group_id, &pk) {
-                                        label.set(entry.label.clone());
-                                        tags.set(join_tags(&entry.tags));
-                                        error.set(None);
-                                        return;
-                                    }
-                                }
-                                form.clear_draft();
-                            },
-                            "Clear"
-                        }
-                        button { class: "ghost",
-                            onclick: move |_| modal_open.set(false),
-                            "Cancel"
                         }
                     }
                 }

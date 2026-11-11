@@ -40,6 +40,13 @@ pub(in crate::ui) fn ConfirmRemoveModal(
                         }
                     }
                     div { class: "btn-row",
+                        button { class: "ghost",
+                            onclick: move |_| {
+                                confirm_text.set(String::new());
+                                open.set(false);
+                            },
+                            "Cancel"
+                        }
                         button {
                             class: "danger solid",
                             disabled: !confirmed(),
@@ -50,13 +57,6 @@ pub(in crate::ui) fn ConfirmRemoveModal(
                                 }
                             },
                             "Remove wallet"
-                        }
-                        button { class: "ghost",
-                            onclick: move |_| {
-                                confirm_text.set(String::new());
-                                open.set(false);
-                            },
-                            "Cancel"
                         }
                     }
                 }

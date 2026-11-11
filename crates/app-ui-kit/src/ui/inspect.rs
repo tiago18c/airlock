@@ -129,14 +129,14 @@ fn InspectBody(pubkey: Pubkey, back: Option<Pubkey>) -> Element {
                         "Back"
                     }
                 }
+                button { class: "ghost",
+                    onclick: move |_| inspect.set(None),
+                    "Close"
+                }
                 button {
                     disabled: busy,
                     onclick: move |_| round += 1,
                     "Refresh"
-                }
-                button { class: "primary",
-                    onclick: move |_| inspect.set(None),
-                    "Close"
                 }
             }
         }

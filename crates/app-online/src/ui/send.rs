@@ -278,14 +278,14 @@ fn SendModal(open: SendOpen) -> Element {
                         p { class: "error", role: "alert", "{err}" }
                     }
                     div { class: "btn-row",
+                        button { class: "ghost",
+                            onclick: move |_| close(),
+                            "Cancel"
+                        }
                         button { class: "primary",
                             disabled: busy(),
                             onclick: move |_| review(),
                             if busy() { "Preparing…" } else { "Review in Sign" }
-                        }
-                        button { class: "ghost",
-                            onclick: move |_| close(),
-                            "Cancel"
                         }
                     }
                 }

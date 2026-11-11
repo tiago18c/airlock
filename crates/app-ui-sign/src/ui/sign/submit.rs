@@ -116,20 +116,20 @@ pub(in crate::ui) fn SubmitProgress() -> Element {
                                 }
                             }
                             div { class: "btn-row",
+                                button { class: "ghost",
+                                    onclick: move |_| form.clear(),
+                                    "Clear"
+                                }
+                                button { class: if run_step.is_some() { "" } else { "primary" },
+                                    onclick: move |_| view(signature),
+                                    "View transaction"
+                                }
                                 if run_step.is_some() {
                                     button { class: "primary",
                                         disabled: continuing(),
                                         onclick: next_step,
                                         if continuing() { "Reading the chain…" } else { "Next step" }
                                     }
-                                }
-                                button { class: if run_step.is_some() { "" } else { "primary" },
-                                    onclick: move |_| view(signature),
-                                    "View transaction"
-                                }
-                                button {
-                                    onclick: move |_| form.clear(),
-                                    "Clear"
                                 }
                             }
                         }
@@ -141,13 +141,13 @@ pub(in crate::ui) fn SubmitProgress() -> Element {
                             p { class: "error", "{why}" }
                             p { class: "hint", "Its fee was paid. Nothing else it did stayed." }
                             div { class: "btn-row",
-                                button { class: "primary",
-                                    onclick: move |_| back(format!("It landed, and failed: {why}")),
-                                    "Back to review"
-                                }
                                 button {
                                     onclick: move |_| view(signature),
                                     "View transaction"
+                                }
+                                button { class: "primary",
+                                    onclick: move |_| back(format!("It landed, and failed: {why}")),
+                                    "Back to review"
                                 }
                             }
                         }
