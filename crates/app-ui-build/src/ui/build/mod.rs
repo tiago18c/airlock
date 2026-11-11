@@ -1,4 +1,5 @@
 use crate::actions::build::*;
+use crate::actions::kept_templates::{ensure_kept, read_import, save_plan, TEMPLATE_FILE_INPUT};
 use crate::actions::template::{compile_template, show_as_blocks};
 use crate::state::forms::{GeneratedKey, IxBody, IxDraft, TemplateSource};
 use crate::state::session::Session;
@@ -17,6 +18,7 @@ mod advanced;
 mod carrier;
 mod editor;
 mod fields;
+mod kept;
 mod rail;
 mod raw;
 mod template;
@@ -25,6 +27,7 @@ pub(in crate::ui) use advanced::*;
 pub(in crate::ui) use carrier::*;
 pub(in crate::ui) use editor::*;
 pub(in crate::ui) use fields::*;
+pub(in crate::ui) use kept::*;
 pub(in crate::ui) use rail::*;
 pub(in crate::ui) use raw::*;
 pub(in crate::ui) use template::*;
@@ -39,9 +42,19 @@ pub fn BuildPanel() -> Element {
     let compiled_note = form.compiled_note;
     let mut picker_open = use_signal(|| false);
     let mut pending = use_signal(|| None::<TemplateSource>);
+    let desk = use_context_provider(|| TemplateDesk {
+        note: Signal::new(None),
+        error: Signal::new(None),
+        removing: Signal::new(None),
+        preview: Signal::new(None),
+        saving: Signal::new(None),
+    });
+    let mut saving = desk.saving;
 
     // The selected wallet's fee payer, once its record has loaded.
     use_effect(move || session.default_build_fee_payer());
+    // The user's templates, read once, the first time Build is shown.
+    use_effect(move || ensure_kept(&session));
 
     let drafts = (form.drafts)();
     let selected_id = (form.selected)();
@@ -67,7 +80,10 @@ pub fn BuildPanel() -> Element {
                     div { class: "btn-row",
                         button {
                             r#type: "button",
-                            onclick: move |_| picker_open.set(true),
+                            onclick: move |_| {
+                                desk.clear();
+                                picker_open.set(true);
+                            },
                             "Templates"
                         }
                     }
@@ -127,6 +143,22 @@ pub fn BuildPanel() -> Element {
                             onclick: move |_| show_as_blocks(&session),
                             "Show as blocks"
                         }
+                    } else if holds_blocks {
+                        button {
+                            r#type: "button",
+                            title: "Keep these blocks as a template, choosing what it asks each time",
+                            onclick: move |_| {
+                                let mut error = form.error;
+                                match save_plan(&session) {
+                                    Ok(plan) => {
+                                        error.set(None);
+                                        saving.set(Some(plan));
+                                    }
+                                    Err(why) => error.set(Some(why)),
+                                }
+                            },
+                            "Save as template"
+                        }
                     }
                     button { class: "ghost",
                         onclick: move |_| session.clear_build(),
@@ -139,5 +171,16 @@ pub fn BuildPanel() -> Element {
             TemplatePicker { open: picker_open, on_pick: pick }
         }
         DiscardBlocks { pending }
+        SaveTemplateDialog {}
+        ImportDialog {}
+        RemoveTemplate {}
+        // A browser picks the file to import through this field.
+        input {
+            id: TEMPLATE_FILE_INPUT,
+            class: "file-hidden",
+            r#type: "file",
+            accept: ".toml",
+            onchange: move |evt| read_import(evt, session, desk.preview, desk.error),
+        }
     }
 }

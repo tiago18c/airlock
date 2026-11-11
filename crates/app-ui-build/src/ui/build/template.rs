@@ -3,6 +3,7 @@
 //! compiled, or closed.
 
 use super::*;
+use crate::actions::kept_templates::{export_template, files_here, kept_templates, pick_import};
 use crate::actions::template::*;
 use crate::state::forms::{FactReadState, OpenTemplate, TemplateSource};
 use std::collections::HashMap;
@@ -13,34 +14,113 @@ use wallet_core::{TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID};
 
 /// Every template, one row each: its name, its summary and where it comes
 /// from. One that does not fit the IDLs of the network in use is listed,
-/// greyed, with the reason.
+/// greyed, with the reason. Each can be exported, and each of the user's
+/// removed; a file of theirs that is not a template says why.
 #[component]
 pub(in crate::ui) fn TemplateList(on_pick: EventHandler<TemplateSource>) -> Element {
     let session = use_context::<Session>();
+    let desk = use_context::<TemplateDesk>();
     let entries = use_memo(move || template_entries(&session));
+    let kept = kept_templates(&session);
+    let files = files_here();
     rsx! {
         ul { class: "book-list template-list",
             for entry in entries() {
-                li { key: "{entry.name}",
-                    button {
-                        class: "template-row",
-                        r#type: "button",
-                        disabled: entry.problem.is_some(),
-                        onclick: {
-                            let source = entry.source.clone();
-                            move |_| on_pick.call(source.clone())
-                        },
-                        span { class: "template-row-head",
-                            span { class: "template-row-name", "{entry.name}" }
-                            span { class: "chip", "{entry.source.chip()}" }
+                TemplateItem {
+                    key: "{entry.source.key()}",
+                    entry: entry.clone(),
+                    files,
+                    on_pick,
+                    desk,
+                }
+            }
+        }
+        if kept.left_out > 0 {
+            p { class: "hint",
+                "{kept.left_out} more of your templates are kept and not listed: at most {app_ui_kit::platform::storage::MAX_STORED_TEMPLATES} are read."
+            }
+        }
+        if let Some(why) = kept.error {
+            p { class: "error", "{why}" }
+        }
+    }
+}
+
+/// One row of the list of templates, with its actions.
+#[component]
+fn TemplateItem(
+    entry: TemplateEntry,
+    files: bool,
+    on_pick: EventHandler<TemplateSource>,
+    desk: TemplateDesk,
+) -> Element {
+    let broken = entry.is_broken();
+    let exportable = files && !broken;
+    let removable = entry
+        .source
+        .slug()
+        .map(|slug| (slug.to_string(), entry.name.clone()));
+    let mut removing = desk.removing;
+    let class = if entry.problem.is_some() {
+        "template-item off"
+    } else {
+        "template-item"
+    };
+    rsx! {
+        li { class,
+            if broken {
+                div { class: "template-row",
+                    span { class: "template-row-head",
+                        span { class: "template-row-name", "{entry.name}" }
+                        span { class: "chip", "{entry.source.chip()}" }
+                    }
+                    if let Some(problem) = &entry.problem {
+                        span { class: "template-row-problem",
+                            "This file is not a template. {problem}"
                         }
-                        if let Some(summary) = &entry.summary {
-                            span { class: "template-row-summary", "{summary}" }
+                    }
+                }
+            } else {
+                button {
+                    class: "template-row",
+                    r#type: "button",
+                    disabled: entry.problem.is_some(),
+                    onclick: {
+                        let source = entry.source.clone();
+                        move |_| on_pick.call(source.clone())
+                    },
+                    span { class: "template-row-head",
+                        span { class: "template-row-name", "{entry.name}" }
+                        span { class: "chip", "{entry.source.chip()}" }
+                    }
+                    if let Some(summary) = &entry.summary {
+                        span { class: "template-row-summary", "{summary}" }
+                    }
+                    if let Some(problem) = &entry.problem {
+                        span { class: "template-row-problem",
+                            "Cannot be used on this network. {problem}"
                         }
-                        if let Some(problem) = &entry.problem {
-                            span { class: "template-row-problem",
-                                "Cannot be used on this network. {problem}"
-                            }
+                    }
+                }
+            }
+            if exportable || removable.is_some() {
+                div { class: "template-actions",
+                    if exportable {
+                        button { class: "sm",
+                            r#type: "button",
+                            title: "Save this template to a file",
+                            onclick: {
+                                let source = entry.source.clone();
+                                move |_| export_template(&source, desk.note, desk.error)
+                            },
+                            "Export"
+                        }
+                    }
+                    if let Some(target) = removable {
+                        button { class: "sm",
+                            r#type: "button",
+                            onclick: move |_| removing.set(Some(target.clone())),
+                            "Remove"
                         }
                     }
                 }
@@ -49,12 +129,15 @@ pub(in crate::ui) fn TemplateList(on_pick: EventHandler<TemplateSource>) -> Elem
     }
 }
 
-/// The list of templates, from the button in Build's head.
+/// The list of templates, from the button in Build's head, with a way to
+/// import one.
 #[component]
 pub(in crate::ui) fn TemplatePicker(
     mut open: Signal<bool>,
     on_pick: EventHandler<TemplateSource>,
 ) -> Element {
+    let session = use_context::<Session>();
+    let desk = use_context::<TemplateDesk>();
     rsx! {
         div { class: "modal-backdrop",
             onclick: move |_| open.set(false),
@@ -73,11 +156,27 @@ pub(in crate::ui) fn TemplatePicker(
                             on_pick.call(source);
                         },
                     }
+                    if let Some(text) = (desk.note)() {
+                        p { class: "note", "{text}" }
+                    }
+                    if let Some(err) = (desk.error)() {
+                        p { class: "error", "{err}" }
+                    }
                     div { class: "btn-row",
                         button { class: "ghost",
                             r#type: "button",
                             onclick: move |_| open.set(false),
                             "Close"
+                        }
+                        if files_here() {
+                            button {
+                                r#type: "button",
+                                onclick: move |_| {
+                                    desk.clear();
+                                    pick_import(session, desk.preview, desk.error);
+                                },
+                                "Import a template"
+                            }
                         }
                     }
                 }
@@ -515,7 +614,11 @@ fn block_units(
 /// numbered by their place in the transaction, as Review and Sign numbers
 /// its instructions.
 #[component]
-fn WrittenBlock(heading: String, rows: Vec<Row>, units: HashMap<String, String>) -> Element {
+pub(in crate::ui) fn WrittenBlock(
+    heading: String,
+    rows: Vec<Row>,
+    units: HashMap<String, String>,
+) -> Element {
     rsx! {
         div { class: "template-written",
             h4 { "{heading}" }

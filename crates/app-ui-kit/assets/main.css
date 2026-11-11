@@ -2282,23 +2282,42 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 
 /* Templates: the list to pick one from, and the form of the one open. */
 .template-list { gap: var(--space-2); }
+/* A row is a card: the template, which opens it, then its actions. */
+.template-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.template-item:has(> .template-row:hover:not(:disabled)) { border-color: var(--brand); background: var(--surface-2); }
+.template-item.off { background: var(--surface-2); }
 .template-row {
   width: 100%;
+  min-width: 0;
   display: grid;
   justify-content: stretch;
   justify-items: start;
   gap: var(--space-1);
   padding: var(--space-3) var(--space-4);
-  border-color: var(--border);
+  border: 0;
   border-radius: var(--radius-lg);
+  background: none;
   text-align: start;
   white-space: normal;
 }
-.template-row:hover:not(:disabled) { border-color: var(--brand); background: var(--surface-2); }
-.template-row:disabled { opacity: 1; background: var(--surface-2); }
+.template-row:hover:not(:disabled) { background: none; }
+.template-row:disabled { opacity: 1; background: none; }
+.template-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); padding: var(--space-2) var(--space-3); }
+@media (max-width: 639px) {
+  .template-item { grid-template-columns: minmax(0, 1fr); }
+  .template-actions { justify-content: flex-start; padding: 0 var(--space-4) var(--space-3); }
+}
 .template-row-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 .template-row-name { font-weight: var(--weight-semibold); }
-.template-row:disabled .template-row-name { color: var(--text-2); }
+.template-row:disabled .template-row-name,
+.template-item.off .template-row-name { color: var(--text-2); }
 .template-row-summary { color: var(--text-2); font-size: var(--text-md); font-weight: var(--weight-regular); }
 .template-row-problem { color: var(--warn-text); font-size: var(--text-md); font-weight: var(--weight-regular); }
 .template-start > h3 { font-size: var(--text-md); color: var(--text-2); }
@@ -2343,6 +2362,47 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   .template-written-rows { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .template-written-value { margin-bottom: var(--space-2); }
 }
+/* Save as template: each block's fields, with what becomes of each. */
+.save-block { display: grid; gap: var(--space-2); padding-top: var(--space-3); border-top: 1px solid var(--border); }
+.save-block > h4 { font-size: var(--text-md); }
+.save-fields { list-style: none; display: grid; gap: var(--space-3); }
+.save-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(11rem, 14rem);
+  align-items: start;
+  gap: var(--space-2) var(--space-4);
+}
+.save-field-what { display: grid; gap: 2px; min-width: 0; font-size: var(--text-md); }
+.save-field-name { color: var(--text-2); overflow-wrap: anywhere; }
+.save-field-value { min-width: 0; overflow-wrap: anywhere; }
+.save-field-choice { display: grid; gap: var(--space-1); min-width: 0; }
+.save-field-choice select { width: 100%; }
+.save-field-fixed { font-size: var(--text-md); font-weight: var(--weight-medium); padding-top: var(--space-1); }
+@media (max-width: 639px) {
+  .save-field { grid-template-columns: minmax(0, 1fr); gap: var(--space-1); }
+}
+
+/* An imported template before it is kept. */
+.import-section { display: grid; gap: var(--space-2); }
+.import-section > h4 { font-size: var(--text-md); }
+.import-name { font-size: var(--text-lg); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+.import-list, .import-blocks { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-2); font-size: var(--text-md); }
+.import-list > li, .import-blocks > li { display: grid; gap: 2px; min-width: 0; }
+.import-item-name { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-weight: var(--weight-medium); }
+.import-program { color: var(--text-2); font-size: var(--text-sm); }
+.import-problems {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--warn-line);
+  border-radius: var(--radius-md);
+  background: var(--warn-soft);
+  color: var(--warn-text);
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}
+.import-problems ul { padding-left: var(--space-4); display: grid; gap: var(--space-1); }
+
 @media (pointer: coarse) {
   .template-option-hint { padding-left: calc(20px + var(--space-2)); }
   .template-option-inputs { margin-left: 9px; }

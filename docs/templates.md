@@ -6,7 +6,7 @@ A template is a short TOML file that asks a few questions and writes Build's blo
 template (TOML) ─► check (form: inputs, options) ─► answers ─► expand ─► IDL blocks ─► compile ─► Review and Sign
 ```
 
-How an instruction is built from an IDL is in [idls.md](idls.md); how the screen is drawn, in [design-system.md](design-system.md). The plan the feature was built from, with what is still to come (templates of your own, import and export), is [plan-templates.md](plan-templates.md).
+How an instruction is built from an IDL is in [idls.md](idls.md); how the screen is drawn, in [design-system.md](design-system.md). The plan the feature was built from is [plan-templates.md](plan-templates.md).
 
 ## Rules
 
@@ -146,6 +146,10 @@ Some values only the node knows: the rent of an account of a given size, a mint'
 | The open template on Build's form | `OpenTemplate`, `TemplateSource`, `FactRead` in `app-ui-kit` (`state/forms/build.rs`) |
 | Opening, answering, reading facts, Show as blocks, compiling | `app-ui-kit` (`actions/template.rs`) |
 | The picker and the form | `app-ui-build` (`ui/build/template.rs`); the widgets are Build's own (`ui/build/fields.rs`) |
+| Making a template from Build's blocks, the slug a file is kept by | `wallet_core::template` (`save.rs`): `SavePlan`, `Choice`, `template_slug` |
+| Keeping the user's templates on each platform | `app_core::storage` (`storage/templates.rs`) |
+| Saving, reading, removing, importing, exporting | `app-ui-kit` (`actions/kept_templates.rs`); the file dialogs in `platform/template_files.rs` |
+| The Save dialog, the import preview, the remove confirmation | `app-ui-build` (`ui/build/kept.rs`) |
 
 The functions a caller uses:
 
@@ -158,7 +162,7 @@ The functions a caller uses:
 
 ## The form
 
-"Templates", in Build's head, lists every template: its name, its summary and a chip ("built-in"). One that fails `check` on the network in use is listed greyed, with the first problem in words. With no block on Build and no template open, the same list sits under the instruction rail. Opening a template while Build holds blocks asks before discarding them.
+"Templates", in Build's head, lists every template: its name, its summary and a chip, "built-in" for the shipped ones and then "yours" for those saved or imported here. One that fails `check` on the network in use is listed greyed, with the first problem in words. With no block on Build and no template open, the same list sits under the instruction rail. Opening a template while Build holds blocks asks before discarding them. Each row has **Export**; each of yours also has **Remove**, which asks first.
 
 An open template takes the place of the rail and the block editor. Fee payer stays above it and Advanced options under it. The form shows:
 
@@ -175,6 +179,53 @@ Online, the facts are read once the answers have been still for 400 ms, with a q
 **Show as blocks** writes the expansion into Build's blocks and leaves the template, with a note saying where they came from. It is one way: the blocks are ordinary blocks, and changing them does not change the template.
 
 **Review and Sign** expands again. A required input left blank stops it: the error names each one and its field is marked. Otherwise the blocks compile through the same path as Build's own button (`compile_instructions` in `actions/build.rs`): the same fee payer and Advanced options, the same simulation and blockhash, errors numbered by instruction. Review and Sign's note reads "Compiled on Build from the template “<name>”", plus whatever compiling adds.
+
+## Your own templates
+
+### Saving
+
+**Save as template** sits in Build's last row of buttons, after Review and Sign, while Build holds blocks and no template is open. Every block must be filled from an IDL: one written by hand or one that carries others is refused by its number ("Block 2 is written by hand, and a template holds only instructions filled from an IDL."), and so is one with no program or instruction yet.
+
+The dialog asks for a name and an optional summary, then lists each block, numbered, with every account and argument its IDL form asks for, what it holds now (an address drawn as the app draws addresses) and what becomes of it (`Choice`):
+
+| Choice | Writes | Offered |
+| --- | --- | --- |
+| Keep this value | the value as typed, a literal: in the field's unit for a scaled amount | always. On a blank field it reads "Leave it blank", and the field is left out |
+| Ask each time | an input named after the field (made unique), labelled in words ("mintAuthority" reads "Mint authority") | always |
+| The wallet in use | `$wallet` | on an address that is the wallet in use now |
+| The fee payer | `$fee-payer` | on an address that is Build's fee payer now |
+
+Some fields are not a choice. An address that is a keypair made on Build is a `new-keypair` value, one value wherever that address appears, so opening the template makes a new key ("A new keypair each time"). A blank field the program needs is asked each time. What the IDL fills in is not written at all: an account it derives that nobody overrode, and an argument left blank for its default. An account the person overrode ("Change") is written, and the template's form asks for it again the same way.
+
+Fields asked that hold the same value and take the same widget are one question, and the dialog says which ("Asked once as “Source”, with 2 · authority"). An amount counted in another argument's units joins another only where that argument is bound the same way. Two questions with one label get their block's number after it.
+
+Each program gets an alias from its IDL's name ("associated_token", "token2022"). The template written reads back from its file to itself and checks against the IDLs it was made from, or nothing is saved and the dialog says why. Opened with the values the blocks held as its answers, the same wallet, fee payer and key, it writes the same blocks, which build to the same bytes: the tests check this for transfers, a scaled token transfer, a mint with a key made here and an overridden account, and the blocks every shipped template shows.
+
+The template's name may not be a shipped one's name or id. One of yours under the same slug asks first: the dialog says "You already have a template called “…”. Saving replaces it." and its main button becomes **Replace**. Saved, the dialog closes, Build's note says so and the blocks stay.
+
+### Where they are kept
+
+A template is kept as the text of its file, `Template::to_toml`, one file each, through `app_core::storage` as IDL bodies are:
+
+| App | Where |
+| --- | --- |
+| Airlock on desktop, the phone app | `templates/<slug>.toml` in the data folder. On Unix the folder is `0700` and the file `0600`, as every store's. The phone's online and offline modes each have their own data folder |
+| Airlock Offline | the same, in its own data folder (`airlock-offline`) |
+| A browser | the `localStorage` key `airlock.template.<slug>` |
+
+The slug comes from the name (`template_slug`): lower case letters and digits joined by `-`, at most 48 characters, never empty, never a shipped template's id and never a name Windows keeps for a device (those get `-yours`). Nothing in a name can make it a path. Templates are not per network: `check` decides, per network, whether one can be opened.
+
+A save is checked, as anything only the person can recreate: a write that fails is reported, and the list shows only what is kept. The list is read once, the first time Build is shown: at most 64 files, each at most 64 KiB (`MAX_TEMPLATE_BYTES`). A file that does not parse is listed as broken, with why, and can be removed; it does not stop the others.
+
+### Import and export
+
+**Export** writes a template's file where the person picks (a save dialog on desktop, a download in a browser), named `<slug>.toml`, or `<id>.toml` for a shipped one. **Import a template**, at the foot of the list, picks one `.toml` file. The phone has no file picker for the app, so it offers neither, as Programs offers no IDL import there.
+
+Nothing is kept before the person has seen what the file does. The preview shows its name and summary, the questions it asks (with what each holds until answered and the option it is asked under), its options, and every block, numbered, with the program's name as this app knows it, its full address and the instruction. Then **Fixed by this template** and **Worked out**, open, drawn as the form draws them: every literal and program, and every value with what works it out ("$mint: a new keypair, made when it is opened", "the wallet in use"). It is read from the file itself, not from an expansion, so blocks under an option and a template that does not fit this network are shown too. This is rule 3 at the door: a file from somewhere else can write nothing the person did not see.
+
+A file that does not parse is refused with the reader's error ("line 6: unknown field `surprise`…"), and the dialog offers only **Close**. One that parses but does not check on the network in use says so, with every problem, and can still be kept: it is listed greyed, as a shipped one would be. **Keep this template** keeps the file as `to_toml` writes it, so what is kept is what was previewed. A name a shipped template has is refused; one of yours with the same slug asks before it is replaced.
+
+A debug build started with `AIRLOCK_DEBUG_FILE_DIR` set skips the file dialogs: import reads `import.toml` from that folder and export writes there, so a script driving the app over CDP can do both. A release build has no such way around them.
 
 ## Adding a shipped template
 

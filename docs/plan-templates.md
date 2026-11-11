@@ -1,6 +1,6 @@
 # Plan: templates on Build
 
-Status: **in progress** (phases 1 to 3 done). Decided with Tiago on 2026-11-11. Each phase below says what it adds; a phase is done when its tests pass and its line is ticked in [Phases](#phases).
+Status: **built** (2026-11-11): all four phases are done; what is left is under [Open](#open). Decided with Tiago on 2026-11-11. Each phase below says what it adds; a phase is done when its tests pass and its line is ticked in [Phases](#phases).
 
 Build asks for every account and argument an IDL names, in the program's base units. That is the right tool for an instruction nobody planned for, and too raw for the things people do often. A template is a short text file that asks a few questions and writes the Build blocks from the answers. The blocks are compiled and read on Review and Sign exactly as blocks made by hand are.
 
@@ -48,7 +48,7 @@ The format, the built-in names, the functions and chain facts are in [templates.
 - [x] **1. Build's fields.** Scaled amounts and folded fields on the Build form.
 - [x] **2. The core.** The format, checking, expansion, functions and facts in `wallet-core` and `wallet-flows`; the shipped templates; their tests against the real programs.
 - [x] **3. The form.** The picker and the template form on Build, "Show as blocks", compiling to Review and Sign.
-- [ ] **4. Your own.** Save as template, storage, import and export.
+- [x] **4. Your own.** Save as template, storage, import and export.
 
 Each phase is one commit series on `t3/build-pane-templates`, in order. Each leaves `cargo fmt --all --check`, CI's Clippy step and the touched crates' tests green, and adds its line to `CHANGELOG.md` when people will notice it.
 
@@ -111,6 +111,8 @@ As built: Build's form holds `template: Signal<Option<OpenTemplate>>` (the sourc
 - **Storage.** The TOML text, one file each: `templates/<slug>.toml` in the data folder on desktop and Android, `airlock.template.<slug>` in a browser, following how IDL bodies are stored. Saved checked, as anything only the user can recreate.
 - **Import and export**, from the picker: one `.toml` file. Importing shows what the template fixes before it is kept, and keeps nothing that fails `parse`. A saved name that exists asks before replacing. Built-in templates cannot be removed or replaced, and can be exported.
 
+As built: the tick became a choice per field (keep, ask each time, the wallet in use, the fee payer), because a field that holds the wallet or the fee payer should follow whoever opens the template rather than be fixed or asked. A blank field is asked or left out, and one the program needs is always asked. Fields asked that hold the same value and take the same widget are one question. `wallet_core::template::SavePlan` makes the template, which reads back from its file to itself and checks against the IDLs; opened with the blocks' values as its answers it writes the same blocks, tested on transfers, a scaled token transfer, a mint with a key made here and an overridden account, and the blocks of every shipped template. Expanding now marks only a derived account as overridden (`IdlDraft::manual`), as Build's "Change" does; it marked an account the IDL cannot fill too, which Build never does. `Storage` in `app-core` gained `list` and `remove` for the store of templates. `TemplateSource` has `Yours` and `Broken` beside `Builtin`; the list is read into `BuildForm::kept` the first time Build is shown. The import preview is read from the file, not from an expansion, so it shows blocks under an option and a template that does not fit this network. A name a shipped template has, or its id, is refused for one of yours, saved or imported. The phone offers no import or export, as it offers no IDL import. [templates.md](templates.md#your-own-templates) has the whole of it.
+
 ## Tests
 
 - `wallet-core`: parsing (every refusal), `to_toml` round trip, checking against IDLs, expansion (blank answers, options on and off, each function), the scale and fold rules of phase 1, and every built-in template on every network.
@@ -121,3 +123,5 @@ As built: Build's form holds `template: Signal<Option<OpenTemplate>>` (the sourc
 
 - Token metadata's size depends on its text. If the program's check of the funded size disagrees with ours by a few bytes, the function is fixed against the VM, never padded.
 - Whether a saved template should record the checksum of each IDL it was made against, to say "this program's IDL changed since" on open. Not in v1: a name that no longer matches already refuses.
+- Import and export on a phone. Android has no file picker the app can open, so neither is offered there, as with IDLs; sharing a template's text (the system share sheet, or a QR) would be the way.
+- Hints and defaults for the questions of a saved template. Save writes each question with its field's name in words and no hint or default; editing a template's text by hand is the way to add them, then importing it.
