@@ -12,6 +12,10 @@ pub const UNLOCK_LINE: &str = "Unlock the vault to sign with its keys and change
 /// phone alike.
 pub const LOCKED_NOTE: &str = "The vault is locked. Its wallets and balances are shown; signing, and adding, removing or changing a wallet, ask for the password.";
 
+/// What the lock screen's Skip gives, after [`UNLOCK_LINE`]: Skip cancels
+/// nothing, it opens the app with the vault locked.
+pub const SKIP_LINE: &str = "Skip opens the app locked: wallets and balances show, and signing or changing a wallet asks for the password.";
+
 /// [`LOCKED_NOTE`], as a pane's note.
 #[component]
 pub fn LockedNote() -> Element {
@@ -224,14 +228,20 @@ pub fn VaultUnlock(
     };
 
     let form = rsx! {
-            div { class: "stack",
+            div { class: "stack unlock-form",
                 span { class: "avatar", Icon { glyph: Glyph::Lock } }
                 h2 { if initialized { "Unlock vault" } else { "Create vault" } }
                 // Every unlock card has one quiet line under its title: what
-                // this unlock is for, or else what unlocking allows; then,
-                // in an app with no network, the offline line.
+                // this unlock is for, or else what unlocking allows, and on
+                // the lock screen what Skip gives; then, in an app with no
+                // network, the offline line.
                 if initialized || reason.is_some() {
-                    p { class: "hint unlock-line", {reason.unwrap_or(UNLOCK_LINE)} }
+                    p { class: "hint unlock-line",
+                        {reason.unwrap_or(UNLOCK_LINE)}
+                        if show_skip && initialized && reason.is_none() {
+                            " {SKIP_LINE}"
+                        }
+                    }
                 }
                 if offline {
                     p { class: "hint offline-note", "Offline: this app never connects." }

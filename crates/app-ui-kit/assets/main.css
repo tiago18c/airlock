@@ -411,10 +411,12 @@ code { color: var(--text-2); }
   box-shadow: var(--shadow-xs);
 }
 .card.auth { padding: var(--space-6); box-shadow: var(--shadow-md); }
-/* The lock card ends as a dialog does: its buttons at the trailing edge,
-   across the full width on a phone. */
+/* The lock card ends as a dialog does, and as the unlock prompt does: its
+   buttons at the trailing edge at their natural widths, the way out a
+   .ghost; on a phone two equal halves across the card. */
 .card.auth .btn-row:last-child { justify-content: flex-end; margin-top: var(--space-2); }
-.app.phone .card.auth .btn-row:last-child > button { flex: 1; }
+.app.phone .card.auth .btn-row:last-child > button,
+.app.phone .modal .unlock-form .btn-row:last-child > button { flex: 1 1 0; }
 
 .stack { display: grid; gap: var(--space-4); align-content: start; min-width: 0; }
 
