@@ -141,6 +141,8 @@ pub fn use_forms() -> Forms {
             made_here: use_signal(Vec::<MadeHere>::new),
             created: use_signal(Vec::new),
             site_sends: use_signal(Vec::new),
+            set_aside: use_signal(Vec::new),
+            displaced: use_signal(|| None),
         },
         stake: StakeForm {
             snapshot: use_signal(|| None),

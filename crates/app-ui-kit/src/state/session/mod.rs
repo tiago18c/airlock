@@ -539,10 +539,55 @@ impl Session {
     }
 
     /// Hand a transaction to the Sign screen and go there. This is the one
-    /// way in for every other part of the app.
+    /// way in for every other part of the app. A site's request on screen is
+    /// set aside as it stands (see [`crate::state::forms::SetAside`]), and a
+    /// request that was set aside comes back as it was left, not as `load`
+    /// prepared it afresh.
     pub fn open_in_sign(&self, load: SignLoad) {
-        self.forms.sign.load(load);
+        if !self.reopen_set_aside(load.request_id()) {
+            self.forms.sign.load(load);
+        }
         self.goto(Tab::Sign);
+    }
+
+    /// Put the site's request `id` back on Sign as it was set aside, if it
+    /// was. Requests that left the queue are forgotten first.
+    fn reopen_set_aside(&self, id: Option<&str>) -> bool {
+        let form = self.forms.sign;
+        let queue = self.bridge.peek().clone();
+        form.forget_set_aside(|id| queue.get(id).is_some());
+        let Some(kept) = id.and_then(|id| form.take_set_aside(id)) else {
+            return false;
+        };
+        let crate::state::forms::SetAside {
+            id,
+            origin,
+            wire,
+            note,
+            expiry,
+            tables,
+            vector,
+            flow,
+            batch,
+        } = kept;
+        match batch {
+            Some(batch) => form.load_batch(batch),
+            None => {
+                let mut load =
+                    SignLoad::new(wire, crate::state::forms::TxSource::Browser { id, origin })
+                        .with_expiry(expiry)
+                        .with_tables(tables)
+                        .with_vector(vector);
+                if let Some(note) = note {
+                    load = load.with_note(note);
+                }
+                if let Some(flow) = flow {
+                    load = load.with_flow(flow);
+                }
+                form.load(load);
+            }
+        }
+        true
     }
 
     /// Open `signature` on the History screen and go there.
@@ -593,7 +638,9 @@ impl Session {
     /// Hand a site's batch to Sign, on its transaction `batch.current`, and
     /// go there.
     pub fn open_batch_in_sign(&self, batch: crate::state::forms::BrowserBatch) {
-        self.forms.sign.load_batch(batch);
+        if !self.reopen_set_aside(Some(&batch.id)) {
+            self.forms.sign.load_batch(batch);
+        }
         self.goto(Tab::Sign);
     }
 
