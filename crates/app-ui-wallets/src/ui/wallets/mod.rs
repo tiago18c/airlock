@@ -263,14 +263,10 @@ pub(in crate::ui) fn WalletBalance(
             if let Some(lamports) = lamports {
                 span { class: "balance", "{format_sol(lamports)}" }
             }
+            // A small bordered button, as on a phone and as the card's
+            // other buttons are: one weight for a card's actions.
             if !phone {
-                button { class: "ghost sm wallet-send",
-                    title: cannot_send.unwrap_or(send_title),
-                    disabled: cannot_send.is_some(),
-                    onclick: move |_| on_send.call(()),
-                    Icon { glyph: Glyph::Send }
-                    "Send"
-                }
+                WalletSend { send_title, cannot_send, on_send }
             }
         }
     }
@@ -291,8 +287,8 @@ pub(in crate::ui) fn WalletFoot(balance: Element, children: Element) -> Element 
     }
 }
 
-/// Send, first in a wallet card's buttons on a phone, and drawn as they
-/// are. Elsewhere it follows the balance: see [`WalletBalance`].
+/// Send, drawn as a card's other buttons are: first in them on a phone,
+/// beside the balance elsewhere (see [`WalletBalance`]).
 #[component]
 pub(in crate::ui) fn WalletSend(
     send_title: &'static str,
