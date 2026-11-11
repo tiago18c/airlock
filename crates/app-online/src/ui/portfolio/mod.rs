@@ -385,12 +385,12 @@ fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>, colors: Colo
                             span { class: "pf-excludes", "{excludes}" }
                         }
                         if let Some(stale) = stale {
-                            // On a phone the rows' own dot in front, so this
-                            // line is the legend of the dots further down.
+                            // On a phone the rows' own mark in front, so this
+                            // line is the legend of the marks further down.
                             span { class: "pf-stale-note",
                                 title: stale_tip,
                                 if phone {
-                                    span { class: "pf-stale-mark", aria_hidden: "true" }
+                                    span { class: "pf-stale-mark", aria_hidden: "true", Icon { glyph: Glyph::Alert } }
                                 }
                                 "{stale}"
                             }
@@ -937,9 +937,11 @@ fn LineRow(
     let only_sender = (senders.len() == 1).then(|| senders[0].1);
     let symbol = line.symbol.clone();
     let now = unix_now();
-    // On a phone an outdated price is a dot at the value, not a chip under
+    // On a phone an outdated price is a mark at the value, not a chip under
     // the symbol: a chip on most rows would make them three lines and say
-    // nothing by being everywhere. The total card counts them.
+    // nothing by being everywhere. The mark is the alert glyph, named
+    // "outdated price", so colour is not its only sign. The total card
+    // counts them.
     let phone = use_phone_layout();
     let stale = phone && priced && valued && is_stale(&line);
     let stale_tip = line
@@ -1057,6 +1059,7 @@ fn LineRow(
                                     role: "img",
                                     title: "{stale_tip}",
                                     aria_label: "outdated price",
+                                    Icon { glyph: Glyph::Alert }
                                 }
                             }
                             if let Some(usd) = line.usd { "{format_value(usd)}" } else { "–" }
@@ -1083,15 +1086,15 @@ fn LineRow(
                     span { class: "pf-send-slot" }
                 }
             }
-            // On a phone the dot's tooltip cannot be read, so the opened
-            // asset says it in words: a tap on the row answers what the dot
+            // On a phone the mark's tooltip cannot be read, so the opened
+            // asset says it in words: a tap on the row answers what the mark
             // at its value means.
             // It is one quiet line, so it does not outweigh the wallets under
             // it; the whole sentence is its tooltip and what a screen reader
             // reads.
             if open() && stale && !stale_tip.is_empty() {
                 p { class: "pf-stale-line", title: "{stale_tip}",
-                    span { class: "pf-stale-mark", aria_hidden: "true" }
+                    span { class: "pf-stale-mark", aria_hidden: "true", Icon { glyph: Glyph::Alert } }
                     span { aria_hidden: "true", "{stale_short}" }
                     span { class: "sr-only", "{stale_tip}" }
                 }

@@ -4538,8 +4538,8 @@ textarea.short { min-height: 64px; }
 .app.phone .pf-table > .pf-cols + .pf-section { padding-top: 0; }
 .app.phone .pf-controls > button.primary { padding-inline: var(--space-5); }
 /* An opened asset whose price is outdated says so in one quiet line past
-   the logo column, only its dot in the warning colour: the wallets under it
-   lead. The whole sentence is the line's tooltip. */
+   the logo column, only its mark in the warning colour: the wallets under
+   it lead. The whole sentence is the line's tooltip. */
 .app.phone .pf-stale-line {
   margin: 0;
   padding: 0 var(--space-3) var(--space-1) calc(var(--space-1) + 32px + var(--space-3));
@@ -4550,15 +4550,15 @@ textarea.short { min-height: 64px; }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* An outdated price's mark: the alert glyph, at the text's size, so its
+   shape says it as well as its colour. */
 .app.phone .pf-stale-mark {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
+  display: inline-flex;
   margin-right: var(--space-1);
-  border-radius: var(--radius-full);
-  background: var(--warn-solid);
-  vertical-align: middle;
+  color: var(--warn-text);
+  vertical-align: -0.125em;
 }
+.app.phone .pf-stale-mark .icon { width: 1em; height: 1em; stroke-width: 2.25; }
 .app.phone .pf-lines { gap: 0; }
 .app.phone .pf-line-main,
 .app.phone .pf-share-main {
