@@ -154,6 +154,12 @@ pub(in crate::ui) fn argument_input(
     if let Some(variants) = enum_variants(kind) {
         let variants = variants.to_vec();
         let optional = matches!(kind, IdlArgKind::Option(_));
+        // A required choice with no answer yet, such as a template's question
+        // with no default, says so, rather than showing its first variant
+        // while it holds nothing: picking the variant shown would change
+        // nothing. Build's own blocks start on a variant, so they never show
+        // it.
+        let unanswered = !optional && !variants.contains(&text);
         return rsx! {
             label { "{label}"
                 select {
@@ -161,6 +167,9 @@ pub(in crate::ui) fn argument_input(
                     onchange: move |e| on_change.call(e.value()),
                     if optional {
                         option { value: "", selected: text.is_empty(), "None" }
+                    }
+                    if unanswered {
+                        option { value: "", selected: true, "Choose one" }
                     }
                     for variant in variants {
                         option {
