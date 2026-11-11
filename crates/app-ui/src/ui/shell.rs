@@ -204,7 +204,7 @@ fn tab_entry(tab: Tab) -> (&'static str, Glyph) {
         Tab::Build => ("Build", Glyph::Layers),
         Tab::Sign => ("Review and Sign", Glyph::Pen),
         Tab::History => ("History", Glyph::History),
-        Tab::Settings => ("Settings", Glyph::Sliders),
+        Tab::Settings => ("Settings", Glyph::Gear),
     }
 }
 
