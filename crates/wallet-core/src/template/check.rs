@@ -172,14 +172,14 @@ fn term_type(template: &Template, term: &Term) -> Option<ValueType> {
 }
 
 /// An option's kind is its item's: blank is how an option is left out.
-fn strip_option(kind: &IdlArgKind) -> &IdlArgKind {
+pub(crate) fn strip_option(kind: &IdlArgKind) -> &IdlArgKind {
     match kind {
         IdlArgKind::Option(inner) => strip_option(inner),
         other => other,
     }
 }
 
-fn field_kind(block: usize, field: &IdlArgField) -> InputKind {
+pub(crate) fn field_kind(block: usize, field: &IdlArgField) -> InputKind {
     let kind = strip_option(&field.kind);
     if *kind == IdlArgKind::Pubkey {
         return InputKind::Address;

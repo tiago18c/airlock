@@ -21,11 +21,14 @@ mod check;
 mod expand;
 mod model;
 mod parse;
+mod save;
 mod size;
 mod write;
 
 #[cfg(test)]
 mod expand_tests;
+#[cfg(test)]
+mod save_tests;
 #[cfg(test)]
 mod tests;
 
@@ -38,5 +41,9 @@ pub use model::{
 pub use parse::{
     TemplateError, MAX_BLOCKS, MAX_INPUTS, MAX_OPTIONS, MAX_PROGRAMS, MAX_TEMPLATE_BYTES,
     MAX_VALUES,
+};
+pub use save::{
+    builtin_named, is_template_slug, template_slug, words, Choice, FieldAt, Locked, PlannedInput,
+    SaveBlock, SaveField, SavePlan, Saved, MAX_SLUG_CHARS,
 };
 pub use size::{MINT_EXTENSIONS, TOKEN_METADATA};

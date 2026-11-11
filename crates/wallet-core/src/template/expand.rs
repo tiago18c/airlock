@@ -346,10 +346,11 @@ pub fn expand(
                 .accounts
                 .iter()
                 .find(|field| field.name == *name)
-                .is_some_and(|field| field.source != IdlAccountSource::Picker);
+                .is_some_and(|field| field.source == IdlAccountSource::Derived);
             if derived {
                 // As Build's "Change": the form asks for it instead of
-                // showing the address the IDL would derive.
+                // showing the address the IDL would derive. An account the
+                // IDL cannot fill is asked for anyway.
                 draft.set_manual(name, true);
             }
             draft.set_account(name, address);
