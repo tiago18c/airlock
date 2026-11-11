@@ -32,6 +32,12 @@ pub enum TemplateError {
     /// `key` holds something the format does not allow. Blocks, inputs and
     /// options are numbered from 1 in `key`, as `block[2].accounts.mint`.
     Invalid { key: String, expected: String },
+    /// A character that can make the text read as something other than it
+    /// is: a control character other than tab, line feed and carriage
+    /// return, or a Unicode bidirectional control. `at` is where: "line 3"
+    /// when it is in the text itself, or the key whose string holds it when
+    /// it was written as an escape (`block[1].arguments.name`).
+    Hidden { at: String, character: char },
 }
 
 impl std::fmt::Display for TemplateError {
@@ -43,6 +49,12 @@ impl std::fmt::Display for TemplateError {
             ),
             Self::Toml(message) => write!(f, "This is not a template file: {message}"),
             Self::Invalid { key, expected } => write!(f, "{key}: {expected}"),
+            Self::Hidden { at, character } => write!(
+                f,
+                "{at}: holds U+{:04X}, {}. It can make the text read as something other than what it is, so a template may not hold one.",
+                *character as u32,
+                hidden_kind(*character).unwrap_or("a hidden character")
+            ),
         }
     }
 }
@@ -115,7 +127,9 @@ impl Template {
         if text.len() > MAX_TEMPLATE_BYTES {
             return Err(TemplateError::TooLarge { bytes: text.len() });
         }
+        hidden_in_text(text)?;
         let table: toml::Table = toml::from_str(text).map_err(|err| toml_error(text, &err))?;
+        hidden_in_table(&table, "")?;
         match table.get("format") {
             Some(toml::Value::Integer(1)) => {}
             Some(toml::Value::Integer(other)) => {
@@ -131,6 +145,72 @@ impl Template {
         let template = read(raw)?;
         validate(&template)?;
         Ok(template)
+    }
+}
+
+/// What `c` is, when it is a character a template may not hold: a control
+/// character other than tab, line feed and carriage return, or a Unicode
+/// bidirectional control (embeddings, overrides, isolates and marks). Each
+/// can make a line show something other than what it holds.
+fn hidden_kind(c: char) -> Option<&'static str> {
+    match c {
+        '\t' | '\n' | '\r' => None,
+        '\u{202A}'..='\u{202E}'
+        | '\u{2066}'..='\u{2069}'
+        | '\u{200E}'
+        | '\u{200F}'
+        | '\u{061C}' => Some("a bidirectional control"),
+        c if c.is_control() => Some("a control character"),
+        _ => None,
+    }
+}
+
+/// Refuses text that holds a hidden character, naming its line.
+fn hidden_in_text(text: &str) -> Result<(), TemplateError> {
+    for (index, line) in text.split('\n').enumerate() {
+        if let Some(character) = line.chars().find(|c| hidden_kind(*c).is_some()) {
+            return Err(TemplateError::Hidden {
+                at: format!("line {}", index + 1),
+                character,
+            });
+        }
+    }
+    Ok(())
+}
+
+/// Refuses a key or a string that holds a hidden character written as an
+/// escape (a backslash, `u` and its code), which the text does not show,
+/// naming the key.
+fn hidden_in_table(table: &toml::Table, prefix: &str) -> Result<(), TemplateError> {
+    for (key, value) in table {
+        let at = if prefix.is_empty() {
+            key.clone()
+        } else {
+            format!("{prefix}.{key}")
+        };
+        if let Some(character) = key.chars().find(|c| hidden_kind(*c).is_some()) {
+            return Err(TemplateError::Hidden { at, character });
+        }
+        hidden_in_value(value, &at)?;
+    }
+    Ok(())
+}
+
+fn hidden_in_value(value: &toml::Value, at: &str) -> Result<(), TemplateError> {
+    match value {
+        toml::Value::String(text) => match text.chars().find(|c| hidden_kind(*c).is_some()) {
+            Some(character) => Err(TemplateError::Hidden {
+                at: at.to_string(),
+                character,
+            }),
+            None => Ok(()),
+        },
+        toml::Value::Array(items) => items
+            .iter()
+            .enumerate()
+            .try_for_each(|(index, item)| hidden_in_value(item, &format!("{at}[{}]", index + 1))),
+        toml::Value::Table(table) => hidden_in_table(table, at),
+        _ => Ok(()),
     }
 }
 

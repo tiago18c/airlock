@@ -225,6 +225,87 @@ fn not_toml_is_refused_with_its_line() {
     assert!(message.starts_with("line 2"), "{message}");
 }
 
+fn hidden(text: &str) -> (String, char) {
+    match Template::parse(text) {
+        Err(TemplateError::Hidden { at, character }) => (at, character),
+        other => panic!("expected a hidden character refused, got {other:?}"),
+    }
+}
+
+#[test]
+fn a_control_or_bidirectional_character_is_refused_with_its_line() {
+    let refused: Vec<char> = (0u32..0x20)
+        .chain(0x7f..0xa0)
+        .filter_map(char::from_u32)
+        .filter(|c| !matches!(c, '\t' | '\n' | '\r'))
+        .chain('\u{202A}'..='\u{202E}')
+        .chain('\u{2066}'..='\u{2069}')
+        .chain(['\u{200E}', '\u{200F}', '\u{061C}'])
+        .collect();
+    assert_eq!(refused.len(), 29 + 33 + 5 + 4 + 3);
+    for c in refused {
+        // In a comment, in a string and in a key: anywhere in the text.
+        for text in [
+            format!("{EXAMPLE}\n# a comment {c} here\n"),
+            EXAMPLE.replace("A new mint,", &format!("A new{c} mint,")),
+            EXAMPLE.replace("max_fee\"\nlabel", &format!("max_fee\"\nla{c}bel")),
+        ] {
+            let line = text
+                .lines()
+                .position(|line| line.contains(c))
+                .expect("the character is in the text")
+                + 1;
+            let (at, character) = hidden(&text);
+            assert_eq!(
+                (at.as_str(), character),
+                (format!("line {line}").as_str(), c)
+            );
+        }
+    }
+    let message = Template::parse(&EXAMPLE.replace("Create a", "Create\u{202E} a"))
+        .unwrap_err()
+        .to_string();
+    assert_eq!(
+        message,
+        "line 3: holds U+202E, a bidirectional control. It can make the text read as something other than what it is, so a template may not hold one."
+    );
+    let message = Template::parse(&format!("{EXAMPLE}\n#\u{7}\n"))
+        .unwrap_err()
+        .to_string();
+    assert!(message.contains("U+0007, a control character"), "{message}");
+}
+
+#[test]
+fn a_hidden_character_written_as_an_escape_is_refused_by_its_key() {
+    let text = EXAMPLE.replace("label = \"Fee\"", "label = \"F\\u202Eee\"");
+    assert_eq!(hidden(&text), ("input[4].label".to_string(), '\u{202E}'));
+    let text = EXAMPLE.replace(
+        "accounts = { mint = \"$mint\" }\narguments = { decimals",
+        "accounts = { mint = \"$mint\" }\narguments = { \"dec\\u0007\" = \"1\", decimals",
+    );
+    assert_eq!(
+        hidden(&text),
+        ("block[3].arguments.dec\u{7}".to_string(), '\u{7}')
+    );
+}
+
+#[test]
+fn tabs_line_ends_and_other_text_are_read() {
+    let text = EXAMPLE.replace('\n', "\r\n").replace(
+        "format = 1",
+        "format =\t1 # Ünïcödé and 日本語 and émoji 🙂",
+    );
+    assert_eq!(
+        Template::parse(&text).unwrap(),
+        Template::parse(EXAMPLE).unwrap()
+    );
+    // Every shipped file and everything to_toml writes still reads.
+    for builtin in &BUILTIN_TEMPLATES {
+        let template = builtin.template().unwrap();
+        assert_eq!(Template::parse(&template.to_toml()).unwrap(), template);
+    }
+}
+
 #[test]
 fn only_format_1_is_read() {
     assert_eq!(refused("name = \"T\"").0, "format");
