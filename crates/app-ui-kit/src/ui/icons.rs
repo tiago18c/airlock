@@ -55,6 +55,10 @@ pub enum Glyph {
     Gear,
     /// An arrow from one box over to another: move what one holds to the other.
     Migrate,
+    /// An arrow up out of a tray: write something out for elsewhere.
+    Export,
+    /// An arrow down into a tray: take in what was written out elsewhere.
+    Import,
     /// Two arrows round a circle: read again.
     Refresh,
 }
@@ -237,6 +241,16 @@ impl Glyph {
                 "M16 11h4a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Z",
                 "M6 11V7a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v2.5",
                 "M15.5 7 18 9.5 20.5 7",
+            ],
+            Glyph::Export => &[
+                "M12 15V4",
+                "M8 8l4-4 4 4",
+                "M4 14v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5",
+            ],
+            Glyph::Import => &[
+                "M12 4v11",
+                "M8 11l4 4 4-4",
+                "M4 14v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5",
             ],
             Glyph::Refresh => &[
                 "M20 12a8 8 0 0 1-14.3 4.9",
