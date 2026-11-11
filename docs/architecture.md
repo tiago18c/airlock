@@ -163,7 +163,7 @@ Every transaction gets a **flow id** when it enters the app (`app_core::diagnost
 | Stage | Extra fields |
 | --- | --- |
 | `received` | `source` (build, wallets, stake, pasted, scanned, browser; Proposals logs as wallets), and for a browser request `origin` and `code` |
-| `transformed` | `transform` (a Squads, programmatic or Vector rebuild, the conversion to v1, a payer swap, a blockhash refresh), `from_message` |
+| `transformed` | `transform` (a Squads, programmatic or Vector rebuild, the conversion to v1, a payer swap, a blockhash refresh, `squads_checks` for what a Squads proposal holds added to its approval), `from_message` |
 | `signed` | `by` (hot key, Vector key, pasted, imported) |
 | `returned` | `origin`, `code` |
 | `sent` | `signature` |

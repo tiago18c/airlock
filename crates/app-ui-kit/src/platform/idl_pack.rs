@@ -117,6 +117,46 @@ mod tests {
         assert!(store.program_client(&whirlpool).is_some());
     }
 
+    /// The inspector does not look on chain for the IDL of an executable
+    /// account's owner: a program of the upgradeable loader reads with the
+    /// loader IDL the pack ships.
+    #[test]
+    fn the_inspector_reads_an_upgradeable_program_with_the_packed_loader_idl() {
+        use wallet_core::program_code::BPF_LOADER_UPGRADEABLE_ID;
+        use wallet_core::{inspect_account, AccountReading, RawAccount};
+
+        let mut store = memory_catalog(IdlNetwork::Devnet);
+        assert_eq!(
+            add_pack(&mut store, read_bundled_pack()),
+            IdlPackState::Ready
+        );
+        assert!(store
+            .records()
+            .iter()
+            .any(|record| record.program_id == BPF_LOADER_UPGRADEABLE_ID));
+        let mut data = vec![2, 0, 0, 0];
+        data.extend([5; 32]);
+        let read = inspect_account(
+            &store.view(),
+            RawAccount {
+                lamports: 1_141_440,
+                data,
+                owner: BPF_LOADER_UPGRADEABLE_ID,
+                executable: true,
+                rent_epoch: u64::MAX,
+            },
+        );
+        match read.reading {
+            AccountReading::Decoded {
+                program, account, ..
+            } => assert_eq!(
+                (program.as_str(), account.as_str()),
+                ("loaderV3", "program")
+            ),
+            other => panic!("not decoded: {other:?}"),
+        }
+    }
+
     #[test]
     fn a_pack_with_other_bytes_is_refused_and_says_why() {
         let mut store = memory_catalog(IdlNetwork::Devnet);

@@ -196,6 +196,35 @@ mod tests {
         assert_eq!(judge(&wire, &[payer]).risky, 0);
     }
 
+    /// A vote the chain checks is not blind, but it is still a vote: it is
+    /// counted, so the request modal leaves it to Review and Sign.
+    #[test]
+    fn a_checked_vote_is_read_in_full_and_still_counted() {
+        use crate::wallets::squads::{CheckForm, ProposalCheck, VoteAction};
+        let payer = pk(1);
+        let squad = Squad::v4(&pk(50));
+        let vault = squad.vault(0);
+        let check = ProposalCheck {
+            form: CheckForm::TopLevel,
+            squad,
+            transaction_index: 4,
+            vault_index: 0,
+            vault,
+            ephemeral_signers: 0,
+            member: payer,
+            action: VoteAction::Approve,
+            instructions: vec![transfer(vault, pk(2), 5)],
+        };
+        let wire = compile(
+            payer,
+            vec![check.instruction(&[]), squad.approve(4, &payer)],
+        )
+        .wire;
+        let verdict = judge(&wire, &[payer]);
+        assert_eq!((verdict.unread, verdict.risky), (0, 1));
+        assert!(verdict.completes());
+    }
+
     #[test]
     fn what_hands_over_control_is_counted_however_well_it_reads() {
         let key = KeypairSigner::new_random();

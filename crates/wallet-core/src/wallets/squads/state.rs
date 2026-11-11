@@ -67,6 +67,9 @@ pub struct VaultTransaction {
     pub vault_index: u8,
     /// The vault that runs the instructions and signs for them.
     pub vault: Pubkey,
+    /// How many ephemeral signers the transaction declares: addresses the
+    /// program derives for it and signs as when it runs.
+    pub ephemeral_signers: u8,
     pub instructions: Vec<Instruction>,
     /// Every account of the stored message in its order, as the execution
     /// has to list them.
@@ -88,6 +91,7 @@ impl VaultTransaction {
             index,
             vault_index,
             vault,
+            ephemeral_signers: 0,
             instructions: message.instructions().expect("a well-formed message"),
             execute_accounts: message.execute_accounts(),
         }
@@ -209,6 +213,8 @@ impl Squad {
             }
         };
         let vault_index: u8 = number(field(details, index_name)?)?;
+        let ephemeral_signers =
+            u8::try_from(bytes(field(details, "ephemeralSignerBumps")?)?.len()).ok()?;
         let message = field(details, "message")?;
         if !list(field(message, "addressTableLookups")?)?.is_empty() {
             return Some(StoredAccount::LookupTables);
@@ -219,6 +225,7 @@ impl Squad {
             index: number(field(&stored, "index")?)?,
             vault_index,
             vault: self.vault(vault_index),
+            ephemeral_signers,
             instructions: message.instructions()?,
             execute_accounts: message.execute_accounts(),
         }))

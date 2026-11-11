@@ -156,6 +156,12 @@ pub const SQUADS_V4_PROGRAM_ID: Pubkey =
 pub const SQUADS_SMART_ACCOUNT_PROGRAM_ID: Pubkey =
     Pubkey::from_str_const("SMRTzfY6DfH5ik3TKiyLFfXexV8uSG3d2UksSCYdunG");
 
+/// The Squads clear signing program, a companion to Squads v4 on devnet: its
+/// `verifyProposal` carries what a proposal's vault transaction holds and
+/// aborts unless the chain stores exactly that.
+pub const SQUADS_CLEAR_SIGNING_PROGRAM_ID: Pubkey =
+    Pubkey::from_str_const("7xs3LhQjKoCGfXm2qst7LUhismrG1bGxz5Jw6AHij7eu");
+
 /// The SPL Governance program Realms runs, on mainnet and devnet.
 pub const REALMS_GOVERNANCE_PROGRAM_ID: Pubkey =
     Pubkey::from_str_const("GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw");

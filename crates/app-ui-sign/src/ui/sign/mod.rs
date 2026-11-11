@@ -58,7 +58,11 @@ mod simulation;
 mod steps;
 mod submit;
 
-use blind::{offer_on_screen, use_stored_behind, BlindApprovals};
+use blind::{
+    checks_on_screen, offer_on_screen, use_stored_behind, AddChecksOffer, BlindApprovals,
+    CheckedApprovals,
+};
+use wallet_flows::offer::CheckOffer;
 
 pub(in crate::ui) use banners::*;
 pub(in crate::ui) use inbox::*;
@@ -358,8 +362,25 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     let online = use_network().is_some();
     let reading = use_explained(tx.as_ref().clone());
     let approvals = wallet_core::blind_in(&reading.explained);
+    // A vote the chain checks is not among them: it holds nothing back.
+    let checked = wallet_core::checked_in(&reading.explained);
     let reading_stored = use_stored_behind(&approvals, online);
     let blind = offer_on_screen(session, tx.as_ref(), &approvals, reading_stored);
+    // Online, an approval whose member signs elsewhere can carry what its
+    // proposal holds, if the user asks for it.
+    let (checks, shown) = checks_on_screen(
+        session,
+        tx.as_ref(),
+        &reading.explained,
+        &approvals,
+        &status,
+        online,
+        needs_rebuild,
+    );
+    let cannot = match checks {
+        CheckOffer::CannotAdd(block) => Some(block),
+        CheckOffer::Nothing | CheckOffer::Add { .. } => None,
+    };
     let busy = use_signal(|| false);
     let share_open = use_signal(|| false);
     let source = (form.source)();
@@ -619,6 +640,12 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
 
         SimulationStrip { tx: tx.clone(), inspect }
 
+        if !checked.is_empty() {
+            CheckedApprovals { checked }
+        }
+        if let (CheckOffer::Add { voids }, Some(shown)) = (checks, shown) {
+            AddChecksOffer { digest: sha256_bytes(&tx.message), shown, voids }
+        }
         if !approvals.is_empty() {
             BlindApprovals {
                 tx: tx.clone(),
@@ -627,6 +654,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
                 reading: reading_stored,
                 online,
                 inspect,
+                cannot,
             }
         }
 

@@ -218,7 +218,10 @@ pub fn programmatic_signers_of(tx: &DecodedTx, authorities: &[Pubkey]) -> Vec<(P
 /// The instructions from the first that those addresses sign to the last
 /// move, unchanged and in order, into one authorization that consumes
 /// `nonce`, and a single `Submit` takes their place. An instruction between
-/// them that they do not sign moves too, so nothing runs out of order.
+/// them that they do not sign moves too, so nothing runs out of order, and
+/// so does a Squads clear signing `verifyBufferHash` or `verifyProposalCpi`
+/// anywhere in `tx`
+/// (`crate::wallets::squads::moves_into_authorization`).
 /// Instructions before the first and after the last stay at the top level,
 /// where a Vector wrap can still cover them. When every instruction is
 /// wrapped, the new transaction is only that `Submit`.
@@ -254,11 +257,16 @@ pub fn wrap_for_programmatic(
 
     let addresses: Vec<Pubkey> = used.iter().map(|(_, address)| *address).collect();
     let mut before = tx.native_instructions();
+    // A Squads clear signing check by CPI, and a buffer hash, move in with
+    // them: the program runs the check only in the list that holds the vote,
+    // and the authority signs only what the `Submit` carries, so a check
+    // left beside it could be dropped after it signed.
     let signed_by_programmatic = |instruction: &solana_instruction::Instruction| {
-        instruction
-            .accounts
-            .iter()
-            .any(|meta| meta.is_signer && addresses.contains(&meta.pubkey))
+        crate::wallets::squads::moves_into_authorization(instruction)
+            || instruction
+                .accounts
+                .iter()
+                .any(|meta| meta.is_signer && addresses.contains(&meta.pubkey))
     };
     // `used` is not empty, so some instruction is signed by one of them.
     let start = before

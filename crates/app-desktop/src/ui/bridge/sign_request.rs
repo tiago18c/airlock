@@ -436,7 +436,13 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
             if let (Some(tx), Some(explained), Some(verdict)) = (prep.shown.clone(), prep.explained.clone(), prep.verdict) {
                 if verdict.risky > 0 {
                     RiskNotice { explained: explained.clone() }
-                    p { class: "hint", "So it is signed in Review and Sign, not from here." }
+                    // What its rows already say, such as a program upgrade,
+                    // has no strip above to point back to.
+                    if wallet_core::risks_told(&explained).is_empty() {
+                        p { class: "hint", "A transaction like this is signed in Review and Sign, not from here." }
+                    } else {
+                        p { class: "hint", "So it is signed in Review and Sign, not from here." }
+                    }
                 }
                 if fetching() {
                     p { class: "muted", role: "status", "Looking for the IDLs of its programs…" }

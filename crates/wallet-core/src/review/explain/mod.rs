@@ -4,8 +4,9 @@
 //!
 //! Some instructions carry other instructions in their data: a programmatic
 //! signer's `Submit`, the executor call inside it, a transaction stored for a
-//! Squads vault, a Vector `Passthrough`, a transaction added to a Realms
-//! proposal. Those are opened and explained the same way, level by level.
+//! Squads vault, what a Squads clear signing check says a proposal holds, a
+//! Vector `Passthrough`, a transaction added to a Realms proposal. Those are
+//! opened and explained the same way, level by level.
 //! Each opens from its own bytes. What a Vector `Advance` does to a
 //! hash-based key is read with the accounts' schemes, when they are known.
 
@@ -17,7 +18,7 @@ use crate::wallets::programmatic::{
     ED25519_SIGNER_PROGRAM_ID,
 };
 use crate::wallets::relay::{advance_next_keys, AuthContext, VectorContext};
-use crate::wallets::squads::{StoredTransaction, SyncExecution};
+use crate::wallets::squads::{ProposalCheck, StoredTransaction, SyncExecution};
 use crate::wallets::vector::{parse_passthrough, SchemeId, PASSTHROUGH_DISCRIMINATOR, PROGRAM_ID};
 use codama_dynamic_client::{
     get_instruction_display, required_accounts_for_display, IntentBody, IntentSpan, ProgramClient,
@@ -134,6 +135,19 @@ fn open_instruction(
                 signers: sync.signers,
             },
             sync.instructions,
+        ));
+    }
+    if let Some(check) = ProposalCheck::parse(instruction) {
+        return Some((
+            InnerKind::SquadsCheck {
+                multisig: check.squad.address,
+                transaction_index: check.transaction_index,
+                vault: check.vault,
+                vault_index: check.vault_index,
+                member: check.member,
+                action: check.action,
+            },
+            check.instructions,
         ));
     }
     if let Some(added) = realms::ProposalTransaction::parse(instruction) {

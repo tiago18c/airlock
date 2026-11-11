@@ -1,7 +1,9 @@
 //! The account inspector: an account read from the node, its header, then its
 //! data decoded with its owner's IDL, or the bytes in hex or base64 when no
-//! IDL reads them. Any address card opens it through `Session::inspect`; the
-//! shell mounts it once.
+//! IDL reads them. An account of the upgradeable loader also shows the hash
+//! of the code it holds; a program, the hash in its program-data account.
+//! Any address card opens it through `Session::inspect`; the shell mounts it
+//! once.
 
 use crate::actions::idl_check::fetch_missing_idls;
 use crate::rt::off_the_window;
@@ -11,9 +13,10 @@ use dioxus::dioxus_core::Task;
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use std::sync::Arc;
+use wallet_core::program_code::{loader_account, DeployedProgram, LoaderAccount};
 use wallet_core::{
-    base64_text, hex_dump, inspect_account, AccountReading, InspectedAccount, Leaf, ValueNode,
-    SHOWN_BYTES,
+    base64_text, group_thousands, hex_dump, inspect_account, AccountReading, InspectedAccount,
+    Leaf, ValueNode, SHOWN_BYTES,
 };
 
 #[component]
@@ -72,7 +75,17 @@ enum Inspection {
     LookingForIdl,
     Missing,
     Failed(String),
-    Read(Arc<InspectedAccount>),
+    /// With what the upgradeable loader's layout says of it, when the
+    /// loader owns it.
+    Read(Arc<InspectedAccount>, Option<LoaderAccount>),
+}
+
+/// A program's program-data account, read after the program.
+#[derive(Clone, PartialEq)]
+enum ProgramDataRead {
+    Reading,
+    Read(DeployedProgram),
+    Failed(String),
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -89,6 +102,7 @@ fn InspectBody(pubkey: Pubkey, back: Option<Pubkey>) -> Element {
     let mut state = use_signal(|| Inspection::Fetching);
     let mut round = use_signal(|| 0u32);
     let mut view = use_signal(|| None::<DataView>);
+    let mut program_data = use_signal(|| None::<ProgramDataRead>);
     let mut running = use_signal(|| None::<Task>);
     // Read again for another address, or on Refresh. A read still going for
     // the address before is dropped.
@@ -99,14 +113,13 @@ fn InspectBody(pubkey: Pubkey, back: Option<Pubkey>) -> Element {
         }
         view.set(None);
         state.set(Inspection::Fetching);
-        let task = spawn(async move {
-            let done = load(session, pubkey, state).await;
-            state.set(done);
-        });
+        program_data.set(None);
+        let task = spawn(load(session, pubkey, state, program_data));
         running.set(Some(task));
     }));
     let shown = state();
-    let busy = matches!(shown, Inspection::Fetching | Inspection::LookingForIdl);
+    let busy = matches!(shown, Inspection::Fetching | Inspection::LookingForIdl)
+        || program_data() == Some(ProgramDataRead::Reading);
     let cluster = session.cluster().name().to_string();
 
     rsx! {
@@ -119,7 +132,9 @@ fn InspectBody(pubkey: Pubkey, back: Option<Pubkey>) -> Element {
                     p { class: "note", "No account is at this address on {cluster}: it holds no lamports and no data." }
                 },
                 Inspection::Failed(why) => rsx! { p { class: "error", "The account could not be read: {why}" } },
-                Inspection::Read(read) => rsx! { AccountRead { read, view } },
+                Inspection::Read(read, loader) => rsx! {
+                    AccountRead { pubkey, read, loader, program_data: program_data(), view }
+                },
             }
             div { class: "btn-row",
                 if let Some(back) = back {
@@ -144,15 +159,22 @@ fn InspectBody(pubkey: Pubkey, back: Option<Pubkey>) -> Element {
     }
 }
 
-async fn load(session: Session, pubkey: Pubkey, mut state: Signal<Inspection>) -> Inspection {
+/// Read the account into `state`, then, for a program of the upgradeable
+/// loader, its program-data account into `program_data`.
+async fn load(
+    session: Session,
+    pubkey: Pubkey,
+    mut state: Signal<Inspection>,
+    mut program_data: Signal<Option<ProgramDataRead>>,
+) {
     let rpc = match session.rpc() {
         Ok(rpc) => rpc,
-        Err(err) => return Inspection::Failed(err.to_string()),
+        Err(err) => return state.set(Inspection::Failed(err.to_string())),
     };
     let account = match rpc.get_account(&pubkey).await {
         Ok(Some(account)) => account,
-        Ok(None) => return Inspection::Missing,
-        Err(err) => return Inspection::Failed(err.to_string()),
+        Ok(None) => return state.set(Inspection::Missing),
+        Err(err) => return state.set(Inspection::Failed(err.to_string())),
     };
     let owner = account.owner;
     let known = session
@@ -164,12 +186,38 @@ async fn load(session: Session, pubkey: Pubkey, mut state: Signal<Inspection>) -
         fetch_missing_idls(&session, &[owner]).await;
     }
     let catalog = session.idls.read().view();
-    let read = off_the_window(move || inspect_account(&catalog, account)).await;
-    Inspection::Read(Arc::new(read))
+    // A buffer or program-data account is hashed here, megabytes at most.
+    let (read, loader) = off_the_window(move || {
+        let loader = loader_account(&account.owner, &account.data);
+        (inspect_account(&catalog, account), loader)
+    })
+    .await;
+    state.set(Inspection::Read(Arc::new(read), loader));
+    let Some(LoaderAccount::Program {
+        program_data: address,
+    }) = loader
+    else {
+        return;
+    };
+    program_data.set(Some(ProgramDataRead::Reading));
+    let done = match wallet_flows::loader::program_data(rpc.as_ref(), address).await {
+        Ok(found) => off_the_window(move || found.read()).await,
+        Err(err) => Err(err),
+    };
+    program_data.set(Some(match done {
+        Ok(deployed) => ProgramDataRead::Read(deployed),
+        Err(err) => ProgramDataRead::Failed(err.to_string()),
+    }));
 }
 
 #[component]
-fn AccountRead(read: Arc<InspectedAccount>, view: Signal<Option<DataView>>) -> Element {
+fn AccountRead(
+    pubkey: Pubkey,
+    read: Arc<InspectedAccount>,
+    loader: Option<LoaderAccount>,
+    program_data: Option<ProgramDataRead>,
+    view: Signal<Option<DataView>>,
+) -> Element {
     let header = &read.header;
     let decoded = matches!(read.reading, AccountReading::Decoded { .. });
     let current = view().unwrap_or(if decoded {
@@ -192,6 +240,9 @@ fn AccountRead(read: Arc<InspectedAccount>, view: Signal<Option<DataView>>) -> E
             div { dt { "Executable" } dd { "{executable}" } }
             div { dt { "Rent epoch" } dd { "{rent_epoch}" } }
             div { dt { "Data" } dd { "{size}" } }
+        }
+        if let Some(loader) = loader {
+            LoaderFacts { pubkey, loader, program_data }
         }
         section { class: "idl-section",
             h4 { "Data" }
@@ -273,6 +324,130 @@ fn DataViews(
                 }
             }
             pre { class: "idl-raw inspect-raw", "{text}" }
+        }
+    }
+}
+
+/// What the upgradeable loader keeps in a program, its program data or a
+/// buffer: the hash of the code, to compare with `solana-verify`, who can
+/// change it, and when it was deployed.
+#[component]
+fn LoaderFacts(
+    pubkey: Pubkey,
+    loader: LoaderAccount,
+    program_data: Option<ProgramDataRead>,
+) -> Element {
+    let session = use_context::<Session>();
+    match loader {
+        LoaderAccount::Uninitialized => rsx! {},
+        LoaderAccount::Program {
+            program_data: address,
+        } => rsx! {
+            section { class: "idl-section",
+                h4 { "Program" }
+                dl { class: "addr-facts inspect-facts",
+                    div {
+                        dt { "Program data" }
+                        dd { class: "addr-card-account",
+                            Address { pubkey: address }
+                            button { class: "ghost sm icon-btn tip tip-end",
+                                r#type: "button",
+                                "data-tip": "Inspect the program data account",
+                                aria_label: "Inspect the program data account",
+                                onclick: move |_| {
+                                    let mut inspect = session.inspect;
+                                    inspect.set(Some(address));
+                                },
+                                Icon { glyph: Glyph::Search }
+                            }
+                        }
+                    }
+                    if let Some(ProgramDataRead::Read(deployed)) = program_data.clone() {
+                        DeployedRows { deployed }
+                    }
+                }
+                match program_data {
+                    Some(ProgramDataRead::Read(_)) => rsx! {
+                        p { class: "hint",
+                            code { "solana-verify get-program-hash {pubkey}" }
+                            " prints the same hash. Compare it with the hash of a build you trust."
+                        }
+                    },
+                    Some(ProgramDataRead::Failed(why)) => rsx! {
+                        p { class: "note", "Its program data could not be read, so its code has no hash here. {why}" }
+                    },
+                    Some(ProgramDataRead::Reading) | None => rsx! {
+                        p { class: "muted", "Reading its program data…" }
+                    },
+                }
+            }
+        },
+        LoaderAccount::ProgramData(deployed) => rsx! {
+            section { class: "idl-section",
+                h4 { "Program" }
+                dl { class: "addr-facts inspect-facts",
+                    DeployedRows { deployed }
+                }
+                p { class: "hint",
+                    code { "solana-verify get-program-hash" }
+                    " prints the same hash for the program this account holds. Compare it with the hash of a build you trust."
+                }
+            }
+        },
+        LoaderAccount::Buffer { authority, hash } => rsx! {
+            section { class: "idl-section",
+                h4 { "Buffer" }
+                dl { class: "addr-facts inspect-facts",
+                    HashRow { term: "Buffer hash", hash, copy: "Copy the buffer hash" }
+                    div {
+                        dt { "Authority" }
+                        dd {
+                            match authority {
+                                Some(authority) => rsx! { Address { pubkey: authority } },
+                                None => rsx! { "None: nobody can write to it or deploy from it." },
+                            }
+                        }
+                    }
+                }
+                p { class: "hint",
+                    code { "solana-verify get-buffer-hash {pubkey}" }
+                    " prints the same hash. Compare it with the hash of a build you trust."
+                }
+            }
+        },
+    }
+}
+
+/// The hash, upgrade authority and deploy slot of a deployed program.
+#[component]
+fn DeployedRows(deployed: DeployedProgram) -> Element {
+    let slot = group_thousands(&deployed.slot.to_string());
+    rsx! {
+        HashRow { term: "Program hash", hash: deployed.hash, copy: "Copy the program hash" }
+        div {
+            dt { "Upgrade authority" }
+            dd {
+                match deployed.authority {
+                    Some(authority) => rsx! { Address { pubkey: authority } },
+                    None => rsx! { "None: nobody can upgrade this program." },
+                }
+            }
+        }
+        div { dt { "Last deployed" } dd { "In slot {slot}" } }
+    }
+}
+
+/// A code hash in full, in lowercase hex, with a copy button.
+#[component]
+fn HashRow(term: &'static str, hash: [u8; 32], copy: &'static str) -> Element {
+    let text = hex::encode(hash);
+    rsx! {
+        div {
+            dt { "{term}" }
+            dd { class: "addr-card-account",
+                code { class: "mono", "{text}" }
+                CopyButton { text: text.clone(), label: copy }
+            }
         }
     }
 }

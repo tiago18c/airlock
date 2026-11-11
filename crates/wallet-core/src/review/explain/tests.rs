@@ -6,6 +6,7 @@ use crate::ids::{
 };
 use crate::tx::builder::compile_v1;
 use crate::tx::decode::decode_v1_transaction;
+use codama_dynamic_client::Value;
 use solana_hash::Hash;
 use solana_instruction::{AccountMeta, Instruction};
 use solana_pubkey::Pubkey;
@@ -1954,4 +1955,613 @@ fn only_an_initialized_token_mint_is_read_for_another_program() {
             account.owner
         );
     }
+}
+
+fn clear_signing_client() -> ProgramClient {
+    let idl = crate::idl::builtin::builtin_idl(
+        crate::IdlNetwork::Devnet,
+        &crate::ids::SQUADS_CLEAR_SIGNING_PROGRAM_ID,
+    )
+    .expect("the clear signing IDL is in the core on devnet");
+    ProgramClient::from_json(idl.json).unwrap()
+}
+
+fn record<const N: usize>(fields: [(&str, Value); N]) -> Value {
+    Value::struct_from(
+        fields
+            .into_iter()
+            .map(|(name, value)| (name.to_string(), value)),
+    )
+}
+
+/// One instruction a vault transaction stores, as `verifyProposal` carries
+/// it, and its bytes as the program reads them (Borsh).
+fn expected_instruction(ix: &Instruction) -> (Value, Vec<u8>) {
+    let value = record([
+        ("programId", Value::PublicKey(ix.program_id.to_bytes())),
+        (
+            "accounts",
+            Value::Array(
+                ix.accounts
+                    .iter()
+                    .map(|meta| {
+                        record([
+                            ("pubkey", Value::PublicKey(meta.pubkey.to_bytes())),
+                            ("isSigner", Value::Bool(meta.is_signer)),
+                            ("isWritable", Value::Bool(meta.is_writable)),
+                        ])
+                    })
+                    .collect(),
+            ),
+        ),
+        ("data", Value::Bytes(ix.data.clone())),
+    ]);
+    let mut bytes = ix.program_id.to_bytes().to_vec();
+    bytes.extend_from_slice(&(ix.accounts.len() as u32).to_le_bytes());
+    for meta in &ix.accounts {
+        bytes.extend_from_slice(meta.pubkey.as_ref());
+        bytes.push(meta.is_signer as u8);
+        bytes.push(meta.is_writable as u8);
+    }
+    bytes.extend_from_slice(&(ix.data.len() as u32).to_le_bytes());
+    bytes.extend_from_slice(&ix.data);
+    (value, bytes)
+}
+
+/// `verifyProposal` built from the IDL lays out its data as the program
+/// reads it, and reads as a sentence that names the proposal, the
+/// transaction, the multisig, the member and the vote. The instructions it
+/// carries are not a field: review opens them.
+#[test]
+fn a_clear_signed_vote_names_its_proposal_member_and_vote() {
+    let (proposal, transaction, multisig, member) = (pk(3), pk(4), pk(5), pk(6));
+    let stored = [
+        fixtures::transfer(pk(7), pk(8), 1_000_000),
+        Instruction {
+            program_id: crate::ids::MEMO_PROGRAM_ID,
+            accounts: vec![AccountMeta::new_readonly(pk(7), true)],
+            data: b"payroll".to_vec(),
+        },
+    ];
+    let (values, encoded): (Vec<Value>, Vec<Vec<u8>>) =
+        stored.iter().map(expected_instruction).unzip();
+    let verify = clear_signing_client()
+        .method("verifyProposal")
+        .unwrap()
+        .account("proposal", proposal)
+        .account("transaction", transaction)
+        .argument(
+            "args",
+            record([
+                ("multisig", Value::PublicKey(multisig.to_bytes())),
+                ("transactionIndex", Value::from(12u64)),
+                ("vaultIndex", Value::from(0u8)),
+                ("numEphemeralSigners", Value::from(0u8)),
+                ("member", Value::PublicKey(member.to_bytes())),
+                ("action", Value::unit_enum("approve")),
+                ("instructions", Value::Array(values)),
+            ]),
+        )
+        .build()
+        .unwrap();
+
+    let mut data = hex::decode("368c3946f39d1e7c").unwrap();
+    data.extend_from_slice(multisig.as_ref());
+    data.extend_from_slice(&12u64.to_le_bytes());
+    data.extend_from_slice(&[0, 0]);
+    data.extend_from_slice(member.as_ref());
+    data.push(0); // Approve
+    data.extend_from_slice(&2u32.to_le_bytes());
+    data.extend(encoded.concat());
+    assert_eq!(verify.data, data);
+    assert_eq!(
+        verify.accounts,
+        [
+            AccountMeta::new_readonly(proposal, false),
+            AccountMeta::new_readonly(transaction, false),
+            AccountMeta::new_readonly(INSTRUCTIONS_SYSVAR, false),
+        ]
+    );
+
+    let idl = explain_one_ix(&builtins(), member, verify.clone());
+    assert_eq!(idl.intent, "Verify proposal");
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "Checks that proposal {proposal}, transaction #12 of multisig {multisig}, holds \
+                 exactly the instructions shown, for {member} to approve it"
+            )
+            .as_str()
+        )
+    );
+    assert_eq!(field(&idl, "Vault Index"), "0");
+    assert_eq!(field(&idl, "Ephemeral Signers"), "0");
+    assert_eq!(field(&idl, "Vote"), "approve");
+    assert!(
+        !idl.fields
+            .iter()
+            .any(|field| field.label.contains("Instructions")),
+        "{:?}",
+        idl.fields
+    );
+    assert_eq!(idl.unnamed_accounts, 0);
+
+    // A lookup table the stored message names comes after the named accounts.
+    let mut with_table = verify;
+    with_table
+        .accounts
+        .push(AccountMeta::new_readonly(pk(9), false));
+    let idl = explain_one_ix(&builtins(), member, with_table);
+    assert_eq!(idl.unnamed_accounts, 0);
+    assert_eq!(field(&idl, "Lookup Table"), pk(9).to_string());
+}
+
+const INSTRUCTIONS_SYSVAR: Pubkey =
+    Pubkey::from_str_const("Sysvar1nstructions1111111111111111111111111");
+
+/// The hash a buffer is checked against is shown whole: it is what the
+/// signer compares with `solana-verify get-buffer-hash`.
+#[test]
+fn a_buffer_hash_check_shows_the_whole_hash() {
+    let (buffer, member) = (pk(3), pk(6));
+    let hash = "7ff737ad44ad241dc6cb45dae1010ba61774c6d55b662876282dbc40a9efe573";
+    let mut data = hex::decode("45610c8e75ad7c1f").unwrap();
+    data.extend_from_slice(buffer.as_ref());
+    data.extend_from_slice(&(hash.len() as u32).to_le_bytes());
+    data.extend_from_slice(hash.as_bytes());
+    let built = clear_signing_client()
+        .method("verifyBufferHash")
+        .unwrap()
+        .account("buffer", buffer)
+        .argument(
+            "args",
+            record([
+                ("buffer", Value::PublicKey(buffer.to_bytes())),
+                ("expectedHash", Value::String(hash.into())),
+            ]),
+        )
+        .build()
+        .unwrap();
+    assert_eq!(built.data, data);
+    assert_eq!(built.accounts, [AccountMeta::new_readonly(buffer, false)]);
+
+    let idl = explain_one_ix(&builtins(), member, built);
+    assert_eq!(idl.intent, "Verify buffer hash");
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(format!("Checks that buffer {buffer} holds the build whose hash is {hash}").as_str())
+    );
+    assert_eq!(field(&idl, "Buffer Hash"), hash);
+}
+
+fn loader_ix(tag: u32, args: &[u8], accounts: Vec<AccountMeta>) -> Instruction {
+    let mut data = tag.to_le_bytes().to_vec();
+    data.extend_from_slice(args);
+    Instruction {
+        program_id: crate::program_code::BPF_LOADER_UPGRADEABLE_ID,
+        accounts,
+        data,
+    }
+}
+
+const RENT: Pubkey = Pubkey::from_str_const("SysvarRent111111111111111111111111111111111");
+const CLOCK: Pubkey = Pubkey::from_str_const("SysvarC1ock11111111111111111111111111111111");
+
+/// Who upgrades which program from which buffer, and where the buffer's
+/// spare lamports go, in the account order of
+/// `solana_loader_v3_interface::instruction::upgrade`.
+#[test]
+fn a_program_upgrade_names_the_program_buffer_and_spill() {
+    let (program_data, program, buffer, spill, authority) = (pk(2), pk(3), pk(4), pk(5), pk(6));
+    let idl = explain_one_ix(
+        &builtins(),
+        authority,
+        loader_ix(
+            3,
+            &[],
+            vec![
+                AccountMeta::new(program_data, false),
+                AccountMeta::new(program, false),
+                AccountMeta::new(buffer, false),
+                AccountMeta::new(spill, false),
+                AccountMeta::new_readonly(RENT, false),
+                AccountMeta::new_readonly(CLOCK, false),
+                AccountMeta::new_readonly(authority, true),
+            ],
+        ),
+    );
+    assert_eq!(idl.intent, "Upgrade program");
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "{authority} upgrades program {program} to the build in buffer {buffer}, and \
+                 sends the buffer's spare lamports to {spill}"
+            )
+            .as_str()
+        )
+    );
+    assert_eq!(field(&idl, "Program Data"), program_data.to_string());
+    assert!(!idl
+        .fields
+        .iter()
+        .any(|field| field.value == RENT.to_string() || field.value == CLOCK.to_string()));
+}
+
+/// Leaving the new authority out makes the program or buffer final. A
+/// sentence cannot name an account the instruction leaves out, so it says
+/// so either way, and the new authority, when there is one, is a field.
+#[test]
+fn setting_a_loader_authority_says_that_leaving_it_out_is_final() {
+    let (program_data, current, new) = (pk(2), pk(3), pk(4));
+    let sentence = format!(
+        "{current} hands over the authority of {program_data}. Without a new authority, it can \
+         never change again"
+    );
+    let handed = explain_one_ix(
+        &builtins(),
+        current,
+        loader_ix(
+            4,
+            &[],
+            vec![
+                AccountMeta::new(program_data, false),
+                AccountMeta::new_readonly(current, true),
+                AccountMeta::new_readonly(new, false),
+            ],
+        ),
+    );
+    assert_eq!(handed.intent, "Set authority");
+    assert_eq!(
+        handed.interpolated_intent.as_deref(),
+        Some(sentence.as_str())
+    );
+    assert_eq!(field(&handed, "New Authority"), new.to_string());
+
+    let finalized = explain_one_ix(
+        &builtins(),
+        current,
+        loader_ix(
+            4,
+            &[],
+            vec![
+                AccountMeta::new(program_data, false),
+                AccountMeta::new_readonly(current, true),
+            ],
+        ),
+    );
+    assert_eq!(
+        finalized.interpolated_intent.as_deref(),
+        Some(sentence.as_str())
+    );
+    assert!(!finalized
+        .fields
+        .iter()
+        .any(|field| field.label == "New Authority"));
+    assert_eq!(finalized.unnamed_accounts, 0);
+
+    // The checked form names the new authority, which signs.
+    let checked = explain_one_ix(
+        &builtins(),
+        current,
+        loader_ix(
+            7,
+            &[],
+            vec![
+                AccountMeta::new(program_data, false),
+                AccountMeta::new_readonly(current, true),
+                AccountMeta::new_readonly(new, true),
+            ],
+        ),
+    );
+    assert_eq!(
+        checked.interpolated_intent.as_deref(),
+        Some(format!("{current} makes {new} the authority of {program_data}").as_str())
+    );
+}
+
+/// A write names its buffer and offset. The bytes it writes, a slice of an
+/// executable, are not a field.
+#[test]
+fn a_buffer_write_names_the_buffer_and_offset_and_hides_the_bytes() {
+    let (buffer, authority) = (pk(2), pk(3));
+    let chunk = [0x7f, b'E', b'L', b'F', 2, 1, 1, 0];
+    let mut args = 4096u32.to_le_bytes().to_vec();
+    args.extend_from_slice(&(chunk.len() as u64).to_le_bytes());
+    args.extend_from_slice(&chunk);
+    let idl = explain_one_ix(
+        &builtins(),
+        authority,
+        loader_ix(
+            1,
+            &args,
+            vec![
+                AccountMeta::new(buffer, false),
+                AccountMeta::new_readonly(authority, true),
+            ],
+        ),
+    );
+    assert_eq!(idl.intent, "Write to buffer");
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(
+            format!("{authority} writes program bytes into buffer {buffer} at offset 4096")
+                .as_str()
+        )
+    );
+    assert_eq!(
+        idl.fields
+            .iter()
+            .map(|field| field.label.as_str())
+            .collect::<Vec<_>>(),
+        ["Offset (bytes)", "Buffer", "Buffer Authority"]
+    );
+}
+
+/// Extending a program reads its size in bytes.
+#[test]
+fn extending_a_program_says_by_how_many_bytes() {
+    let (program_data, program, payer) = (pk(2), pk(3), pk(4));
+    let idl = explain_one_ix(
+        &builtins(),
+        payer,
+        loader_ix(
+            6,
+            &10_240u32.to_le_bytes(),
+            vec![
+                AccountMeta::new(program_data, false),
+                AccountMeta::new(program, false),
+                AccountMeta::new_readonly(SYSTEM_PROGRAM_ID, false),
+                AccountMeta::new(payer, true),
+            ],
+        ),
+    );
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(format!("Extends program {program} by 10,240 bytes").as_str())
+    );
+    assert_eq!(field(&idl, "Payer"), payer.to_string());
+}
+
+/// A Squads vote with the check that pins what its proposal holds: the check
+/// opens to the instructions it carries, read with their own IDLs, run as the
+/// vault. They are read from the check's bytes, so they open with no IDL for
+/// the check itself, as on a network whose catalog has none.
+#[test]
+fn a_checked_vote_opens_to_what_the_proposal_holds() {
+    use crate::wallets::squads::{CheckForm, ProposalCheck, Squad, VoteAction};
+    let squad = Squad::v4(&pk(50));
+    let (vault, member) = (squad.vault(1), pk(1));
+    let (program_data, program, buffer, spill) = (pk(2), pk(3), pk(4), pk(5));
+    let held = vec![
+        fixtures::transfer(vault, pk(8), 1_000_000),
+        loader_ix(
+            3,
+            &[],
+            vec![
+                AccountMeta::new(program_data, false),
+                AccountMeta::new(program, false),
+                AccountMeta::new(buffer, false),
+                AccountMeta::new(spill, false),
+                AccountMeta::new_readonly(RENT, false),
+                AccountMeta::new_readonly(CLOCK, false),
+                AccountMeta::new_readonly(vault, true),
+            ],
+        ),
+    ];
+    let check = ProposalCheck {
+        form: CheckForm::TopLevel,
+        squad,
+        transaction_index: 12,
+        vault_index: 1,
+        vault,
+        ephemeral_signers: 0,
+        member,
+        action: VoteAction::Approve,
+        instructions: held.clone(),
+    };
+    let verify = check.instruction(&[]);
+    let wire = compile(member, vec![verify.clone(), squad.approve(12, &member)]).wire;
+    let tx = decode_v1_transaction(&wire).unwrap();
+
+    // What the transaction carries comes back exactly: the same metas, flags
+    // and data the program compares with what is stored.
+    let native = tx.native_instructions();
+    assert_eq!(ProposalCheck::parse(&native[0]).unwrap().instructions, held);
+
+    for (catalog, worded) in [
+        (builtins(), true),
+        (
+            crate::fixtures::shipped_catalog(crate::IdlNetwork::Mainnet),
+            false,
+        ),
+        (
+            IdlStore::open(MemoryStore::new(), MemoryBodies::new()),
+            false,
+        ),
+    ] {
+        let explained = explain_transaction(&catalog, &tx);
+        let opened = &explained.instructions[0];
+        assert_eq!(opened.idl.is_some(), worded);
+        let inner = opened.inner.as_ref().expect("the check opens");
+        assert_eq!(
+            inner.kind,
+            InnerKind::SquadsCheck {
+                multisig: squad.address,
+                transaction_index: 12,
+                vault,
+                vault_index: 1,
+                member,
+                action: VoteAction::Approve,
+            }
+        );
+        assert_eq!(inner.instructions.len(), 2);
+        for (shown, held) in inner.instructions.iter().zip(&held) {
+            assert_eq!(shown.program_id, held.program_id);
+            assert_eq!(
+                shown.accounts,
+                held.accounts
+                    .iter()
+                    .map(|meta| meta.pubkey)
+                    .collect::<Vec<_>>()
+            );
+            assert_eq!(shown.data, held.data);
+            assert!(shown.inner.is_none());
+        }
+        // The vote itself is not opened: it holds nothing.
+        assert!(explained.instructions[1].inner.is_none());
+        // Every program inside is listed, so a missing IDL is looked for.
+        let listed: Vec<Pubkey> = explained
+            .programs
+            .iter()
+            .map(|line| line.program_id)
+            .collect();
+        assert!(listed.contains(&SYSTEM_PROGRAM_ID));
+        assert!(listed.contains(&crate::program_code::BPF_LOADER_UPGRADEABLE_ID));
+    }
+
+    // With the IDLs the app ships, the payment and the upgrade read as
+    // sentences, and the vault is what signs the upgrade.
+    let explained = explain_transaction(&builtins(), &tx);
+    let inner = &explained.instructions[0]
+        .inner
+        .as_ref()
+        .unwrap()
+        .instructions;
+    let pay = inner[0].idl.as_ref().unwrap();
+    assert_eq!(pay.intent, "Transfer SOL");
+    let upgrade = inner[1].idl.as_ref().unwrap();
+    assert_eq!(upgrade.intent, "Upgrade program");
+    let signer = upgrade.accounts.iter().find(|line| line.signer).unwrap();
+    assert_eq!(signer.pubkey, vault);
+    // The vault is no signer of the transaction itself: only the member is.
+    assert_eq!(tx.signers.len(), 1);
+    assert_eq!(tx.signers[0].pubkey, member);
+
+    // A check that does not read to its last byte is not opened.
+    let mut longer = verify;
+    longer.data.push(0);
+    let tx = decode_v1_transaction(&compile(member, vec![longer]).wire).unwrap();
+    assert!(explain_transaction(&builtins(), &tx).instructions[0]
+        .inner
+        .is_none());
+
+    // The same check for a member that signs through a program opens the
+    // same way, wherever it sits.
+    let by_cpi = ProposalCheck {
+        form: CheckForm::Cpi,
+        ..check
+    };
+    let carried = crate::review::explain::explain_instructions(
+        &IdlStore::open(MemoryStore::new(), MemoryBodies::new()),
+        &[by_cpi.instruction(&[])],
+    );
+    let inner = carried[0].inner.as_ref().expect("the check opens");
+    assert_eq!(
+        inner.kind,
+        InnerKind::SquadsCheck {
+            multisig: squad.address,
+            transaction_index: 12,
+            vault,
+            vault_index: 1,
+            member,
+            action: VoteAction::Approve,
+        }
+    );
+    assert_eq!(
+        inner
+            .instructions
+            .iter()
+            .map(|shown| shown.data.clone())
+            .collect::<Vec<_>>(),
+        held.iter().map(|ix| ix.data.clone()).collect::<Vec<_>>()
+    );
+}
+
+/// `verifyProposalCpi` built from the IDL lays out its data as
+/// `verifyProposal` does under its own tag, names the member as a signer
+/// after the instructions sysvar, and reads as the same check for a member
+/// that signs through a program.
+#[test]
+fn a_clear_signed_vote_by_cpi_reads_as_the_same_check() {
+    let (proposal, transaction, multisig, member) = (pk(3), pk(4), pk(5), pk(6));
+    let stored = [fixtures::transfer(pk(7), pk(8), 1_000_000)];
+    let (values, encoded): (Vec<Value>, Vec<Vec<u8>>) =
+        stored.iter().map(expected_instruction).unzip();
+    let verify = clear_signing_client()
+        .method("verifyProposalCpi")
+        .unwrap()
+        .account("proposal", proposal)
+        .account("transaction", transaction)
+        .account("member", member)
+        .argument(
+            "args",
+            record([
+                ("multisig", Value::PublicKey(multisig.to_bytes())),
+                ("transactionIndex", Value::from(12u64)),
+                ("vaultIndex", Value::from(0u8)),
+                ("numEphemeralSigners", Value::from(0u8)),
+                ("member", Value::PublicKey(member.to_bytes())),
+                ("action", Value::unit_enum("approve")),
+                ("instructions", Value::Array(values)),
+            ]),
+        )
+        .build()
+        .unwrap();
+
+    let mut data = hex::decode("dc969bbf04fb8ca8").unwrap();
+    assert_eq!(data, crate::wallets::squads::VERIFY_PROPOSAL_CPI);
+    data.extend_from_slice(multisig.as_ref());
+    data.extend_from_slice(&12u64.to_le_bytes());
+    data.extend_from_slice(&[0, 0]);
+    data.extend_from_slice(member.as_ref());
+    data.push(0); // Approve
+    data.extend_from_slice(&1u32.to_le_bytes());
+    data.extend(encoded.concat());
+    assert_eq!(verify.data, data);
+    assert_eq!(
+        verify.accounts,
+        [
+            AccountMeta::new_readonly(proposal, false),
+            AccountMeta::new_readonly(transaction, false),
+            AccountMeta::new_readonly(INSTRUCTIONS_SYSVAR, false),
+            AccountMeta::new_readonly(member, true),
+        ]
+    );
+    // What the app builds for the same check is these bytes.
+    let parsed = crate::wallets::squads::ProposalCheck::from_data(&verify.data).unwrap();
+    assert_eq!(parsed.form, crate::wallets::squads::CheckForm::Cpi);
+
+    let idl = explain_one_ix(&builtins(), member, verify.clone());
+    assert_eq!(idl.intent, "Verify proposal by CPI");
+    assert_eq!(
+        idl.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "Checks that proposal {proposal}, transaction #12 of multisig {multisig}, holds \
+                 exactly the instructions shown, for {member} to approve it, signing through a \
+                 program"
+            )
+            .as_str()
+        )
+    );
+    assert_eq!(field(&idl, "Vote"), "approve");
+    assert!(
+        !idl.fields
+            .iter()
+            .any(|field| field.label.contains("Instructions")),
+        "{:?}",
+        idl.fields
+    );
+    assert_eq!(idl.unnamed_accounts, 0);
+
+    // A lookup table the stored message names comes after the member.
+    let mut with_table = verify;
+    with_table
+        .accounts
+        .push(AccountMeta::new_readonly(pk(9), false));
+    let idl = explain_one_ix(&builtins(), member, with_table);
+    assert_eq!(idl.unnamed_accounts, 0);
+    assert_eq!(field(&idl, "Lookup Table"), pk(9).to_string());
 }

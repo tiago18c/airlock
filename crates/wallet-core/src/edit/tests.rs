@@ -297,3 +297,34 @@ fn a_vector_passthrough_is_written_again_around_its_edit() {
     assert_eq!(parsed.instructions[1], transfer(&account, &pk(3), 7));
     assert_eq!(parsed.instructions.len(), 2);
 }
+
+/// A Squads clear signing check carries what a proposal stores, but it is not
+/// a carrier: what it carries has to stay what is stored, or the vote fails.
+/// It opens as its own IDL form, or raw, and builds back to the same bytes.
+#[test]
+fn a_squads_check_is_edited_as_itself_not_as_what_it_carries() {
+    use crate::wallets::squads::{CheckForm, ProposalCheck, VoteAction};
+    let squad = Squad::v4(&pk(50));
+    let vault = squad.vault(0);
+    let check = ProposalCheck {
+        form: CheckForm::TopLevel,
+        squad,
+        transaction_index: 4,
+        vault_index: 0,
+        vault,
+        ephemeral_signers: 0,
+        member: pk(1),
+        action: VoteAction::Approve,
+        instructions: vec![transfer(&vault, &pk(2), 5)],
+    }
+    .instruction(&[]);
+    assert!(Carrier::open(&check).is_none());
+    for store in [
+        builtins(),
+        IdlStore::open(MemoryStore::new(), MemoryBodies::new()),
+    ] {
+        let opened = open_instruction(&store, &check);
+        assert!(!matches!(opened, OpenedIx::Carried { .. }));
+        assert_eq!(build(&store, &opened), check);
+    }
+}

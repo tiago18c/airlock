@@ -69,6 +69,99 @@ pub fn rebuild_loaded(session: Session) {
     });
 }
 
+/// Rebuild the Squads approval on screen so it carries what its proposal
+/// holds, the Squads clear signing program's checks, for a device that
+/// cannot ask a node (`wallet_flows::proposal_checks`). `shown` is what the
+/// screen shows the node said the proposal stores: what is carried has to be
+/// that. Only on the user's press. Signatures made over the transaction
+/// before are void, and the note says so. A transaction loaded in its place
+/// meanwhile is left alone; a refusal is kept for this message, to show in
+/// place of the offer.
+pub fn add_checks_loaded(session: Session, shown: wallet_core::squads::VaultTransaction) {
+    let form = session.forms.sign;
+    let (mut note, mut wire) = (form.note, form.wire);
+    let (mut rebuilding, mut refused) = (form.rebuilding, form.checks_refused);
+    let Some(loaded) = form.wire.peek().clone() else {
+        return;
+    };
+    if *rebuilding.peek() {
+        return;
+    }
+    let generation = form.generation();
+    refused.set(None);
+    rebuilding.set(true);
+    spawn(async move {
+        let result = with_checks(session, &loaded, shown).await;
+        rebuilding.set(false);
+        if !form.still_on_screen(generation) || form.wire.peek().as_ref() != Some(&loaded) {
+            return;
+        }
+        match result {
+            Ok(with) => {
+                wire.set(Some(with.wire.clone()));
+                form.set_exact_blockhash_height(with.last_valid_height);
+                // Rebuilt for a keyless member again: signing for it needs
+                // what the rebuild read.
+                if let Some(adapted) = &with.adapted {
+                    let mut marked = form.rebuilt;
+                    marked.set(true);
+                    form.set_vector_context(adapted.context.clone());
+                }
+                note.set(Some(wallet_flows::proposal_checks::checks_note(&with)));
+            }
+            Err(why) => {
+                let digest = parse_wire(&loaded)
+                    .map(|view| sha256_bytes(&view.message))
+                    .unwrap_or_default();
+                refused.set(Some((digest, why)));
+            }
+        }
+    });
+}
+
+/// Read the proposal again, hash each upgrade's buffer away from the window,
+/// build, and log the change. A member voting through a keyless wallet is
+/// rebuilt for it again, from the transaction as it was before its first
+/// rebuild: a press of the user's either way.
+async fn with_checks(
+    session: Session,
+    wire: &[u8],
+    shown: wallet_core::squads::VaultTransaction,
+) -> Result<wallet_flows::proposal_checks::WithChecks, String> {
+    use wallet_flows::proposal_checks::{build_with_checks, read_for_checks, NOT_REBUILT};
+    let rpc = session.rpc().map_err(sentence)?;
+    let tables = session.forms.sign.tables.peek().clone();
+    let tx = decode_on_sign(wire, &tables).map_err(sentence)?;
+    let plan = read_for_checks(rpc.as_ref(), &tx, Some(&shown))
+        .await
+        .map_err(sentence)?;
+    let rebuild = if plan.wrapped() {
+        let plain = plan.plain_tx().map_err(sentence)?;
+        let planned = session.plan_adaptation(&plain).map_err(sentence)?;
+        Some(planned.ok_or_else(|| NOT_REBUILT.to_string())?)
+    } else {
+        None
+    };
+    let hashed = crate::rt::off_the_window(move || plan.hash()).await;
+    let with = build_with_checks(
+        rpc.as_ref(),
+        hashed,
+        wallet_core::squads::ClearSigningAccepts::DEPLOYED,
+        rebuild.as_ref(),
+    )
+    .await
+    .map_err(sentence)?;
+    let flow = session.forms.sign.flow.peek().unwrap_or_else(next_flow_id);
+    let cluster = session.cluster();
+    TxLog {
+        flow,
+        wire: &with.wire,
+        cluster: Some(&cluster),
+    }
+    .log_transformed("squads_checks", &hex::encode(sha256_bytes(&tx.message)));
+    Ok(with)
+}
+
 /// What [`refresh_blockhash`] did besides moving to a new blockhash.
 pub struct Refreshed {
     pub wire: Vec<u8>,

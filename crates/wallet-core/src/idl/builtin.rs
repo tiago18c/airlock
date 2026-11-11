@@ -3,7 +3,7 @@
 //! Two sets ship. The core, [`BUILTIN_IDLS`], is compiled into the binary:
 //! the programs the wallet's own code builds instructions for (System, Stake,
 //! Token, Token-2022, compute budget, the Ed25519 signer, the two Squads
-//! programs, Vector). The IDLs of third-party programs, such as Raydium and
+//! programs and the Squads clear signing program, Vector). The IDLs of third-party programs, such as Raydium and
 //! Orca, are in `resources/idls/` and ship as one compressed file beside the
 //! binary (the `idl-pack` crate, read by [`crate::idl::pack`]). Both become
 //! [`EmbeddedIdl`]s in the catalog, and read the same from there.
@@ -38,7 +38,9 @@ use crate::ids::{
     ASSOCIATED_TOKEN_PROGRAM_ID, COMPUTE_BUDGET_PROGRAM_ID, STAKE_PROGRAM_ID, SYSTEM_PROGRAM_ID,
     TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID,
 };
-use crate::ids::{SQUADS_SMART_ACCOUNT_PROGRAM_ID, SQUADS_V4_PROGRAM_ID};
+use crate::ids::{
+    SQUADS_CLEAR_SIGNING_PROGRAM_ID, SQUADS_SMART_ACCOUNT_PROGRAM_ID, SQUADS_V4_PROGRAM_ID,
+};
 use crate::wallets::vector::PROGRAM_ID as VECTOR_PROGRAM_ID;
 use solana_pubkey::Pubkey;
 use std::borrow::Cow;
@@ -164,7 +166,7 @@ const DISPLAY_NODES: &str = "Display nodes added by hand.";
 /// In this order on a tie between two files carrying the same additional
 /// program: the earlier file's entry is read. Files of the IDL pack come
 /// after these.
-pub static BUILTIN_IDLS: [BuiltinIdl; 9] = [
+pub static BUILTIN_IDLS: [BuiltinIdl; 10] = [
     BuiltinIdl {
         program_id: SYSTEM_PROGRAM_ID,
         name: "system",
@@ -252,6 +254,24 @@ pub static BUILTIN_IDLS: [BuiltinIdl; 9] = [
         changes: "Converted from Anchor to Codama (`sdk/smart-account/idl`). Display nodes \
                   added by hand. The two `executeTransactionSync` instructions declare the \
                   members and accounts they list after their own as a remaining-accounts group.",
+    },
+    BuiltinIdl {
+        program_id: SQUADS_CLEAR_SIGNING_PROGRAM_ID,
+        name: "squadsClearSigning",
+        json: include_str!("../../idls/squads-clear-signing.json"),
+        networks: DEVNET,
+        // Devnet's program-metadata account still publishes the IDL of an
+        // earlier build (SHA-256 8384222…), from before `assertAccountHash`,
+        // `assertProgramRevision` and `verifyProposalCpi`, which the program
+        // runs since 2026-11-11. Its two instructions read the same as this
+        // file's.
+        source: repository(
+            "https://github.com/tiago18c/squads-cs-poc/blob/09222511693f38b81ff81b2f0340ebb30407b184/idl/squads_clear_signing.json",
+        ),
+        changes: "Converted from Anchor to Codama. `verifyProposal` and `verifyProposalCpi` \
+                  declare the address lookup tables they read as a remaining-accounts group, \
+                  and the instructions sysvar has its address as a default. Display nodes \
+                  added by hand.",
     },
     BuiltinIdl {
         program_id: VECTOR_PROGRAM_ID,

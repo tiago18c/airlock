@@ -12,7 +12,14 @@
 //! stores and opens is not blind, since the transaction then holds what is
 //! approved. Only the programs named here are known: another program can keep
 //! what it approves elsewhere too, and reads as whatever its IDL says.
+//!
+//! A v4 vote, or execution, is not blind either when a Squads clear signing
+//! check pins it ([`super::checked`]): the check carries what the proposal
+//! must hold, and the chain refuses the whole transaction unless the proposal
+//! holds exactly that. Each is judged on its own, so a transaction can hold
+//! votes that are pinned and votes that are not.
 
+use super::checked::{pinned_places, IxPlace};
 use crate::ids::REALMS_GOVERNANCE_PROGRAM_ID;
 use crate::review::explain::{ExplainedIx, ExplainedTx};
 use crate::wallets::squads::{Squad, SquadsProgram, StoredAccount, VaultTransaction};
@@ -21,6 +28,11 @@ use std::collections::HashMap;
 
 const SQUADS_APPROVAL: &str =
     "Approves a Squads proposal. What it would run is stored on chain, not in this transaction.";
+/// Still a vote: the proposal can run what it holds once it passes. Counted
+/// so the request modal leaves it to Review and Sign, and not told as a
+/// strip: its check's row says what it pins (see `super::risk::risks_told`).
+pub(crate) const CHECKED_APPROVAL: &str =
+    "Approves a Squads proposal, which can then run what it holds as its vault.";
 const SQUADS_RUN: &str =
     "Runs a transaction a Squads multisig stored on chain. What it does is not in this transaction.";
 const REALMS_VOTE: &str =
@@ -48,7 +60,7 @@ const REALMS_CAST_VOTE: u8 = 13;
 
 /// What a Squads instruction is to this module, and where it names the accounts
 /// that matter. Every one of them names the multisig first.
-enum SquadsCall {
+pub(super) enum SquadsCall {
     /// Stores what its own bytes say, as the account at position 1.
     Stores,
     /// Opens voting on a stored transaction, the proposal at position 1. Its
@@ -65,7 +77,7 @@ enum SquadsCall {
     },
 }
 
-fn squads_call(program: SquadsProgram, data: &[u8]) -> Option<SquadsCall> {
+pub(super) fn squads_call(program: SquadsProgram, data: &[u8]) -> Option<SquadsCall> {
     let tag: [u8; 8] = data.get(..8)?.try_into().ok()?;
     let runs = |proposal, transaction| {
         Some(SquadsCall::Runs {
@@ -112,26 +124,46 @@ pub struct BlindApproval {
 }
 
 /// The approvals in `explained`, each once, at any depth the app could open.
+/// A vote or an execution a clear signing check pins is not among them: see
+/// [`super::checked::checked_in`].
 pub fn blind_in(explained: &ExplainedTx) -> Vec<BlindApproval> {
+    let pinned = pinned_places(explained);
     let mut found = Vec::new();
-    walk(&explained.instructions, &mut found);
+    walk(&explained.instructions, None, &pinned, &mut found);
     found
 }
 
-fn walk(list: &[ExplainedIx], found: &mut Vec<BlindApproval>) {
+/// [`blind_in`] for instructions carried for another transaction, such as
+/// what a proposal stores: whatever they hold, no check among them pins a
+/// vote, since none of them runs in the transaction being signed.
+pub fn blind_in_carried(instructions: &[ExplainedIx]) -> Vec<BlindApproval> {
+    let mut found = Vec::new();
+    walk(instructions, None, &[], &mut found);
+    found
+}
+
+/// `list` is carried at `outer`, the transaction's own when `None`. `pinned`
+/// are the places of the votes and executions checks pin.
+fn walk(
+    list: &[ExplainedIx],
+    outer: Option<&IxPlace>,
+    pinned: &[IxPlace],
+    found: &mut Vec<BlindApproval>,
+) {
     // Stored and opened earlier in this list, which they succeed or fail with.
     // A list carried inside an instruction is a list of its own: it may only be
     // stored, to run some other time, so it says nothing of the accounts here.
     let mut stored = Vec::new();
     let mut opened = Vec::new();
-    for instruction in list {
+    for (at, instruction) in list.iter().enumerate() {
+        let place = IxPlace::at(outer, at);
         if let Some(approval) = blind_one(instruction, &mut stored, &mut opened) {
-            if !found.contains(&approval) {
+            if !pinned.contains(&place) && !found.contains(&approval) {
                 found.push(approval);
             }
         }
         if let Some(inner) = &instruction.inner {
-            walk(&inner.instructions, found);
+            walk(&inner.instructions, Some(&place), pinned, found);
         }
     }
 }
@@ -227,6 +259,10 @@ mod tests {
     use crate::review::explain::explain_transaction;
     use crate::tx::decode::decode_v1_transaction;
     use crate::wallets::squads::tests::{unhex, written};
+    use crate::wallets::squads::{
+        LOADER_UPGRADE, UPGRADE_BUFFER, UPGRADE_PROGRAM, VERIFY_BUFFER_HASH, VERIFY_PROPOSAL,
+        VERIFY_PROPOSAL_CPI,
+    };
     use solana_instruction::Instruction;
     use wallet_vault::store::MemoryStore;
 
@@ -563,6 +599,28 @@ mod tests {
                 target: None
             }]
         );
+    }
+
+    #[test]
+    fn the_tags_are_the_ones_the_clear_signing_and_loader_idls_give() {
+        let idl = include_str!("../../idls/squads-clear-signing.json");
+        let (want, accounts) = in_idl(idl, "verifyProposal");
+        assert_eq!(want["data"], hex::encode(VERIFY_PROPOSAL));
+        assert_eq!(accounts[..2], ["proposal", "transaction"]);
+        let (want, accounts) = in_idl(idl, "verifyProposalCpi");
+        assert_eq!(want["data"], hex::encode(VERIFY_PROPOSAL_CPI));
+        assert_eq!(
+            accounts,
+            ["proposal", "transaction", "instructionsSysvar", "member"]
+        );
+        let (want, accounts) = in_idl(idl, "verifyBufferHash");
+        assert_eq!(want["data"], hex::encode(VERIFY_BUFFER_HASH));
+        assert_eq!(accounts, ["buffer"]);
+        let loader = include_str!("../../../../resources/idls/loader-v3.json");
+        let (want, accounts) = in_idl(loader, "upgrade");
+        assert_eq!(want["number"], f64::from(LOADER_UPGRADE));
+        assert_eq!(accounts[UPGRADE_PROGRAM], "programAccount");
+        assert_eq!(accounts[UPGRADE_BUFFER], "bufferAccount");
     }
 
     #[test]

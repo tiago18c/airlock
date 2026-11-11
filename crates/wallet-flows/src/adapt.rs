@@ -4,7 +4,9 @@
 use crate::error::FlowError;
 use crate::simulate::{measure, simulate};
 use solana_pubkey::Pubkey;
-use wallet_core::adapt::{swap_fee_payer, AdaptPlan, Adapted, AdaptedStep, HeldBack, PayerSwap};
+use wallet_core::adapt::{
+    swap_fee_payer, AdaptError, AdaptPlan, Adapted, AdaptedStep, HeldBack, PayerSwap,
+};
 use wallet_core::relay::{fit_compute_units, fit_loaded_accounts, with_compute_unit_limit};
 use wallet_core::{decode_v1_transaction, DecodedTx, Phrase, SolanaRpc, MAX_TRANSACTION_SIZE};
 
@@ -16,6 +18,17 @@ pub async fn rebuild(
     tx: &DecodedTx,
     plan: &AdaptPlan,
 ) -> Result<(Adapted, u64), FlowError> {
+    rebuild_or(rpc, tx, plan, FlowError::refused).await
+}
+
+/// [`rebuild`], with `refused` saying why a plan that cannot be built is
+/// refused.
+pub(crate) async fn rebuild_or(
+    rpc: &dyn SolanaRpc,
+    tx: &DecodedTx,
+    plan: &AdaptPlan,
+    refused: impl Fn(AdaptError) -> FlowError,
+) -> Result<(Adapted, u64), FlowError> {
     let addresses = plan.accounts_to_read();
     let accounts: Vec<_> = addresses
         .iter()
@@ -23,9 +36,7 @@ pub async fn rebuild(
         .filter_map(|(address, account)| Some((*address, account?)))
         .collect();
     let (blockhash, last_valid_height) = rpc.get_latest_blockhash_with_height().await?;
-    let mut adapted = plan
-        .build(tx, &accounts, blockhash)
-        .map_err(FlowError::refused)?;
+    let mut adapted = plan.build(tx, &accounts, blockhash).map_err(refused)?;
     // The wrap starts loaded accounts at the maximum, but keeps the inner
     // compute limit plus a fixed overhead. Raise compute to the maximum too,
     // measure, then fit both. A node that cannot say leaves the wire as it

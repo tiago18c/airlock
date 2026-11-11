@@ -1664,3 +1664,65 @@ async fn sign_asks_the_trezor_answers_its_button_and_writes_in_its_signature() {
     screen.act(|| assert!(screen.session.device.peek().is_none()));
     screen.act(|| assert_eq!(*screen.form().error.peek(), None));
 }
+
+// ---- What a proposal holds, added to its approval.
+
+/// Transaction 1 of a v4 multisig as the program stored it on a local chain,
+/// as wallet-flows' tests read it.
+const STORED_MULTISIG: &str = "d9a5e44daa78c870fe9cc9c9cd9b18266e9f23d17ba3babdb928f35f539137b7";
+const STORED_TRANSACTION: &str = "a8faa264510ea2cfd9a5e44daa78c870fe9cc9c9cd9b18266e9f23d17ba3babdb928f35f539137b735a8380093a2d2386c1b25d1024507dbc5ae3ac66a3e65a3f6f192dee20896d30100000000000000ff00ff0000000001010103000000cd14d8623ad6e0db012f89806e133cc3326376b5c15ff369d4e7df8821d6eb07e2649cd17279322c1945b9c13b9d8f063e52f3723d3e70d81b9f339357aa3670000000000000000000000000000000000000000000000000000000000000000001000000020200000000010c00000002000000443322110000000000000000";
+
+fn stored_squad() -> (
+    wallet_core::squads::Squad,
+    wallet_core::squads::VaultTransaction,
+) {
+    let address: [u8; 32] = hex::decode(STORED_MULTISIG).unwrap().try_into().unwrap();
+    let squad = wallet_core::squads::Squad {
+        program: wallet_core::squads::SquadsProgram::V4,
+        address: Pubkey::new_from_array(address),
+    };
+    let data = hex::decode(STORED_TRANSACTION).unwrap();
+    match squad.parse_transaction(&data) {
+        Some(wallet_core::squads::StoredAccount::Vault(stored)) => (squad, stored),
+        other => panic!("{other:?}"),
+    }
+}
+
+#[tokio::test]
+async fn a_refusal_to_add_what_a_proposal_holds_stays_with_its_message() {
+    let mut screen = Screen::new().await;
+    let (squad, stored) = stored_squad();
+    // Member pk(9) signs elsewhere; this window's key pays.
+    let approval = compile_v1(
+        screen.key,
+        vec![squad.approve(1, &pk(9))],
+        None,
+        Some(solana_hash::Hash::new_from_array([3; 32])),
+    )
+    .unwrap()
+    .wire;
+    screen.load(&approval, TxSource::Pasted);
+    screen.settle().await;
+    let form = screen.form();
+
+    // The node holds no such proposal: nothing changes but the sentence.
+    screen.act(|| add_checks_loaded(screen.session, stored.clone()));
+    screen.settle().await;
+    assert_eq!(screen.wire(), Some(approval.clone()));
+    assert!(!screen.act(|| *form.rebuilding.peek()));
+    let digest = parse_wire(&approval)
+        .map(|view| sha256_bytes(&view.message))
+        .unwrap();
+    assert_eq!(
+        screen.act(|| form.checks_refused.peek().clone()),
+        Some((
+            digest,
+            wallet_flows::proposal_checks::PROPOSAL_UNREAD.to_string()
+        ))
+    );
+    assert_eq!(screen.act(|| form.note.peek().clone()), None);
+
+    // Another transaction starts over.
+    screen.load(&screen.transfer(2), TxSource::Pasted);
+    assert_eq!(screen.act(|| form.checks_refused.peek().clone()), None);
+}

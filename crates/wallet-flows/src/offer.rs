@@ -2,7 +2,8 @@
 //! a press will do. Decided from plain facts, so each rule can be read and tested
 //! apart from the screens. The screens only gather the facts and draw the answers.
 
-use wallet_core::{NextSignature, QuickSign};
+use wallet_core::squads::{ClearSigningAccepts, ShapeRefused};
+use wallet_core::{ApprovalShape, NextSignature, QuickSign};
 
 /// Whether a Sign press first moves the transaction to a fresh blockhash. A
 /// relayed transaction is moved inside [`crate::sign`] and is not one of these.
@@ -189,6 +190,94 @@ pub fn blind_offer(facts: BlindFacts) -> BlindOffer {
     }
 }
 
+/// Where a transaction stands for adding what the proposal it approves holds,
+/// so the device that signs can read it: see [`crate::proposal_checks`].
+#[derive(Clone, Debug)]
+pub struct CheckFacts {
+    pub online: bool,
+    /// What its own instructions are to the clear signing program.
+    pub shape: ApprovalShape,
+    /// A node said what the proposal voted on stores, and it is a vault
+    /// transaction this app reads: no config change, batch or lookup table.
+    pub stored_read: bool,
+    /// The vote's signature is not made yet and has to come from off this
+    /// device: another device, or a hardware wallet. Not a hot key here, for
+    /// which this device reads the proposal from its node already.
+    pub signs_elsewhere: bool,
+    /// The clear signing program runs on the cluster in use.
+    pub program_on_cluster: bool,
+    /// A wallet without a key is asked to sign: it is rebuilt first.
+    pub needs_rebuild: bool,
+    /// v1, the one format another device takes.
+    pub shareable: bool,
+    /// Signatures already made over the transaction.
+    pub signatures_held: usize,
+}
+
+/// What the Sign screen offers about adding what a proposal holds.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CheckOffer {
+    Nothing,
+    /// Offer to add it. `voids` signatures already made would no longer apply.
+    Add {
+        voids: usize,
+    },
+    /// It would be offered but for this, which the user can change.
+    CannotAdd(CheckBlock),
+}
+
+/// Why what a proposal holds cannot be added to votes that would otherwise
+/// take it: the clear signing program deployed does not take it beside
+/// this (`wallet_core::squads::ClearSigningAccepts`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CheckBlock {
+    /// It lives on a durable nonce, whose System instruction the program
+    /// refuses.
+    DurableNonce,
+    /// It executes the proposal too.
+    Execute,
+    /// Several members vote in it.
+    SeveralVotes,
+    /// The member votes through a wallet without a key, a programmatic
+    /// signer or a Vector wallet, and the program does not take a check
+    /// inside that wallet's `Submit` or `Passthrough`. The one deployed on
+    /// devnet takes both.
+    Authorization,
+}
+
+/// Offered only online, on a cluster where the program runs, for v1 votes
+/// on a proposal whose stored vault transaction a node returned, when a
+/// vote's signature comes from off this device, and when nothing else has to
+/// be rebuilt first. A transaction with anything else in it gets nothing, and
+/// one whose votes are all checked needs nothing. Of the rest, what `accepts`
+/// says the program does not take is blocked, with the reason.
+pub fn check_offer(facts: CheckFacts, accepts: ClearSigningAccepts) -> CheckOffer {
+    let applies = facts.online
+        && facts.program_on_cluster
+        && facts.shareable
+        && !facts.needs_rebuild
+        && facts.stored_read
+        && facts.signs_elsewhere;
+    if !applies {
+        return CheckOffer::Nothing;
+    }
+    let open = match facts.shape {
+        ApprovalShape::Open(open) => open,
+        ApprovalShape::Other | ApprovalShape::Checked => return CheckOffer::Nothing,
+    };
+    match accepts.refuses(open.facts()) {
+        None => CheckOffer::Add {
+            voids: facts.signatures_held,
+        },
+        Some(ShapeRefused::DurableNonce) => CheckOffer::CannotAdd(CheckBlock::DurableNonce),
+        Some(ShapeRefused::Execute) => CheckOffer::CannotAdd(CheckBlock::Execute),
+        Some(ShapeRefused::SeveralVotes) => CheckOffer::CannotAdd(CheckBlock::SeveralVotes),
+        Some(ShapeRefused::InSubmit | ShapeRefused::InPassthrough) => {
+            CheckOffer::CannotAdd(CheckBlock::Authorization)
+        }
+    }
+}
+
 /// Where one transaction of a batch stands on the Sign screen.
 #[derive(Clone, Copy, Debug)]
 pub struct BatchFacts {
@@ -324,6 +413,245 @@ pub fn can_go_out(sends: bool, left_for_site: usize) -> bool {
 mod tests {
     use super::*;
     use NextSignature::{Authorization, Nothing, Transaction};
+
+    fn a_vote(member: u8) -> wallet_core::V4Vote {
+        let squad = wallet_core::squads::Squad::v4(&solana_pubkey::Pubkey::new_from_array([4; 32]));
+        wallet_core::V4Vote {
+            squad,
+            proposal: squad.proposal(1),
+            member: solana_pubkey::Pubkey::new_from_array([member; 32]),
+            carried: false,
+        }
+    }
+
+    /// One member's vote, alone.
+    fn one_vote() -> wallet_core::OpenApproval {
+        let vote = a_vote(5);
+        wallet_core::OpenApproval {
+            squad: vote.squad,
+            proposal: vote.proposal,
+            votes: vec![vote],
+            execute: false,
+            nonce: false,
+            in_submit: false,
+            in_passthrough: false,
+        }
+    }
+
+    /// `open` with every vote run by a programmatic signer's `Submit`.
+    fn in_submit(open: wallet_core::OpenApproval) -> wallet_core::OpenApproval {
+        let votes = open
+            .votes
+            .iter()
+            .map(|vote| wallet_core::V4Vote {
+                carried: true,
+                ..*vote
+            })
+            .collect();
+        wallet_core::OpenApproval {
+            votes,
+            in_submit: true,
+            ..open
+        }
+    }
+
+    /// `open` with every vote run by a Vector `Passthrough`.
+    fn in_passthrough(open: wallet_core::OpenApproval) -> wallet_core::OpenApproval {
+        wallet_core::OpenApproval {
+            in_submit: false,
+            in_passthrough: true,
+            ..in_submit(open)
+        }
+    }
+
+    /// A lone vote through each kind of wallet without a key.
+    fn carried_votes() -> [wallet_core::OpenApproval; 2] {
+        [in_submit(one_vote()), in_passthrough(one_vote())]
+    }
+
+    /// Each shape beyond a vote alone, and why the deployed program blocks
+    /// it, whether the member signs with its key or through a program.
+    fn wider() -> Vec<(wallet_core::OpenApproval, CheckBlock)> {
+        let top = vec![
+            (
+                wallet_core::OpenApproval {
+                    nonce: true,
+                    ..one_vote()
+                },
+                CheckBlock::DurableNonce,
+            ),
+            (
+                wallet_core::OpenApproval {
+                    execute: true,
+                    ..one_vote()
+                },
+                CheckBlock::Execute,
+            ),
+            (
+                wallet_core::OpenApproval {
+                    votes: vec![a_vote(5), a_vote(6)],
+                    ..one_vote()
+                },
+                CheckBlock::SeveralVotes,
+            ),
+            (
+                wallet_core::OpenApproval {
+                    votes: vec![a_vote(5), a_vote(6)],
+                    execute: true,
+                    ..one_vote()
+                },
+                CheckBlock::Execute,
+            ),
+        ];
+        // A keyless wallet's rebuild takes no durable nonce, so that shape
+        // is never carried.
+        let carried: Vec<_> = top
+            .iter()
+            .filter(|(open, _)| !open.nonce)
+            .flat_map(|(open, block)| {
+                [
+                    (in_submit(open.clone()), *block),
+                    (in_passthrough(open.clone()), *block),
+                ]
+            })
+            .collect();
+        top.into_iter().chain(carried).collect()
+    }
+
+    /// A lone approval waiting on an offline member, online on devnet.
+    fn lone() -> CheckFacts {
+        CheckFacts {
+            online: true,
+            shape: ApprovalShape::Open(one_vote()),
+            stored_read: true,
+            signs_elsewhere: true,
+            program_on_cluster: true,
+            needs_rebuild: false,
+            shareable: true,
+            signatures_held: 0,
+        }
+    }
+
+    const DEPLOYED: ClearSigningAccepts = ClearSigningAccepts::DEPLOYED;
+    const EVERYTHING: ClearSigningAccepts = ClearSigningAccepts::EVERYTHING;
+
+    #[test]
+    fn a_lone_vote_from_elsewhere_on_a_stored_transaction_is_offered_the_checks() {
+        for accepts in [DEPLOYED, EVERYTHING] {
+            assert_eq!(check_offer(lone(), accepts), CheckOffer::Add { voids: 0 });
+            // Signatures made already are said to be void.
+            let signed = CheckFacts {
+                signatures_held: 2,
+                ..lone()
+            };
+            assert_eq!(check_offer(signed, accepts), CheckOffer::Add { voids: 2 });
+        }
+    }
+
+    #[test]
+    fn a_lone_vote_through_a_programmatic_signer_or_a_vector_wallet_is_offered_the_checks() {
+        for open in carried_votes() {
+            let facts = CheckFacts {
+                shape: ApprovalShape::Open(open.clone()),
+                ..lone()
+            };
+            for accepts in [DEPLOYED, EVERYTHING] {
+                assert_eq!(
+                    check_offer(facts.clone(), accepts),
+                    CheckOffer::Add { voids: 0 },
+                    "{open:?}"
+                );
+            }
+            // A program that took neither carrier would block it, saying why.
+            let top_only = ClearSigningAccepts {
+                in_submit: false,
+                in_passthrough: false,
+                ..DEPLOYED
+            };
+            assert_eq!(
+                check_offer(facts, top_only),
+                CheckOffer::CannotAdd(CheckBlock::Authorization),
+                "{open:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn each_condition_alone_takes_the_offer_away() {
+        let without: [fn(&mut CheckFacts); 6] = [
+            |f| f.online = false,
+            |f| f.stored_read = false,
+            |f| f.signs_elsewhere = false,
+            |f| f.program_on_cluster = false,
+            |f| f.needs_rebuild = true,
+            |f| f.shareable = false,
+        ];
+        let shapes = std::iter::once(one_vote())
+            .chain(carried_votes())
+            .chain(wider().into_iter().map(|(open, _)| open));
+        for open in shapes {
+            for (i, change) in without.iter().enumerate() {
+                for accepts in [DEPLOYED, EVERYTHING] {
+                    let mut facts = CheckFacts {
+                        shape: ApprovalShape::Open(open.clone()),
+                        ..lone()
+                    };
+                    change(&mut facts);
+                    assert_eq!(
+                        check_offer(facts, accepts),
+                        CheckOffer::Nothing,
+                        "{i} {open:?}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn a_shape_the_deployed_program_refuses_says_why_and_is_offered_once_it_takes_it() {
+        for (open, block) in wider() {
+            let facts = CheckFacts {
+                shape: ApprovalShape::Open(open.clone()),
+                ..lone()
+            };
+            assert_eq!(
+                check_offer(facts.clone(), DEPLOYED),
+                CheckOffer::CannotAdd(block),
+                "{open:?}"
+            );
+            assert_eq!(
+                check_offer(facts, EVERYTHING),
+                CheckOffer::Add { voids: 0 },
+                "{open:?}"
+            );
+        }
+        // Taking one thing more does not take the rest.
+        let several = CheckFacts {
+            shape: ApprovalShape::Open(wallet_core::OpenApproval {
+                votes: vec![a_vote(5), a_vote(6)],
+                execute: true,
+                ..one_vote()
+            }),
+            ..lone()
+        };
+        let execute_only = ClearSigningAccepts {
+            execute: true,
+            ..DEPLOYED
+        };
+        assert_eq!(
+            check_offer(several, execute_only),
+            CheckOffer::CannotAdd(CheckBlock::SeveralVotes)
+        );
+        for accepts in [DEPLOYED, EVERYTHING] {
+            for shape in [ApprovalShape::Other, ApprovalShape::Checked] {
+                let facts = CheckFacts {
+                    shape: shape.clone(),
+                    ..lone()
+                };
+                assert_eq!(check_offer(facts, accepts), CheckOffer::Nothing);
+            }
+        }
+    }
 
     /// A transaction a site sent, on a live blockhash, with this device's key
     /// still to sign, on an online device.

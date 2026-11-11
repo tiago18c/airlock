@@ -1,0 +1,1537 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "squadsClearSigning",
+    "publicKey": "7xs3LhQjKoCGfXm2qst7LUhismrG1bGxz5Jw6AHij7eu",
+    "version": "0.1.0",
+    "origin": "anchor",
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "verifyProposal",
+        "docs": [
+          "Verify that the Squads v4 vault transaction stored on-chain matches",
+          "`args.instructions` exactly, and that this transaction contains the",
+          "matching Squads vote instruction (and nothing else). Aborts otherwise."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "proposal",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The Squads v4 `Proposal` being voted on (the sibling vote's proposal).",
+              "validated in the handler; the vote must target this exact account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Proposal"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "transaction",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The Squads v4 `VaultTransaction` the proposal belongs to.",
+              "the handler against the proposal."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Transaction"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "instructionsSysvar",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "Sysvar1nstructions1111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "368c3946f39d1e7c",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "args",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "verifyProposalArgs"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "isOptional": true,
+            "isWritable": false,
+            "docs": [
+              "The address lookup tables the stored vault transaction's message names, in its order. Usually none."
+            ],
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "addressLookupTables"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lookup Table"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Verify proposal",
+          "interpolatedIntent": "Checks that proposal ${accounts.proposal}, transaction #${data.args.transactionIndex} of multisig ${data.args.multisig}, holds exactly the instructions shown, for ${data.args.member} to ${data.args.action} it"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "verifyBufferHash",
+        "docs": [
+          "Verify that a BPF upgradeable-loader Buffer account's program bytes",
+          "hash to `args.expected_hash` (SHA-256 via the native `sol_sha256`",
+          "syscall over the bytes with trailing zeros trimmed — byte-identical to",
+          "`solana-verify get-buffer-hash`).",
+          "Bundle it before `verify_proposal` + the Squads vote when the proposal",
+          "under approval is a program upgrade, so the offline signer sees the",
+          "exact build being deployed, not just the buffer's address. Aborts the",
+          "transaction on any mismatch."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "buffer",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The BPF upgradeable-loader Buffer account whose contents are checked."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Buffer"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "45610c8e75ad7c1f",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "args",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "verifyBufferHashArgs"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Verify buffer hash",
+          "interpolatedIntent": "Checks that buffer ${accounts.buffer} holds the build whose hash is ${data.args.expectedHash}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "assertAccountHash",
+        "docs": [
+          "Assert that an arbitrary account's raw data hashes to",
+          "`args.expected_hash` (SHA-256 over the **untrimmed** account data, as",
+          "lowercase hex), and — when `args.owner` is `Some` — that the account is",
+          "owned by that program. Lets an offline signer pin the exact state of",
+          "any account a proposal depends on (a config, a mint, an oracle, ...)",
+          "**at vote time**. Only data and (optionally) owner are covered — not",
+          "lamports or the executable flag; a non-existent account has empty data",
+          "and the system program as owner. Aborts the transaction on any mismatch."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "account",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The account whose data (and optionally owner) is asserted."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Account"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "31a75176f36de1c9",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "args",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "assertAccountHashArgs"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Check account hash",
+          "interpolatedIntent": "Checks that the data of ${accounts.account} hashes to ${data.args.expectedHash}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "assertProgramRevision",
+        "docs": [
+          "Assert that a deployed loader-v3 program runs exactly the build hashing",
+          "to `args.expected_hash`. A specialization of `assert_account_hash` for",
+          "upgradeable programs, which keep their code in a separate ProgramData",
+          "account:",
+          "",
+          "1. the `program` account equals `args.program`, is owned by the BPF",
+          "upgradeable loader, and is in the `Program` state;",
+          "2. the `programdata_address` stored in it equals the passed",
+          "`program_data` account, which is also loader-owned and in the",
+          "`ProgramData` state;",
+          "3. the ProgramData's program bytes (trailing zeros trimmed) SHA-256 to",
+          "`args.expected_hash` — byte-identical to",
+          "`solana-verify get-program-hash <program>`.",
+          "",
+          "The ProgramData metadata (deploy slot, upgrade authority) is not part",
+          "of the hash, so the digest identifies the build, not the deployment.",
+          "Like every assertion here it holds at vote time only: a program with",
+          "a live upgrade authority can change before the proposal executes."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "program",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The loader-v3 Program account (the program id)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programData",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The ProgramData account the program account points at.",
+              "`ProgramData` state, and program-bytes hash are validated in the handler."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program Data"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "8ab7e3fd6a076da2",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "args",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "assertProgramRevisionArgs"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Check program build",
+          "interpolatedIntent": "Checks that program ${accounts.program} runs the build whose hash is ${data.args.expectedHash}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "verifyProposalCpi",
+        "docs": [
+          "`verify_proposal` for a **programmatic signer**: a member key that is a",
+          "PDA and can only sign inside a CPI. Must itself be invoked via CPI,",
+          "with the member signing.",
+          "",
+          "The content checks are identical to `verify_proposal`. The difference",
+          "is where the Squads vote is looked for: not among the top-level",
+          "instructions, but in the instruction list that the signer program (the",
+          "\"driver\") executes, parsed from the top-level instruction this CPI",
+          "descends from. Two drivers are recognised:",
+          "",
+          "- the **ed25519 programmatic signer**: the top-level instruction is its",
+          "`Submit`, and the list is the execution message handed to the",
+          "message executor;",
+          "- **Vector**: the top-level instruction is a `Passthrough` of the",
+          "Vector program, signing as the member (a vector account or its",
+          "system PDA). No other instruction of that program may appear in the",
+          "transaction except `Advance`.",
+          "",
+          "In both, the member must not be a transaction signer, and this",
+          "instruction must be one the driver invokes directly.",
+          "",
+          "The list is located by parsing the driver's framing, not from an",
+          "argument. It must contain this very invocation and otherwise consist",
+          "only of this program's instructions and the expected vote."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "proposal",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The Squads v4 `Proposal` being voted on."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Proposal"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "transaction",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The Squads v4 `VaultTransaction` the proposal belongs to."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Transaction"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "instructionsSysvar",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "Sysvar1nstructions1111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "member",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "The multisig member casting the vote: the programmatic signer, which",
+              "must sign this CPI (and equal `args.member`). For Vector, this is a",
+              "vector account or its system PDA."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "dc969bbf04fb8ca8",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "args",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "verifyProposalArgs"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "isOptional": true,
+            "isWritable": false,
+            "docs": [
+              "The address lookup tables the stored vault transaction's message names, in its order. Usually none."
+            ],
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "addressLookupTables"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lookup Table"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Verify proposal by CPI",
+          "interpolatedIntent": "Checks that proposal ${accounts.proposal}, transaction #${data.args.transactionIndex} of multisig ${data.args.multisig}, holds exactly the instructions shown, for ${data.args.member} to ${data.args.action} it, signing through a program"
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "expectedAccountMeta",
+        "docs": [
+          "Expected account meta of an inner instruction."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pubkey",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isSigner",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isWritable",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "expectedInstruction",
+        "docs": [
+          "One expected instruction inside the vault transaction, fully expanded",
+          "(indexes resolved to pubkeys) so an offline device can render it."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "programId",
+              "docs": [
+                "Program the instruction invokes."
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "accounts",
+              "docs": [
+                "Ordered account metas, exactly as compiled into the vault transaction."
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "expectedAccountMeta"
+                },
+                "count": {
+                  "kind": "prefixedCountNode",
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "data",
+              "docs": [
+                "Raw instruction data, byte-for-byte."
+              ],
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "bytesTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "proposalAction",
+        "docs": [
+          "The kind of Squads v4 vote instruction expected next to `verify_proposal`."
+        ],
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "approve",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "approve"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "reject",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "reject"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "cancel",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "cancel"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "cancelV2",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "cancel"
+              }
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "verifyBufferHashArgs",
+        "docs": [
+          "Binds a buffer account to the exact build the offline signer reviewed."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "buffer",
+              "docs": [
+                "The buffer account under verification (must equal the passed account —",
+                "duplicated here so the offline device renders it from the args alone)."
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "expectedHash",
+              "docs": [
+                "SHA-256 of the buffer's program bytes with trailing zeros trimmed, as a",
+                "**lowercase hex string** (64 chars) — byte-identical to what",
+                "`solana-verify get-buffer-hash` prints, shown as-is to the signer so it",
+                "can be compared against a locally reproduced build."
+              ],
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Buffer Hash"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "verifyProposalArgs",
+        "docs": [
+          "Everything the offline signer needs to see, in one IDL-decodable blob."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "multisig",
+              "docs": [
+                "The Squads v4 multisig this proposal belongs to."
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Multisig"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "transactionIndex",
+              "docs": [
+                "Index of the vault transaction / proposal being voted on."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Transaction Index"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vaultIndex",
+              "docs": [
+                "Vault (authority) index the transaction executes under."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Vault Index"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "numEphemeralSigners",
+              "docs": [
+                "Number of ephemeral signer PDAs the transaction uses (usually 0)."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Ephemeral Signers"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "member",
+              "docs": [
+                "The multisig member casting the vote — must be the signer of the",
+                "sibling Squads vote instruction (i.e. the offline device's own key)."
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Member"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "action",
+              "docs": [
+                "Which vote the sibling Squads instruction must be."
+              ],
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "proposalAction"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Vote"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "instructions",
+              "docs": [
+                "The complete, expanded instruction list of the vault transaction.",
+                "Must match the on-chain `VaultTransaction` exactly."
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "expectedInstruction"
+                },
+                "count": {
+                  "kind": "prefixedCountNode",
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "assertAccountHashArgs",
+        "docs": [
+          "Binds an arbitrary account to the exact state the offline signer reviewed."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "account",
+              "docs": [
+                "The account under verification (must equal the passed account —",
+                "duplicated here so the offline device renders it from the args alone)."
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "owner",
+              "docs": [
+                "If set, the program that must own the account."
+              ],
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Required Owner"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "expectedHash",
+              "docs": [
+                "SHA-256 of the account's raw data (no trimming), as a **lowercase hex",
+                "string** (64 chars)."
+              ],
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Data Hash"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "assertProgramRevisionArgs",
+        "docs": [
+          "Binds a deployed upgradeable program to the exact build the offline",
+          "signer reviewed."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "program",
+              "docs": [
+                "The program id under verification (must equal the passed account)."
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "expectedHash",
+              "docs": [
+                "SHA-256 of the ProgramData's program bytes with trailing zeros",
+                "trimmed, as a **lowercase hex string** (64 chars) — byte-identical to",
+                "`solana-verify get-program-hash <program>`."
+              ],
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Program Hash"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "invalidTransactionOwner",
+        "code": 6000,
+        "message": "Transaction account is not owned by the Squads v4 program",
+        "docs": [
+          "InvalidTransactionOwner: Transaction account is not owned by the Squads v4 program"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidProposalOwner",
+        "code": 6001,
+        "message": "Proposal account is not owned by the Squads v4 program",
+        "docs": [
+          "InvalidProposalOwner: Proposal account is not owned by the Squads v4 program"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "notAvaultTransaction",
+        "code": 6002,
+        "message": "Account is not a Squads v4 VaultTransaction (discriminator mismatch)",
+        "docs": [
+          "NotAVaultTransaction: Account is not a Squads v4 VaultTransaction (discriminator mismatch)"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "transactionDeserializationError",
+        "code": 6003,
+        "message": "Failed to deserialize the VaultTransaction account data",
+        "docs": [
+          "TransactionDeserializationError: Failed to deserialize the VaultTransaction account data"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "multisigMismatch",
+        "code": 6004,
+        "message": "VaultTransaction.multisig does not match the expected multisig",
+        "docs": [
+          "MultisigMismatch: VaultTransaction.multisig does not match the expected multisig"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "transactionIndexMismatch",
+        "code": 6005,
+        "message": "VaultTransaction.index does not match the expected transaction_index",
+        "docs": [
+          "TransactionIndexMismatch: VaultTransaction.index does not match the expected transaction_index"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultIndexMismatch",
+        "code": 6006,
+        "message": "VaultTransaction.vault_index does not match the expected vault_index",
+        "docs": [
+          "VaultIndexMismatch: VaultTransaction.vault_index does not match the expected vault_index"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "ephemeralSignersMismatch",
+        "code": 6007,
+        "message": "Number of ephemeral signers does not match the expected count",
+        "docs": [
+          "EphemeralSignersMismatch: Number of ephemeral signers does not match the expected count"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "lookupTableCountMismatch",
+        "code": 6008,
+        "message": "Wrong number of address lookup table accounts supplied as remaining accounts",
+        "docs": [
+          "LookupTableCountMismatch: Wrong number of address lookup table accounts supplied as remaining accounts"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "lookupTableAddressMismatch",
+        "code": 6009,
+        "message": "Supplied lookup table account does not match the address referenced by the message",
+        "docs": [
+          "LookupTableAddressMismatch: Supplied lookup table account does not match the address referenced by the message"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidLookupTableOwner",
+        "code": 6010,
+        "message": "Lookup table account is not owned by the address lookup table program",
+        "docs": [
+          "InvalidLookupTableOwner: Lookup table account is not owned by the address lookup table program"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidLookupTableData",
+        "code": 6011,
+        "message": "Failed to parse the address lookup table account",
+        "docs": [
+          "InvalidLookupTableData: Failed to parse the address lookup table account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "lookupTableIndexOutOfBounds",
+        "code": 6012,
+        "message": "Address lookup table index is out of bounds",
+        "docs": [
+          "LookupTableIndexOutOfBounds: Address lookup table index is out of bounds"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "accountIndexOutOfBounds",
+        "code": 6013,
+        "message": "Message references an account index that is out of bounds",
+        "docs": [
+          "AccountIndexOutOfBounds: Message references an account index that is out of bounds"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "instructionCountMismatch",
+        "code": 6014,
+        "message": "Number of instructions in the vault transaction does not match the expected list",
+        "docs": [
+          "InstructionCountMismatch: Number of instructions in the vault transaction does not match the expected list"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "programIdMismatch",
+        "code": 6015,
+        "message": "Instruction program id does not match the expected program id",
+        "docs": [
+          "ProgramIdMismatch: Instruction program id does not match the expected program id"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "accountCountMismatch",
+        "code": 6016,
+        "message": "Instruction account count does not match the expected accounts",
+        "docs": [
+          "AccountCountMismatch: Instruction account count does not match the expected accounts"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "accountKeyMismatch",
+        "code": 6017,
+        "message": "Instruction account pubkey does not match the expected account",
+        "docs": [
+          "AccountKeyMismatch: Instruction account pubkey does not match the expected account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "accountWritableMismatch",
+        "code": 6018,
+        "message": "Instruction account writable flag does not match the expected flag",
+        "docs": [
+          "AccountWritableMismatch: Instruction account writable flag does not match the expected flag"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "accountSignerMismatch",
+        "code": 6019,
+        "message": "Instruction account signer flag does not match the expected flag",
+        "docs": [
+          "AccountSignerMismatch: Instruction account signer flag does not match the expected flag"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "dataMismatch",
+        "code": 6020,
+        "message": "Instruction data does not match the expected data",
+        "docs": [
+          "DataMismatch: Instruction data does not match the expected data"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "instructionsSysvarError",
+        "code": 6021,
+        "message": "Failed to read the instructions sysvar",
+        "docs": [
+          "InstructionsSysvarError: Failed to read the instructions sysvar"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "forbiddenInstruction",
+        "code": 6022,
+        "message": "Transaction contains an instruction to a program that is not allowed alongside a clear-signed vote",
+        "docs": [
+          "ForbiddenInstruction: Transaction contains an instruction to a program that is not allowed alongside a clear-signed vote"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unexpectedSquadsInstruction",
+        "code": 6023,
+        "message": "Squads instruction in this transaction is not the expected vote instruction",
+        "docs": [
+          "UnexpectedSquadsInstruction: Squads instruction in this transaction is not the expected vote instruction"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "malformedVoteInstruction",
+        "code": 6024,
+        "message": "Squads vote instruction has too few accounts",
+        "docs": [
+          "MalformedVoteInstruction: Squads vote instruction has too few accounts"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "voteMultisigMismatch",
+        "code": 6025,
+        "message": "Squads vote instruction targets a different multisig",
+        "docs": [
+          "VoteMultisigMismatch: Squads vote instruction targets a different multisig"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "voteProposalMismatch",
+        "code": 6026,
+        "message": "Squads vote instruction targets a different proposal",
+        "docs": [
+          "VoteProposalMismatch: Squads vote instruction targets a different proposal"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "voteMemberMismatch",
+        "code": 6027,
+        "message": "Squads vote instruction member does not match the expected member",
+        "docs": [
+          "VoteMemberMismatch: Squads vote instruction member does not match the expected member"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "voteMemberNotSigner",
+        "code": 6028,
+        "message": "Squads vote instruction member is not a transaction signer",
+        "docs": [
+          "VoteMemberNotSigner: Squads vote instruction member is not a transaction signer"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "missingVoteInstruction",
+        "code": 6029,
+        "message": "Transaction does not contain the expected Squads vote instruction",
+        "docs": [
+          "MissingVoteInstruction: Transaction does not contain the expected Squads vote instruction"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "bufferKeyMismatch",
+        "code": 6030,
+        "message": "Buffer account does not match the address in the args",
+        "docs": [
+          "BufferKeyMismatch: Buffer account does not match the address in the args"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidBufferOwner",
+        "code": 6031,
+        "message": "Buffer account is not owned by the BPF upgradeable loader",
+        "docs": [
+          "InvalidBufferOwner: Buffer account is not owned by the BPF upgradeable loader"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "notAbuffer",
+        "code": 6032,
+        "message": "Account is not an initialized BPF loader Buffer",
+        "docs": [
+          "NotABuffer: Account is not an initialized BPF loader Buffer"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "bufferHashMismatch",
+        "code": 6033,
+        "message": "Buffer program bytes do not hash to the expected value",
+        "docs": [
+          "BufferHashMismatch: Buffer program bytes do not hash to the expected value"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "notAproposal",
+        "code": 6034,
+        "message": "Account is not a Squads v4 Proposal (discriminator mismatch or truncated)",
+        "docs": [
+          "NotAProposal: Account is not a Squads v4 Proposal (discriminator mismatch or truncated)"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "proposalMultisigMismatch",
+        "code": 6035,
+        "message": "Proposal.multisig does not match the expected multisig",
+        "docs": [
+          "ProposalMultisigMismatch: Proposal.multisig does not match the expected multisig"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "proposalIndexMismatch",
+        "code": 6036,
+        "message": "Proposal.transaction_index does not match the expected transaction_index",
+        "docs": [
+          "ProposalIndexMismatch: Proposal.transaction_index does not match the expected transaction_index"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidHashFormat",
+        "code": 6037,
+        "message": "Expected hash is not a 64-char lowercase hex string",
+        "docs": [
+          "InvalidHashFormat: Expected hash is not a 64-char lowercase hex string"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "assertedAccountMismatch",
+        "code": 6038,
+        "message": "Account does not match the address in the args",
+        "docs": [
+          "AssertedAccountMismatch: Account does not match the address in the args"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "accountOwnerMismatch",
+        "code": 6039,
+        "message": "Account owner does not match the expected owner",
+        "docs": [
+          "AccountOwnerMismatch: Account owner does not match the expected owner"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "accountHashMismatch",
+        "code": 6040,
+        "message": "Account data does not hash to the expected value",
+        "docs": [
+          "AccountHashMismatch: Account data does not hash to the expected value"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "programKeyMismatch",
+        "code": 6041,
+        "message": "Program account does not match the address in the args",
+        "docs": [
+          "ProgramKeyMismatch: Program account does not match the address in the args"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidProgramOwner",
+        "code": 6042,
+        "message": "Program account is not owned by the BPF upgradeable loader",
+        "docs": [
+          "InvalidProgramOwner: Program account is not owned by the BPF upgradeable loader"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "notAprogram",
+        "code": 6043,
+        "message": "Account is not a BPF upgradeable loader Program",
+        "docs": [
+          "NotAProgram: Account is not a BPF upgradeable loader Program"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "programDataAddressMismatch",
+        "code": 6044,
+        "message": "ProgramData account does not match the address stored in the Program account",
+        "docs": [
+          "ProgramDataAddressMismatch: ProgramData account does not match the address stored in the Program account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidProgramDataOwner",
+        "code": 6045,
+        "message": "ProgramData account is not owned by the BPF upgradeable loader",
+        "docs": [
+          "InvalidProgramDataOwner: ProgramData account is not owned by the BPF upgradeable loader"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "notAprogramData",
+        "code": 6046,
+        "message": "Account is not a BPF upgradeable loader ProgramData",
+        "docs": [
+          "NotAProgramData: Account is not a BPF upgradeable loader ProgramData"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "programHashMismatch",
+        "code": 6047,
+        "message": "Program bytes do not hash to the expected value",
+        "docs": [
+          "ProgramHashMismatch: Program bytes do not hash to the expected value"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "notInvokedViaCpi",
+        "code": 6048,
+        "message": "verify_proposal_cpi must be invoked via CPI, not as a top-level instruction",
+        "docs": [
+          "NotInvokedViaCpi: verify_proposal_cpi must be invoked via CPI, not as a top-level instruction"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "memberAccountMismatch",
+        "code": 6049,
+        "message": "Member account does not match the member in the args",
+        "docs": [
+          "MemberAccountMismatch: Member account does not match the member in the args"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unsupportedSignerDriver",
+        "code": 6050,
+        "message": "The top-level instruction is not a supported programmatic-signer driver for this member",
+        "docs": [
+          "UnsupportedSignerDriver: The top-level instruction is not a supported programmatic-signer driver for this member"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "malformedDriverInstruction",
+        "code": 6051,
+        "message": "The driver's top-level instruction does not have the expected layout",
+        "docs": [
+          "MalformedDriverInstruction: The driver's top-level instruction does not have the expected layout"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "malformedEmbeddedInstructions",
+        "code": 6052,
+        "message": "The driver's embedded instruction list is malformed or out of bounds",
+        "docs": [
+          "MalformedEmbeddedInstructions: The driver's embedded instruction list is malformed or out of bounds"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "embeddedTrailingBytes",
+        "code": 6053,
+        "message": "The driver's embedded instruction list has trailing bytes or accounts",
+        "docs": [
+          "EmbeddedTrailingBytes: The driver's embedded instruction list has trailing bytes or accounts"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "embeddedSelfInstructionMissing",
+        "code": 6054,
+        "message": "The driver's embedded instruction list does not contain this verify_proposal_cpi instruction",
+        "docs": [
+          "EmbeddedSelfInstructionMissing: The driver's embedded instruction list does not contain this verify_proposal_cpi instruction"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "forbiddenDriverInstruction",
+        "code": 6055,
+        "message": "Another instruction of the driver program in this transaction could use the member's signature",
+        "docs": [
+          "ForbiddenDriverInstruction: Another instruction of the driver program in this transaction could use the member's signature"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "memberIsTransactionSigner",
+        "code": 6056,
+        "message": "Member signs the transaction itself; verify_proposal_cpi is for programmatic signers only",
+        "docs": [
+          "MemberIsTransactionSigner: Member signs the transaction itself; verify_proposal_cpi is for programmatic signers only"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unexpectedStackHeight",
+        "code": 6057,
+        "message": "verify_proposal_cpi was not invoked directly by the driver",
+        "docs": [
+          "UnexpectedStackHeight: verify_proposal_cpi was not invoked directly by the driver"
+        ]
+      }
+    ]
+  }
+}
