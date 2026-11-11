@@ -383,10 +383,8 @@ pub(in crate::ui) fn BookEntry(row: BookRow) -> Element {
                 }
                 if show_kind {
                     // The same words on a desktop and a phone, leading with
-                    // the kind. On a phone it is one line, cut at its end,
-                    // so the kind is what survives.
+                    // the kind; it wraps where it does not fit.
                     p { class: "ab-kind",
-                        title: if phone { what.clone() } else { None },
                         if let Some(what) = what.as_ref() {
                             "{what}"
                         }

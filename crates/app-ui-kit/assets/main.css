@@ -1854,14 +1854,16 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
 }
 /* Nothing to weigh: the name takes the balance's room too. */
 .app.phone .ab-row.ab-unweighed > .ab-name { grid-column: 2 / -1; }
-/* The kind line is one line, cut at its end, so its kind, which leads,
-   is what survives: "Smart contract wallet · Squads v4 · 2 of 3". */
-.app.phone .ab-kind {
-  overflow: hidden;
-  overflow-wrap: normal;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+/* The kind line wraps between its words rather than being cut, as on the
+   desktop: "Smart contract wallet · Squads v4 · 2 of 3". */
+.app.phone .ab-kind { overflow-wrap: normal; }
+/* The capsule and what ends its line share the line under the name, across
+   the balance's column too: a long "6 token accounts" then takes no room
+   from the name and its kind. */
+.app.phone .ab-row > .ab-address,
+.app.phone .ab-row > .ab-actions { grid-row: 2; grid-column: 2 / -1; }
+.app.phone .ab-row > .ab-address { justify-self: start; }
+.app.phone .ab-row > .ab-actions { justify-self: end; }
 .app.phone .ab-address { justify-items: start; }
 /* The short address and its copy icon in one capsule, a chip that can be
    pressed, starting under the name. It is drawn as tall as the line, and
