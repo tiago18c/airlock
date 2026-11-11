@@ -13,7 +13,7 @@
 
 /// The instructions that initialize a mint extension of a fixed length, and
 /// that length.
-pub const MINT_EXTENSIONS: [(&str, usize); 11] = [
+pub const MINT_EXTENSIONS: [(&str, usize); 14] = [
     ("initializeTransferFeeConfig", 108),
     ("initializeMintCloseAuthority", 32),
     ("initializeNonTransferableMint", 0),
@@ -25,6 +25,9 @@ pub const MINT_EXTENSIONS: [(&str, usize); 11] = [
     ("initializeGroupMemberPointer", 64),
     ("initializePausableConfig", 33),
     ("initializeScaledUiAmountMint", 56),
+    ("initializeDefaultAccountState", 1),
+    ("initializeConfidentialTransferMint", 65),
+    ("initializeConfidentialTransferFee", 129),
 ];
 
 /// Writes token metadata on the mint, growing it as it does.
@@ -123,6 +126,7 @@ mod tests {
         assert_eq!(sizing("initializePermanentDelegate"), Sizing::Fixed(32));
         assert_eq!(sizing("initializeTokenMetadata"), Sizing::Metadata);
         assert_eq!(sizing("initializeTokenGroup"), Sizing::Unknown);
-        assert_eq!(sizing("initializeDefaultAccountState"), Sizing::Unknown);
+        assert_eq!(sizing("initializeDefaultAccountState"), Sizing::Fixed(1));
+        assert_eq!(sizing("initializeConfidentialMintBurn"), Sizing::Unknown);
     }
 }

@@ -12,7 +12,9 @@
 //! Token-2022 refuses some extensions together, but none of the shipped
 //! options: the program the VM carries (11.0.0) takes all six at once, a
 //! transfer fee on a non-transferable mint included. Of the other extensions
-//! the size table knows, scaled UI amount cannot go with interest-bearing.
+//! the size table knows, scaled UI amount cannot go with interest-bearing,
+//! a transfer fee beside a confidential transfer config needs the
+//! confidential transfer fee too, and that fee needs both.
 
 use crate::support::node::Node;
 use crate::support::{logs, Chain, SOL};
@@ -617,4 +619,218 @@ fn every_other_extension_in_the_size_table_is_sized_as_the_program_sizes_it() {
     assert!(desk
         .create_from(&template, &["interest", "scaled"], &[])
         .is_err());
+}
+
+// Token-2022 extension types of the extensions below.
+const CONFIDENTIAL_TRANSFER_MINT: u16 = 4;
+const DEFAULT_ACCOUNT_STATE: u16 = 6;
+const CONFIDENTIAL_TRANSFER_FEE_CONFIG: u16 = 16;
+
+/// Default account state and confidential transfers, which no shipped
+/// template offers, each checked against the program as the shipped
+/// extensions are. The freeze authority is the wallet unless cleared: a
+/// mint whose accounts start frozen needs one.
+const STATE_AND_CONFIDENTIAL: &str = r#"
+format = 1
+name = "Default state and confidential transfers"
+
+[programs]
+system = "11111111111111111111111111111111"
+token = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+
+[[option]]
+name = "default_state"
+label = "Default account state"
+
+[[option]]
+name = "transfer_fee"
+label = "Transfer fee"
+
+[[option]]
+name = "confidential"
+label = "Confidential transfers"
+
+[[option]]
+name = "confidential_fee"
+label = "Confidential transfer fee"
+
+[[input]]
+name = "freezer"
+label = "Freeze authority"
+optional = true
+default = "$wallet"
+
+[[input]]
+name = "state"
+label = "State"
+option = "default_state"
+
+[[input]]
+name = "auditor"
+label = "Auditor"
+optional = true
+option = "confidential"
+
+[[input]]
+name = "withdraw_key"
+label = "Withdraw key"
+option = "confidential_fee"
+
+[values]
+funded = "token-2022-mint-funded-space $mint"
+lamports = "rent-for $funded"
+mint = "new-keypair"
+space = "token-2022-mint-space $mint"
+
+[[block]]
+program = "$system"
+instruction = "createAccount"
+accounts = { newAccount = "$mint", payer = "$fee-payer" }
+arguments = { lamports = "$lamports", programAddress = "$token", space = "$space" }
+
+[[block]]
+when = "default_state"
+program = "$token"
+instruction = "initializeDefaultAccountState"
+accounts = { mint = "$mint" }
+arguments = { state = "$state" }
+
+[[block]]
+when = "transfer_fee"
+program = "$token"
+instruction = "initializeTransferFeeConfig"
+accounts = { mint = "$mint" }
+arguments = { transferFeeBasisPoints = "1", maximumFee = "100", transferFeeConfigAuthority = "$wallet", withdrawWithheldAuthority = "$wallet" }
+
+[[block]]
+when = "confidential"
+program = "$token"
+instruction = "initializeConfidentialTransferMint"
+accounts = { mint = "$mint" }
+arguments = { authority = "$wallet", autoApproveNewAccounts = "true", auditorElgamalPubkey = "$auditor" }
+
+[[block]]
+when = "confidential_fee"
+program = "$token"
+instruction = "initializeConfidentialTransferFee"
+accounts = { mint = "$mint" }
+arguments = { authority = "$wallet", withdrawWithheldAuthorityElGamalPubkey = "$withdraw_key" }
+
+[[block]]
+program = "$token"
+instruction = "initializeMint2"
+accounts = { mint = "$mint" }
+arguments = { decimals = "0", mintAuthority = "$wallet", freezeAuthority = "$freezer" }
+"#;
+
+/// The Ristretto basepoint, compressed: a valid ElGamal public key.
+const BASEPOINT: &str = "GGumV86X6FZzHRo8bLvbW2LJ3PZ45EqRPWeogP8ufcm3";
+
+fn state_and_confidential() -> Template {
+    Template::parse(STATE_AND_CONFIDENTIAL).unwrap()
+}
+
+#[test]
+fn default_account_state_is_sized_as_the_program_sizes_it() {
+    let desk = Desk::new();
+    let template = state_and_confidential();
+    for (state, byte) in [("initialized", 1), ("frozen", 2)] {
+        let made = desk
+            .create_from(&template, &["default_state"], &[("state", state.into())])
+            .unwrap_or_else(|logs| panic!("{state}: {logs}"));
+        let mint = read_mint(&desk, &made.mint);
+        assert_eq!(mint.extensions.len(), 1, "{state}");
+        assert_eq!(
+            mint.extensions[&DEFAULT_ACCOUNT_STATE],
+            vec![byte],
+            "{state}"
+        );
+        assert_eq!(mint.freeze_authority, Some(desk.me()));
+        exactly_funded(&desk, &mint, &made);
+    }
+    // The program takes neither a state accounts cannot be in, nor frozen
+    // accounts on a mint nobody can thaw.
+    let refused = |answers: &[(&str, String)]| {
+        desk.create_from(&template, &["default_state"], answers)
+            .err()
+            .unwrap_or_else(|| panic!("{answers:?} landed"))
+    };
+    let logs = refused(&[("state", "uninitialized".into())]);
+    assert!(logs.contains("Invalid account state"), "{logs}");
+    let logs = refused(&[("state", "frozen".into()), ("freezer", String::new())]);
+    assert!(logs.contains("cannot freeze accounts"), "{logs}");
+}
+
+#[test]
+fn a_confidential_mint_is_sized_as_the_program_sizes_it() {
+    let desk = Desk::new();
+    let template = state_and_confidential();
+    let basepoint: Pubkey = BASEPOINT.parse().unwrap();
+    assert_eq!(basepoint.to_bytes()[..4], [0xe2, 0xf2, 0xae, 0x0a]);
+    // Not a point: the program keeps the 32 bytes without reading them.
+    let not_a_point = Pubkey::new_from_array([255; 32]);
+    for auditor in [None, Some(basepoint), Some(not_a_point)] {
+        let answers: Vec<(&str, String)> = auditor
+            .map(|key| vec![("auditor", key.to_string())])
+            .unwrap_or_default();
+        let made = desk
+            .create_from(&template, &["confidential"], &answers)
+            .unwrap_or_else(|logs| panic!("{auditor:?}: {logs}"));
+        let mint = read_mint(&desk, &made.mint);
+        assert_eq!(mint.extensions.len(), 1);
+        let config = &mint.extensions[&CONFIDENTIAL_TRANSFER_MINT];
+        assert_eq!(config.len(), 65);
+        assert_eq!(key(&config[0..32]), desk.me(), "authority");
+        assert_eq!(config[32], 1, "approves new accounts");
+        let held = auditor.map_or([0; 32], |key| key.to_bytes());
+        assert_eq!(config[33..65], held, "auditor");
+        exactly_funded(&desk, &mint, &made);
+    }
+}
+
+/// The confidential transfer fee goes on a mint with a transfer fee and a
+/// confidential transfer config. The program refuses it without both, and
+/// refuses the two together without it.
+#[test]
+fn the_confidential_transfer_fee_is_sized_as_the_program_sizes_it() {
+    let desk = Desk::new();
+    let template = state_and_confidential();
+    let basepoint: Pubkey = BASEPOINT.parse().unwrap();
+    let key_answer = [("withdraw_key", BASEPOINT.to_string())];
+    let all = ["transfer_fee", "confidential", "confidential_fee"];
+    let made = desk
+        .create_from(&template, &all, &key_answer)
+        .unwrap_or_else(|logs| panic!("{logs}"));
+    let mint = read_mint(&desk, &made.mint);
+    assert_eq!(
+        mint.extensions.keys().copied().collect::<Vec<_>>(),
+        vec![
+            TRANSFER_FEE_CONFIG,
+            CONFIDENTIAL_TRANSFER_MINT,
+            CONFIDENTIAL_TRANSFER_FEE_CONFIG
+        ]
+    );
+    let config = &mint.extensions[&CONFIDENTIAL_TRANSFER_FEE_CONFIG];
+    assert_eq!(config.len(), 129);
+    assert_eq!(key(&config[0..32]), desk.me(), "authority");
+    assert_eq!(key(&config[32..64]), basepoint, "withdraw key");
+    assert_eq!(config[64], 1, "harvest to the mint");
+    assert!(
+        config[65..].iter().all(|byte| *byte == 0),
+        "nothing withheld"
+    );
+    exactly_funded(&desk, &mint, &made);
+
+    for options in [
+        &["transfer_fee", "confidential"][..],
+        &["confidential_fee"],
+        &["transfer_fee", "confidential_fee"],
+        &["confidential", "confidential_fee"],
+    ] {
+        let logs = desk
+            .create_from(&template, options, &key_answer)
+            .err()
+            .unwrap_or_else(|| panic!("{options:?} landed"));
+        assert!(logs.contains("invalid combination of extensions"), "{logs}");
+    }
 }

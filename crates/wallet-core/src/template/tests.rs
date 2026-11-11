@@ -755,7 +755,7 @@ fn an_amount_scaled_by_an_unbound_argument_is_refused() {
 fn an_extension_the_size_table_does_not_know_is_refused() {
     let text = EXAMPLE.replace(
         "instruction = \"initializeTransferFeeConfig\"\naccounts = { mint = \"$mint\" }\narguments = { transferFeeBasisPoints = \"$fee\", maximumFee = \"$max_fee\", transferFeeConfigAuthority = \"$authority\", withdrawWithheldAuthority = \"$authority\" }",
-        "instruction = \"initializeDefaultAccountState\"\naccounts = { mint = \"$mint\" }\narguments = { state = \"$fee\" }",
+        "instruction = \"initializePermissionedBurn\"\naccounts = { mint = \"$mint\" }\narguments = { authority = \"$fee\" }",
     ).replace("[[input]]\nname = \"max_fee\"\nlabel = \"Maximum fee\"\nhint = \"The most one transfer can be charged, in the token's base units.\"\noption = \"transfer_fee\"\n", "");
     let problems = problems_of(&text);
     has(&problems, 2, None, "do not know the extension");
