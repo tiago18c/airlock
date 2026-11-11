@@ -347,7 +347,6 @@ pub fn TopBar(
 #[component]
 fn LockToggle() -> Element {
     let session = use_context::<Session>();
-    let phone = use_phone_layout();
     if !session.is_initialized() {
         return rsx! {};
     }
@@ -357,14 +356,13 @@ fn LockToggle() -> Element {
     } else {
         (Glyph::Lock, "Unlock vault")
     };
-    // On a phone the locked vault is the state to notice, and not by colour
-    // alone: a filled button that says so. Unlocked is the usual state, a
-    // quiet icon like the bell beside it.
-    let class = match (phone, unlocked) {
-        (true, true) => "icon-btn sm lock-toggle",
-        (true, false) => "sm lock-toggle locked",
-        (false, true) => "icon-btn sm lock-toggle unlocked",
-        (false, false) => "icon-btn sm lock-toggle",
+    // The locked vault is the state to notice, and not by colour alone: an
+    // amber button that says so. Unlocked is the usual state, a quiet icon
+    // like the bell beside it. The same on a desktop and on a phone.
+    let class = if unlocked {
+        "icon-btn sm lock-toggle"
+    } else {
+        "sm lock-toggle locked"
     };
     rsx! {
         button {
@@ -379,7 +377,7 @@ fn LockToggle() -> Element {
                 }
             },
             Icon { glyph }
-            if phone && !unlocked {
+            if !unlocked {
                 span { "Locked" }
             }
         }

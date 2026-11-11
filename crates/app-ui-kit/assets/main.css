@@ -201,7 +201,16 @@ code { color: var(--text-2); }
   justify-content: flex-end;
 }
 .topbar .segmented { flex-wrap: nowrap; }
-.lock-toggle.unlocked { color: var(--warn-text); }
+/* The lock: unlocked is the usual state, a quiet icon. Locked is the one to
+   notice, by more than colour: an amber tint and the word. */
+.topbar .lock-toggle.locked {
+  gap: var(--space-1);
+  background: var(--warn-soft);
+  border-color: var(--warn-line);
+  color: var(--warn-text);
+  font-weight: var(--weight-semibold);
+}
+.topbar .lock-toggle.locked .icon { width: 16px; height: 16px; }
 /* The theme toggle at the height of the other top bar controls. Touch
    screens keep their larger targets. */
 @media (pointer: fine) {
@@ -4974,17 +4983,7 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
   border-bottom-left-radius: 0;
 }
 
-/* The lock, on a phone: unlocked is the usual state, a quiet icon like the
-   bell. Locked is the one to notice, by more than colour: a filled warning
-   tint and the word. */
-.app.phone .lock-toggle.locked {
-  gap: var(--space-1);
-  background: var(--warn-soft);
-  border-color: var(--warn-line);
-  color: var(--warn-text);
-  font-weight: var(--weight-semibold);
-}
-.app.phone .lock-toggle.locked .icon { width: 16px; height: 16px; }
+
 .more-item {
   display: flex;
   align-items: center;
