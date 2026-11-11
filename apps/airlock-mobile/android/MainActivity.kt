@@ -907,13 +907,27 @@ object MwaBridge {
 
 /// What a `solana-wallet:` link opens. It has no window of its own: it
 /// starts the MWA session, brings Airlock forward for the request modal, and
-/// stays behind in the asking app's task until the session ends, when that
-/// app expects it to finish.
+/// stays behind until the session ends, when the asking app expects it to
+/// finish. Opened from a browser, it runs in a task of its own, which shows
+/// in recents while the session lasts (see the manifest).
 class MwaActivity : Activity() {
     private var session = 0L
+    private var resumedOnce = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Its card in recents: Airlock's name, and no screenshot of a
+        // window it does not have.
+        setTaskDescription(android.app.ActivityManager.TaskDescription("Airlock"))
+        if (android.os.Build.VERSION.SDK_INT >= 33) setRecentsScreenshotEnabled(false)
+        // Restored after Airlock's process went away, or opened again from
+        // its card in recents: the link is an old one that no app is waiting
+        // on any more.
+        val fromHistory = (intent?.flags ?: 0) and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY != 0
+        if (savedInstanceState != null || fromHistory) {
+            finishAndRemoveTask()
+            return
+        }
         val association = intent?.data?.let {
             try {
                 AssociationUri.parse(it)
@@ -929,6 +943,15 @@ class MwaActivity : Activity() {
         }
         session = MwaBridge.start(this, association, callingPackage)
         showAirlock()
+    }
+
+    /// Back in front while its session lasts, from its card in recents: the
+    /// request is in Airlock, so Airlock comes forward again. The first resume
+    /// follows onCreate, which already did.
+    override fun onResume() {
+        super.onResume()
+        if (resumedOnce && session != 0L && !isFinishing) showAirlock()
+        resumedOnce = true
     }
 
     /// Bring Airlock's own task forward. A running Airlock is moved to the
