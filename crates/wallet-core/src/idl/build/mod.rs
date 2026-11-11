@@ -10,10 +10,10 @@ use codama_dynamic_client::{
     ProgramClient, Value,
 };
 use codama_nodes::{
-    ConstantPdaSeedValue, DefaultValueStrategy, HasKind, InstructionAccountNode,
-    InstructionArgumentNode, InstructionInputValueNode, InstructionNode, NestedTypeNodeTrait, Node,
-    Number, NumberFormat, PdaSeedNode, PdaSeedValueValue, PdaValueNode, PdaValuePda,
-    PdaValueProgramId, RootNode, TypeNode,
+    ConstantPdaSeedValue, DefaultValueStrategy, DefinedTypeLinkNode, HasKind,
+    InstructionAccountNode, InstructionArgumentNode, InstructionInputValueNode, InstructionNode,
+    NestedTypeNodeTrait, Node, Number, NumberFormat, PdaSeedNode, PdaSeedValueValue, PdaValueNode,
+    PdaValuePda, PdaValueProgramId, ProgramNode, RootNode, TypeNode,
 };
 use solana_instruction::Instruction;
 use solana_pubkey::Pubkey;
@@ -26,6 +26,8 @@ mod pda;
 mod scale;
 mod types;
 
+#[cfg(test)]
+mod link_tests;
 #[cfg(test)]
 mod scale_tests;
 #[cfg(test)]

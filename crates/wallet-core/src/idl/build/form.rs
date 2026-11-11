@@ -30,7 +30,7 @@ pub fn idl_instruction_form(
     let arguments: Vec<IdlArgField> = node
         .arguments
         .iter()
-        .filter_map(|argument| argument_field(node, argument))
+        .filter_map(|argument| argument_field(&client.root().program, node, argument))
         .collect();
     // Seeds read an argument as the program does: in base units.
     let args = base_unit_text(&arguments, &argument_text(input));
@@ -129,13 +129,14 @@ pub(super) fn account_field(
 }
 
 pub(super) fn argument_field(
+    program: &ProgramNode,
     instruction: &InstructionNode,
     argument: &InstructionArgumentNode,
 ) -> Option<IdlArgField> {
     if argument.default_value_strategy == Some(DefaultValueStrategy::Omitted) {
         return None;
     }
-    let kind = classify(&argument.r#type);
+    let kind = classify_in(program, &argument.r#type);
     let scale = if integer_inside(&kind) {
         argument_scale(instruction, &argument.r#type)
     } else {
@@ -158,7 +159,27 @@ fn integer_inside(kind: &IdlArgKind) -> bool {
     }
 }
 
+/// How many links a field's type is followed through to the program's own
+/// defined types: a link, and a link that link names.
+const LINK_DEPTH: usize = 2;
+
+/// The field a type is typed into, without following links: a link is a
+/// field nobody can fill. Seeds and scales read types this way.
 pub(super) fn classify(ty: &TypeNode) -> IdlArgKind {
+    classify_at(None, ty, 0)
+}
+
+/// The field a type is typed into, following a link to a defined type of
+/// `program` up to [`LINK_DEPTH`] links deep. Only an enum whose variants
+/// hold nothing is read through a link, as a choice; anything else behind
+/// one, a link to another program, a type the program does not define, or
+/// a link past the depth stays a field nobody can fill. A type that links
+/// to itself ends there too: IDLs are hostile input.
+pub(super) fn classify_in(program: &ProgramNode, ty: &TypeNode) -> IdlArgKind {
+    classify_at(Some(program), ty, 0)
+}
+
+fn classify_at(program: Option<&ProgramNode>, ty: &TypeNode, links: usize) -> IdlArgKind {
     match unwrap_type(ty) {
         TypeNode::Number(node) => integer_kind(node.format),
         TypeNode::Amount(node) => integer_kind(node.number.get_nested_type_node().format),
@@ -167,19 +188,47 @@ pub(super) fn classify(ty: &TypeNode) -> IdlArgKind {
         TypeNode::String(_) => IdlArgKind::String,
         TypeNode::Boolean(_) => IdlArgKind::Bool,
         TypeNode::Bytes(_) => IdlArgKind::Bytes,
-        TypeNode::Option(node) => IdlArgKind::Option(Box::new(classify(&node.item))),
-        TypeNode::RemainderOption(node) => IdlArgKind::Option(Box::new(classify(&node.item))),
-        TypeNode::ZeroableOption(node) => IdlArgKind::Option(Box::new(classify(&node.item))),
+        TypeNode::Option(node) => {
+            IdlArgKind::Option(Box::new(classify_at(program, &node.item, links)))
+        }
+        TypeNode::RemainderOption(node) => {
+            IdlArgKind::Option(Box::new(classify_at(program, &node.item, links)))
+        }
+        TypeNode::ZeroableOption(node) => {
+            IdlArgKind::Option(Box::new(classify_at(program, &node.item, links)))
+        }
         TypeNode::Enum(node) => match unit_variants(node) {
             Some(variants) => IdlArgKind::Enum { variants },
             None => IdlArgKind::Raw {
                 note: "enum with fields".to_string(),
             },
         },
+        TypeNode::Link(link) => program
+            .filter(|_| links < LINK_DEPTH)
+            .and_then(|program| linked_type(program, link))
+            .map(|linked| classify_at(program, linked, links + 1))
+            .filter(|kind| matches!(kind, IdlArgKind::Enum { .. }))
+            .unwrap_or_else(|| IdlArgKind::Raw {
+                note: link.kind().to_string(),
+            }),
         other => IdlArgKind::Raw {
             note: other.kind().to_string(),
         },
     }
+}
+
+/// The type `link` names among `program`'s own defined types.
+fn linked_type<'a>(program: &'a ProgramNode, link: &DefinedTypeLinkNode) -> Option<&'a TypeNode> {
+    if let Some(other) = &link.program {
+        if other.name != program.name {
+            return None;
+        }
+    }
+    program
+        .defined_types
+        .iter()
+        .find(|defined| defined.name == link.name)
+        .map(|defined| defined.r#type.as_ref())
 }
 
 pub(super) fn unwrap_type(ty: &TypeNode) -> &TypeNode {

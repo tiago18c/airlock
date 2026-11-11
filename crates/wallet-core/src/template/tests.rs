@@ -693,6 +693,54 @@ arguments = { lamports = \"0.0000000001\", space = \"eighty\", programAddress = 
     has(&problems, 1, Some("lamports"), "decimal places");
 }
 
+/// `initializeDefaultAccountState.state` links to the enum `accountState`:
+/// an input bound to it is a choice of its variants, a literal must be one,
+/// and it cannot also be bound to a number.
+#[test]
+fn an_enum_behind_a_link_is_a_choice_in_a_template() {
+    let block = |state: &str| {
+        one_block(
+            "[[input]]\nname = \"state\"\nlabel = \"State\"\n[[input]]\nname = \"mint\"\nlabel = \"Mint\"",
+            &format!(
+                "program = \"$token\"\ninstruction = \"initializeDefaultAccountState\"\naccounts = {{ mint = \"$mint\" }}\narguments = {{ state = \"{state}\" }}"
+            ),
+        )
+    };
+    let template = Template::parse(&block("$state")).unwrap();
+    let form = check(&template, &catalog()).unwrap();
+    let state = form.inputs.iter().find(|i| i.name == "state").unwrap();
+    assert_eq!(
+        state.kind,
+        InputKind::Argument {
+            kind: crate::IdlArgKind::Enum {
+                variants: vec![
+                    "uninitialized".into(),
+                    "initialized".into(),
+                    "frozen".into()
+                ],
+            },
+            scale: InputScale::None,
+        }
+    );
+
+    let fixed = block("frozen").replace("[[input]]\nname = \"state\"\nlabel = \"State\"\n", "");
+    check(&Template::parse(&fixed).unwrap(), &catalog()).unwrap();
+    let wrong = block("thawed").replace("[[input]]\nname = \"state\"\nlabel = \"State\"\n", "");
+    has(&problems_of(&wrong), 1, Some("state"), "thawed");
+
+    let twice = one_block(
+        "[[input]]\nname = \"state\"\nlabel = \"State\"\n[[input]]\nname = \"mint\"\nlabel = \"Mint\"",
+        "program = \"$token\"\ninstruction = \"initializeDefaultAccountState\"\naccounts = { mint = \"$mint\" }\narguments = { state = \"$state\" }\n[[block]]\nprogram = \"$token\"\ninstruction = \"initializeMint2\"\naccounts = { mint = \"$mint\" }\narguments = { decimals = \"$state\", mintAuthority = \"$wallet\" }",
+    );
+    assert!(
+        problems_of(&twice)
+            .iter()
+            .any(|p| p.message.contains("`$state` is bound to fields")),
+        "{:#?}",
+        problems_of(&twice)
+    );
+}
+
 #[test]
 fn an_amount_scaled_by_an_unbound_argument_is_refused() {
     let text = one_block(
