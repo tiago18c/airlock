@@ -1,6 +1,6 @@
 # Plan: templates on Build
 
-Status: **in progress**. Decided with Tiago on 2026-11-11. Each phase below says what it adds; a phase is done when its tests pass and its line is ticked in [Phases](#phases).
+Status: **in progress** (phases 1 to 3 done). Decided with Tiago on 2026-11-11. Each phase below says what it adds; a phase is done when its tests pass and its line is ticked in [Phases](#phases).
 
 Build asks for every account and argument an IDL names, in the program's base units. That is the right tool for an instruction nobody planned for, and too raw for the things people do often. A template is a short text file that asks a few questions and writes the Build blocks from the answers. The blocks are compiled and read on Review and Sign exactly as blocks made by hand are.
 
@@ -41,122 +41,13 @@ These hold for every phase. They are what keeps a template from being a way arou
 
 ## The format
 
-TOML, version 1. One namespace: inputs, values, program aliases, options and the built-in names share it, and a file that uses a name twice is refused. `$name` is a reference; `$$` is a literal dollar. Any other string is a literal, written as it would be typed into the Build field it goes to (a base58 address, a number in the field's unit, an enum variant, `true`).
-
-```toml
-format = 1
-name = "Create a Token-2022 token"
-summary = "A new mint, with the extensions you choose."
-
-[programs]
-system = "11111111111111111111111111111111"
-token = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-
-[[option]]
-name = "transfer_fee"
-label = "Transfer fee"
-hint = "Keeps a share of every transfer in the receiving account."
-
-[[input]]
-name = "decimals"
-label = "Decimals"
-default = "9"
-
-[[input]]
-name = "authority"
-label = "Mint authority"
-default = "$wallet"
-
-[[input]]
-name = "freeze_authority"
-label = "Freeze authority"
-optional = true
-
-[[input]]
-name = "fee"
-label = "Fee"
-option = "transfer_fee"
-
-[[input]]
-name = "max_fee"
-label = "Maximum fee"
-hint = "The most one transfer can be charged, in the token's base units."
-option = "transfer_fee"
-
-[values]
-mint = "new-keypair"
-space = "token-2022-mint-space $mint"
-funded = "token-2022-mint-funded-space $mint"
-lamports = "rent-for $funded"
-
-[[block]]
-program = "$system"
-instruction = "createAccount"
-accounts = { payer = "$fee-payer", newAccount = "$mint" }
-arguments = { lamports = "$lamports", space = "$space", programAddress = "$token" }
-
-[[block]]
-when = "transfer_fee"
-program = "$token"
-instruction = "initializeTransferFeeConfig"
-accounts = { mint = "$mint" }
-arguments = { transferFeeBasisPoints = "$fee", maximumFee = "$max_fee", transferFeeConfigAuthority = "$authority", withdrawWithheldAuthority = "$authority" }
-
-[[block]]
-program = "$token"
-instruction = "initializeMint2"
-accounts = { mint = "$mint" }
-arguments = { decimals = "$decimals", mintAuthority = "$authority", freezeAuthority = "$freeze_authority" }
-```
-
-| Key | Meaning |
-| --- | --- |
-| `format` | `1`. Any other number refuses the file |
-| `name`, `summary` | Shown in the picker and at the head of the form. Never on Review and Sign |
-| `[programs]` | Alias to address. A block's `program` is an alias, or a value whose function returns a program |
-| `[[option]]` | A checkbox: `name`, `label`, optional `hint`, optional `default = true`. No nesting, no else |
-| `[[input]]` | A question: `name`, `label`, optional `hint`, `optional`, `default` (a literal, a built-in name or a program alias), `option` (asked only while that option is on) |
-| `[values]` | Derived values, one function call each: `name = "function arg arg"`. An argument is a reference or a literal. Calls do not nest; a value names another value instead |
-| `[[block]]` | One instruction, in the order written: `program`, `instruction`, `accounts`, `arguments`, optional `when` (an option name: the block exists only while it is on) |
-
-An input or value that nothing uses refuses the file, and so does one larger than 64 KiB or with more than 32 blocks, inputs or values, 16 options or 16 program aliases.
-
-Order is the order of the `[[block]]` entries, so an option's block sits where it must run (most extensions before `initializeMint2`, metadata after). TOML does not keep the order between two different arrays, which is why an option does not hold its own blocks.
-
-**An input has no declared type.** It takes the widget of the field it is bound to: an address picker for an account or a public key argument, a select for an enum, a checkbox for a boolean, a scaled amount where the IDL declares a scale (phase 1). Bound to several fields, they must agree, or the file is refused. An input used only as a function's argument takes that parameter's type. An optional input left blank leaves its fields blank, which the IDL form reads as it does on Build (`None`, the IDL default, or an optional account left out); a required field bound to an optional input refuses the file.
-
-**A field the template does not mention** is left to the IDL: a derived account is derived, an argument with a default takes it. A required field with no binding and no default refuses the file when it is checked against the IDL.
-
-### Built-in names
-
-| Name | Value |
-| --- | --- |
-| `$wallet` | The address the selected wallet acts as: what its transactions move funds from (a multisig's vault, not its member) |
-| `$fee-payer` | Build's fee payer field |
-
-### Functions
-
-The whole list. A function is pure, or names the chain fact it needs.
-
-| Function | Returns | Needs |
-| --- | --- | --- |
-| `new-keypair` | The address of a keypair made on this device for this form, kept as Build's "New keypair" keeps one. Stable while the form is open | nothing |
-| `associated-token-account <owner> <mint> <token program>` | The associated token address | nothing |
-| `token-2022-mint-space <mint>` | The size to create a Token-2022 mint at: the base mint and every extension an enabled block of this template initializes on `<mint>`, without token metadata | nothing |
-| `token-2022-mint-funded-space <mint>` | The size to fund: the above, plus the token metadata an enabled `initializeTokenMetadata` block of this template writes to `<mint>`, from the lengths of the values bound to it | nothing |
-| `rent-for <bytes>` | Lamports | the node's rent for that size |
-| `decimals-of <mint>` | The mint's decimals | the mint account |
-| `token-program-of <mint>` | Token or Token-2022, whichever owns the mint | the mint account |
-
-The two size functions read the template's own enabled blocks, so the checkboxes and the size cannot disagree. They count each enabled block whose program is a Token-2022 alias and whose `mint` is bound to the same reference as the function's argument, each extension once. A length that would equal a multisig's (355) is two bytes more, as Token-2022 makes it. An `initialize…` instruction on that mint the table does not know refuses the template when it is checked. A Token-2022 mint is created at the size without metadata and funded for the size with it, because `initializeTokenMetadata` grows the account itself. The extension sizes are a table in Rust, checked by running every shipped option against the real program ([Tests](#tests)).
-
-**Chain facts.** Expanding a template returns the facts it still needs. Online, the app reads them from the node (`wallet-flows`, over `SolanaRpc`) and expands again. With no node (Airlock Offline, or offline mode) each missing fact is a field of the form, labelled as what it is ("Rent for 234 bytes, in lamports"), under the template's own inputs. A block whose program is `token-program-of` is checked against both programs' IDLs.
+The format, the built-in names, the functions and chain facts are in [templates.md](templates.md), which is the reference from phase 3 on.
 
 ## Phases
 
 - [x] **1. Build's fields.** Scaled amounts and folded fields on the Build form.
 - [x] **2. The core.** The format, checking, expansion, functions and facts in `wallet-core` and `wallet-flows`; the shipped templates; their tests against the real programs.
-- [ ] **3. The form.** The picker and the template form on Build, "Show as blocks", compiling to Review and Sign.
+- [x] **3. The form.** The picker and the template form on Build, "Show as blocks", compiling to Review and Sign.
 - [ ] **4. Your own.** Save as template, storage, import and export.
 
 Each phase is one commit series on `t3/build-pane-templates`, in order. Each leaves `cargo fmt --all --check`, CI's Clippy step and the touched crates' tests green, and adds its line to `CHANGELOG.md` when people will notice it.
@@ -211,6 +102,8 @@ An option ships only if its test passes against the program the test VM carries.
 - `docs/templates.md`: the format, the rules, and how to add a shipped template. `idls.md` and `architecture.md` point to it.
 
 Touches `app-ui-kit` (Build's form state and actions), `app-ui-build`, `app-ui-kit` CSS.
+
+As built: Build's form holds `template: Signal<Option<OpenTemplate>>` (the source, the parsed template, the answers, facts typed and facts read, the address of each `new-keypair` key, the inputs marked missing) and `fact_read: Signal<FactRead>`. `TemplateSource` has one variant, `Builtin(id)`, for phase 4 to add a saved one beside. The keys go to `generated`, where Sign finds Build's own. `compile` in `actions/build.rs` and the template's Review and Sign share `compile_instructions`. The core gained `Template::default_text` (what an input shows before it is answered) and `Expansion::uses` (every fact the blocks rest on, known or not, so a fact field does not vanish once filled). The facts become fields offline and also when the node refuses. The disclosures number blocks by their place in the transaction, as Review and Sign does, not by their place in the file. Airlock Offline compiles a template only on a durable nonce, as it does Build's blocks.
 
 ### 4. Your own
 

@@ -1,6 +1,6 @@
 # Working in this repository
 
-Airlock is a Solana wallet that keeps preparing a transaction apart from signing it; the [README](README.md) says what it is and describes the crates. [docs/architecture.md](docs/architecture.md) covers how the app crates fit together. The other files in `docs/` cover signing, IDLs, the browser bridge, the design system and releases.
+Airlock is a Solana wallet that keeps preparing a transaction apart from signing it; the [README](README.md) says what it is and describes the crates. [docs/architecture.md](docs/architecture.md) covers how the app crates fit together. The other files in `docs/` cover signing, IDLs, templates on Build, the browser bridge, the design system and releases.
 
 ## Before opening a pull request
 

@@ -112,6 +112,8 @@ pub fn use_forms() -> Forms {
             compiled_note: use_signal(|| None::<String>),
             payer_for: use_signal(|| None::<wallet_core::WalletId>),
             generated: use_signal(Vec::<GeneratedKey>::new),
+            template: use_signal(|| None::<OpenTemplate>),
+            fact_read: use_signal(FactRead::default),
         },
         sign: SignForm {
             wire: use_signal(|| None::<Vec<u8>>),

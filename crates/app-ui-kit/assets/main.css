@@ -2280,6 +2280,74 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   border-radius: var(--radius-md);
 }
 
+/* Templates: the list to pick one from, and the form of the one open. */
+.template-list { gap: var(--space-2); }
+.template-row {
+  width: 100%;
+  display: grid;
+  justify-content: stretch;
+  justify-items: start;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-color: var(--border);
+  border-radius: var(--radius-lg);
+  text-align: start;
+  white-space: normal;
+}
+.template-row:hover:not(:disabled) { border-color: var(--brand); background: var(--surface-2); }
+.template-row:disabled { opacity: 1; background: var(--surface-2); }
+.template-row-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.template-row-name { font-weight: var(--weight-semibold); }
+.template-row:disabled .template-row-name { color: var(--text-2); }
+.template-row-summary { color: var(--text-2); font-size: var(--text-md); font-weight: var(--weight-regular); }
+.template-row-problem { color: var(--warn-text); font-size: var(--text-md); font-weight: var(--weight-regular); }
+.template-start > h3 { font-size: var(--text-md); color: var(--text-2); }
+
+.template-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+.template-title { display: grid; gap: var(--space-1); min-width: 0; flex: 1 1 0; }
+.template-head > button { flex: none; }
+.template-inputs, .template-option-inputs, .template-facts { display: grid; gap: var(--space-4); }
+.template-input { display: grid; gap: var(--space-1); min-width: 0; }
+.template-input.missing input[type="text"],
+.template-input.missing select { background: var(--danger-soft); border-color: var(--danger-line); }
+.field-missing { color: var(--danger-text); font-size: var(--text-md); }
+.template-options { display: grid; gap: var(--space-3); }
+.template-option { display: grid; gap: var(--space-1); }
+/* A hint and the inputs of an option sit under its label, past the box. */
+.template-option-hint { padding-left: calc(16px + var(--space-2)); }
+.template-option-inputs {
+  margin: var(--space-2) 0 var(--space-2) 7px;
+  padding-left: calc(9px + var(--space-2));
+  border-left: 2px solid var(--border-control);
+}
+.template-facts { padding-top: var(--space-2); }
+
+.template-written { display: grid; gap: var(--space-2); }
+.template-written + .template-written { padding-top: var(--space-3); border-top: 1px solid var(--border); }
+.template-written-rows {
+  list-style: none;
+  display: grid;
+  grid-template-columns: minmax(8rem, max-content) minmax(0, 1fr);
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--text-md);
+}
+.template-written-rows > li { display: contents; }
+.template-written-field { color: var(--text-2); overflow-wrap: anywhere; }
+.template-written-value { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 639px) {
+  .template-written-rows { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .template-written-value { margin-bottom: var(--space-2); }
+}
+@media (pointer: coarse) {
+  .template-option-hint { padding-left: calc(20px + var(--space-2)); }
+  .template-option-inputs { margin-left: 9px; }
+}
+
 .tip::after {
   content: attr(data-tip);
   position: absolute;

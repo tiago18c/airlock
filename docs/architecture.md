@@ -195,6 +195,7 @@ Settings has **Open log folder** (desktop) and **Copy diagnostics**: the version
 | A pane only the online build has | `app-online` (or `app-desktop` if native only), mounted by the online app |
 | A new online action inside a shared pane | `wallet-flows` (the logic, over `SolanaRpc`) plus `use_network()` in the pane |
 | Logging for a new area | a new `airlock::<area>` target, added to the table above |
+| A template that ships with the app | a file in `crates/wallet-core/templates/`, listed in `BUILTIN_TEMPLATES`, with its flow tests: see [templates.md](templates.md#adding-a-shipped-template) |
 
 The rules behind the table:
 

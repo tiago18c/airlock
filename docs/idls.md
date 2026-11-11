@@ -1,6 +1,6 @@
 # IDLs
 
-How Airlock uses IDLs to read and build instructions, and the rules that keep what the user reads tied to what they sign. The dynamic client itself, and the gaps of its Anchor converter, are in `crates/codama/README.md`. What an IDL read from the chain may and may not unlock at signing time is in [signing.md](signing.md).
+How Airlock uses IDLs to read and build instructions, and the rules that keep what the user reads tied to what they sign. The dynamic client itself, and the gaps of its Anchor converter, are in `crates/codama/README.md`. What an IDL read from the chain may and may not unlock at signing time is in [signing.md](signing.md). Templates, which write Build's IDL blocks from a few answers, are in [templates.md](templates.md).
 
 ## Rules
 
