@@ -336,9 +336,10 @@ fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>, colors: Colo
         .collect();
     let excludes = excludes_note(portfolio.unpriced.len(), portfolio.left_out.len());
     // The total says once how many prices are outdated, as one more fact
-    // of where its prices come from. On a phone the rows mark each only
-    // with a dot at the value, so this is also the dots' legend; on desktop
-    // each row has its own "outdated price" pill.
+    // of where its prices come from, after the alert glyph every outdated
+    // row carries. On a phone the rows mark each only with the glyph at the
+    // value, so this is also the marks' legend; on a desktop each row has
+    // its own "outdated price" pill, the same glyph before its words.
     let phone = use_phone_layout();
     let stale = stale_note(
         portfolio
@@ -349,7 +350,7 @@ fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>, colors: Colo
             .count(),
     );
     let stale_tip = if phone {
-        "The Tokens API says the market data of these tokens has not been updated lately, so their prices and 24h changes may be out of date. A dot at a value marks each one."
+        "The Tokens API says the market data of these tokens has not been updated lately, so their prices and 24h changes may be out of date. The alert mark at a value marks each one."
     } else {
         "The Tokens API says the market data of these tokens has not been updated lately, so their prices and 24h changes may be out of date. Each one says \"outdated price\"."
     };
@@ -383,13 +384,13 @@ fn Summary(portfolio: Portfolio, priced: bool, ago: Option<String>, colors: Colo
                             span { class: "pf-excludes", "{excludes}" }
                         }
                         if let Some(stale) = stale {
-                            // On a phone the rows' own mark in front, so this
-                            // line is the legend of the marks further down.
+                            // The rows' own mark in front, on a desktop and a
+                            // phone, so this line is the legend of the marks
+                            // further down. The words name it; the glyph is
+                            // hidden from assistive tech.
                             span { class: "pf-stale-note",
                                 title: stale_tip,
-                                if phone {
-                                    span { class: "pf-stale-mark", aria_hidden: "true", Icon { glyph: Glyph::Alert } }
-                                }
+                                span { class: "pf-stale-mark", aria_hidden: "true", Icon { glyph: Glyph::Alert } }
                                 "{stale}"
                             }
                         }
@@ -949,7 +950,9 @@ fn LineRow(
         .and_then(|check| warning_tip(STALE, &symbol, check.checked_at, now))
         .unwrap_or_default();
     let stale_short = stale_line(line.check.as_ref().map_or(0, |check| check.checked_at), now);
-    let warnings: Vec<(String, Option<String>)> = line
+    // Each warning with whether it is the outdated price, whose pill leads
+    // with the same alert glyph the phone's mark is.
+    let warnings: Vec<(String, Option<String>, bool)> = line
         .check
         .as_ref()
         .map(|check| {
@@ -962,6 +965,7 @@ fn LineRow(
                     (
                         warning_text(code),
                         warning_tip(code, &symbol, check.checked_at, now),
+                        code == STALE,
                     )
                 })
                 .collect()
@@ -1021,8 +1025,13 @@ fn LineRow(
                                     Icon { glyph: Glyph::Check }
                                 }
                             }
-                            for (warning, tip) in warnings {
-                                span { key: "{warning}", class: "chip warn", title: tip, "{warning}" }
+                            for (warning, tip, outdated) in warnings {
+                                span { key: "{warning}", class: "chip warn", title: tip,
+                                    if outdated {
+                                        span { class: "pf-stale-mark", aria_hidden: "true", Icon { glyph: Glyph::Alert } }
+                                    }
+                                    "{warning}"
+                                }
                             }
                         }
                         if let Some(mint) = mint_below {

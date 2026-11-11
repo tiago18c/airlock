@@ -4554,14 +4554,17 @@ textarea.short { min-height: 64px; }
   white-space: nowrap;
 }
 /* An outdated price's mark: the alert glyph, at the text's size, so its
-   shape says it as well as its colour. */
-.app.phone .pf-stale-mark {
+   shape says it as well as its colour. The same on a desktop, before the
+   row's "outdated price" pill's words and the total card's count. */
+.pf-stale-mark {
   display: inline-flex;
   margin-right: var(--space-1);
   color: var(--warn-text);
   vertical-align: -0.125em;
 }
-.app.phone .pf-stale-mark .icon { width: 1em; height: 1em; stroke-width: 2.25; }
+.pf-stale-mark .icon { width: 1em; height: 1em; stroke-width: 2.25; }
+/* In the pill the chip's gap stands between the glyph and the words. */
+.chip > .pf-stale-mark { margin-right: calc(var(--space-1) - 6px); }
 .app.phone .pf-lines { gap: 0; }
 .app.phone .pf-line-main,
 .app.phone .pf-share-main {
