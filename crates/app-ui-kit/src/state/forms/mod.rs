@@ -114,6 +114,7 @@ pub fn use_forms() -> Forms {
             generated: use_signal(Vec::<GeneratedKey>::new),
             template: use_signal(|| None::<OpenTemplate>),
             fact_read: use_signal(FactRead::default),
+            kept: use_signal(|| None::<KeptTemplates>),
         },
         sign: SignForm {
             wire: use_signal(|| None::<Vec<u8>>),

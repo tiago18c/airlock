@@ -45,20 +45,20 @@ fn app(held: Held) -> Element {
 }
 
 /// A window with a vault that holds one hot key, selected.
-struct Screen {
-    _kit: Kit,
+pub(crate) struct Screen {
+    pub(crate) kit: Kit,
     dom: VirtualDom,
-    session: Session,
-    key: Pubkey,
+    pub(crate) session: Session,
+    pub(crate) key: Pubkey,
 }
 
 impl Screen {
     /// No node: facts are typed.
-    async fn offline() -> Self {
+    pub(crate) async fn offline() -> Self {
         Self::on(None).await
     }
 
-    async fn online(rpc: FakeRpc) -> Self {
+    pub(crate) async fn online(rpc: FakeRpc) -> Self {
         Self::on(Some(Arc::new(rpc))).await
     }
 
@@ -92,7 +92,7 @@ impl Screen {
         dom.rebuild_in_place();
         let session = session.get().unwrap();
         let mut screen = Self {
-            _kit: kit,
+            kit,
             dom,
             session,
             key,
@@ -102,15 +102,15 @@ impl Screen {
         screen
     }
 
-    fn form(&self) -> BuildForm {
+    pub(crate) fn form(&self) -> BuildForm {
         self.session.forms.build
     }
 
-    fn act<R>(&self, then: impl FnOnce() -> R) -> R {
+    pub(crate) fn act<R>(&self, then: impl FnOnce() -> R) -> R {
         self.dom.in_scope(ScopeId::ROOT, then)
     }
 
-    async fn settle(&mut self) {
+    pub(crate) async fn settle(&mut self) {
         for _ in 0..4 {
             let _ = tokio::time::timeout(
                 std::time::Duration::from_millis(40),
@@ -129,11 +129,11 @@ impl Screen {
         }
     }
 
-    fn open(&self, source: TemplateSource) {
+    pub(crate) fn open(&self, source: TemplateSource) {
         self.act(|| open_template(&self.session, source)).unwrap();
     }
 
-    fn answer(&self, input: &str, text: &str) {
+    pub(crate) fn answer(&self, input: &str, text: &str) {
         self.act(|| answer(&self.session, input, text.to_string()));
     }
 
@@ -141,24 +141,24 @@ impl Screen {
         self.act(|| set_option(&self.session, option, true));
     }
 
-    fn opened(&self) -> OpenExpansion {
+    pub(crate) fn opened(&self) -> OpenExpansion {
         self.act(|| expand_open(&self.session))
             .expect("a template is open")
     }
 
-    fn expansion(&self) -> Expansion {
+    pub(crate) fn expansion(&self) -> Expansion {
         self.opened().expansion.expect("the template checks")
     }
 
-    fn open_template(&self) -> Option<OpenTemplate> {
+    pub(crate) fn open_template(&self) -> Option<OpenTemplate> {
         self.act(|| self.form().template.peek().clone())
     }
 
-    fn drafts(&self) -> Vec<IxDraft> {
+    pub(crate) fn drafts(&self) -> Vec<IxDraft> {
         self.act(|| self.form().drafts.peek().clone())
     }
 
-    fn generated(&self) -> Vec<Pubkey> {
+    pub(crate) fn generated(&self) -> Vec<Pubkey> {
         self.act(|| {
             self.form()
                 .generated
@@ -169,7 +169,7 @@ impl Screen {
         })
     }
 
-    fn error(&self) -> Option<String> {
+    pub(crate) fn error(&self) -> Option<String> {
         self.act(|| self.form().error.peek().clone())
     }
 

@@ -201,6 +201,47 @@ impl Storage for MemoryStorage {
             shared: self.shared.clone(),
         })
     }
+
+    fn list(&self, prefix: &str) -> Result<Vec<String>, VaultError> {
+        if *self
+            .shared
+            .refusing_reads
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+        {
+            return Err(VaultError::Io("the store refused the read".into()));
+        }
+        let folder = prefix.rfind('/').map_or(0, |at| at + 1);
+        let files = self
+            .shared
+            .files
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner);
+        Ok(files
+            .keys()
+            .filter(|name| name.starts_with(prefix) && !name[folder..].contains('/'))
+            .cloned()
+            .collect())
+    }
+
+    fn remove(&self, name: &str) -> Result<(), VaultError> {
+        if *self
+            .shared
+            .refusing
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+        {
+            return Err(VaultError::Io("the store refused the removal".into()));
+        }
+        let mut files = self
+            .shared
+            .files
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner);
+        files.remove(name);
+        files.remove(&format!("{name}.bak"));
+        Ok(())
+    }
 }
 
 struct MemoryFile {

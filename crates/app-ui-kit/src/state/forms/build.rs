@@ -168,12 +168,21 @@ impl Default for GeneratedKey {
     }
 }
 
-/// Where the template open on Build came from.
+/// Where a template on Build's list comes from.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TemplateSource {
     /// One that ships with the app, by its id in
     /// [`wallet_core::BUILTIN_TEMPLATES`].
     Builtin(&'static str),
+    /// One of the user's, saved here or imported, by the slug it is kept
+    /// under.
+    Yours {
+        slug: String,
+        template: Arc<Template>,
+    },
+    /// A file kept as one of the user's that is not a template, and why.
+    /// It can only be removed.
+    Broken { slug: String, why: String },
 }
 
 impl TemplateSource {
@@ -184,6 +193,8 @@ impl TemplateSource {
                 .ok_or_else(|| format!("No template ships as “{id}”."))?
                 .template()
                 .map_err(|err| err.to_string()),
+            Self::Yours { template, .. } => Ok(template.as_ref().clone()),
+            Self::Broken { why, .. } => Err(why.clone()),
         }
     }
 
@@ -191,8 +202,36 @@ impl TemplateSource {
     pub fn chip(&self) -> &'static str {
         match self {
             Self::Builtin(_) => "built-in",
+            Self::Yours { .. } | Self::Broken { .. } => "yours",
         }
     }
+
+    /// The slug one of the user's is kept under.
+    pub fn slug(&self) -> Option<&str> {
+        match self {
+            Self::Builtin(_) => None,
+            Self::Yours { slug, .. } | Self::Broken { slug, .. } => Some(slug),
+        }
+    }
+
+    /// Tells it from every other row of the list.
+    pub fn key(&self) -> String {
+        match self {
+            Self::Builtin(id) => format!("built-in:{id}"),
+            Self::Yours { slug, .. } | Self::Broken { slug, .. } => format!("yours:{slug}"),
+        }
+    }
+}
+
+/// The user's templates, as read from where they are kept.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct KeptTemplates {
+    /// By slug: [`TemplateSource::Yours`] or [`TemplateSource::Broken`].
+    pub kept: Vec<TemplateSource>,
+    /// How many more are kept than are read.
+    pub left_out: usize,
+    /// Why none could be read, when the store would not list them.
+    pub error: Option<String>,
 }
 
 /// The template open on Build, and what its form holds.
@@ -322,6 +361,9 @@ pub struct BuildForm {
     pub template: Signal<Option<OpenTemplate>>,
     /// Reading the open template's chain facts from the node.
     pub fact_read: Signal<FactRead>,
+    /// The user's templates, once read. `None` until the list is first
+    /// needed.
+    pub kept: Signal<Option<KeptTemplates>>,
 }
 
 impl BuildForm {

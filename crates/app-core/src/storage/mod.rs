@@ -6,6 +6,7 @@ mod dirs;
 mod file;
 #[cfg(not(target_arch = "wasm32"))]
 mod logos;
+mod templates;
 #[cfg(target_arch = "wasm32")]
 mod web;
 
@@ -16,6 +17,10 @@ pub(crate) use file::log_data_dir_move;
 pub use file::{claim_data_dir, data_dir, logs_dir, DataDirClaim, FileStorage};
 #[cfg(not(target_arch = "wasm32"))]
 pub use logos::{load_logo, logo_data_url, logo_file, save_logo, LOGOS_DIR};
+pub use templates::{
+    remove_template, save_template, stored_templates, template_file, Stored, StoredTemplates,
+    MAX_STORED_TEMPLATES, TEMPLATES_PREFIX,
+};
 #[cfg(target_arch = "wasm32")]
 pub use web::{claim_web_data, LocalStorage, WebDataClaim, WebIdlBodies};
 
@@ -36,6 +41,17 @@ pub trait Storage: Send + Sync {
     fn open_record(&self, name: &str) -> Box<dyn VaultStore> {
         self.open(name)
     }
+
+    /// The names [`open`](Self::open) takes that start with `prefix`, in no
+    /// order. A prefix with a `/` names a folder: `templates/` lists the
+    /// files in it, not those in folders under it. A folder that is not
+    /// there lists nothing.
+    fn list(&self, prefix: &str) -> Result<Vec<String>, VaultError>;
+
+    /// Removes the file or key `name`, and the older copy a save keeps
+    /// beside it, so it cannot come back in its place. One that is not
+    /// there is already removed.
+    fn remove(&self, name: &str) -> Result<(), VaultError>;
 }
 
 pub const VAULT_FILE: &str = "vault.json";

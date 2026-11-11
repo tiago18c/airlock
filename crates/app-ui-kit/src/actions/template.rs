@@ -34,29 +34,41 @@ pub struct TemplateEntry {
     pub problem: Option<String>,
 }
 
-/// Every template there is, checked against the IDLs of the network in use.
+impl TemplateEntry {
+    /// A file kept as one of the user's that is not a template.
+    pub fn is_broken(&self) -> bool {
+        matches!(self.source, TemplateSource::Broken { .. })
+    }
+}
+
+/// Every template there is, checked against the IDLs of the network in use:
+/// the built-in ones, then the user's, once they are read (see
+/// [`super::kept_templates::ensure_kept`]).
 pub fn template_entries(session: &Session) -> Vec<TemplateEntry> {
+    let kept = super::kept_templates::kept_templates(session);
     let idls = session.idls.read();
     BUILTIN_TEMPLATES
         .iter()
-        .map(|builtin| {
-            let source = TemplateSource::Builtin(builtin.id);
-            match source.template() {
-                Ok(template) => TemplateEntry {
-                    problem: wallet_core::template::check(&template, &*idls)
-                        .err()
-                        .map(|problems| first_problem(&problems)),
-                    name: template.name,
-                    summary: template.summary,
-                    source,
+        .map(|builtin| TemplateSource::Builtin(builtin.id))
+        .chain(kept.kept)
+        .map(|source| match source.template() {
+            Ok(template) => TemplateEntry {
+                problem: wallet_core::template::check(&template, &*idls)
+                    .err()
+                    .map(|problems| first_problem(&problems)),
+                name: template.name,
+                summary: template.summary,
+                source,
+            },
+            Err(err) => TemplateEntry {
+                name: match &source {
+                    TemplateSource::Builtin(id) => id.to_string(),
+                    other => format!("{}.toml", other.slug().unwrap_or_default()),
                 },
-                Err(err) => TemplateEntry {
-                    name: builtin.id.to_string(),
-                    summary: None,
-                    problem: Some(err),
-                    source,
-                },
-            }
+                summary: None,
+                problem: Some(err),
+                source,
+            },
         })
         .collect()
 }
@@ -428,4 +440,4 @@ pub fn block_heading(session: &Session, draft: &wallet_core::IdlDraft) -> String
 }
 
 #[cfg(test)]
-mod tests;
+pub(crate) mod tests;
