@@ -7,14 +7,24 @@ use zeroize::{Zeroize, Zeroizing};
 /// card that has no reason of its own, in one wording.
 pub const UNLOCK_LINE: &str = "Unlock the vault to sign with its keys and change its wallets.";
 
+/// What locked means, in one clause: what stays and what waits. Both
+/// [`LOCKED_NOTE`] and [`SKIP_LINE`] end with it, so the lock screen and the
+/// panes say it word for word. A macro, as `concat!` takes only literals.
+macro_rules! locked_means {
+    () => {
+        "wallets and balances are shown; signing, and adding, removing or changing a wallet, ask for the password."
+    };
+}
+
 /// What stays and what waits while the vault is locked, said once on every
 /// pane that says it: the Wallets pane and Portfolio, on a desktop and a
 /// phone alike.
-pub const LOCKED_NOTE: &str = "The vault is locked. Its wallets and balances are shown; signing, and adding, removing or changing a wallet, ask for the password.";
+pub const LOCKED_NOTE: &str = concat!("The vault is locked. Its ", locked_means!());
 
 /// What the lock screen's Skip gives, after [`UNLOCK_LINE`]: Skip cancels
-/// nothing, it opens the app with the vault locked.
-pub const SKIP_LINE: &str = "Skip opens the app locked: wallets and balances show, and signing or changing a wallet asks for the password.";
+/// nothing, it opens the app with the vault locked, and then it is as
+/// [`LOCKED_NOTE`] says.
+pub const SKIP_LINE: &str = concat!("Skip opens the app locked: its ", locked_means!());
 
 /// [`LOCKED_NOTE`], as a pane's note.
 #[component]
@@ -314,5 +324,22 @@ pub fn VaultUnlock(
     }
     rsx! {
         section { class: "card auth", {form} }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn skip_line_ends_with_the_locked_note_clause() {
+        let clause = LOCKED_NOTE
+            .strip_prefix("The vault is locked. Its ")
+            .unwrap();
+        assert!(SKIP_LINE.ends_with(clause));
+        assert_eq!(
+            SKIP_LINE,
+            "Skip opens the app locked: its wallets and balances are shown; signing, and adding, removing or changing a wallet, ask for the password."
+        );
     }
 }

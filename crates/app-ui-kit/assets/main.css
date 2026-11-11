@@ -2163,8 +2163,23 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 .ix-plus .icon { width: 20px; height: 20px; }
 .ix-new-label { font-weight: var(--weight-medium); color: var(--text-2); }
 .ix-block-new:hover .ix-new-label { color: inherit; }
-/* Alone, the tile starts the list: as wide as the column, as on a phone. */
-.ix-block-new:only-child { flex-basis: 100%; max-width: none; }
+/* Alone, the tile starts the list, laid as every empty list's `.empty` row:
+   one button as wide as the column, as tall as that row, the plus where the
+   row's icon is and the words beside it, from the left. Beside other blocks
+   it keeps their shape. */
+.ix-block-new:only-child {
+  flex-basis: 100%;
+  max-width: none;
+  min-height: 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-4);
+  font-size: var(--text-md);
+}
+.ix-block-new:only-child .ix-plus .icon { color: var(--text-3); }
+.ix-block-new:only-child:hover .ix-plus .icon { color: inherit; }
 
 .ix-block-program {
   font-size: var(--text-xs);
