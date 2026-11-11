@@ -36,8 +36,11 @@ use crate::idl::builtin::builtin_idl;
 use crate::idl::network::IdlNetwork;
 use crate::ids::SYSTEM_PROGRAM_ID;
 
-pub use crate::ids::{SQUADS_SMART_ACCOUNT_PROGRAM_ID, SQUADS_V4_PROGRAM_ID};
+pub use crate::ids::{
+    SQUADS_CLEAR_SIGNING_PROGRAM_ID, SQUADS_SMART_ACCOUNT_PROGRAM_ID, SQUADS_V4_PROGRAM_ID,
+};
 
+mod clear_sign;
 mod instructions;
 mod message;
 mod program;
@@ -48,6 +51,7 @@ mod values;
 #[cfg(test)]
 pub(crate) mod tests;
 
+pub use clear_sign::*;
 pub use message::*;
 pub use program::*;
 pub use state::*;

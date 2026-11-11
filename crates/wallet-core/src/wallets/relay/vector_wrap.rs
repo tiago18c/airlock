@@ -48,7 +48,9 @@ pub struct VectorWrap {
 /// Rebuild `tx` so that each of `accounts` it needs as a signer signs
 /// through one `Advance`, listed in the order of `accounts`. A run of
 /// instructions they sign becomes one `Passthrough`, whichever of them signs
-/// each one, so an instruction two of them sign runs too.
+/// each one, so an instruction two of them sign runs too. A Squads clear
+/// signing instruction they do not sign joins the run after it, so the
+/// checks for a vote run in the same `Passthrough` as the vote.
 ///
 /// A System transfer out of one of them becomes the program's `Withdraw`,
 /// since the account holds data and the System program will not move its
@@ -75,19 +77,36 @@ pub fn wrap_for_vector(
     }
 
     let mut used: Vec<&VectorWrap> = Vec::new();
+    let native = tx.native_instructions();
+    let mut signings: Vec<Vec<&VectorWrap>> = native
+        .iter()
+        .map(|instruction| {
+            accounts
+                .iter()
+                .filter(|wrap| {
+                    instruction
+                        .accounts
+                        .iter()
+                        .any(|meta| meta.is_signer && meta.pubkey == wrap.account)
+                })
+                .collect()
+        })
+        .collect();
+    // A Squads clear signing instruction no Vector account signs, such as a
+    // `verifyBufferHash`, runs in the `Passthrough` of the instructions after
+    // it, with the vote it belongs to
+    // (`crate::wallets::squads::moves_into_authorization`).
+    for index in (0..native.len().saturating_sub(1)).rev() {
+        if signings[index].is_empty()
+            && crate::wallets::squads::moves_into_authorization(&native[index])
+        {
+            signings[index] = signings[index + 1].clone();
+        }
+    }
     // Runs of instructions, each with the accounts it runs as. A run no
     // Vector account signs has none and stays at the top level.
     let mut runs: Vec<(Vec<&VectorWrap>, Vec<Instruction>)> = Vec::new();
-    for (index, instruction) in tx.native_instructions().into_iter().enumerate() {
-        let signing: Vec<&VectorWrap> = accounts
-            .iter()
-            .filter(|wrap| {
-                instruction
-                    .accounts
-                    .iter()
-                    .any(|meta| meta.is_signer && meta.pubkey == wrap.account)
-            })
-            .collect();
+    for ((index, instruction), signing) in native.into_iter().enumerate().zip(signings) {
         if let Some(wrap) = signing.first() {
             // Only a Vector account signing between two programmatic
             // instructions lands in a `Submit`; it would run its whole

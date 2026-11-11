@@ -10,6 +10,7 @@ mod proposal_fit;
 mod proposals;
 mod sign_panel;
 mod site_request;
+mod squads_checks;
 mod stake;
 mod token_plan;
 mod use_cases;

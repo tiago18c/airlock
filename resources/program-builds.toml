@@ -95,6 +95,14 @@ idlSha256 = "322c273684609c07f4438fa90640c581a9c391a8d77518935f29382e1a7a25bf"
 reviewed = "2026-11-11"
 
 [[builds]]
+# loaderV3 (pack). Built into the validator. Every instruction the IDL lists is UpgradeableLoaderInstruction 0 to 7 of solana-loader-v3-interface, with its account order; the account states are UpgradeableLoaderState.
+programId = "BPFLoaderUpgradeab1e11111111111111111111111"
+network = "mainnet"
+programHash = "native"
+idlSha256 = "3fac399546087cd5acb3eb15b000541f9569de56f9d62ed8e8e85f4c25b6539b"
+reviewed = "2026-11-11"
+
+[[builds]]
 # splGovernance (pack). spl-governance v3.1.3. Every instruction the IDL keeps is in this binary by name (see the manifest for those it drops).
 programId = "GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw"
 network = "mainnet"
@@ -186,6 +194,14 @@ idlSha256 = "80adf8b60fdb86130f53fe7ea7c115aad8335266b4833d09a3f1500182c16378"
 reviewed = "2026-11-09"
 
 [[builds]]
+# loaderV3 (pack). Built into the validator. Every instruction the IDL lists is UpgradeableLoaderInstruction 0 to 7 of solana-loader-v3-interface, with its account order; the account states are UpgradeableLoaderState.
+programId = "BPFLoaderUpgradeab1e11111111111111111111111"
+network = "devnet"
+programHash = "native"
+idlSha256 = "3fac399546087cd5acb3eb15b000541f9569de56f9d62ed8e8e85f4c25b6539b"
+reviewed = "2026-11-11"
+
+[[builds]]
 # memo (pack). One instruction: the memo as UTF-8, signers after it. The IDL is the memo repository's.
 programId = "Memo4c2pN8afCj432Lb7RMVKi9PbQnnW7ewFFaV3oAH"
 network = "devnet"
@@ -254,6 +270,16 @@ programHash = "6ab7466b56775dcd93f10c9d3cbe9c5c7e088ac5b01659776ec638266473bced"
 authority = "HsjQHG73wm2RzGRg7t8d2MthLAFFSnuEvBMAKJ2PkB6r"
 idlSha256 = "0328455cdcd62d02cb286e0b5a12ea5cdd37f26746e7d54a1ef5208567a5d53c"
 reviewed = "2026-11-09"
+
+[[builds]]
+# squadsClearSigning (core). Deployed 2026-11-11 at slot 521229740 from the repository after 0922251 merged (not reproduced with solana-verify): every instruction the IDL lists is in this binary by name, verifyProposalCpi, assertAccountHash and assertProgramRevision included. Its program-metadata account publishes an earlier build's IDL, which lacks those three.
+programId = "7xs3LhQjKoCGfXm2qst7LUhismrG1bGxz5Jw6AHij7eu"
+network = "devnet"
+programHash = "3a1f82d0499d5e8789fb3ee29c970a3514ccafc2ab429abae15f908ad31e40f9"
+authority = "4NQjumUQG6YTRTvnhy9PYBftD55JwyYJrozNwQR67gDX"
+idlSha256 = "2a98fe039f735f97f1fb4b2c801feaafcb5a25f3974025457e48539bcefbe439"
+source = { repo = "https://github.com/tiago18c/squads-cs-poc", commit = "09222511693f38b81ff81b2f0340ebb30407b184" }
+reviewed = "2026-11-11"
 
 [[builds]]
 # squadsMultisigProgram (core). Every instruction the IDL lists is in this binary by name.

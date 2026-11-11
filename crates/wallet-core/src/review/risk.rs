@@ -12,7 +12,8 @@
 //! [`super::blind`].
 
 use crate::ids::{STAKE_PROGRAM_ID, SYSTEM_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID};
-use crate::review::blind::blind_in;
+use crate::review::blind::{blind_in, blind_in_carried, CHECKED_APPROVAL};
+use crate::review::checked::checked_in;
 use crate::review::explain::{ExplainedIx, ExplainedTx};
 use solana_pubkey::Pubkey;
 
@@ -67,17 +68,66 @@ fn risk_of(program: &Pubkey, data: &[u8]) -> Option<&'static str> {
 /// What `explained` would do that hands over control, each thing once, at any
 /// depth the app could open. A call a program makes by itself shows only when the
 /// transaction runs.
+///
+/// A vote the clear signing program checks is not blind, but it is still a
+/// vote: it is told as one, and what the proposal holds is told as for any
+/// other instruction.
 pub fn risks_in(explained: &ExplainedTx) -> Vec<&'static str> {
     let mut found = Vec::new();
     for instruction in &explained.instructions {
         collect(instruction, &mut found);
     }
-    for approval in blind_in(explained) {
-        if !found.contains(&approval.what) {
-            found.push(approval.what);
+    if !checked_in(explained).is_empty() {
+        found.push(CHECKED_APPROVAL);
+    }
+    told_once(&mut found, blind_in(explained).iter().map(|one| one.what));
+    found
+}
+
+/// [`risks_in`] for instructions carried for another transaction, such as what
+/// a proposal stores. A check among them pins nothing: see
+/// [`super::blind::blind_in_carried`].
+pub fn risks_in_carried(instructions: &[ExplainedIx]) -> Vec<&'static str> {
+    let mut found = Vec::new();
+    for instruction in instructions {
+        collect(instruction, &mut found);
+    }
+    told_once(
+        &mut found,
+        blind_in_carried(instructions).iter().map(|one| one.what),
+    );
+    found
+}
+
+/// What still counts in [`risks_in`] but is never told as a strip of its own,
+/// because the rows the shipped IDLs decode say the same: a program upgrade,
+/// or a change of who can upgrade it, reads as a sentence, and so does a
+/// checked vote, with what the proposal holds opened under its check.
+const UNTOLD: [&str; 2] = [PROGRAM_CONTROL, CHECKED_APPROVAL];
+
+/// What of [`risks_in`] a screen tells as a warning. What counts, for the
+/// request modal's Sign, is [`risks_in`]: this only leaves out what the
+/// instruction rows already say.
+pub fn risks_told(explained: &ExplainedTx) -> Vec<&'static str> {
+    told(risks_in(explained))
+}
+
+/// [`risks_told`] for instructions carried for another transaction.
+pub fn risks_told_carried(instructions: &[ExplainedIx]) -> Vec<&'static str> {
+    told(risks_in_carried(instructions))
+}
+
+fn told(mut risks: Vec<&'static str>) -> Vec<&'static str> {
+    risks.retain(|risk| !UNTOLD.contains(risk));
+    risks
+}
+
+fn told_once(found: &mut Vec<&'static str>, more: impl Iterator<Item = &'static str>) {
+    for what in more {
+        if !found.contains(&what) {
+            found.push(what);
         }
     }
-    found
 }
 
 fn collect(instruction: &ExplainedIx, found: &mut Vec<&'static str>) {
@@ -193,5 +243,78 @@ mod tests {
             instructions: vec![carrying, approval(None)],
         };
         assert_eq!(risks_in(&explained), [TOKEN_APPROVAL]);
+    }
+
+    #[test]
+    fn an_upgrade_a_checked_vote_pins_is_told_and_the_vote_is_not_blind() {
+        use crate::fixtures::{compile, pk, transfer};
+        use crate::idl::catalog::{IdlStore, MemoryBodies};
+        use crate::review::explain::{explain_instructions, explain_transaction};
+        use crate::tx::decode::decode_v1_transaction;
+        use crate::wallets::squads::{CheckForm, ProposalCheck, Squad, VoteAction};
+        use solana_instruction::{AccountMeta, Instruction};
+        use wallet_vault::store::MemoryStore;
+
+        let squad = Squad::v4(&pk(50));
+        let vault = squad.vault(0);
+        let upgrade = Instruction {
+            program_id: UPGRADEABLE_LOADER_ID,
+            accounts: [pk(2), pk(3), pk(4), pk(5), pk(6), pk(7)]
+                .into_iter()
+                .map(|key| AccountMeta::new(key, false))
+                .chain([AccountMeta::new_readonly(vault, true)])
+                .collect(),
+            data: tagged(3),
+        };
+        let check = ProposalCheck {
+            form: CheckForm::TopLevel,
+            squad,
+            transaction_index: 4,
+            vault_index: 0,
+            vault,
+            ephemeral_signers: 0,
+            member: pk(1),
+            action: VoteAction::Approve,
+            instructions: vec![transfer(vault, pk(8), 5), upgrade],
+        };
+        let pair = vec![check.instruction(&[]), squad.approve(4, &pk(1))];
+        let catalog = IdlStore::open(MemoryStore::new(), MemoryBodies::new());
+        let tx = decode_v1_transaction(&compile(pk(1), pair.clone()).wire).unwrap();
+        assert_eq!(
+            risks_in(&explain_transaction(&catalog, &tx)),
+            [PROGRAM_CONTROL, CHECKED_APPROVAL]
+        );
+        // Carried for another transaction, the same pair pins nothing.
+        let carried = explain_instructions(&catalog, &pair);
+        assert!(risks_in_carried(&carried).contains(&PROGRAM_CONTROL));
+        assert!(!risks_in_carried(&carried).contains(&CHECKED_APPROVAL));
+        assert_eq!(risks_in_carried(&carried).len(), 2);
+
+        // Counted, but told by the rows alone: no strip says either. The
+        // carried vote is still blind, and that is told.
+        assert!(risks_told(&explain_transaction(&catalog, &tx)).is_empty());
+        assert_eq!(risks_told_carried(&carried).len(), 1);
+        assert!(!risks_told_carried(&carried).contains(&PROGRAM_CONTROL));
+    }
+
+    #[test]
+    fn what_is_counted_but_not_told_is_only_those_two() {
+        let of = |program, tag| one(program, tagged(tag));
+        for tag in [3, 4, 5, 7] {
+            let explained = of(UPGRADEABLE_LOADER_ID, tag);
+            assert_eq!(risks_in(&explained), [PROGRAM_CONTROL]);
+            assert!(risks_told(&explained).is_empty());
+        }
+        // Every other strip is still told.
+        for (program, data, risk) in [
+            (TOKEN_PROGRAM_ID, vec![4, 1], TOKEN_APPROVAL),
+            (TOKEN_PROGRAM_ID, vec![6, 1], TOKEN_AUTHORITY),
+            (SYSTEM_PROGRAM_ID, tagged(1), SYSTEM_ASSIGN),
+            (SYSTEM_PROGRAM_ID, tagged(7), NONCE_AUTHORITY),
+            (STAKE_PROGRAM_ID, tagged(1), STAKE_AUTHORITY),
+            (STAKE_PROGRAM_ID, tagged(6), STAKE_LOCKUP),
+        ] {
+            assert_eq!(risks_told(&one(program, data)), [risk]);
+        }
     }
 }

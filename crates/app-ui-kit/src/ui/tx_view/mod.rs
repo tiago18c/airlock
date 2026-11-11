@@ -25,10 +25,11 @@ pub use instruction::*;
 pub use reading::*;
 
 /// What a transaction does that hands over control of something, however well
-/// it reads.
+/// it reads. What an instruction's own sentence already says gets no strip
+/// (`wallet_core::risks_told`).
 #[component]
 pub fn RiskNotice(explained: ExplainedTx) -> Element {
-    let risks = wallet_core::risks_in(&explained);
+    let risks = wallet_core::risks_told(&explained);
     rsx! {
         for risk in risks {
             p { key: "{risk}", class: "warn", role: "alert", "{risk}" }
@@ -193,6 +194,7 @@ fn summary_addresses(instructions: &[ExplainedIx], named: &mut HashSet<Pubkey>) 
                 InnerKind::Authorization { .. }
                     | InnerKind::Execution { .. }
                     | InnerKind::Passthrough { .. }
+                    | InnerKind::SquadsCheck { .. }
             )
         );
         if !envelope {
@@ -242,6 +244,12 @@ fn summary_addresses(instructions: &[ExplainedIx], named: &mut HashSet<Pubkey>) 
                         named.extend(signer.system);
                     }
                 }
+                InnerKind::SquadsCheck {
+                    multisig, vault, ..
+                } => {
+                    named.insert(*multisig);
+                    named.insert(*vault);
+                }
             }
             summary_addresses(&inner.instructions, named);
         }
@@ -275,13 +283,15 @@ pub fn InstructionList(instructions: Vec<ExplainedIx>, inspect: bool) -> Element
 #[component]
 fn InstructionBody(ix: ExplainedIx, inspect: bool) -> Element {
     // A Submit and the executor call inside it only carry other instructions.
-    // In Summary they are a heading for what they carry.
+    // In Summary they are a heading for what they carry. So is a Squads
+    // check, whose heading says all its own row would.
     let envelope = matches!(
         ix.inner.as_ref().map(|inner| &inner.kind),
         Some(
             InnerKind::Authorization { .. }
                 | InnerKind::Execution { .. }
                 | InnerKind::Passthrough { .. }
+                | InnerKind::SquadsCheck { .. }
         )
     );
     let inner = ix.inner.clone();
@@ -410,6 +420,31 @@ fn InnerBlock(inner: InnerMessage, inspect: bool) -> Element {
                                 }
                             },
                             None => rsx! {},
+                        }
+                    }
+                },
+                InnerKind::SquadsCheck {
+                    multisig,
+                    transaction_index,
+                    vault,
+                    vault_index,
+                    member,
+                    action,
+                } => rsx! {
+                    div { class: "chip-row inner-head",
+                        span { "The vote lands only if proposal #{transaction_index} of multisig" }
+                        Address { pubkey: multisig }
+                        span { "holds exactly these, to run as vault" }
+                        Address { pubkey: vault }
+                        if inspect {
+                            span { class: "muted", "(number {vault_index})" }
+                        }
+                    }
+                    if inspect {
+                        div { class: "chip-row",
+                            span { class: "muted", "for" }
+                            Address { pubkey: member }
+                            span { class: "muted", "to {action.label()}" }
                         }
                     }
                 },

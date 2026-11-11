@@ -404,6 +404,102 @@ mod tests {
         assert_eq!(field(&fields, "authority").leaf, Leaf::Address(authority));
     }
 
+    /// The heads of real loader-v3 accounts: the state, then the first bytes
+    /// of the program they hold (an ELF header). The program bytes are not
+    /// read, however long. A program data account whose authority was removed
+    /// keeps the old authority's bytes after the none tag.
+    #[test]
+    fn loader_accounts_read_by_their_state_and_leave_the_program_bytes_unread() {
+        use crate::program_code::BPF_LOADER_UPGRADEABLE_ID;
+
+        let catalog = crate::fixtures::shipped_catalog(crate::IdlNetwork::Mainnet);
+        let read = |head: &str| {
+            let mut data = hex::decode(head).unwrap();
+            data.extend_from_slice(&[0x5a; 4096]);
+            match inspect_account(
+                &catalog,
+                RawAccount {
+                    lamports: 1,
+                    data,
+                    owner: BPF_LOADER_UPGRADEABLE_ID,
+                    executable: false,
+                    rent_epoch: u64::MAX,
+                },
+            )
+            .reading
+            {
+                AccountReading::Decoded {
+                    program,
+                    account,
+                    fields,
+                } => {
+                    assert_eq!(program, "loaderV3");
+                    (account, fields)
+                }
+                other => panic!("not decoded: {other:?}"),
+            }
+        };
+        fn labels(fields: &[ValueNode]) -> Vec<&str> {
+            fields.iter().map(|f| f.label.as_str()).collect()
+        }
+        let address = |text: &str| Leaf::Address(text.parse().unwrap());
+
+        // Devnet's Squads clear signing program, whole.
+        let (account, fields) =
+            read("020000000398fdac42b752682e374b269f9da8c280c89f727141ec7331f9f0023755a1b2");
+        assert_eq!(account, "program");
+        assert_eq!(labels(&fields), ["discriminator", "programdataAddress"]);
+        assert_eq!(
+            field(&fields, "programdataAddress").leaf,
+            address("F3XgezNo8hNwWEQAdAeNEnpcu5ofWo7isDDTjM8Ssry")
+        );
+
+        // Its program data, upgradeable.
+        let (account, fields) = read(
+            "030000008e6c101f0000000001320f19b8a6dac35027907d4407cae7f35ac37daac8cd696d310ca7\
+             a1437e9e527f454c46020101000000000000000000030007",
+        );
+        assert_eq!(account, "programData");
+        assert_eq!(
+            labels(&fields),
+            ["discriminator", "slot", "upgradeAuthorityAddress"]
+        );
+        assert_eq!(field(&fields, "slot").leaf, Leaf::Text("521170062".into()));
+        assert_eq!(
+            field(&fields, "upgradeAuthorityAddress").leaf,
+            address("4NQjumUQG6YTRTvnhy9PYBftD55JwyYJrozNwQR67gDX")
+        );
+
+        // Mainnet's 1mq8ecRSbfpqVMg8FWe35bMFkhV9ifoH6aQEBg41qGS: no authority,
+        // and 32 stale bytes after the none tag.
+        let (account, fields) = read(
+            "0300000095e38d180000000000a8817a062379291fcc0e388796dd97f0edb1673da23e3dec694375\
+             0bb3a5ebb47f454c46020101000000000000000000030007",
+        );
+        assert_eq!(account, "programData");
+        assert_eq!(
+            labels(&fields),
+            ["discriminator", "slot", "upgradeAuthorityAddress"]
+        );
+        assert_eq!(field(&fields, "slot").leaf, Leaf::Text("411952021".into()));
+        assert_eq!(
+            field(&fields, "upgradeAuthorityAddress").leaf,
+            Leaf::Text("none".into())
+        );
+
+        // A devnet buffer (F2tAgfuMF3hWCVMy94yzWquKiusq66p8DKAWhkrwxDgd).
+        let (account, fields) = read(
+            "01000000016fc805df4ec2ed7d0707c4310e7ae5f57a1ef6f667475d3df9bd17d7a96f14e27f454c\
+             460201010000000000000000000300070101000000c08009",
+        );
+        assert_eq!(account, "buffer");
+        assert_eq!(labels(&fields), ["discriminator", "authorityAddress"]);
+        assert_eq!(
+            field(&fields, "authorityAddress").leaf,
+            address("8XMA2xAq4qsjfRtCEY4xGj4PRz925PqcCoPpDjeJU6FT")
+        );
+    }
+
     #[test]
     fn data_no_idl_reads_stays_raw() {
         let read = inspect_account(

@@ -268,8 +268,12 @@ pub struct SignForm {
     pub last_signature: Signal<Option<String>>,
     /// What came of the last press of Submit, while it is on screen.
     pub submission: Signal<Option<Submission>>,
-    /// A rebuild for a keyless wallet is running.
+    /// A rebuild for a keyless wallet, or one that adds what a Squads
+    /// proposal holds, is running.
     pub rebuilding: Signal<bool>,
+    /// Why what a proposal holds could not be added to the message with this
+    /// checksum. See `actions::sign_screen::add_checks_loaded`.
+    pub checks_refused: Signal<Option<([u8; 32], String)>>,
     /// Checksum of the message last rebuilt without being asked, so a
     /// failed attempt is not repeated. See `SignPanel`.
     pub auto_rebuilt_for: Signal<Option<[u8; 32]>>,
@@ -691,6 +695,7 @@ impl SignForm {
         this.tables.set(wallet_core::LookupTables::new());
         this.clock.reset(None);
         this.rebuilt.set(false);
+        this.checks_refused.set(None);
         this.returned.set(false);
         this.batch.set(None);
         this.submission.set(None);

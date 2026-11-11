@@ -51,6 +51,13 @@ export const PROGRAMS = [
     address: "74mXFW7BSAAwc6zQC2uYKuDcWnz17HHXMWqLnEeg9BJv",
     sha256: "3eeea62b1393fd656293044f07d6e473645df7c10bda25e4ebf66043b820dc9d",
   },
+  {
+    // The Squads clear signing program: github.com/tiago18c/squads-cs-poc,
+    // the build of 0922251, with verifyProposalCpi. Deployed on devnet only.
+    file: "squads_clear_signing.so",
+    address: "7xs3LhQjKoCGfXm2qst7LUhismrG1bGxz5Jw6AHij7eu",
+    sha256: "1e4f8833eca89476327d32f24a356af1b5ba8a9fa17483d82d0eb055f69f5b39",
+  },
 ];
 
 const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";

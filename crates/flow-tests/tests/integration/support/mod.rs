@@ -99,6 +99,10 @@ impl Chain {
                 "squads_smart_account.so",
             ),
             (wallet_core::vector::PROGRAM_ID, "vector.so"),
+            (
+                wallet_core::squads::SQUADS_CLEAR_SIGNING_PROGRAM_ID,
+                "squads_clear_signing.so",
+            ),
         ] {
             let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
                 .join("programs")

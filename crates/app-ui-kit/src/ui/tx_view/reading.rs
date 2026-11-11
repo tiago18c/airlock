@@ -339,12 +339,11 @@ pub fn ReadInstructions(
     };
     rsx! {
         ReadingNote { waiting, gave_up }
+        // They run in a transaction of their own, so a check among them pins
+        // no vote of this one.
         if risks {
-            RiskNotice {
-                explained: ExplainedTx {
-                    programs: Vec::new(),
-                    instructions: shown.clone(),
-                },
+            for risk in wallet_core::risks_told_carried(&shown) {
+                p { key: "{risk}", class: "warn", role: "alert", "{risk}" }
             }
         }
         if !waiting {

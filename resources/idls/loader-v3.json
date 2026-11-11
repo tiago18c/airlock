@@ -1,0 +1,981 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "loaderV3",
+    "publicKey": "BPFLoaderUpgradeab1e11111111111111111111111",
+    "version": "0.0.0",
+    "origin": "shank",
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "name": "uninitialized",
+        "docs": [
+          "An account the loader owns that holds nothing yet."
+        ],
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "numberValueNode",
+                "number": 0.0
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "buffer",
+        "docs": [
+          "A buffer: program bytes written ahead of a deploy or an upgrade.",
+          "The bytes start at offset 37, after the authority, which takes 33 bytes even when none."
+        ],
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "numberValueNode",
+                "number": 1.0
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "authorityAddress",
+              "docs": [
+                "Who may write the buffer and use it. None: no one, ever."
+              ],
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": true,
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "program",
+        "docs": [
+          "A program: the address instructions call. Its code is in its program data account."
+        ],
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "numberValueNode",
+                "number": 2.0
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "programdataAddress",
+              "docs": [
+                "The program data account."
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "programData",
+        "docs": [
+          "A program's code and who may upgrade it.",
+          "The code starts at offset 45, after the authority, which takes 33 bytes even when none."
+        ],
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              },
+              "defaultValue": {
+                "kind": "numberValueNode",
+                "number": 3.0
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "slot",
+              "docs": [
+                "The slot the program was last deployed or upgraded in."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "upgradeAuthorityAddress",
+              "docs": [
+                "Who may upgrade the program. None: it can no longer be upgraded."
+              ],
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": true,
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "initializeBuffer",
+        "optionalAccountStrategy": "omitted",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "sourceAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Buffer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "bufferAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Buffer Authority"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 0.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create buffer",
+          "interpolatedIntent": "Sets up buffer ${accounts.sourceAccount} for program bytes, with ${accounts.bufferAuthority} as the one who writes them"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "write",
+        "optionalAccountStrategy": "omitted",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "bufferAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Buffer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "bufferAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Buffer Authority"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 1.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "offset",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Offset (bytes)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "bytes",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "bytesTypeNode"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Write to buffer",
+          "interpolatedIntent": "${accounts.bufferAuthority} writes program bytes into buffer ${accounts.bufferAccount} at offset ${data.offset}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "deployWithMaxDataLen",
+        "optionalAccountStrategy": "omitted",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payerAccount",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programDataAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program Data"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "bufferAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Buffer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rentSysvar",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarRent111111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "clockSysvar",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarC1ock11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Upgrade Authority"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 2.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "maxDataLen",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "bytes"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Largest Program Size"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Deploy program",
+          "interpolatedIntent": "${accounts.authority} deploys program ${accounts.programAccount} from buffer ${accounts.bufferAccount}, with room for ${data.maxDataLen}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "upgrade",
+        "optionalAccountStrategy": "omitted",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "programDataAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program Data"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "bufferAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Buffer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "spillAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Spare Lamports To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rentSysvar",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarRent111111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "clockSysvar",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarC1ock11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Upgrade Authority"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 3.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Upgrade program",
+          "interpolatedIntent": "${accounts.authority} upgrades program ${accounts.programAccount} to the build in buffer ${accounts.bufferAccount}, and sends the buffer's spare lamports to ${accounts.spillAccount}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setAuthority",
+        "optionalAccountStrategy": "omitted",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "bufferOrProgramDataAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Buffer or Program Data"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "currentAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Current Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "newAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Authority"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 4.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set authority",
+          "interpolatedIntent": "${accounts.currentAuthority} hands over the authority of ${accounts.bufferOrProgramDataAccount}. Without a new authority, it can never change again"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "close",
+        "optionalAccountStrategy": "omitted",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "bufferOrProgramDataAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Closed Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lamports To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programAccount",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 5.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Close buffer or program",
+          "interpolatedIntent": "${accounts.authority} closes ${accounts.bufferOrProgramDataAccount} and sends its lamports to ${accounts.destinationAccount}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "extendProgram",
+        "optionalAccountStrategy": "omitted",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "programDataAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program Data"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 6.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "additionalBytes",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "bytes"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Added Size"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Extend program",
+          "interpolatedIntent": "Extends program ${accounts.programAccount} by ${data.additionalBytes}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setAuthorityChecked",
+        "optionalAccountStrategy": "omitted",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "bufferOrProgramDataAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Buffer or Program Data"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "currentAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Current Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "newAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Authority"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 7.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set authority",
+          "interpolatedIntent": "${accounts.currentAuthority} makes ${accounts.newAuthority} the authority of ${accounts.bufferOrProgramDataAccount}"
+        }
+      }
+    ]
+  }
+}

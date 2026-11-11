@@ -217,6 +217,19 @@ pub enum InnerKind {
     /// A Vector `Passthrough`: what runs as its accounts after the
     /// transaction's `Advance`.
     Passthrough { signers: Vec<RunsAs> },
+    /// The Squads clear signing program's `verifyProposal`, or the same check
+    /// by CPI, `verifyProposalCpi`: the instructions proposal
+    /// `transaction_index` of `multisig` must hold, exactly, for the vote
+    /// beside it to land. They run as `vault` once the proposal passes,
+    /// so the vault is what signs them, not a signer of this transaction.
+    SquadsCheck {
+        multisig: Pubkey,
+        transaction_index: u64,
+        vault: Pubkey,
+        vault_index: u8,
+        member: Pubkey,
+        action: crate::wallets::squads::VoteAction,
+    },
 }
 
 /// One account a `Passthrough` runs as.

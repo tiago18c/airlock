@@ -157,3 +157,26 @@ plan reads as one remaining-accounts group. Instructions with optional accounts 
 optionalAccountStrategy to programId. The Token program's mint account is added, so token \
 amounts read their mint's decimals; slippage and fees are in percent. Display nodes added \
 by hand."""
+
+# The upgradeable BPF loader, built into the validator, which deploys, upgrades
+# and closes most programs. The repository's Shank IDL describes instructions
+# 0 to 7; the file stores it with the transforms the repository's codama.mjs
+# applies before generating its clients.
+[[idls]]
+file = "loader-v3.json"
+programId = "BPFLoaderUpgradeab1e11111111111111111111111"
+name = "loaderV3"
+networks = ["mainnet", "devnet", "testnet", "localnet"]
+source = { kind = "repository", url = "https://github.com/solana-program/loader-v3/blob/b9c8ab343229851ebaa1607ec64b1d9a9a3ffc41/idl.json" }
+changes = """Converted from Shank to Codama, then the two transforms of the repository's \
+codama.mjs: the program is renamed loaderV3 at BPFLoaderUpgradeab1e11111111111111111111111 \
+(the Shank file declares CoreBPFLoaderUpgradeab1e1111111111111111111), and write's bytes \
+take a u64 length prefix, as bincode writes a Vec<u8>. Optional accounts are omitted rather \
+than replaced by the program id, as the loader reads them. The sysvar and system program \
+accounts have their addresses as defaults. The account states (uninitialized, buffer, \
+program, programData) are added by hand from UpgradeableLoaderState in \
+solana-loader-v3-interface: a u32 tag, then the variant's fields, an authority taking 33 \
+bytes even when none, and the program bytes after it left unread. Migrate (8) and \
+ExtendProgramChecked (9), which solana-loader-v3-interface dropped in 7.0, and the optional \
+trailing flags its 8.x adds to deployWithMaxDataLen, upgrade and close, are left out. Display \
+nodes added by hand."""

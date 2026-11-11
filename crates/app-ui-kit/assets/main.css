@@ -2899,6 +2899,8 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 
 .modal.inspect { width: min(48rem, 100%); }
 .inspect-facts { font-size: var(--text-md); align-items: center; }
+/* A hash or an address with a button after it, level with its term. */
+.inspect-facts .addr-card-account { align-items: center; }
 .inspect-views { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
 .inspect-raw { max-height: 50vh; white-space: pre; overflow-wrap: normal; line-height: 1.5; }
 .inspect-tree { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; min-width: 0; }

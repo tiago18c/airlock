@@ -69,17 +69,20 @@ pub use keys::{
 };
 pub use phrase::{Part, Phrase};
 pub use review::{
-    batch_steps, blind_in, blocks_left, blocks_left_after, carrying_stored, context_is_for,
-    context_note, context_note_for, context_note_with, display_accounts, display_note,
-    explain_instructions, explain_transaction, explain_with_note, format_countdown, keys_asked_for,
+    approval_shape, batch_steps, blind_in, blind_in_carried, blocks_left, blocks_left_after,
+    carrying_stored, checked_in, checked_instructions, context_is_for, context_note,
+    context_note_for, context_note_with, display_accounts, display_note, explain_instructions,
+    explain_transaction, explain_with_note, format_countdown, keys_asked_for,
     missing_catalog_programs, next_step, note_supplies_accounts, only_simulate_and_sign,
-    quick_sign, quick_sign_in, read_clock, risks_in, seconds_left, sign_locally, sign_locally_in,
-    sign_locally_in_with, sign_steps, signing_status, signing_status_in, stored_in, tx_lifetime,
-    AuthorizingKey, BlindApproval, ClockReading, ContextPinMatch, DisplayNote, ExplainedIx,
-    ExplainedTx, IdlAccountLine, IdlExplanation, IdlField, IdlPinStatus, InnerKind, InnerMessage,
-    LocalKeys, LocalSigning, NextKey, NextSignature, ProgramLine, QuickSign, RunsAs, SignFinish,
-    SignStep, SignStepInputs, SignStepKind, SignStepState, SignerKey, SignerLine, SignerRole,
-    SignerState, SigningStatus, SimulationStage, StoredTarget, TxLifetime, FRESH_BLOCKHASH_BLOCKS,
+    plain_approval, quick_sign, quick_sign_in, read_clock, risks_in, risks_in_carried, risks_told,
+    risks_told_carried, seconds_left, sign_locally, sign_locally_in, sign_locally_in_with,
+    sign_steps, signing_status, signing_status_in, stored_in, tx_lifetime, ApprovalShape,
+    AuthorizingKey, BlindApproval, CheckedApproval, CheckedUpgrade, ClockReading, ContextPinMatch,
+    DisplayNote, ExplainedIx, ExplainedTx, IdlAccountLine, IdlExplanation, IdlField, IdlPinStatus,
+    InnerKind, InnerMessage, IxPlace, LocalKeys, LocalSigning, NextKey, NextSignature,
+    OpenApproval, PinnedVote, PlainApproval, ProgramLine, QuickSign, RunsAs, SignFinish, SignStep,
+    SignStepInputs, SignStepKind, SignStepState, SignerKey, SignerLine, SignerRole, SignerState,
+    SigningStatus, SimulationStage, StoredTarget, TxLifetime, V4Vote, FRESH_BLOCKHASH_BLOCKS,
     SECONDS_PER_BLOCK,
 };
 pub use transport::{protocol, signature_objects, SignatureObject};
