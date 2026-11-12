@@ -673,3 +673,24 @@ read their mint's decimals where the mint is an account of the instruction; the 
 swap, balance check, reward swap minimum and Orca swap amounts are in base units, and \
 the top-up withdrawal is in SOL. Fees and limits in basis points are in percent, ages \
 are durations. Display nodes added by hand."""
+
+# OnRe (onreapp), the tokenized reinsurance fund behind the ONyc token: offers
+# that sell ONyc for stablecoins at a price that grows on a schedule, a Prop
+# AMM to buy and sell ONyc, and redemption requests a worker fulfills later.
+# The file is the Anchor IDL its program-metadata account publishes on
+# mainnet, which is the IDL of the OtterSec-verified source commit; it has no
+# Anchor IDL account and no devnet program.
+[[idls]]
+file = "onre.json"
+programId = "onreuGhHHgVzMWSkj2oQDLDtvvGvoepBPkqyaubFcwe"
+name = "onreapp"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "58f788a634b14cf112d36e90b12dba8f4d746b4eb1a1ee4822f57acd2dc5a640" }
+changes = """Converted from Anchor to Codama. initialize leaves its optional programData account out \
+as the program's own address (optionalAccountStrategy programId). \
+updateCirculatingSupplyExcludedBalance declares the excluded owners' ONyc token accounts \
+as a remaining-accounts group, which Anchor IDLs cannot. The Token program's mint \
+account is added, so purchase, sale, redemption, vault and mint amounts read the \
+decimals of the mint the instruction names; the Prop AMM's minimum sell haircut, the \
+supply and mint caps and the asset adjustment of a NAV burn are in base units. Display \
+nodes added by hand."""
