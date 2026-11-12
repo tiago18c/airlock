@@ -1,0 +1,3003 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "cargo",
+    "publicKey": "Cargo2VNTPPTi9c1vq1Jw5d3BWUNr18MjRtSupAghKEk",
+    "version": "0.1.0",
+    "origin": "anchor",
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "name": "cargoPod",
+        "docs": [
+          "A pod that can store any number of resources and tracks stats given a definition."
+        ],
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "a52176ebfcbcf45d",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "version",
+              "docs": [
+                "The data version of this account."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "statsDefinition",
+              "docs": [
+                "The definition of tracked stats."
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "authority",
+              "docs": [
+                "The authority for this pod."
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "openTokenAccounts",
+              "docs": [
+                "The number of open token accounts in this pod."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "podSeeds",
+              "docs": [
+                "The seeds of the signer for this pod."
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 32
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "podBump",
+              "docs": [
+                "The bump of the signer for this pod."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "seqId",
+              "docs": [
+                "The sequence id for the definition"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "unupdatedTokenAccounts",
+              "docs": [
+                "The number of unupdated token accounts in this pod. If this is greater than zero means the pod is frozen and only can withdraw cargo but not deposit."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "cargoStatsDefinition",
+        "docs": [
+          "A definition of cargo stats."
+        ],
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "3c8885918111836d",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "version",
+              "docs": [
+                "The data version of this account."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "authority",
+              "docs": [
+                "The authority for this definition."
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "defaultCargoType",
+              "docs": [
+                "The default cargo type. System program (all 0s) if none."
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "statsCount",
+              "docs": [
+                "The number of stats in this definition."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "seqId",
+              "docs": [
+                "The sequence id for the definition"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "cargoType",
+        "docs": [
+          "The stats for a given cargo type (token mint)."
+        ],
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "9866bce6c80ea4e0",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "version",
+              "docs": [
+                "The data version of this account."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "statsDefinition",
+              "docs": [
+                "The definition this follows"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mint",
+              "docs": [
+                "The mint the cargo type is for"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "creator",
+              "docs": [
+                "TODO: remove this"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bump",
+              "docs": [
+                "The bump for this account"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "statsCount",
+              "docs": [
+                "The number of stats in this definition."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "seqId",
+              "docs": [
+                "The sequence id for the definition"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mintAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority used to mint new tokens. The mint authority may only",
+                "be provided during mint creation. If no mint authority is present",
+                "then the mint has a fixed supply and no further tokens may be minted."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "supply",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "docs": [
+                "Total supply of tokens."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "decimals",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "docs": [
+                "Number of base 10 digits to the right of the decimal place."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isInitialized",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "docs": [
+                "Is `true` if this structure has been initialized."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "freezeAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority to freeze token accounts."
+              ]
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "sizeDiscriminatorNode",
+            "size": 82
+          }
+        ],
+        "name": "mint",
+        "docs": [],
+        "size": 82
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "addCargo",
+        "docs": [
+          "Adds cargo to a [`CargoPod`](state::CargoPod).",
+          "Requires the authority to sign."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pod Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "signerOriginAccount",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "statsDefinition",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Stats Definition"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoPod",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Pod"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoType",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Type"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "originTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pod Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "bcdc9f6c814961bb",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "cargoAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Add cargo to a pod",
+          "interpolatedIntent": "${accounts.signerOriginAccount} adds ${data.cargoAmount} of cargo type ${accounts.cargoType} from ${accounts.originTokenAccount} to cargo pod ${accounts.cargoPod}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "closeCargoPod",
+        "docs": [
+          "Closes the [`CargoPod`](state::CargoPod) if it has no open token accounts.",
+          "Requires the authority to sign."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "funder",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rent Receiver"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pod Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoPod",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Pod"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "da4710ee0c269587",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Close a cargo pod",
+          "interpolatedIntent": "${accounts.authority} closes cargo pod ${accounts.cargoPod} and returns its rent to ${accounts.funder}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "closeTokenAccount",
+        "docs": [
+          "Closes and burns any excess tokens in a given token account within a [`CargoPod`](state::CargoPod).",
+          "Requires the authority to sign."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "funder",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rent Receiver"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pod Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoPod",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Pod"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pod Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoType",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Type"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "84ac183c649c8761",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Close a pod token account",
+          "interpolatedIntent": "${accounts.authority} closes token account ${accounts.cargoTokenAccount} for ${accounts.mint} in cargo pod ${accounts.cargoPod}, burning any tokens left in it, and returns its rent to ${accounts.funder}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "consumeCargo",
+        "docs": [
+          "Consumes cargo from a [`CargoPod`](state::CargoPod), burning the amount.",
+          "Requires the authority to sign."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pod Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "statsDefinition",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Stats Definition"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoPod",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Pod"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoType",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Type"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pod Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "c9c423ed85b38f1c",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "cargoAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "tokenDecimals"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount Burned"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "tokenDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "tokenMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Consume cargo",
+          "interpolatedIntent": "${accounts.authority} burns ${data.cargoAmount} of ${accounts.tokenMint} from cargo pod ${accounts.cargoPod}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initCargoPod",
+        "docs": [
+          "Inits a new [`CargoPod`](state::CargoPod) account for the given [`CargoStatsDefinition`](state::CargoStatsDefinition) and authority."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "funder",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rent Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pod Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoPod",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Pod"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "statsDefinition",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Stats Definition"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "4ece42f1e615d7da",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "podSeeds",
+            "type": {
+              "kind": "arrayTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "count": {
+                "kind": "fixedCountNode",
+                "value": 32
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a cargo pod",
+          "interpolatedIntent": "${accounts.funder} creates cargo pod ${accounts.cargoPod} for ${accounts.authority}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initCargoType",
+        "docs": [
+          "Inits a new [`CargoType`](state::CargoType) account for the given [`CargoStatsDefinition`](state::CargoStatsDefinition)."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "key",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signing Key"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "profile",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Permissions Profile"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "funder",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rent Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "statsDefinition",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Stats Definition"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoType",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Type"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "55c62d1029a3d727",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "input",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "initCargoTypeInput"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Register a cargo type",
+          "interpolatedIntent": "${accounts.key} registers ${accounts.mint} as cargo type ${accounts.cargoType} of cargo stats definition ${accounts.statsDefinition}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initCargoTypeForNextSeqId",
+        "docs": [
+          "Creates a new cargo type for the next `seq_id`."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "key",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signing Key"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "profile",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Permissions Profile"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "funder",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rent Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "statsDefinition",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Stats Definition"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoType",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Type"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "73e1f17ea4304b60",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "input",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "initCargoTypeInput"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Register a cargo type for the next version",
+          "interpolatedIntent": "${accounts.key} registers ${accounts.mint} as cargo type ${accounts.cargoType} for the next version of cargo stats definition ${accounts.statsDefinition}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initCargoTypeFromOldCargoType",
+        "docs": [
+          "Creates a new cargo type for the next `seq_id` from a given cargo type."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "key",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signing Key"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "profile",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Permissions Profile"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "funder",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rent Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "statsDefinition",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Stats Definition"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "oldCargoType",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Previous Cargo Type"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoType",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Type"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "b278baef0dcadc9b",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "input",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "initCargoTypeFromOldCargoTypeInput"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Copy a cargo type to the next version",
+          "interpolatedIntent": "${accounts.key} creates cargo type ${accounts.cargoType} for the next version of cargo stats definition ${accounts.statsDefinition} from cargo type ${accounts.oldCargoType}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initDefinition",
+        "docs": [
+          "Inits a [`CargoStatsDefinition`](state::CargoStatsDefinition) account."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "profile",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Permissions Profile"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "funder",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rent Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "statsDefinition",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Stats Definition"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "dd83d723a4edbbec",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "input",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "initDefinitionInput"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a cargo stats definition",
+          "interpolatedIntent": "${accounts.funder} creates cargo stats definition ${accounts.statsDefinition}, tracking ${data.input.cargoStats} stats, for cargo permissions profile ${accounts.profile}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "legitimizeCargo",
+        "docs": [
+          "Legitimizes cargo in a [`CargoPod`](state::CargoPod) that was added outside of [`add_cargo`] or other cargo ix.",
+          "Requires the authority to sign."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pod Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "statsDefinition",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Stats Definition"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoPod",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Pod"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoType",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Type"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pod Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "8b7d8abcf9c932ec",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "cargoAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Record cargo sent to a pod",
+          "interpolatedIntent": "${accounts.authority} records ${data.cargoAmount} of cargo type ${accounts.cargoType} sent straight to ${accounts.cargoTokenAccount} as cargo of pod ${accounts.cargoPod}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "mintTo",
+        "docs": [
+          "Mints tokens directly to a [`CargoPod`](state::CargoPod).",
+          "Requires the authority to sign."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pod Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mintAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Mint Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "statsDefinition",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Stats Definition"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoPod",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Pod"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoType",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Type"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pod Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "f12230ba25b37bc0",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "mintAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "tokenDecimals"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount Minted"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "tokenDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "tokenMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Mint tokens into a pod",
+          "interpolatedIntent": "${accounts.mintAuthority} mints ${data.mintAmount} of ${accounts.tokenMint} into cargo pod ${accounts.cargoPod}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "removeCargo",
+        "docs": [
+          "Removes cargo from a [`CargoPod`](state::CargoPod) to a given token account.",
+          "Requires the authority to sign."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pod Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "statsDefinition",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Stats Definition"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoPod",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Pod"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoType",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Type"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pod Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "726e24cfbc1d6ffb",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "cargoAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Remove cargo from a pod",
+          "interpolatedIntent": "${accounts.authority} removes ${data.cargoAmount} of cargo type ${accounts.cargoType} from cargo pod ${accounts.cargoPod} to ${accounts.destinationTokenAccount}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "transferAuthority",
+        "docs": [
+          "Transfers authority of a [`CargoPod`](state::CargoPod) to a new authority.",
+          "Requires both authorities to sign."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "originPodAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Current Pod Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "newPodAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Pod Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoPod",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Pod"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "30a94c48e5b437a1",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Hand over a cargo pod",
+          "interpolatedIntent": "${accounts.originPodAuthority} hands cargo pod ${accounts.cargoPod} over to ${accounts.newPodAuthority}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "transferCargo",
+        "docs": [
+          "Transfers cargo between [`CargoPod`](state::CargoPod)s.",
+          "Requires both authorities to sign."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "originPodAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From Pod Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationPodAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To Pod Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "statsDefinition",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Stats Definition"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "originCargoPod",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From Cargo Pod"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationCargoPod",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To Cargo Pod"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoType",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Type"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "originTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From Pod Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To Pod Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "d8e9a45c3addabed",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "cargoAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Move cargo between pods",
+          "interpolatedIntent": "${accounts.originPodAuthority} moves ${data.cargoAmount} of cargo type ${accounts.cargoType} from cargo pod ${accounts.originCargoPod} to cargo pod ${accounts.destinationCargoPod}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateCargoPod",
+        "docs": [
+          "Updates a [`CargoPod`](state::CargoPod) account to have the newest sequence id from the [`CargoDefinition`](state::CargoStatsDefinition).",
+          "This is the first step to update a [`CargoPod`](state::CargoPod) to a new [`CargoStatsDefinition`](state::CargoStatsDefinition).",
+          "Permissionless function."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoPod",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Pod"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "statsDefinition",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Stats Definition"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "93c2fdeae85d2392",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update a cargo pod's version",
+          "interpolatedIntent": "Cargo pod ${accounts.cargoPod} moves to the latest version of cargo stats definition ${accounts.statsDefinition}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateDefinition",
+        "docs": [
+          "Updates a [`CargoStatsDefinition`](state::CargoStatsDefinition) account.",
+          "Will advance the `seq_id` unless `rollback` is set to true."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "key",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signing Key"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "profile",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Permissions Profile"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "statsDefinition",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Stats Definition"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "99bacedae957b396",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "input",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "updateDefinitionInput"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update a cargo stats definition",
+          "interpolatedIntent": "${accounts.key} updates cargo stats definition ${accounts.statsDefinition} of cargo permissions profile ${accounts.profile}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updatePodTokenAccount",
+        "docs": [
+          "Updates a [`CargoPod`](state::CargoPod)'s token account to have the same sequence id as the [`CargoPod`](state::CargoPod).",
+          "This must be called after [`update_cargo_pod`].",
+          "Permissionless function."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "statsDefinition",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Stats Definition"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoPod",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Pod"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "oldCargoType",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Previous Cargo Type"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoType",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Cargo Type"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "cargoTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pod Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "b1750f5f60ae3618",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update a pod token account's version",
+          "interpolatedIntent": "Token account ${accounts.cargoTokenAccount} of cargo pod ${accounts.cargoPod} moves from cargo type ${accounts.oldCargoType} to cargo type ${accounts.cargoType}"
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "initCargoTypeFromOldCargoTypeInput",
+        "docs": [
+          "Struct for data input for this IX"
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "keyIndex",
+              "docs": [
+                "the index of the key in the cargo permissions profile"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Key Index in Profile"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "newValues",
+              "docs": [
+                "vector with values for all stats tracked by the definition"
+              ],
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "arrayTypeNode",
+                  "item": {
+                    "kind": "numberTypeNode",
+                    "format": "u64",
+                    "endian": "le"
+                  },
+                  "count": {
+                    "kind": "prefixedCountNode",
+                    "prefix": {
+                      "kind": "numberTypeNode",
+                      "format": "u32",
+                      "endian": "le"
+                    }
+                  }
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "New Stat Values"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "initCargoTypeInput",
+        "docs": [
+          "Struct for data input for this IX"
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "keyIndex",
+              "docs": [
+                "the index of the key in the cargo permissions profile"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Key Index in Profile"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "values",
+              "docs": [
+                "vector with values for all stats tracked by the definition"
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "prefixedCountNode",
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Stat Values"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "initDefinitionInput",
+        "docs": [
+          "Struct for data input for [`InitDefinition`]"
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "cargoStats",
+              "docs": [
+                "the count of stats the definition has"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Number of Stats"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "updateDefinitionInput",
+        "docs": [
+          "Struct for data input for this IX"
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "keyIndex",
+              "docs": [
+                "the index of the key in the cargo permissions profile"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Key Index in Profile"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "rollback",
+              "docs": [
+                "flag that if present means we need to decrease the definition seq_id"
+              ],
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "booleanTypeNode",
+                  "size": {
+                    "kind": "numberTypeNode",
+                    "format": "u8",
+                    "endian": "le"
+                  }
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Roll Back to the Previous Version"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "statOutOfBounds",
+        "code": 6000,
+        "message": "A given stat was out of bounds",
+        "docs": [
+          "StatOutOfBounds: A given stat was out of bounds"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "tooManyStats",
+        "code": 6001,
+        "message": "There are too many stats",
+        "docs": [
+          "TooManyStats: There are too many stats"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidRentFunder",
+        "code": 6002,
+        "message": "Rent funder was not owned by the system program or this program",
+        "docs": [
+          "InvalidRentFunder: Rent funder was not owned by the system program or this program"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "tooFewStats",
+        "code": 6003,
+        "message": "Popped a stat when there are no stats left",
+        "docs": [
+          "TooFewStats: Popped a stat when there are no stats left"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "missingSystemProgram",
+        "code": 6004,
+        "message": "System program is missing when needed",
+        "docs": [
+          "MissingSystemProgram: System program is missing when needed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidCargoStat",
+        "code": 6005,
+        "message": "Cargo stat data was invalid",
+        "docs": [
+          "InvalidCargoStat: Cargo stat data was invalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidCargoStatSize",
+        "code": 6006,
+        "message": "Cargo stat size data was invalid",
+        "docs": [
+          "InvalidCargoStatSize: Cargo stat size data was invalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidCargoType",
+        "code": 6007,
+        "message": "Cargo type is invalid",
+        "docs": [
+          "InvalidCargoType: Cargo type is invalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "wrongNumberOfDefinitions",
+        "code": 6008,
+        "message": "Wrong number of definitions provided to init a cargo type",
+        "docs": [
+          "WrongNumberOfDefinitions: Wrong number of definitions provided to init a cargo type"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidValueForStat",
+        "code": 6009,
+        "message": "Invalid value provided for stat",
+        "docs": [
+          "InvalidValueForStat: Invalid value provided for stat"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "numericOverflow",
+        "code": 6010,
+        "message": "Math overflow",
+        "docs": [
+          "NumericOverflow: Math overflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "authorityMismatch",
+        "code": 6011,
+        "message": "Authority mismatch",
+        "docs": [
+          "AuthorityMismatch: Authority mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "statsDefinitionMismatch",
+        "code": 6012,
+        "message": "Stats definition mismatch",
+        "docs": [
+          "StatsDefinitionMismatch: Stats definition mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "mintMismatch",
+        "code": 6013,
+        "message": "Mint mismatch",
+        "docs": [
+          "MintMismatch: Mint mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "ownerMismatch",
+        "code": 6014,
+        "message": "Owner mismatch",
+        "docs": [
+          "OwnerMismatch: Owner mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidDelegation",
+        "code": 6015,
+        "message": "Delegated amount is invalid",
+        "docs": [
+          "InvalidDelegation: Delegated amount is invalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "frozenPod",
+        "code": 6016,
+        "message": "The pod is frozen",
+        "docs": [
+          "FrozenPod: The pod is frozen"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unupdatedCargoPodAccount",
+        "code": 6017,
+        "message": "Unupdated CargoPod Account",
+        "docs": [
+          "UnupdatedCargoPodAccount: Unupdated CargoPod Account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidSeqId",
+        "code": 6018,
+        "message": "Invalid seq_id",
+        "docs": [
+          "InvalidSeqId: Invalid seq_id"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unupdatedTokenAccount",
+        "code": 6019,
+        "message": "Unupdated token account",
+        "docs": [
+          "UnupdatedTokenAccount: Unupdated token account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "openTokenAccounts",
+        "code": 6020,
+        "message": "Cargo Pod has token accounts open",
+        "docs": [
+          "OpenTokenAccounts: Cargo Pod has token accounts open"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "nonZeroDelegation",
+        "code": 6021,
+        "message": "Non Zero Delegated Amount",
+        "docs": [
+          "NonZeroDelegation: Non Zero Delegated Amount"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidPreviousType",
+        "code": 6022,
+        "message": "Invalid previous cargo_type account",
+        "docs": [
+          "InvalidPreviousType: Invalid previous cargo_type account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "insufficientCargoAmount",
+        "code": 6023,
+        "message": "Insufficient cargo amount",
+        "docs": [
+          "InsufficientCargoAmount: Insufficient cargo amount"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "insufficientTokenAmount",
+        "code": 6024,
+        "message": "Insufficient token amount",
+        "docs": [
+          "InsufficientTokenAmount: Insufficient token amount"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "podTokenAccountAlreadyUpdated",
+        "code": 6025,
+        "message": "Pod Token Account Already Updated",
+        "docs": [
+          "PodTokenAccountAlreadyUpdated: Pod Token Account Already Updated"
+        ]
+      }
+    ]
+  }
+}

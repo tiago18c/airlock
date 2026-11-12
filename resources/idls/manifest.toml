@@ -1478,3 +1478,18 @@ sysvar as one remaining-accounts group, shown (every sampled swap passes Jito's 
 `jitodontfront` marker there). The Token program's mint account is added, so deposit and \
 withdrawal amounts read their mint's decimals; swap amounts are in base units. Display \
 nodes added by hand."""
+
+# Star Atlas's cargo program: the cargo pods that hold a fleet's or a
+# starbase's resources in SAGE, the space game. SAGE calls it for every cargo
+# move, so people meet it as an inner instruction. The file is the legacy
+# Anchor IDL its IDL account publishes on mainnet.
+[[idls]]
+file = "star-atlas-cargo.json"
+programId = "Cargo2VNTPPTi9c1vq1Jw5d3BWUNr18MjRtSupAghKEk"
+name = "cargo"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "5cae920297da956fd911e0fa2a4bf192bac738fe9c6d94956391dee42e9e2f1a" }
+changes = """Converted from Anchor to Codama. The program address is set, since a legacy Anchor IDL \
+does not carry one. The Token program's mint account is added, so the amounts that \
+consume_cargo burns and mint_to mints read the decimals of their token. Display nodes \
+added by hand."""

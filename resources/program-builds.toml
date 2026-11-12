@@ -975,3 +975,12 @@ programHash = "3ee703d7265847cc5a66cfd41e2a856938ddc659d26186e02617d2589d3845a6"
 authority = "GwH3Hiv5mACLX3ufTw1pFsrhSPon5tdw252DBs4Rx4PV"
 idlSha256 = "75537d95287c69ce87f9846973cdced58389add2f3d64ece386215c72bbeaac0"
 reviewed = "2026-11-12"
+
+[[builds]]
+# cargo (pack). Deployed at slot 258006208; OtterSec lists no verify record. The binary logs exactly the IDL's 17 instruction names apart from Anchor's IDL instructions, and mainnet calls of add_cargo, remove_cargo, transfer_cargo, consume_cargo, legitimize_cargo, close_token_account, init_cargo_pod, close_cargo_pod and transfer_authority decode with every account named and no data left over.
+programId = "Cargo2VNTPPTi9c1vq1Jw5d3BWUNr18MjRtSupAghKEk"
+network = "mainnet"
+programHash = "dbba2f01304c4e6068e3024340cfdb40446946ae62741f2ca820a409eb1b460b"
+authority = "BVJESvrDeXZcSX5UVdK2Tt57Lur9gyakgCfdX45pVQ1V"
+idlSha256 = "df5513c1e338d7d939717f0d3801447da524fcd902dafe53c5d6c6b50495fb89"
+reviewed = "2026-11-12"

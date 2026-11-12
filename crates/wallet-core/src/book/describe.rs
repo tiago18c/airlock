@@ -771,6 +771,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("riptK81hDxhe5pW5jSzSM9iRA8azgEgLJ4dXkPtBS7j"),
         "Riptide AMM Program",
     ),
+    (
+        Pubkey::from_str_const("Cargo2VNTPPTi9c1vq1Jw5d3BWUNr18MjRtSupAghKEk"),
+        "Star Atlas Cargo Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.
