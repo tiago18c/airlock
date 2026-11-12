@@ -551,6 +551,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ"),
         "Pump Fees Program",
     ),
+    (
+        Pubkey::from_str_const("De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44"),
+        "Subscriptions Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

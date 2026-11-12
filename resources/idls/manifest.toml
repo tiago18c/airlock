@@ -253,3 +253,41 @@ accounts they read after the named ones (the current shareholders, their token a
 the pool) as one hidden remaining-accounts group, which Anchor IDLs cannot. The fees of \
 updateFeeConfig's flat fees and of setExoticFlatFees are in percent. Display nodes added \
 by hand."""
+
+# The Solana Foundation's subscriptions program: fixed and recurring token
+# delegations, and subscriptions to a merchant's plan. It publishes a Codama
+# IDL in its program-metadata account, and runs a different build on devnet at
+# the same address with a different IDL (subscriptions-devnet.json). This is
+# mainnet's: 0.5.0-beta.1, 18 instructions.
+[[idls]]
+file = "subscriptions.json"
+programId = "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44"
+name = "subscriptions"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "1522580389fe155633e37682b91488df7cf6c7b3ba5a6cb3ba0e5ae00ffe89aa" }
+changes = """Codama as published, no conversion. revokeDelegation declares the accounts it reads \
+after the delegation (a subscription's plan, then a rent receiver) as one \
+remaining-accounts group, since what they are depends on the kind of delegation; the \
+three transfers declare the Token-2022 transfer-hook accounts they forward as a hidden \
+remaining-accounts group. The Token program's mint account is added, so the amounts of \
+transfers and plans read their mint's decimals; delegation and subscribe amounts, whose \
+mint is not among the accounts, are in base units. Display nodes added by hand."""
+
+# The Solana Foundation's subscriptions program as devnet runs it: another
+# build than mainnet's at the same address, publishing its own Codama IDL in
+# its program-metadata account (0.5.0, 19 instructions). It adds
+# reclaimExcessRent and the TransferContext account a transfer hook can read;
+# otherwise it is the same document as subscriptions.json.
+[[idls]]
+file = "subscriptions-devnet.json"
+programId = "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44"
+name = "subscriptions"
+networks = ["devnet"]
+source = { kind = "chain", network = "devnet", account = "programMetadata", sha256 = "5f1f0fbf20c4ab048e2292efc2c619fb77c628e59994a65adc299970559484b6" }
+changes = """Codama as published, no conversion. The same tables as subscriptions.json: \
+revokeDelegation declares the accounts it reads after the delegation (a subscription's \
+plan, then a rent receiver) as one remaining-accounts group; the three transfers declare \
+the transfer-hook accounts they forward, and this build's TransferContext PDA and System \
+program, as a hidden remaining-accounts group. The Token program's mint account is \
+added, so the amounts of transfers and plans read their mint's decimals; delegation and \
+subscribe amounts are in base units. Display nodes added by hand."""
