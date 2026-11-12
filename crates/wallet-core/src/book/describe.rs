@@ -715,6 +715,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS"),
         "Raydium Router Program",
     ),
+    (
+        Pubkey::from_str_const("So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo"),
+        "Save Lending Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

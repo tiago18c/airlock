@@ -1155,3 +1155,36 @@ changes = """The devnet router's hand-written file with mainnet's program addres
 account orders were checked against transactions this program executed on mainnet. The \
 route's hops are one remaining-accounts group, since their accounts depend on each pool \
 program."""
+
+# Save (formerly Solend), the lending program forked from SPL token-lending.
+# It publishes no IDL: no program-metadata or Anchor account, and none in
+# solendprotocol's repositories (its SDKs pack instructions by hand). This
+# file is written by hand from token-lending's instruction.rs and processor.rs
+# at d04ce00
+# (https://github.com/solendprotocol/solana-program-library/blob/d04ce00bbf4356c4fd32b3be38eb9760b696bb3e/token-lending/sdk/src/instruction.rs),
+# the commit OtterSec verified for the deployed program, and checked against
+# mainnet transactions of 9 of its 25 instructions. Mainnet only: devnet has
+# no program at this address.
+[[idls]]
+file = "save.json"
+programId = "So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo"
+name = "saveLending"
+networks = ["mainnet"]
+source = { kind = "hand" }
+changes = """Written by hand from LendingInstruction in token-lending/sdk/src/instruction.rs: a \
+one-byte tag, then fixed-layout little-endian fields exactly as `unpack` reads them (an \
+option is a u8 flag then a public key, a bool a u8). The reserve config is laid out in \
+that wire order, which is not its Rust field order. Account orders follow the \
+processor's reads and the SDK's builders, not the doc comments, which still list a clock \
+sysvar the processor no longer reads; flags are the builders'. The extra oracle the \
+processor reads only when present (refreshReserve, initReserve, updateReserveConfig) is \
+an optional trailing account, omitted when absent. The obligation's reserves after \
+refreshObligation's, the withdrawals' and the borrow's accounts are remaining-accounts \
+groups (for the borrow, followed by an optional host fee receiver, so that group is \
+shown). The rate limiter's outflow is in USD for a lending market and in the reserve's \
+token for a reserve, so each instruction carries its own copy of that struct. The Token \
+program's mint account is added, so collateral token amounts read their mint's decimals \
+where the collateral mint is an account of the instruction (redeemReserveCollateral, \
+withdrawObligationCollateralAndRedeemReserveCollateral) and initReserve's first deposit \
+its liquidity mint's; every other token amount is in base units. Display nodes added by \
+hand."""

@@ -1,0 +1,5796 @@
+{
+  "kind": "rootNode",
+  "program": {
+    "kind": "programNode",
+    "pdas": [],
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mintAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority used to mint new tokens. The mint authority may only",
+                "be provided during mint creation. If no mint authority is present",
+                "then the mint has a fixed supply and no further tokens may be minted."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "supply",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "docs": [
+                "Total supply of tokens."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "decimals",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "docs": [
+                "Number of base 10 digits to the right of the decimal place."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isInitialized",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "docs": [
+                "Is `true` if this structure has been initialized."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "freezeAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority to freeze token accounts."
+              ]
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "sizeDiscriminatorNode",
+            "size": 82
+          }
+        ],
+        "name": "mint",
+        "docs": [],
+        "size": 82
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "initLendingMarket",
+        "docs": [
+          "Initializes a new lending market.",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Lending market account - uninitialized.",
+          "1. `[]` Rent sysvar.",
+          "2. `[]` Token program id.",
+          "3. `[]` Oracle program id.",
+          "4. `[]` Switchboard Oracle program id."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account - uninitialized."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rent",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Rent sysvar."
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarRent111111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "oracleProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Oracle program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pyth Oracle Program"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "switchboardOracleProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Switchboard Oracle program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Switchboard Oracle Program"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 0
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "owner",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "docs": [
+              "Owner authority which can add new reserves"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "quoteCurrency",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 32,
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              }
+            },
+            "docs": [
+              "Currency market prices are quoted in",
+              "e.g. \"USD\" null padded (`*b\"USD\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\"`) or SPL token mint pubkey"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Quote Currency"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a lending market",
+          "interpolatedIntent": "Creates lending market ${accounts.lendingMarket}, owned by ${data.owner}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setLendingMarketOwnerAndConfig",
+        "docs": [
+          "Sets the new owner of a lending market.",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Lending market account.",
+          "1. `[signer]` Current owner."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "marketChangeAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Current owner."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Market Owner or Risk Authority"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 1
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newOwner",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "docs": [
+              "The new owner"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New Owner"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "rateLimiterConfig",
+            "type": {
+              "kind": "structTypeNode",
+              "fields": [
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "windowDuration",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u64",
+                    "endian": "le"
+                  },
+                  "docs": [
+                    "Rate limiter window size in slots."
+                  ],
+                  "display": {
+                    "kind": "structFieldDisplayNode",
+                    "label": "Outflow Window (Slots)"
+                  }
+                },
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "maxOutflow",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u64",
+                    "endian": "le",
+                    "display": {
+                      "kind": "amountNumberDisplayNode",
+                      "unit": {
+                        "kind": "stringValueNode",
+                        "string": "USD"
+                      }
+                    }
+                  },
+                  "docs": [
+                    "Rate limiter param. Max outflow in a window."
+                  ],
+                  "display": {
+                    "kind": "structFieldDisplayNode",
+                    "label": "Max Outflow per Window"
+                  }
+                }
+              ]
+            },
+            "docs": [
+              "The new config"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "whitelistedLiquidator",
+            "type": {
+              "kind": "optionTypeNode",
+              "fixed": false,
+              "item": {
+                "kind": "publicKeyTypeNode"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "docs": [
+              "whitelist liquidator"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Only Liquidator Allowed (None: Anyone)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "riskAuthority",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "docs": [
+              "The risk authority"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Risk Authority"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Change the market owner",
+          "interpolatedIntent": "${accounts.marketChangeAuthority} sets the owner of lending market ${accounts.lendingMarket} to ${data.newOwner} and its risk authority to ${data.riskAuthority}. Signed by the risk authority, it can only pause outflows"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initReserve",
+        "docs": [
+          "Initializes a new lending market reserve.",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Source liquidity token account.",
+          "$authority can transfer $liquidity_amount.",
+          "1. `[writable]` Destination collateral token account - uninitialized.",
+          "2. `[writable]` Reserve account - uninitialized.",
+          "3. `[]` Reserve liquidity SPL Token mint.",
+          "4. `[writable]` Reserve liquidity supply SPL Token account - uninitialized.",
+          "5. `[writable]` Reserve liquidity fee receiver - uninitialized.",
+          "6. `[writable]` Reserve collateral SPL Token mint - uninitialized.",
+          "7 `[writable]` Reserve collateral token supply - uninitialized.",
+          "8. `[]` Pyth product account.",
+          "9. `[]` Pyth price account.",
+          "This will be used as the reserve liquidity oracle account.",
+          "10. `[]` Switchboard price feed account. used as a backup oracle",
+          "11 `[]` Lending market account.",
+          "12 `[]` Derived lending market authority.",
+          "13 `[signer]` Lending market owner.",
+          "14 `[signer]` User transfer authority ($authority).",
+          "15 `[]` Clock sysvar (optional, will be removed soon).",
+          "16 `[]` Rent sysvar.",
+          "17 `[]` Token program id."
+        ],
+        "optionalAccountStrategy": "omitted",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "sourceLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Source liquidity token account. $authority can transfer $liquidity_amount."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationCollateral",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Destination collateral token account - uninitialized."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collateral Tokens To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve account - uninitialized."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveLiquidityMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve liquidity SPL Token mint."
+            ],
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveLiquiditySupply",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve liquidity supply SPL Token account - uninitialized."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Liquidity Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveLiquidityFeeReceiver",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve liquidity fee receiver - uninitialized."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Fee Receiver"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveCollateralMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve collateral SPL Token mint - uninitialized."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collateral Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveCollateralSupply",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve collateral token supply - uninitialized."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Collateral Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "pythProduct",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Pyth product account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pyth Product Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "pythPrice",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Pyth price account. This will be used as the reserve liquidity oracle account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pyth Price Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "switchboardFeed",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Switchboard price feed account. used as a backup oracle"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Switchboard Feed"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarketAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Derived lending market authority."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarketOwner",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Lending market owner."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Market Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userTransferAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "User transfer authority ($authority)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Transfer Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rent",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Rent sysvar."
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarRent111111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "extraOracle",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "docs": [
+              "Extra oracle, passed only when the config names one."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Extra Oracle"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 2
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "liquidityAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "liquidityDecimals"
+                }
+              }
+            },
+            "docs": [
+              "Initial amount of liquidity to deposit into the new reserve"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Initial Deposit"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "config",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "reserveConfig"
+            },
+            "docs": [
+              "Reserve configuration values"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a reserve",
+          "interpolatedIntent": "${accounts.lendingMarketOwner} creates reserve ${accounts.reserve} for ${accounts.reserveLiquidityMint} in lending market ${accounts.lendingMarket}, with a first deposit of ${data.liquidityAmount} from ${accounts.sourceLiquidity}"
+        },
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "liquidityDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "reserveLiquidityMint",
+              "path": "decimals"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "name": "refreshReserve",
+        "docs": [
+          "Accrue interest and update market price of liquidity on a reserve.",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Reserve account.",
+          "1. `[]` Pyth Reserve liquidity oracle account.",
+          "Must be the Pyth price account specified at InitReserve.",
+          "2. `[]` Switchboard Reserve liquidity oracle account.",
+          "Must be the Switchboard price feed account specified at InitReserve.",
+          "3. `[]` Clock sysvar (optional, will be removed soon)."
+        ],
+        "optionalAccountStrategy": "omitted",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "pythPrice",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Pyth Reserve liquidity oracle account. Must be the Pyth price account specified at InitReserve."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "switchboardFeed",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Switchboard Reserve liquidity oracle account. Must be the Switchboard price feed account specified at InitReserve."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "extraOracleAccount",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "docs": [
+              "Extra oracle of the reserve, when it has one."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 3
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Refresh a reserve",
+          "interpolatedIntent": "Refreshes the interest and price of reserve ${accounts.reserve}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "depositReserveLiquidity",
+        "docs": [
+          "Deposit liquidity into a reserve in exchange for collateral. Collateral represents a share",
+          "of the reserve liquidity pool.",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Source liquidity token account.",
+          "$authority can transfer $liquidity_amount.",
+          "1. `[writable]` Destination collateral token account.",
+          "2. `[writable]` Reserve account.",
+          "3. `[writable]` Reserve liquidity supply SPL Token account.",
+          "4. `[writable]` Reserve collateral SPL Token mint.",
+          "5. `[]` Lending market account.",
+          "6. `[]` Derived lending market authority.",
+          "7. `[signer]` User transfer authority ($authority).",
+          "8. `[]` Clock sysvar (optional, will be removed soon).",
+          "9. `[]` Token program id."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "sourceLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Source liquidity token account. $authority can transfer $liquidity_amount."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationCollateral",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Destination collateral token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collateral Tokens To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveLiquiditySupply",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve liquidity supply SPL Token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Liquidity Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveCollateralMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve collateral SPL Token mint."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collateral Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarketAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Derived lending market authority."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userTransferAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "User transfer authority ($authority)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Transfer Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 4
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "liquidityAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "Amount of liquidity to deposit in exchange for collateral tokens"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount (Reserve's Token)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Deposit into a reserve",
+          "interpolatedIntent": "${accounts.userTransferAuthority} deposits ${data.liquidityAmount} from ${accounts.sourceLiquidity} into reserve ${accounts.reserve} and receives its collateral tokens in ${accounts.destinationCollateral}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "redeemReserveCollateral",
+        "docs": [
+          "Redeem collateral from a reserve in exchange for liquidity.",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Source collateral token account.",
+          "$authority can transfer $collateral_amount.",
+          "1. `[writable]` Destination liquidity token account.",
+          "2. `[writable]` Reserve account.",
+          "3. `[writable]` Reserve collateral SPL Token mint.",
+          "4. `[writable]` Reserve liquidity supply SPL Token account.",
+          "5. `[]` Lending market account.",
+          "6. `[]` Derived lending market authority.",
+          "7. `[signer]` User transfer authority ($authority).",
+          "8. `[]` Clock sysvar (optional, will be removed soon).",
+          "9. `[]` Token program id."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "sourceCollateral",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Source collateral token account. $authority can transfer $collateral_amount."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Destination liquidity token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveCollateralMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve collateral SPL Token mint."
+            ],
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collateral Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveLiquiditySupply",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve liquidity supply SPL Token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Liquidity Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarketAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Derived lending market authority."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userTransferAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "User transfer authority ($authority)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Transfer Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 5
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "collateralAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "collateralDecimals"
+                }
+              }
+            },
+            "docs": [
+              "Amount of collateral tokens to redeem in exchange for liquidity"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Collateral Tokens"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Redeem collateral tokens",
+          "interpolatedIntent": "${accounts.userTransferAuthority} redeems ${data.collateralAmount} collateral tokens of reserve ${accounts.reserve} from ${accounts.sourceCollateral} for the reserve's token into ${accounts.destinationLiquidity}"
+        },
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "collateralDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "reserveCollateralMint",
+              "path": "decimals"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initObligation",
+        "docs": [
+          "Initializes a new lending market obligation.",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Obligation account - uninitialized.",
+          "1. `[]` Lending market account.",
+          "2. `[signer]` Obligation owner.",
+          "3. `[]` Clock sysvar (optional, will be removed soon).",
+          "4. `[]` Rent sysvar.",
+          "5. `[]` Token program id."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligation",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Obligation account - uninitialized."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Obligation"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligationOwner",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Obligation owner."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rent",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Rent sysvar."
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarRent111111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 6
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create an obligation",
+          "interpolatedIntent": "${accounts.obligationOwner} creates obligation ${accounts.obligation} in lending market ${accounts.lendingMarket}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "refreshObligation",
+        "docs": [
+          "Refresh an obligation's accrued interest and collateral and liquidity prices. Requires",
+          "refreshed reserves, as all obligation collateral deposit reserves in order, followed by all",
+          "liquidity borrow reserves in order.",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Obligation account.",
+          "1. `[]` Clock sysvar (optional, will be removed soon).",
+          ".. `[writable]` Collateral deposit reserve accounts - refreshed, all, in order.",
+          ".. `[]` Liquidity borrow reserve accounts - refreshed, all, in order."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligation",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Obligation account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Obligation"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 7
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Refresh an obligation",
+          "interpolatedIntent": "Refreshes the deposits and borrows of obligation ${accounts.obligation}"
+        },
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "obligationReserves"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The obligation's deposit reserves, all, in order, then its borrow",
+              "reserves, all, in order."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "name": "depositObligationCollateral",
+        "docs": [
+          "Deposit collateral to an obligation.",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Source collateral token account.",
+          "Minted by deposit reserve collateral mint.",
+          "$authority can transfer $collateral_amount.",
+          "1. `[writable]` Destination deposit reserve collateral supply SPL Token account.",
+          "2. `[writable]` Deposit reserve account.",
+          "3. `[writable]` Obligation account.",
+          "4. `[]` Lending market account.",
+          "5. `[signer]` Obligation owner.",
+          "6. `[signer]` User transfer authority ($authority).",
+          "7. `[]` Clock sysvar (optional, will be removed soon).",
+          "8. `[]` Token program id."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "sourceCollateral",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Source collateral token account. Minted by deposit reserve collateral mint. $authority can transfer $collateral_amount."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationCollateral",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Destination deposit reserve collateral supply SPL Token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Collateral Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "depositReserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Deposit reserve account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligation",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Obligation account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Obligation"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligationOwner",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Obligation owner."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Obligation Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userTransferAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "User transfer authority ($authority)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Transfer Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 8
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "collateralAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "Amount of collateral tokens to deposit"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Collateral Tokens"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Deposit collateral",
+          "interpolatedIntent": "${accounts.userTransferAuthority} deposits ${data.collateralAmount} collateral tokens of reserve ${accounts.depositReserve} from ${accounts.sourceCollateral} into obligation ${accounts.obligation}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawObligationCollateral",
+        "docs": [
+          "Withdraw collateral from an obligation. Requires a refreshed obligation and reserve.",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Source withdraw reserve collateral supply SPL Token account.",
+          "1. `[writable]` Destination collateral token account.",
+          "Minted by withdraw reserve collateral mint.",
+          "2. `[]` Withdraw reserve account - refreshed.",
+          "3. `[writable]` Obligation account - refreshed.",
+          "4. `[]` Lending market account.",
+          "5. `[]` Derived lending market authority.",
+          "6. `[signer]` Obligation owner.",
+          "7. `[]` Clock sysvar (optional, will be removed soon).",
+          "8. `[]` Token program id."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "sourceCollateral",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Source withdraw reserve collateral supply SPL Token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Collateral Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationCollateral",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Destination collateral token account. Minted by withdraw reserve collateral mint."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawReserve",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Withdraw reserve account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligation",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Obligation account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Obligation"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarketAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Derived lending market authority."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligationOwner",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Obligation owner."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 9
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "collateralAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "Amount of collateral tokens to withdraw - u64::MAX for up to 100% of deposited amount"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Collateral Tokens (the highest value withdraws as much as allowed)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw collateral",
+          "interpolatedIntent": "${accounts.obligationOwner} withdraws up to ${data.collateralAmount} collateral tokens of reserve ${accounts.withdrawReserve} from obligation ${accounts.obligation} into ${accounts.destinationCollateral}"
+        },
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "depositReserves"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The obligation's deposit reserves, all, in order (their borrow",
+              "attribution is updated)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "name": "borrowObligationLiquidity",
+        "docs": [
+          "Borrow liquidity from a reserve by depositing collateral tokens. Requires a refreshed",
+          "obligation and reserve.",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Source borrow reserve liquidity supply SPL Token account.",
+          "1. `[writable]` Destination liquidity token account.",
+          "Minted by borrow reserve liquidity mint.",
+          "2. `[writable]` Borrow reserve account - refreshed.",
+          "3. `[writable]` Borrow reserve liquidity fee receiver account.",
+          "Must be the fee account specified at InitReserve.",
+          "4. `[writable]` Obligation account - refreshed.",
+          "5. `[]` Lending market account.",
+          "6. `[]` Derived lending market authority.",
+          "7. `[signer]` Obligation owner.",
+          "8. `[]` Clock sysvar (optional, will be removed soon).",
+          "9. `[]` Token program id.",
+          "10 `[optional, writable]` Host fee receiver account."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "sourceLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Source borrow reserve liquidity supply SPL Token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Liquidity Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Destination liquidity token account. Minted by borrow reserve liquidity mint."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "borrowReserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Borrow reserve account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "borrowReserveLiquidityFeeReceiver",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Borrow reserve liquidity fee receiver account. Must be the fee account specified at InitReserve."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Fee Receiver"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligation",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Obligation account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Obligation"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarketAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Derived lending market authority."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligationOwner",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Obligation owner."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 10
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "liquidityAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "Amount of liquidity to borrow - u64::MAX for 100% of borrowing power"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount (Reserve's Token; the highest value borrows as much as allowed)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Borrow tokens",
+          "interpolatedIntent": "${accounts.obligationOwner} borrows ${data.liquidityAmount} from reserve ${accounts.borrowReserve} against obligation ${accounts.obligation}, into ${accounts.destinationLiquidity}"
+        },
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "depositReservesAndHostFeeReceiver"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The obligation's deposit reserves, all, in order, then optionally",
+              "a host fee receiver, which gets the host's share of the borrow fee."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Deposit Reserve (Last May Be Host Fee Receiver)"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "name": "repayObligationLiquidity",
+        "docs": [
+          "Repay borrowed liquidity to a reserve. Requires a refreshed obligation and reserve.",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Source liquidity token account.",
+          "Minted by repay reserve liquidity mint.",
+          "$authority can transfer $liquidity_amount.",
+          "1. `[writable]` Destination repay reserve liquidity supply SPL Token account.",
+          "2. `[writable]` Repay reserve account - refreshed.",
+          "3. `[writable]` Obligation account - refreshed.",
+          "4. `[]` Lending market account.",
+          "5. `[signer]` User transfer authority ($authority).",
+          "6. `[]` Clock sysvar (optional, will be removed soon).",
+          "7. `[]` Token program id."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "sourceLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Source liquidity token account. Minted by repay reserve liquidity mint. $authority can transfer $liquidity_amount."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Destination repay reserve liquidity supply SPL Token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Liquidity Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "repayReserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Repay reserve account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligation",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Obligation account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Obligation"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userTransferAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "User transfer authority ($authority)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Transfer Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 11
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "liquidityAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "Amount of liquidity to repay - u64::MAX for 100% of borrowed amount"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount (Reserve's Token; the highest value repays the whole debt)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Repay a loan",
+          "interpolatedIntent": "${accounts.userTransferAuthority} repays up to ${data.liquidityAmount} of the debt of obligation ${accounts.obligation} to reserve ${accounts.repayReserve}, from ${accounts.sourceLiquidity}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "liquidateObligation",
+        "docs": [
+          "Repay borrowed liquidity to a reserve to receive collateral at a discount from an unhealthy",
+          "obligation. Requires a refreshed obligation and reserves.",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Source liquidity token account.",
+          "Minted by repay reserve liquidity mint.",
+          "$authority can transfer $liquidity_amount.",
+          "1. `[writable]` Destination collateral token account.",
+          "Minted by withdraw reserve collateral mint.",
+          "2. `[writable]` Repay reserve account - refreshed.",
+          "3. `[writable]` Repay reserve liquidity supply SPL Token account.",
+          "4. `[]` Withdraw reserve account - refreshed.",
+          "5. `[writable]` Withdraw reserve collateral supply SPL Token account.",
+          "6. `[writable]` Obligation account - refreshed.",
+          "7. `[]` Lending market account.",
+          "8. `[]` Derived lending market authority.",
+          "9. `[signer]` User transfer authority ($authority).",
+          "10 `[]` Clock sysvar (optional, will be removed soon).",
+          "11 `[]` Token program id."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "sourceLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Source liquidity token account. Minted by repay reserve liquidity mint. $authority can transfer $liquidity_amount."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Repays From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationCollateral",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Destination collateral token account. Minted by withdraw reserve collateral mint."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collateral Tokens To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "repayReserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Repay reserve account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Repay Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "repayReserveLiquiditySupply",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Repay reserve liquidity supply SPL Token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Repay Reserve Liquidity Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawReserve",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Withdraw reserve account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Withdraw Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawReserveCollateralSupply",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Withdraw reserve collateral supply SPL Token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Withdraw Reserve Collateral Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligation",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Obligation account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Obligation"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarketAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Derived lending market authority."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userTransferAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "User transfer authority ($authority)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Liquidator"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 12
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "liquidityAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "Amount of liquidity to repay - u64::MAX for up to 100% of borrowed amount"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Maximum Repaid"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Liquidate (deprecated)",
+          "interpolatedIntent": "${accounts.userTransferAuthority} asks to liquidate obligation ${accounts.obligation} with the old instruction. The program rejects this instruction"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "flashLoan",
+        "docs": [
+          "This instruction is now deprecated. Use FlashBorrowReserveLiquidity instead.",
+          "Make a flash loan.",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Source liquidity token account.",
+          "Minted by reserve liquidity mint.",
+          "Must match the reserve liquidity supply.",
+          "1. `[writable]` Destination liquidity token account.",
+          "Minted by reserve liquidity mint.",
+          "2. `[writable]` Reserve account.",
+          "3. `[writable]` Flash loan fee receiver account.",
+          "Must match the reserve liquidity fee receiver.",
+          "4. `[writable]` Host fee receiver.",
+          "5. `[]` Lending market account.",
+          "6. `[]` Derived lending market authority.",
+          "7. `[]` Token program id.",
+          "8. `[]` Flash loan receiver program id.",
+          "Must implement an instruction that has tag of 0 and a signature of `(amount: u64)`",
+          "This instruction must return the amount to the source liquidity account.",
+          ".. `[any]` Additional accounts expected by the receiving program's `ReceiveFlashLoan` instruction.",
+          "",
+          "The flash loan receiver program that is to be invoked should contain an instruction with",
+          "tag `0` and accept the total amount (including fee) that needs to be returned back after",
+          "its execution has completed.",
+          "",
+          "Flash loan receiver should have an instruction with the following signature:",
+          "",
+          "0. `[writable]` Source liquidity (matching the destination from above).",
+          "1. `[writable]` Destination liquidity (matching the source from above).",
+          "2. `[]` Token program id",
+          ".. `[any]` Additional accounts provided to the lending program's `FlashLoan` instruction above.",
+          "ReceiveFlashLoan {",
+          "// Amount that must be repaid by the receiver program",
+          "amount: u64",
+          "}"
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "sourceLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Source liquidity token account. Minted by reserve liquidity mint. Must match the reserve liquidity supply."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Liquidity Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Destination liquidity token account. Minted by reserve liquidity mint."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "flashLoanFeeReceiver",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Flash loan fee receiver account. Must match the reserve liquidity fee receiver."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Fee Receiver"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "hostFeeReceiver",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Host fee receiver."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Host Fee Receiver"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarketAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Derived lending market authority."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "flashLoanReceiverProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Flash loan receiver program id. Must implement an instruction that has tag of 0 and a signature of `(amount: u64)` This instruction must return the amount to the source liquidity account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Receiver Program"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 13
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "The amount that is to be borrowed - u64::MAX for up to 100% of available liquidity"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Take a flash loan (deprecated)",
+          "interpolatedIntent": "Asks for a flash loan of ${data.amount} from reserve ${accounts.reserve} with the old instruction. The program rejects this instruction"
+        },
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "receiverProgramAccounts"
+            },
+            "isOptional": true,
+            "isWritable": false,
+            "docs": [
+              "Accounts the receiving program's `ReceiveFlashLoan` instruction expects."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Receiver Program Account"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "name": "depositReserveLiquidityAndObligationCollateral",
+        "docs": [
+          "Combines DepositReserveLiquidity and DepositObligationCollateral",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Source liquidity token account.",
+          "$authority can transfer $liquidity_amount.",
+          "1. `[writable]` Destination collateral token account.",
+          "2. `[writable]` Reserve account.",
+          "3. `[writable]` Reserve liquidity supply SPL Token account.",
+          "4. `[writable]` Reserve collateral SPL Token mint.",
+          "5. `[]` Lending market account.",
+          "6. `[]` Derived lending market authority.",
+          "7. `[writable]` Destination deposit reserve collateral supply SPL Token account.",
+          "8. `[writable]` Obligation account.",
+          "9. `[signer]` Obligation owner.",
+          "10 `[]` Pyth price oracle account.",
+          "11 `[]` Switchboard price feed oracle account.",
+          "12 `[signer]` User transfer authority ($authority).",
+          "13 `[]` Clock sysvar (optional, will be removed soon).",
+          "14 `[]` Token program id."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "sourceLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Source liquidity token account. $authority can transfer $liquidity_amount."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userCollateral",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Destination collateral token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collateral Token Account (Passed Through)"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveLiquiditySupply",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve liquidity supply SPL Token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Liquidity Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveCollateralMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve collateral SPL Token mint."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collateral Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarketAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Derived lending market authority."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationCollateral",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Destination deposit reserve collateral supply SPL Token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Collateral Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligation",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Obligation account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Obligation"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligationOwner",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Obligation owner."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Obligation Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "pythPrice",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Pyth price oracle account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "switchboardFeed",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Switchboard price feed oracle account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userTransferAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "User transfer authority ($authority)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Transfer Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 14
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "liquidityAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "Amount of liquidity to deposit in exchange"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount (Reserve's Token)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Deposit as collateral",
+          "interpolatedIntent": "${accounts.userTransferAuthority} deposits ${data.liquidityAmount} from ${accounts.sourceLiquidity} into reserve ${accounts.reserve}, as collateral of obligation ${accounts.obligation}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawObligationCollateralAndRedeemReserveCollateral",
+        "docs": [
+          "Combines WithdrawObligationCollateral and RedeemReserveCollateral",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Source withdraw reserve collateral supply SPL Token account.",
+          "1. `[writable]` Destination collateral token account.",
+          "Minted by withdraw reserve collateral mint.",
+          "2. `[writable]` Withdraw reserve account - refreshed.",
+          "3. `[writable]` Obligation account - refreshed.",
+          "4. `[]` Lending market account.",
+          "5. `[]` Derived lending market authority.",
+          "6. `[writable]` User liquidity token account.",
+          "7. `[writable]` Reserve collateral SPL Token mint.",
+          "8. `[writable]` Reserve liquidity supply SPL Token account.",
+          "9. `[signer]` Obligation owner",
+          "10 `[signer]` User transfer authority ($authority).",
+          "11. `[]` Clock sysvar (optional, will be removed soon).",
+          "12. `[]` Token program id."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveCollateral",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Source withdraw reserve collateral supply SPL Token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Collateral Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userCollateral",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Destination collateral token account. Minted by withdraw reserve collateral mint."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collateral Token Account (Passed Through)"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Withdraw reserve account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligation",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Obligation account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Obligation"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarketAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Derived lending market authority."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "User liquidity token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveCollateralMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve collateral SPL Token mint."
+            ],
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collateral Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveLiquiditySupply",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve liquidity supply SPL Token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Liquidity Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligationOwner",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Obligation owner"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userTransferAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "User transfer authority ($authority)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Transfer Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 15
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "collateralAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "collateralDecimals"
+                }
+              }
+            },
+            "docs": [
+              "liquidity_amount is the amount of collateral tokens to withdraw"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Collateral Tokens (the highest value withdraws as much as allowed)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw a deposit",
+          "interpolatedIntent": "${accounts.obligationOwner} withdraws up to ${data.collateralAmount} collateral tokens of reserve ${accounts.reserve} from obligation ${accounts.obligation} and redeems them for the reserve's token into ${accounts.userLiquidity}"
+        },
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "collateralDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "reserveCollateralMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "depositReserves"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The obligation's deposit reserves, all, in order (their borrow",
+              "attribution is updated)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateReserveConfig",
+        "docs": [
+          "Updates a reserves config and a reserve price oracle pubkeys",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "1. `[writable]` Reserve account - refreshed",
+          "2 `[]` Lending market account.",
+          "3 `[]` Derived lending market authority.",
+          "4 `[signer]` Lending market owner.",
+          "5 `[]` Pyth product key.",
+          "6 `[]` Pyth price key.",
+          "7 `[]` Switchboard key."
+        ],
+        "optionalAccountStrategy": "omitted",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve account - refreshed"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarketAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Derived lending market authority."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "signer",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Lending market owner."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Market Owner or Risk Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "pythProduct",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Pyth product key."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pyth Product Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "pythPrice",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Pyth price key."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pyth Price Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "switchboardFeed",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Switchboard key."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Switchboard Feed"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "extraOracle",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "docs": [
+              "Extra oracle, read when the market owner signs and the config names one."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Extra Oracle"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 16
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "config",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "reserveConfig"
+            },
+            "docs": [
+              "Reserve config to update to"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "rateLimiterConfig",
+            "type": {
+              "kind": "structTypeNode",
+              "fields": [
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "windowDuration",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u64",
+                    "endian": "le"
+                  },
+                  "docs": [
+                    "Rate limiter window size in slots."
+                  ],
+                  "display": {
+                    "kind": "structFieldDisplayNode",
+                    "label": "Outflow Window (Slots)"
+                  }
+                },
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "maxOutflow",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u64",
+                    "endian": "le",
+                    "display": {
+                      "kind": "amountNumberDisplayNode",
+                      "unit": {
+                        "kind": "stringValueNode",
+                        "string": "base units"
+                      }
+                    }
+                  },
+                  "docs": [
+                    "Rate limiter param. Max outflow in a window."
+                  ],
+                  "display": {
+                    "kind": "structFieldDisplayNode",
+                    "label": "Max Outflow per Window (Reserve's Token)"
+                  }
+                }
+              ]
+            },
+            "docs": [
+              "Rate limiter config"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update reserve settings",
+          "interpolatedIntent": "${accounts.signer} updates the settings of reserve ${accounts.reserve}. The market owner sets them all; the risk authority can only lower its deposit and borrow limits or pause outflows"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "liquidateObligationAndRedeemReserveCollateral",
+        "docs": [
+          "Repay borrowed liquidity to a reserve to receive collateral at a discount from an unhealthy",
+          "obligation. Requires a refreshed obligation and reserves.",
+          "",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Source liquidity token account.",
+          "Minted by repay reserve liquidity mint.",
+          "$authority can transfer $liquidity_amount.",
+          "1. `[writable]` Destination collateral token account.",
+          "Minted by withdraw reserve collateral mint.",
+          "2. `[writable]` Destination liquidity token account.",
+          "3. `[writable]` Repay reserve account - refreshed.",
+          "4. `[writable]` Repay reserve liquidity supply SPL Token account.",
+          "5. `[writable]` Withdraw reserve account - refreshed.",
+          "6. `[writable]` Withdraw reserve collateral SPL Token mint.",
+          "7. `[writable]` Withdraw reserve collateral supply SPL Token account.",
+          "8. `[writable]` Withdraw reserve liquidity supply SPL Token account.",
+          "9. `[writable]` Withdraw reserve liquidity fee receiver account.",
+          "10 `[writable]` Obligation account - refreshed.",
+          "11 `[]` Lending market account.",
+          "12 `[]` Derived lending market authority.",
+          "13 `[signer]` User transfer authority ($authority).",
+          "14 `[]` Token program id."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "sourceLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Source liquidity token account. Minted by repay reserve liquidity mint. $authority can transfer $liquidity_amount."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Repays From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationCollateral",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Destination collateral token account. Minted by withdraw reserve collateral mint."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collateral Tokens To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Destination liquidity token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Receives Into"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "repayReserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Repay reserve account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Repay Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "repayReserveLiquiditySupply",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Repay reserve liquidity supply SPL Token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Repay Reserve Liquidity Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawReserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Withdraw reserve account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Withdraw Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawReserveCollateralMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Withdraw reserve collateral SPL Token mint."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Withdraw Collateral Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawReserveCollateralSupply",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Withdraw reserve collateral supply SPL Token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Withdraw Reserve Collateral Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawReserveLiquiditySupply",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Withdraw reserve liquidity supply SPL Token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Withdraw Reserve Liquidity Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawReserveLiquidityFeeReceiver",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Withdraw reserve liquidity fee receiver account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Withdraw Reserve Fee Receiver"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligation",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Obligation account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Obligation"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarketAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Derived lending market authority."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userTransferAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "User transfer authority ($authority)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Liquidator"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 17
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "liquidityAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "Amount of liquidity to repay - u64::MAX for up to 100% of borrowed amount"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Maximum Repaid (Repay Reserve's Token; the highest value repays as much as allowed)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Liquidate an obligation",
+          "interpolatedIntent": "${accounts.userTransferAuthority} liquidates obligation ${accounts.obligation}: repays up to ${data.liquidityAmount} of its debt to reserve ${accounts.repayReserve} from ${accounts.sourceLiquidity}, and receives its collateral of reserve ${accounts.withdrawReserve}, redeemed into ${accounts.destinationLiquidity} as far as that reserve has liquidity"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "redeemFees",
+        "docs": [
+          "0. `[writable]` Reserve account.",
+          "1. `[writable]` Borrow reserve liquidity fee receiver account.",
+          "Must be the fee account specified at InitReserve.",
+          "2. `[writable]` Reserve liquidity supply SPL Token account.",
+          "3. `[]` Lending market account.",
+          "4. `[]` Derived lending market authority.",
+          "5. `[]` Token program id."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveLiquidityFeeReceiver",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Borrow reserve liquidity fee receiver account. Must be the fee account specified at InitReserve."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Fee Receiver"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveSupplyLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve liquidity supply SPL Token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Liquidity Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarketAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Derived lending market authority."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 18
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Collect reserve fees",
+          "interpolatedIntent": "Moves the fees reserve ${accounts.reserve} has collected to its fee receiver ${accounts.reserveLiquidityFeeReceiver}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "flashBorrowReserveLiquidity",
+        "docs": [
+          "Flash borrow reserve liquidity",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Source liquidity token account.",
+          "1. `[writable]` Destination liquidity token account.",
+          "2. `[writable]` Reserve account.",
+          "3. `[]` Lending market account.",
+          "4. `[]` Derived lending market authority.",
+          "5. `[]` Instructions sysvar.",
+          "6. `[]` Token program id.",
+          "7. `[]` Clock sysvar (optional, will be removed soon)."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "sourceLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Source liquidity token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Liquidity Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Destination liquidity token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarketAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Derived lending market authority."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "instructionsSysvar",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Instructions sysvar."
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "Sysvar1nstructions1111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 19
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "liquidityAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "Amount of liquidity to flash borrow"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount (Reserve's Token)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Take a flash loan",
+          "interpolatedIntent": "Borrows ${data.liquidityAmount} from reserve ${accounts.reserve} into ${accounts.destinationLiquidity}, to be repaid in the same transaction"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "flashRepayReserveLiquidity",
+        "docs": [
+          "Flash repay reserve liquidity",
+          "Accounts expected by this instruction:",
+          "",
+          "0. `[writable]` Source liquidity token account.",
+          "$authority can transfer $liquidity_amount.",
+          "1. `[writable]` Destination liquidity token account.",
+          "2. `[writable]` Flash loan fee receiver account.",
+          "Must match the reserve liquidity fee receiver.",
+          "3. `[writable]` Host fee receiver.",
+          "4. `[writable]` Reserve account.",
+          "5. `[]` Lending market account.",
+          "6. `[signer]` User transfer authority ($authority).",
+          "7. `[]` Instructions sysvar.",
+          "8. `[]` Token program id."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "sourceLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Source liquidity token account. $authority can transfer $liquidity_amount."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Destination liquidity token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Liquidity Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveLiquidityFeeReceiver",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Flash loan fee receiver account. Must match the reserve liquidity fee receiver."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Fee Receiver"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "hostFeeReceiver",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Host fee receiver."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Host Fee Receiver"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userTransferAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "User transfer authority ($authority)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Transfer Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "instructionsSysvar",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Instructions sysvar."
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "Sysvar1nstructions1111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 20
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "liquidityAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "Amount of liquidity to flash repay"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount (Reserve's Token)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "borrowInstructionIndex",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [
+              "Index of FlashBorrowReserveLiquidity instruction"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Borrow Instruction Index"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Repay a flash loan",
+          "interpolatedIntent": "${accounts.userTransferAuthority} repays a flash loan of ${data.liquidityAmount} to reserve ${accounts.reserve}, plus its fee, from ${accounts.sourceLiquidity}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "forgiveDebt",
+        "docs": [
+          "Forgive Debt",
+          "",
+          "Accounts expected by this instruction:",
+          "0. `[writable]` Obligation account - refreshed.",
+          "1. `[writable]` Reserve account - refreshed.",
+          "2. `[]` Lending Market account.",
+          "3. `[signer]` Lending Market owner."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligation",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Obligation account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Obligation"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending Market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarketOwner",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Lending Market owner."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Market Owner"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 21
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "liquidityAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "Amount of debt to forgive"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Maximum Forgiven (Reserve's Token)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Forgive debt",
+          "interpolatedIntent": "${accounts.lendingMarketOwner} forgives up to ${data.liquidityAmount} of the debt of obligation ${accounts.obligation} to reserve ${accounts.reserve}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateMarketMetadata",
+        "docs": [
+          "UpdateMarketMetadata",
+          "",
+          "Accounts expected by this instruction:",
+          "0. `[]` Lending market account.",
+          "1. `[signer]` Lending market owner.",
+          "2. `[writable]` Lending market metadata account.",
+          "Must be a pda with seeds [lending_market, \"MetaData\"]",
+          "3. `[]` System program"
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarketOwner",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Lending market owner."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Market Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "metadata",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market metadata account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Metadata Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "System program, which creates the metadata account."
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 22
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "metadata",
+            "type": {
+              "kind": "structTypeNode",
+              "fields": [
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "bumpSeed",
+                  "type": {
+                    "kind": "numberTypeNode",
+                    "format": "u8",
+                    "endian": "le"
+                  },
+                  "docs": [
+                    "Bump seed."
+                  ],
+                  "display": {
+                    "kind": "structFieldDisplayNode",
+                    "skip": "always"
+                  }
+                },
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "marketName",
+                  "type": {
+                    "kind": "fixedSizeTypeNode",
+                    "size": 50,
+                    "type": {
+                      "kind": "stringTypeNode",
+                      "encoding": "utf8"
+                    }
+                  },
+                  "docs": [
+                    "Market name null padded."
+                  ],
+                  "display": {
+                    "kind": "structFieldDisplayNode",
+                    "label": "Market Name"
+                  }
+                },
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "marketDescription",
+                  "type": {
+                    "kind": "fixedSizeTypeNode",
+                    "size": 300,
+                    "type": {
+                      "kind": "stringTypeNode",
+                      "encoding": "utf8"
+                    }
+                  },
+                  "docs": [
+                    "Market description null padded."
+                  ],
+                  "display": {
+                    "kind": "structFieldDisplayNode",
+                    "label": "Market Description"
+                  }
+                },
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "marketImageUrl",
+                  "type": {
+                    "kind": "fixedSizeTypeNode",
+                    "size": 250,
+                    "type": {
+                      "kind": "stringTypeNode",
+                      "encoding": "utf8"
+                    }
+                  },
+                  "docs": [
+                    "Market image url."
+                  ],
+                  "display": {
+                    "kind": "structFieldDisplayNode",
+                    "label": "Market Image URL"
+                  }
+                },
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "lookupTables",
+                  "type": {
+                    "kind": "arrayTypeNode",
+                    "item": {
+                      "kind": "publicKeyTypeNode"
+                    },
+                    "count": {
+                      "kind": "fixedCountNode",
+                      "value": 4
+                    }
+                  },
+                  "docs": [
+                    "Lookup tables."
+                  ],
+                  "display": {
+                    "kind": "structFieldDisplayNode",
+                    "label": "Lookup Tables"
+                  }
+                },
+                {
+                  "kind": "structFieldTypeNode",
+                  "name": "padding",
+                  "type": {
+                    "kind": "fixedSizeTypeNode",
+                    "size": 100,
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    }
+                  },
+                  "docs": [
+                    "Padding."
+                  ],
+                  "display": {
+                    "kind": "structFieldDisplayNode",
+                    "skip": "always"
+                  }
+                }
+              ]
+            },
+            "docs": [
+              "The lending market's metadata, as its account stores it."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update market metadata",
+          "interpolatedIntent": "${accounts.lendingMarketOwner} sets the name, description, image and lookup tables of lending market ${accounts.lendingMarket}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setObligationCloseabilityStatus",
+        "docs": [
+          "MarkObligationAsClosable",
+          "",
+          "Accounts expected by this instruction",
+          "0. `[writable]` Obligation account - refreshed.",
+          "1. `[]` Lending market account.",
+          "2. `[]` Reserve account - refreshed.",
+          "3. `[signer]` risk authority of lending market or lending market owner"
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "obligation",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Obligation account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Obligation"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "signer",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "risk authority of lending market or lending market owner"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Risk Authority or Market Owner"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 23
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "closeable",
+            "type": {
+              "kind": "booleanTypeNode",
+              "size": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "docs": [
+              "Obligation is closable"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "May Be Liquidated While Healthy"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set obligation closeability",
+          "interpolatedIntent": "${accounts.signer} sets whether obligation ${accounts.obligation} may be liquidated while healthy: ${data.closeable}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "donateToReserve",
+        "docs": [
+          "DonateToReserve",
+          "",
+          "0. `[writable]` Source liquidity token account.",
+          "Minted by repay reserve liquidity mint.",
+          "$authority can transfer $liquidity_amount.",
+          "1. `[writable]` Destination reserve liquidity supply SPL Token account.",
+          "2. `[writable]` Repay reserve account - refreshed.",
+          "3. `[]` Lending market account.",
+          "4. `[signer]` User transfer authority ($authority).",
+          "5. `[]` Token program id."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "sourceLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Source liquidity token account. Minted by repay reserve liquidity mint. $authority can transfer $liquidity_amount."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationLiquidity",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Destination reserve liquidity supply SPL Token account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve Liquidity Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Repay reserve account - refreshed."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lendingMarket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Lending market account."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Market"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userTransferAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "User transfer authority ($authority)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Transfer Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 24
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "liquidityAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "docs": [
+              "amount to donate"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount (Reserve's Token)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Donate to a reserve",
+          "interpolatedIntent": "${accounts.userTransferAuthority} donates ${data.liquidityAmount} from ${accounts.sourceLiquidity} to reserve ${accounts.reserve}, for its depositors"
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "reserveConfig",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "optimalUtilizationRate",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "Optimal utilization rate, as a percentage."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Optimal Utilization"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "maxUtilizationRate",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "Unhealthy utilization rate, as a percentage."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Max Utilization"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "loanToValueRatio",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "Target ratio of the value of borrows to deposits, as a percentage.",
+                "0 if use as collateral is disabled."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Loan to Value (0: Not Collateral)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "liquidationBonus",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "The minimum bonus a liquidator gets when repaying part of an unhealthy",
+                "obligation, as a percentage."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Liquidation Bonus (Min)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "liquidationThreshold",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "Loan to value ratio at which an obligation can be liquidated, as a percentage."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Liquidation Threshold"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "minBorrowRate",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "Min borrow APY."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Min Borrow Rate (APY)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "optimalBorrowRate",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "Optimal (utilization) borrow APY."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Optimal Borrow Rate (APY)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "maxBorrowRate",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "Max borrow APY."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Max Borrow Rate (APY)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "superMaxBorrowRate",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "Supermax borrow APY, as a percentage."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Super Max Borrow Rate (APY)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "fees",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "reserveFees"
+              },
+              "docs": [
+                "Program owner fees assessed, separate from gains due to interest accrual."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "flatten": true
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "depositLimit",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "base units"
+                  }
+                }
+              },
+              "docs": [
+                "Maximum deposit limit of liquidity in native units, u64::MAX for inf."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Deposit Limit"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "borrowLimit",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "base units"
+                  }
+                }
+              },
+              "docs": [
+                "Maximum amount of liquidity that can be borrowed, in native units (0: borrows",
+                "disabled)."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Borrow Limit"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "feeReceiver",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              },
+              "docs": [
+                "Reserve liquidity fee receiver address."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Fee Receiver"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "protocolLiquidationFee",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "decimals": {
+                    "kind": "numberValueNode",
+                    "number": 1
+                  },
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "Cut of the liquidation bonus that the protocol receives, in deca bps."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Protocol Share of Liquidation Bonus"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "protocolTakeRate",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "Protocol take rate is the amount borrowed interest protocol receives, as a",
+                "percentage."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Protocol Share of Interest"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "addedBorrowWeightBps",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "decimals": {
+                    "kind": "numberValueNode",
+                    "number": 2
+                  },
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "Added borrow weight in basis points (the borrow weight is 1 plus this)."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Added Borrow Weight"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "reserveType",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "reserveType"
+              },
+              "docs": [
+                "Type of the reserve."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Reserve Type"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "maxLiquidationBonus",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "The maximum bonus a liquidator gets when repaying part of an unhealthy",
+                "obligation, as a percentage."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Liquidation Bonus (Max)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "maxLiquidationThreshold",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "Loan to value ratio at which the obligation can be liquidated for the maximum",
+                "bonus, as a percentage."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Max Liquidation Threshold"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "scaledPriceOffsetBps",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "i64",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "decimals": {
+                    "kind": "numberValueNode",
+                    "number": 2
+                  },
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "Scaled price offset in basis points. Used to calculate a more reliable asset",
+                "price for staked assets."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Scaled Price Offset"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "extraOraclePubkey",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "docs": [
+                "Extra oracle. Only used to limit borrows and withdrawals."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Extra Oracle"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "attributedBorrowLimitOpen",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "USD"
+                  }
+                }
+              },
+              "docs": [
+                "Open attributed borrow limit in USD."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Attributed Borrow Limit (Open)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "attributedBorrowLimitClose",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "USD"
+                  }
+                }
+              },
+              "docs": [
+                "Close attributed borrow limit in USD."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Attributed Borrow Limit (Close)"
+              }
+            }
+          ]
+        },
+        "docs": [
+          "Reserve configuration values, in the order the instruction data carries them."
+        ]
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "reserveFees",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "borrowFeeWad",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "decimals": {
+                    "kind": "numberValueNode",
+                    "number": 16
+                  },
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "Fee assessed on `BorrowObligationLiquidity`, expressed as a Wad (10^18 = 100%)."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Borrow Fee"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "flashLoanFeeWad",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "decimals": {
+                    "kind": "numberValueNode",
+                    "number": 16
+                  },
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "Fee for flash loan, expressed as a Wad (10^18 = 100%)."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Flash Loan Fee"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "hostFeePercentage",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "docs": [
+                "Amount of fee going to host account, if provided in liquidate and repay."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Host Share of Fees"
+              }
+            }
+          ]
+        },
+        "docs": [
+          "Additional fee information on a reserve."
+        ]
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "reserveType",
+        "type": {
+          "kind": "enumTypeNode",
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          },
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "regular",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Regular (usable as collateral)"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "isolated",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Isolated (borrowed only on its own, not collateral)"
+              }
+            }
+          ]
+        },
+        "docs": [
+          "Asset type of the reserve."
+        ]
+      }
+    ],
+    "errors": [],
+    "name": "saveLending",
+    "prefix": "",
+    "publicKey": "So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo",
+    "version": "2.0.2",
+    "docs": [
+      "Save (formerly Solend) lending program, a fork of SPL token-lending. It",
+      "publishes no IDL: this one is written by hand from token-lending's",
+      "sdk/src/instruction.rs and program/src/processor.rs in",
+      "solendprotocol/solana-program-library at d04ce00bbf4356c4fd32b3be38eb9760b696bb3e."
+    ]
+  },
+  "additionalPrograms": [],
+  "standard": "codama",
+  "version": "1.0.0"
+}
