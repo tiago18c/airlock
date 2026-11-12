@@ -643,6 +643,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("SPMBzsVUuoHA4Jm6KunbsotaahvVikZs1JyTW6iJvbn"),
         "Sanctum Multi-Validator Stake Pool Program",
     ),
+    (
+        Pubkey::from_str_const("1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78"),
+        "Loopscale Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

@@ -653,3 +653,12 @@ programHash = "3a9383372a36d55816d6f47a5707ec8abc8c099dea9f9dd7636b96a9eeaf5169"
 authority = "47SND7bGKvNXrqfP1bjsLCbwTgZhFBzAgmZ42QSkRScz"
 idlSha256 = "36dc5207901598f83455f2364fc717cc7a8ac775765bc19bdbc33bf824a539db"
 reviewed = "2026-11-12"
+
+[[builds]]
+# loopscale (pack). The binary logs 42 instruction names: the IDL's 40 and freezeVaultLpTokens and thawVaultLpTokens, which the IDL lacks and which read raw. Successful mainnet transactions decode with the IDL, every account named, for createLoan, lockLoan, unlockLoan, closeLoan, depositCollateral, withdrawCollateral, borrowPrincipal, repayPrincipal, updateWeightMatrix, refinanceLedger, liquidateLedger, withdrawStrategy, depositUserVault, withdrawUserVault, stakeUserVaultLp, unstakeUserVaultLp, claimVaultRewards, createTimelock and executeTimelock.
+programId = "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78"
+network = "mainnet"
+programHash = "bfaa5c6675e76399f0ced2872019738089651d7f6b0814fd037876218e7bd03d"
+authority = "DwBXwJDZ4Av4miT62sEssWJUinkzwkmPPB4Fg3fKEfft"
+idlSha256 = "707d50d420c2c4b07e0fc755d65ee883edfd8f65385b9dd3cb4b40fde22d5edb"
+reviewed = "2026-11-12"
