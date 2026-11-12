@@ -966,3 +966,12 @@ programHash = "4f8b6c92ace4c6b17191321024aedfe34936b38f916771bf06c1d2254bbff00d"
 authority = "wrEKphuVCu1HmKFy4Syagj7hhTZcpZqF6B193wacXZK"
 idlSha256 = "11eec08861e0fd937de385bf54955dd60996947271ef29279b1823284bd37889"
 reviewed = "2026-11-12"
+
+[[builds]]
+# riptideAmmProgram (pack). The binary logs `Instruction: <name>` and holds the same 16 instruction names the IDL has. Mainnet transactions of oracleUpdate, swapExactIn, marketUpdate and marketDeposit decode with no byte left over; the one account swaps pass beyond the IDL's list is Jito's jitodontfront marker.
+programId = "riptK81hDxhe5pW5jSzSM9iRA8azgEgLJ4dXkPtBS7j"
+network = "mainnet"
+programHash = "3ee703d7265847cc5a66cfd41e2a856938ddc659d26186e02617d2589d3845a6"
+authority = "GwH3Hiv5mACLX3ufTw1pFsrhSPon5tdw252DBs4Rx4PV"
+idlSha256 = "75537d95287c69ce87f9846973cdced58389add2f3d64ece386215c72bbeaac0"
+reviewed = "2026-11-12"

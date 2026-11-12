@@ -1462,3 +1462,19 @@ become remainder options. The optional accounts at the end of `deposit`, `withdr
 `swapExactIn` and `closePool`, passed only when needed, become one remaining-accounts \
 group each. A staleness limit of 0 reads as none. Token amounts are in base units. \
 Display nodes added by hand."""
+
+# Riptide AMM (riptide_amm_program 2.1.0), riptide.so's oracle-quoted market
+# maker: an updater key rewrites each market's quote, and routers such as
+# Jupiter swap against it. A Shank IDL; devnet's program-metadata account
+# holds the same document.
+[[idls]]
+file = "riptide.json"
+programId = "riptK81hDxhe5pW5jSzSM9iRA8azgEgLJ4dXkPtBS7j"
+name = "riptideAmmProgram"
+networks = ["mainnet", "devnet"]
+source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "dc84c88e467915010cbcd61efe1347fb898b95ae848645c57acc18cefefce045" }
+changes = """Converted from Shank to Codama. Swaps declare the accounts passed after the instructions \
+sysvar as one remaining-accounts group, shown (every sampled swap passes Jito's \
+`jitodontfront` marker there). The Token program's mint account is added, so deposit and \
+withdrawal amounts read their mint's decimals; swap amounts are in base units. Display \
+nodes added by hand."""
