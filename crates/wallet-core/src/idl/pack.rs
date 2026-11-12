@@ -197,7 +197,8 @@ mod tests {
     }
 
     /// The mainnet Raydium files are the devnet ones with the addresses of
-    /// mainnet, which is all the two networks' IDLs differ in.
+    /// mainnet, which is all the two networks' IDLs differ in. The router's,
+    /// written by hand, differs by its program address alone.
     #[test]
     fn the_mainnet_raydium_files_differ_from_devnet_by_addresses_alone() {
         let idls = shipped_idls();
@@ -212,7 +213,7 @@ mod tests {
         );
         /// Devnet program, mainnet program, and the other addresses swapped.
         type Pair<'a> = (&'a str, &'a str, &'a [(&'a str, &'a str)]);
-        let pairs: [Pair; 2] = [
+        let pairs: [Pair; 3] = [
             (
                 "DRayAUgENGQBKVaX8owNhgzkEDyoHTGVEGHVJT1E9pfH",
                 "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK",
@@ -228,6 +229,13 @@ mod tests {
                         "DNXgeM9EiiaAbaWvwjHj9fQQLAX5ZsfHyvmYUNRAdNC8",
                     ),
                 ],
+            ),
+            // The router's file is written by hand; mainnet's is devnet's with
+            // the mainnet program address.
+            (
+                "DRaybByLpbUL57LJARs3j8BitTxVfzBg351EaMr5UTCd",
+                "routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS",
+                &[],
             ),
         ];
         for (devnet, mainnet, swaps) in pairs {

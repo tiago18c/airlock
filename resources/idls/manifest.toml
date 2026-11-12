@@ -1140,3 +1140,18 @@ kind's launch check reads, and `adminExecuteMultisigProposal` the accounts of th
 transaction it executes, as remaining accounts. Unstaking, minting proposals and DAO \
 creation scale their amounts by the base or quote mint among their accounts; other token \
 amounts are in base units. Display nodes added by hand."""
+
+# Raydium's routing program on mainnet, which Raydium's own app sends
+# multi-pool swaps through. It publishes no IDL. The file is the hand-written
+# devnet one with mainnet's program address, which is all the two differ in; a
+# test checks that.
+[[idls]]
+file = "raydium-router-mainnet.json"
+programId = "routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS"
+name = "raydiumRouter"
+networks = ["mainnet"]
+source = { kind = "hand" }
+changes = """The devnet router's hand-written file with mainnet's program address. Data layouts and \
+account orders were checked against transactions this program executed on mainnet. The \
+route's hops are one remaining-accounts group, since their accounts depend on each pool \
+program."""
