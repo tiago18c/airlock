@@ -930,3 +930,12 @@ programHash = "d3d674dd897f8fd201f9a0b5e62e2da065afa0ba7809bb144c9ea7479c9c5999"
 authority = "GPgADQrhzGoUgLqxsZMKvSpwcLaJFVTq6gEixKhmcwpm"
 idlSha256 = "230b15e6a408fde31a08b312fc6b352609b1a7daf733e4142557524f630bc975"
 reviewed = "2026-11-12"
+
+[[builds]]
+# jitoTipDistribution (pack). Deployed at slot 403585576; OtterSec lists no verify record. The binary logs exactly the IDL's 10 instruction names apart from Anchor's IDL instructions and holds both halves of each discriminator; mainnet claims, tip distribution account openings and closings, merkle root uploads, claim record closings and upload authority migrations decode with every account named and no data left over.
+programId = "4R3gSG8BpU4t19KYj8CfnbtRpnT8gtk4dvTHxVRwc2r7"
+network = "mainnet"
+programHash = "adeb955a5239519e769e971dc36dccc485bc111f4e00542fb4c8c6e362b550ec"
+authority = "4ivLcnNLhe4cKdpV9b4jyEmxgbYWFgktHcTyyBvYavsD"
+idlSha256 = "785f216ff8088afb9d0b6fa7d9e115cc5032a9043990a353d38a19df74ea1b01"
+reviewed = "2026-11-12"

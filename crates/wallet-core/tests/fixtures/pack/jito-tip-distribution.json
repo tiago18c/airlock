@@ -1,0 +1,279 @@
+{
+  "accounts": {},
+  "instructions": [
+    {
+      "accounts": [
+        "STGR71TeAeycQUDKzku1GqPQdErQcTcdqxJuQmCjBu6",
+        "BvhJ8seFT16Bzp1JuDpUkwRcKNVA5DxnqZJihXhfi793:w",
+        "8F4jGUmxF36vQ6yabnsxX6AQVXdKBhs8kGSUuRKSg8Xt",
+        "7dtfzBRKUBidjmCNoY1Sx9sqBzEEcnZVwgxENPKQMncm:w",
+        "9PzhPdmbCmDCsKEbvZfJnN1mdkzQjxJkSMGL67k3BKZa:w",
+        "6jWg4ostJobnqLMCUBkussarDesNFqFJj1nFqim1xgWB:w",
+        "11111111111111111111111111111111"
+      ],
+      "data": "3ec6d6c1d59f6cd2ff061f000000000000110000005397dada53f92189191d5aed251e384be3c76e92a6b54303b26265b21bc61cbe2f0e5e251b445ab6b960f93caba4e0057f1f319ee337718a589141f66879128111e28427e806ed7a1c8ff4ef9f4dbfa6b595b2912fc89f1aa7f49af36064767a1a8c932a27030783a902f9b01ece87196251218878066bb89dd21a9399ea69127c5782fc7b70cf2f80af8492aa74ddcbf929adb357dd47bd840ffa98a060208f804847772b21e6201db15f6f1bebd6667587c049479b28789e2c87795b06190c3e20d39232df09c8f900ddee0ff7bc1058418efbe1e3bca6198e375ee96b3d15d8193b623fb2171ed5d38b7a45981c2a2da3ed5bacdfa11f3644c05459349894d30dd55a0ab63e7b221096d1773b2620235cc0bb355a4d912369bf1788e0c7772985b74fef33fc62d93dbf06de3623ff96a4ef1dd6bcd490f6e9bbe09b058a6e5e124cff35448b4b97dfb495c5ee72350650504ff12f6ef9f786f85cca4cadbd782433834b471436c265fd88f6ea31887d220c21a9778cc126ca436616cd465f1d2347c5d6d916abf1c64cbfe3c3212af110a7e0ee44e498e97ed2aca5d5cfa7a29fa63fed2bc5d93495f552d751422d0e7695632617bba967fa712baaa621b444c1d1f0323cc15e2935f70e841a8a3e3904ccd525daf4039f8c348f937cf1dc91d2db76a0ca5eac54edf5c49cd449af4faa7c5a99fb911081ce6c42c77c3ee6bd24bc06b9df7ea312293fa63d7ddc0137a2ad17be14d76332c4c0f94eb30c3f",
+      "fields": [
+        [
+          "Amount",
+          "0.000007942 SOL"
+        ],
+        [
+          "Tip Distribution Account",
+          "BvhJ8seFT16Bzp1JuDpUkwRcKNVA5DxnqZJihXhfi793"
+        ],
+        [
+          "Merkle Root Upload Authority",
+          "8F4jGUmxF36vQ6yabnsxX6AQVXdKBhs8kGSUuRKSg8Xt"
+        ],
+        [
+          "Claim Record",
+          "7dtfzBRKUBidjmCNoY1Sx9sqBzEEcnZVwgxENPKQMncm"
+        ],
+        [
+          "Recipient",
+          "9PzhPdmbCmDCsKEbvZfJnN1mdkzQjxJkSMGL67k3BKZa"
+        ],
+        [
+          "Rent Payer",
+          "6jWg4ostJobnqLMCUBkussarDesNFqFJj1nFqim1xgWB"
+        ]
+      ],
+      "from": "2i299YbDaPXuQtufVp1Ak1UZRXSC4L5hen6i6AcGfJ5KKoeWBbKYwrBXSUVAHjyx8v7Md9rR1s3ap1RjKyBogPth#3.1",
+      "intent": "Claim MEV tips",
+      "programId": "4R3gSG8BpU4t19KYj8CfnbtRpnT8gtk4dvTHxVRwc2r7",
+      "sentence": "8F4jGUmxF36vQ6yabnsxX6AQVXdKBhs8kGSUuRKSg8Xt releases 0.000007942 SOL from tip distribution account BvhJ8seFT16Bzp1JuDpUkwRcKNVA5DxnqZJihXhfi793 to 9PzhPdmbCmDCsKEbvZfJnN1mdkzQjxJkSMGL67k3BKZa, if the attached merkle proof matches the account's merkle root; 6jWg4ostJobnqLMCUBkussarDesNFqFJj1nFqim1xgWB pays the rent of claim record 7dtfzBRKUBidjmCNoY1Sx9sqBzEEcnZVwgxENPKQMncm",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "STGR71TeAeycQUDKzku1GqPQdErQcTcdqxJuQmCjBu6",
+        "BfWEic1NowHhY7oju4QpeWZe5LTU3TYwzmz8Qe6pmG8Y:w",
+        "8F4jGUmxF36vQ6yabnsxX6AQVXdKBhs8kGSUuRKSg8Xt",
+        "AswX8Y7K6NCe6YGKMXpS74bHvcYdppYeDskmdvfkJ1ex:w",
+        "BNVuJvd4qdh7HfVYBCBx9zux3dLeYh2yA17gcrNgcLmV:w",
+        "6jWg4ostJobnqLMCUBkussarDesNFqFJj1nFqim1xgWB:w",
+        "11111111111111111111111111111111"
+      ],
+      "data": "3ec6d6c1d59f6cd2fcf0ef2b01000000000d0000001d879f128a9d03f4f7ef3936f6a2a78b5022b546ba9a17a7523f78845c21dbb282eec7ad26762d9079d78311cf663f4be878546d4620bf77bf5a4029e06544f82e1cc5df3b323e8db3933914b8b0282e3badebcbea2d17dc0f61f4065424b5d98f33e0045b94fbe98175840df3513f37a4fdd1a27f11c0f14c96c6782bc37a3b3a11ee806c2647af6d0b75c02b86567a5d51e408f400005bbd4e296b4ab747a8ccfc015623b1ab797a474e9efdb4084c44e708125d8daebda00967b78e2d72ad95d3080e48f87902a8578a68feaead98be49e62a6884e096b30ef505e071db2f6481fdaae531bac98e12d1e2e9d05ab79d2cc997ce9be45c01221d25c902e1026a2540fb86477d2e7e4fc7098c99a76a89ae9ad72f2577fec349cbeb1eb66d9af4db2eabc3908c2424356ea754ed032855d04437f07eaf641950fde91ba5e71dce74b2ad383db10ab7688542f2920796837bbea05e4543b249ed0339699dcb8a7963227c5c68a9e38f93907bbbfa4c001d8c4ab5803a6cc02fc0c29acc9b3c922f352bef090e2c33fd51852ac1f65aeb25aa7e1811cb8543c24566267d157af4",
+      "fields": [
+        [
+          "Amount",
+          "0.019656688 SOL"
+        ],
+        [
+          "Tip Distribution Account",
+          "BfWEic1NowHhY7oju4QpeWZe5LTU3TYwzmz8Qe6pmG8Y"
+        ],
+        [
+          "Merkle Root Upload Authority",
+          "8F4jGUmxF36vQ6yabnsxX6AQVXdKBhs8kGSUuRKSg8Xt"
+        ],
+        [
+          "Claim Record",
+          "AswX8Y7K6NCe6YGKMXpS74bHvcYdppYeDskmdvfkJ1ex"
+        ],
+        [
+          "Recipient",
+          "BNVuJvd4qdh7HfVYBCBx9zux3dLeYh2yA17gcrNgcLmV"
+        ],
+        [
+          "Rent Payer",
+          "6jWg4ostJobnqLMCUBkussarDesNFqFJj1nFqim1xgWB"
+        ]
+      ],
+      "from": "3pzVpDvjdS6K4rTuy5TUPqSy34RYyTAReLpkvxm2Zf3cwF5GLBxiBX79HtB6rcLvtypukTi7VYffhq7fLcey56kM#3.1",
+      "intent": "Claim MEV tips",
+      "programId": "4R3gSG8BpU4t19KYj8CfnbtRpnT8gtk4dvTHxVRwc2r7",
+      "sentence": "8F4jGUmxF36vQ6yabnsxX6AQVXdKBhs8kGSUuRKSg8Xt releases 0.019656688 SOL from tip distribution account BfWEic1NowHhY7oju4QpeWZe5LTU3TYwzmz8Qe6pmG8Y to BNVuJvd4qdh7HfVYBCBx9zux3dLeYh2yA17gcrNgcLmV, if the attached merkle proof matches the account's merkle root; 6jWg4ostJobnqLMCUBkussarDesNFqFJj1nFqim1xgWB pays the rent of claim record AswX8Y7K6NCe6YGKMXpS74bHvcYdppYeDskmdvfkJ1ex",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "STGR71TeAeycQUDKzku1GqPQdErQcTcdqxJuQmCjBu6",
+        "EDjkBjKP8pPeBVMYugLFNe6KyewuRmSL5Hcb7rzwwJwj:w",
+        "DG6fVEB2Qy1jntvHVPui3R12CMqcwNNnjYPYdsbQ9ACP",
+        "ByszyWdqC3rVMWy8f6jwK5cmwkpwYdwsr7UL58xS5vnm:sw",
+        "11111111111111111111111111111111"
+      ],
+      "data": "78bf19b66f31b3376b9c27e9bf2ce2871b86a0e47f61ac65b000c32fefdc9c227961574d81ce4be30000ff",
+      "fields": [
+        [
+          "Merkle Root Upload Authority",
+          "8F4jGUmxF36vQ6yabnsxX6AQVXdKBhs8kGSUuRKSg8Xt"
+        ],
+        [
+          "Validator Commission",
+          "0 %"
+        ],
+        [
+          "Tip Distribution Account",
+          "EDjkBjKP8pPeBVMYugLFNe6KyewuRmSL5Hcb7rzwwJwj"
+        ],
+        [
+          "Validator Vote Account",
+          "DG6fVEB2Qy1jntvHVPui3R12CMqcwNNnjYPYdsbQ9ACP"
+        ],
+        [
+          "Validator Identity",
+          "ByszyWdqC3rVMWy8f6jwK5cmwkpwYdwsr7UL58xS5vnm"
+        ]
+      ],
+      "from": "4zsop5En5XxT7kvHP35LMvjRZhRPEQqfwynMdhDyFnJthruvHwXN2fFjkdXYBBV6vSnXLFB3apH3BdiF1cP6H9xe#1",
+      "intent": "Open a tip distribution account",
+      "programId": "4R3gSG8BpU4t19KYj8CfnbtRpnT8gtk4dvTHxVRwc2r7",
+      "sentence": "ByszyWdqC3rVMWy8f6jwK5cmwkpwYdwsr7UL58xS5vnm opens tip distribution account EDjkBjKP8pPeBVMYugLFNe6KyewuRmSL5Hcb7rzwwJwj for validator vote account DG6fVEB2Qy1jntvHVPui3R12CMqcwNNnjYPYdsbQ9ACP for the current epoch, keeping 0 % commission on its tips, and lets 8F4jGUmxF36vQ6yabnsxX6AQVXdKBhs8kGSUuRKSg8Xt decide who is paid from it",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "STGR71TeAeycQUDKzku1GqPQdErQcTcdqxJuQmCjBu6",
+        "5wX8WT5PJc9d9at2h7Eb9FdqebLfZvq1h93LNhyfKLf8:w",
+        "pine9rHVDS1pjwdhYkx3vRyaAyRd5KPDKXZEXAqvxcX",
+        "pineXRUnbaLNFMxaM3zBmFfTiKgQMGqT9jYHXZWq2Fw:sw",
+        "11111111111111111111111111111111"
+      ],
+      "data": "78bf19b66f31b3376b9c27e9bf2ce2871b86a0e47f61ac65b000c32fefdc9c227961574d81ce4be3e803ff",
+      "fields": [
+        [
+          "Merkle Root Upload Authority",
+          "8F4jGUmxF36vQ6yabnsxX6AQVXdKBhs8kGSUuRKSg8Xt"
+        ],
+        [
+          "Validator Commission",
+          "10 %"
+        ],
+        [
+          "Tip Distribution Account",
+          "5wX8WT5PJc9d9at2h7Eb9FdqebLfZvq1h93LNhyfKLf8"
+        ],
+        [
+          "Validator Vote Account",
+          "pine9rHVDS1pjwdhYkx3vRyaAyRd5KPDKXZEXAqvxcX"
+        ],
+        [
+          "Validator Identity",
+          "pineXRUnbaLNFMxaM3zBmFfTiKgQMGqT9jYHXZWq2Fw"
+        ]
+      ],
+      "from": "53ppxVZqCtLXJ1wjexnsj3dkUDVBMFz7hrBpEvTrG1FxwiK5zxRn76e6feD4Jdh96jwBR8mLSMsCmAYxXrJp6ZT8#1",
+      "intent": "Open a tip distribution account",
+      "programId": "4R3gSG8BpU4t19KYj8CfnbtRpnT8gtk4dvTHxVRwc2r7",
+      "sentence": "pineXRUnbaLNFMxaM3zBmFfTiKgQMGqT9jYHXZWq2Fw opens tip distribution account 5wX8WT5PJc9d9at2h7Eb9FdqebLfZvq1h93LNhyfKLf8 for validator vote account pine9rHVDS1pjwdhYkx3vRyaAyRd5KPDKXZEXAqvxcX for the current epoch, keeping 10 % commission on its tips, and lets 8F4jGUmxF36vQ6yabnsxX6AQVXdKBhs8kGSUuRKSg8Xt decide who is paid from it",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "STGR71TeAeycQUDKzku1GqPQdErQcTcdqxJuQmCjBu6",
+        "J5x8UqjaX92qb7JBTA45kaPqxPM2qo6Yk1A5LGqb8yJ2:w",
+        "8F4jGUmxF36vQ6yabnsxX6AQVXdKBhs8kGSUuRKSg8Xt:w"
+      ],
+      "data": "46036e1dc7becdb0acb95229fc51a6779adfdecd50405c917238174199ed72adf65a9cb743671a8975378a1d000000003000000000000000",
+      "fields": [
+        [
+          "Most Paid Out",
+          "0.495597429 SOL"
+        ],
+        [
+          "Most Recipients",
+          "48"
+        ],
+        [
+          "Tip Distribution Account",
+          "J5x8UqjaX92qb7JBTA45kaPqxPM2qo6Yk1A5LGqb8yJ2"
+        ],
+        [
+          "Merkle Root Upload Authority",
+          "8F4jGUmxF36vQ6yabnsxX6AQVXdKBhs8kGSUuRKSg8Xt"
+        ]
+      ],
+      "from": "5BrKV5tDyMLHYejbAVvpWKjhXNGPZBmQAsL5aHfMRfnMRP2kCurWNa1HQmBehKY1uAXzVDPeoeAXTpeKdafpAGom#1.1",
+      "intent": "Upload a merkle root",
+      "programId": "4R3gSG8BpU4t19KYj8CfnbtRpnT8gtk4dvTHxVRwc2r7",
+      "sentence": "8F4jGUmxF36vQ6yabnsxX6AQVXdKBhs8kGSUuRKSg8Xt sets who is paid from tip distribution account J5x8UqjaX92qb7JBTA45kaPqxPM2qo6Yk1A5LGqb8yJ2: a merkle root paying out at most 0.495597429 SOL to at most 48 recipients",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "STGR71TeAeycQUDKzku1GqPQdErQcTcdqxJuQmCjBu6",
+        "5eosrve6LktMZgVNszYzebgmmC7BjLK8NoWyRQtcmGTF:w",
+        "AMH3F5zAb13td6mVRfnggTjrJaHLHxmgBzkoc9PbpfSZ:w",
+        "49DJjUX3cwFvaZD5rCAwubiz7qdRWDez9xmB381XdHru:w",
+        "EG2ziPBR4uc9MzCLxBmnrE7cozKZV8DTvVSxPWXiQ8vh:sw"
+      ],
+      "data": "2f88d0be7df34ae33104000000000000",
+      "fields": [
+        [
+          "Epoch",
+          "1,073"
+        ],
+        [
+          "Expired Funds Account",
+          "5eosrve6LktMZgVNszYzebgmmC7BjLK8NoWyRQtcmGTF"
+        ],
+        [
+          "Tip Distribution Account",
+          "AMH3F5zAb13td6mVRfnggTjrJaHLHxmgBzkoc9PbpfSZ"
+        ],
+        [
+          "Validator Vote Account",
+          "49DJjUX3cwFvaZD5rCAwubiz7qdRWDez9xmB381XdHru"
+        ],
+        [
+          "Caller",
+          "EG2ziPBR4uc9MzCLxBmnrE7cozKZV8DTvVSxPWXiQ8vh"
+        ]
+      ],
+      "from": "pjbRLKNDqGALsDi7wyZ3mvjXaYnLqPeFMTaUvSSjJiuQw3bM76ZC9h3B2cAiaKhV1EZKjiLHjvMPTSkgiKJpGxA#1",
+      "intent": "Close a tip distribution account",
+      "programId": "4R3gSG8BpU4t19KYj8CfnbtRpnT8gtk4dvTHxVRwc2r7",
+      "sentence": "EG2ziPBR4uc9MzCLxBmnrE7cozKZV8DTvVSxPWXiQ8vh closes expired tip distribution account AMH3F5zAb13td6mVRfnggTjrJaHLHxmgBzkoc9PbpfSZ of epoch 1073: unclaimed tips go to 5eosrve6LktMZgVNszYzebgmmC7BjLK8NoWyRQtcmGTF and its rent goes back to validator vote account 49DJjUX3cwFvaZD5rCAwubiz7qdRWDez9xmB381XdHru",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "STGR71TeAeycQUDKzku1GqPQdErQcTcdqxJuQmCjBu6",
+        "DRqQ5tza9sZhWPr2w7LcZBfgaKSuC81VMCabmCUusNYe:w",
+        "6jWg4ostJobnqLMCUBkussarDesNFqFJj1nFqim1xgWB:w"
+      ],
+      "data": "a3d6bfa5f5bc11b9",
+      "fields": [
+        [
+          "Claim Record",
+          "DRqQ5tza9sZhWPr2w7LcZBfgaKSuC81VMCabmCUusNYe"
+        ],
+        [
+          "Rent Returned To",
+          "6jWg4ostJobnqLMCUBkussarDesNFqFJj1nFqim1xgWB"
+        ]
+      ],
+      "from": "36ogckni8mFPzrp5eKL2p3RauFjkGJqtBQbufgtkcbLDjb6Rm5rJsfTuZyz3AEiRFteZWgMskSdtTfi1NNV1CTQz#1",
+      "intent": "Close a claim record",
+      "programId": "4R3gSG8BpU4t19KYj8CfnbtRpnT8gtk4dvTHxVRwc2r7",
+      "sentence": "Expired claim record DRqQ5tza9sZhWPr2w7LcZBfgaKSuC81VMCabmCUusNYe is closed and its rent goes back to 6jWg4ostJobnqLMCUBkussarDesNFqFJj1nFqim1xgWB",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HpvS3hqsgLRV9tVEVdQbq65XgbbKBiqrr62WGdwWbkNv:w",
+        "2hbjrrawTnZkmeVBSzmNZQ4ujUfYvb7cYbn6hQsr3APU"
+      ],
+      "data": "0de2a39038cad617",
+      "fields": [
+        [
+          "Tip Distribution Account",
+          "HpvS3hqsgLRV9tVEVdQbq65XgbbKBiqrr62WGdwWbkNv"
+        ],
+        [
+          "Upload Authority Override",
+          "2hbjrrawTnZkmeVBSzmNZQ4ujUfYvb7cYbn6hQsr3APU"
+        ]
+      ],
+      "from": "4ZmqaC2bVECnGgeWPCgiHxNWuQnTfmS4qCrDxkTFte1CWoqfbPNtwPF2fpv4wZmASjMUTMAAkw89gMgga45Q1uxH#3",
+      "intent": "Move a root upload authority",
+      "programId": "4R3gSG8BpU4t19KYj8CfnbtRpnT8gtk4dvTHxVRwc2r7",
+      "sentence": "The merkle root upload authority of tip distribution account HpvS3hqsgLRV9tVEVdQbq65XgbbKBiqrr62WGdwWbkNv moves from the original authority to the override authority set in 2hbjrrawTnZkmeVBSzmNZQ4ujUfYvb7cYbn6hQsr3APU",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}

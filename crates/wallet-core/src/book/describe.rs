@@ -755,6 +755,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("EMBERpYNE6ehWmXymZZS2skiFmCa9V5dp14e1iduM5qy"),
         "Phoenix Ember Program",
     ),
+    (
+        Pubkey::from_str_const("4R3gSG8BpU4t19KYj8CfnbtRpnT8gtk4dvTHxVRwc2r7"),
+        "Jito Tip Distribution Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.
