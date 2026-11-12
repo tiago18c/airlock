@@ -234,6 +234,7 @@ fn the_blocks_a_built_in_template_shows_open_to_the_same_blocks() {
                 "cliff_amount" | "per_period" => "1".to_string(),
                 "period" => "60".to_string(),
                 "stream_name" => "Payroll".to_string(),
+                "ticket" => pk(25).to_string(),
                 "freeze_authority" => pk(8).to_string(),
                 "program" => pk(20).to_string(),
                 "buffer" => pk(21).to_string(),

@@ -21,7 +21,7 @@ impl BuiltinTemplate {
 }
 
 /// In the order the picker lists them.
-pub static BUILTIN_TEMPLATES: [BuiltinTemplate; 7] = [
+pub static BUILTIN_TEMPLATES: [BuiltinTemplate; 11] = [
     BuiltinTemplate {
         id: "create-token",
         toml: include_str!("../../templates/create-token.toml"),
@@ -45,6 +45,22 @@ pub static BUILTIN_TEMPLATES: [BuiltinTemplate; 7] = [
     BuiltinTemplate {
         id: "create-stream",
         toml: include_str!("../../templates/create-stream.toml"),
+    },
+    BuiltinTemplate {
+        id: "stake-marinade",
+        toml: include_str!("../../templates/stake-marinade.toml"),
+    },
+    BuiltinTemplate {
+        id: "unstake-marinade",
+        toml: include_str!("../../templates/unstake-marinade.toml"),
+    },
+    BuiltinTemplate {
+        id: "order-unstake-marinade",
+        toml: include_str!("../../templates/order-unstake-marinade.toml"),
+    },
+    BuiltinTemplate {
+        id: "claim-marinade-ticket",
+        toml: include_str!("../../templates/claim-marinade-ticket.toml"),
     },
     BuiltinTemplate {
         id: "upgrade-program",

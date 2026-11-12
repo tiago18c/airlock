@@ -1,0 +1,31 @@
+format = 1
+name = "Unstake mSOL in a few days"
+summary = "Burns mSOL for a Marinade ticket worth its SOL with no fee, claimable once Marinade has unstaked it: from the next epoch, two to three days at most."
+
+[programs]
+marinade = "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
+system = "11111111111111111111111111111111"
+token = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+
+[[input]]
+name = "amount"
+label = "Amount of mSOL"
+hint = "Taken from this wallet's mSOL account. The ticket's SOL can be claimed only by this wallet."
+
+[values]
+lamports = "rent-for 88"
+msol_account = "associated-token-account $wallet mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So $token"
+msol_units = "base-units $amount 9"
+ticket = "new-keypair"
+
+[[block]]
+program = "$system"
+instruction = "createAccount"
+accounts = { newAccount = "$ticket", payer = "$fee-payer" }
+arguments = { lamports = "$lamports", programAddress = "$marinade", space = "88" }
+
+[[block]]
+program = "$marinade"
+instruction = "orderUnstake"
+accounts = { burnMsolAuthority = "$wallet", burnMsolFrom = "$msol_account", clock = "SysvarC1ock11111111111111111111111111111111", msolMint = "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So", newTicketAccount = "$ticket", rent = "SysvarRent111111111111111111111111111111111", state = "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC", tokenProgram = "$token" }
+arguments = { msolAmount = "$msol_units" }

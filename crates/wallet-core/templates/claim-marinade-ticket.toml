@@ -1,0 +1,17 @@
+format = 1
+name = "Claim a Marinade unstake ticket"
+summary = "Pays out the SOL of a ticket from Unstake mSOL in a few days and closes it, from 30 minutes into the epoch after it was made."
+
+[programs]
+marinade = "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
+system = "11111111111111111111111111111111"
+
+[[input]]
+name = "ticket"
+label = "Ticket"
+hint = "Made for this wallet, which receives its SOL and the ticket's rent."
+
+[[block]]
+program = "$marinade"
+instruction = "claim"
+accounts = { clock = "SysvarC1ock11111111111111111111111111111111", reservePda = "Du3Ysj1wKbxPKkuPPnvzQLQh8oMSVifs3jGZjJWXFmHN", state = "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC", systemProgram = "$system", ticketAccount = "$ticket", transferSolTo = "$wallet" }

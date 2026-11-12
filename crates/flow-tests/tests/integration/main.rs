@@ -2,6 +2,7 @@ mod support;
 
 mod cleanup;
 mod combined_approvals;
+mod marinade_templates;
 mod metadata_templates;
 mod migrate;
 mod mixed_approvals;

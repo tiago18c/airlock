@@ -584,6 +584,7 @@ fn every_builtin_template_expands_and_builds_with_everything_on() {
                 "cliff_amount" | "per_period" => "1".to_string(),
                 "period" => "60".to_string(),
                 "stream_name" => "Payroll".to_string(),
+                "ticket" => pk(25).to_string(),
                 "program" => pk(20).to_string(),
                 "buffer" => pk(21).to_string(),
                 "idl_buffer" => pk(22).to_string(),
