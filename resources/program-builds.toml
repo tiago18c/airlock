@@ -846,3 +846,21 @@ programHash = "407c44877d614be1ab40e6b061dad240b908efe0f38ff4c99db794983316edf5"
 authority = "5eosrve6LktMZgVNszYzebgmmC7BjLK8NoWyRQtcmGTF"
 idlSha256 = "186516b4a10973af76c2a1d90ca569db74319dfe8a3d9b2db4853ec1c574412b"
 reviewed = "2026-11-12"
+
+[[builds]]
+# Jito Restaking Program (pack). The binary logs the 25 instruction names of restaking_program/src/lib.rs in jito-foundation/restaking, one per tag the IDL lists (the four operator and network opt-ins log as their ticket names), and that source is unchanged from v0.0.4 to the pinned commit. Every sampled instruction (tags 1, 2, 4 to 7, 9, 11, 15, 17, 20, 21 and 23 on mainnet) decodes with the IDL at its exact data length and names all of its accounts.
+programId = "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q"
+network = "mainnet"
+programHash = "75da0a2fc5aee6cf6645922363c417c0f6bfce4acb5c3624b5eb9392d3f0a29b"
+authority = "5eosrve6LktMZgVNszYzebgmmC7BjLK8NoWyRQtcmGTF"
+idlSha256 = "d1ca41a2e83d6908838a694ef62cdf3b11d0bb1af1cb728c2796b878e4956b45"
+reviewed = "2026-11-12"
+
+[[builds]]
+# Jito Restaking Program (pack). The binary logs the 25 instruction names of restaking_program/src/lib.rs in jito-foundation/restaking, one per tag the IDL lists (the four operator and network opt-ins log as their ticket names), and that source is unchanged from v0.0.4 to the pinned commit. Every sampled instruction (tags 1, 2, 4 to 7, 9, 11, 15, 17, 20, 21 and 23 on mainnet; tags 1, 2, 4 to 7, 9, 15 and 20 on devnet, which runs the same executable) decodes with the IDL at its exact data length and names all of its accounts.
+programId = "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q"
+network = "devnet"
+programHash = "75da0a2fc5aee6cf6645922363c417c0f6bfce4acb5c3624b5eb9392d3f0a29b"
+authority = "9eZbWiHsPRsxLSiHxzg2pkXsAuQMwAjQrda7C7e21Fw6"
+idlSha256 = "d1ca41a2e83d6908838a694ef62cdf3b11d0bb1af1cb728c2796b878e4956b45"
+reviewed = "2026-11-12"

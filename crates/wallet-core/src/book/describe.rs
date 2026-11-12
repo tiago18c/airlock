@@ -723,6 +723,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8"),
         "Jito Vault Program",
     ),
+    (
+        Pubkey::from_str_const("RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q"),
+        "Jito Restaking Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.
