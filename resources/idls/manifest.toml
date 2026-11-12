@@ -621,3 +621,29 @@ withdrawals read the reward token's; the stake a delegating program sets, one-ti
 rewards, and farm vault deposits and withdrawals, whose mint is not an account of the \
 instruction, are in base units. Unstaked amounts are stake shares, scaled by 10^18. \
 Display nodes added by hand."""
+
+# Kamino Vault (kamino_vault), Kamino Finance's earn vaults, which curators
+# allocate across Kamino Lend reserves. The file is the legacy Anchor IDL its
+# Anchor IDL account publishes on mainnet (2.2.2), less four instructions the
+# deployed program (2.3.4) does not have; it has no program-metadata account.
+# The devnet program is closed, so the file is mainnet only.
+[[idls]]
+file = "kamino-vault.json"
+programId = "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd"
+name = "kaminoVault"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "efe2577139dc53c18f91a61d6479407b0f73580e5418f3f88d27f39a9cdb92b7" }
+changes = """Converted from Anchor to Codama. The program's address is set, which a legacy Anchor IDL \
+does not carry. updateReserveAllocationV3, investV2WithMaxAmount, \
+updateKlendQueueAccounting and investInConditionalReserve are removed: the deployed \
+program does not have them. In withdraw and sell, whose two account groups repeat names \
+(vaultState, eventAuthority, program), every grouped account takes its group's name as a \
+prefix (withdrawFromAvailableVaultState), as the v01 and TypeScript converters do and \
+the legacy converter does not; nothing else is renamed. Deposits, withdrawals, \
+redemptions, invests, fee and setting changes declare the vault's reserves and their \
+lending markets as remaining accounts, which Anchor IDLs cannot, and deposits, \
+withdrawals and redemptions also the vault's permissioning authority, which a \
+permissioned vault requires as the last signer. The Token program's mint account is \
+added, so deposit, invest and reward amounts read the vault token's decimals and share \
+amounts the share token's, where that mint is an account of the instruction; the token \
+cap of an allocation and fees given up are in base units. Display nodes added by hand."""
