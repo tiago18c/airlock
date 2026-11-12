@@ -94,10 +94,23 @@ fn prepare(form: &IdlForm, input: &IdlBuildInput) -> Result<Ready, IdlBuildFailu
     }
 
     let text = argument_text(input);
-    let mut arguments = Vec::new();
+    let mut arguments: Vec<(String, Value)> = Vec::new();
     for field in &form.arguments {
-        if let Some(value) = parse_field(field, &text).map_err(IdlBuildFailure::Message)? {
-            arguments.push((field.name.clone(), value))
+        let Some(value) = parse_field(field, &text).map_err(IdlBuildFailure::Message)? else {
+            continue;
+        };
+        // A struct's fields, in the order the struct declares them.
+        match field.name.split_once(STRUCT_FIELD_SEPARATOR) {
+            Some((parent, child)) => match arguments.iter_mut().find(|(name, _)| name == parent) {
+                Some((_, Value::Struct(fields))) => {
+                    fields.insert(child.to_string(), value);
+                }
+                _ => arguments.push((
+                    parent.to_string(),
+                    Value::Struct([(child.to_string(), value)].into_iter().collect()),
+                )),
+            },
+            None => arguments.push((field.name.clone(), value)),
         }
     }
     let signers = form

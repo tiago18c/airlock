@@ -184,6 +184,12 @@ fn kind_words(kind: &IdlArgKind, scale: &InputScale) -> Option<String> {
         IdlArgKind::Bool => "yes or no".into(),
         IdlArgKind::String => "text".into(),
         IdlArgKind::Bytes => "bytes, in hex".into(),
+        IdlArgKind::List(item) => match **item {
+            IdlArgKind::String => "a list of text, as JSON".into(),
+            IdlArgKind::Pubkey => "a list of addresses, as JSON".into(),
+            IdlArgKind::Bool => "a list of yes or no, as JSON".into(),
+            _ => "a list of whole numbers, as JSON".into(),
+        },
         IdlArgKind::Enum { variants } => format!("a choice of {}", listed(variants, "or")),
         IdlArgKind::Integer { float: true, .. } => "a number".into(),
         IdlArgKind::Integer { .. } => match scale {

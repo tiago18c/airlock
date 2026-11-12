@@ -103,6 +103,14 @@ impl Chain {
                 wallet_core::squads::SQUADS_CLEAR_SIGNING_PROGRAM_ID,
                 "squads_clear_signing.so",
             ),
+            (
+                Pubkey::from_str_const("ProgM6JCCvbYkfKqJYHePx4xxSUSqJp7rh8Lyv7nk7S"),
+                "program_metadata.so",
+            ),
+            (
+                Pubkey::from_str_const("verifycLy8mB96wd9wqq3WDXQwM4oU6r42Th37Db9fC"),
+                "otter_verify.so",
+            ),
         ] {
             let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
                 .join("programs")
@@ -176,6 +184,49 @@ impl Chain {
                 },
             )
             .unwrap();
+    }
+
+    /// Put a program of the upgradeable loader at `program`, running `code`,
+    /// with `room` bytes for code in its program data, deployed at slot 0 by
+    /// `authority`, as `solana program deploy` leaves it. Returns its
+    /// program data address.
+    pub fn plant_upgradeable(
+        &mut self,
+        program: Pubkey,
+        authority: Pubkey,
+        code: &[u8],
+        room: usize,
+    ) -> Pubkey {
+        let loader = wallet_core::program_code::BPF_LOADER_UPGRADEABLE_ID;
+        let (program_data, _) = Pubkey::find_program_address(&[program.as_ref()], &loader);
+        let mut data = vec![3, 0, 0, 0];
+        data.extend_from_slice(&0u64.to_le_bytes());
+        data.push(1);
+        data.extend_from_slice(authority.as_ref());
+        data.extend_from_slice(code);
+        data.resize(45 + room, 0);
+        self.plant(program_data, loader, data);
+        let mut data = vec![2, 0, 0, 0];
+        data.extend_from_slice(program_data.as_ref());
+        let lamports = self.svm.minimum_balance_for_rent_exemption(data.len());
+        self.svm
+            .set_account(
+                program,
+                Account {
+                    lamports,
+                    data,
+                    owner: loader,
+                    executable: true,
+                    rent_epoch: 0,
+                },
+            )
+            .unwrap();
+        program_data
+    }
+
+    /// Move the clock to `slot`.
+    pub fn warp(&mut self, slot: u64) {
+        self.svm.warp_to_slot(slot);
     }
 
     /// Put an active address lookup table holding `addresses` on the chain,

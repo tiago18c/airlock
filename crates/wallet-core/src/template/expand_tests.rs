@@ -6,6 +6,7 @@ use crate::fixtures::pk;
 use crate::idl::catalog::IdlCatalog;
 use crate::ids::{ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID};
 use crate::spl::{associated_token_address, create_ata_idempotent};
+use solana_pubkey::Pubkey;
 
 fn builtin(id: &str) -> Template {
     builtin_template(id).unwrap().template().unwrap()
@@ -411,6 +412,12 @@ fn every_builtin_template_expands_and_builds_with_everything_on() {
                 "amount" | "fee" => "1".to_string(),
                 "max_fee" => "10".to_string(),
                 "token_name" | "symbol" | "uri" => "x".to_string(),
+                "program" => pk(20).to_string(),
+                "buffer" => pk(21).to_string(),
+                "idl_buffer" => pk(22).to_string(),
+                "repository" | "commit" | "version" => "x".to_string(),
+                "build_args" => r#"["--library-name", "x"]"#.to_string(),
+                "deploy_slot" => "123".to_string(),
                 _ => continue,
             };
             answers = answers.answer(&input.name, &text);
@@ -550,4 +557,72 @@ fn the_starter_expands_to_a_transfer_that_builds() {
             10_000_000
         )]
     );
+}
+
+#[test]
+fn upgrading_a_program_derives_its_program_data_and_idl_account_and_needs_no_fact() {
+    let template = builtin("upgrade-program");
+    let program = pk(20);
+    let program_data = Pubkey::find_program_address(
+        &[program.as_ref()],
+        &crate::program_code::BPF_LOADER_UPGRADEABLE_ID,
+    )
+    .0;
+    let answers = Answers::for_template(&template)
+        .answer("program", &program.to_string())
+        .answer("buffer", &pk(21).to_string());
+    let mut expansion = run(&template, &answers, &env(), &Facts::default());
+    assert!(expansion.is_complete(), "{expansion:#?}");
+    assert!(expansion.needs.is_empty() && expansion.uses.is_empty());
+    assert_eq!(instructions(&expansion), ["upgrade"]);
+    let built = build_all(&mut expansion);
+    let accounts: Vec<Pubkey> = built[0].accounts.iter().map(|meta| meta.pubkey).collect();
+    // Program data, program, buffer, spill (the wallet), rent, clock, authority.
+    assert_eq!(
+        accounts,
+        [
+            program_data,
+            program,
+            pk(21),
+            pk(1),
+            solana_sdk_ids::sysvar::rent::ID,
+            solana_sdk_ids::sysvar::clock::ID,
+            pk(1),
+        ]
+    );
+    assert_eq!(built[0].data, 3u32.to_le_bytes());
+
+    let answers = answers
+        .turn_on("idl")
+        .turn_on("verified_build")
+        .answer("idl_buffer", &pk(22).to_string())
+        .answer("repository", "https://example.com/p")
+        .answer("commit", "abc")
+        .answer("version", "0.4.11")
+        .answer("deploy_slot", "9");
+    let mut expansion = run(&template, &answers, &env(), &Facts::default());
+    assert!(expansion.is_complete(), "{expansion:#?}");
+    assert_eq!(
+        instructions(&expansion),
+        ["upgrade", "setData", "close", "trim", "update"]
+    );
+    let idl_account = crate::idl::catalog::program_metadata_idl_address(&program).unwrap();
+    let set_data = &expansion.blocks[1].draft;
+    assert_eq!(set_data.account("metadata"), Some(idl_account));
+    assert_eq!(set_data.account("programData"), Some(program_data));
+    assert_eq!(set_data.argument("compression"), "zlib");
+    // The closed IDL buffer pays for the IDL account's new size, and trim
+    // sends what is left over to the refund address.
+    assert_eq!(
+        expansion.blocks[2].draft.account("destination"),
+        Some(idl_account)
+    );
+    assert_eq!(
+        expansion.blocks[3].draft.account("destination"),
+        Some(pk(1))
+    );
+    assert_eq!(expansion.blocks[4].draft.argument("params.args"), "");
+    let built = build_all(&mut expansion);
+    // setData: encoding utf8, zlib, json, direct, and no data.
+    assert_eq!(built[1].data, [3, 1, 2, 1, 0]);
 }

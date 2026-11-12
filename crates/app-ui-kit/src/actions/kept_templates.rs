@@ -520,6 +520,8 @@ fn words_of(template: &Template, term: &Term, facts: Option<FactsFrom>) -> Strin
         }
         Function::RentFor => format!("rent for {} bytes, {from}", arg(0)),
         Function::DecimalsOf => format!("the decimals of the mint {}, {from}", arg(0)),
+        Function::ProgramDataOf => format!("the program data account of {}", arg(0)),
+        Function::IdlMetadataOf => format!("the IDL account of {} on program-metadata", arg(0)),
         Function::TokenProgramOf => {
             format!("the token program of the mint {}, {from}", arg(0))
         }

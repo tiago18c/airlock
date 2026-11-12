@@ -556,6 +556,18 @@ impl<'a> Run<'a> {
                 let decimals = self.facts.decimals.get(&mint)?;
                 Some(Val::Integer(u128::from(*decimals)))
             }
+            Function::ProgramDataOf => {
+                let (address, _) = Pubkey::find_program_address(
+                    &[address(0)?.as_ref()],
+                    &crate::program_code::BPF_LOADER_UPGRADEABLE_ID,
+                );
+                Some(Val::Address(address))
+            }
+            Function::IdlMetadataOf => {
+                crate::idl::catalog::program_metadata_idl_address(&address(0)?)
+                    .ok()
+                    .map(Val::Address)
+            }
             Function::TokenProgramOf => {
                 let mint = address(0)?;
                 self.rest_on(Fact::TokenProgram(mint));

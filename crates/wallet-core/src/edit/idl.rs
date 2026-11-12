@@ -2,6 +2,7 @@
 
 use crate::idl::build::{
     idl_instruction_form, scaled_text, IdlAccountSource, IdlArgKind, IdlArgScale,
+    STRUCT_FIELD_SEPARATOR,
 };
 use crate::idl::draft::IdlDraft;
 use codama_dynamic_client::{NumberValue, ProgramClient, Value};
@@ -33,7 +34,13 @@ pub fn idl_draft_for(
         return None;
     };
     for argument in &form.arguments {
-        let value = fields.get(&argument.name)?;
+        let value = match argument.name.split_once(STRUCT_FIELD_SEPARATOR) {
+            Some((parent, child)) => match fields.get(parent)? {
+                Value::Struct(inner) => inner.get(child)?,
+                _ => return None,
+            },
+            None => fields.get(&argument.name)?,
+        };
         // A scaled field holds the amount in its unit, as it is typed.
         let decimals = match &argument.scale {
             IdlArgScale::None => None,
@@ -111,6 +118,20 @@ fn argument_text(kind: &IdlArgKind, value: &Value, decimals: Option<u8>) -> Opti
             variants.contains(variant).then(|| variant.clone())
         }
         (IdlArgKind::Bytes, Value::Bytes(bytes)) => Some(hex::encode(bytes)),
+        (IdlArgKind::List(_), Value::Array(items)) if items.is_empty() => Some(String::new()),
+        (IdlArgKind::List(item), Value::Array(items)) => {
+            let items = items
+                .iter()
+                .map(|value| {
+                    let text = argument_text(item, value, None)?;
+                    Some(match **item {
+                        IdlArgKind::Bool => serde_json::Value::Bool(text == "true"),
+                        _ => serde_json::Value::String(text),
+                    })
+                })
+                .collect::<Option<Vec<_>>>()?;
+            serde_json::to_string(&items).ok()
+        }
         _ => None,
     }
 }
