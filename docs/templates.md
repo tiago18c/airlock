@@ -109,7 +109,11 @@ Order is the order of the `[[block]]` entries, so an option's block sits where i
 
 **An argument made of fields** (a struct, directly or through a type the IDL defines) is one field per member, named `argument.member`, as Build shows it: `arguments = { "params.commit" = "$commit" }`. The key is quoted, since TOML reads a bare dotted key as a table. **A list** of text, numbers, addresses or booleans is typed as a JSON array, and blank is the empty list, so it may be bound to an optional input.
 
+**A struct inside a list, an option or another struct**, an **enum whose variants hold values**, and a **fixed byte array** are typed as Build types them: a JSON object with a key for each field (`{"verified":false,"key":"…"}`), a variant's name when it holds nothing (`zero`) and `{"variant": value}` when it does (`{"limited": 5}`), and text kept as its bytes followed by zeros, or hex after `0x`. A literal is written the same way; a function of the list below writes the JSON a Metaplex creator list or collection takes from an address.
+
 **A field the template does not mention** is left to the IDL: a derived account is derived, an argument with a default takes it. A required field with no binding and no default refuses the file when it is checked against the IDL.
+
+**An option whose blocks need a program the network in use has no IDL for** is not offered there: the form leaves it out, the reader says "Not offered on this network." with why, and it is off whatever the form held. The rest of the template is offered. So Create a token offers "Name and symbol" on mainnet only, where Token Metadata's IDL ships, and Upgrade a program is offered on every network, updating the IDL and the verified build only on mainnet and devnet.
 
 ### Built-in names
 
@@ -133,6 +137,19 @@ The whole list. A function is pure, or names the chain fact it needs.
 | `token-program-of <mint>` | Token or Token-2022, whichever owns the mint | the mint account |
 | `program-data-of <program>` | The program data account the upgradeable loader keeps the program's code in | nothing |
 | `idl-metadata-of <program>` | The program's canonical IDL account on program-metadata (seed `idl`) | nothing |
+| `metadata-of <mint>` | The mint's metadata account on Metaplex Token Metadata (`metadata`, the program, the mint) | nothing |
+| `master-edition-of <mint>` | The mint's master edition account on Metaplex Token Metadata (as above, then `edition`) | nothing |
+| `base-units <amount> <decimals>` | An amount typed in a token's units, in base units. The input is typed with `<decimals>` places: fixed when it is a literal, once known when it is a value such as `decimals-of` (`InputScale::FromValue`) | nothing |
+| `sole-creator <address>` | The JSON of a Metaplex creator list naming `<address>` alone, verified, with the whole share. It is verified only if that address signs | nothing |
+| `unverified-collection <address>` | The JSON of a Metaplex collection naming `<address>`, not verified | nothing |
+| `stream-escrow-of <stream>` | The token account a Streamflow stream holds its tokens in (`strm`, the stream) | nothing |
+| `tree-config-of <tree>` | The config account Metaplex Bubblegum keeps for a merkle tree (the tree) | nothing |
+| `tree-depth <shape>`, `tree-buffer <shape>` | The depth and buffer size of a merkle tree shape | nothing |
+| `merkle-tree-space <shape> <canopy>` | The bytes of a merkle tree account of that shape and canopy depth on MPL Account Compression | nothing |
+
+An input given to a function and bound to no field takes the parameter's type: a whole number, an amount in a token's units (`base-units`), or for a tree shape a choice of the 34 depth and buffer pairs the account compression programs take, each named with what it holds ("16,384 NFTs (depth 14, buffer 64)"); any other pair fails on chain. A function that cannot take an answer says so on that input (`Missing::Invalid`): `merkle-tree-space` refuses a canopy as deep as the tree, or one that leaves proofs longer than the 17 nodes Bubblegum takes, and names the range.
+
+The sizes are `getConcurrentMerkleTreeAccountSize` of MPL Account Compression's SDK: a 56-byte header, the tree (24 bytes, then a change log of 40 + 32 × depth bytes for each buffer slot and one more for the rightmost proof) and a canopy of (2^(canopy + 1) − 2) × 32 bytes (`crates/wallet-core/src/template/tree.rs`). The flow tests create trees of two shapes against the real programs.
 
 The two size functions read the template's own enabled blocks, so the checkboxes and the size cannot disagree. They count each enabled block whose program is a Token-2022 alias and whose `mint` is bound to the same reference as the function's argument, each extension once. A length that would equal a multisig's (355) is two bytes more, as Token-2022 makes it. An `initialize…` instruction on that mint the table does not know refuses the template when it is checked. A Token-2022 mint is created at the size without metadata and funded for the size with it, because `initializeTokenMetadata` grows the account itself. The extension sizes are a table in Rust, checked by running every shipped option against the real program ([Adding a shipped template](#adding-a-shipped-template)). Beside the shipped options it knows interest-bearing, transfer hook, group pointer, group member pointer, pausable, scaled UI amount, default account state and confidential transfers with their fee, each landed by a flow test. The program takes the confidential transfer fee only on a mint with a transfer fee and confidential transfers, and refuses those two together without it; a mint whose accounts start frozen needs a freeze authority. A template cannot say options go together, so the size functions do not check this: the simulation does.
 
@@ -285,6 +302,23 @@ A debug build started with `AIRLOCK_DEBUG_FILE_DIR` set skips the file dialogs: 
 1. Write `crates/wallet-core/templates/<id>.toml`. The id is the file's stem and stays the same across versions.
 2. Add it to `BUILTIN_TEMPLATES` in `crates/wallet-core/src/template/builtin.rs`, in the order the list shows them.
 3. Run `cargo test -p wallet-core template`. It parses and checks every shipped template against the embedded IDLs of every network its programs run on, and expands and builds each with every option on.
-4. Add a run to `crates/flow-tests/tests/integration/templates.rs`: with no option, with each option alone, and with every option the program allows together. Each run lands the transaction against the real programs in the test VM and reads the result back. An option ships only if its run passes.
+4. Add a run to the flow tests (`crates/flow-tests/tests/integration/templates.rs` for the token programs, a file of its own for another program's): with no option, with each option alone, and with every option the program allows together. Each run lands the transaction against the real programs in the test VM and reads the result back. An option ships only if its run passes. A program the VM does not carry goes in `scripts/fetch-programs.mjs`, pinned by its hash, read from mainnet (`network: "mainnet"`) when devnet runs another build. `support/templates.rs` has a desk that loads such programs, plants copies of the mainnet accounts a program reads (`crates/flow-tests/fixtures/*.json`), lands a shipped template with the IDLs of a network, and reads back what Review and Sign says of each instruction.
 5. A Token-2022 extension the size table (`crates/wallet-core/src/template/size.rs`) does not know refuses the template. Add its size there, with a flow test that lands it.
 6. Add a line to `CHANGELOG.md`.
+
+## The shipped templates
+
+| Template | Programs | Offered on | Flow test |
+| --- | --- | --- | --- |
+| Create a token | System, Token, associated token; Token Metadata for "Name and symbol" | every network; the name and symbol on mainnet | `templates.rs`, `metadata_templates.rs` |
+| Create a Token-2022 token | System, Token-2022, associated token | every network | `templates.rs` |
+| Mint tokens | associated token, Token or Token-2022 | every network | `templates.rs` |
+| Add a name and symbol to a token | Token Metadata (`createV1`) | mainnet | `metadata_templates.rs` |
+| Create an NFT | System, Token, Token Metadata (`createV1`, `mintV1`) | mainnet | `metadata_templates.rs` |
+| Create a Core NFT, Create a Core collection | Metaplex Core (`createV2`, `createCollectionV2`) | mainnet, devnet | `core_templates.rs` |
+| Create a compressed NFT tree, Mint a compressed NFT | System, Bubblegum (`createTreeV2`, `mintV2`), MPL Account Compression, MPL Noop | mainnet, devnet | `compressed_templates.rs` |
+| Create a vesting or payment stream | Streamflow (`create`) | mainnet | `stream_template.rs` |
+| Stake SOL with Marinade, Unstake mSOL now, Unstake mSOL in a few days, Claim a Marinade unstake ticket | Marinade (`deposit`, `liquidUnstake`, `orderUnstake`, `claim`) | mainnet | `marinade_templates.rs` |
+| Upgrade a program | upgradeable loader; program-metadata and OtterSec's verify program for the options | every network; the options on mainnet and devnet | `upgrade_template.rs` |
+
+Token Metadata, Streamflow and Marinade run other builds on devnet than the ones their IDLs describe, which is why their IDLs, and so these templates, are mainnet only. Their fixed addresses come from each program's source or SDK and every executed sample in the IDL's reports: Streamflow's treasury, automatic-withdrawal service and fee oracle are the constants of its SDK (`packages/stream/solana/constants.ts`), and Marinade's accounts are its one state's PDAs and the accounts that state records. Nothing a template writes is read from the chain but rent, a mint's decimals and its token program.
