@@ -269,7 +269,7 @@ fn every_linked_choice_of_the_shipped_idls_opens_as_chosen_and_builds_the_same()
     // once whatever the number of networks it is read on: one more is then a
     // decision made with the IDL that brings it, and one fewer is a widget
     // Build gained.
-    const SKIPPED: [&str; 16] = [
+    const SKIPPED: [&str; 15] = [
         "bankineco.executeTrancheDepositFeeExempt",
         "bankineco.executeTrancheWithdrawFeeExempt",
         "bubblegum.mintV2",
@@ -285,7 +285,6 @@ fn every_linked_choice_of_the_shipped_idls_opens_as_chosen_and_builds_the_same()
         "vaults.liquidatePerfectDex",
         "vaults.operateDex",
         "vaults.operatePerfectDex",
-        "velocity.settleMultiplePnls",
     ];
     skipped.sort();
     skipped.dedup();
