@@ -1493,3 +1493,31 @@ changes = """Converted from Anchor to Codama. The program address is set, since 
 does not carry one. The Token program's mint account is added, so the amounts that \
 consume_cargo burns and mint_to mints read the decimals of their token. Display nodes \
 added by hand."""
+
+# SAGE, the game program of Star Atlas: fleets, starbases, mining, crafting
+# and movement. Players sign with a key their player profile lets act for it,
+# mostly through automation. The file is the legacy Anchor IDL its IDL account
+# publishes on mainnet; the deployed program also has loading_bay_to_respawn,
+# which the IDL lacks.
+[[idls]]
+file = "star-atlas-sage.json"
+programId = "SAGE2HAwep459SNq61LHvjxPk4pLPEJLoMETef7f7EE"
+name = "sage"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "ebbe42637dedc3160c75e3cb19de65c1b26ee05ff2e316931393b32abc976045" }
+changes = """Converted from Anchor to Codama. The program address is set, since a legacy Anchor IDL \
+does not carry one. The XP accounts of close_crafting_process, \
+scan_for_survey_data_units and stop_mining_asteroid, which sit in nested account groups \
+with the same names, are prefixed with their group's name \
+(craftingXpAccountsUserPointsAccount, councilRankXpAccountsUserPointsAccount and so on), \
+as the newer Anchor converter does. The remaining accounts the program reads are \
+declared as Star Atlas's SDK passes them: the docked starbase of fleet cargo, ship and \
+crew instructions, crafting fee accounts, loyalty point redemption accounts, the Merkle \
+proofs of crew cards (hidden), the accounts fleet_state_handler and stop_subwarp settle \
+a movement with, the starbase accounts of invalidate_rental, the mining accounts of \
+force_disband_fleet and the certificate owner of redeem_certificate. The Token program's \
+mint account is added, so cargo amounts of instructions that name the token mint read \
+its decimals. createFleet and addShipToFleet are sent three more bytes than the IDL's \
+arguments account for, in every transaction seen; nothing published says what they mean, \
+so they are declared as optional trailing bytes and shown as such. Display nodes added \
+by hand."""
