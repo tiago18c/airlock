@@ -1,0 +1,5826 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "jitoVault",
+    "publicKey": "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8",
+    "version": "0.0.3",
+    "origin": "shank",
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "name": "config",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "admin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "restakingProgram",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "epochLength",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "numVaults",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "depositWithdrawalFeeCapBps",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "feeRateOfChangeBps",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "feeBumpBps",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "programFeeBps",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "programFeeWallet",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "feeAdmin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "reserved",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 229
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "accountNode",
+        "name": "vault",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "base",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vrtMint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "supportedMint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vrtSupply",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tokensDeposited",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "depositCapacity",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "delegationState",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "delegationState"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "additionalAssetsNeedUnstaking",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vrtEnqueuedForCooldownAmount",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vrtCoolingDownAmount",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vrtReadyToClaimAmount",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "admin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "delegationAdmin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "operatorAdmin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "ncnAdmin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "slasherAdmin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "capacityAdmin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "feeAdmin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "delegateAssetAdmin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "feeWallet",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mintBurnAdmin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "metadataAdmin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vaultIndex",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "ncnCount",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "operatorCount",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "slasherCount",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lastFeeChangeSlot",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lastFullStateUpdateSlot",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "depositFeeBps",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "withdrawalFeeBps",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "nextWithdrawalFeeBps",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "rewardFeeBps",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "programFeeBps",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isPaused",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podBool"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lastStartStateUpdateSlot",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "reserved",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 251
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "accountNode",
+        "name": "vaultNcnSlasherOperatorTicket",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vault",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "ncn",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "slasher",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "operator",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "epoch",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "slashed",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "reserved",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 263
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "accountNode",
+        "name": "vaultNcnSlasherTicket",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vault",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "ncn",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "slasher",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "maxSlashablePerEpoch",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "index",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "state",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "slotToggle"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "reserved",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 263
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "accountNode",
+        "name": "vaultNcnTicket",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vault",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "ncn",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "index",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "state",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "slotToggle"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "reserved",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 263
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "accountNode",
+        "name": "vaultOperatorDelegation",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vault",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "operator",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "delegationState",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "delegationState"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lastUpdateSlot",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "index",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "reserved",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 263
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "accountNode",
+        "name": "vaultStakerWithdrawalTicket",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vault",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "staker",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "base",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vrtAmount",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "slotUnstaked",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "reserved",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 263
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "accountNode",
+        "name": "vaultUpdateStateTracker",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vault",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "ncnEpoch",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lastUpdatedIndex",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "delegationState",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "delegationState"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "withdrawalAllocationMethod",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "reserved",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 263
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "accountNode",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mintAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority used to mint new tokens. The mint authority may only",
+                "be provided during mint creation. If no mint authority is present",
+                "then the mint has a fixed supply and no further tokens may be minted."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "supply",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "docs": [
+                "Total supply of tokens."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "decimals",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "docs": [
+                "Number of base 10 digits to the right of the decimal place."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isInitialized",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "docs": [
+                "Is `true` if this structure has been initialized."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "freezeAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority to freeze token accounts."
+              ]
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "sizeDiscriminatorNode",
+            "size": 82
+          }
+        ],
+        "name": "mint",
+        "docs": [],
+        "size": 82
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "initializeConfig",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "restakingProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Restaking Program"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programFeeWallet",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program Fee Wallet"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 0.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "programFeeBps",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u16",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 2
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "%"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Program Fee"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create the vault program config",
+          "interpolatedIntent": "${accounts.admin} creates the vault program's config ${accounts.config}, with a program fee on withdrawals of ${data.programFeeBps} paid to ${accounts.programFeeWallet}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initializeVault",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vrtMint",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Receipt Token (New Mint)"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Supported Token"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "adminStTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultStTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "burnVault",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Burn Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "burnVaultVrtTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Burn Vault Receipt Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "base",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Seed Key"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "associatedTokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 1.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "depositFeeBps",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u16",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 2
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "%"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Deposit Fee"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "withdrawalFeeBps",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u16",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 2
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "%"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Withdrawal Fee"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "rewardFeeBps",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u16",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 2
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "%"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Reward Fee"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "decimals",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Receipt Token Decimals"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "initializeTokenAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "stDecimals"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Initial Deposit"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "stDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "stMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a vault",
+          "interpolatedIntent": "${accounts.admin} creates vault ${accounts.vault} for ${accounts.stMint} with receipt token ${accounts.vrtMint}, depositing ${data.initializeTokenAmount} whose receipt tokens are locked in burn vault ${accounts.burnVault}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initializeVaultWithMint",
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 2.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Unused instruction",
+          "interpolatedIntent": "Does nothing: the program accepts this instruction and changes nothing"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initializeVaultOperatorDelegation",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "operator",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Operator"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "operatorVaultTicket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Operator's Vault Ticket"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultOperatorDelegation",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Operator Delegation"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Operator Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 3.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Add an operator",
+          "interpolatedIntent": "${accounts.admin} adds operator ${accounts.operator} to vault ${accounts.vault}, creating its delegation account ${accounts.vaultOperatorDelegation}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initializeVaultNcnTicket",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ncn",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Network (NCN)"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ncnVaultTicket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Network's Vault Ticket"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultNcnTicket",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Network Ticket"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Network Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 4.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Add a network",
+          "interpolatedIntent": "${accounts.admin} adds network ${accounts.ncn} to vault ${accounts.vault}, creating ticket ${accounts.vaultNcnTicket}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initializeVaultNcnSlasherOperatorTicket",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ncn",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Network (NCN)"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "slasher",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Slasher"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "operator",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Operator"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultNcnSlasherTicket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Slasher Ticket"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultNcnSlasherOperatorTicket",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Slashing Record"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 5.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a slashing record",
+          "interpolatedIntent": "${accounts.payer} creates the record of how much slasher ${accounts.slasher} of network ${accounts.ncn} slashes operator ${accounts.operator} in vault ${accounts.vault} this epoch"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initializeVaultNcnSlasherTicket",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ncn",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Network (NCN)"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "slasher",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Slasher"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ncnSlasherTicket",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Network's Slasher Ticket"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultSlasherTicket",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Slasher Ticket"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Slasher Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 6.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Add a slasher",
+          "interpolatedIntent": "${accounts.admin} adds slasher ${accounts.slasher} of network ${accounts.ncn} to vault ${accounts.vault}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "warmupVaultNcnTicket",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ncn",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Network (NCN)"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultNcnTicket",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Network Ticket"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Network Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 7.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Opt in to a network",
+          "interpolatedIntent": "${accounts.admin} opts vault ${accounts.vault} in to network ${accounts.ncn}; it becomes active after one full epoch of warm-up"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "cooldownVaultNcnTicket",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ncn",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Network (NCN)"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultNcnTicket",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Network Ticket"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Network Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 8.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Opt out of a network",
+          "interpolatedIntent": "${accounts.admin} opts vault ${accounts.vault} out of network ${accounts.ncn}; it ends after one full epoch of cooldown"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "warmupVaultNcnSlasherTicket",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ncn",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Network (NCN)"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "slasher",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Slasher"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultSlasherTicket",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Slasher Ticket"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Slasher Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 9.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Opt in to a slasher",
+          "interpolatedIntent": "${accounts.admin} lets slasher ${accounts.slasher} of network ${accounts.ncn} slash vault ${accounts.vault}; it becomes active after one full epoch of warm-up"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "cooldownVaultNcnSlasherTicket",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ncn",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Network (NCN)"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "slasher",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Slasher"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultNcnSlasherTicket",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Slasher Ticket"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Slasher Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 10.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Opt out of a slasher",
+          "interpolatedIntent": "${accounts.admin} stops slasher ${accounts.slasher} of network ${accounts.ncn} from slashing vault ${accounts.vault}; it ends after one full epoch of cooldown"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "mintTo",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vrtMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Receipt Token"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "depositor",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Depositor"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "depositorTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Depositor Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "depositorVrtTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Depositor Receipt Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultFeeTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mintSigner",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Mint-Burn Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 11.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amountIn",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Deposit Amount"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "minAmountOut",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "vrtDecimals"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Minimum Receipt Tokens"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "vrtDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "vrtMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Deposit into a vault",
+          "interpolatedIntent": "${accounts.depositor} deposits ${data.amountIn} of vault ${accounts.vault}'s supported token for at least ${data.minAmountOut} of ${accounts.vrtMint} into ${accounts.depositorVrtTokenAccount}; the vault's deposit fee is minted to ${accounts.vaultFeeTokenAccount}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "enqueueWithdrawal",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultStakerWithdrawalTicket",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Withdrawal Ticket"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultStakerWithdrawalTicketTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Ticket Receipt Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "staker",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Staker"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakerVrtTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Staker Receipt Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "base",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Ticket Seed Key"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "burnSigner",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Mint-Burn Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 12.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Receipt Tokens"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Request a withdrawal",
+          "interpolatedIntent": "${accounts.staker} asks to withdraw from vault ${accounts.vault}, locking ${data.amount} of its receipt token from ${accounts.stakerVrtTokenAccount} in withdrawal ticket ${accounts.vaultStakerWithdrawalTicket}, to be paid out later, after one full epoch has passed"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "changeWithdrawalTicketOwner",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultStakerWithdrawalTicket",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Withdrawal Ticket"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "oldOwner",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "newOwner",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Owner"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 13.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Change a ticket's owner",
+          "interpolatedIntent": "${accounts.oldOwner} gives withdrawal ticket ${accounts.vaultStakerWithdrawalTicket} of vault ${accounts.vault} to ${accounts.newOwner}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "burnWithdrawalTicket",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vrtMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Receipt Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "staker",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Staker"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakerTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Staker Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultStakerWithdrawalTicket",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Withdrawal Ticket"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultStakerWithdrawalTicketTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Ticket Receipt Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultFeeTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programFeeTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "burnSigner",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Mint-Burn Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 14.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Complete a withdrawal",
+          "interpolatedIntent": "Pays out withdrawal ticket ${accounts.vaultStakerWithdrawalTicket} of vault ${accounts.vault}: its receipt tokens are burned and the vault's supported token goes to ${accounts.stakerTokenAccount} of ${accounts.staker}, less the vault's and the program's withdrawal fees"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setDepositCapacity",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Capacity Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 15.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Deposit Capacity"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set deposit capacity",
+          "interpolatedIntent": "${accounts.admin} sets the most vault ${accounts.vault} accepts in deposits to ${data.amount} of its supported token"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setFees",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Fee Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 16.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "depositFeeBps",
+            "type": {
+              "kind": "optionTypeNode",
+              "fixed": false,
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "decimals": {
+                    "kind": "numberValueNode",
+                    "number": 2
+                  },
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Deposit Fee (none: unchanged)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "withdrawalFeeBps",
+            "type": {
+              "kind": "optionTypeNode",
+              "fixed": false,
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "decimals": {
+                    "kind": "numberValueNode",
+                    "number": 2
+                  },
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Withdrawal Fee from Next Epoch (none: unchanged)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "rewardFeeBps",
+            "type": {
+              "kind": "optionTypeNode",
+              "fixed": false,
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "decimals": {
+                    "kind": "numberValueNode",
+                    "number": 2
+                  },
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Reward Fee (none: unchanged)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set vault fees",
+          "interpolatedIntent": "${accounts.admin} changes the fees of vault ${accounts.vault}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setProgramFee",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Config Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 17.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newFeeBps",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u16",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 2
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "%"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Program Fee"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set the program fee",
+          "interpolatedIntent": "${accounts.admin} sets the program fee on withdrawals from vaults to ${data.newFeeBps}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setProgramFeeWallet",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programFeeAdmin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program Fee Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "newFeeWallet",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Fee Wallet"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 18.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set the program fee wallet",
+          "interpolatedIntent": "${accounts.programFeeAdmin} sets the wallet that receives the program fee to ${accounts.newFeeWallet}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setIsPaused",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 19.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "isPaused",
+            "type": {
+              "kind": "booleanTypeNode",
+              "size": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Paused"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Pause or unpause a vault",
+          "interpolatedIntent": "${accounts.admin} sets vault ${accounts.vault} paused: ${data.isPaused}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "delegateTokenAccount",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "delegateAssetAdmin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Delegate Asset Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault's Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "delegate",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Delegate"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 20.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Delegate a vault token account",
+          "interpolatedIntent": "${accounts.delegateAssetAdmin} lets ${accounts.delegate} move any amount of ${accounts.tokenMint} from vault ${accounts.vault}'s token account ${accounts.tokenAccount}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setAdmin",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "oldAdmin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "newAdmin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 21.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Hand over a vault",
+          "interpolatedIntent": "${accounts.oldAdmin} hands the admin role of vault ${accounts.vault}, and every other role it holds there, to ${accounts.newAdmin}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setSecondaryAdmin",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "newAdmin",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Holder"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 22.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "vaultAdminRole",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "vaultAdminRole"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Role"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set a vault role",
+          "interpolatedIntent": "${accounts.admin} gives the ${data.vaultAdminRole} role of vault ${accounts.vault} to ${accounts.newAdmin}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "addDelegation",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "operator",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Operator"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultOperatorDelegation",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Operator Delegation"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Delegation Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 23.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Delegate to an operator",
+          "interpolatedIntent": "${accounts.admin} delegates ${data.amount} of vault ${accounts.vault}'s supported token to operator ${accounts.operator}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "cooldownDelegation",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "operator",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Operator"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultOperatorDelegation",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Operator Delegation"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Delegation Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 24.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Undelegate from an operator",
+          "interpolatedIntent": "${accounts.admin} starts cooling down ${data.amount} of vault ${accounts.vault}'s supported token delegated to operator ${accounts.operator}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateVaultBalance",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultTokenAccount",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vrtMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Receipt Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultFeeTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 25.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update a vault's balance",
+          "interpolatedIntent": "Updates the balance vault ${accounts.vault} records to what ${accounts.vaultTokenAccount} holds, minting the reward fee, if any, in receipt tokens to ${accounts.vaultFeeTokenAccount}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initializeVaultUpdateStateTracker",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultUpdateStateTracker",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Update Tracker"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 26.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "withdrawalAllocationMethod",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "withdrawalAllocationMethod"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Withdrawal Allocation"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Start a vault's epoch update",
+          "interpolatedIntent": "${accounts.payer} starts this epoch's update of vault ${accounts.vault} in ${accounts.vaultUpdateStateTracker}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "crankVaultUpdateStateTracker",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "operator",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Operator"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultOperatorDelegation",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Operator Delegation"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultUpdateStateTracker",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Update Tracker"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 27.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update an operator delegation",
+          "interpolatedIntent": "Updates operator ${accounts.operator}'s delegation in this epoch's update of vault ${accounts.vault}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "closeVaultUpdateStateTracker",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultUpdateStateTracker",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Update Tracker"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 28.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "ncnEpoch",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Epoch"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Finish a vault's epoch update",
+          "interpolatedIntent": "${accounts.payer} closes the update of vault ${accounts.vault} for epoch ${data.ncnEpoch}, finishing the update if that is the current epoch, and takes back its rent"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "createTokenMetadata",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vrtMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Receipt Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "metadata",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Metadata"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mplTokenMetadataProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 29.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "name",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Name"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "symbol",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Symbol"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "uri",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Metadata URI"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create receipt token metadata",
+          "interpolatedIntent": "${accounts.admin} creates the metadata of ${accounts.vrtMint}: name ${data.name}, symbol ${data.symbol}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateTokenMetadata",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vrtMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Receipt Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "metadata",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Metadata"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mplTokenMetadataProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 30.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "name",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Name"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "symbol",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Symbol"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "uri",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Metadata URI"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update receipt token metadata",
+          "interpolatedIntent": "${accounts.admin} sets the metadata of ${accounts.vrtMint} to name ${data.name}, symbol ${data.symbol}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setConfigAdmin",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "oldAdmin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Config Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "newAdmin",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 31.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Hand over the program config",
+          "interpolatedIntent": "${accounts.oldAdmin} hands the admin role of the vault program's config to ${accounts.newAdmin}"
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "slotToggle",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "slotAdded",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "slotRemoved",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "reserved",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 32
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "createMetadataAccountArgsV3",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "data",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "dataV2"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isMutable",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "collectionDetails",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "updateMetadataAccountArgsV2",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "data",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "dataV2"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "updateAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "primarySaleHappened",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "booleanTypeNode",
+                  "size": {
+                    "kind": "numberTypeNode",
+                    "format": "u8",
+                    "endian": "le"
+                  }
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isMutable",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "booleanTypeNode",
+                  "size": {
+                    "kind": "numberTypeNode",
+                    "format": "u8",
+                    "endian": "le"
+                  }
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "dataV2",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "name",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "symbol",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "uri",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "sellerFeeBasisPoints",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "creators",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "collection",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "uses",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "vaultAdminRole",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "delegationAdmin",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Delegation Admin"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "operatorAdmin",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Operator Admin"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "ncnAdmin",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Network Admin"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "slasherAdmin",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Slasher Admin"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "capacityAdmin",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Capacity Admin"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "feeWallet",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Fee Wallet"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "mintBurnAdmin",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Mint-Burn Admin"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "delegateAssetAdmin",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Delegate Asset Admin"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "feeAdmin",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Fee Admin"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "metadataAdmin",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Metadata Admin"
+              }
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "withdrawalAllocationMethod",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "greedy",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Greedy"
+              }
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "delegationState",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "stakedAmount",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "enqueuedForCooldownAmount",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "coolingDownAmount",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "podU64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "reserved",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 256
+                }
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "badEpochLength",
+        "code": 0,
+        "message": "Bad epoch length",
+        "docs": [
+          "BadEpochLength: Bad epoch length"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultSlashUnderflow",
+        "code": 1000,
+        "message": "VaultSlashUnderflow",
+        "docs": [
+          "VaultSlashUnderflow: VaultSlashUnderflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultInitialAmountFailed",
+        "code": 1001,
+        "message": "VaultInitialAmountFailed",
+        "docs": [
+          "VaultInitialAmountFailed: VaultInitialAmountFailed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultInsufficientFunds",
+        "code": 1002,
+        "message": "VaultInsufficientFunds",
+        "docs": [
+          "VaultInsufficientFunds: VaultInsufficientFunds"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultOverflow",
+        "code": 1003,
+        "message": "VaultOverflow",
+        "docs": [
+          "VaultOverflow: VaultOverflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultOperatorAdminInvalid",
+        "code": 1004,
+        "message": "VaultOperatorAdminInvalid",
+        "docs": [
+          "VaultOperatorAdminInvalid: VaultOperatorAdminInvalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultAdminInvalid",
+        "code": 1005,
+        "message": "VaultAdminInvalid",
+        "docs": [
+          "VaultAdminInvalid: VaultAdminInvalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultCapacityAdminInvalid",
+        "code": 1006,
+        "message": "VaultCapacityAdminInvalid",
+        "docs": [
+          "VaultCapacityAdminInvalid: VaultCapacityAdminInvalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultMintBurnAdminInvalid",
+        "code": 1007,
+        "message": "VaultMintBurnAdminInvalid",
+        "docs": [
+          "VaultMintBurnAdminInvalid: VaultMintBurnAdminInvalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultDelegationAdminInvalid",
+        "code": 1008,
+        "message": "VaultDelegationAdminInvalid",
+        "docs": [
+          "VaultDelegationAdminInvalid: VaultDelegationAdminInvalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultDelegateAssetAdminInvalid",
+        "code": 1009,
+        "message": "VaultDelegateAssetAdminInvalid",
+        "docs": [
+          "VaultDelegateAssetAdminInvalid: VaultDelegateAssetAdminInvalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultCapacityExceeded",
+        "code": 1010,
+        "message": "VaultCapacityExceeded",
+        "docs": [
+          "VaultCapacityExceeded: VaultCapacityExceeded"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultSlasherAdminInvalid",
+        "code": 1011,
+        "message": "VaultSlasherAdminInvalid",
+        "docs": [
+          "VaultSlasherAdminInvalid: VaultSlasherAdminInvalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultNcnAdminInvalid",
+        "code": 1012,
+        "message": "VaultNcnAdminInvalid",
+        "docs": [
+          "VaultNcnAdminInvalid: VaultNcnAdminInvalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultFeeAdminInvalid",
+        "code": 1013,
+        "message": "VaultFeeAdminInvalid",
+        "docs": [
+          "VaultFeeAdminInvalid: VaultFeeAdminInvalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "configAdminInvalid",
+        "code": 1014,
+        "message": "ConfigAdminInvalid",
+        "docs": [
+          "ConfigAdminInvalid: ConfigAdminInvalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "configFeeAdminInvalid",
+        "code": 1015,
+        "message": "ConfigFeeAdminInvalid",
+        "docs": [
+          "ConfigFeeAdminInvalid: ConfigFeeAdminInvalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultFeeCapExceeded",
+        "code": 1016,
+        "message": "VaultFeeCapExceeded",
+        "docs": [
+          "VaultFeeCapExceeded: VaultFeeCapExceeded"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultFeeChangeTooSoon",
+        "code": 1017,
+        "message": "VaultFeeChangeTooSoon",
+        "docs": [
+          "VaultFeeChangeTooSoon: VaultFeeChangeTooSoon"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultFeeBumpTooLarge",
+        "code": 1018,
+        "message": "VaultFeeBumpTooLarge",
+        "docs": [
+          "VaultFeeBumpTooLarge: VaultFeeBumpTooLarge"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultUnderflow",
+        "code": 1019,
+        "message": "VaultUnderflow",
+        "docs": [
+          "VaultUnderflow: VaultUnderflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultUpdateNeeded",
+        "code": 1020,
+        "message": "VaultUpdateNeeded",
+        "docs": [
+          "VaultUpdateNeeded: VaultUpdateNeeded"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultIsUpdated",
+        "code": 1021,
+        "message": "VaultIsUpdated",
+        "docs": [
+          "VaultIsUpdated: VaultIsUpdated"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultOperatorDelegationUpdateNeeded",
+        "code": 1022,
+        "message": "VaultOperatorDelegationUpdateNeeded",
+        "docs": [
+          "VaultOperatorDelegationUpdateNeeded: VaultOperatorDelegationUpdateNeeded"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultOperatorDelegationIsUpdated",
+        "code": 1023,
+        "message": "VaultOperatorDelegationIsUpdated",
+        "docs": [
+          "VaultOperatorDelegationIsUpdated: VaultOperatorDelegationIsUpdated"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultUpdateIncorrectIndex",
+        "code": 1024,
+        "message": "VaultUpdateIncorrectIndex",
+        "docs": [
+          "VaultUpdateIncorrectIndex: VaultUpdateIncorrectIndex"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultUpdateStateNotFinishedUpdating",
+        "code": 1025,
+        "message": "VaultUpdateStateNotFinishedUpdating",
+        "docs": [
+          "VaultUpdateStateNotFinishedUpdating: VaultUpdateStateNotFinishedUpdating"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultSecurityOverflow",
+        "code": 1026,
+        "message": "VaultSecurityOverflow",
+        "docs": [
+          "VaultSecurityOverflow: VaultSecurityOverflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultSlashIncomplete",
+        "code": 1027,
+        "message": "VaultSlashIncomplete",
+        "docs": [
+          "VaultSlashIncomplete: VaultSlashIncomplete"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultSecurityUnderflow",
+        "code": 1028,
+        "message": "VaultSecurityUnderflow",
+        "docs": [
+          "VaultSecurityUnderflow: VaultSecurityUnderflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "slippageError",
+        "code": 1029,
+        "message": "SlippageError",
+        "docs": [
+          "SlippageError: SlippageError"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultStakerWithdrawalTicketNotWithdrawable",
+        "code": 1030,
+        "message": "VaultStakerWithdrawalTicketNotWithdrawable",
+        "docs": [
+          "VaultStakerWithdrawalTicketNotWithdrawable: VaultStakerWithdrawalTicketNotWithdrawable"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultNcnSlasherTicketFailedCooldown",
+        "code": 1031,
+        "message": "VaultNcnSlasherTicketFailedCooldown",
+        "docs": [
+          "VaultNcnSlasherTicketFailedCooldown: VaultNcnSlasherTicketFailedCooldown"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultNcnSlasherTicketFailedWarmup",
+        "code": 1032,
+        "message": "VaultNcnSlasherTicketFailedWarmup",
+        "docs": [
+          "VaultNcnSlasherTicketFailedWarmup: VaultNcnSlasherTicketFailedWarmup"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultNcnTicketFailedCooldown",
+        "code": 1033,
+        "message": "VaultNcnTicketFailedCooldown",
+        "docs": [
+          "VaultNcnTicketFailedCooldown: VaultNcnTicketFailedCooldown"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultNcnTicketFailedWarmup",
+        "code": 1034,
+        "message": "VaultNcnTicketFailedWarmup",
+        "docs": [
+          "VaultNcnTicketFailedWarmup: VaultNcnTicketFailedWarmup"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultNcnTicketUnslashable",
+        "code": 1035,
+        "message": "VaultNcnTicketUnslashable",
+        "docs": [
+          "VaultNcnTicketUnslashable: VaultNcnTicketUnslashable"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "operatorVaultTicketUnslashable",
+        "code": 1036,
+        "message": "OperatorVaultTicketUnslashable",
+        "docs": [
+          "OperatorVaultTicketUnslashable: OperatorVaultTicketUnslashable"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "ncnOperatorStateUnslashable",
+        "code": 1037,
+        "message": "NcnOperatorStateUnslashable",
+        "docs": [
+          "NcnOperatorStateUnslashable: NcnOperatorStateUnslashable"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultNcnSlasherTicketUnslashable",
+        "code": 1038,
+        "message": "VaultNcnSlasherTicketUnslashable",
+        "docs": [
+          "VaultNcnSlasherTicketUnslashable: VaultNcnSlasherTicketUnslashable"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "ncnVaultTicketUnslashable",
+        "code": 1039,
+        "message": "NcnVaultTicketUnslashable",
+        "docs": [
+          "NcnVaultTicketUnslashable: NcnVaultTicketUnslashable"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "ncnVaultSlasherTicketUnslashable",
+        "code": 1040,
+        "message": "NcnVaultSlasherTicketUnslashable",
+        "docs": [
+          "NcnVaultSlasherTicketUnslashable: NcnVaultSlasherTicketUnslashable"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultMaxSlashedPerOperatorExceeded",
+        "code": 1041,
+        "message": "VaultMaxSlashedPerOperatorExceeded",
+        "docs": [
+          "VaultMaxSlashedPerOperatorExceeded: VaultMaxSlashedPerOperatorExceeded"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultStakerWithdrawalTicketInvalidStaker",
+        "code": 1042,
+        "message": "VaultStakerWithdrawalTicketInvalidStaker",
+        "docs": [
+          "VaultStakerWithdrawalTicketInvalidStaker: VaultStakerWithdrawalTicketInvalidStaker"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "slasherOverflow",
+        "code": 1043,
+        "message": "SlasherOverflow",
+        "docs": [
+          "SlasherOverflow: SlasherOverflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "ncnOverflow",
+        "code": 1044,
+        "message": "NcnOverflow",
+        "docs": [
+          "NcnOverflow: NcnOverflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "operatorOverflow",
+        "code": 1045,
+        "message": "OperatorOverflow",
+        "docs": [
+          "OperatorOverflow: OperatorOverflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultDelegationZero",
+        "code": 1046,
+        "message": "VaultDelegationZero",
+        "docs": [
+          "VaultDelegationZero: VaultDelegationZero"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultCooldownZero",
+        "code": 1047,
+        "message": "VaultCooldownZero",
+        "docs": [
+          "VaultCooldownZero: VaultCooldownZero"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultBurnZero",
+        "code": 1048,
+        "message": "VaultBurnZero",
+        "docs": [
+          "VaultBurnZero: VaultBurnZero"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultEnqueueWithdrawalAmountZero",
+        "code": 1049,
+        "message": "VaultEnqueueWithdrawalAmountZero",
+        "docs": [
+          "VaultEnqueueWithdrawalAmountZero: VaultEnqueueWithdrawalAmountZero"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultMintZero",
+        "code": 1050,
+        "message": "VaultMintZero",
+        "docs": [
+          "VaultMintZero: VaultMintZero"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultIsPaused",
+        "code": 1051,
+        "message": "VaultIsPaused",
+        "docs": [
+          "VaultIsPaused: VaultIsPaused"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidDepositor",
+        "code": 1052,
+        "message": "InvalidDepositor",
+        "docs": [
+          "InvalidDepositor: InvalidDepositor"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidDepositTokenAccount",
+        "code": 1053,
+        "message": "InvalidDepositTokenAccount",
+        "docs": [
+          "InvalidDepositTokenAccount: InvalidDepositTokenAccount"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "noSupportedMintBalanceChange",
+        "code": 1054,
+        "message": "NoSupportedMintBalanceChange",
+        "docs": [
+          "NoSupportedMintBalanceChange: NoSupportedMintBalanceChange"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidEpochLength",
+        "code": 1055,
+        "message": "InvalidEpochLength",
+        "docs": [
+          "InvalidEpochLength: InvalidEpochLength"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultRewardFeeDeltaTooLarge",
+        "code": 1056,
+        "message": "VaultRewardFeeDeltaTooLarge",
+        "docs": [
+          "VaultRewardFeeDeltaTooLarge: VaultRewardFeeDeltaTooLarge"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultRewardFeeIsZero",
+        "code": 1057,
+        "message": "VaultRewardFeeIsZero",
+        "docs": [
+          "VaultRewardFeeIsZero: VaultRewardFeeIsZero"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vrtOutCannotBeZero",
+        "code": 1058,
+        "message": "VrtOutCannotBeZero",
+        "docs": [
+          "VrtOutCannotBeZero: VrtOutCannotBeZero"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "nonZeroAdditionalAssetsNeededForWithdrawalAtEndOfUpdate",
+        "code": 1059,
+        "message": "NonZeroAdditionalAssetsNeededForWithdrawalAtEndOfUpdate",
+        "docs": [
+          "NonZeroAdditionalAssetsNeededForWithdrawalAtEndOfUpdate: NonZeroAdditionalAssetsNeededForWithdrawalAtEndOfUpdate"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "arithmeticOverflow",
+        "code": 3000,
+        "message": "ArithmeticOverflow",
+        "docs": [
+          "ArithmeticOverflow: ArithmeticOverflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "arithmeticUnderflow",
+        "code": 3001,
+        "message": "ArithmeticUnderflow",
+        "docs": [
+          "ArithmeticUnderflow: ArithmeticUnderflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "divisionByZero",
+        "code": 3002,
+        "message": "DivisionByZero",
+        "docs": [
+          "DivisionByZero: DivisionByZero"
+        ]
+      }
+    ]
+  }
+}
