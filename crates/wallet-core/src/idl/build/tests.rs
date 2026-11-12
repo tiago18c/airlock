@@ -361,3 +361,94 @@ fn every_seed_kind_derives_the_address_the_build_uses() {
     let ix = build_idl_instruction(&client, "open", &input).unwrap();
     assert_eq!(ix.accounts[0].pubkey, expected);
 }
+
+/// OtterSec's `update` takes one struct argument, `params`, holding a list of
+/// strings. Build asks for each field of the struct, reads the list as JSON,
+/// encodes the struct as the program reads it, and an instruction read back
+/// opens onto the same fields.
+#[test]
+fn a_struct_argument_is_one_field_per_member_and_a_list_reads_as_json() {
+    let catalog = crate::fixtures::shipped_catalog(crate::IdlNetwork::Mainnet);
+    let program = Pubkey::from_str("verifycLy8mB96wd9wqq3WDXQwM4oU6r42Th37Db9fC").unwrap();
+    let client = catalog.program_client(&program).unwrap();
+    let mut input = IdlBuildInput {
+        accounts: vec![
+            ("authority".to_string(), Some(pk(1))),
+            ("programAddress".to_string(), Some(pk(2))),
+        ],
+        arguments: vec![
+            ("params.version".to_string(), "0.4.11".to_string()),
+            (
+                "params.gitUrl".to_string(),
+                "https://example.com/p".to_string(),
+            ),
+            ("params.commit".to_string(), "abc".to_string()),
+            (
+                "params.args".to_string(),
+                r#"["--library-name", "p"]"#.to_string(),
+            ),
+            ("params.deploySlot".to_string(), "77".to_string()),
+        ],
+    };
+    let form = idl_instruction_form(&client, "update", &input).unwrap();
+    let fields: Vec<(&str, &IdlArgKind)> = form
+        .arguments
+        .iter()
+        .map(|field| (field.name.as_str(), &field.kind))
+        .collect();
+    assert_eq!(
+        fields,
+        [
+            ("params.version", &IdlArgKind::String),
+            ("params.gitUrl", &IdlArgKind::String),
+            ("params.commit", &IdlArgKind::String),
+            (
+                "params.args",
+                &IdlArgKind::List(Box::new(IdlArgKind::String))
+            ),
+            (
+                "params.deploySlot",
+                &IdlArgKind::Integer {
+                    signed: false,
+                    float: false,
+                    bits: 64
+                }
+            ),
+        ]
+    );
+    assert!(form.arguments[3].may_be_blank());
+
+    let built = build_idl_instruction(&client, "update", &input).unwrap();
+    // Borsh: each string and the list with a u32 length, the slot as a u64.
+    let mut want = hex::decode("dbc858b09e3ffd7f").unwrap();
+    for text in ["0.4.11", "https://example.com/p", "abc"] {
+        want.extend_from_slice(&(text.len() as u32).to_le_bytes());
+        want.extend_from_slice(text.as_bytes());
+    }
+    want.extend_from_slice(&2u32.to_le_bytes());
+    for text in ["--library-name", "p"] {
+        want.extend_from_slice(&(text.len() as u32).to_le_bytes());
+        want.extend_from_slice(text.as_bytes());
+    }
+    want.extend_from_slice(&77u64.to_le_bytes());
+    assert_eq!(built.data, want);
+
+    let opened = crate::edit::idl_draft_for(&client, "otterVerify", &built).unwrap();
+    assert_eq!(opened.argument("params.args"), r#"["--library-name","p"]"#);
+    assert_eq!(opened.argument("params.deploySlot"), "77");
+
+    // Blank is the empty list; anything but a JSON list of strings is refused.
+    input.arguments[3].1 = String::new();
+    let built = build_idl_instruction(&client, "update", &input).unwrap();
+    let at = want.len() - 8 - (4 + 14) - (4 + 1) - 4;
+    assert_eq!(&built.data[at..at + 4], &0u32.to_le_bytes());
+    let opened = crate::edit::idl_draft_for(&client, "otterVerify", &built).unwrap();
+    assert_eq!(opened.argument("params.args"), "");
+    for bad in ["--library-name p", "[1]", r#"{"a": "b"}"#] {
+        input.arguments[3].1 = bad.to_string();
+        assert!(
+            build_idl_instruction(&client, "update", &input).is_err(),
+            "{bad}"
+        );
+    }
+}

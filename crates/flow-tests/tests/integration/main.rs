@@ -14,6 +14,7 @@ mod squads_checks;
 mod stake;
 mod templates;
 mod token_plan;
+mod upgrade_template;
 mod use_cases;
 mod vector;
 mod vector_squads;

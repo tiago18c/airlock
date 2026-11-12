@@ -985,12 +985,14 @@ fn every_builtin_template_checks_on_every_network_its_programs_run_on() {
                 .unwrap_or_else(|problems| panic!("{} on {network}: {problems:#?}", builtin.id));
             checked_on += 1;
         }
-        assert_eq!(
-            checked_on,
-            IdlNetwork::ALL.len(),
-            "{}: Token, Token-2022, associated-token and System run everywhere",
-            builtin.id
-        );
+        // Token, Token-2022, associated-token and System run everywhere;
+        // program-metadata and OtterSec's verify program on mainnet and
+        // devnet only.
+        let expected = match builtin.id {
+            "upgrade-program" => 2,
+            _ => IdlNetwork::ALL.len(),
+        };
+        assert_eq!(checked_on, expected, "{}", builtin.id);
     }
 }
 

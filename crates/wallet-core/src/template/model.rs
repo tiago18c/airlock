@@ -117,6 +117,12 @@ pub enum Function {
     DecimalsOf,
     /// `<mint>`: Token or Token-2022, whichever owns the mint.
     TokenProgramOf,
+    /// `<program>`: the program data account the upgradeable loader keeps
+    /// the program's code in.
+    ProgramDataOf,
+    /// `<program>`: the program's canonical IDL account on the
+    /// program-metadata program, seed `idl`.
+    IdlMetadataOf,
 }
 
 /// What a value or an argument is.
@@ -130,7 +136,7 @@ pub(crate) enum ValueType {
 }
 
 impl Function {
-    pub const ALL: [Function; 7] = [
+    pub const ALL: [Function; 9] = [
         Self::NewKeypair,
         Self::AssociatedTokenAccount,
         Self::Token2022MintSpace,
@@ -138,6 +144,8 @@ impl Function {
         Self::RentFor,
         Self::DecimalsOf,
         Self::TokenProgramOf,
+        Self::ProgramDataOf,
+        Self::IdlMetadataOf,
     ];
 
     /// The name a file writes it by.
@@ -150,6 +158,8 @@ impl Function {
             Self::RentFor => "rent-for",
             Self::DecimalsOf => "decimals-of",
             Self::TokenProgramOf => "token-program-of",
+            Self::ProgramDataOf => "program-data-of",
+            Self::IdlMetadataOf => "idl-metadata-of",
         }
     }
 
@@ -168,7 +178,9 @@ impl Function {
             Self::Token2022MintSpace
             | Self::Token2022MintFundedSpace
             | Self::DecimalsOf
-            | Self::TokenProgramOf => &[Address],
+            | Self::TokenProgramOf
+            | Self::ProgramDataOf
+            | Self::IdlMetadataOf => &[Address],
             Self::RentFor => &[Integer],
         }
     }
@@ -181,12 +193,16 @@ impl Function {
             Self::Token2022MintSpace | Self::Token2022MintFundedSpace => "a mint",
             Self::RentFor => "a size in bytes",
             Self::DecimalsOf | Self::TokenProgramOf => "a mint",
+            Self::ProgramDataOf | Self::IdlMetadataOf => "a program",
         }
     }
 
     pub(crate) fn returns(self) -> ValueType {
         match self {
-            Self::NewKeypair | Self::AssociatedTokenAccount => ValueType::Address,
+            Self::NewKeypair
+            | Self::AssociatedTokenAccount
+            | Self::ProgramDataOf
+            | Self::IdlMetadataOf => ValueType::Address,
             Self::Token2022MintSpace
             | Self::Token2022MintFundedSpace
             | Self::RentFor

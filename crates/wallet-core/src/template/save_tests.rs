@@ -229,6 +229,12 @@ fn the_blocks_a_built_in_template_shows_open_to_the_same_blocks() {
                 "max_fee" => "10".to_string(),
                 "token_name" | "symbol" | "uri" => "x".to_string(),
                 "freeze_authority" => pk(8).to_string(),
+                "program" => pk(20).to_string(),
+                "buffer" => pk(21).to_string(),
+                "idl_buffer" => pk(22).to_string(),
+                "repository" | "commit" | "version" => "x".to_string(),
+                "build_args" => r#"["--library-name", "x"]"#.to_string(),
+                "deploy_slot" => "123".to_string(),
                 _ => continue,
             };
             answers = answers.answer(&input.name, &text);

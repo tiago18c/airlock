@@ -297,6 +297,12 @@ pub(super) fn sample_text(kind: &IdlArgKind, scale: &IdlArgScale, source: bool) 
         IdlArgKind::Bool => "false".to_string(),
         IdlArgKind::Enum { variants } => variants.first()?.clone(),
         IdlArgKind::Bytes => "00".to_string(),
+        IdlArgKind::List(item) => match **item {
+            IdlArgKind::String => r#"["a","b"]"#.to_string(),
+            IdlArgKind::Bool => "[true]".to_string(),
+            IdlArgKind::Pubkey => format!(r#"["{}"]"#, pk(50)),
+            _ => r#"["15"]"#.to_string(),
+        },
         IdlArgKind::Raw { .. } => return None,
     })
 }

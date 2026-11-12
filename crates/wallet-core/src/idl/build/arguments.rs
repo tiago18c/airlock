@@ -75,9 +75,62 @@ pub(super) fn parse_argument(
                 .map(|bytes| Some(Value::Bytes(bytes)))
                 .map_err(|_| format!("`{text}` is not hex."))
         }
+        IdlArgKind::List(item) => parse_list(item, text).map(|items| Some(Value::Array(items))),
         IdlArgKind::Raw { note } => Err(format!(
             "This field ({note}) has to be filled by hand in a later slice."
         )),
+    }
+}
+
+/// A list typed as a JSON array: `["--features", "mainnet"]`. Blank is the
+/// empty list. Each item is read as a field of the item's kind would read
+/// its text, so an integer may be written as a number or a string.
+fn parse_list(item: &IdlArgKind, text: &str) -> Result<Vec<Value>, String> {
+    if text.is_empty() {
+        return Ok(Vec::new());
+    }
+    let shape = "Enter a list as JSON, such as [\"a\", \"b\"], or leave it blank for none.";
+    let serde_json::Value::Array(items) =
+        serde_json::from_str::<serde_json::Value>(text).map_err(|_| shape.to_string())?
+    else {
+        return Err(shape.to_string());
+    };
+    items
+        .iter()
+        .enumerate()
+        .map(|(at, value)| {
+            let text = match (item, value) {
+                (IdlArgKind::String, serde_json::Value::String(text)) => {
+                    return Ok(Value::String(text.clone()));
+                }
+                (IdlArgKind::Pubkey, serde_json::Value::String(text)) => text.clone(),
+                (IdlArgKind::Integer { .. }, serde_json::Value::String(text)) => text.clone(),
+                (IdlArgKind::Integer { .. }, serde_json::Value::Number(number)) => {
+                    number.to_string()
+                }
+                (IdlArgKind::Bool, serde_json::Value::Bool(flag)) => flag.to_string(),
+                _ => {
+                    return Err(format!(
+                        "Item {} of the list is not {}.",
+                        at + 1,
+                        item_words(item)
+                    ))
+                }
+            };
+            parse_argument(item, &text, false, None)?
+                .ok_or_else(|| format!("Item {} of the list is empty.", at + 1))
+                .map_err(|err| format!("Item {}: {err}", at + 1))
+        })
+        .collect()
+}
+
+fn item_words(item: &IdlArgKind) -> &'static str {
+    match item {
+        IdlArgKind::String => "text in quotes",
+        IdlArgKind::Pubkey => "an address in quotes",
+        IdlArgKind::Bool => "true or false",
+        IdlArgKind::Integer { .. } => "a whole number",
+        _ => "a value this list holds",
     }
 }
 
