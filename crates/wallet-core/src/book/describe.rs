@@ -559,6 +559,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"),
         "PumpSwap AMM Program",
     ),
+    (
+        Pubkey::from_str_const("6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"),
+        "Pump.fun Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

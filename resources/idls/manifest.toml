@@ -311,3 +311,26 @@ trackVolume (buy, buyExactQuoteIn) and createPool's creatorFeeBps, canEditCreato
 isHolderReward are remainder options: the program takes data that leaves them out. The \
 Token program's mint account is added, so token amounts read their mint's decimals; fees \
 are in percent. Display nodes added by hand."""
+
+# Pump.fun's bonding-curve launchpad. The file is the IDL in Pump's public
+# docs repository: the Anchor IDL the program publishes on mainnet is older
+# than the program and lacks the v3 trades and the multi-hop swap, about half
+# of what it executed when checked. Devnet runs another build with the same
+# instructions.
+[[idls]]
+file = "pump.json"
+programId = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+name = "pump"
+networks = ["mainnet", "devnet"]
+source = { kind = "repository", url = "https://github.com/pump-fun/pump-public-docs/blob/639b87fb45c3adeffa6f7c4a1bf0cb85e392bf22/idl/pump.json" }
+changes = """Converted from Anchor to Codama. The arguments the program reads only when the data \
+carries them (the buys' trackVolume and partialFill, createV2's isCashbackEnabled, \
+creatorFeeBps and isHolderReward) are remainder options of a bool or a u64 instead of \
+one-item tuples that are always there, because executed instructions leave them out. The \
+legacy buys and sells, createV2, the creator fee and holder reward distributions, \
+migrateV2 (the new pool's boost vault) and multiHopCurveSwap (five accounts per bonding \
+curve hop) declare the accounts they read after the named ones as remaining-accounts \
+groups, which Anchor IDLs cannot. distributeFeeToHolders, the one instruction with an \
+optional account, sets optionalAccountStrategy to programId. The Token program's mint \
+account is added, so the trades' token amounts read their mint's decimals; SOL amounts \
+are in SOL and fees in percent. Display nodes added by hand."""
