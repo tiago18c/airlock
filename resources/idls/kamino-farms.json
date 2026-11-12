@@ -1,0 +1,5607 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "farms",
+    "publicKey": "FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr",
+    "version": "1.7.0",
+    "origin": "anchor",
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "name": "farmState",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "c666d84a3f42a3be",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "farmAdmin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "globalConfig",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "token",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "tokenInfo"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "rewardInfos",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "rewardInfo"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 10
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "numRewardTokens",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "numUsers",
+              "docs": [
+                "Data used to calculate the rewards of the user"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "totalStakedAmount",
+              "docs": [
+                "The number of token in the `farm_vault` staked (getting rewards and fees)",
+                "Set such as `farm_vault.amount = total_staked_amount + total_pending_amount`"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "farmVault",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "farmVaultsAuthority",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "farmVaultsAuthorityBump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "delegateAuthority",
+              "docs": [
+                "Only used for delegate farms",
+                "Set to `default()` otherwise"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "timeUnit",
+              "docs": [
+                "Raw representation of a `TimeUnit`",
+                "Seconds = 0, Slots = 1"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isFarmFrozen",
+              "docs": [
+                "Automatically set to true in case of a full authority withdrawal",
+                "If true, the farm is frozen and no more deposits are allowed"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isFarmDelegated",
+              "docs": [
+                "Indicates if the farm is a delegate farm",
+                "If true, the farm is a delegate farm and the `delegate_authority` is set*"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isRewardUserOnceEnabled",
+              "docs": [
+                "If set to 1, indicates that the \"reward user once\" feature is enabled"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isHarvestingPermissionless",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "padding0",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 3
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "withdrawAuthority",
+              "docs": [
+                "Withdraw authority for the farm, allowed to lock deposited funds and withdraw them",
+                "Set to `default()` if unused (only the depositors can withdraw their funds)"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "depositWarmupPeriod",
+              "docs": [
+                "Delay between a user deposit and the moment it is considered as staked",
+                "0 if unused"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "withdrawalCooldownPeriod",
+              "docs": [
+                "Delay between a user unstake and the ability to withdraw his deposit."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "totalActiveStakeScaled",
+              "docs": [
+                "Total active stake of tokens in the farm (scaled from `Decimal` representation)."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "totalPendingStakeScaled",
+              "docs": [
+                "Total pending stake of tokens in the farm (scaled from `Decimal` representation).",
+                "(can be used by `withdraw_authority` but don't get rewards or fees)"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "totalPendingAmount",
+              "docs": [
+                "Total pending amount of tokens in the farm"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "slashedAmountCurrent",
+              "docs": [
+                "Slashed amounts from early withdrawal"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "slashedAmountCumulative",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "slashedAmountSpillAddress",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lockingMode",
+              "docs": [
+                "Locking stake"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lockingStartTimestamp",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lockingDuration",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lockingEarlyWithdrawalPenaltyBps",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "depositCapAmount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "scopePrices",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "scopeOraclePriceId",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "scopeOracleMaxAge",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pendingFarmAdmin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "strategyId",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "delegatedRpsAdmin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vaultId",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "secondDelegatedAuthority",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "padding",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 74
+                }
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "globalConfig",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "95089ccaa0fcb0d9",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "globalAdmin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "treasuryFeeBps",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "treasuryVaultsAuthority",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "treasuryVaultsAuthorityBump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pendingGlobalAdmin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "padding1",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u128",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 126
+                }
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "userState",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "48b155f94ca7ba7e",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "userId",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "farmState",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "owner",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isFarmDelegated",
+              "docs": [
+                "Indicate if this user state is part of a delegated farm"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "padding0",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 7
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "rewardsTallyScaled",
+              "docs": [
+                "Rewards tally used for computation of gained rewards",
+                "(scaled from `Decimal` representation)."
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u128",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 10
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "rewardsIssuedUnclaimed",
+              "docs": [
+                "Number of reward tokens ready for claim"
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 10
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lastClaimTs",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 10
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "activeStakeScaled",
+              "docs": [
+                "User stake deposited and usable, generating rewards and fees.",
+                "(scaled from `Decimal` representation)."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pendingDepositStakeScaled",
+              "docs": [
+                "User stake deposited but not usable and not generating rewards yet.",
+                "(scaled from `Decimal` representation)."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pendingDepositStakeTs",
+              "docs": [
+                "After this timestamp, pending user stake can be moved to user stake",
+                "Initialized to now() + delayed user stake period"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pendingWithdrawalUnstakeScaled",
+              "docs": [
+                "User deposits unstaked, pending for withdrawal, not usable and not generating rewards.",
+                "(scaled from `Decimal` representation)."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pendingWithdrawalUnstakeTs",
+              "docs": [
+                "After this timestamp, user can withdraw their deposit."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bump",
+              "docs": [
+                "User bump used for account address validation"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "delegatee",
+              "docs": [
+                "Delegatee used for initialisation - useful to check against"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lastStakeTs",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "rewardsIssuedCumulative",
+              "docs": [
+                "Cumulative rewards issued to the user - ONLY used for stats/analytics",
+                "DO NOT USE IN ANY CALCULATIONS",
+                "Old userStates will have this field populated only from the point of release",
+                "not reflecting any historical data before this was released"
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 10
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "padding1",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 40
+                }
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "oraclePrices",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "598076dd0648b492",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "oracleMappings",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "prices",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "datedPrice"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 512
+                }
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mintAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority used to mint new tokens. The mint authority may only",
+                "be provided during mint creation. If no mint authority is present",
+                "then the mint has a fixed supply and no further tokens may be minted."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "supply",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "docs": [
+                "Total supply of tokens."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "decimals",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "docs": [
+                "Number of base 10 digits to the right of the decimal place."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isInitialized",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "docs": [
+                "Is `true` if this structure has been initialized."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "freezeAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority to freeze token accounts."
+              ]
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "sizeDiscriminatorNode",
+            "size": 82
+          }
+        ],
+        "name": "mint",
+        "docs": [],
+        "size": 82
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "initializeGlobalConfig",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "globalAdmin",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Global Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "globalConfig",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farms Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "treasuryVaultsAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "71d87a83e1d11637",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create the farms config",
+          "interpolatedIntent": "${accounts.globalAdmin} creates the farms config ${accounts.globalConfig}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateGlobalConfig",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "globalAdmin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Global Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "globalConfig",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farms Config"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "a45482bd6f3afac8",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "mode",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Setting Number (0 Pending Global Admin, 1 Treasury Fee)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "value",
+            "type": {
+              "kind": "arrayTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "count": {
+                "kind": "fixedCountNode",
+                "value": 32
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New Value (Bytes)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update the farms config",
+          "interpolatedIntent": "${accounts.globalAdmin} changes setting ${data.mode} of the farms config ${accounts.globalConfig}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initializeFarm",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmAdmin",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "globalConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farms Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmVaultsAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Staked Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rent",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "fc1cb9acf44a75a5",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a farm",
+          "interpolatedIntent": "${accounts.farmAdmin} creates farm ${accounts.farmState} for staking ${accounts.tokenMint}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initializeFarmDelegated",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmAdmin",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmDelegate",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Delegated Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "globalConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farms Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmVaultsAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rent",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "fa546519334dcc5b",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a delegated farm",
+          "interpolatedIntent": "${accounts.farmAdmin} creates farm ${accounts.farmState}, whose stakes ${accounts.farmDelegate} sets"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initializeReward",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmAdmin",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "globalConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farms Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rewardMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reward Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rewardVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reward Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rewardTreasuryVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Treasury Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmVaultsAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "treasuryVaultsAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rent",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "5f87c0c4f281e644",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Add a farm reward",
+          "interpolatedIntent": "${accounts.farmAdmin} adds ${accounts.rewardMint} as a reward of farm ${accounts.farmState}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "addRewards",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rewardMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reward Token"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rewardVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reward Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmVaultsAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payerRewardTokenAta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "scopePrices",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Scope Prices"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "58ba19e326895117",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "rewardDecimals"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "rewardIndex",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Reward Number (from 0)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "rewardDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "rewardMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Top up farm rewards",
+          "interpolatedIntent": "${accounts.payer} adds ${data.amount} of ${accounts.rewardMint} to the rewards of farm ${accounts.farmState}, from ${accounts.payerRewardTokenAta}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateFarmConfig",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "signer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "scopePrices",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Scope Prices"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "d6b0bcf4cb3be6cf",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "mode",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u16",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Setting Number (0 Reward Rate, 1 Minimum Claim Interval, 2 Withdraw Authority, 3 Deposit Warm-Up, 4 Withdrawal Cooldown, 5 Reward Type, 6 Reward Rate Decimals, 7 Locking Mode, 8 Locking Start, 9 Locking Duration, 10 Early Withdrawal Penalty, 11 Deposit Cap, 12 Slashed Tokens Recipient, 13 Scope Prices, 14 Scope Price ID, 15 Scope Price Maximum Age, 16 Reward Schedule, 17 Pending Farm Admin, 18 Strategy, 19 Reward Rate Admin, 20 Vault, 21 Second Delegated Authority, 22 One-Time Rewards, 23 Delegated Authority, 24 Anyone May Claim Rewards)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "data",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "bytesTypeNode"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New Value (Bytes)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update farm settings",
+          "interpolatedIntent": "${accounts.signer} changes setting ${data.mode} of farm ${accounts.farmState}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initializeUser",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "owner",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "delegatee",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Staked For"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rent",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "6f11b9fa3c7a26fe",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a farm account",
+          "interpolatedIntent": "${accounts.payer} creates farm account ${accounts.userState} for ${accounts.owner} in farm ${accounts.farmState}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "transferOwnership",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "oldOwner",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "newOwner",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "oldUserState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "newUserState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Owner's Farm Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "scopePrices",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Scope Prices"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rent",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "41b1d749352d632f",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Transfer a farm stake",
+          "interpolatedIntent": "${accounts.oldOwner} moves the whole stake of farm account ${accounts.oldUserState} in farm ${accounts.farmState} to ${accounts.newOwner}, in farm account ${accounts.newUserState}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "rewardUserOnce",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "delegateAuthority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Delegated Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Account"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "db8939165eba6072",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "rewardIndex",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Reward Number (from 0)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "expectedRewardsIssuedCumulative",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Expected Rewards Granted So Far"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "userStateId",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Farm Account Number"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Grant a one-time reward",
+          "interpolatedIntent": "${accounts.delegateAuthority} grants ${data.amount} of reward #${data.rewardIndex} of farm ${accounts.farmState} to farm account ${accounts.userState}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "refreshFarm",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "scopePrices",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Scope Prices"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "d6838ab790c2ac2a",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Refresh a farm",
+          "interpolatedIntent": "Refreshes the rewards of farm ${accounts.farmState}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "stake",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "owner",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userAta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "scopePrices",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Scope Prices"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "ceb0ca12c8d1b36c",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "tokenDecimals"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount (the highest value stakes the whole balance)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "tokenDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "tokenMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Stake tokens",
+          "interpolatedIntent": "${accounts.owner} stakes ${data.amount} of ${accounts.tokenMint} from ${accounts.userAta} in farm ${accounts.farmState}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setStakeDelegated",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "delegateAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Delegated Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "49abb84b1e38c6df",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New Stake (as the delegating program counts it)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set a delegated stake",
+          "interpolatedIntent": "${accounts.delegateAuthority} sets the stake of farm account ${accounts.userState} in farm ${accounts.farmState} to ${data.newAmount}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "harvestReward",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "globalConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farms Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rewardMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reward Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userRewardTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rewardsVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reward Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rewardsTreasuryVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Treasury Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmVaultsAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "scopePrices",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Scope Prices"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "44c8e4e9b820e2bc",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "rewardIndex",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Reward Number (from 0)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Claim farm rewards",
+          "interpolatedIntent": "${accounts.payer} claims the ${accounts.rewardMint} rewards of farm account ${accounts.userState} in farm ${accounts.farmState} into ${accounts.userRewardTokenAccount}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "unstake",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "owner",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "scopePrices",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Scope Prices"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "5a5f6b2acd7c32e1",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "stakeSharesScaled",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u128",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 18
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "shares"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Stake Shares (more than are staked unstakes everything)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Unstake tokens",
+          "interpolatedIntent": "${accounts.owner} unstakes up to ${data.stakeSharesScaled} from farm ${accounts.farmState}; the tokens can be withdrawn once the farm's cooldown ends"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "refreshUserState",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "userState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "scopePrices",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Scope Prices"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "01870c3ef38c4d6c",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Refresh a farm account",
+          "interpolatedIntent": "Refreshes the stake and rewards of farm account ${accounts.userState} in farm ${accounts.farmState}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawUnstakedDeposits",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "owner",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userAta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmVaultsAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "2466bb31dc248443",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw unstaked tokens",
+          "interpolatedIntent": "${accounts.owner} withdraws their unstaked tokens from farm ${accounts.farmState} into ${accounts.userAta}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawTreasury",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "globalAdmin",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Global Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "globalConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farms Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rewardMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rewardTreasuryVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Treasury Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "treasuryVaultAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawDestinationTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "283f7a9e90d85360",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "rewardDecimals"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "rewardDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "rewardMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw treasury fees",
+          "interpolatedIntent": "${accounts.globalAdmin} withdraws ${data.amount} of ${accounts.rewardMint} of treasury fees from ${accounts.rewardTreasuryVault} into ${accounts.withdrawDestinationTokenAccount}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "depositToFarmVault",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "depositor",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "depositorAta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "83a6405e6cd572b7",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Add to a farm's vault",
+          "interpolatedIntent": "${accounts.depositor} adds ${data.amount} of the farm's token to the vault of farm ${accounts.farmState}, from ${accounts.depositorAta}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawFromFarmVault",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawAuthority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Withdraw Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawerTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmVaultsAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "165280fa564f7c4e",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount (all of the vault freezes the farm)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw from a farm's vault",
+          "interpolatedIntent": "${accounts.withdrawAuthority} withdraws up to ${data.amount} of the farm's token from the vault of farm ${accounts.farmState} into ${accounts.withdrawerTokenAccount}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawSlashedAmount",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "crank",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "slashedAmountSpillAddress",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmVaultsAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "cad9434aac168cd8",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Collect slashed tokens",
+          "interpolatedIntent": "${accounts.crank} sends the tokens farm ${accounts.farmState} kept as early withdrawal penalties to ${accounts.slashedAmountSpillAddress}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateFarmAdmin",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "pendingFarmAdmin",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "142588137aef2482",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Accept the farm admin role",
+          "interpolatedIntent": "${accounts.pendingFarmAdmin} becomes the admin of farm ${accounts.farmState}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateGlobalConfigAdmin",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "pendingGlobalAdmin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "globalConfig",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farms Config"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "b85717c19ceeaf77",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Accept the global admin role",
+          "interpolatedIntent": "${accounts.pendingGlobalAdmin} becomes the admin of the farms config ${accounts.globalConfig}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawReward",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmAdmin",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rewardMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reward Token"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rewardVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Reward Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmVaultsAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "adminRewardTokenAta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "scopePrices",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Scope Prices"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "bfbbb0890919bbf4",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "rewardDecimals"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "rewardIndex",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Reward Number (from 0)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "rewardDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "rewardMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw unissued rewards",
+          "interpolatedIntent": "${accounts.farmAdmin} withdraws up to ${data.amount} of ${accounts.rewardMint} not yet issued as rewards from farm ${accounts.farmState} into ${accounts.adminRewardTokenAta}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateSecondDelegatedAuthority",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "globalAdmin",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Global Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "globalConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farms Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "newSecondDelegatedAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Second Delegated Authority"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "7f1a06b5cbf87540",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set a second delegate",
+          "interpolatedIntent": "${accounts.globalAdmin} makes ${accounts.newSecondDelegatedAuthority} the second delegated authority of farm ${accounts.farmState}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "closeEmptyUserState",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "signer",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "farmState",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farm"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rentReceiver",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rent To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "f01809e356e1c75f",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Close a farm account",
+          "interpolatedIntent": "${accounts.signer} closes the empty farm account ${accounts.userState} of farm ${accounts.farmState} and returns its rent to ${accounts.rentReceiver}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "idlMissingTypes",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "globalAdmin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Global Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "globalConfig",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Farms Config"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "8250269950d4b6fd",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "globalConfigOptionKind",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "globalConfigOption"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Farms Config Setting"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "farmConfigOptionKind",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "farmConfigOption"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Farm Setting"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "timeUnit",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "timeUnit"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Time Unit"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "lockingMode",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "lockingMode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Locking Mode"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "rewardType",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "rewardType"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Reward Type"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Declare IDL types"
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "farmConfigOption",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "updateRewardRps",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Reward Rate"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "updateRewardMinClaimDuration",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Minimum Claim Interval"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "withdrawAuthority",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Withdraw Authority"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "depositWarmupPeriod",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Deposit Warm-Up Period"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "withdrawCooldownPeriod",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Withdrawal Cooldown Period"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "rewardType",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Reward Type"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "rpsDecimals",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Reward Rate Decimals"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "lockingMode",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Locking Mode"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "lockingStartTimestamp",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Locking Start"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "lockingDuration",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Locking Duration"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "lockingEarlyWithdrawalPenaltyBps",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Early Withdrawal Penalty"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "depositCapAmount",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Deposit Cap"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "slashedAmountSpillAddress",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Slashed Tokens Recipient"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "scopePricesAccount",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Scope Prices Account"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "scopeOraclePriceId",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Scope Price ID"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "scopeOracleMaxAge",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Scope Price Maximum Age"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "updateRewardScheduleCurvePoints",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Reward Schedule"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "updatePendingFarmAdmin",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Pending Farm Admin"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "updateStrategyId",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Strategy"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "updateDelegatedRpsAdmin",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Reward Rate Admin"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "updateVaultId",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Vault"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "updateExtraDelegatedAuthority",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Second Delegated Authority"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "updateIsRewardUserOnceEnabled",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "One-Time Rewards Enabled"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "updateDelegatedAuthority",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Delegated Authority"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "updateIsHarvestingPermissionless",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Anyone May Claim Rewards"
+              }
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "globalConfigOption",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "setPendingGlobalAdmin",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Pending Global Admin"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "setTreasuryFeeBps",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Treasury Fee"
+              }
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "lockingMode",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "none",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "None"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "continuous",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Continuous"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "withExpiry",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "With Expiry"
+              }
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "rewardInfo",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "token",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "tokenInfo"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "rewardsVault",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "rewardsAvailable",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "rewardScheduleCurve",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "rewardScheduleCurve"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "minClaimDurationSeconds",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lastIssuanceTs",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "rewardsIssuedUnclaimed",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "rewardsIssuedCumulative",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "rewardPerShareScaled",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "placeholder0",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "rewardType",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "rewardsPerSecondDecimals",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "padding0",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 6
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "padding1",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 20
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "rewardPerTimeUnitPoint",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tsStart",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "rewardPerTimeUnit",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "rewardScheduleCurve",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "points",
+              "docs": [
+                "This is a stepwise function, meaning that each point represents",
+                "how many rewards are issued per time unit since the beginning",
+                "of that point until the beginning of the next point.",
+                "This is not a linear curve, there is no interpolation going on.",
+                "A curve can be [[t0, 100], [t1, 50], [t2, 0]]",
+                "meaning that from t0 to t1, 100 rewards are issued per time unit,",
+                "from t1 to t2, 50 rewards are issued per time unit, and after t2 it stops",
+                "Another curve, can be [[t0, 100], [u64::max, 0]]",
+                "meaning that from t0 to u64::max, 100 rewards are issued per time unit"
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "rewardPerTimeUnitPoint"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 20
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "rewardType",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "proportional",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Proportional"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "constant",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Constant"
+              }
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "timeUnit",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "seconds",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Seconds"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "slots",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Slots"
+              }
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "tokenInfo",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "decimals",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tokenProgram",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "padding",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 6
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "datedPrice",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "price",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "price"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lastUpdatedSlot",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "unixTimestamp",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "reserved",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 2
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "reserved2",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u16",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 3
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "index",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "price",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "value",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "exp",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "stakeZero",
+        "code": 6000,
+        "message": "Cannot stake 0 amount",
+        "docs": [
+          "StakeZero: Cannot stake 0 amount"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unstakeZero",
+        "code": 6001,
+        "message": "Cannot unstake 0 amount",
+        "docs": [
+          "UnstakeZero: Cannot unstake 0 amount"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "nothingToUnstake",
+        "code": 6002,
+        "message": "Nothing to unstake",
+        "docs": [
+          "NothingToUnstake: Nothing to unstake"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "noRewardToHarvest",
+        "code": 6003,
+        "message": "No reward to harvest",
+        "docs": [
+          "NoRewardToHarvest: No reward to harvest"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "noRewardInList",
+        "code": 6004,
+        "message": "Reward not present in reward list",
+        "docs": [
+          "NoRewardInList: Reward not present in reward list"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rewardAlreadyInitialized",
+        "code": 6005,
+        "message": "Reward already initialized",
+        "docs": [
+          "RewardAlreadyInitialized: Reward already initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "maxRewardNumberReached",
+        "code": 6006,
+        "message": "Max number of reward tokens reached",
+        "docs": [
+          "MaxRewardNumberReached: Max number of reward tokens reached"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rewardDoesNotExist",
+        "code": 6007,
+        "message": "Reward does not exist",
+        "docs": [
+          "RewardDoesNotExist: Reward does not exist"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "wrongRewardVaultAccount",
+        "code": 6008,
+        "message": "Reward vault exists but the account is wrong",
+        "docs": [
+          "WrongRewardVaultAccount: Reward vault exists but the account is wrong"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rewardVaultMismatch",
+        "code": 6009,
+        "message": "Reward vault pubkey does not match staking pool vault",
+        "docs": [
+          "RewardVaultMismatch: Reward vault pubkey does not match staking pool vault"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rewardVaultAuthorityMismatch",
+        "code": 6010,
+        "message": "Reward vault authority pubkey does not match staking pool vault",
+        "docs": [
+          "RewardVaultAuthorityMismatch: Reward vault authority pubkey does not match staking pool vault"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "nothingStaked",
+        "code": 6011,
+        "message": "Nothing staked, cannot collect any rewards",
+        "docs": [
+          "NothingStaked: Nothing staked, cannot collect any rewards"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "integerOverflow",
+        "code": 6012,
+        "message": "Integer overflow",
+        "docs": [
+          "IntegerOverflow: Integer overflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "conversionFailure",
+        "code": 6013,
+        "message": "Conversion failure",
+        "docs": [
+          "ConversionFailure: Conversion failure"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unexpectedAccount",
+        "code": 6014,
+        "message": "Unexpected account in instruction",
+        "docs": [
+          "UnexpectedAccount: Unexpected account in instruction"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "operationForbidden",
+        "code": 6015,
+        "message": "Operation forbidden",
+        "docs": [
+          "OperationForbidden: Operation forbidden"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "mathOverflow",
+        "code": 6016,
+        "message": "Mathematical operation with overflow",
+        "docs": [
+          "MathOverflow: Mathematical operation with overflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "minClaimDurationNotReached",
+        "code": 6017,
+        "message": "Minimum claim duration has not been reached",
+        "docs": [
+          "MinClaimDurationNotReached: Minimum claim duration has not been reached"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rewardsVaultHasDelegate",
+        "code": 6018,
+        "message": "Reward vault has a delegate",
+        "docs": [
+          "RewardsVaultHasDelegate: Reward vault has a delegate"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rewardsVaultHasCloseAuthority",
+        "code": 6019,
+        "message": "Reward vault has a close authority",
+        "docs": [
+          "RewardsVaultHasCloseAuthority: Reward vault has a close authority"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "farmVaultHasDelegate",
+        "code": 6020,
+        "message": "Farm vault has a delegate",
+        "docs": [
+          "FarmVaultHasDelegate: Farm vault has a delegate"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "farmVaultHasCloseAuthority",
+        "code": 6021,
+        "message": "Farm vault has a close authority",
+        "docs": [
+          "FarmVaultHasCloseAuthority: Farm vault has a close authority"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rewardsTreasuryVaultHasDelegate",
+        "code": 6022,
+        "message": "Reward vault has a delegate",
+        "docs": [
+          "RewardsTreasuryVaultHasDelegate: Reward vault has a delegate"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rewardsTreasuryVaultHasCloseAuthority",
+        "code": 6023,
+        "message": "Reward vault has a close authority",
+        "docs": [
+          "RewardsTreasuryVaultHasCloseAuthority: Reward vault has a close authority"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "userAtaRewardVaultMintMissmatch",
+        "code": 6024,
+        "message": "User ata and reward vault have different mints",
+        "docs": [
+          "UserAtaRewardVaultMintMissmatch: User ata and reward vault have different mints"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "userAtaFarmTokenMintMissmatch",
+        "code": 6025,
+        "message": "User ata and farm token have different mints",
+        "docs": [
+          "UserAtaFarmTokenMintMissmatch: User ata and farm token have different mints"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "tokenFarmTokenMintMissmatch",
+        "code": 6026,
+        "message": "Token mint and farm token have different mints",
+        "docs": [
+          "TokenFarmTokenMintMissmatch: Token mint and farm token have different mints"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rewardAtaRewardMintMissmatch",
+        "code": 6027,
+        "message": "Reward ata mint is different than reward mint",
+        "docs": [
+          "RewardAtaRewardMintMissmatch: Reward ata mint is different than reward mint"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rewardAtaOwnerNotPayer",
+        "code": 6028,
+        "message": "Reward ata owner is different than payer",
+        "docs": [
+          "RewardAtaOwnerNotPayer: Reward ata owner is different than payer"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidGlobalConfigMode",
+        "code": 6029,
+        "message": "Mode to update global_config is invalid",
+        "docs": [
+          "InvalidGlobalConfigMode: Mode to update global_config is invalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rewardIndexOutOfRange",
+        "code": 6030,
+        "message": "Reward Index is higher than number of rewards",
+        "docs": [
+          "RewardIndexOutOfRange: Reward Index is higher than number of rewards"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "nothingToWithdraw",
+        "code": 6031,
+        "message": "No tokens available to withdraw",
+        "docs": [
+          "NothingToWithdraw: No tokens available to withdraw"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "userDelegatedFarmNonDelegatedMissmatch",
+        "code": 6032,
+        "message": "user, user_ref, authority and payer must match for non-delegated farm",
+        "docs": [
+          "UserDelegatedFarmNonDelegatedMissmatch: user, user_ref, authority and payer must match for non-delegated farm"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "authorityFarmDelegateMissmatch",
+        "code": 6033,
+        "message": "Authority must match farm delegate authority",
+        "docs": [
+          "AuthorityFarmDelegateMissmatch: Authority must match farm delegate authority"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "farmNotDelegated",
+        "code": 6034,
+        "message": "Farm not delegated, can not complete operation",
+        "docs": [
+          "FarmNotDelegated: Farm not delegated, can not complete operation"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "farmDelegated",
+        "code": 6035,
+        "message": "Operation not allowed for delegated farm",
+        "docs": [
+          "FarmDelegated: Operation not allowed for delegated farm"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unstakeNotElapsed",
+        "code": 6036,
+        "message": "Unstake lockup period is not elapsed. Deposit is locked until end of unstake period",
+        "docs": [
+          "UnstakeNotElapsed: Unstake lockup period is not elapsed. Deposit is locked until end of unstake period"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "pendingWithdrawalNotWithdrawnYet",
+        "code": 6037,
+        "message": "Pending withdrawal already exist and not withdrawn yet",
+        "docs": [
+          "PendingWithdrawalNotWithdrawnYet: Pending withdrawal already exist and not withdrawn yet"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "depositZero",
+        "code": 6038,
+        "message": "Cannot deposit zero amount directly to farm vault",
+        "docs": [
+          "DepositZero: Cannot deposit zero amount directly to farm vault"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidConfigValue",
+        "code": 6039,
+        "message": "Invalid config value",
+        "docs": [
+          "InvalidConfigValue: Invalid config value"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidPenaltyPercentage",
+        "code": 6040,
+        "message": "Invalid penalty percentage",
+        "docs": [
+          "InvalidPenaltyPercentage: Invalid penalty percentage"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "earlyWithdrawalNotAllowed",
+        "code": 6041,
+        "message": "Early withdrawal not allowed",
+        "docs": [
+          "EarlyWithdrawalNotAllowed: Early withdrawal not allowed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidLockingTimestamps",
+        "code": 6042,
+        "message": "Invalid locking timestamps",
+        "docs": [
+          "InvalidLockingTimestamps: Invalid locking timestamps"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidRpsCurvePoint",
+        "code": 6043,
+        "message": "Invalid reward rate curve point",
+        "docs": [
+          "InvalidRpsCurvePoint: Invalid reward rate curve point"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTimestamp",
+        "code": 6044,
+        "message": "Invalid timestamp",
+        "docs": [
+          "InvalidTimestamp: Invalid timestamp"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "depositCapReached",
+        "code": 6045,
+        "message": "Deposit cap reached",
+        "docs": [
+          "DepositCapReached: Deposit cap reached"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "missingScopePrices",
+        "code": 6046,
+        "message": "Missing Scope Prices",
+        "docs": [
+          "MissingScopePrices: Missing Scope Prices"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "scopeOraclePriceTooOld",
+        "code": 6047,
+        "message": "Scope Oracle Price Too Old",
+        "docs": [
+          "ScopeOraclePriceTooOld: Scope Oracle Price Too Old"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidOracleConfig",
+        "code": 6048,
+        "message": "Invalid Oracle Config",
+        "docs": [
+          "InvalidOracleConfig: Invalid Oracle Config"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "couldNotDeserializeScope",
+        "code": 6049,
+        "message": "Could not deserialize scope",
+        "docs": [
+          "CouldNotDeserializeScope: Could not deserialize scope"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rewardAtaOwnerNotAdmin",
+        "code": 6050,
+        "message": "Reward ata owner is different than farm admin",
+        "docs": [
+          "RewardAtaOwnerNotAdmin: Reward ata owner is different than farm admin"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "withdrawRewardZeroAvailable",
+        "code": 6051,
+        "message": "Cannot withdraw reward as available amount is zero",
+        "docs": [
+          "WithdrawRewardZeroAvailable: Cannot withdraw reward as available amount is zero"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rewardScheduleCurveSet",
+        "code": 6052,
+        "message": "Cannot withdraw reward as reward schedule is set",
+        "docs": [
+          "RewardScheduleCurveSet: Cannot withdraw reward as reward schedule is set"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unsupportedTokenExtension",
+        "code": 6053,
+        "message": "Cannot initialize farm while having a mint with token22 and requested extensions",
+        "docs": [
+          "UnsupportedTokenExtension: Cannot initialize farm while having a mint with token22 and requested extensions"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidFarmConfigUpdateAuthority",
+        "code": 6054,
+        "message": "Invalid authority for updating farm config",
+        "docs": [
+          "InvalidFarmConfigUpdateAuthority: Invalid authority for updating farm config"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTransferOwnershipOldOwner",
+        "code": 6055,
+        "message": "Invalid authority for transfer ownersip new user state initialization",
+        "docs": [
+          "InvalidTransferOwnershipOldOwner: Invalid authority for transfer ownersip new user state initialization"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTransferOwnershipFarmState",
+        "code": 6056,
+        "message": "Invalid farm state for transfer ownership new user state initialization",
+        "docs": [
+          "InvalidTransferOwnershipFarmState: Invalid farm state for transfer ownership new user state initialization"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTransferOwnershipUserStateOwnerDelegatee",
+        "code": 6057,
+        "message": "Invalid user state for transfer ownership, owner must match delegatee",
+        "docs": [
+          "InvalidTransferOwnershipUserStateOwnerDelegatee: Invalid user state for transfer ownership, owner must match delegatee"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTransferOwnershipFarmStateLockingMode",
+        "code": 6058,
+        "message": "Invalid farm state locking mode for transfer ownership, must be 0",
+        "docs": [
+          "InvalidTransferOwnershipFarmStateLockingMode: Invalid farm state locking mode for transfer ownership, must be 0"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTransferOwnershipFarmStateWithdrawCooldownPeriod",
+        "code": 6059,
+        "message": "Invalid farm state withdrawal cooldown period for transfer ownership, must be 0",
+        "docs": [
+          "InvalidTransferOwnershipFarmStateWithdrawCooldownPeriod: Invalid farm state withdrawal cooldown period for transfer ownership, must be 0"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTransferOwnershipStakeAmount",
+        "code": 6060,
+        "message": "Invalid transfer ownership stake amount, must be equal to unstaked deposits",
+        "docs": [
+          "InvalidTransferOwnershipStakeAmount: Invalid transfer ownership stake amount, must be equal to unstaked deposits"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTransferOwnershipNewOwner",
+        "code": 6061,
+        "message": "Invalid authority for transfer ownersip new user state initialization",
+        "docs": [
+          "InvalidTransferOwnershipNewOwner: Invalid authority for transfer ownersip new user state initialization"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTransferOwnershipFarmStateDepositWarmupPeriod",
+        "code": 6062,
+        "message": "Invalid farm state deposit warmup period for transfer ownership, must be 0 if old user has stake",
+        "docs": [
+          "InvalidTransferOwnershipFarmStateDepositWarmupPeriod: Invalid farm state deposit warmup period for transfer ownership, must be 0 if old user has stake"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rewardUserOnceFeatureDisabled",
+        "code": 6063,
+        "message": "Reward User Once feature is disabled",
+        "docs": [
+          "RewardUserOnceFeatureDisabled: Reward User Once feature is disabled"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidDelegatedAuthorityUpdate",
+        "code": 6064,
+        "message": "Can not set delegate_authority to default pubkey - farm is delegated",
+        "docs": [
+          "InvalidDelegatedAuthorityUpdate: Can not set delegate_authority to default pubkey - farm is delegated"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "userTokenAccountOwnerMismatch",
+        "code": 6065,
+        "message": "User token account owner does not match user state owner",
+        "docs": [
+          "UserTokenAccountOwnerMismatch: User token account owner does not match user state owner"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "harvestingNotPermissionlessPayerMismatch",
+        "code": 6066,
+        "message": "Harvesting is not permissionless, payer does not match user state owner",
+        "docs": [
+          "HarvestingNotPermissionlessPayerMismatch: Harvesting is not permissionless, payer does not match user state owner"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rewardsIssuedCumulativeMismatch",
+        "code": 6067,
+        "message": "Rewards issued cumulative does not match expected value",
+        "docs": [
+          "RewardsIssuedCumulativeMismatch: Rewards issued cumulative does not match expected value"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "cannotCloseUserStateStakeNonZero",
+        "code": 6068,
+        "message": "Cannot close user state because staked amount is non-zero",
+        "docs": [
+          "CannotCloseUserStateStakeNonZero: Cannot close user state because staked amount is non-zero"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "cannotCloseUserStatePendingUnstakes",
+        "code": 6069,
+        "message": "Cannot close user state because there are pending unstake requests",
+        "docs": [
+          "CannotCloseUserStatePendingUnstakes: Cannot close user state because there are pending unstake requests"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "cannotCloseUserStatePendingDeposits",
+        "code": 6070,
+        "message": "Cannot close user state because there are pending deposit requests",
+        "docs": [
+          "CannotCloseUserStatePendingDeposits: Cannot close user state because there are pending deposit requests"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "cannotCloseUserStateUnharvestedRewards",
+        "code": 6071,
+        "message": "Cannot close user state because there are unharvested rewards",
+        "docs": [
+          "CannotCloseUserStateUnharvestedRewards: Cannot close user state because there are unharvested rewards"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "cannotCloseUserStateSignerNotOwner",
+        "code": 6072,
+        "message": "Cannot close user state because signer is not the owner",
+        "docs": [
+          "CannotCloseUserStateSignerNotOwner: Cannot close user state because signer is not the owner"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "cannotCloseUserStateDelegatedSignerNotDelegateAuthority",
+        "code": 6073,
+        "message": "Cannot close user state (delegated) because signer is not the delegate authority",
+        "docs": [
+          "CannotCloseUserStateDelegatedSignerNotDelegateAuthority: Cannot close user state (delegated) because signer is not the delegate authority"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "cannotCloseUserStateRentReceiverNotOwner",
+        "code": 6074,
+        "message": "Cannot close user state because rent receiver is not the owner",
+        "docs": [
+          "CannotCloseUserStateRentReceiverNotOwner: Cannot close user state because rent receiver is not the owner"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "cannotCloseUserStateDelegatedRentReceiverNotAdmin",
+        "code": 6075,
+        "message": "Cannot close user state (delegated) because rent receiver is not the admin",
+        "docs": [
+          "CannotCloseUserStateDelegatedRentReceiverNotAdmin: Cannot close user state (delegated) because rent receiver is not the admin"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "userRewardTokenAccountMustBeAta",
+        "code": 6076,
+        "message": "User reward token account must be an ATA when payer is not the owner",
+        "docs": [
+          "UserRewardTokenAccountMustBeAta: User reward token account must be an ATA when payer is not the owner"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rewardsIssuedCumulativeAtMax",
+        "code": 6077,
+        "message": "Cannot reward user because rewards_issued_cumulative has reached maximum value",
+        "docs": [
+          "RewardsIssuedCumulativeAtMax: Cannot reward user because rewards_issued_cumulative has reached maximum value"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "userStateIdMismatch",
+        "code": 6078,
+        "message": "User state user id does not match expected value",
+        "docs": [
+          "UserStateIdMismatch: User state user id does not match expected value"
+        ]
+      }
+    ]
+  }
+}
