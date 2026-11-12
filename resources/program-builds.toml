@@ -788,3 +788,12 @@ programHash = "fa7644fadb76fb3dc02a32982e2410fe263e052cae9dbd222fcbac2a667531c6"
 authority = "5u7o2WGgHckh18opTfPsqKb8E3nhDKcReBrbzUeXg2n7"
 idlSha256 = "fa30a21d8174a8bd1d96cf589267314ac158dc292e7f8c9569f4bd4c30b31d01"
 reviewed = "2026-11-12"
+
+[[builds]]
+# stakePool (pack). Deployed at slot 385756820; OtterSec lists no verify record. The binary logs exactly the IDL's 12 instruction names apart from Anchor's IDL instructions, and holds both halves of each instruction's discriminator; mainnet transactions of stake, request_unstake, unstake, unstake_as_worker, migrate_entry and create_pool_v2 decode with every account named and no data left over.
+programId = "STAKEvGqQTtzJZH6BWDcbpzXXn2BBerPAgQ3EGLN2GH"
+network = "mainnet"
+programHash = "c760754bc0e8b3f6cd391ddbb6792f54f84f768fdbb59d36e2f35f2eca6ff659"
+authority = "5u7o2WGgHckh18opTfPsqKb8E3nhDKcReBrbzUeXg2n7"
+idlSha256 = "62a29e9dcb34c843e7baf7dbe6af2cb282c2e7fffcdd5c0e0476f8e7ee7790d7"
+reviewed = "2026-11-12"

@@ -1084,3 +1084,20 @@ which the program takes as "when created" and "at the start", instead of as 1 Ja
 and top-up instructions read the decimals of the mint they name; the new amount per \
 period of update stays in base units, since update names no mint. Display nodes added by \
 hand."""
+
+# Streamflow's staking program (stake_pool 2.4.0): projects create stake pools
+# for their token, and holders lock tokens in them for a chosen time, weighted
+# by its length, for a receipt token. Rewards come from Streamflow's separate
+# reward pool programs. The file is the Anchor IDL its IDL account publishes
+# on mainnet; devnet runs a newer build (2.7.0).
+[[idls]]
+file = "streamflow-staking.json"
+programId = "STAKEvGqQTtzJZH6BWDcbpzXXn2BBerPAgQ3EGLN2GH"
+name = "stakePool"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "943e30f6a7b839bb2513c60135fe52f96e8dcd20ad5d7dcc3afca93910443595" }
+changes = """Converted from Anchor to Codama. The Token program's mint account is added, so staked \
+amounts and a pool's stake cap read the decimals of the staked token. create_pool_v2's \
+stake cap and expiry time are read as absent when zero, which the program and \
+Streamflow's SDK take as "no cap" and "never", instead of as 0 tokens and 1 January \
+1970. Display nodes added by hand."""
