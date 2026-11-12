@@ -583,6 +583,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("proVF4pMXVaYqmy4NjniPh4pqKNfMmsihgd4wdkCX3u"),
         "OKX DEX Router Program",
     ),
+    (
+        Pubkey::from_str_const("LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"),
+        "Raydium LaunchLab Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

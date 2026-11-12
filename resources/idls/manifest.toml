@@ -453,3 +453,27 @@ mint account is added, so a swap's amount in and quoted output read the decimals
 input and output mints the instruction names. Slippage and the platform's share of the \
 commission are in percent; the packed commission and the trim and charge rates are plain \
 numbers. Display nodes added by hand."""
+
+# Raydium LaunchLab (raydium_launchpad), the bonding-curve launchpad behind
+# letsbonk.fun and other platforms: buys and sells on a token's curve, token
+# and pool creation, creator, platform and vesting claims, and the migration
+# to a Raydium pool. Its program-metadata and Anchor IDL accounts hold the
+# same document. Devnet runs it at another address
+# (DRay6fNdQ5J82H7xV6uq2aV3mNrUZ1J4PgSKsWgptcm6).
+[[idls]]
+file = "raydium-launchlab.json"
+programId = "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+name = "raydiumLaunchpad"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "94f2405a89d172ef6cf632682076455dba927f9c103ed32178d0b237c643b3bb" }
+changes = """Converted from Anchor to Codama. The four trades declare the accounts they read after \
+the named ones (the share fee recipient when there is a share fee, the System program, \
+the platform fee vault and the creator fee vault) as one remaining-accounts group, shown \
+as Fee Accounts. initializeV2 and initializeWithToken2022 declare the platform's allow \
+record and launch rule, each passed only when the platform has one, as one hidden \
+remaining-accounts group; updatePlatformConfig declares the CP swap AMM config its \
+CpSwapConfig and AllInfo changes read; migrateToCpswap declares the accounts it reads \
+after the named ones as one hidden group. The Token program's mint account is added, so \
+the trades' amounts read their base or quote mint's decimals. Rates are per million, as \
+the program counts them; vesting shares and a new pool's curve settings are in base \
+units. Display nodes added by hand."""
