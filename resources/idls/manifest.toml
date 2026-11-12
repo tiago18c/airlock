@@ -1621,3 +1621,19 @@ they hold the program's own address. Royalties read as a percent. The merkle roo
 the hashes that identify a leaf, `[u8; 32]` arrays in the source, are typed as 32-byte \
 fixed-size bytes so they read as hex; the bytes are the same. Display nodes added by \
 hand."""
+
+# Market Tick, a sub-slot clock: a signer writes its own nanosecond timestamp
+# for the current slot into one shared account many times a slot, and the
+# first signer of a slot keeps it for that slot. The program does not check
+# who signs or that the time is true. Its source is public in the
+# firedancer-io organisation on GitHub; the IDL in its program-metadata
+# account is that repository's idls/market_tick.json, byte for byte, and
+# devnet holds the same build and document.
+[[idls]]
+file = "market-tick.json"
+programId = "tickUcsEQegChaAuo9VYQQztB4ZGApY6ZT4FkULWY6N"
+name = "marketTick"
+networks = ["mainnet", "devnet"]
+source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "80124ebab574b5fa11ae3e27b90589a660a00ef0a10dd53f9cd7abde8173d988" }
+changes = """Converted from Anchor to Codama. The signer's timestamp reads as a date from nanoseconds \
+and the target interval in milliseconds. Display nodes added by hand."""

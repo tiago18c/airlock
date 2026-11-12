@@ -1074,3 +1074,21 @@ programHash = "8d8b3432caed8dfb06d20fa3c884038312508b440f0d80aeab8b9531241ed2c1"
 authority = "Fsxr5WVKZZoeb7xgwTWRHymSRVGY9vk7m5B5GPu1KU59"
 idlSha256 = "4e2de0f45231a0dd4705013f2c97512128059cb920c704973cb0ecd4c4e9540f"
 reviewed = "2026-11-12"
+
+[[builds]]
+# marketTick (pack). The binary logs no instruction names; it holds the program's own log line and four of the IDL's seven error messages as whole strings, and mainnet increments are the 25 bytes the IDL's tag and three arguments take, with the account and signer it names. OtterSec has no record of this program.
+programId = "tickUcsEQegChaAuo9VYQQztB4ZGApY6ZT4FkULWY6N"
+network = "mainnet"
+programHash = "c5cd829c984cf60fe5aaddc196a0252458cbd29ca30df2f4282dcea50337c6e2"
+authority = "DzxY3eGHb8qVfxSAmeqkTQEFiQ5XVmEfejNqZtdWyL2x"
+idlSha256 = "0b2efa51a89ff3f55102489a71544b3c719bdd3c6996ae90978a2a1de582d493"
+reviewed = "2026-11-12"
+
+[[builds]]
+# marketTick (pack). The same executable as on mainnet, with the same IDL in its program-metadata account. Devnet's initialize and increments decode with every account named.
+programId = "tickUcsEQegChaAuo9VYQQztB4ZGApY6ZT4FkULWY6N"
+network = "devnet"
+programHash = "c5cd829c984cf60fe5aaddc196a0252458cbd29ca30df2f4282dcea50337c6e2"
+authority = "DXchT5vygBxnUnQGp9w7i9CFZdcZ7Uujwkw5a7VeAC8D"
+idlSha256 = "0b2efa51a89ff3f55102489a71544b3c719bdd3c6996ae90978a2a1de582d493"
+reviewed = "2026-11-12"
