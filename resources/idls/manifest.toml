@@ -918,3 +918,21 @@ withdrawal and loss amounts read the decimals of the hyUSD and eHYUSD mints the 
 instructions name. Hylo's fixed-point values (limits, the withdrawal fee, the slippage \
 check's expected amount and tolerance) carry their own power of ten and show as bits and \
 exponent. Display nodes added by hand."""
+
+# Meteora Dynamic Vault, the lending vaults that hold the idle liquidity of
+# DAMM v1 pools. Mainnet has no program-metadata account; its Anchor IDL
+# account holds a legacy IDL, version 0.7.2, older than the program deployed
+# there. Devnet runs another build.
+[[idls]]
+file = "meteora-vault.json"
+programId = "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi"
+name = "vault"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "43df05a8858eb665971ed17bfd5739ede11a77ffcc72700d738e97b1d6c7c3c4" }
+changes = """Converted from Anchor to Codama. The legacy IDL carries no program address, so the \
+program's address is set. `collectDust` and `withdraw2` are left out: the deployed \
+program does not have them. `depositStrategy`, `withdrawStrategy` and \
+`withdrawDirectlyFromStrategy` declare the lending protocol's accounts they read after \
+the listed ones. The Token program's mint account is added, so LP token amounts read the \
+LP mint's decimals; amounts of the vault's own token are in base units. Display nodes \
+added by hand."""
