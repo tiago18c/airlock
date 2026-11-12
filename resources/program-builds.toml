@@ -1130,3 +1130,12 @@ programHash = "fb6eedda54a5356967c6a802a4559184ae88fd3fe3584a34ece24cc459cf85a2"
 authority = "7Tn58JpSvBHeB5Mk1JEby3kCPMKTZaN9pUdhTFpKE5sh"
 idlSha256 = "83c6617b0743fc2f1cb7e93584be07a2d8a80f074e0692c42a07f6a859fe0d3f"
 reviewed = "2026-11-12"
+
+[[builds]]
+# Velocity Program (pack). The binary logs `Instruction: <name>` for exactly the IDL's 216 instructions (the mainnet build leaves out the LP pool, isolated-position and devnet-only instructions the repository's full-feature IDL has). Every sampled instruction (31 of them, from orders, fills, deposits, withdrawals, swaps and insurance fund staking to keeper and fee instructions) decodes with the IDL at its exact data length and names all of its accounts; the native fast-path keeper instructions (data starting ff ff ff ff) are not Anchor instructions and are not in the IDL.
+programId = "vELoC1audYbSYVRXn1vPaV8Axoa9oU6BYmNGZZBDZ1P"
+network = "mainnet"
+programHash = "95d9fbc9df8621e595f98b15e3e46bb70627eabf1d05ce3560981e997f4a3975"
+authority = "8jj7zJgdr5bDndc7evM74FMGwzLPmd4u4QxNzFi1BMai"
+idlSha256 = "8218a8418a961de03da6e73bf3e730fc1ae743a200af540efef7dfa651e90f84"
+reviewed = "2026-11-12"
