@@ -1423,3 +1423,21 @@ source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "2d
 changes = """Converted from Anchor to Codama. The Config struct, which update_config takes as its \
 argument and which the converter keeps only as the Config account's data, is restored \
 unchanged as a defined type, so update_config can be read. Display nodes added by hand."""
+
+# Coinflow's credits program (coinflow 0.1.0), behind its card and bank
+# checkouts: Coinflow credits a customer's record, a customer redeems credits
+# inside a merchant's transaction (tokens from Coinflow's vault, returned at
+# the end if unspent), and Coinflow settles credits to merchants. The legacy
+# IDL carries no address, and the deployed program has two instructions it
+# lacks.
+[[idls]]
+file = "coinflow.json"
+programId = "FD1amxhTsDpwzoVX41dxp2ygAESURV2zdUACzxM1Dfw9"
+name = "coinflow"
+networks = ["mainnet", "devnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "062dde88cc7fbb9a9ac9e6e8d83da383c3b6d5bf238a641ed4b63ca013b4bb60" }
+changes = """Converted from legacy Anchor to Codama, with the program's address added (a legacy IDL \
+carries none). The Token program's mint account is added, so the amount redeem_credits \
+redeems reads the decimals of its token. burn_credits declares the Instructions sysvar \
+that executed instructions pass after the accounts the IDL lists, hidden. Display nodes \
+added by hand."""

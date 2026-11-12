@@ -759,6 +759,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("4R3gSG8BpU4t19KYj8CfnbtRpnT8gtk4dvTHxVRwc2r7"),
         "Jito Tip Distribution Program",
     ),
+    (
+        Pubkey::from_str_const("FD1amxhTsDpwzoVX41dxp2ygAESURV2zdUACzxM1Dfw9"),
+        "Coinflow Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.
