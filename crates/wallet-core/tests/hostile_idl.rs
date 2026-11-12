@@ -6,8 +6,8 @@
 use solana_instruction::{AccountMeta, Instruction};
 use solana_pubkey::Pubkey;
 use wallet_core::{
-    compile_v1, decode_v1_transaction, explain_transaction, IdlOrigin, IdlStore, KeypairSigner,
-    MemoryBodies, WalletSigner,
+    compile_v1, decode_v1_transaction, explain_transaction, idl_instruction_form, IdlArgKind,
+    IdlBuildInput, IdlOrigin, IdlStore, KeypairSigner, MemoryBodies, WalletSigner,
 };
 use wallet_vault::store::MemoryStore;
 
@@ -249,4 +249,51 @@ fn discriminators_that_each_copy_the_tree_stop_at_a_limit() {
     let file = || idl(&types, &instructions);
     assert!(reads(file(), vec![3, 1]), "found before the limit");
     assert!(!reads(file(), vec![199, 1]), "past the limit");
+}
+
+/// Build's form follows a link a link or two deep to a plain enum, and no
+/// further: types that link to themselves, or to each other, are a field
+/// nobody can fill.
+#[test]
+fn builds_form_reads_a_type_that_links_to_itself_as_a_field_nobody_can_fill() {
+    let plain = format!(
+        r#"{{"kind":"enumTypeNode","variants":[{{"kind":"enumEmptyVariantTypeNode","name":"on"}}],"size":{U8}}}"#
+    );
+    let types = [
+        defined("loop", &link("loop")),
+        defined("ping", &link("pong")),
+        defined("pong", &link("ping")),
+        defined("switch", &plain),
+    ];
+    let instructions = [
+        instruction("a", 1, U8, &link("loop")),
+        instruction("b", 2, U8, &link("ping")),
+        instruction("c", 3, U8, &link("switch")),
+    ];
+    let file = idl(&types, &instructions);
+    let kinds = on_a_main_threads_stack(move || {
+        let mut store = IdlStore::open(MemoryStore::new(), MemoryBodies::new());
+        store
+            .import_with_origin(file.as_bytes(), None, IdlOrigin::ProgramMetadata)
+            .unwrap();
+        let client = store.program_client(&PROGRAM.parse().unwrap()).unwrap();
+        ["a", "b", "c"].map(|name| {
+            idl_instruction_form(&client, name, &IdlBuildInput::default())
+                .unwrap()
+                .arguments[0]
+                .kind
+                .clone()
+        })
+    });
+    let unread = IdlArgKind::Raw {
+        note: "definedTypeLinkNode".into(),
+    };
+    assert_eq!(kinds[0], unread);
+    assert_eq!(kinds[1], unread);
+    assert_eq!(
+        kinds[2],
+        IdlArgKind::Enum {
+            variants: vec!["on".into()]
+        }
+    );
 }

@@ -1,6 +1,6 @@
 # Plan: templates on Build
 
-Status: **in progress**. Decided with Tiago on 2026-11-11. Each phase below says what it adds; a phase is done when its tests pass and its line is ticked in [Phases](#phases).
+Status: all seven phases are **built** (2026-11-11). Phases 5 to 7 were added the same day, after Tiago used the first four: a crash on import, two extensions the size functions left out, and a browser for templates that reads and writes their text. What is left after those is under [Open](#open). Each phase below says what it adds; a phase is done when its tests pass and its line is ticked in [Phases](#phases).
 
 Build asks for every account and argument an IDL names, in the program's base units. That is the right tool for an instruction nobody planned for, and too raw for the things people do often. A template is a short text file that asks a few questions and writes the Build blocks from the answers. The blocks are compiled and read on Review and Sign exactly as blocks made by hand are.
 
@@ -41,121 +41,17 @@ These hold for every phase. They are what keeps a template from being a way arou
 
 ## The format
 
-TOML, version 1. One namespace: inputs, values, program aliases, options and the built-in names share it, and a file that uses a name twice is refused. `$name` is a reference; `$$` is a literal dollar. Any other string is a literal, written as it would be typed into the Build field it goes to (a base58 address, a number in the field's unit, an enum variant, `true`).
-
-```toml
-format = 1
-name = "Create a Token-2022 token"
-summary = "A new mint, with the extensions you choose."
-
-[programs]
-system = "11111111111111111111111111111111"
-token = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-
-[[option]]
-name = "transfer_fee"
-label = "Transfer fee"
-hint = "Keeps a share of every transfer in the receiving account."
-
-[[input]]
-name = "decimals"
-label = "Decimals"
-default = "9"
-
-[[input]]
-name = "authority"
-label = "Mint authority"
-default = "$wallet"
-
-[[input]]
-name = "freeze_authority"
-label = "Freeze authority"
-optional = true
-
-[[input]]
-name = "fee"
-label = "Fee"
-option = "transfer_fee"
-
-[[input]]
-name = "max_fee"
-label = "Maximum fee"
-hint = "The most one transfer can be charged, in the token's base units."
-option = "transfer_fee"
-
-[values]
-mint = "new-keypair"
-space = "token-2022-mint-space $mint"
-funded = "token-2022-mint-funded-space $mint"
-lamports = "rent-for $funded"
-
-[[block]]
-program = "$system"
-instruction = "createAccount"
-accounts = { payer = "$fee-payer", newAccount = "$mint" }
-arguments = { lamports = "$lamports", space = "$space", programAddress = "$token" }
-
-[[block]]
-when = "transfer_fee"
-program = "$token"
-instruction = "initializeTransferFeeConfig"
-accounts = { mint = "$mint" }
-arguments = { transferFeeBasisPoints = "$fee", maximumFee = "$max_fee", transferFeeConfigAuthority = "$authority", withdrawWithheldAuthority = "$authority" }
-
-[[block]]
-program = "$token"
-instruction = "initializeMint2"
-accounts = { mint = "$mint" }
-arguments = { decimals = "$decimals", mintAuthority = "$authority", freezeAuthority = "$freeze_authority" }
-```
-
-| Key | Meaning |
-| --- | --- |
-| `format` | `1`. Any other number refuses the file |
-| `name`, `summary` | Shown in the picker and at the head of the form. Never on Review and Sign |
-| `[programs]` | Alias to address. A block's `program` is an alias, or a value whose function returns a program |
-| `[[option]]` | A checkbox: `name`, `label`, optional `hint`, optional `default = true`. No nesting, no else |
-| `[[input]]` | A question: `name`, `label`, optional `hint`, `optional`, `default` (a literal or a reference), `option` (asked only while that option is on) |
-| `[values]` | Derived values, one function call each: `name = "function arg arg"`. An argument is a reference or a literal. Calls do not nest; a value names another value instead |
-| `[[block]]` | One instruction, in the order written: `program`, `instruction`, `accounts`, `arguments`, optional `when` (an option name: the block exists only while it is on) |
-
-Order is the order of the `[[block]]` entries, so an option's block sits where it must run (most extensions before `initializeMint2`, metadata after). TOML does not keep the order between two different arrays, which is why an option does not hold its own blocks.
-
-**An input has no declared type.** It takes the widget of the field it is bound to: an address picker for an account or a public key argument, a select for an enum, a checkbox for a boolean, a scaled amount where the IDL declares a scale (phase 1). Bound to several fields, they must agree, or the file is refused. An input used only as a function's argument takes that parameter's type. An optional input left blank leaves its fields blank, which the IDL form reads as it does on Build (`None`, the IDL default, or an optional account left out); a required field bound to an optional input refuses the file.
-
-**A field the template does not mention** is left to the IDL: a derived account is derived, an argument with a default takes it. A required field with no binding and no default refuses the file when it is checked against the IDL.
-
-### Built-in names
-
-| Name | Value |
-| --- | --- |
-| `$wallet` | The address the selected wallet acts as: what its transactions move funds from (a multisig's vault, not its member) |
-| `$fee-payer` | Build's fee payer field |
-
-### Functions
-
-The whole list. A function is pure, or names the chain fact it needs.
-
-| Function | Returns | Needs |
-| --- | --- | --- |
-| `new-keypair` | The address of a keypair made on this device for this form, kept as Build's "New keypair" keeps one. Stable while the form is open | nothing |
-| `associated-token-account <owner> <mint> <token program>` | The associated token address | nothing |
-| `token-2022-mint-space <mint>` | The size to create a Token-2022 mint at: the base mint and every extension an enabled block of this template initializes on `<mint>`, without token metadata | nothing |
-| `token-2022-mint-funded-space <mint>` | The size to fund: the above, plus the token metadata an enabled `initializeTokenMetadata` block of this template writes to `<mint>`, from the lengths of the values bound to it | nothing |
-| `rent-for <bytes>` | Lamports | the node's rent for that size |
-| `decimals-of <mint>` | The mint's decimals | the mint account |
-| `token-program-of <mint>` | Token or Token-2022, whichever owns the mint | the mint account |
-
-The two size functions read the template's own enabled blocks, so the checkboxes and the size cannot disagree. A Token-2022 mint is created at the size without metadata and funded for the size with it, because `initializeTokenMetadata` grows the account itself. The extension sizes are a table in Rust, checked by running every shipped option against the real program ([Tests](#tests)).
-
-**Chain facts.** Expanding a template returns the facts it still needs. Online, the app reads them from the node (`wallet-flows`, over `SolanaRpc`) and expands again. With no node (Airlock Offline, or offline mode) each missing fact is a field of the form, labelled as what it is ("Rent for 234 bytes, in lamports"), under the template's own inputs. A block whose program is `token-program-of` is checked against both programs' IDLs.
+The format, the built-in names, the functions and chain facts are in [templates.md](templates.md), which is the reference from phase 3 on.
 
 ## Phases
 
 - [x] **1. Build's fields.** Scaled amounts and folded fields on the Build form.
-- [ ] **2. The core.** The format, checking, expansion, functions and facts in `wallet-core` and `wallet-flows`; the shipped templates; their tests against the real programs.
-- [ ] **3. The form.** The picker and the template form on Build, "Show as blocks", compiling to Review and Sign.
-- [ ] **4. Your own.** Save as template, storage, import and export.
+- [x] **2. The core.** The format, checking, expansion, functions and facts in `wallet-core` and `wallet-flows`; the shipped templates; their tests against the real programs.
+- [x] **3. The form.** The picker and the template form on Build, "Show as blocks", compiling to Review and Sign.
+- [x] **4. Your own.** Save as template, storage, import and export.
+- [x] **5. Loose ends.** The crash on importing a name that exists; an enum behind a defined type as a choice on Build; default account state and confidential transfer in the size table.
+- [x] **6. The browser.** The Templates dialog as a list and a reader, with each template's questions, blocks and text.
+- [x] **7. Templates as text.** Writing, editing and importing a template as text in the same dialog, checked as it is typed.
 
 Each phase is one commit series on `t3/build-pane-templates`, in order. Each leaves `cargo fmt --all --check`, CI's Clippy step and the touched crates' tests green, and adds its line to `CHANGELOG.md` when people will notice it.
 
@@ -185,15 +81,17 @@ A new module `wallet_core::template`, placed in `layers.rs` above `idl` and `spl
 - `wallet_flows::template_facts(rpc, needs)`: reads rent, mint decimals and mint owners, one request each kind where the node allows.
 - `toml` is already in the lock file (`idl-pack`, `program-watch`); `wallet-core` takes the same version. It must build for wasm.
 
+As built: the module is public and its parts are reached as `wallet_core::template::{check, expand, Answers, Env, Facts, Fact, …}`; only `Template`, `TemplateError`, `BuiltinTemplate`, `BUILTIN_TEMPLATES` and `builtin_template` are also at the root (`Fact` is taken there). `check` takes the network's catalog as `&dyn IdlCatalog` and returns the inputs (with their kind and scale) and options; the rows the template fixes and works out come from `expand`, per block, with their resolved text. `Answers` tells an input with no answer (it takes its default) from one cleared on purpose (it stays blank). A `token-program-of` block whose mint is not known yet is laid out as Token's, with no program. `template_facts` asks rent one size at a time (the node has no call for several) and every mint in one request. The size table holds the extensions a test lands against the VM's Token-2022 (11.0.0): the six shipped ones and interest-bearing, transfer hook, group pointer, group member pointer, pausable and scaled UI amount. Phase 5 added default account state and confidential transfers with their fee.
+
 The shipped templates:
 
 | File | Asks | Options |
 | --- | --- | --- |
 | `create-token.toml` | decimals, mint authority, freeze authority (optional) | Mint a first supply (to, amount) |
 | `create-token-2022.toml` | the same | Name and symbol (metadata pointer to the mint itself, then token metadata: name, symbol, URI), Transfer fee (fee, maximum fee), Close authority, Permanent delegate, Non-transferable, Mint a first supply |
-| `mint-tokens.toml` | mint, to, amount | none. Uses `token-program-of` and `decimals-of`, creates the recipient's associated token account if missing (`createAssociatedTokenIdempotent`), then `mintToChecked` |
+| `mint-tokens.toml` | mint, to, amount | none. Uses `token-program-of` and `decimals-of`, creates the recipient's associated token account if missing (`createAssociatedTokenIdempotent`), then `mintToChecked`, with the wallet as mint authority |
 
-An option ships only if its test passes against the program the test VM carries.
+An option ships only if its test passes against the program the test VM carries. All of them did, and all six of `create-token-2022` land together: the VM's Token-2022 accepts a transfer fee on a non-transferable mint.
 
 ### 3. The form
 
@@ -208,11 +106,47 @@ An option ships only if its test passes against the program the test VM carries.
 
 Touches `app-ui-kit` (Build's form state and actions), `app-ui-build`, `app-ui-kit` CSS.
 
+As built: Build's form holds `template: Signal<Option<OpenTemplate>>` (the source, the parsed template, the answers, facts typed and facts read, the address of each `new-keypair` key, the inputs marked missing) and `fact_read: Signal<FactRead>`. `TemplateSource` has one variant, `Builtin(id)`, for phase 4 to add a saved one beside. The keys go to `generated`, where Sign finds Build's own. `compile` in `actions/build.rs` and the template's Review and Sign share `compile_instructions`. The core gained `Template::default_text` (what an input shows before it is answered) and `Expansion::uses` (every fact the blocks rest on, known or not, so a fact field does not vanish once filled). The facts become fields offline and also when the node refuses. The disclosures number blocks by their place in the transaction, as Review and Sign does, not by their place in the file. Airlock Offline compiles a template only on a durable nonce, as it does Build's blocks.
+
 ### 4. Your own
 
 - **Save as template** on Build, when it holds at least one block and all are IDL blocks: a dialog lists each block's fields with a tick "Ask each time". Ticked fields become inputs named after the field; ticked fields holding the same value become one input. An address that is a keypair made on Build becomes a `new-keypair` value everywhere it appears. The rest are literals. Name and summary are typed.
 - **Storage.** The TOML text, one file each: `templates/<slug>.toml` in the data folder on desktop and Android, `airlock.template.<slug>` in a browser, following how IDL bodies are stored. Saved checked, as anything only the user can recreate.
 - **Import and export**, from the picker: one `.toml` file. Importing shows what the template fixes before it is kept, and keeps nothing that fails `parse`. A saved name that exists asks before replacing. Built-in templates cannot be removed or replaced, and can be exported.
+
+As built: the tick became a choice per field (keep, ask each time, the wallet in use, the fee payer), because a field that holds the wallet or the fee payer should follow whoever opens the template rather than be fixed or asked. A blank field is asked or left out, and one the program needs is always asked. Fields asked that hold the same value and take the same widget are one question. `wallet_core::template::SavePlan` makes the template, which reads back from its file to itself and checks against the IDLs; opened with the blocks' values as its answers it writes the same blocks, tested on transfers, a scaled token transfer, a mint with a key made here and an overridden account, and the blocks of every shipped template. Expanding now marks only a derived account as overridden (`IdlDraft::manual`), as Build's "Change" does; it marked an account the IDL cannot fill too, which Build never does. `Storage` in `app-core` gained `list` and `remove` for the store of templates. `TemplateSource` has `Yours` and `Broken` beside `Builtin`; the list is read into `BuildForm::kept` the first time Build is shown. The import preview is read from the file, not from an expansion, so it shows blocks under an option and a template that does not fit this network. A name a shipped template has, or its id, is refused for one of yours, saved or imported. The phone offers no import or export, as it offers no IDL import. [templates.md](templates.md#your-own-templates) has the whole of it.
+
+### 5. Loose ends
+
+- **The import crash.** Importing a template whose name is already taken panics with an `unwrap` on `None`. No code of ours on that path unwraps, so it is reproduced first, in a debug build with a backtrace, with a name one of the user's has and with a name a shipped one has, through the file dialog's debug seam and with the reasoning for the real dialog. The cause is fixed where it is, and a test holds it where a test can reach it. Phase 7 replaces the import dialog, which is no reason to skip this: the cause may be a pattern used elsewhere.
+- **An enum behind a defined type.** `classify` in `idl/build/form.rs` reads a `definedTypeLinkNode` as a field nobody can fill, so `initializeDefaultAccountState.state` and Token's `setAuthority.authorityType` cannot be built at all. It follows the link to the program's own defined type, to a bounded depth: an enum whose variants hold nothing becomes `IdlArgKind::Enum`, a choice. Anything else stays as it is. Building, opening for edit and building again gives the same bytes.
+- **The size table** gains `initializeDefaultAccountState` and `initializeConfidentialTransferMint`, each landed alone against the VM's Token-2022 as the others were. A confidential mint with no auditor needs no ElGamal key; with one, the key is 32 bytes the IDL types as an address. `initializeConfidentialTransferFee` joins them if it lands beside a transfer fee, and is left out with the reason if not.
+- The shipped templates do not change. A mint whose accounts start frozen cannot take a first supply, and a template has no way to say two options do not go together.
+
+As built: the crash came from the file dialog, not from the name. The click handler opened rfd's blocking dialog, whose message loop runs on the window's thread while dioxus holds the window's elements borrowed for the click (desktop delivers each event through a webview request, `__events`, handled where it arrives). The dioxus waker fired inside that loop and rendered the window; the first node the render made panicked ("RefCell already borrowed"), the handler then panicked on a scope that was gone (the `unwrap` on `None`), and the process aborted. It took a change on screen before the dialog: Import clears the note of the import before it, so a second import crashed and a first did not, whatever the names. Through the debug folder no dialog opens, which is why phase 4's runs never saw it; it was reproduced by driving the real dialog with UI Automation, three runs out of three, and is gone in the same runs since. Import and export now await rfd's async dialog in a task (`import_from`, `export_template`), so the click returns before the dialog opens, and a kit test holds that the preview comes from the task. Programs opens its IDL dialogs the blocking way too (`actions/programs.rs`: `import_one`, `import_folder`, `export_folder`); it changes nothing on screen before them, so it crashes only if something else renders while its dialog is open, and it is left for its own change. A link is followed to the program's own defined types at most two deep (`classify_in`); an enum whose variants hold nothing is a choice, anything else stays raw, and seeds and scales still do not follow links. 21 arguments of the shipped IDLs became choices, among them `setAuthority.authorityType` in Token and Token-2022, `initializeDefaultAccountState.state` and `updateDefaultAccountState.state`, the stake authorizations' `stakeAuthorize` and program-metadata's `format`, `encoding`, `compression` and `dataSource`; a test builds each variant of each, opens it on Build and builds the same bytes, on every network. The lengths the VM took are default account state 1, confidential transfer mint 65 and confidential transfer fee 129. Neither ElGamal key is read when it is set up: an auditor key or a withdraw key of 32 bytes of `0xff`, which is no point, lands as well as the Ristretto basepoint, so the tests use the basepoint and say so. The confidential transfer fee lands only beside both a transfer fee and confidential transfers, and the program refuses those two together without it; a frozen default needs a freeze authority, and `uninitialized` is refused.
+
+### 6. The browser
+
+The Templates dialog becomes what Programs is for IDLs: a list on one side, the template picked on the other. On a phone it is one at a time, with a way back, as Programs is.
+
+- **The list.** Every template, shipped and the user's, with a filter over name and summary, the chip, and the greyed state of one that does not fit this network. A file of the user's that is not a template is listed too.
+- **The reader.** The name, the summary, where it comes from, and for one that does not fit this network every problem. Then tabs, as an IDL has: **Questions · n** (each question with its hint, what it holds until answered, and the options with the questions asked under each), **Blocks · n** (every block in order: program, address, instruction, the option it runs under, and every field it sets with where the value comes from: asked, fixed, worked out and how), and **Text**, the file as it is kept, with Copy.
+- **Actions** on the template picked: **Use this template** (asks first when Build holds blocks, as today), Export, and Remove for one of the user's. The rows of the list carry no buttons.
+- **Kept as written.** One of the user's is kept as the text it was saved from, so Text, Copy and Export give back the same bytes, comments included. Save as template still writes `to_toml`. `TemplateSource::Yours` and `Broken` carry the text.
+- Build's empty state keeps its short list: a row there opens the template at once.
+
+As built: the reader is drawn from `TemplateView` (`app-ui-kit`, `actions/template_browser.rs`), which `template_view` reads from a template and its text and nothing else, so phase 7 can give it a template parsed from text that is not kept: `ReaderQuestions` lists the questions as the form asks them, with the widget each takes in words from `check`'s form (none when the template does not fit), and `ReaderBlock` every field each block sets, accounts apart from arguments, in the IDL's order, as `FieldOrigin::Asked`, `Fixed` or `Worked`. A kit test holds that every field of every shipped template is on its Blocks tab once, with the origin the file gives it. The import preview reads with the same tabs, in place of its own lists and the Fixed and Worked out disclosures, and once kept the dialog shows the template in its list. `TemplateSource::Yours` carries the text kept and `Broken` the text when it was text; `keep_import` takes the file's text and parses it again, so the bytes kept are the bytes read, while Save as template still writes `to_toml`. `Template::parse` refuses control characters other than tab, line feed and carriage return, and Unicode bidirectional controls, in the text by line and, written as escapes in a string, by key (`TemplateError::Hidden`). Build's short list leaves out a file that is not a template, which the dialog lists, and gains **Browse templates**. On a wide window the dialog opens on the first template that can be used; on a phone on the list. Two leftovers of phase 5 are fixed here. A required choice with no answer showed its first variant while it held nothing, so picking that variant changed nothing; Build's shared `argument_input` now puts "Choose one" first while the text is not one of its variants, which a block of Build's own never is, since its draft starts on the first. And the file dialogs, awaited since phase 5 and so not modal to the window, could be opened twice: a flag on the desk (`TemplateDesk::dialog`) is held while one is open, disables Import and Export, and is let go when the dialog returns, from a task spawned in the scope that owns the flag, so closing the Templates dialog meanwhile does not drop it. Checked with the real Windows dialogs, import and export twice each, answered through UI Automation. The phone's one-pane layout comes only from the mobile shell (`PhoneLayout`), so it was checked in the Android app on an emulator, not in a desktop window.
+
+### 7. Templates as text
+
+The same dialog writes templates. Rule 3 holds: whatever is about to be kept, the dialog shows what it does beside the text, read from the text as it stands.
+
+- **Ways in.** **New template** (a short starter that parses), **Edit** on one of the user's, **Edit a copy** on a shipped one, **Import a file** (the file's text, not kept yet), and pasting. A broken file of the user's opens here to be mended. The import dialog of phase 4 goes: an imported file is a text not yet saved.
+- **The editor.** The text in a plain monospace field, and beside it (under it when the dialog is narrow) the Questions and Blocks of phase 6 for the text as typed. Checked as it is typed: the reader's error, with TOML's own line and excerpt; then every problem `check` finds on this network; then the name (a shipped one's is refused, another of the user's says saving replaces it).
+- **Saving.** Allowed when the text parses and the name is free or replaces one of the user's knowingly. Problems on this network do not stop it: it is listed greyed, as an import was. Editing one of the user's and changing its name renames it: the old file goes once the new one is kept. Leaving with changes not saved asks first.
+- **On a phone** there is still no file picker, and now no need: Copy on Text and paste into New template carry a template between devices.
+
+As built: the editor is `TemplateEditor` (`app-ui-build`, `ui/build/text.rs`) over `read_text` and `save_text` (`app-ui-kit`, `actions/template_text.rs`). `read_text` reads the text into `TextRead`: refused (`Refusal::TooLarge`, or `NotATemplate` with the reader's words and an `Excerpt` of the line it points at, the character marked and any hidden one written as its code), or read, with the `TemplateView` of phase 6 and a `NameCheck` (free, its own, a shipped one's, or another of the user's it replaces). `TemplateError` gained `place()`, the line and character of a TOML error or a hidden character in the text; a format error names its key and has none. The field is a plain `textarea` given its text once (`initial_value`) and never set back, so the caret stays put; driving the app and typing in the middle of the text, one key at a time and fast, left it where it was. Lines are numbered in a column beside the field that follows its scrolling through a small script, checked in step at the top, the middle and the bottom of an 81-line text, in both themes, with long lines scrolling sideways; **Show line N in the text**, under an error, also selects that line. The status sits at the top of the reading, so the field never moves as it changes; while the text does not read, the reading shows the last text that did, dimmed under "As of the last text that read as a template", since blanking it at every half-typed line made the pane jump and showed nothing to compare with, and Save is off meanwhile, so nothing stale can be kept. Reading a text at the size limit with 32 questions and 32 blocks takes 1.3 ms with optimizations (10 ms in a debug build), so it runs on every keystroke with no delay. Save writes the text through `keep`, the checked write every template goes through; a rename writes the new file first and removes the old one only once it is kept, which a kit test holds with a store that refuses saves alone and one that refuses removals alone. The import dialog of phase 4 and `ImportPreview`, `preview_import` and `keep_import` are gone: `pick_import` opens the file's text in the editor, and `pick_template_file` gives the file's name with its bytes for the editor's head. The editor's text is held on Build's form (`BuildForm::editing`), so a screen that takes the window does not lose it; Build opens the dialog on it again. Three leftovers were settled here. Review and Sign had not drawn the transaction's note since it was trimmed (#47), so a template's name never showed: `TxSource::Build` now carries it and the line under the title reads "From the template “<name>” on Build". The reader said "from the node" for a chain fact in an app with no node; it now says "typed in as the chain has it" there (`FactsFrom`); the form's Worked out rows show values, not those words. And a template open on Build holds what it opened (`OpenTemplate` keeps the template and its text), so editing, renaming or removing its file in the dialog changes nothing it shows or builds, which a kit test holds; the form now says when its file has changed or gone since. Checked by driving the debug build: every way in, the refusals, Replace, rename, mending a broken file, the discard question, a narrow dialog, the light theme, Airlock Offline, imports through the real Windows dialog four times in a row, and on the A16 emulator in the phone's offline mode.
 
 ## Tests
 
@@ -224,3 +158,6 @@ Touches `app-ui-kit` (Build's form state and actions), `app-ui-build`, `app-ui-k
 
 - Token metadata's size depends on its text. If the program's check of the funded size disagrees with ours by a few bytes, the function is fixed against the VM, never padded.
 - Whether a saved template should record the checksum of each IDL it was made against, to say "this program's IDL changed since" on open. Not in v1: a name that no longer matches already refuses.
+- Files on a phone. Android has no file picker the app can open, so a template goes between devices as text, copied and pasted. The system share sheet or a QR would be the next step.
+- Save as template writes each question with its field's name in words and no hint or default. Edit adds them by hand; the Save dialog could ask for them.
+- Token-2022's token group and group member, written onto the mint after it is initialized as metadata is, are not sized.

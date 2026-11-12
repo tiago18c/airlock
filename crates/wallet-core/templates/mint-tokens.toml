@@ -1,0 +1,36 @@
+format = 1
+name = "Mint tokens"
+summary = "Mints more of a token whose mint authority is this wallet."
+
+[programs]
+associated_token = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+
+[[input]]
+name = "mint"
+label = "Mint"
+
+[[input]]
+name = "to"
+label = "To"
+hint = "Receives the tokens in its token account, which is created if missing."
+default = "$wallet"
+
+[[input]]
+name = "amount"
+label = "Amount"
+
+[values]
+account = "associated-token-account $to $mint $token"
+decimals = "decimals-of $mint"
+token = "token-program-of $mint"
+
+[[block]]
+program = "$associated_token"
+instruction = "createAssociatedTokenIdempotent"
+accounts = { mint = "$mint", owner = "$to", payer = "$fee-payer", tokenProgram = "$token" }
+
+[[block]]
+program = "$token"
+instruction = "mintToChecked"
+accounts = { mint = "$mint", mintAuthority = "$wallet", token = "$account" }
+arguments = { amount = "$amount", decimals = "$decimals" }

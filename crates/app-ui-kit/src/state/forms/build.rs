@@ -1,6 +1,12 @@
-//! The Build screen: its instruction blocks and transaction settings.
+//! The Build screen: its instruction blocks and transaction settings, or the
+//! template open in their place.
 
 use super::*;
+use std::collections::{BTreeMap, BTreeSet};
+use std::str::FromStr;
+use std::sync::Arc;
+use wallet_core::template::{Answers, Env, Fact, Facts};
+use wallet_core::Template;
 
 /// One instruction block on the build screen.
 #[derive(Clone, PartialEq)]
@@ -162,6 +168,259 @@ impl Default for GeneratedKey {
     }
 }
 
+/// Where a template on Build's list comes from.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum TemplateSource {
+    /// One that ships with the app, by its id in
+    /// [`wallet_core::BUILTIN_TEMPLATES`].
+    Builtin(&'static str),
+    /// One of the user's, saved here or imported, by the slug it is kept
+    /// under, with the text it is kept as: the file that was imported,
+    /// comments and all, or what Save as template wrote. `template` is that
+    /// text read.
+    Yours {
+        slug: String,
+        template: Arc<Template>,
+        text: Arc<str>,
+    },
+    /// A file kept as one of the user's that is not a template, why, and
+    /// its text when it could be read as text. It can only be removed.
+    Broken {
+        slug: String,
+        why: String,
+        text: Option<Arc<str>>,
+    },
+}
+
+impl TemplateSource {
+    /// The template, read from its file.
+    pub fn template(&self) -> Result<Template, String> {
+        match self {
+            Self::Builtin(id) => wallet_core::builtin_template(id)
+                .ok_or_else(|| format!("No template ships as “{id}”."))?
+                .template()
+                .map_err(|err| err.to_string()),
+            Self::Yours { template, .. } => Ok(template.as_ref().clone()),
+            Self::Broken { why, .. } => Err(why.clone()),
+        }
+    }
+
+    /// The text of its file, as it is kept: what Text shows, Copy copies and
+    /// Export writes. `None` for a file that could not be read as text.
+    pub fn text(&self) -> Option<&str> {
+        match self {
+            Self::Builtin(id) => wallet_core::builtin_template(id).map(|builtin| builtin.toml),
+            Self::Yours { text, .. } => Some(text),
+            Self::Broken { text, .. } => text.as_deref(),
+        }
+    }
+
+    /// The word on its row in the list of templates.
+    pub fn chip(&self) -> &'static str {
+        match self {
+            Self::Builtin(_) => "built-in",
+            Self::Yours { .. } | Self::Broken { .. } => "yours",
+        }
+    }
+
+    /// The slug one of the user's is kept under.
+    pub fn slug(&self) -> Option<&str> {
+        match self {
+            Self::Builtin(_) => None,
+            Self::Yours { slug, .. } | Self::Broken { slug, .. } => Some(slug),
+        }
+    }
+
+    /// Tells it from every other row of the list.
+    pub fn key(&self) -> String {
+        match self {
+            Self::Builtin(id) => format!("built-in:{id}"),
+            Self::Yours { slug, .. } | Self::Broken { slug, .. } => format!("yours:{slug}"),
+        }
+    }
+}
+
+/// What the editor is writing.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum EditTarget {
+    /// A new template, from the starter text.
+    New,
+    /// One of the user's, kept as `slug`: saving writes over it, or renames
+    /// it when the name changes. `name` is its name, or its file name when
+    /// it is not a template yet.
+    Edit { slug: String, name: String },
+    /// The text of the template `name`, shipped or the user's, tied to no
+    /// kept file.
+    Copy { name: String },
+    /// A file read for import, by its file name. Nothing is kept yet.
+    Import { file: String },
+}
+
+impl EditTarget {
+    /// What the editor's head says is being done.
+    pub fn title(&self) -> String {
+        match self {
+            Self::New => "New template".to_string(),
+            Self::Edit { name, .. } => format!("Editing “{name}”"),
+            Self::Copy { name } => format!("A copy of “{name}”"),
+            Self::Import { file } => format!("Importing {file}"),
+        }
+    }
+
+    /// The slug of the file it writes over: one of the user's being edited.
+    pub fn own_slug(&self) -> Option<&str> {
+        match self {
+            Self::Edit { slug, .. } => Some(slug),
+            _ => None,
+        }
+    }
+}
+
+/// The editor, open on a text.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct TextEdit {
+    pub target: EditTarget,
+    /// The text it opened with. Leaving with other text asks first.
+    pub original: Arc<str>,
+    /// The text as it stands in the field.
+    pub text: String,
+    /// Tells this opening from every other, so the field is made anew for
+    /// each.
+    pub opened: u64,
+}
+
+static OPENINGS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
+
+impl TextEdit {
+    /// The editor on `text`, written as `target`.
+    pub fn open(target: EditTarget, text: String) -> Self {
+        Self {
+            target,
+            original: text.as_str().into(),
+            text,
+            opened: OPENINGS.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
+        }
+    }
+
+    /// Whether the text differs from what the editor opened with. A field
+    /// gives its lines back ending in a line feed alone, so a file written
+    /// with carriage returns is not changed by being typed in.
+    pub fn dirty(&self) -> bool {
+        self.text.replace("\r\n", "\n") != self.original.replace("\r\n", "\n")
+    }
+}
+
+/// The user's templates, as read from where they are kept.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct KeptTemplates {
+    /// By slug: [`TemplateSource::Yours`] or [`TemplateSource::Broken`].
+    pub kept: Vec<TemplateSource>,
+    /// How many more are kept than are read.
+    pub left_out: usize,
+    /// Why none could be read, when the store would not list them.
+    pub error: Option<String>,
+}
+
+/// The template open on Build, and what its form holds.
+#[derive(Clone, Debug, PartialEq)]
+pub struct OpenTemplate {
+    /// Tells this opening from any before it, so a late answer from the
+    /// node for another one is dropped.
+    pub opened: u64,
+    pub source: TemplateSource,
+    pub template: Arc<Template>,
+    pub answers: Answers,
+    /// Chain facts typed by hand, as typed: offline, or when the node could
+    /// not answer.
+    pub typed_facts: BTreeMap<Fact, String>,
+    /// Chain facts the node answered.
+    pub read_facts: Facts,
+    /// The address of the keypair made for each `new-keypair` value. The
+    /// key itself is in [`BuildForm::generated`], where Sign finds it.
+    pub keypairs: BTreeMap<String, Pubkey>,
+    /// Required inputs Review and Sign found blank. Each is marked on its
+    /// field until it is answered.
+    pub marked: BTreeSet<String>,
+}
+
+impl OpenTemplate {
+    /// Every chain fact known: those the node answered, and over them those
+    /// typed by hand that read as what they are.
+    pub fn facts(&self) -> Facts {
+        let mut facts = self.read_facts.clone();
+        let mut typed = Facts::default();
+        for (fact, text) in &self.typed_facts {
+            let text = text.trim();
+            match fact {
+                Fact::Rent(bytes) => {
+                    if let Ok(lamports) = text.parse() {
+                        typed.rent.insert(*bytes, lamports);
+                    }
+                }
+                Fact::MintDecimals(mint) => {
+                    if let Ok(decimals) = text.parse() {
+                        typed.decimals.insert(*mint, decimals);
+                    }
+                }
+                Fact::TokenProgram(mint) => {
+                    let program = Pubkey::from_str(text).ok().filter(|program| {
+                        [
+                            wallet_core::TOKEN_PROGRAM_ID,
+                            wallet_core::TOKEN_2022_PROGRAM_ID,
+                        ]
+                        .contains(program)
+                    });
+                    if let Some(program) = program {
+                        typed.token_programs.insert(*mint, program);
+                    }
+                }
+            }
+        }
+        facts.merge(typed);
+        facts
+    }
+
+    /// The text input `name` shows: its answer, or else its default.
+    pub fn input_text(&self, name: &str, env: &Env) -> String {
+        match self.answers.inputs.get(name) {
+            Some(text) => text.clone(),
+            None => self.template.default_text(name, env).unwrap_or_default(),
+        }
+    }
+}
+
+/// Reading the chain facts of the open template from the node.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct FactRead {
+    /// Moves with every new set of facts asked for, so a reply to an older
+    /// one is dropped.
+    pub round: u64,
+    /// What was last asked for.
+    pub needs: Vec<Fact>,
+    pub state: FactReadState,
+}
+
+impl FactRead {
+    /// Nothing asked, in a round of its own, so a reply still on its way
+    /// for what was asked before is dropped.
+    pub fn after(&self) -> Self {
+        Self {
+            round: self.round + 1,
+            ..Self::default()
+        }
+    }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub enum FactReadState {
+    #[default]
+    Idle,
+    /// Waiting for the answers to settle, then for the node.
+    Reading,
+    /// The node refused, in its words.
+    Failed(String),
+}
+
 #[derive(Clone, Copy)]
 pub struct BuildForm {
     pub drafts: Signal<Vec<IxDraft>>,
@@ -185,6 +444,17 @@ pub struct BuildForm {
     pub compiled_note: Signal<Option<String>>,
     /// Keypairs made here for accounts. See [`GeneratedKey`].
     pub generated: Signal<Vec<GeneratedKey>>,
+    /// The template open in place of the blocks, if any.
+    pub template: Signal<Option<OpenTemplate>>,
+    /// Reading the open template's chain facts from the node.
+    pub fact_read: Signal<FactRead>,
+    /// The user's templates, once read. `None` until the list is first
+    /// needed.
+    pub kept: Signal<Option<KeptTemplates>>,
+    /// The Templates dialog's editor, while it is open. Kept here, not in
+    /// the dialog, so text not saved yet outlives the Build screen when
+    /// something else takes the window.
+    pub editing: Signal<Option<TextEdit>>,
 }
 
 impl BuildForm {
@@ -206,6 +476,11 @@ impl BuildForm {
         let mut blockhash = self.blockhash;
         let mut error = self.error;
         let mut compiled_note = self.compiled_note;
+        let mut template = self.template;
+        let mut fact_read = self.fact_read;
+        template.set(None);
+        let next = fact_read.peek().after();
+        fact_read.set(next);
         drafts.set(Vec::new());
         selected.set(None);
         next_id.set(1);

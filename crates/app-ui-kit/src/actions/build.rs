@@ -61,11 +61,37 @@ pub fn current_instructions(session: &Session) -> Result<Vec<Instruction>, Strin
 fn compile_blocks(session: &Session, drafts: &[IxDraft]) -> Result<Vec<Instruction>, String> {
     let mut instructions = Vec::new();
     for (i, draft) in drafts.iter().enumerate() {
-        let built = compile_block(session, draft)
-            .map_err(|err| format!("Instruction {} · {err}", i + 1))?;
+        let built = compile_block(session, draft).map_err(|err| numbered(i, err))?;
         instructions.push(built);
     }
     Ok(instructions)
+}
+
+/// An error of the instruction at `index`, as Build numbers it.
+fn numbered(index: usize, err: impl std::fmt::Display) -> String {
+    format!("Instruction {} · {err}", index + 1)
+}
+
+/// Encode IDL blocks that are not on the form, such as a template's, in
+/// order, with the errors numbered as Build's own blocks are.
+pub fn build_idl_drafts(
+    session: &Session,
+    drafts: &mut [IdlDraft],
+) -> Result<Vec<Instruction>, String> {
+    let idls = session.idls.read();
+    drafts
+        .iter_mut()
+        .enumerate()
+        .map(|(i, draft)| {
+            let program_id = draft
+                .program_id
+                .ok_or_else(|| numbered(i, "Choose a program."))?;
+            let client = idls
+                .program_client(&program_id)
+                .ok_or_else(|| numbered(i, "That IDL is no longer stored."))?;
+            draft.build(&client).map_err(|err| numbered(i, err))
+        })
+        .collect()
 }
 
 fn compile_block(session: &Session, draft: &IxDraft) -> Result<Instruction, String> {
@@ -140,17 +166,29 @@ fn count_blocks(instructions: &[OpenedIx]) -> (usize, usize) {
         })
 }
 
-/// Hand a compiled transaction to Sign. `extra` is added to its note.
+/// Hand a compiled transaction to Sign. `template` is the name of the
+/// template it was compiled from, if any, and `extra` is what compiling
+/// adds; both go in its note, and the name in its source line, the only
+/// place Review and Sign names a template.
 fn review_compiled(
     session: &Session,
     compiled: CompiledTx,
+    template: Option<&str>,
     extra: &str,
     last_valid_height: Option<u64>,
 ) {
+    let from = template
+        .map(super::template::template_source_note)
+        .unwrap_or_default();
     session.open_in_sign(
-        SignLoad::new(compiled.wire, TxSource::Build)
-            .with_note(format!("Compiled on Build{extra}."))
-            .expiring_at(last_valid_height),
+        SignLoad::new(
+            compiled.wire,
+            TxSource::Build {
+                template: template.map(str::to_string),
+            },
+        )
+        .with_note(format!("Compiled on Build{from}{extra}."))
+        .expiring_at(last_valid_height),
     );
 }
 
@@ -174,19 +212,30 @@ pub fn compile_idl_draft(session: &Session, draft: &IxDraft) -> Result<Instructi
 
 /// Compile what is on the Build form and open it on Sign. Online, what
 /// Advanced options leave blank is filled from the node first.
-pub fn compile(session: Session, mut compiling: Signal<bool>) {
+pub fn compile(session: Session, compiling: Signal<bool>) {
     let form = session.forms.build;
     let (mut error, mut compiled_note) = (form.error, form.compiled_note);
     error.set(None);
     compiled_note.set(None);
 
-    let instructions = match current_instructions(&session) {
-        Ok(instructions) => instructions,
-        Err(msg) => {
-            error.set(Some(msg));
-            return;
-        }
-    };
+    match current_instructions(&session) {
+        Ok(instructions) => compile_instructions(session, instructions, None, compiling),
+        Err(msg) => error.set(Some(msg)),
+    }
+}
+
+/// Compile `instructions` with Build's fee payer and Advanced options, and
+/// open the transaction on Sign. Online, what Advanced options leave blank
+/// is filled from the node first. `template` is the name of the template
+/// the instructions were written from, if any.
+pub(crate) fn compile_instructions(
+    session: Session,
+    instructions: Vec<Instruction>,
+    template: Option<String>,
+    mut compiling: Signal<bool>,
+) {
+    let form = session.forms.build;
+    let mut error = form.error;
     let fee_payer = (form.fee_payer)();
     let settings = form.settings();
     // Offline, or nothing left blank: compile what was typed.
@@ -196,7 +245,7 @@ pub fn compile(session: Session, mut compiling: Signal<bool>) {
         .filter(|_| settings.wants_blockhash() || settings.wants_limits());
     let Some(rpc) = rpc else {
         match compile_draft(fee_payer, instructions, &settings) {
-            Ok(tx) => review_compiled(&session, tx, "", None),
+            Ok(tx) => review_compiled(&session, tx, template.as_deref(), "", None),
             Err(err) => error.set(Some(err.to_string())),
         }
         return;
@@ -217,7 +266,9 @@ pub fn compile(session: Session, mut compiling: Signal<bool>) {
             settings,
         };
         match compile_with_defaults(rpc.as_ref(), draft, &probe).await {
-            Ok((tx, note, height)) => review_compiled(&session, tx, &note, height),
+            Ok((tx, note, height)) => {
+                review_compiled(&session, tx, template.as_deref(), &note, height)
+            }
             Err(err) => error.set(Some(err.to_string())),
         }
         compiling.set(false);

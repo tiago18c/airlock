@@ -283,7 +283,7 @@ fn a_scale_from_another_argument_asks_for_it_first() {
 
 /// Text a filled form could hold for `kind`: an amount with a fraction where
 /// its scale allows one, and 6 for an argument another field is scaled by.
-fn sample_text(kind: &IdlArgKind, scale: &IdlArgScale, source: bool) -> Option<String> {
+pub(super) fn sample_text(kind: &IdlArgKind, scale: &IdlArgScale, source: bool) -> Option<String> {
     Some(match kind {
         _ if source => "6".to_string(),
         IdlArgKind::Option(inner) => return sample_text(inner, scale, false),

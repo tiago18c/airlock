@@ -257,7 +257,7 @@ async fn a_request_that_left_the_queue_is_not_kept() {
     screen.act(|| {
         screen
             .session
-            .open_in_sign(SignLoad::new(own, TxSource::Build))
+            .open_in_sign(SignLoad::new(own, TxSource::Build { template: None }))
     });
 
     screen.act(|| {
@@ -508,7 +508,7 @@ async fn a_late_simulation_does_not_take_a_signature_off_the_transaction() {
 async fn fitting_what_this_app_made_says_nothing() {
     let mut screen = Screen::new().await;
     let wire = screen.transfer(1);
-    screen.load(&wire, TxSource::Build);
+    screen.load(&wire, TxSource::Build { template: None });
     let tx = decode_v1_transaction(&wire).unwrap();
     screen.act(|| start_simulation(screen.session, tx));
     screen.settle().await;

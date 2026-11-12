@@ -689,7 +689,7 @@ pub fn start_simulation(session: Session, tx: DecodedTx) {
                             // Anyone else's should hear what was changed in it.
                             let from_app = matches!(
                                 *form.source.peek(),
-                                Some(TxSource::Build | TxSource::Wallets | TxSource::Stake)
+                                Some(TxSource::Build { .. } | TxSource::Wallets | TxSource::Stake)
                             );
                             if !from_app {
                                 const FITTED: &str =

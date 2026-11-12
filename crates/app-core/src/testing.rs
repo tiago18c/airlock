@@ -143,6 +143,13 @@ struct Shared {
     writes: Mutex<HashMap<String, usize>>,
     refusing: Mutex<bool>,
     refusing_reads: Mutex<bool>,
+    refusing_saves_alone: Mutex<bool>,
+    refusing_removals_alone: Mutex<bool>,
+}
+
+/// Whether `flag` is set.
+fn set(flag: &Mutex<bool>) -> bool {
+    *flag.lock().unwrap_or_else(PoisonError::into_inner)
 }
 
 impl MemoryStorage {
@@ -184,6 +191,24 @@ impl MemoryStorage {
             .unwrap_or_else(PoisonError::into_inner) = refuse;
     }
 
+    /// Fail every save from now on, but not removals, or stop failing them.
+    pub fn refuse_saves_alone(&self, refuse: bool) {
+        *self
+            .shared
+            .refusing_saves_alone
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner) = refuse;
+    }
+
+    /// Fail every removal from now on, but not saves, or stop failing them.
+    pub fn refuse_removals_alone(&self, refuse: bool) {
+        *self
+            .shared
+            .refusing_removals_alone
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner) = refuse;
+    }
+
     /// Fail every read from now on, or stop failing them.
     pub fn refuse_reads(&self, refuse: bool) {
         *self
@@ -200,6 +225,42 @@ impl Storage for MemoryStorage {
             name: name.to_owned(),
             shared: self.shared.clone(),
         })
+    }
+
+    fn list(&self, prefix: &str) -> Result<Vec<String>, VaultError> {
+        if *self
+            .shared
+            .refusing_reads
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+        {
+            return Err(VaultError::Io("the store refused the read".into()));
+        }
+        let folder = prefix.rfind('/').map_or(0, |at| at + 1);
+        let files = self
+            .shared
+            .files
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner);
+        Ok(files
+            .keys()
+            .filter(|name| name.starts_with(prefix) && !name[folder..].contains('/'))
+            .cloned()
+            .collect())
+    }
+
+    fn remove(&self, name: &str) -> Result<(), VaultError> {
+        if set(&self.shared.refusing) || set(&self.shared.refusing_removals_alone) {
+            return Err(VaultError::Io("the store refused the removal".into()));
+        }
+        let mut files = self
+            .shared
+            .files
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner);
+        files.remove(name);
+        files.remove(&format!("{name}.bak"));
+        Ok(())
     }
 }
 
@@ -237,12 +298,7 @@ impl VaultStore for MemoryFile {
     }
 
     fn save(&self, bytes: &[u8]) -> Result<(), VaultError> {
-        if *self
-            .shared
-            .refusing
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-        {
+        if set(&self.shared.refusing) || set(&self.shared.refusing_saves_alone) {
             return Err(VaultError::Io("the store refused the save".into()));
         }
         let mut files = self

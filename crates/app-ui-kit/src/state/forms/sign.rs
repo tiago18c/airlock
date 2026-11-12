@@ -5,7 +5,12 @@ use super::*;
 /// Where the transaction on the Sign screen came from.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TxSource {
-    Build,
+    /// Compiled on Build. `template` is the name of the template it was
+    /// written from, if any: the only thing of a template that reaches
+    /// Review and Sign.
+    Build {
+        template: Option<String>,
+    },
     Wallets,
     Stake,
     /// A site asked for a signature through the browser extension.

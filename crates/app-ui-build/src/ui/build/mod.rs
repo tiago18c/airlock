@@ -1,5 +1,7 @@
 use crate::actions::build::*;
-use crate::state::forms::{GeneratedKey, IxBody, IxDraft};
+use crate::actions::kept_templates::{ensure_kept, read_import, save_plan, TEMPLATE_FILE_INPUT};
+use crate::actions::template::{compile_template, show_as_blocks};
+use crate::state::forms::{GeneratedKey, IxBody, IxDraft, TemplateSource};
 use crate::state::session::Session;
 use crate::ui::{Accordion, Address, AddressPicker, AddressSelect, Glyph, Icon};
 use dioxus::prelude::*;
@@ -13,18 +15,26 @@ use wallet_core::{
 };
 
 mod advanced;
+mod browser;
 mod carrier;
 mod editor;
 mod fields;
+mod kept;
 mod rail;
 mod raw;
+mod template;
+mod text;
 
 pub(in crate::ui) use advanced::*;
+pub(in crate::ui) use browser::*;
 pub(in crate::ui) use carrier::*;
 pub(in crate::ui) use editor::*;
 pub(in crate::ui) use fields::*;
+pub(in crate::ui) use kept::*;
 pub(in crate::ui) use rail::*;
 pub(in crate::ui) use raw::*;
+pub(in crate::ui) use template::*;
+pub(in crate::ui) use text::*;
 
 #[component]
 pub fn BuildPanel() -> Element {
@@ -34,13 +44,39 @@ pub fn BuildPanel() -> Element {
     let error = form.error;
     let compiling = use_signal(|| false);
     let compiled_note = form.compiled_note;
+    // Text the Templates dialog's editor held when Build was last left is
+    // still there: the dialog opens on it again.
+    let mut picker_open = use_signal(|| form.editing.peek().is_some());
+    let mut pending = use_signal(|| None::<TemplateSource>);
+    let desk = use_context_provider(|| TemplateDesk {
+        note: Signal::new(None),
+        error: Signal::new(None),
+        removing: Signal::new(None),
+        editing: form.editing,
+        saving: Signal::new(None),
+        show: Signal::new(None),
+        dialog: Signal::new(false),
+    });
+    let mut saving = desk.saving;
 
     // The selected wallet's fee payer, once its record has loaded.
     use_effect(move || session.default_build_fee_payer());
+    // The user's templates, read once, the first time Build is shown.
+    use_effect(move || ensure_kept(&session));
 
     let drafts = (form.drafts)();
     let selected_id = (form.selected)();
     let selected_draft = drafts.iter().find(|d| Some(d.id) == selected_id).cloned();
+    let templating = form.template.read().is_some();
+    let holds_blocks = !drafts.is_empty();
+    // Opening a template drops the blocks, so it asks first when there are any.
+    let pick = move |source: TemplateSource| {
+        if form.drafts.peek().is_empty() {
+            pick_template(session, source);
+        } else {
+            pending.set(Some(source));
+        }
+    };
 
     rsx! {
         section { class: "page",
@@ -48,6 +84,16 @@ pub fn BuildPanel() -> Element {
                 div { class: "page-head",
                     div {
                         h2 { "Build" }
+                    }
+                    div { class: "btn-row",
+                        button {
+                            r#type: "button",
+                            onclick: move |_| {
+                                desk.clear();
+                                picker_open.set(true);
+                            },
+                            "Templates"
+                        }
                     }
                 }
 
@@ -58,14 +104,35 @@ pub fn BuildPanel() -> Element {
                     on_change: move |pk| fee_payer.set(pk),
                 }
 
-                h3 { "Instructions" }
-                InstructionRail { parent: None }
-                AdvancedOptions {}
-
-                if let Some(draft) = selected_draft {
-                    InstructionEditor { key: "{draft.id}", draft }
+                if templating {
+                    TemplateForm {}
+                    AdvancedOptions {}
                 } else {
-                    p { class: "muted", "Select a block to edit it, or add a new instruction." }
+                    h3 { "Instructions" }
+                    InstructionRail { parent: None }
+                    if !holds_blocks {
+                        div { class: "stack template-start",
+                            div { class: "template-start-head",
+                                h3 { "Or start from a template" }
+                                button { class: "link-btn",
+                                    r#type: "button",
+                                    onclick: move |_| {
+                                        desk.clear();
+                                        picker_open.set(true);
+                                    },
+                                    "Browse templates"
+                                }
+                            }
+                            TemplateList { on_pick: pick }
+                        }
+                    }
+                    AdvancedOptions {}
+
+                    if let Some(draft) = selected_draft {
+                        InstructionEditor { key: "{draft.id}", draft }
+                    } else if holds_blocks {
+                        p { class: "muted", "Select a block to edit it, or add a new instruction." }
+                    }
                 }
 
                 if let Some(note) = compiled_note() {
@@ -78,8 +145,38 @@ pub fn BuildPanel() -> Element {
                 div { class: "btn-row",
                     button { class: "primary",
                         disabled: compiling(),
-                        onclick: move |_| compile(session, compiling),
+                        onclick: move |_| {
+                            if form.template.peek().is_some() {
+                                compile_template(session, compiling);
+                            } else {
+                                compile(session, compiling);
+                            }
+                        },
                         if compiling() { "Compiling…" } else { "Review and Sign" }
+                    }
+                    if templating {
+                        button {
+                            r#type: "button",
+                            title: "Write the template out as blocks, to change what it does not ask",
+                            onclick: move |_| show_as_blocks(&session),
+                            "Show as blocks"
+                        }
+                    } else if holds_blocks {
+                        button {
+                            r#type: "button",
+                            title: "Keep these blocks as a template, choosing what it asks each time",
+                            onclick: move |_| {
+                                let mut error = form.error;
+                                match save_plan(&session) {
+                                    Ok(plan) => {
+                                        error.set(None);
+                                        saving.set(Some(plan));
+                                    }
+                                    Err(why) => error.set(Some(why)),
+                                }
+                            },
+                            "Save as template"
+                        }
                     }
                     button { class: "ghost",
                         onclick: move |_| session.clear_build(),
@@ -87,6 +184,20 @@ pub fn BuildPanel() -> Element {
                     }
                 }
             }
+        }
+        if picker_open() {
+            TemplateBrowser { open: picker_open, on_pick: pick }
+        }
+        DiscardBlocks { pending }
+        SaveTemplateDialog {}
+        RemoveTemplate {}
+        // A browser picks the file to import through this field.
+        input {
+            id: TEMPLATE_FILE_INPUT,
+            class: "file-hidden",
+            r#type: "file",
+            accept: ".toml",
+            onchange: move |evt| read_import(evt, desk.editing, desk.error),
         }
     }
 }

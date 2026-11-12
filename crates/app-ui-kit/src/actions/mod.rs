@@ -9,12 +9,16 @@ pub mod build;
 pub mod cleanup;
 pub mod device;
 pub mod idl_check;
+pub mod kept_templates;
 pub mod migrate;
 pub mod network;
 pub mod programs;
 pub mod sign;
 pub mod sign_screen;
 pub mod site_send;
+pub mod template;
+pub mod template_browser;
+pub mod template_text;
 pub mod wallets;
 
 /// Run `fut` for the whole life of the app. It runs in `App`'s scope, which

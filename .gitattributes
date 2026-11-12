@@ -6,3 +6,8 @@
 # the chain, so the bytes must not depend on the OS that checked them out.
 crates/wallet-core/idls/*.json text eol=lf
 resources/idls/* text eol=lf
+# Compiled into the app too. Pinned so a build on any OS holds the same
+# bytes, and a built-in template exported on Windows is the same file as
+# one exported elsewhere.
+crates/wallet-core/templates/*.toml text eol=lf
+crates/wallet-core/templates/starter/*.toml text eol=lf

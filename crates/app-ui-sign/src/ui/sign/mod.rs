@@ -184,7 +184,7 @@ pub fn SignPanel() -> Element {
         };
         let from_app = matches!(
             (form.source)(),
-            Some(TxSource::Build | TxSource::Wallets | TxSource::Stake)
+            Some(TxSource::Build { .. } | TxSource::Wallets | TxSource::Stake)
         );
         if !online || !from_app {
             return;
@@ -405,7 +405,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
     let from_browser = matches!(source, Some(TxSource::Browser { .. }));
     let app_built = matches!(
         source,
-        Some(TxSource::Build | TxSource::Wallets | TxSource::Stake)
+        Some(TxSource::Build { .. } | TxSource::Wallets | TxSource::Stake)
     );
     let exact = (form.clock.expiry)().is_some_and(|expiry| expiry.exact);
     // A site's own transaction goes back to it, and it signs for the accounts
@@ -1213,7 +1213,16 @@ fn and_list(items: &[String]) -> String {
 #[component]
 fn SourceLine(source: TxSource) -> Element {
     match source {
-        TxSource::Build => rsx! { p { class: "page-source", "From Build" } },
+        TxSource::Build { template: None } => rsx! { p { class: "page-source", "From Build" } },
+        // The template's name, and nothing else of it: the transaction is
+        // read as any other.
+        TxSource::Build {
+            template: Some(name),
+        } => rsx! {
+            p { class: "page-source from-template", title: "From the template “{name}” on Build",
+                "From the template “{name}” on Build"
+            }
+        },
         TxSource::Wallets => rsx! { p { class: "page-source", "From Wallets" } },
         TxSource::Stake => rsx! { p { class: "page-source", "From Stake" } },
         TxSource::Pasted => rsx! { p { class: "page-source", "Pasted" } },

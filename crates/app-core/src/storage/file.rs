@@ -6,7 +6,7 @@ use std::sync::{Mutex, OnceLock};
 
 use bridge_protocol::data_dir::{create_private_dir, Moved};
 
-use wallet_core::{FileStore, VaultStore};
+use wallet_core::{FileStore, VaultError, VaultStore};
 
 use super::{app_dirs, Storage};
 
@@ -32,6 +32,61 @@ impl Storage for FileStorage {
     fn open_record(&self, name: &str) -> Box<dyn VaultStore> {
         Box::new(FileStore::without_backup(self.dir.join(name)))
     }
+
+    fn list(&self, prefix: &str) -> Result<Vec<String>, VaultError> {
+        let (folder, start) = match prefix.rsplit_once('/') {
+            Some((folder, start)) => (Some(folder), start),
+            None => (None, prefix),
+        };
+        let dir = match folder {
+            Some(folder) => self.dir.join(folder),
+            None => self.dir.clone(),
+        };
+        let entries = match std::fs::read_dir(&dir) {
+            Ok(entries) => entries,
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+            Err(err) => return Err(VaultError::Io(err.to_string())),
+        };
+        let mut names = Vec::new();
+        for entry in entries {
+            let entry = entry.map_err(|err| VaultError::Io(err.to_string()))?;
+            let is_file = entry
+                .file_type()
+                .map_err(|err| VaultError::Io(err.to_string()))?
+                .is_file();
+            let Some(name) = entry.file_name().to_str().map(str::to_string) else {
+                continue;
+            };
+            if !is_file || !name.starts_with(start) {
+                continue;
+            }
+            names.push(match folder {
+                Some(folder) => format!("{folder}/{name}"),
+                None => name,
+            });
+        }
+        Ok(names)
+    }
+
+    fn remove(&self, name: &str) -> Result<(), VaultError> {
+        let path = self.dir.join(name);
+        for path in [path.clone(), sibling(&path, ".bak")] {
+            match std::fs::remove_file(&path) {
+                Ok(()) => {}
+                Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
+                Err(err) => return Err(VaultError::Io(err.to_string())),
+            }
+        }
+        Ok(())
+    }
+}
+
+/// `path` with `suffix` after its file name, as the stores name the copies
+/// they keep beside a file.
+fn sibling(path: &Path, suffix: &str) -> PathBuf {
+    let mut name = path.file_name().unwrap_or_default().to_os_string();
+    name.push(suffix);
+    path.with_file_name(name)
 }
 
 /// This app's data folder: `<prefix>_DATA_DIR` when set, else its own folder

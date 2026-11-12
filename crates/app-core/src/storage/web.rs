@@ -132,6 +132,30 @@ impl Storage for LocalStorage {
     fn open(&self, name: &str) -> Box<dyn VaultStore> {
         Box::new(LocalStorageStore::new(format!("airlock.{name}")))
     }
+
+    fn list(&self, prefix: &str) -> Result<Vec<String>, VaultError> {
+        let storage = LocalStorageStore::storage()?;
+        let count = storage
+            .length()
+            .map_err(|err| VaultError::Io(format!("localStorage read: {err:?}")))?;
+        let start = format!("airlock.{prefix}");
+        let mut names = Vec::new();
+        for index in 0..count {
+            let key = storage
+                .key(index)
+                .map_err(|err| VaultError::Io(format!("localStorage read: {err:?}")))?;
+            if let Some(name) = key.as_deref().and_then(|key| key.strip_prefix("airlock.")) {
+                if key.as_deref().is_some_and(|key| key.starts_with(&start)) {
+                    names.push(name.to_string());
+                }
+            }
+        }
+        Ok(names)
+    }
+
+    fn remove(&self, name: &str) -> Result<(), VaultError> {
+        LocalStorageStore::new(format!("airlock.{name}")).remove()
+    }
 }
 
 /// One `localStorage` key. Everything the app keeps is JSON, the vault too,

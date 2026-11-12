@@ -106,11 +106,35 @@ pub(in crate::ui) fn idl_argument_field(
     argument: wallet_core::IdlArgField,
 ) -> Element {
     let name = argument.name.clone();
-    let text = idl.argument(&argument.name).to_string();
-    let kind = argument.kind.clone();
-    let label = argument_label(&argument);
+    let on_change = Callback::new(move |value: String| {
+        form.patch_idl(id, |d| {
+            d.set_argument(&name, value);
+        });
+    });
+    argument_input(
+        argument_label(&argument),
+        argument_placeholder(&argument),
+        &argument.kind,
+        idl.argument(&argument.name).to_string(),
+        form.picker_reset,
+        on_change,
+    )
+}
 
-    if bare_bool(&kind) {
+/// The widget for an argument of kind `kind`, holding `text`: a checkbox
+/// for a boolean, a select for an enum, the address picker for a public
+/// key, and a text field for the rest. Build's blocks and a template's
+/// inputs both draw their arguments with it. An enum that is an option can
+/// be left at None.
+pub(in crate::ui) fn argument_input(
+    label: String,
+    placeholder: String,
+    kind: &IdlArgKind,
+    text: String,
+    reset: Signal<u64>,
+    on_change: Callback<String>,
+) -> Element {
+    if bare_bool(kind) {
         let checked = text == "true";
         return rsx! {
             label { class: "check",
@@ -118,10 +142,8 @@ pub(in crate::ui) fn idl_argument_field(
                     r#type: "checkbox",
                     checked,
                     onchange: move |e| {
-                        let value = if e.checked() { "true" } else { "false" }.to_string();
-                        form.patch_idl(id, |d| {
-                            d.set_argument(&name, value);
-                        });
+                        let value = if e.checked() { "true" } else { "false" };
+                        on_change.call(value.to_string());
                     },
                 }
                 " {label}"
@@ -129,21 +151,25 @@ pub(in crate::ui) fn idl_argument_field(
         };
     }
 
-    if let Some(variants) = enum_variants(&kind) {
+    if let Some(variants) = enum_variants(kind) {
         let variants = variants.to_vec();
         let optional = matches!(kind, IdlArgKind::Option(_));
+        // A required choice with no answer yet, such as a template's question
+        // with no default, says so, rather than showing its first variant
+        // while it holds nothing: picking the variant shown would change
+        // nothing. Build's own blocks start on a variant, so they never show
+        // it.
+        let unanswered = !optional && !variants.contains(&text);
         return rsx! {
             label { "{label}"
                 select {
                     value: "{text}",
-                    onchange: move |e| {
-                        let value = e.value();
-                        form.patch_idl(id, |d| {
-                            d.set_argument(&name, value);
-                        });
-                    },
+                    onchange: move |e| on_change.call(e.value()),
                     if optional {
                         option { value: "", selected: text.is_empty(), "None" }
+                    }
+                    if unanswered {
+                        option { value: "", selected: true, "Choose one" }
                     }
                     for variant in variants {
                         option {
@@ -157,36 +183,27 @@ pub(in crate::ui) fn idl_argument_field(
         };
     }
 
-    if arg_pubkey(&kind) {
+    if arg_pubkey(kind) {
         let selected = Pubkey::from_str(text.trim()).ok();
         return rsx! {
             AddressPicker {
                 label,
                 selected,
-                reset: form.picker_reset,
+                reset,
                 on_change: move |pk: Option<Pubkey>| {
-                    let value = pk.map(|pk| pk.to_string()).unwrap_or_default();
-                    form.patch_idl(id, |d| {
-                        d.set_argument(&name, value);
-                    });
+                    on_change.call(pk.map(|pk| pk.to_string()).unwrap_or_default());
                 },
             }
         };
     }
 
-    let placeholder = argument_placeholder(&argument);
     rsx! {
         label { "{label}"
             input {
                 r#type: "text",
                 placeholder: "{placeholder}",
                 value: "{text}",
-                oninput: move |e| {
-                    let value = e.value();
-                    form.patch_idl(id, |d| {
-                        d.set_argument(&name, value);
-                    });
-                },
+                oninput: move |e| on_change.call(e.value()),
             }
         }
     }
@@ -195,40 +212,67 @@ pub(in crate::ui) fn idl_argument_field(
 /// An argument's name, and the unit it is typed in when its IDL names one:
 /// "amount · SOL".
 pub(in crate::ui) fn argument_label(argument: &IdlArgField) -> String {
-    match argument.scale.unit() {
-        Some(unit) => format!("{} · {unit}", argument.name),
-        None => argument.name.clone(),
+    with_unit(&argument.name, argument.scale.unit())
+}
+
+/// A field's name, then its unit when it has one: "Fee · %".
+pub(in crate::ui) fn with_unit(name: &str, unit: Option<&str>) -> String {
+    match unit {
+        Some(unit) => format!("{name} · {unit}"),
+        None => name.to_string(),
     }
+}
+
+/// How many decimal places a number is typed with.
+pub(in crate::ui) enum Places {
+    /// In base units, as the program reads it.
+    BaseUnits,
+    Fixed(u8),
+    /// As many as another field holds, not known yet.
+    Like(String),
 }
 
 /// What a text field takes: an amount says how many decimal places, and a
 /// number the IDL gives no unit for is in base units.
 pub(in crate::ui) fn argument_placeholder(argument: &IdlArgField) -> String {
-    let (optional, inner) = match &argument.kind {
-        IdlArgKind::Option(inner) => (true, inner.as_ref()),
-        kind => (false, kind),
+    let places = match &argument.scale {
+        IdlArgScale::None => Places::BaseUnits,
+        IdlArgScale::Fixed { decimals, .. } => Places::Fixed(*decimals),
+        IdlArgScale::FromArgument { argument, .. } => Places::Like(argument.clone()),
+    };
+    let blank = if argument.blank_uses_default {
+        Some("blank for the default")
+    } else if matches!(argument.kind, IdlArgKind::Option(_)) {
+        Some("blank for none")
+    } else {
+        None
+    };
+    kind_placeholder(&argument.kind, places, blank)
+}
+
+/// What a text field of kind `kind` takes, typed with `places`, and what
+/// leaving it blank does, when it can be.
+pub(in crate::ui) fn kind_placeholder(
+    kind: &IdlArgKind,
+    places: Places,
+    blank: Option<&str>,
+) -> String {
+    let inner = match kind {
+        IdlArgKind::Option(inner) => inner.as_ref(),
+        kind => kind,
     };
     let takes = match inner {
         IdlArgKind::Bytes => "hex".to_string(),
         IdlArgKind::Raw { note } => note.clone(),
         IdlArgKind::Integer { float: true, .. } => "number".to_string(),
-        IdlArgKind::Integer { .. } => match &argument.scale {
-            IdlArgScale::None => "whole number, in base units".to_string(),
-            IdlArgScale::Fixed { decimals: 0, .. } => "whole number".to_string(),
-            IdlArgScale::Fixed { decimals: 1, .. } => "up to 1 decimal place".to_string(),
-            IdlArgScale::Fixed { decimals, .. } => format!("up to {decimals} decimal places"),
-            IdlArgScale::FromArgument { argument, .. } => {
-                format!("as many decimal places as {argument}")
-            }
+        IdlArgKind::Integer { .. } => match places {
+            Places::BaseUnits => "whole number, in base units".to_string(),
+            Places::Fixed(0) => "whole number".to_string(),
+            Places::Fixed(1) => "up to 1 decimal place".to_string(),
+            Places::Fixed(decimals) => format!("up to {decimals} decimal places"),
+            Places::Like(other) => format!("as many decimal places as {other}"),
         },
         _ => String::new(),
-    };
-    let blank = if argument.blank_uses_default {
-        Some("blank for the default")
-    } else if optional {
-        Some("blank for none")
-    } else {
-        None
     };
     match (blank, takes.is_empty()) {
         (Some(blank), true) => blank.to_string(),

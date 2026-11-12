@@ -383,6 +383,9 @@ code { color: var(--text-2); }
   font-size: var(--text-sm);
 }
 .page-source .icon { flex: none; width: 16px; height: 16px; }
+/* A template's name, the one thing of it Review and Sign shows, on one
+   line cut at its end. */
+.page-source.from-template { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .page-source .origin {
   min-width: 0;
   overflow: hidden;
@@ -2278,6 +2281,523 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   padding: var(--space-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
+}
+
+/* Templates: Build's short list under the rail, and the form of the one
+   open. */
+.template-list { gap: var(--space-2); }
+/* A row is a card that opens the template. */
+.template-item {
+  display: grid;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.template-item:has(> .template-row:hover:not(:disabled)) { border-color: var(--brand); background: var(--surface-2); }
+.template-item.off { background: var(--surface-2); }
+.template-row {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  justify-content: stretch;
+  justify-items: start;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: none;
+  text-align: start;
+  white-space: normal;
+}
+.template-row:hover:not(:disabled) { background: none; }
+.template-row:disabled { opacity: 1; background: none; }
+.template-row-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.template-row-name { font-weight: var(--weight-semibold); }
+.template-row:disabled .template-row-name,
+.template-item.off .template-row-name { color: var(--text-2); }
+.template-row-summary { color: var(--text-2); font-size: var(--text-md); font-weight: var(--weight-regular); }
+.template-row-problem { color: var(--warn-text); font-size: var(--text-md); font-weight: var(--weight-regular); }
+.template-start-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+}
+.template-start-head > h3 { font-size: var(--text-md); color: var(--text-2); }
+
+.template-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+.template-title { display: grid; gap: var(--space-1); min-width: 0; flex: 1 1 0; }
+.template-head > button { flex: none; }
+.template-inputs, .template-option-inputs, .template-facts { display: grid; gap: var(--space-4); }
+.template-input { display: grid; gap: var(--space-1); min-width: 0; }
+.template-input.missing input[type="text"],
+.template-input.missing select { background: var(--danger-soft); border-color: var(--danger-line); }
+.field-missing { color: var(--danger-text); font-size: var(--text-md); }
+.template-options { display: grid; gap: var(--space-3); }
+.template-option { display: grid; gap: var(--space-1); }
+/* A hint and the inputs of an option sit under its label, past the box. */
+.template-option-hint { padding-left: calc(16px + var(--space-2)); }
+.template-option-inputs {
+  margin: var(--space-2) 0 var(--space-2) 7px;
+  padding-left: calc(9px + var(--space-2));
+  border-left: 2px solid var(--border-control);
+}
+.template-facts { padding-top: var(--space-2); }
+
+.template-written { display: grid; gap: var(--space-2); }
+.template-written + .template-written { padding-top: var(--space-3); border-top: 1px solid var(--border); }
+.template-written-rows {
+  list-style: none;
+  display: grid;
+  grid-template-columns: minmax(8rem, max-content) minmax(0, 1fr);
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--text-md);
+}
+.template-written-rows > li { display: contents; }
+.template-written-field { color: var(--text-2); overflow-wrap: anywhere; }
+.template-written-value { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 639px) {
+  .template-written-rows { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .template-written-value { margin-bottom: var(--space-2); }
+}
+/* Save as template: each block's fields, with what becomes of each. */
+.save-block { display: grid; gap: var(--space-2); padding-top: var(--space-3); border-top: 1px solid var(--border); }
+.save-block > h4 { font-size: var(--text-md); }
+.save-fields { list-style: none; display: grid; gap: var(--space-3); }
+.save-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(11rem, 14rem);
+  align-items: start;
+  gap: var(--space-2) var(--space-4);
+}
+.save-field-what { display: grid; gap: 2px; min-width: 0; font-size: var(--text-md); }
+.save-field-name { color: var(--text-2); overflow-wrap: anywhere; }
+.save-field-value { min-width: 0; overflow-wrap: anywhere; }
+.save-field-choice { display: grid; gap: var(--space-1); min-width: 0; }
+.save-field-choice select { width: 100%; }
+.save-field-fixed { font-size: var(--text-md); font-weight: var(--weight-medium); padding-top: var(--space-1); }
+@media (max-width: 639px) {
+  .save-field { grid-template-columns: minmax(0, 1fr); gap: var(--space-1); }
+}
+
+/* The Templates dialog: the list on the left and the template picked on
+   the right, as Programs lays out IDLs. The dialog has a height of its
+   own, and each pane scrolls inside it, so the head and the last row of
+   buttons stay in place. An imported file is read in the same reader. */
+.modal.template-browser {
+  width: min(64rem, 100%);
+  height: min(46rem, calc(100vh - 48px));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow: hidden;
+  container: template-browser / inline-size;
+}
+.modal.template-browser > .btn-row:last-child { margin-top: 0; }
+.modal.template-browser > p { margin: 0; }
+.template-browser-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  min-height: var(--control-md);
+}
+.template-browser-head > h3 { min-width: 0; overflow-wrap: anywhere; }
+.template-browser-ways { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.template-browser-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  gap: var(--space-4);
+}
+.template-browser-body.one { grid-template-columns: minmax(0, 1fr); }
+/* The list: one card, the filter as its first row, the rows scrolling under
+   it. */
+.template-side {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.template-filter {
+  flex-shrink: 0;
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+.template-none, .template-side-note { margin: 0; padding: var(--space-3) var(--space-4); font-size: var(--text-md); }
+.template-side > .group-list {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.template-side-note { flex-shrink: 0; border-top: 1px solid var(--border); }
+.template-pick {
+  min-height: 0;
+  padding: var(--space-2) var(--space-2) var(--space-2) 10px;
+  white-space: normal;
+}
+.template-pick-text { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.template-pick-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); }
+.template-pick-name { min-width: 0; overflow-wrap: anywhere; line-height: 1.35; }
+.template-pick-head > .chip { flex: none; }
+/* The summary cut to two lines; the reader has it whole. */
+.template-pick-summary {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  line-height: 1.4;
+}
+.template-pick-problem { color: var(--warn-text); font-size: var(--text-sm); font-weight: var(--weight-regular); }
+.template-pick-item.off .template-pick-name { color: var(--text-2); }
+.template-pick-item.on .template-pick-summary { color: inherit; opacity: 0.85; }
+/* The reader: one pane that scrolls, its tabs staying at its top. */
+.template-reader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.template-reader > .empty { margin: auto 0; }
+.reader-head { display: grid; gap: var(--space-2); min-width: 0; }
+.reader-head > p { margin: 0; }
+.reader-title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
+.reader-title > h3 { min-width: 0; overflow-wrap: anywhere; }
+.reader-summary { overflow-wrap: anywhere; }
+.reader-tabs {
+  position: sticky;
+  top: calc(-1 * var(--space-4));
+  z-index: var(--z-sticky);
+  flex-shrink: 0;
+  margin: 0 calc(-1 * var(--space-5));
+  padding: 0 var(--space-5);
+  background: var(--surface);
+}
+.reader-tabs > .tab { margin-bottom: 0; }
+.reader-panel { display: grid; gap: var(--space-3); align-content: start; min-width: 0; }
+.reader-eyebrow { margin-top: var(--space-2); }
+.reader-panel .eyebrow {
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.reader-questions, .reader-options, .reader-blocks, .reader-fields {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+/* Questions: one row each, the widget it takes at the row's end. */
+.reader-questions {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.reader-question { display: grid; gap: 2px; min-width: 0; padding: var(--space-2) var(--space-3); }
+.reader-question + .reader-question { border-top: 1px solid var(--border); }
+.reader-question > p { margin: 0; overflow-wrap: anywhere; }
+.reader-question-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 var(--space-3);
+}
+.reader-question-label { font-weight: var(--weight-medium); overflow-wrap: anywhere; }
+.reader-takes { color: var(--text-2); font-size: var(--text-sm); }
+.reader-until { color: var(--text-2); font-size: var(--text-md); }
+.reader-options { display: grid; gap: var(--space-4); }
+.reader-option { display: grid; gap: var(--space-1); min-width: 0; }
+.reader-option > p { margin: 0; }
+.reader-option-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.reader-option-label { font-weight: var(--weight-semibold); }
+/* An option's questions sit under it, past a rule, as the form shows them. */
+.reader-option-questions,
+.reader-option > .reader-option-none {
+  margin-left: var(--space-3);
+}
+.reader-option-questions { margin-top: var(--space-1); }
+.reader-option-none { font-size: var(--text-md); }
+/* Blocks: numbered cards, each field a row: its name, then where its value
+   comes from. */
+.reader-blocks { display: grid; gap: var(--space-3); }
+.reader-block {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.reader-block-head { display: flex; align-items: flex-start; gap: var(--space-3); min-width: 0; }
+.reader-block-number {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+.reader-block-what { display: grid; gap: 2px; min-width: 0; }
+.reader-block-what > p { margin: 0; }
+.reader-block-title { font-weight: var(--weight-semibold); overflow-wrap: break-word; line-height: 24px; }
+.reader-block-title code { font-weight: var(--weight-medium); }
+/* A name breaks only when it is longer than the line, not wherever a
+   line ends, as an address may. */
+.reader-block-title .mono, .reader-field-name.mono { overflow-wrap: break-word; word-break: normal; }
+.reader-program { gap: var(--space-1); }
+.reader-program code { color: var(--text-2); font-size: var(--text-sm); overflow-wrap: anywhere; }
+.reader-when { color: var(--text-2); font-size: var(--text-md); }
+.reader-block-none { margin: 0; font-size: var(--text-md); }
+.reader-fields-group { display: grid; gap: var(--space-1); min-width: 0; }
+.reader-fields-group > h5 { margin: 0; }
+.reader-fields {
+  display: grid;
+  grid-template-columns: minmax(7rem, max-content) minmax(0, 1fr);
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--text-md);
+}
+.reader-field { display: contents; }
+.reader-field-name { color: var(--text-2); font-size: var(--text-sm); line-height: 22px; overflow-wrap: anywhere; }
+.reader-field-from {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--space-2);
+  min-width: 0;
+  min-height: 22px;
+  overflow-wrap: anywhere;
+}
+/* Where a value comes from, as a word before it. */
+.reader-origin {
+  flex: none;
+  padding: 0 6px;
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-full);
+  color: var(--text-2);
+  font-size: var(--text-xs);
+  line-height: 18px;
+}
+.reader-origin.asked { border-color: var(--brand-line); background: var(--brand-soft); color: var(--brand-text); }
+.reader-ref { color: var(--text-3); font-family: var(--font-mono); font-size: var(--text-sm); }
+.reader-text { display: grid; gap: var(--space-2); min-width: 0; }
+.reader-text-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.reader-raw { max-height: none; }
+.template-cannot { align-self: center; }
+.template-back { gap: var(--space-1); margin-left: calc(-1 * var(--space-2)); padding: 0 var(--space-2); font-weight: var(--weight-semibold); }
+.template-back .icon { width: 18px; height: 18px; }
+.reader-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+/* The editor, in the Templates dialog's place of the list and the reader:
+   the text on the left and its reading on the right, each scrolling on its
+   own. A narrow dialog and a phone put the reading under the text, on one
+   page that scrolls. The status stays at the top of the reading, so the
+   field never moves as it changes. */
+.template-editor {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 6fr);
+  gap: var(--space-4);
+}
+.editor-text { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.editor-field {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.editor-field:hover { border-color: var(--border-strong); }
+.editor-field:focus-within { border-color: var(--brand); box-shadow: var(--focus-ring); }
+/* The numbers and the text share one font, size and line height, so each
+   number stays beside its line; the numbers follow the field's scrolling,
+   and have room past the last line for its horizontal scrollbar. */
+.editor-gutter, textarea.editor-input {
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  line-height: 20px;
+  tab-size: 4;
+}
+.editor-gutter {
+  margin: 0;
+  min-width: 3.5ch;
+  overflow: hidden;
+  padding: var(--space-2) var(--space-3) 64px var(--space-3);
+  border-right: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-3);
+  text-align: right;
+  user-select: none;
+  white-space: pre;
+}
+textarea.editor-input {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  /* Little room on the left: a field scrolled to show its caret at the
+     start of a line keeps it in sight but not its padding. */
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-1);
+  overflow: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  resize: none;
+  white-space: pre;
+  overflow-wrap: normal;
+}
+textarea.editor-input:focus { box-shadow: none; }
+.editor-reading {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.editor-status {
+  flex-shrink: 0;
+  display: grid;
+  gap: var(--space-2);
+  max-height: 45%;
+  overflow: auto;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}
+.editor-status p { margin: 0; }
+.editor-reads { color: var(--ok-text); font-weight: var(--weight-medium); }
+.editor-error { display: grid; gap: var(--space-2); justify-items: start; min-width: 0; }
+.editor-reason { white-space: pre-wrap; }
+/* The line a refusal points at, as it is in the text: its number, then the
+   line, the character pointed at marked. */
+.editor-excerpt {
+  justify-self: stretch;
+  display: flex;
+  gap: var(--space-3);
+  margin: 0;
+  overflow-x: auto;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--danger-line);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  line-height: 20px;
+  white-space: pre;
+}
+.editor-excerpt-line { flex: none; color: var(--text-3); user-select: none; }
+.editor-excerpt mark {
+  display: inline-block;
+  min-width: 1ch;
+  border-radius: 2px;
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  box-shadow: inset 0 -2px 0 var(--danger-solid);
+}
+.editor-view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow: auto;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+}
+.editor-view.stale > :not(.editor-stale-note) { opacity: 0.5; }
+.editor-stale-note {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--text-2);
+  font-size: var(--text-md);
+}
+.editor-section { display: flex; align-items: center; margin: var(--space-2) 0 0; }
+.editor-nothing { margin: 0; padding: var(--space-4) var(--space-5); }
+/* Narrow: one page that scrolls, the text first, then the status and the
+   reading, the last row of buttons staying in place under it. */
+@container template-browser (max-width: 720px) {
+  .template-editor { display: flex; flex-direction: column; gap: var(--space-3); overflow: auto; }
+  .editor-text { flex: none; }
+  .editor-field { flex: none; height: min(28rem, 58vh); min-height: 16rem; }
+  .editor-reading { flex: none; overflow: visible; }
+  .editor-status { max-height: none; overflow: visible; }
+  .editor-view { flex: none; overflow: visible; padding: var(--space-3) var(--space-4) var(--space-4); }
+}
+@media (pointer: coarse) {
+  .editor-gutter, textarea.editor-input { font-size: 0.875rem; line-height: 21px; }
+  textarea.editor-input { min-height: 0; }
+}
+/* A narrow window: the list over the reader, each scrolling; a phone shows
+   one of the two. */
+@media (max-width: 639px) {
+  .modal.template-browser { height: 92vh; }
+  .template-browser-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 2fr) minmax(0, 3fr); }
+  .template-browser-body.one { grid-template-rows: minmax(0, 1fr); }
+  .template-reader { padding: var(--space-3) var(--space-4) var(--space-4); }
+  .reader-tabs { top: calc(-1 * var(--space-3)); margin: 0 calc(-1 * var(--space-4)); padding: 0 var(--space-4); }
+  .reader-fields { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .reader-field-from { margin-bottom: var(--space-2); }
+  .modal.template-browser .btn-row:last-child { flex-wrap: wrap; }
+  .modal.template-browser .btn-row:last-child > .template-cannot { flex-basis: 100%; }
+}
+
+.import-problems {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--warn-line);
+  border-radius: var(--radius-md);
+  background: var(--warn-soft);
+  color: var(--warn-text);
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}
+.import-problems ul { padding-left: var(--space-4); display: grid; gap: var(--space-1); }
+
+@media (pointer: coarse) {
+  .template-option-hint { padding-left: calc(20px + var(--space-2)); }
+  .template-option-inputs { margin-left: 9px; }
 }
 
 .tip::after {

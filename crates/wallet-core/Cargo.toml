@@ -54,6 +54,8 @@ solana-sdk-ids = "3.1"
 # The program's client crate lays it out with the same version.
 solana-instructions-sysvar = "3.0"
 thiserror.workspace = true
+# Templates on Build are TOML files. The version idl-pack and program-watch use.
+toml = "0.8"
 # The Vector program's client crate, from our fork, which compiles our program
 # ID in. Pinned by commit. See docs/vector-fork.md.
 vector-core = { git = "https://github.com/tiago18c/vector", rev = "e0566fc4f15686b5f49c419d7eb08bb4496bf9cc" }

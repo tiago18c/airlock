@@ -1,5 +1,5 @@
-//! Where the UI touches the page and the device: eval, QR, camera, IDL files,
-//! the IDL pack.
+//! Where the UI touches the page and the device: eval, QR, camera, IDL and
+//! template files, the IDL pack.
 //! The browser bridge socket and Windows camera permission live in `app-desktop`;
 //! its queue is in the core.
 
@@ -11,5 +11,7 @@ pub mod idl_pack;
 pub mod page_policy;
 pub mod qr;
 pub mod storage;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod template_files;
 
 pub use eval::{copy_text, eval};
