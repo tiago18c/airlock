@@ -449,7 +449,7 @@
             "kind": "instructionAccountNode",
             "name": "metadata",
             "isWritable": true,
-            "isSigner": false,
+            "isSigner": true,
             "isOptional": false,
             "docs": [
               "- create: should be an ephemeral signer;",

@@ -1082,8 +1082,11 @@ changes = """Converted from Anchor to Codama. Start time and cliff time are read
 which the program takes as "when created" and "at the start", instead of as 1 January \
 1970. The Token program's mint account is added, so the amounts of the create, withdraw \
 and top-up instructions read the decimals of the mint they name; the new amount per \
-period of update stays in base units, since update names no mint. Display nodes added by \
-hand."""
+period of update stays in base units, since update names no mint. create's contract \
+account signs, as its documentation says ("should be an ephemeral signer") and every \
+create on mainnet and the SDK's createStreamInstruction show; the file marked it a \
+signer in no instruction, since create_v2 shares the account as a PDA. Display nodes \
+added by hand."""
 
 # Streamflow's staking program (stake_pool 2.4.0): projects create stake pools
 # for their token, and holders lock tokens in them for a chosen time, weighted
