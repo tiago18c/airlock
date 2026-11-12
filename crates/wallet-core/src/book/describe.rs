@@ -595,6 +595,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN"),
         "Meteora Dynamic Bonding Curve Program",
     ),
+    (
+        Pubkey::from_str_const("jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9"),
+        "Jupiter Lend Earn Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

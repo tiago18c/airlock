@@ -514,3 +514,20 @@ and the DAMM v1 migration metadata. The three swaps and `migrationDammV2` set \
 optionalAccountStrategy to programId. The Token program's mint account is added, so fee \
 claim limits and a config's migration threshold read their mint's decimals; swap amounts \
 are in base units. Display nodes added by hand."""
+
+# Jupiter Lend's Earn program: deposits of a token to earn, which pay out
+# jlTokens (shares), and withdrawals and redemptions of them. It calls Jupiter
+# Lend's liquidity program (jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC) for
+# every deposit and withdrawal. The program publishes no IDL on chain; the
+# file is the Anchor IDL in Jupiter's jup-ag/jupiter-lend repository.
+[[idls]]
+file = "jupiter-lend-earn.json"
+programId = "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9"
+name = "lending"
+networks = ["mainnet"]
+source = { kind = "repository", url = "https://github.com/jup-ag/jupiter-lend/blob/7960a14a5a760abc41db3ed1395dc5cb56a1f8db/target/idl/lending.json" }
+changes = """Converted from Anchor to Codama. The deposit, mint, withdraw and redeem instructions set \
+optionalAccountStrategy to programId. Amounts in the underlying token are in the \
+decimals of its mint and amounts in jlTokens in the decimals of the jlToken mint, both \
+read from chain; rebalanceWithAmounts' amount is in base units. Display nodes added by \
+hand."""
