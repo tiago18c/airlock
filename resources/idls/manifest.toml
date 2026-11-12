@@ -381,3 +381,28 @@ account is added, so token amounts read their mint's decimals where the instruct
 names the mint; a swap's quoted output reads the destination mint's decimals, or SOL's \
 for the swaps that pay SOL, and stays in base units otherwise. Slippage and fees are in \
 percent. Display nodes added by hand."""
+
+# Jupiter's perpetual exchange and its JLP pool. Closed source; the IDL is the
+# legacy Anchor IDL the program publishes on mainnet, which carries no program
+# address. Most trades are signed as instant instructions co-signed by
+# Jupiter's keepers; requests and take-profit, stop-loss and limit orders are
+# executed later by a keeper.
+[[idls]]
+file = "jupiter-perps.json"
+programId = "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+name = "perpetuals"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "1d90a653a1cc88bddb7c5876acee52d3f26c6b1e3306e0833234020dc6f7d653" }
+changes = """Converted from Anchor to Codama; the program address is set, as the legacy IDL has none. \
+setMaxGlobalSizes is removed: the deployed program has no such instruction. Instructions \
+with optional accounts set optionalAccountStrategy to programId. Adding and removing \
+liquidity, the liquidity quotes, refreshing the pool's value, withdrawing fees, \
+borrowing, withdrawing borrow collateral and liquidating a borrow position declare the \
+pool's custodies and their price accounts as one hidden remaining-accounts group; \
+closePositionRequest3 takes one optional account more than the IDL lists, before the \
+event authority: the eventAuthority slot is marked optional, so that account shows when \
+a client passes one, and the last account is a hidden remaining-accounts group. The \
+Token program's mint account is added, so the collateral of a request or limit order \
+reads its input mint's decimals and JLP amounts the JLP mint's; position sizes, \
+collateral decreases, price limits and trigger prices are in USD with 6 decimals; other \
+token amounts are in base units; fees are in percent. Display nodes added by hand."""

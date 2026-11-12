@@ -1,0 +1,1806 @@
+{
+  "accounts": {
+    "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4": {
+      "data": "AQAAAI0mUwybJH+SiOrON1RLJjiAwCytBNMhUO0dAfj73SOGzcBBARGpAAAGAQEAAACNJlMMmyR/kojqzjdUSyY4gMAsrQTTIVDtHQH4+90jhg==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh": {
+      "data": "AQAAAJdz8e+O65iVdMpxBFsTrA0MEUaiThB5GX5TF1UZTdCWhrpkqjcAAAAIAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": {
+      "data": "AQAAAJj+huiNm+Lqi8HMpIeLKYjCQPUrhCS/tA7Rot3LXhmbzttsJUaBHwAGAQEAAABicKqKWcWUBbRShshncubNEm6bil06OFNtN/e0FOi2Zw==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    }
+  },
+  "instructions": [
+    {
+      "accounts": [
+        "DFZcDnmEYNUK1khquZzx5dQYiEyjJ3N5STqaDVLZ88ZU:sw",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz",
+        "AQCGyheWPLeo6Qp9WpYS9m3Qj479t7R636N9ey1rEjEn",
+        "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm",
+        "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa",
+        "4vkNeXiYEUizLdrpdPS1eC2mccyM4NUPRtERrk6ZETkk",
+        "DdwY1ELc9rRK7xNL3hTXabSFBmVrTPpfsUZSv2Y3LL1U",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "AFZnHPzy4mvVCffrVwhewHbFc93uTHvDSFrVH7GtfXF1:w",
+        "hUqAT1KQ7eW1i6Csp9CXYtpPfSAvi835V7wKi5fRfmC:w",
+        "6Jp2xZUTWdDD2ZyUPRzeMdc6AFQ5K3pFgZxk2EijfjnM:w",
+        "Fgc93D641F8N2d1xLjQ4jmShuD3GE3BsCXA56KBQbF5u",
+        "9DRrwc4hSMQouw3ptpHXtQXVNHoqwyqLaK6NWztWTDin"
+      ],
+      "data": "a200d737e10fb900",
+      "fields": [
+        [
+          "Keeper",
+          "DFZcDnmEYNUK1khquZzx5dQYiEyjJ3N5STqaDVLZ88ZU"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "JLP Mint",
+          "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4"
+        ]
+      ],
+      "from": "5jabM98D7CpvaMMohiJcAyd6XFJ6Q7cyzV2QqXMTYCGF1vLo2DCV1FgpUqo3r5HxJjhs1BQiMyPBwfA6ojaihU6g#9",
+      "intent": "Refresh the pool's value",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "DFZcDnmEYNUK1khquZzx5dQYiEyjJ3N5STqaDVLZ88ZU updates the recorded value of pool 5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Ag28fGtwtpnqassHURUBsQ1WfiyaWWzDDNs4Q28qHRjv:sw",
+        "perpSnt3NivMdD5DRFc7VmW6x7PuvQJGNyDTL74mEYx:s",
+        "8Adms3BypyuUyz5nYgq46wgVTbt4LSoZ2jsfe2JEWSdx:sw",
+        "81BWUdXyEoqkDhS4iGuVc8h26RsT6yQEcsdXuWC1X1EN:w",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "HhuNXe8yfDBmq3J3hmJpWvhFvh42dvrDGiGLRnizXsJR:w",
+        "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm:w",
+        "hUqAT1KQ7eW1i6Csp9CXYtpPfSAvi835V7wKi5fRfmC:w",
+        "hUqAT1KQ7eW1i6Csp9CXYtpPfSAvi835V7wKi5fRfmC:w",
+        "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa:w",
+        "6Jp2xZUTWdDD2ZyUPRzeMdc6AFQ5K3pFgZxk2EijfjnM",
+        "6Jp2xZUTWdDD2ZyUPRzeMdc6AFQ5K3pFgZxk2EijfjnM",
+        "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS:w",
+        "J3mcYkpWmTSMJhFKKrPWQwEMDppd5cTb1TAEqdGUBbhW",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "a47e44b6dfa640b7bad0ba5f00000000019b99b6000000000002ae129ac110000000d469f56a00000000",
+      "fields": [
+        [
+          "Size Increase",
+          "1,606.07865 USD"
+        ],
+        [
+          "Collateral",
+          "11,966,875 base units"
+        ],
+        [
+          "Side",
+          "short"
+        ],
+        [
+          "Price Limit",
+          "71,967.57675 USD"
+        ],
+        [
+          "Requested At",
+          "2026-11-12T07:25:08.000Z"
+        ],
+        [
+          "Keeper",
+          "Ag28fGtwtpnqassHURUBsQ1WfiyaWWzDDNs4Q28qHRjv"
+        ],
+        [
+          "API Keeper",
+          "perpSnt3NivMdD5DRFc7VmW6x7PuvQJGNyDTL74mEYx"
+        ],
+        [
+          "Owner",
+          "8Adms3BypyuUyz5nYgq46wgVTbt4LSoZ2jsfe2JEWSdx"
+        ],
+        [
+          "Pay From",
+          "81BWUdXyEoqkDhS4iGuVc8h26RsT6yQEcsdXuWC1X1EN"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Position",
+          "HhuNXe8yfDBmq3J3hmJpWvhFvh42dvrDGiGLRnizXsJR"
+        ],
+        [
+          "Market Custody",
+          "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm"
+        ],
+        [
+          "Collateral Custody",
+          "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa"
+        ],
+        [
+          "Collateral Custody Vault",
+          "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS"
+        ],
+        [
+          "Token Ledger",
+          "J3mcYkpWmTSMJhFKKrPWQwEMDppd5cTb1TAEqdGUBbhW"
+        ]
+      ],
+      "from": "5VMowzcYoM2ijtaUb7dTTC15kRcTg224pFA1PVjny1qTwh3z43uMXiitPdmJNYaRMnChtGBmAVVdYNquoMLVek7z#6",
+      "intent": "Open or increase a position",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "8Adms3BypyuUyz5nYgq46wgVTbt4LSoZ2jsfe2JEWSdx opens or increases short position HhuNXe8yfDBmq3J3hmJpWvhFvh42dvrDGiGLRnizXsJR now by 1,606.07865 USD in size, with collateral from 81BWUdXyEoqkDhS4iGuVc8h26RsT6yQEcsdXuWC1X1EN and a price limit of 71,967.57675 USD",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Ag28fGtwtpnqassHURUBsQ1WfiyaWWzDDNs4Q28qHRjv:sw",
+        "perpSnt3NivMdD5DRFc7VmW6x7PuvQJGNyDTL74mEYx:s",
+        "2kwYxBFL1CE7xRdxMe2vkirShL8irWNZzvNiSA2YPMiN:sw",
+        "5AY3Vs7hcLVW5f2XJBVsiCiaPAedP3MreSzLzVb9kaNc:w",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "8Aa89eonFqRzbMPKR81ZbgEW16rRNzMAmTZ27TYKTtY9:w",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "BUvduFTd2sWFagCunBPLupG8fBTJqweLw9DuhruNFSCm:w",
+        "7dNie2R2n4VNnFL7jU1Vcv6NacDpapRUUFq22SS5JCDG",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "a47e44b6dfa640b7754cbb3000000000018066ab130000000001e016fb04000000003a64f56a00000000",
+      "fields": [
+        [
+          "Size Increase",
+          "817.581173 USD"
+        ],
+        [
+          "Collateral",
+          "330,000,000 base units"
+        ],
+        [
+          "Side",
+          "long"
+        ],
+        [
+          "Price Limit",
+          "83.564256 USD"
+        ],
+        [
+          "Requested At",
+          "2026-11-12T07:01:14.000Z"
+        ],
+        [
+          "Keeper",
+          "Ag28fGtwtpnqassHURUBsQ1WfiyaWWzDDNs4Q28qHRjv"
+        ],
+        [
+          "API Keeper",
+          "perpSnt3NivMdD5DRFc7VmW6x7PuvQJGNyDTL74mEYx"
+        ],
+        [
+          "Owner",
+          "2kwYxBFL1CE7xRdxMe2vkirShL8irWNZzvNiSA2YPMiN"
+        ],
+        [
+          "Pay From",
+          "5AY3Vs7hcLVW5f2XJBVsiCiaPAedP3MreSzLzVb9kaNc"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Position",
+          "8Aa89eonFqRzbMPKR81ZbgEW16rRNzMAmTZ27TYKTtY9"
+        ],
+        [
+          "Market Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ],
+        [
+          "Collateral Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ],
+        [
+          "Collateral Custody Vault",
+          "BUvduFTd2sWFagCunBPLupG8fBTJqweLw9DuhruNFSCm"
+        ],
+        [
+          "Token Ledger",
+          "7dNie2R2n4VNnFL7jU1Vcv6NacDpapRUUFq22SS5JCDG"
+        ]
+      ],
+      "from": "r3ueX4ifcz6wUZipGerHEeNzQfnHL3YSuXNPTo3J8yHbHp8MtPAhp2DdrWJftzqovjoD8nFQHSxaBuB4XAZCuBV#9",
+      "intent": "Open or increase a position",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "2kwYxBFL1CE7xRdxMe2vkirShL8irWNZzvNiSA2YPMiN opens or increases long position 8Aa89eonFqRzbMPKR81ZbgEW16rRNzMAmTZ27TYKTtY9 now by 817.581173 USD in size, with collateral from 5AY3Vs7hcLVW5f2XJBVsiCiaPAedP3MreSzLzVb9kaNc and a price limit of 83.564256 USD",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+        "8zY9YAEbGqBHhdAUgwgen1mooXCjDC3YGN5QnedTUquV:sw",
+        "by5yR95SnrEC8JMXpB6JuvBUXW8CjeU7GJd1HuVCfPs:w",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "CPAmNSHruQpVTNv6sy4bAyc7tUWHFdNqCD1eXmLY3tFg:w",
+        "J88rReSX7wsf8XSGoXuG5mH5TamiqNsakN82Wzgkr674:w",
+        "FPuMAEgAtuZTzdNJbgiCu3sobxmwMrDwQyMbY1iGbVpc",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "7a822112d32ca13a",
+      "fields": [
+        [
+          "Owner",
+          "8zY9YAEbGqBHhdAUgwgen1mooXCjDC3YGN5QnedTUquV"
+        ],
+        [
+          "Refund To",
+          "by5yR95SnrEC8JMXpB6JuvBUXW8CjeU7GJd1HuVCfPs"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Position Request",
+          "CPAmNSHruQpVTNv6sy4bAyc7tUWHFdNqCD1eXmLY3tFg"
+        ],
+        [
+          "Request Token Account",
+          "J88rReSX7wsf8XSGoXuG5mH5TamiqNsakN82Wzgkr674"
+        ],
+        [
+          "Position",
+          "FPuMAEgAtuZTzdNJbgiCu3sobxmwMrDwQyMbY1iGbVpc"
+        ],
+        [
+          "Market Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ],
+        [
+          "Request Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ]
+      ],
+      "from": "22FovWnkPq82RocA3yrtYavXdDbYWmsuyxvtKGRd1bstsDa6aEXBgfCPcPAgBw1fq5KxR9cSXoxrxmRLPdd9vnLU#6",
+      "intent": "Close a position request",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "Closes position request CPAmNSHruQpVTNv6sy4bAyc7tUWHFdNqCD1eXmLY3tFg of 8zY9YAEbGqBHhdAUgwgen1mooXCjDC3YGN5QnedTUquV on position FPuMAEgAtuZTzdNJbgiCu3sobxmwMrDwQyMbY1iGbVpc, returning any EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v it holds to by5yR95SnrEC8JMXpB6JuvBUXW8CjeU7GJd1HuVCfPs",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Ag28fGtwtpnqassHURUBsQ1WfiyaWWzDDNs4Q28qHRjv:sw",
+        "perpSnt3NivMdD5DRFc7VmW6x7PuvQJGNyDTL74mEYx:s",
+        "8zY9YAEbGqBHhdAUgwgen1mooXCjDC3YGN5QnedTUquV:sw",
+        "by5yR95SnrEC8JMXpB6JuvBUXW8CjeU7GJd1HuVCfPs:w",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "FPuMAEgAtuZTzdNJbgiCu3sobxmwMrDwQyMbY1iGbVpc",
+        "CPAmNSHruQpVTNv6sy4bAyc7tUWHFdNqCD1eXmLY3tFg:w",
+        "J88rReSX7wsf8XSGoXuG5mH5TamiqNsakN82Wzgkr674:w",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "7562427f1e3249b90000000000000000000000000000000040d2df03000000000001da154925000000009969f56a00000000",
+      "fields": [
+        [
+          "Collateral Decrease",
+          "0 USD"
+        ],
+        [
+          "Size Decrease",
+          "0 USD"
+        ],
+        [
+          "Trigger Price",
+          "65 USD"
+        ],
+        [
+          "Trigger When Price Is Above",
+          "false"
+        ],
+        [
+          "Entire Position",
+          "true"
+        ],
+        [
+          "Requested At",
+          "2026-11-12T07:24:09.000Z"
+        ],
+        [
+          "Keeper",
+          "Ag28fGtwtpnqassHURUBsQ1WfiyaWWzDDNs4Q28qHRjv"
+        ],
+        [
+          "API Keeper",
+          "perpSnt3NivMdD5DRFc7VmW6x7PuvQJGNyDTL74mEYx"
+        ],
+        [
+          "Owner",
+          "8zY9YAEbGqBHhdAUgwgen1mooXCjDC3YGN5QnedTUquV"
+        ],
+        [
+          "Receive To",
+          "by5yR95SnrEC8JMXpB6JuvBUXW8CjeU7GJd1HuVCfPs"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Position",
+          "FPuMAEgAtuZTzdNJbgiCu3sobxmwMrDwQyMbY1iGbVpc"
+        ],
+        [
+          "Position Request",
+          "CPAmNSHruQpVTNv6sy4bAyc7tUWHFdNqCD1eXmLY3tFg"
+        ],
+        [
+          "Request Token Account",
+          "J88rReSX7wsf8XSGoXuG5mH5TamiqNsakN82Wzgkr674"
+        ],
+        [
+          "Market Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ],
+        [
+          "Collateral Custody",
+          "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa"
+        ],
+        [
+          "Receive Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ]
+      ],
+      "from": "22FovWnkPq82RocA3yrtYavXdDbYWmsuyxvtKGRd1bstsDa6aEXBgfCPcPAgBw1fq5KxR9cSXoxrxmRLPdd9vnLU#7",
+      "intent": "Set a take-profit or stop-loss",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "8zY9YAEbGqBHhdAUgwgen1mooXCjDC3YGN5QnedTUquV sets a take-profit or stop-loss on position FPuMAEgAtuZTzdNJbgiCu3sobxmwMrDwQyMbY1iGbVpc: when the price reaches 65 USD (trigger when above: false), reduce it (entire position: true; size: 0 USD; collateral: 0 USD), paid out in EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v to by5yR95SnrEC8JMXpB6JuvBUXW8CjeU7GJd1HuVCfPs; a keeper executes it when triggered",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Ag28fGtwtpnqassHURUBsQ1WfiyaWWzDDNs4Q28qHRjv:sw",
+        "perpSnt3NivMdD5DRFc7VmW6x7PuvQJGNyDTL74mEYx:s",
+        "EzHpWT8shNkikfET3mndU9B3Mg1DjwGudBpWJNDwx72D:sw",
+        "tchH47oPWpq2FfmSYkxGZ17gWYzhrpfy2WQRjRZrwUX:w",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "AiKCz2ct3YTQQhqDZX4rcBwaZgPABeFhEKw5NrxwfgeV",
+        "BJXza256nmi3HiriJdRCduzh8HhkX8CAZ1rLYSHoJGaM:w",
+        "52VGmuFmg6YTpW6VQ6d4WfapSQfPK8MhmPPcCJF6v11E:w",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa",
+        "So11111111111111111111111111111111111111112",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "7562427f1e3249b90000000000000000944c7293040000006090f104000000000100e885220c000000003669f56a00000000",
+      "fields": [
+        [
+          "Collateral Decrease",
+          "0 USD"
+        ],
+        [
+          "Size Decrease",
+          "19,653.610644 USD"
+        ],
+        [
+          "Trigger Price",
+          "82.94 USD"
+        ],
+        [
+          "Trigger When Price Is Above",
+          "true"
+        ],
+        [
+          "Entire Position",
+          "false"
+        ],
+        [
+          "Requested At",
+          "2026-11-12T07:22:30.000Z"
+        ],
+        [
+          "Keeper",
+          "Ag28fGtwtpnqassHURUBsQ1WfiyaWWzDDNs4Q28qHRjv"
+        ],
+        [
+          "API Keeper",
+          "perpSnt3NivMdD5DRFc7VmW6x7PuvQJGNyDTL74mEYx"
+        ],
+        [
+          "Owner",
+          "EzHpWT8shNkikfET3mndU9B3Mg1DjwGudBpWJNDwx72D"
+        ],
+        [
+          "Receive To",
+          "tchH47oPWpq2FfmSYkxGZ17gWYzhrpfy2WQRjRZrwUX"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Position",
+          "AiKCz2ct3YTQQhqDZX4rcBwaZgPABeFhEKw5NrxwfgeV"
+        ],
+        [
+          "Position Request",
+          "BJXza256nmi3HiriJdRCduzh8HhkX8CAZ1rLYSHoJGaM"
+        ],
+        [
+          "Request Token Account",
+          "52VGmuFmg6YTpW6VQ6d4WfapSQfPK8MhmPPcCJF6v11E"
+        ],
+        [
+          "Market Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ],
+        [
+          "Collateral Custody",
+          "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa"
+        ],
+        [
+          "Receive Token",
+          "So11111111111111111111111111111111111111112"
+        ]
+      ],
+      "from": "5YMNMZEnfaGRMiG8FSFZTLYPVfAYRHFSKpcQn5rzoLHQuwzsizYTYquzZk74jKydC1sGpeb6ymygz9usbiRdWjPa#6",
+      "intent": "Set a take-profit or stop-loss",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "EzHpWT8shNkikfET3mndU9B3Mg1DjwGudBpWJNDwx72D sets a take-profit or stop-loss on position AiKCz2ct3YTQQhqDZX4rcBwaZgPABeFhEKw5NrxwfgeV: when the price reaches 82.94 USD (trigger when above: true), reduce it (entire position: false; size: 19,653.610644 USD; collateral: 0 USD), paid out in So11111111111111111111111111111111111111112 to tchH47oPWpq2FfmSYkxGZ17gWYzhrpfy2WQRjRZrwUX; a keeper executes it when triggered",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Ag28fGtwtpnqassHURUBsQ1WfiyaWWzDDNs4Q28qHRjv:sw",
+        "perpSnt3NivMdD5DRFc7VmW6x7PuvQJGNyDTL74mEYx:s",
+        "wnh3c4hA4tjnac72Am2MgGNQhfNPvKGh49ZHh3L1Ln8:sw",
+        "AALqdPnxVWqSbTBrspiqeKiRGffpEabeKTwudi3dd98S:w",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq",
+        "EJceyTUaNh36Ltx6BgS1fBP6DhfV8Uu5odzaMxsss49C:w",
+        "9gsesJE3fxBnXZVVgs4QibXVYxnRXwJof7S8rQ7bF8GM:w",
+        "5xg9FttPw5mM7stR85JuJBDn1kiLpKnhgzTyHLkcR5c:w",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "c225c37b287f7e9cb66e5e400000000000e1f505000000000100b4c4040000000000c089090800000000d867f56a00000000",
+      "fields": [
+        [
+          "Size Increase",
+          "1,079.93055 USD"
+        ],
+        [
+          "Collateral",
+          "100"
+        ],
+        [
+          "Side",
+          "long"
+        ],
+        [
+          "Trigger Price",
+          "80 USD"
+        ],
+        [
+          "Trigger When Price Is Above",
+          "false"
+        ],
+        [
+          "Requested At",
+          "2026-11-12T07:16:40.000Z"
+        ],
+        [
+          "Keeper",
+          "Ag28fGtwtpnqassHURUBsQ1WfiyaWWzDDNs4Q28qHRjv"
+        ],
+        [
+          "API Keeper",
+          "perpSnt3NivMdD5DRFc7VmW6x7PuvQJGNyDTL74mEYx"
+        ],
+        [
+          "Owner",
+          "wnh3c4hA4tjnac72Am2MgGNQhfNPvKGh49ZHh3L1Ln8"
+        ],
+        [
+          "Pay From",
+          "AALqdPnxVWqSbTBrspiqeKiRGffpEabeKTwudi3dd98S"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Position",
+          "EJceyTUaNh36Ltx6BgS1fBP6DhfV8Uu5odzaMxsss49C"
+        ],
+        [
+          "Position Request",
+          "9gsesJE3fxBnXZVVgs4QibXVYxnRXwJof7S8rQ7bF8GM"
+        ],
+        [
+          "Request Token Account",
+          "5xg9FttPw5mM7stR85JuJBDn1kiLpKnhgzTyHLkcR5c"
+        ],
+        [
+          "Market Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ],
+        [
+          "Collateral Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ],
+        [
+          "Input Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ]
+      ],
+      "from": "5SgumA8GHNvvbkarn3ecq8QAKr9fnAtVRq5XNJBFQ7JQ8u3zkbPsVMjvJJJiVdXMUvAkfduYwNWKJsze56Pxupyr#6",
+      "intent": "Place a limit order",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "wnh3c4hA4tjnac72Am2MgGNQhfNPvKGh49ZHh3L1Ln8 places a limit order to open or increase a long position EJceyTUaNh36Ltx6BgS1fBP6DhfV8Uu5odzaMxsss49C by 1,079.93055 USD when the price reaches 80 USD (trigger when above: false), putting up 100 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from AALqdPnxVWqSbTBrspiqeKiRGffpEabeKTwudi3dd98S; a keeper executes it when triggered",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Ag28fGtwtpnqassHURUBsQ1WfiyaWWzDDNs4Q28qHRjv:sw",
+        "perpSnt3NivMdD5DRFc7VmW6x7PuvQJGNyDTL74mEYx:s",
+        "3v7PzD9UaB6gf5KJ8JqSKk9uL5XoAYCWTFrUhASGtCz6:sw",
+        "3MocUYNACfjBy8YAdyh1wB9n9hA7Sxr3KakNwhQWMrJT:w",
+        "AVzP2GeRmqGphJsMxWoqjpUifPpCret7LqWhD8NWQK49",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "344kHN197C72gav52tv7fdhLcp4oK3fKuAEb7w4Lu16t:w",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa:w",
+        "6Jp2xZUTWdDD2ZyUPRzeMdc6AFQ5K3pFgZxk2EijfjnM",
+        "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+        "2Ze1TgVbxLbCLUmzsHqGijMQuwp6Jmc5FhbAFSCW6c8D:w",
+        "A3rGjGSKXHw1FZAKgDK56oQYZ57pEb4Tm2Z3gWx8JUZj:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "a2bfc83e8b3eb0110000000000000000000000000000000056cb0605000000000101d067f56a000000003c5130a8cbdb1242",
+      "fields": [
+        [
+          "Collateral Decrease",
+          "0 USD"
+        ],
+        [
+          "Size Decrease",
+          "0 USD"
+        ],
+        [
+          "Price Limit",
+          "84.33135 USD"
+        ],
+        [
+          "Entire Position",
+          "true"
+        ],
+        [
+          "Requested At",
+          "2026-11-12T07:16:32.000Z"
+        ],
+        [
+          "Keeper",
+          "Ag28fGtwtpnqassHURUBsQ1WfiyaWWzDDNs4Q28qHRjv"
+        ],
+        [
+          "API Keeper",
+          "perpSnt3NivMdD5DRFc7VmW6x7PuvQJGNyDTL74mEYx"
+        ],
+        [
+          "Owner",
+          "3v7PzD9UaB6gf5KJ8JqSKk9uL5XoAYCWTFrUhASGtCz6"
+        ],
+        [
+          "Receive To",
+          "3MocUYNACfjBy8YAdyh1wB9n9hA7Sxr3KakNwhQWMrJT"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Position",
+          "344kHN197C72gav52tv7fdhLcp4oK3fKuAEb7w4Lu16t"
+        ],
+        [
+          "Market Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ],
+        [
+          "Collateral Custody",
+          "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa"
+        ],
+        [
+          "Collateral Custody Vault",
+          "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS"
+        ],
+        [
+          "Receive Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Position Request",
+          "2Ze1TgVbxLbCLUmzsHqGijMQuwp6Jmc5FhbAFSCW6c8D"
+        ],
+        [
+          "Request Token Account",
+          "A3rGjGSKXHw1FZAKgDK56oQYZ57pEb4Tm2Z3gWx8JUZj"
+        ]
+      ],
+      "from": "3T7PEWs5xL5y6qiAEGQY7ZhKsUTizawcD6KMhLBczQFwJk2wYesyKfwfAcNbsC1D2ANrWNV3qGxGE93nDBzMKarW#6",
+      "intent": "Decrease or close a position",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "3v7PzD9UaB6gf5KJ8JqSKk9uL5XoAYCWTFrUhASGtCz6 reduces position 344kHN197C72gav52tv7fdhLcp4oK3fKuAEb7w4Lu16t now (entire position: true; size: 0 USD; collateral: 0 USD), paid out in EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v to 3MocUYNACfjBy8YAdyh1wB9n9hA7Sxr3KakNwhQWMrJT, with a price limit of 84.33135 USD",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "DFZcDnmEYNUK1khquZzx5dQYiEyjJ3N5STqaDVLZ88ZU:sw",
+        "AVzP2GeRmqGphJsMxWoqjpUifPpCret7LqWhD8NWQK49",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "AQCGyheWPLeo6Qp9WpYS9m3Qj479t7R636N9ey1rEjEn:w",
+        "Bgarxg65CEjN3kosjCW5Du3wEqvV3dpCGDR3a2HRQsYJ:w",
+        "AFZnHPzy4mvVCffrVwhewHbFc93uTHvDSFrVH7GtfXF1",
+        "AFZnHPzy4mvVCffrVwhewHbFc93uTHvDSFrVH7GtfXF1",
+        "9RnCbYa8mcjSAjWousrBKXrtceC186zYYsojC8YGQtjo:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz:w",
+        "AQCGyheWPLeo6Qp9WpYS9m3Qj479t7R636N9ey1rEjEn:w",
+        "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm:w",
+        "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa:w",
+        "4vkNeXiYEUizLdrpdPS1eC2mccyM4NUPRtERrk6ZETkk",
+        "DdwY1ELc9rRK7xNL3hTXabSFBmVrTPpfsUZSv2Y3LL1U:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh",
+        "AFZnHPzy4mvVCffrVwhewHbFc93uTHvDSFrVH7GtfXF1",
+        "hUqAT1KQ7eW1i6Csp9CXYtpPfSAvi835V7wKi5fRfmC",
+        "6Jp2xZUTWdDD2ZyUPRzeMdc6AFQ5K3pFgZxk2EijfjnM",
+        "Fgc93D641F8N2d1xLjQ4jmShuD3GE3BsCXA56KBQbF5u",
+        "9DRrwc4hSMQouw3ptpHXtQXVNHoqwyqLaK6NWztWTDin"
+      ],
+      "data": "fc808f91e1dd9fcf",
+      "fields": [
+        [
+          "Keeper",
+          "DFZcDnmEYNUK1khquZzx5dQYiEyjJ3N5STqaDVLZ88ZU"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Custody",
+          "AQCGyheWPLeo6Qp9WpYS9m3Qj479t7R636N9ey1rEjEn"
+        ],
+        [
+          "Custody Vault",
+          "Bgarxg65CEjN3kosjCW5Du3wEqvV3dpCGDR3a2HRQsYJ"
+        ],
+        [
+          "Receive To",
+          "9RnCbYa8mcjSAjWousrBKXrtceC186zYYsojC8YGQtjo"
+        ]
+      ],
+      "from": "2QKGUMB7MKLcoWuy3GT5KVBnuSEhQeWgCHZ8Mf5XRAHYX3sF3iYSBALJoHCWdzftfLQ3zVcdWhkG9QAv2vMjGxqv#3",
+      "intent": "Withdraw protocol fees",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "DFZcDnmEYNUK1khquZzx5dQYiEyjJ3N5STqaDVLZ88ZU withdraws the protocol fees of custody AQCGyheWPLeo6Qp9WpYS9m3Qj479t7R636N9ey1rEjEn to 9RnCbYa8mcjSAjWousrBKXrtceC186zYYsojC8YGQtjo",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "3dPM7dB3j5QkMGHqXYHXvR3dBudzztCbbQ5v7oTE1dVx:w",
+        "FL3NDFgLhbvdgxaC8ngACFdurWT3jwTQmTAQZPAyiAc9:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "e455b9704e4f4d02",
+      "fields": [
+        [
+          "Token Ledger",
+          "3dPM7dB3j5QkMGHqXYHXvR3dBudzztCbbQ5v7oTE1dVx"
+        ],
+        [
+          "Token Account",
+          "FL3NDFgLhbvdgxaC8ngACFdurWT3jwTQmTAQZPAyiAc9"
+        ]
+      ],
+      "from": "4bagxc3gmFWNha4uii5oKPs8JHehtPWRWr8bBTyvoV1rcoDnNjrXECrRWLRtr7Qsn9sQhTR3ykaP9hFKU4QyzSoL#8",
+      "intent": "Record a token balance",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "Records the balance of FL3NDFgLhbvdgxaC8ngACFdurWT3jwTQmTAQZPAyiAc9 in token ledger 3dPM7dB3j5QkMGHqXYHXvR3dBudzztCbbQ5v7oTE1dVx",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "9frWwSBXPD6mSzshJSTisH1pmuBcVtKqYe5zdW2tjspx:sw",
+        "FL3NDFgLhbvdgxaC8ngACFdurWT3jwTQmTAQZPAyiAc9:w",
+        "4aquh2nposcQPuaSYLgwTEaGwBTptwgJ2A76iUXinj3A:w",
+        "AVzP2GeRmqGphJsMxWoqjpUifPpCret7LqWhD8NWQK49",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "AQCGyheWPLeo6Qp9WpYS9m3Qj479t7R636N9ey1rEjEn:w",
+        "AFZnHPzy4mvVCffrVwhewHbFc93uTHvDSFrVH7GtfXF1:w",
+        "Bgarxg65CEjN3kosjCW5Du3wEqvV3dpCGDR3a2HRQsYJ:w",
+        "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa:w",
+        "6Jp2xZUTWdDD2ZyUPRzeMdc6AFQ5K3pFgZxk2EijfjnM",
+        "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS:w",
+        "3dPM7dB3j5QkMGHqXYHXvR3dBudzztCbbQ5v7oTE1dVx:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Sysvar1nstructions1111111111111111111111111",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "8b8deec529d3ac130000000000000000",
+      "fields": [
+        [
+          "Minimum Out",
+          "0 base units"
+        ],
+        [
+          "Owner",
+          "9frWwSBXPD6mSzshJSTisH1pmuBcVtKqYe5zdW2tjspx"
+        ],
+        [
+          "Pay From",
+          "FL3NDFgLhbvdgxaC8ngACFdurWT3jwTQmTAQZPAyiAc9"
+        ],
+        [
+          "Receive To",
+          "4aquh2nposcQPuaSYLgwTEaGwBTptwgJ2A76iUXinj3A"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Input Custody",
+          "AQCGyheWPLeo6Qp9WpYS9m3Qj479t7R636N9ey1rEjEn"
+        ],
+        [
+          "Input Custody Vault",
+          "Bgarxg65CEjN3kosjCW5Du3wEqvV3dpCGDR3a2HRQsYJ"
+        ],
+        [
+          "Output Custody",
+          "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa"
+        ],
+        [
+          "Output Custody Vault",
+          "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS"
+        ],
+        [
+          "Token Ledger",
+          "3dPM7dB3j5QkMGHqXYHXvR3dBudzztCbbQ5v7oTE1dVx"
+        ]
+      ],
+      "from": "4bagxc3gmFWNha4uii5oKPs8JHehtPWRWr8bBTyvoV1rcoDnNjrXECrRWLRtr7Qsn9sQhTR3ykaP9hFKU4QyzSoL#10",
+      "intent": "Swap a recorded amount",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "9frWwSBXPD6mSzshJSTisH1pmuBcVtKqYe5zdW2tjspx swaps from FL3NDFgLhbvdgxaC8ngACFdurWT3jwTQmTAQZPAyiAc9 the amount token ledger 3dPM7dB3j5QkMGHqXYHXvR3dBudzztCbbQ5v7oTE1dVx measures, for at least 0 base units to 4aquh2nposcQPuaSYLgwTEaGwBTptwgJ2A76iUXinj3A through the JLP pool",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "6U91aKa8pmMxkJwBCfPTmUEfZi6dHe7DcFq2ALvB2tbB",
+        "HnyWYPxeETAqaWWxSWJgqTfCLUXZ6idnW6XzGQwmkAjd:w",
+        "DPNFSk4kUZ7p2k2MdrQLrhDzdULCRSSj44M8e3c5n9oH:w",
+        "AVzP2GeRmqGphJsMxWoqjpUifPpCret7LqWhD8NWQK49",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm:w",
+        "hUqAT1KQ7eW1i6Csp9CXYtpPfSAvi835V7wKi5fRfmC",
+        "hUqAT1KQ7eW1i6Csp9CXYtpPfSAvi835V7wKi5fRfmC",
+        "FgpXg2J3TzSs7w3WGYYE7aWePdrxBVLCXSxmAKnCZNtZ:w",
+        "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz",
+        "AQCGyheWPLeo6Qp9WpYS9m3Qj479t7R636N9ey1rEjEn",
+        "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm:w",
+        "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa",
+        "4vkNeXiYEUizLdrpdPS1eC2mccyM4NUPRtERrk6ZETkk",
+        "DdwY1ELc9rRK7xNL3hTXabSFBmVrTPpfsUZSv2Y3LL1U",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh",
+        "AFZnHPzy4mvVCffrVwhewHbFc93uTHvDSFrVH7GtfXF1",
+        "hUqAT1KQ7eW1i6Csp9CXYtpPfSAvi835V7wKi5fRfmC",
+        "6Jp2xZUTWdDD2ZyUPRzeMdc6AFQ5K3pFgZxk2EijfjnM",
+        "Fgc93D641F8N2d1xLjQ4jmShuD3GE3BsCXA56KBQbF5u",
+        "9DRrwc4hSMQouw3ptpHXtQXVNHoqwyqLaK6NWztWTDin"
+      ],
+      "data": "e4a24e1c46db74730500000000000000000000000000000000",
+      "fields": [
+        [
+          "Amount In",
+          "5 base units"
+        ],
+        [
+          "Minimum JLP Out",
+          "0"
+        ],
+        [
+          "Amount Before Swap",
+          "None"
+        ],
+        [
+          "Owner",
+          "6U91aKa8pmMxkJwBCfPTmUEfZi6dHe7DcFq2ALvB2tbB"
+        ],
+        [
+          "Pay From",
+          "HnyWYPxeETAqaWWxSWJgqTfCLUXZ6idnW6XzGQwmkAjd"
+        ],
+        [
+          "JLP Account",
+          "DPNFSk4kUZ7p2k2MdrQLrhDzdULCRSSj44M8e3c5n9oH"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Custody",
+          "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm"
+        ],
+        [
+          "Custody Vault",
+          "FgpXg2J3TzSs7w3WGYYE7aWePdrxBVLCXSxmAKnCZNtZ"
+        ],
+        [
+          "JLP Mint",
+          "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4"
+        ]
+      ],
+      "from": "5ZEWEpXPuqPEP4m48Dan3eu5ps4nu81wBVTMvVzxJ18v1B9oP1Ah1iWkoLARG4ZvwZidGCpoJu9safjxB91bj16p#4.2",
+      "intent": "Buy JLP",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "6U91aKa8pmMxkJwBCfPTmUEfZi6dHe7DcFq2ALvB2tbB adds 5 base units from HnyWYPxeETAqaWWxSWJgqTfCLUXZ6idnW6XzGQwmkAjd to the JLP pool for at least 0 of 27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4, to DPNFSk4kUZ7p2k2MdrQLrhDzdULCRSSj44M8e3c5n9oH",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Ag28fGtwtpnqassHURUBsQ1WfiyaWWzDDNs4Q28qHRjv:sw",
+        "perpSnt3NivMdD5DRFc7VmW6x7PuvQJGNyDTL74mEYx:s",
+        "8iXti8jhYWWmxWvQKdtD9hoCJaPPuZcRTGoTbLEtpyG7:sw",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq",
+        "BdLrpVMvF3epWrsBNPZX8mPPwptr4v8BHa6BUrsMyfL9",
+        "5RR2GhVgEGmPu6XafCQUL6yduQ8Mah96976B1XRaZof:w",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w"
+      ],
+      "data": "88f5e53a798d0ccfea850f4f00000000c068780400000000c265f56a00000000",
+      "fields": [
+        [
+          "Size Increase",
+          "1,326.417386 USD"
+        ],
+        [
+          "Trigger Price",
+          "75 USD"
+        ],
+        [
+          "Requested At",
+          "2026-11-12T07:07:46.000Z"
+        ],
+        [
+          "Keeper",
+          "Ag28fGtwtpnqassHURUBsQ1WfiyaWWzDDNs4Q28qHRjv"
+        ],
+        [
+          "API Keeper",
+          "perpSnt3NivMdD5DRFc7VmW6x7PuvQJGNyDTL74mEYx"
+        ],
+        [
+          "Owner",
+          "8iXti8jhYWWmxWvQKdtD9hoCJaPPuZcRTGoTbLEtpyG7"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Position",
+          "BdLrpVMvF3epWrsBNPZX8mPPwptr4v8BHa6BUrsMyfL9"
+        ],
+        [
+          "Position Request",
+          "5RR2GhVgEGmPu6XafCQUL6yduQ8Mah96976B1XRaZof"
+        ],
+        [
+          "Market Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ]
+      ],
+      "from": "3qQThHG5xcEd9MsdkQUnx6mAbnCyBLmGiXryxvekkAsmGm1CtTkdmgfp7jYNXA4pLETq7MaJd1yUYhy46dn8djBd#6",
+      "intent": "Change a limit order",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "8iXti8jhYWWmxWvQKdtD9hoCJaPPuZcRTGoTbLEtpyG7 changes limit order 5RR2GhVgEGmPu6XafCQUL6yduQ8Mah96976B1XRaZof on position BdLrpVMvF3epWrsBNPZX8mPPwptr4v8BHa6BUrsMyfL9 to a size of 1,326.417386 USD and a trigger price of 75 USD",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HL2kH8yaDDQZxA35uc6TFTBoLpes731WKoPZUM2wUWVA:sw",
+        "DagVGyZe4fRJfYxz9LkVbXktaZJuTQUqx3X8m72dcKCc:w",
+        "Hu4UTA3a7adRpfVx8rvGStA7QnWdbJjHJqATjwrMwyvg:w",
+        "AVzP2GeRmqGphJsMxWoqjpUifPpCret7LqWhD8NWQK49",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa:w",
+        "6Jp2xZUTWdDD2ZyUPRzeMdc6AFQ5K3pFgZxk2EijfjnM",
+        "Dpw1EAVrSB1ibxiDQyTAW6Zip3J4Btk2x4SgApQCeFbX",
+        "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS:w",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh",
+        "7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE",
+        "BUvduFTd2sWFagCunBPLupG8fBTJqweLw9DuhruNFSCm:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "414b3f4ceb5b5b8849011300000000000000000000000000",
+      "fields": [
+        [
+          "Amount In",
+          "1,245,513 base units"
+        ],
+        [
+          "Minimum Out",
+          "0 base units"
+        ],
+        [
+          "Owner",
+          "HL2kH8yaDDQZxA35uc6TFTBoLpes731WKoPZUM2wUWVA"
+        ],
+        [
+          "Pay From",
+          "DagVGyZe4fRJfYxz9LkVbXktaZJuTQUqx3X8m72dcKCc"
+        ],
+        [
+          "Receive To",
+          "Hu4UTA3a7adRpfVx8rvGStA7QnWdbJjHJqATjwrMwyvg"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Input Custody",
+          "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa"
+        ],
+        [
+          "Input Custody Vault",
+          "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS"
+        ],
+        [
+          "Output Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ],
+        [
+          "Output Custody Vault",
+          "BUvduFTd2sWFagCunBPLupG8fBTJqweLw9DuhruNFSCm"
+        ]
+      ],
+      "from": "5UBpm43Rnpong3vFsRtqkXYfgAdfF6teRkonQLCWn7Jwt4A64MTzP2hn8CACj1gCR7up9FFsYjodhrdBhDjzR8R9#2.1",
+      "intent": "Swap tokens",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "HL2kH8yaDDQZxA35uc6TFTBoLpes731WKoPZUM2wUWVA swaps 1,245,513 base units from DagVGyZe4fRJfYxz9LkVbXktaZJuTQUqx3X8m72dcKCc for at least 0 base units to Hu4UTA3a7adRpfVx8rvGStA7QnWdbJjHJqATjwrMwyvg through the JLP pool",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "BunGAnP9g7ehQnSHkHocGU1EC3j7t3VRVUccf8sS8whU:sw",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq",
+        "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa",
+        "AVzP2GeRmqGphJsMxWoqjpUifPpCret7LqWhD8NWQK49",
+        "B2sxySx3hJbCU1MZQzEfUv3TjSuXFSXhhwYAjnbGeMQY:w",
+        "2XYPHGFrEZxwhZQxtUETT6zEcWwBWv5yPBoAuDJf4i7w:w",
+        "Fp95xSDQ95QbwzU6nSzrzXFUQMmBveSjPt41ReAH55Ex:w",
+        "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "1102c3be4c10ee4ac882050000000000",
+      "fields": [
+        [
+          "JLP Amount",
+          "0.36116"
+        ],
+        [
+          "Owner",
+          "BunGAnP9g7ehQnSHkHocGU1EC3j7t3VRVUccf8sS8whU"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Custody",
+          "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa"
+        ],
+        [
+          "Borrow Position",
+          "B2sxySx3hJbCU1MZQzEfUv3TjSuXFSXhhwYAjnbGeMQY"
+        ],
+        [
+          "Collateral Vault",
+          "2XYPHGFrEZxwhZQxtUETT6zEcWwBWv5yPBoAuDJf4i7w"
+        ],
+        [
+          "Collateral From",
+          "Fp95xSDQ95QbwzU6nSzrzXFUQMmBveSjPt41ReAH55Ex"
+        ],
+        [
+          "JLP Mint",
+          "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4"
+        ]
+      ],
+      "from": "252UUZQZ8qV1CFKfPcnLG3c7mK87x43yDXjur1GCHBK929eVBNmJHAFUjC3biSDo9jzKsVY7zkwNA6n8Y5ayEemo#5",
+      "intent": "Deposit JLP collateral",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "BunGAnP9g7ehQnSHkHocGU1EC3j7t3VRVUccf8sS8whU deposits 0.36116 of 27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4 from Fp95xSDQ95QbwzU6nSzrzXFUQMmBveSjPt41ReAH55Ex as collateral of borrow position B2sxySx3hJbCU1MZQzEfUv3TjSuXFSXhhwYAjnbGeMQY",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "7qK8NZHrsVegpsb4BkfpyX2woFxRgfrwSM672LJjjx2M:sw",
+        "GUyavMzGrC1Gco9HXjMyNHpzcL4NihRriwr6c24Y7MSk:w",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq",
+        "D1pgY4H9TQ7JLbuyHY91B1S76Lisj8P6mcpGQrFgwGws",
+        "4UPms2pTDwzku5jHkGbySYEkrozJUVtNE8TeUEskj1pC:w",
+        "AcqSsG2jTtkAws6aYjXrN7bSbjoJiqXef8VwMNC3wjcN:w",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz",
+        "So11111111111111111111111111111111111111112",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "4ac6c356c163014f9ffe0f0000000000260e4e0400000000b7b6e3040000000000010092cabfa49f58d3fc",
+      "fields": [
+        [
+          "Collateral Decrease",
+          "1.048223 USD"
+        ],
+        [
+          "Size Decrease",
+          "72.224294 USD"
+        ],
+        [
+          "Price Limit",
+          "82.032311 USD"
+        ],
+        [
+          "Minimum Swap Out",
+          "None"
+        ],
+        [
+          "Entire Position",
+          "false"
+        ],
+        [
+          "Owner",
+          "7qK8NZHrsVegpsb4BkfpyX2woFxRgfrwSM672LJjjx2M"
+        ],
+        [
+          "Receive To",
+          "GUyavMzGrC1Gco9HXjMyNHpzcL4NihRriwr6c24Y7MSk"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Position",
+          "D1pgY4H9TQ7JLbuyHY91B1S76Lisj8P6mcpGQrFgwGws"
+        ],
+        [
+          "Position Request",
+          "4UPms2pTDwzku5jHkGbySYEkrozJUVtNE8TeUEskj1pC"
+        ],
+        [
+          "Request Token Account",
+          "AcqSsG2jTtkAws6aYjXrN7bSbjoJiqXef8VwMNC3wjcN"
+        ],
+        [
+          "Market Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ],
+        [
+          "Collateral Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ],
+        [
+          "Receive Token",
+          "So11111111111111111111111111111111111111112"
+        ]
+      ],
+      "from": "2CaSp5frQrEe56KqVk6Nt3sezL72LBq7vDAXxdjMwRhLdo2xGvo41WBL2yz5vkrFquk7WWYgk9FhabA7Ya9ko5uK#3",
+      "intent": "Request a position decrease",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "7qK8NZHrsVegpsb4BkfpyX2woFxRgfrwSM672LJjjx2M asks to reduce position D1pgY4H9TQ7JLbuyHY91B1S76Lisj8P6mcpGQrFgwGws (entire position: false; size: 72.224294 USD; collateral: 1.048223 USD), paid out in So11111111111111111111111111111111111111112 to GUyavMzGrC1Gco9HXjMyNHpzcL4NihRriwr6c24Y7MSk, with a price limit of 82.032311 USD; a keeper executes the request later",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "3c4Robdi8yK8aG8JLyTATnSZ8LVnQz7g6ekKntwXtQd4:sw",
+        "6sLjdTJx7DitRG4kUTrBk9U3mFNb4gXcDWiZ7mhuF3XM:w",
+        "5JwW8K9KUWUnswZD7pvuZwm9czyGNvxVLQHmoWJkk6Na:w",
+        "AVzP2GeRmqGphJsMxWoqjpUifPpCret7LqWhD8NWQK49",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa:w",
+        "6Jp2xZUTWdDD2ZyUPRzeMdc6AFQ5K3pFgZxk2EijfjnM",
+        "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS:w",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh",
+        "BUvduFTd2sWFagCunBPLupG8fBTJqweLw9DuhruNFSCm:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Sysvar1nstructions1111111111111111111111111",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "c52656a5c71726ead67c1636000000003b77306d02000000",
+      "fields": [
+        [
+          "Amount In",
+          "907,443,414 base units"
+        ],
+        [
+          "Minimum Out",
+          "10,421,827,387 base units"
+        ],
+        [
+          "Owner",
+          "3c4Robdi8yK8aG8JLyTATnSZ8LVnQz7g6ekKntwXtQd4"
+        ],
+        [
+          "Pay From",
+          "6sLjdTJx7DitRG4kUTrBk9U3mFNb4gXcDWiZ7mhuF3XM"
+        ],
+        [
+          "Receive To",
+          "5JwW8K9KUWUnswZD7pvuZwm9czyGNvxVLQHmoWJkk6Na"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Input Custody",
+          "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa"
+        ],
+        [
+          "Input Custody Vault",
+          "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS"
+        ],
+        [
+          "Output Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ],
+        [
+          "Output Custody Vault",
+          "BUvduFTd2sWFagCunBPLupG8fBTJqweLw9DuhruNFSCm"
+        ]
+      ],
+      "from": "5fvxsWRv4pN8yFAJhD2peeyDvL3QxxVBzjQioXahvKrrmEJwPAjKkeLDzMEH4MnuTB4uRoRcD2vX9FAXEm3kKQ7t#5",
+      "intent": "Swap before a trade",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "3c4Robdi8yK8aG8JLyTATnSZ8LVnQz7g6ekKntwXtQd4 swaps 907,443,414 base units from 6sLjdTJx7DitRG4kUTrBk9U3mFNb4gXcDWiZ7mhuF3XM for at least 10,421,827,387 base units to 5JwW8K9KUWUnswZD7pvuZwm9czyGNvxVLQHmoWJkk6Na through the JLP pool, to fund a position",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "DFZcDnmEYNUK1khquZzx5dQYiEyjJ3N5STqaDVLZ88ZU:sw",
+        "3c4Robdi8yK8aG8JLyTATnSZ8LVnQz7g6ekKntwXtQd4:w",
+        "AVzP2GeRmqGphJsMxWoqjpUifPpCret7LqWhD8NWQK49",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "FwgUbzBFVg4e2dfV7cwzhCPVvt8bWdhsN6r4nu2dwQtr:w",
+        "F5RkvxWDSCJVGnXJXhzyjyo4YB6vJs9heuhzEJmWrzxb:w",
+        "HyUim5SefgBEih9BBsoepHcpUfyCsVkxFEJgUPLvGFyN:w",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa:w",
+        "6Jp2xZUTWdDD2ZyUPRzeMdc6AFQ5K3pFgZxk2EijfjnM",
+        "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "6c12cbd1e36741a5",
+      "fields": [
+        [
+          "Keeper",
+          "DFZcDnmEYNUK1khquZzx5dQYiEyjJ3N5STqaDVLZ88ZU"
+        ],
+        [
+          "Owner",
+          "3c4Robdi8yK8aG8JLyTATnSZ8LVnQz7g6ekKntwXtQd4"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Position Request",
+          "FwgUbzBFVg4e2dfV7cwzhCPVvt8bWdhsN6r4nu2dwQtr"
+        ],
+        [
+          "Request Token Account",
+          "F5RkvxWDSCJVGnXJXhzyjyo4YB6vJs9heuhzEJmWrzxb"
+        ],
+        [
+          "Position",
+          "HyUim5SefgBEih9BBsoepHcpUfyCsVkxFEJgUPLvGFyN"
+        ],
+        [
+          "Market Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ],
+        [
+          "Collateral Custody",
+          "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa"
+        ],
+        [
+          "Collateral Custody Vault",
+          "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS"
+        ]
+      ],
+      "from": "4XRZsLt2swr1QqA9HhP3gzcCstyBDuPADn4BQ6Qa9fcUn9WkNPXupCCUXqjbZL2PWW7muMzLxaarEvD3p9mqyZyY#6",
+      "intent": "Execute a take-profit or stop-loss",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "DFZcDnmEYNUK1khquZzx5dQYiEyjJ3N5STqaDVLZ88ZU executes take-profit or stop-loss request FwgUbzBFVg4e2dfV7cwzhCPVvt8bWdhsN6r4nu2dwQtr, decreasing position HyUim5SefgBEih9BBsoepHcpUfyCsVkxFEJgUPLvGFyN of 3c4Robdi8yK8aG8JLyTATnSZ8LVnQz7g6ekKntwXtQd4",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "9vipHbBVWsJL3E8hqoceadywyrs1CicKMH4UY68kVBFX:sw",
+        "3d8DG6pGoXzbjaRuaJnv5qBnuLY9UuxjL6ohP6rsywZy:w",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq",
+        "B3gQdUqnZMhWM96EEfpXnjV6y5a6KWn2qQLf6m7Y6bjG:w",
+        "BR1Zs6LT1VcrFRg88cK4AgATwgCV94bmJ7iGfqYaTXy:w",
+        "Bpa26ww1vH3JHv9pXGBnrimV8t2mXdUsX5BH218ndm3p:w",
+        "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm",
+        "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm",
+        "3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "b855c71869ab9c3864eb0400000000009001000000000000014199486a1100000000796e102e00000000",
+      "fields": [
+        [
+          "Size Increase",
+          "0.322404 USD"
+        ],
+        [
+          "Collateral",
+          "0.000004"
+        ],
+        [
+          "Side",
+          "long"
+        ],
+        [
+          "Price Limit",
+          "74,797.586753 USD"
+        ],
+        [
+          "Minimum Swap Out",
+          "None"
+        ],
+        [
+          "Owner",
+          "9vipHbBVWsJL3E8hqoceadywyrs1CicKMH4UY68kVBFX"
+        ],
+        [
+          "Pay From",
+          "3d8DG6pGoXzbjaRuaJnv5qBnuLY9UuxjL6ohP6rsywZy"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Position",
+          "B3gQdUqnZMhWM96EEfpXnjV6y5a6KWn2qQLf6m7Y6bjG"
+        ],
+        [
+          "Position Request",
+          "BR1Zs6LT1VcrFRg88cK4AgATwgCV94bmJ7iGfqYaTXy"
+        ],
+        [
+          "Request Token Account",
+          "Bpa26ww1vH3JHv9pXGBnrimV8t2mXdUsX5BH218ndm3p"
+        ],
+        [
+          "Market Custody",
+          "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm"
+        ],
+        [
+          "Collateral Custody",
+          "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm"
+        ],
+        [
+          "Input Token",
+          "3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh"
+        ]
+      ],
+      "from": "WdpasmWU3e9rXnQB7E3hFrniVtgeNoa2X6eSgW6xZXyD4GsDsrAkW8yGbEZnZKc3nEQdBHxxVSNRUPu4mm5cogA#3",
+      "intent": "Request a position increase",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "9vipHbBVWsJL3E8hqoceadywyrs1CicKMH4UY68kVBFX asks to open or increase a long position B3gQdUqnZMhWM96EEfpXnjV6y5a6KWn2qQLf6m7Y6bjG by 0.322404 USD, putting up 0.000004 of 3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh from 3d8DG6pGoXzbjaRuaJnv5qBnuLY9UuxjL6ohP6rsywZy, with a price limit of 74,797.586753 USD; a keeper executes the request later",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "H3dDE6K6uqBp5kBKctH6w8hzpV5eAmxUiqvcdHxuE9i4:sw",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "2ee4FgiYyAznZ9j62vfVg8zh484AfnMMKxZCExcVhdfv:w",
+        "DZFM8VH1zd9cQnrTVj7EpUmh1HAmDGoGE5Q9vp1JkJ5x:w",
+        "B3gQdUqnZMhWM96EEfpXnjV6y5a6KWn2qQLf6m7Y6bjG:w",
+        "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm:w",
+        "hUqAT1KQ7eW1i6Csp9CXYtpPfSAvi835V7wKi5fRfmC:w",
+        "hUqAT1KQ7eW1i6Csp9CXYtpPfSAvi835V7wKi5fRfmC:w",
+        "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm:w",
+        "hUqAT1KQ7eW1i6Csp9CXYtpPfSAvi835V7wKi5fRfmC:w",
+        "hUqAT1KQ7eW1i6Csp9CXYtpPfSAvi835V7wKi5fRfmC:w",
+        "FgpXg2J3TzSs7w3WGYYE7aWePdrxBVLCXSxmAKnCZNtZ:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "439335172b391043",
+      "fields": [
+        [
+          "Keeper",
+          "H3dDE6K6uqBp5kBKctH6w8hzpV5eAmxUiqvcdHxuE9i4"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Position Request",
+          "2ee4FgiYyAznZ9j62vfVg8zh484AfnMMKxZCExcVhdfv"
+        ],
+        [
+          "Request Token Account",
+          "DZFM8VH1zd9cQnrTVj7EpUmh1HAmDGoGE5Q9vp1JkJ5x"
+        ],
+        [
+          "Position",
+          "B3gQdUqnZMhWM96EEfpXnjV6y5a6KWn2qQLf6m7Y6bjG"
+        ],
+        [
+          "Market Custody",
+          "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm"
+        ],
+        [
+          "Collateral Custody",
+          "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm"
+        ],
+        [
+          "Collateral Custody Vault",
+          "FgpXg2J3TzSs7w3WGYYE7aWePdrxBVLCXSxmAKnCZNtZ"
+        ]
+      ],
+      "from": "4CiNaKvSDfKvh3F935Kqd3fRqwTDujQV6g8D5DsKK7Z7LhVrY2bK2N3VNvom5uaLx1vKxGrk6SnN7onmgZ3bBeZa#9",
+      "intent": "Execute an increase request",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "H3dDE6K6uqBp5kBKctH6w8hzpV5eAmxUiqvcdHxuE9i4 executes request 2ee4FgiYyAznZ9j62vfVg8zh484AfnMMKxZCExcVhdfv, increasing position B3gQdUqnZMhWM96EEfpXnjV6y5a6KWn2qQLf6m7Y6bjG",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "H3dDE6K6uqBp5kBKctH6w8hzpV5eAmxUiqvcdHxuE9i4:sw",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "BFKUpxN7bBWuiF7rxJwsgVoGCJutNxgi3hDjcKYkeu2X:w",
+        "AF9fqnXfo8CgxUDp2TjUznfC9egYDWbhZeWD9GFW9CTK:w",
+        "2Um9ETWEiBLDaXqq5ziSgGwjzqKKYNGiHTgv2G7DZDRw:w",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "BUvduFTd2sWFagCunBPLupG8fBTJqweLw9DuhruNFSCm:w",
+        "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa:w",
+        "6Jp2xZUTWdDD2ZyUPRzeMdc6AFQ5K3pFgZxk2EijfjnM",
+        "6Jp2xZUTWdDD2ZyUPRzeMdc6AFQ5K3pFgZxk2EijfjnM",
+        "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "72376a8cc7dd2070",
+      "fields": [
+        [
+          "Keeper",
+          "H3dDE6K6uqBp5kBKctH6w8hzpV5eAmxUiqvcdHxuE9i4"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Position Request",
+          "BFKUpxN7bBWuiF7rxJwsgVoGCJutNxgi3hDjcKYkeu2X"
+        ],
+        [
+          "Request Token Account",
+          "AF9fqnXfo8CgxUDp2TjUznfC9egYDWbhZeWD9GFW9CTK"
+        ],
+        [
+          "Position",
+          "2Um9ETWEiBLDaXqq5ziSgGwjzqKKYNGiHTgv2G7DZDRw"
+        ],
+        [
+          "Market Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ],
+        [
+          "Collateral Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ],
+        [
+          "Collateral Custody Vault",
+          "BUvduFTd2sWFagCunBPLupG8fBTJqweLw9DuhruNFSCm"
+        ],
+        [
+          "Swap Input Custody",
+          "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa"
+        ],
+        [
+          "Swap Input Custody Vault",
+          "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS"
+        ]
+      ],
+      "from": "2KJKF8gf8W9vVDkuDVcr7Mo6W94yRkHuMBGSxFTToDyeajCPismjeeRuJvUW4zoHZz8EFH3x4GPWeUw5Ro7xjw1v#5",
+      "intent": "Execute an increase request",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "H3dDE6K6uqBp5kBKctH6w8hzpV5eAmxUiqvcdHxuE9i4 executes request BFKUpxN7bBWuiF7rxJwsgVoGCJutNxgi3hDjcKYkeu2X, swapping its deposit through the JLP pool and increasing position 2Um9ETWEiBLDaXqq5ziSgGwjzqKKYNGiHTgv2G7DZDRw",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "DFZcDnmEYNUK1khquZzx5dQYiEyjJ3N5STqaDVLZ88ZU:sw",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "ESwkJrhUXN4ZNa3UzyiHydc7KoUFfd65nf98wbNgqQWQ:w",
+        "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm:w",
+        "hUqAT1KQ7eW1i6Csp9CXYtpPfSAvi835V7wKi5fRfmC:w",
+        "hUqAT1KQ7eW1i6Csp9CXYtpPfSAvi835V7wKi5fRfmC:w",
+        "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm:w",
+        "hUqAT1KQ7eW1i6Csp9CXYtpPfSAvi835V7wKi5fRfmC:w",
+        "hUqAT1KQ7eW1i6Csp9CXYtpPfSAvi835V7wKi5fRfmC:w",
+        "FgpXg2J3TzSs7w3WGYYE7aWePdrxBVLCXSxmAKnCZNtZ:w",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "40b05833a8bc9caf",
+      "fields": [
+        [
+          "Liquidator",
+          "DFZcDnmEYNUK1khquZzx5dQYiEyjJ3N5STqaDVLZ88ZU"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Position",
+          "ESwkJrhUXN4ZNa3UzyiHydc7KoUFfd65nf98wbNgqQWQ"
+        ],
+        [
+          "Market Custody",
+          "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm"
+        ],
+        [
+          "Collateral Custody",
+          "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm"
+        ],
+        [
+          "Collateral Custody Vault",
+          "FgpXg2J3TzSs7w3WGYYE7aWePdrxBVLCXSxmAKnCZNtZ"
+        ]
+      ],
+      "from": "ZgKtbp9CTCmSr6KcDjYBRmdRrCRMmnqEXTRZB2i9UbBmfGKYxCSjU3BBKB3N95rLgXp7mxidXy9q43116d28E6o#5",
+      "intent": "Liquidate a position",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "DFZcDnmEYNUK1khquZzx5dQYiEyjJ3N5STqaDVLZ88ZU liquidates position ESwkJrhUXN4ZNa3UzyiHydc7KoUFfd65nf98wbNgqQWQ",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "DFZcDnmEYNUK1khquZzx5dQYiEyjJ3N5STqaDVLZ88ZU:sw",
+        "EQSThpqfCFrFYuVeUBu52JeEDdVS4dJiqRBNFM6GHcZS:w",
+        "AVzP2GeRmqGphJsMxWoqjpUifPpCret7LqWhD8NWQK49",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "AGe9d3mRrYMxd1xhoHDgkDgKJBQhLmbEJVXzCQ7QpAH:w",
+        "3ttBFh47tnCZKd6wjh8gPdr2mPAUrk44Rkk7bhcWLSin:w",
+        "BE5BoDx4N1cq3HYmhfxWdm9k2wyHRy6YZ1GYzoWrXub5:w",
+        "AQCGyheWPLeo6Qp9WpYS9m3Qj479t7R636N9ey1rEjEn:w",
+        "AFZnHPzy4mvVCffrVwhewHbFc93uTHvDSFrVH7GtfXF1:w",
+        "AFZnHPzy4mvVCffrVwhewHbFc93uTHvDSFrVH7GtfXF1:w",
+        "AQCGyheWPLeo6Qp9WpYS9m3Qj479t7R636N9ey1rEjEn:w",
+        "AFZnHPzy4mvVCffrVwhewHbFc93uTHvDSFrVH7GtfXF1:w",
+        "AFZnHPzy4mvVCffrVwhewHbFc93uTHvDSFrVH7GtfXF1:w",
+        "Bgarxg65CEjN3kosjCW5Du3wEqvV3dpCGDR3a2HRQsYJ:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "b9a172af609403aa",
+      "fields": [
+        [
+          "Keeper",
+          "DFZcDnmEYNUK1khquZzx5dQYiEyjJ3N5STqaDVLZ88ZU"
+        ],
+        [
+          "Owner",
+          "EQSThpqfCFrFYuVeUBu52JeEDdVS4dJiqRBNFM6GHcZS"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Position Request",
+          "AGe9d3mRrYMxd1xhoHDgkDgKJBQhLmbEJVXzCQ7QpAH"
+        ],
+        [
+          "Request Token Account",
+          "3ttBFh47tnCZKd6wjh8gPdr2mPAUrk44Rkk7bhcWLSin"
+        ],
+        [
+          "Position",
+          "BE5BoDx4N1cq3HYmhfxWdm9k2wyHRy6YZ1GYzoWrXub5"
+        ],
+        [
+          "Market Custody",
+          "AQCGyheWPLeo6Qp9WpYS9m3Qj479t7R636N9ey1rEjEn"
+        ],
+        [
+          "Collateral Custody",
+          "AQCGyheWPLeo6Qp9WpYS9m3Qj479t7R636N9ey1rEjEn"
+        ],
+        [
+          "Collateral Custody Vault",
+          "Bgarxg65CEjN3kosjCW5Du3wEqvV3dpCGDR3a2HRQsYJ"
+        ]
+      ],
+      "from": "46yhbNKncWXUA81VWZfqyYjSkZc2PhfmLAknQLKeAeULQfuJJBbXTS61kyTNamgprFR2kQmJWXYKjzfvYUenMrpu#6",
+      "intent": "Execute a decrease request",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "DFZcDnmEYNUK1khquZzx5dQYiEyjJ3N5STqaDVLZ88ZU executes request AGe9d3mRrYMxd1xhoHDgkDgKJBQhLmbEJVXzCQ7QpAH, decreasing position BE5BoDx4N1cq3HYmhfxWdm9k2wyHRy6YZ1GYzoWrXub5 of EQSThpqfCFrFYuVeUBu52JeEDdVS4dJiqRBNFM6GHcZS",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "H3dDE6K6uqBp5kBKctH6w8hzpV5eAmxUiqvcdHxuE9i4:sw",
+        "G5FwFrcPUsfH5oVS1EyYgxKqto91L5d2TagenNzGpCXD:w",
+        "AVzP2GeRmqGphJsMxWoqjpUifPpCret7LqWhD8NWQK49",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq:w",
+        "Ekub3T1w2HHPQLDo19uN1kAeLKzCv8skBVKtm3jAD1u1:w",
+        "ER11rKsnm8o33mFR4ApiJDPPKxbJmGnrnNAQvWKXUEjp:w",
+        "H8iSkFvQxVvPHUVwMGRnXLVUBUMn9qpTZF2uzzeP2S18:w",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh:w",
+        "BUvduFTd2sWFagCunBPLupG8fBTJqweLw9DuhruNFSCm:w",
+        "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa:w",
+        "6Jp2xZUTWdDD2ZyUPRzeMdc6AFQ5K3pFgZxk2EijfjnM",
+        "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+      ],
+      "data": "026fc8e723417beb",
+      "fields": [
+        [
+          "Keeper",
+          "H3dDE6K6uqBp5kBKctH6w8hzpV5eAmxUiqvcdHxuE9i4"
+        ],
+        [
+          "Owner",
+          "G5FwFrcPUsfH5oVS1EyYgxKqto91L5d2TagenNzGpCXD"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Position Request",
+          "Ekub3T1w2HHPQLDo19uN1kAeLKzCv8skBVKtm3jAD1u1"
+        ],
+        [
+          "Request Token Account",
+          "ER11rKsnm8o33mFR4ApiJDPPKxbJmGnrnNAQvWKXUEjp"
+        ],
+        [
+          "Position",
+          "H8iSkFvQxVvPHUVwMGRnXLVUBUMn9qpTZF2uzzeP2S18"
+        ],
+        [
+          "Market Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ],
+        [
+          "Collateral Custody",
+          "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz"
+        ],
+        [
+          "Collateral Custody Vault",
+          "BUvduFTd2sWFagCunBPLupG8fBTJqweLw9DuhruNFSCm"
+        ],
+        [
+          "Swap Output Custody",
+          "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa"
+        ],
+        [
+          "Swap Output Custody Vault",
+          "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS"
+        ]
+      ],
+      "from": "GS5JLq9eYV8v5nebReGxCT2Mu1M6pfHubZVkKD5eda4pUmsuhKG88CspJs7WAAMNQcqa8G75adqHj9mmK1j2WS1#6",
+      "intent": "Execute a take-profit or stop-loss",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "H3dDE6K6uqBp5kBKctH6w8hzpV5eAmxUiqvcdHxuE9i4 executes take-profit or stop-loss request Ekub3T1w2HHPQLDo19uN1kAeLKzCv8skBVKtm3jAD1u1, decreasing position H8iSkFvQxVvPHUVwMGRnXLVUBUMn9qpTZF2uzzeP2S18 of G5FwFrcPUsfH5oVS1EyYgxKqto91L5d2TagenNzGpCXD and swapping the payout through the JLP pool",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "BunGAnP9g7ehQnSHkHocGU1EC3j7t3VRVUccf8sS8whU:sw",
+        "H4ND9aYttUVLFmNypZqLjZ52FYiGvdEB45GmwNoKEjTj",
+        "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq",
+        "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa:w",
+        "AVzP2GeRmqGphJsMxWoqjpUifPpCret7LqWhD8NWQK49",
+        "B2sxySx3hJbCU1MZQzEfUv3TjSuXFSXhhwYAjnbGeMQY:w",
+        "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS:w",
+        "3NvudfqMvfNQNTyB99fdoghhkBnVoJuoAzGhD1EnE9Po:w",
+        "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "37hJBDnntwqhGbK7L6M1bLyvccj4u55CCUiLPdYkiqBN",
+        "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+        "7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz:w",
+        "AQCGyheWPLeo6Qp9WpYS9m3Qj479t7R636N9ey1rEjEn:w",
+        "5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm:w",
+        "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa:w",
+        "4vkNeXiYEUizLdrpdPS1eC2mccyM4NUPRtERrk6ZETkk:w",
+        "DdwY1ELc9rRK7xNL3hTXabSFBmVrTPpfsUZSv2Y3LL1U:w",
+        "FYq2BWQ1V5P1WFBqr3qB2Kb5yHVvSv7upzKodgQE5zXh",
+        "AFZnHPzy4mvVCffrVwhewHbFc93uTHvDSFrVH7GtfXF1",
+        "hUqAT1KQ7eW1i6Csp9CXYtpPfSAvi835V7wKi5fRfmC",
+        "6Jp2xZUTWdDD2ZyUPRzeMdc6AFQ5K3pFgZxk2EijfjnM",
+        "Fgc93D641F8N2d1xLjQ4jmShuD3GE3BsCXA56KBQbF5u",
+        "9DRrwc4hSMQouw3ptpHXtQXVNHoqwyqLaK6NWztWTDin"
+      ],
+      "data": "99b741417121f92d2e87040100000000",
+      "fields": [
+        [
+          "Amount",
+          "17,073,966 base units"
+        ],
+        [
+          "Owner",
+          "BunGAnP9g7ehQnSHkHocGU1EC3j7t3VRVUccf8sS8whU"
+        ],
+        [
+          "Pool",
+          "5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq"
+        ],
+        [
+          "Custody",
+          "G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa"
+        ],
+        [
+          "Borrow Position",
+          "B2sxySx3hJbCU1MZQzEfUv3TjSuXFSXhhwYAjnbGeMQY"
+        ],
+        [
+          "Custody Vault",
+          "WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS"
+        ],
+        [
+          "Borrow To",
+          "3NvudfqMvfNQNTyB99fdoghhkBnVoJuoAzGhD1EnE9Po"
+        ],
+        [
+          "JLP Mint",
+          "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4"
+        ]
+      ],
+      "from": "2QRB5ScN5oM9XSUeSxh9KUjibRC6kSbF33fjWh7yGsrGrSvrnNdk9cupwXWd4tHVsakcdbWfa6oi6NswPGRdHCmC#5",
+      "intent": "Borrow against JLP",
+      "programId": "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu",
+      "sentence": "BunGAnP9g7ehQnSHkHocGU1EC3j7t3VRVUccf8sS8whU borrows 17,073,966 base units from WzWUoCmtVv7eqAbU3BfKPU3fhLP6CXR8NCJH78UK9VS to 3NvudfqMvfNQNTyB99fdoghhkBnVoJuoAzGhD1EnE9Po, against the JLP in borrow position B2sxySx3hJbCU1MZQzEfUv3TjSuXFSXhhwYAjnbGeMQY",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}
