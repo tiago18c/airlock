@@ -795,6 +795,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"),
         "Metaplex Core Program",
     ),
+    (
+        Pubkey::from_str_const("BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY"),
+        "Metaplex Bubblegum Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.
