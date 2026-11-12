@@ -2,6 +2,7 @@ mod support;
 
 mod cleanup;
 mod combined_approvals;
+mod metadata_templates;
 mod migrate;
 mod mixed_approvals;
 mod offline_nonce;

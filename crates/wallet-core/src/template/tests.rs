@@ -716,6 +716,57 @@ fn a_program_with_no_idl_on_the_network_is_named() {
     has(&problems, 3, None, "No IDL for `$token`");
 }
 
+/// An option whose block needs a program this network has no IDL for is
+/// left out of the form, with why, and is off whatever the form holds; the
+/// rest of the template is offered.
+#[test]
+fn an_option_on_a_program_with_no_idl_here_is_not_offered() {
+    let template = builtin_template("create-token")
+        .unwrap()
+        .template()
+        .unwrap();
+    let devnet = crate::fixtures::shipped_catalog(IdlNetwork::Devnet);
+    let form = check(&template, &devnet).unwrap();
+    let offered: Vec<&str> = form.options.iter().map(|o| o.name.as_str()).collect();
+    assert_eq!(offered, ["first_supply"]);
+    assert_eq!(form.unavailable.len(), 1);
+    assert_eq!(form.unavailable[0].0, "metadata");
+    assert!(
+        form.unavailable[0]
+            .1
+            .contains("No IDL for `$token_metadata`"),
+        "{:?}",
+        form.unavailable
+    );
+    let answers = Answers::for_template(&template)
+        .turn_on("metadata")
+        .answer("token_name", "x");
+    let env = Env {
+        wallet: Some(solana_pubkey::Pubkey::new_unique()),
+        fee_payer: Some(solana_pubkey::Pubkey::new_unique()),
+        keypairs: [("mint".to_string(), solana_pubkey::Pubkey::new_unique())].into(),
+    };
+    let expansion = expand(&template, &answers, &env, &Facts::default(), &devnet).unwrap();
+    let instructions: Vec<&str> = expansion
+        .blocks
+        .iter()
+        .map(|block| block.draft.instruction.as_str())
+        .collect();
+    assert_eq!(instructions, ["createAccount", "initializeMint2"]);
+    assert!(
+        !expansion
+            .missing
+            .contains(&Missing::Input("symbol".to_string())),
+        "{:?}",
+        expansion.missing
+    );
+
+    let mainnet = crate::fixtures::shipped_catalog(IdlNetwork::Mainnet);
+    let form = check(&template, &mainnet).unwrap();
+    assert_eq!(form.options.len(), 2);
+    assert!(form.unavailable.is_empty());
+}
+
 #[test]
 fn an_instruction_or_field_the_idl_lacks_is_named() {
     let problems = problems_of(&EXAMPLE.replace("\"initializeMint2\"", "\"initializeMint3\""));
@@ -997,7 +1048,9 @@ fn every_builtin_template_checks_on_every_network_its_programs_run_on() {
         use IdlNetwork::*;
         // Token, Token-2022, associated-token, System and the upgradeable
         // loader run everywhere; program-metadata and OtterSec's verify
-        // program on mainnet and devnet only.
+        // program on mainnet and devnet only; Token Metadata's IDL ships for
+        // mainnet only, so Create a token offers a name and symbol there
+        // alone.
         let expected = match builtin.id {
             // The upgrade alone runs on every network; updating the IDL and
             // the verified build only where their programs' IDLs ship.
@@ -1007,6 +1060,11 @@ fn every_builtin_template_checks_on_every_network_its_programs_run_on() {
                 (Testnet, false),
                 (Localnet, false),
             ],
+            "add-token-metadata" | "create-nft" => vec![(Mainnet, true)],
+            "create-token" => IdlNetwork::ALL
+                .into_iter()
+                .map(|network| (network, network == Mainnet))
+                .collect(),
             _ => IdlNetwork::ALL
                 .into_iter()
                 .map(|network| (network, true))

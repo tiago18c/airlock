@@ -18,6 +18,7 @@ use wallet_core::{
 };
 
 pub mod node;
+pub mod templates;
 pub mod vector;
 
 /// Sign as a user on the Sign screen does: one press, then, when that press

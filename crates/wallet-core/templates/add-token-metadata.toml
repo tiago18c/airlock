@@ -1,0 +1,52 @@
+format = 1
+name = "Add a name and symbol to a token"
+summary = "Gives a token on the Token program a name, a symbol and a link, kept by Metaplex Token Metadata, where wallets and explorers look for them. The mint authority signs."
+
+[programs]
+system = "11111111111111111111111111111111"
+token_metadata = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+
+[[input]]
+name = "mint"
+label = "Mint"
+hint = "A token that has no metadata yet."
+
+[[input]]
+name = "authority"
+label = "Mint authority"
+hint = "The token's mint authority, which signs this transaction."
+default = "$wallet"
+
+[[input]]
+name = "token_name"
+label = "Name"
+
+[[input]]
+name = "symbol"
+label = "Symbol"
+
+[[input]]
+name = "uri"
+label = "Details link"
+hint = "A link to a JSON file with the token's image and description."
+
+[[input]]
+name = "update_authority"
+label = "Update authority"
+hint = "Can change the name, symbol and link later."
+default = "$wallet"
+
+[[input]]
+name = "mutable"
+label = "Can be changed later"
+hint = "Once off, the name, symbol and link stay as they are for good."
+default = "true"
+
+[values]
+metadata_account = "metadata-of $mint"
+
+[[block]]
+program = "$token_metadata"
+instruction = "createV1"
+accounts = { authority = "$authority", metadata = "$metadata_account", mint = "$mint", payer = "$fee-payer", systemProgram = "$system", sysvarInstructions = "Sysvar1nstructions1111111111111111111111111", updateAuthority = "$update_authority" }
+arguments = { "assetData.isMutable" = "$mutable", "assetData.name" = "$token_name", "assetData.primarySaleHappened" = "false", "assetData.sellerFeeBasisPoints" = "0", "assetData.symbol" = "$symbol", "assetData.tokenStandard" = "fungible", "assetData.uri" = "$uri" }

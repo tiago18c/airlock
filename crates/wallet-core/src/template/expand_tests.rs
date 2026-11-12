@@ -410,6 +410,88 @@ fn catalog_for(template: &Template) -> impl IdlCatalog {
     panic!("{} is offered whole on no network", template.name)
 }
 
+/// The Token Metadata accounts of a mint, a royalty in percent, the creator
+/// list and the collection claim, worked out as Metaplex's clients do: the
+/// addresses are those of an NFT on mainnet.
+#[test]
+fn an_nft_derives_its_metadata_and_edition_and_writes_its_creator() {
+    let template = builtin("create-nft");
+    let mint = Pubkey::from_str_const("77dS5XKvzP6bto59gWzyK3VUWY8qkv3Hdw8VyxttAzz8");
+    let env = Env {
+        keypairs: [("mint".to_string(), mint)].into(),
+        ..env()
+    };
+    let answers = Answers::for_template(&template)
+        .turn_on("in_collection")
+        .answer("nft_name", "Ape")
+        .answer("symbol", "APE")
+        .answer("uri", "https://e.x/a.json")
+        .answer("royalty", "5.5")
+        .answer("collection", &pk(9).to_string());
+    let expansion = run(&template, &answers, &env, &rent(82, 1_461_600));
+    assert!(expansion.is_complete(), "{expansion:#?}");
+    let create = &expansion.blocks[2].draft;
+    assert_eq!(
+        create.account("metadata"),
+        Some(Pubkey::from_str_const(
+            "H9bVaTZhsRMoc1F7QmsnmTtqYY7QkG1FdWz3RbVuP47E"
+        ))
+    );
+    assert_eq!(
+        create.account("masterEdition"),
+        Some(Pubkey::from_str_const(
+            "9C13d9vXB2c1a964XrMZTZ3phVgdkFWJ31dha8PCdu1m"
+        ))
+    );
+    assert_eq!(create.argument("assetData.sellerFeeBasisPoints"), "550");
+    assert_eq!(
+        create.argument("assetData.creators"),
+        format!(r#"[{{"address":"{}","verified":true,"share":100}}]"#, pk(1))
+    );
+    assert_eq!(
+        create.argument("assetData.collection"),
+        format!(r#"{{"verified":false,"key":"{}"}}"#, pk(9))
+    );
+    assert_eq!(
+        expansion.values.get("royalty_points").map(String::as_str),
+        Some("550")
+    );
+
+    // A royalty with more places than percent has, or none, leaves the
+    // field blank; with no collection the claim is blank, so none.
+    let answers = answers.answer("royalty", "5.555");
+    let expansion = run(&template, &answers, &env, &rent(82, 1_461_600));
+    assert_eq!(
+        expansion.blocks[2]
+            .draft
+            .argument("assetData.sellerFeeBasisPoints"),
+        ""
+    );
+    let answers = Answers::for_template(&template).answer("royalty", "0");
+    let expansion = run(&template, &answers, &env, &rent(82, 1_461_600));
+    assert_eq!(
+        expansion.blocks[2].draft.argument("assetData.collection"),
+        ""
+    );
+    // The royalty is typed in percent, with two places.
+    let form = check(&template, &catalog()).unwrap();
+    let royalty = form.inputs.iter().find(|i| i.name == "royalty").unwrap();
+    assert_eq!(
+        royalty.kind,
+        InputKind::Argument {
+            kind: crate::IdlArgKind::Integer {
+                signed: false,
+                float: false,
+                bits: 64
+            },
+            scale: InputScale::Fixed {
+                decimals: 2,
+                unit: None
+            },
+        }
+    );
+}
+
 #[test]
 fn every_builtin_template_expands_and_builds_with_everything_on() {
     let mint = pk(7);
