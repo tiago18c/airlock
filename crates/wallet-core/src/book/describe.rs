@@ -803,6 +803,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("tickUcsEQegChaAuo9VYQQztB4ZGApY6ZT4FkULWY6N"),
         "Market Tick Program",
     ),
+    (
+        Pubkey::from_str_const("stkitrT1Uoy18Dk1fTrgPw8W6MVzoCfYoAFT4MLsmhq"),
+        "Sanctum Router Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

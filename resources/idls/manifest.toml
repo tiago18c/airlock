@@ -1637,3 +1637,23 @@ networks = ["mainnet", "devnet"]
 source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "80124ebab574b5fa11ae3e27b90589a660a00ef0a10dd53f9cd7abde8173d988" }
 changes = """Converted from Anchor to Codama. The signer's timestamp reads as a date from nanoseconds \
 and the target interval in milliseconds. Display nodes added by hand."""
+
+# Sanctum Router (formerly stakedex): moves SOL and liquid staking tokens
+# through stake pools and stake accounts, for wrapped SOL staked into an LST,
+# an LST redeemed for wrapped SOL or withdrawn as a stake account, a stake
+# account deposited for an LST, and one LST swapped for another by way of a
+# stake account. It publishes no IDL on chain. The file is the Shank IDL in
+# Sanctum's stakedex-sdk repository; its successor sanctum-router-sdk has no
+# IDL but builds the same nine tags with the same accounts and data.
+[[idls]]
+file = "sanctum-router.json"
+programId = "stkitrT1Uoy18Dk1fTrgPw8W6MVzoCfYoAFT4MLsmhq"
+name = "stakedex"
+networks = ["mainnet"]
+source = { kind = "repository", url = "https://github.com/igneous-labs/stakedex-sdk/blob/87685585cb246e7e0d75e9d59606707d8a20d336/interfaces/stakedex_interface/idl.json" }
+changes = """Converted from Shank to Codama; every instruction keeps its one-byte tag. The accounts \
+of the stake pool (or Lido, Marinade or the Sanctum reserve) a route goes through follow \
+the router's fixed accounts and vary by pool, so they are declared as one \
+remaining-accounts group, shown as Stake Pool Accounts. The Token program's mint account \
+is added, so input amounts read in the input mint's decimals; wrapped SOL amounts read \
+in SOL's 9 decimals. Display nodes added by hand."""
