@@ -23,6 +23,7 @@ mod model;
 mod parse;
 mod save;
 mod size;
+mod tree;
 mod write;
 
 #[cfg(test)]

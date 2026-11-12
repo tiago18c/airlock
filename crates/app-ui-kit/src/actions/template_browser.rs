@@ -221,6 +221,12 @@ fn kind_words(kind: &IdlArgKind, scale: &InputScale) -> Option<String> {
                 "or"
             )
         ),
+        IdlArgKind::Enum { variants } if variants.len() > 6 => format!(
+            "a choice of {}, from {} to {}",
+            variants.len(),
+            variants.first()?,
+            variants.last()?
+        ),
         IdlArgKind::Enum { variants } => format!("a choice of {}", listed(variants, "or")),
         IdlArgKind::Integer { float: true, .. } => "a number".into(),
         IdlArgKind::Integer { .. } => match scale {

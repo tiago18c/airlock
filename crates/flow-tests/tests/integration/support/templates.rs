@@ -14,9 +14,10 @@ use std::str::FromStr;
 use std::sync::Mutex;
 use wallet_core::template::{expand, Answers, Env, Expansion, Facts, Template};
 use wallet_core::{
-    builtin_template, compile_v1_budget, decode_transaction, display_accounts, explain_transaction,
-    explain_with_note, idls_from_pack, ComputeBudgetSpec, DisplayNote, IdlNetwork, IdlStore,
-    Instruction, KeypairSigner, LookupTables, MemoryBodies, MemoryStore, WalletSigner,
+    apply_local_signatures, builtin_template, compile_v1_budget, decode_transaction,
+    display_accounts, explain_transaction, explain_with_note, idls_from_pack, ComputeBudgetSpec,
+    DisplayNote, IdlNetwork, IdlStore, Instruction, KeypairSigner, LookupTables, MemoryBodies,
+    MemoryStore, WalletSigner,
 };
 
 const COMPUTE_BUDGET: Pubkey =
@@ -32,6 +33,8 @@ pub struct TemplateDesk {
 pub struct Landed {
     pub expansion: Expansion,
     pub instructions: Vec<Instruction>,
+    /// The data of every instruction the programs called, in order.
+    pub inner: Vec<Vec<u8>>,
 }
 
 /// A file in `crates/flow-tests/`.
@@ -133,13 +136,15 @@ impl TemplateDesk {
         signers.extend(others.iter().copied());
         // A key can be named twice; it signs once.
         signers.dedup_by_key(|signer| signer.pubkey());
-        self.node
+        let inner = self
+            .node
             .chain()
-            .send(&signers, instructions.clone())
+            .send_keeping_calls(&signers, instructions.clone())
             .map_err(|failure| logs(&failure))?;
         Ok(Landed {
             expansion,
             instructions,
+            inner,
         })
     }
 
@@ -204,6 +209,40 @@ impl TemplateDesk {
 const CLOCK: Pubkey = Pubkey::from_str_const("SysvarC1ock11111111111111111111111111111111");
 
 impl Chain {
+    /// As [`Chain::send`], keeping the data of each instruction the
+    /// programs called.
+    pub fn send_keeping_calls(
+        &mut self,
+        signers: &[&KeypairSigner],
+        instructions: Vec<Instruction>,
+    ) -> Result<Vec<Vec<u8>>, Box<litesvm::types::FailedTransactionMetadata>> {
+        let compiled = compile_v1_budget(
+            signers[0].pubkey(),
+            instructions,
+            None,
+            Some(self.svm.latest_blockhash()),
+            ComputeBudgetSpec::default(),
+        )
+        .expect("compiles");
+        let signers: Vec<&dyn WalletSigner> = signers
+            .iter()
+            .map(|signer| *signer as &dyn WalletSigner)
+            .collect();
+        let wire = apply_local_signatures(&compiled.wire, &signers).expect("signs");
+        assert!(wire.len() <= wallet_core::MAX_TRANSACTION_SIZE);
+        let transaction: solana_transaction::versioned::VersionedTransaction =
+            wincode::deserialize(&wire).expect("the wire is a transaction");
+        let result = self.svm.send_transaction(transaction);
+        self.svm.expire_blockhash();
+        let meta = result.map_err(Box::new)?;
+        Ok(meta
+            .inner_instructions
+            .iter()
+            .flatten()
+            .map(|inner| inner.instruction.data.clone())
+            .collect())
+    }
+
     /// Set the clock's time and epoch, and when that epoch started: the
     /// Clock sysvar's `unix_timestamp`, `epoch` and `epoch_start_timestamp`.
     pub fn set_time(&mut self, unix_timestamp: i64, epoch: u64, epoch_start: i64) {
@@ -213,6 +252,22 @@ impl Chain {
         clock.data[24..32].copy_from_slice(&(epoch + 1).to_le_bytes());
         clock.data[32..40].copy_from_slice(&unix_timestamp.to_le_bytes());
         self.svm.set_account(CLOCK, clock).unwrap();
+    }
+
+    /// Put an account at `address` exactly as given.
+    pub fn plant_raw(&mut self, address: Pubkey, owner: Pubkey, lamports: u64, data: Vec<u8>) {
+        self.svm
+            .set_account(
+                address,
+                Account {
+                    lamports,
+                    data,
+                    owner,
+                    executable: false,
+                    rent_epoch: 0,
+                },
+            )
+            .unwrap();
     }
 
     /// Load the program in `programs/<file>` at `program_id`.

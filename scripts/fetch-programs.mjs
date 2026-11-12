@@ -84,6 +84,24 @@ export const PROGRAMS = [
     sha256: "7e033fd24ce189d9e7dc2600152c6c88ce80d662deeeb7ecc64f0c8437867cf7",
   },
   {
+    // Metaplex Bubblegum, compressed NFTs. Devnet runs the code mainnet does.
+    file: "mpl_bubblegum.so",
+    address: "BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY",
+    sha256: "6f189a058ce8a21ce1849e0f768853e9601da1edbfaad2248f4b3b7452dc7b06",
+  },
+  {
+    // MPL Account Compression, the merkle trees of Bubblegum's version 2.
+    file: "mpl_account_compression.so",
+    address: "mcmt6YrQEMKw8Mw43FmpRLmf7BqRnFMKmAcbxE3xkAW",
+    sha256: "3586e2852ea61311611e3941bb3af037aaf495b2f38503049b40b89065226fd4",
+  },
+  {
+    // MPL Noop, which Bubblegum's version 2 records its leaves through.
+    file: "mpl_noop.so",
+    address: "mnoopTCrg4p8ry25e4bcWA9XZjbNjMTfgYVGGEdRsf3",
+    sha256: "10d275edf5a3181eb4ac187c07d37efd0279c7a6fe0cb222b1ac97804bc14b8b",
+  },
+  {
     // Metaplex Token Metadata, frozen since its deploy of 2025-11-17. Devnet
     // runs another build.
     file: "mpl_token_metadata.so",

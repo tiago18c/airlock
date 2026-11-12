@@ -1054,8 +1054,11 @@ fn every_builtin_template_checks_on_every_network_its_programs_run_on() {
         let expected = match builtin.id {
             // The upgrade alone runs on every network; updating the IDL and
             // the verified build only where their programs' IDLs ship.
-            // Metaplex Core's IDL ships for mainnet and devnet.
-            "create-core-nft" | "create-core-collection" => {
+            // Metaplex Core's and Bubblegum's IDLs ship for mainnet and devnet.
+            "create-core-nft"
+            | "create-core-collection"
+            | "create-nft-tree"
+            | "mint-compressed-nft" => {
                 vec![(Mainnet, true), (Devnet, true)]
             }
             "upgrade-program" => vec![

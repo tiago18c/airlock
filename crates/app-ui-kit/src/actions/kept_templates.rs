@@ -534,6 +534,14 @@ fn words_of(template: &Template, term: &Term, facts: Option<FactsFrom>) -> Strin
         ),
         Function::UnverifiedCollection => format!("the collection {}, unverified", arg(0)),
         Function::StreamEscrowOf => format!("the escrow token account of the stream {}", arg(0)),
+        Function::TreeConfigOf => format!("Bubblegum's config account of the tree {}", arg(0)),
+        Function::TreeDepth => format!("the depth of {}", arg(0)),
+        Function::TreeBuffer => format!("the buffer size of {}", arg(0)),
+        Function::MerkleTreeSpace => format!(
+            "the size of a tree of {} with a canopy of {}",
+            arg(0),
+            arg(1)
+        ),
     }
 }
 

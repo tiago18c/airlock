@@ -1,0 +1,50 @@
+format = 1
+name = "Mint a compressed NFT"
+summary = "Mints a compressed NFT into a Metaplex Bubblegum tree (version 2) this wallet created or may mint into. No proof is needed: a mint adds the next leaf."
+
+[programs]
+bubblegum = "BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY"
+compression = "mcmt6YrQEMKw8Mw43FmpRLmf7BqRnFMKmAcbxE3xkAW"
+core = "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+noop = "mnoopTCrg4p8ry25e4bcWA9XZjbNjMTfgYVGGEdRsf3"
+system = "11111111111111111111111111111111"
+
+[[input]]
+name = "tree"
+label = "Tree"
+hint = "A tree made with Create a compressed NFT tree, by this wallet or open to anyone."
+
+[[input]]
+name = "nft_name"
+label = "Name"
+
+[[input]]
+name = "symbol"
+label = "Symbol"
+
+[[input]]
+name = "uri"
+label = "Details link"
+hint = "A link to a JSON file with the NFT's image, description and attributes."
+
+[[input]]
+name = "royalty"
+label = "Royalty, in percent"
+hint = "The share of each resale that marketplaces pay this wallet, its only creator. Marketplaces choose whether to honour it."
+default = "0"
+
+[[input]]
+name = "owner"
+label = "Owner"
+default = "$wallet"
+
+[values]
+creators = "sole-creator $wallet"
+royalty_points = "base-units $royalty 2"
+tree_config = "tree-config-of $tree"
+
+[[block]]
+program = "$bubblegum"
+instruction = "mintV2"
+accounts = { compressionProgram = "$compression", leafOwner = "$owner", logWrapper = "$noop", merkleTree = "$tree", mplCoreProgram = "$core", payer = "$fee-payer", systemProgram = "$system", treeAuthority = "$tree_config", treeDelegate = "$wallet" }
+arguments = { "metadataArgs.creators" = "$creators", "metadataArgs.isMutable" = "true", "metadataArgs.name" = "$nft_name", "metadataArgs.primarySaleHappened" = "false", "metadataArgs.sellerFeeBasisPoints" = "$royalty_points", "metadataArgs.symbol" = "$symbol", "metadataArgs.tokenStandard" = "nonFungible", "metadataArgs.uri" = "$uri" }

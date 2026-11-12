@@ -312,7 +312,7 @@ impl Pass<'_> {
         let fits = match ty {
             ValueType::Address | ValueType::Program => address,
             ValueType::Integer => integer,
-            ValueType::Amount => false,
+            ValueType::Amount | ValueType::Shape => false,
             ValueType::Json => json.is_some(),
         };
         if fits && ty == ValueType::Json {
@@ -344,6 +344,7 @@ impl Pass<'_> {
                 ValueType::Program => "a program",
                 ValueType::Integer | ValueType::Amount => "a number",
                 ValueType::Json => "JSON",
+                ValueType::Shape => "a tree shape",
             };
             self.problem(
                 number,
@@ -587,7 +588,10 @@ fn parameter_problem(template: &Template, input: &str, kind: &InputKind) -> Opti
                     matches!(kind, IdlArgKind::Integer { float: false, .. })
                 }
                 (ValueType::Integer | ValueType::Amount, InputKind::Address) => false,
-                (ValueType::Json, _) => false,
+                (ValueType::Shape, InputKind::Argument { kind, .. }) => {
+                    *kind == super::tree::tree_shape_kind()
+                }
+                (ValueType::Shape | ValueType::Json, _) => false,
                 (_, InputKind::Address) => true,
                 (_, InputKind::Argument { .. }) => false,
             };
@@ -616,6 +620,18 @@ fn kind_from_parameters(template: &Template, input: &str) -> InputKind {
         (call.function == Function::BaseUnits && call.args[0].reference() == Some(input))
             .then(|| call.args[1].clone())
     });
+    let shape = template.values.values().any(|call| {
+        call.args
+            .iter()
+            .zip(call.function.params())
+            .any(|(arg, param)| arg.reference() == Some(input) && *param == ValueType::Shape)
+    });
+    if shape {
+        return InputKind::Argument {
+            kind: super::tree::tree_shape_kind(),
+            scale: InputScale::None,
+        };
+    }
     if let Some(decimals) = amount {
         let scale = match decimals {
             Term::Literal(text) => match text.parse() {

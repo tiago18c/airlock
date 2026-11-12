@@ -352,6 +352,15 @@ fn missing_words(open: &OpenTemplate, missing: &[Missing]) -> (Vec<String>, BTre
                     .unwrap_or_else(|| name.clone());
                 words.push(label);
             }
+            Missing::Invalid { input, message } => {
+                inputs.insert(input.clone());
+                let label = open
+                    .template
+                    .input(input)
+                    .map(|input| input.label.clone())
+                    .unwrap_or_else(|| input.clone());
+                words.push(format!("{label} ({message})"));
+            }
             Missing::Wallet => words.push("a wallet to act as".to_string()),
             Missing::FeePayer => words.push("Fee payer".to_string()),
             // Made when the template opens: only a template changed under

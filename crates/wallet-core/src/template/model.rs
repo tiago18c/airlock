@@ -140,6 +140,15 @@ pub enum Function {
     /// `<stream>`: the token account a Streamflow stream holds its tokens
     /// in.
     StreamEscrowOf,
+    /// `<tree>`: the config account Bubblegum keeps for a merkle tree.
+    TreeConfigOf,
+    /// `<shape>`: the depth of a merkle tree of that shape.
+    TreeDepth,
+    /// `<shape>`: the buffer size of a merkle tree of that shape.
+    TreeBuffer,
+    /// `<shape> <canopy>`: the bytes a merkle tree account of that shape
+    /// and canopy depth takes on MPL Account Compression.
+    MerkleTreeSpace,
 }
 
 /// What a value or an argument is.
@@ -154,10 +163,13 @@ pub(crate) enum ValueType {
     Amount,
     /// A value written as JSON into a field made of fields: a result only.
     Json,
+    /// One of the merkle tree shapes [`super::tree::TREE_SHAPES`] names, as
+    /// an input: a parameter only.
+    Shape,
 }
 
 impl Function {
-    pub const ALL: [Function; 15] = [
+    pub const ALL: [Function; 19] = [
         Self::NewKeypair,
         Self::AssociatedTokenAccount,
         Self::Token2022MintSpace,
@@ -173,6 +185,10 @@ impl Function {
         Self::SoleCreator,
         Self::UnverifiedCollection,
         Self::StreamEscrowOf,
+        Self::TreeConfigOf,
+        Self::TreeDepth,
+        Self::TreeBuffer,
+        Self::MerkleTreeSpace,
     ];
 
     /// The name a file writes it by.
@@ -193,6 +209,10 @@ impl Function {
             Self::SoleCreator => "sole-creator",
             Self::UnverifiedCollection => "unverified-collection",
             Self::StreamEscrowOf => "stream-escrow-of",
+            Self::TreeConfigOf => "tree-config-of",
+            Self::TreeDepth => "tree-depth",
+            Self::TreeBuffer => "tree-buffer",
+            Self::MerkleTreeSpace => "merkle-tree-space",
         }
     }
 
@@ -218,9 +238,12 @@ impl Function {
             | Self::MasterEditionOf
             | Self::SoleCreator
             | Self::UnverifiedCollection
-            | Self::StreamEscrowOf => &[Address],
+            | Self::StreamEscrowOf
+            | Self::TreeConfigOf => &[Address],
             Self::RentFor => &[Integer],
             Self::BaseUnits => &[Amount, Integer],
+            Self::TreeDepth | Self::TreeBuffer => &[Shape],
+            Self::MerkleTreeSpace => &[Shape, Integer],
         }
     }
 
@@ -238,6 +261,9 @@ impl Function {
             Self::SoleCreator => "an address",
             Self::UnverifiedCollection => "a collection",
             Self::StreamEscrowOf => "a stream",
+            Self::TreeConfigOf => "a merkle tree",
+            Self::TreeDepth | Self::TreeBuffer => "a tree shape",
+            Self::MerkleTreeSpace => "a tree shape and a canopy depth",
         }
     }
 
@@ -249,12 +275,16 @@ impl Function {
             | Self::IdlMetadataOf
             | Self::MetadataOf
             | Self::MasterEditionOf
-            | Self::StreamEscrowOf => ValueType::Address,
+            | Self::StreamEscrowOf
+            | Self::TreeConfigOf => ValueType::Address,
             Self::Token2022MintSpace
             | Self::Token2022MintFundedSpace
             | Self::RentFor
             | Self::DecimalsOf
-            | Self::BaseUnits => ValueType::Integer,
+            | Self::BaseUnits
+            | Self::TreeDepth
+            | Self::TreeBuffer
+            | Self::MerkleTreeSpace => ValueType::Integer,
             Self::TokenProgramOf => ValueType::Program,
             Self::SoleCreator | Self::UnverifiedCollection => ValueType::Json,
         }

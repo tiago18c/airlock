@@ -236,6 +236,7 @@ fn the_blocks_a_built_in_template_shows_open_to_the_same_blocks() {
                 "stream_name" => "Payroll".to_string(),
                 "ticket" => pk(25).to_string(),
                 "collection_name" => "x".to_string(),
+                "tree" => pk(26).to_string(),
                 "freeze_authority" => pk(8).to_string(),
                 "program" => pk(20).to_string(),
                 "buffer" => pk(21).to_string(),
@@ -256,6 +257,7 @@ fn the_blocks_a_built_in_template_shows_open_to_the_same_blocks() {
                 ("ticket".to_string(), pk(32)),
                 ("asset".to_string(), pk(33)),
                 ("collection".to_string(), pk(34)),
+                ("tree".to_string(), pk(35)),
             ]
             .into(),
         };

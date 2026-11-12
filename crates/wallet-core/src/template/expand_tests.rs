@@ -22,6 +22,7 @@ fn env() -> Env {
             ("ticket".to_string(), pk(32)),
             ("asset".to_string(), pk(33)),
             ("collection".to_string(), pk(34)),
+            ("tree".to_string(), pk(35)),
         ]
         .into(),
     }
@@ -469,6 +470,58 @@ fn a_stream_derives_its_escrow_and_takes_amounts_in_the_tokens_units() {
     assert_eq!(waiting.decimals_of(scale), None);
 }
 
+/// A tree's size is a choice of the shapes the programs take, its account
+/// is sized from the shape and canopy, and a canopy Bubblegum refuses is
+/// named on its input.
+#[test]
+fn a_tree_is_sized_from_its_shape_and_canopy_and_a_bad_canopy_is_named() {
+    let template = builtin("create-nft-tree");
+    let form = check(&template, &catalog()).unwrap();
+    let shape = form.inputs.iter().find(|i| i.name == "shape").unwrap();
+    let InputKind::Argument {
+        kind: crate::IdlArgKind::Enum { variants },
+        ..
+    } = &shape.kind
+    else {
+        panic!("{shape:?}")
+    };
+    assert_eq!(variants.len(), 34);
+    assert_eq!(variants[0], "8 NFTs (depth 3, buffer 8)");
+    assert!(variants.contains(&"16,384 NFTs (depth 14, buffer 64)".to_string()));
+
+    // The default shape, no canopy: 31,800 bytes, and their rent.
+    let answers = Answers::for_template(&template);
+    let first = run(&template, &answers, &env(), &Facts::default());
+    assert_eq!(first.needs, [Fact::Rent(31_800)]);
+    let expansion = run(&template, &answers, &env(), &rent(31_800, 222_000_000));
+    assert!(expansion.is_complete(), "{expansion:#?}");
+    let create = &expansion.blocks[1].draft;
+    assert_eq!(create.argument("maxDepth"), "14");
+    assert_eq!(create.argument("maxBufferSize"), "64");
+    assert_eq!(
+        create.account("treeAuthority"),
+        Some(
+            Pubkey::find_program_address(&[pk(35).as_ref()], &super::expand::BUBBLEGUM_PROGRAM_ID)
+                .0
+        )
+    );
+
+    // A depth of 24 needs a canopy of at least 7.
+    let deep = answers
+        .clone()
+        .answer("shape", "16,777,216 NFTs (depth 24, buffer 64)")
+        .answer("canopy", "3");
+    let expansion = run(&template, &deep, &env(), &Facts::default());
+    assert!(expansion.missing.contains(&Missing::Invalid {
+        input: "canopy".to_string(),
+        message: "A tree of depth 24 takes a canopy of 7 to 23.".to_string(),
+    }));
+    assert!(expansion.needs.is_empty(), "no size, so no rent to ask for");
+    let deep = deep.answer("canopy", "7");
+    let expansion = run(&template, &deep, &env(), &Facts::default());
+    assert!(expansion.missing.is_empty(), "{:?}", expansion.missing);
+}
+
 /// The shipped IDLs of the first network that offers every block of
 /// `template`, mainnet first.
 fn catalog_for(template: &Template) -> impl IdlCatalog {
@@ -588,6 +641,7 @@ fn every_builtin_template_expands_and_builds_with_everything_on() {
                 "stream_name" => "Payroll".to_string(),
                 "ticket" => pk(25).to_string(),
                 "collection_name" => "x".to_string(),
+                "tree" => pk(26).to_string(),
                 "program" => pk(20).to_string(),
                 "buffer" => pk(21).to_string(),
                 "idl_buffer" => pk(22).to_string(),

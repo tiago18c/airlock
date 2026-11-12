@@ -21,7 +21,7 @@ impl BuiltinTemplate {
 }
 
 /// In the order the picker lists them.
-pub static BUILTIN_TEMPLATES: [BuiltinTemplate; 13] = [
+pub static BUILTIN_TEMPLATES: [BuiltinTemplate; 15] = [
     BuiltinTemplate {
         id: "create-token",
         toml: include_str!("../../templates/create-token.toml"),
@@ -49,6 +49,14 @@ pub static BUILTIN_TEMPLATES: [BuiltinTemplate; 13] = [
     BuiltinTemplate {
         id: "create-core-collection",
         toml: include_str!("../../templates/create-core-collection.toml"),
+    },
+    BuiltinTemplate {
+        id: "create-nft-tree",
+        toml: include_str!("../../templates/create-nft-tree.toml"),
+    },
+    BuiltinTemplate {
+        id: "mint-compressed-nft",
+        toml: include_str!("../../templates/mint-compressed-nft.toml"),
     },
     BuiltinTemplate {
         id: "create-stream",

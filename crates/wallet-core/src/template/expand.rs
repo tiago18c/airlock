@@ -149,6 +149,9 @@ pub enum Missing {
     FeePayer,
     /// The caller has not made the keypair of this `new-keypair` value.
     Keypair(String),
+    /// An input whose answer a function cannot take, and why: a canopy too
+    /// shallow or too deep for its tree.
+    Invalid { input: String, message: String },
 }
 
 /// A field the template filled itself, with what it put there.
@@ -265,6 +268,9 @@ pub const TOKEN_METADATA_PROGRAM_ID: Pubkey =
 /// Streamflow's vesting program, whose escrow `stream-escrow-of` derives.
 pub const STREAMFLOW_PROGRAM_ID: Pubkey =
     Pubkey::from_str_const("strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m");
+/// Metaplex Bubblegum, whose tree config `tree-config-of` derives.
+pub const BUBBLEGUM_PROGRAM_ID: Pubkey =
+    Pubkey::from_str_const("BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY");
 
 struct Run<'a> {
     template: &'a Template,
@@ -650,6 +656,47 @@ impl<'a> Run<'a> {
             }
             Function::SoleCreator | Function::UnverifiedCollection => {
                 call.function.json_for(&address(0)?).map(Val::Text)
+            }
+            Function::TreeConfigOf => Some(Val::Address(
+                Pubkey::find_program_address(&[address(0)?.as_ref()], &BUBBLEGUM_PROGRAM_ID).0,
+            )),
+            Function::TreeDepth | Function::TreeBuffer => {
+                let Val::Text(text) = args.first()?.as_ref()? else {
+                    return None;
+                };
+                let (depth, buffer) = super::tree::tree_shape(text)?;
+                let n = if call.function == Function::TreeDepth {
+                    depth
+                } else {
+                    buffer
+                };
+                Some(Val::Integer(u128::from(n)))
+            }
+            Function::MerkleTreeSpace => {
+                let Val::Text(text) = args.first()?.as_ref()? else {
+                    return None;
+                };
+                let (depth, buffer) = super::tree::tree_shape(text)?;
+                let canopy = u32::try_from(args.get(1)?.as_ref()?.integer()?).ok();
+                match canopy.and_then(|canopy| super::tree::merkle_tree_len(depth, buffer, canopy))
+                {
+                    Some(len) => Some(Val::Integer(len as u128)),
+                    None => {
+                        if let Some(input) = call.args[1].reference() {
+                            if self.template.input(input).is_some() {
+                                let least = depth.saturating_sub(super::tree::MAX_PROOF_NODES);
+                                self.miss(Missing::Invalid {
+                                    input: input.to_string(),
+                                    message: format!(
+                                        "A tree of depth {depth} takes a canopy of {least} to {}.",
+                                        depth - 1
+                                    ),
+                                });
+                            }
+                        }
+                        None
+                    }
+                }
             }
         }
     }
