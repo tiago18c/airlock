@@ -807,6 +807,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("stkitrT1Uoy18Dk1fTrgPw8W6MVzoCfYoAFT4MLsmhq"),
         "Sanctum Router Program",
     ),
+    (
+        Pubkey::from_str_const("up12bytoZBmwofqsySf2uqKQ7zpfeKiAWwfvqzJjtRt"),
+        "Upshift Vault Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

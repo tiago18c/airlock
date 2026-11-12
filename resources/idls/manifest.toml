@@ -1657,3 +1657,27 @@ the router's fixed accounts and vary by pool, so they are declared as one \
 remaining-accounts group, shown as Stake Pool Accounts. The Token program's mint account \
 is added, so input amounts read in the input mint's decimals; wrapped SOL amounts read \
 in SOL's 9 decimals. Display nodes added by hand."""
+
+# Upshift's vaults, run by August Digital (august_vault): people deposit one
+# token into a vault for its share token and redeem shares for their part of
+# the vault's tokens, paid at once less a withdrawal fee; the vault's operator
+# moves funds out to strategies and back and reports what is deployed. The
+# file is the Anchor IDL its IDL account publishes on mainnet, which is older
+# than the program deployed, with deposit_checked and redeem_checked added
+# from the OtterSec-verified source.
+[[idls]]
+file = "upshift.json"
+programId = "up12bytoZBmwofqsySf2uqKQ7zpfeKiAWwfvqzJjtRt"
+name = "augustVault"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "ca4dd18089a73219cacdb6e47e2b2e2a0439001a9afb18adf4db240380f09c52" }
+changes = """Converted from Anchor to Codama. `initialize` is removed: the deployed program takes \
+other accounts, in another order, and two more arguments, so it reads raw rather than \
+with wrong names. `operatorWithdraw` and `operatorDeposit` declare the registered \
+destination's entry the deployed program reads after their listed accounts. The Token \
+program's mint account is added, so amounts read the decimals of the deposit and share \
+mints the instructions name. `depositChecked` and `redeemChecked`, which the deployed \
+program has and the chain's IDL lacks, are added from the verified source (commit \
+87c0f2d4): each takes the accounts of `deposit` or `redeem` in the same order and one \
+more u64, the least shares or the least payout after the fee. Display nodes added by \
+hand."""
