@@ -190,6 +190,9 @@ pub struct Expansion {
     /// facts already answered. A form that asks for facts by hand keeps a
     /// field for each of these, so a field does not go once it is filled.
     pub uses: Vec<Fact>,
+    /// Each value the enabled blocks use that is worked out, as text: an
+    /// address, a number in base units, or JSON.
+    pub values: BTreeMap<String, String>,
 }
 
 impl Expansion {
@@ -214,6 +217,7 @@ impl Expansion {
                 .trim()
                 .parse()
                 .ok(),
+            InputScale::FromValue { value, .. } => self.values.get(value)?.parse().ok(),
         }
     }
 }
@@ -244,7 +248,23 @@ impl Val {
             Self::Address(_) => None,
         }
     }
+
+    fn text(&self) -> String {
+        match self {
+            Self::Address(address) => address.to_string(),
+            Self::Integer(n) => n.to_string(),
+            Self::Text(text) => text.clone(),
+        }
+    }
 }
+
+/// Metaplex Token Metadata, whose accounts `metadata-of` and
+/// `master-edition-of` derive.
+pub const TOKEN_METADATA_PROGRAM_ID: Pubkey =
+    Pubkey::from_str_const("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
+/// Streamflow's vesting program, whose escrow `stream-escrow-of` derives.
+pub const STREAMFLOW_PROGRAM_ID: Pubkey =
+    Pubkey::from_str_const("strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m");
 
 struct Run<'a> {
     template: &'a Template,
@@ -267,6 +287,12 @@ pub fn expand(
     idls: &dyn IdlCatalog,
 ) -> Result<Expansion, Vec<Problem>> {
     let checked = analyze(template, idls)?;
+    // An option this network does not offer is off, whatever the form held.
+    let mut offered = answers.clone();
+    for (option, _) in &checked.form.unavailable {
+        offered.options.remove(option);
+    }
+    let answers = &offered;
     let mut run = Run {
         template,
         answers,
@@ -291,9 +317,13 @@ pub fn expand(
         .filter(|(_, block)| run.enabled(block))
         .collect();
     let live = live_values(template, enabled.iter().map(|(_, block)| *block));
+    let mut worked_out = BTreeMap::new();
     for name in template.value_order() {
         if live.contains(name) {
             let value = run.evaluate(name);
+            if let Some(text) = value.as_ref().map(Val::text) {
+                worked_out.insert(name.to_string(), text);
+            }
             run.values.insert(name, value);
         }
     }
@@ -414,6 +444,7 @@ pub fn expand(
         missing: run.missing,
         needs: run.needs,
         uses: run.uses,
+        values: worked_out,
     })
 }
 
@@ -573,6 +604,52 @@ impl<'a> Run<'a> {
                 self.rest_on(Fact::TokenProgram(mint));
                 let program = self.facts.token_programs.get(&mint)?;
                 Some(Val::Address(*program))
+            }
+            Function::MetadataOf => {
+                let mint = address(0)?;
+                let seeds: [&[u8]; 3] = [
+                    b"metadata",
+                    TOKEN_METADATA_PROGRAM_ID.as_ref(),
+                    mint.as_ref(),
+                ];
+                Some(Val::Address(
+                    Pubkey::find_program_address(&seeds, &TOKEN_METADATA_PROGRAM_ID).0,
+                ))
+            }
+            Function::MasterEditionOf => {
+                let mint = address(0)?;
+                let seeds: [&[u8]; 4] = [
+                    b"metadata",
+                    TOKEN_METADATA_PROGRAM_ID.as_ref(),
+                    mint.as_ref(),
+                    b"edition",
+                ];
+                Some(Val::Address(
+                    Pubkey::find_program_address(&seeds, &TOKEN_METADATA_PROGRAM_ID).0,
+                ))
+            }
+            Function::StreamEscrowOf => {
+                let stream = address(0)?;
+                Some(Val::Address(
+                    Pubkey::find_program_address(
+                        &[b"strm", stream.as_ref()],
+                        &STREAMFLOW_PROGRAM_ID,
+                    )
+                    .0,
+                ))
+            }
+            Function::BaseUnits => {
+                let text = match args.first()?.as_ref()? {
+                    Val::Text(text) => text.trim().to_string(),
+                    Val::Integer(n) => n.to_string(),
+                    Val::Address(_) => return None,
+                };
+                let decimals = u8::try_from(args.get(1)?.as_ref()?.integer()?).ok()?;
+                let digits = crate::units::decimal_to_base(&text, decimals).ok()?;
+                digits.parse().ok().map(Val::Integer)
+            }
+            Function::SoleCreator | Function::UnverifiedCollection => {
+                call.function.json_for(&address(0)?).map(Val::Text)
             }
         }
     }

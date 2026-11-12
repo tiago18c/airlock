@@ -397,11 +397,25 @@ fn every_function_works_out_its_value() {
     assert_eq!(built[3].accounts[1].pubkey, account);
 }
 
+/// The shipped IDLs of the first network that offers every block of
+/// `template`, mainnet first.
+fn catalog_for(template: &Template) -> impl IdlCatalog {
+    use crate::idl::network::IdlNetwork;
+    for network in [IdlNetwork::Mainnet, IdlNetwork::Devnet] {
+        let store = crate::fixtures::shipped_catalog(network);
+        if check(template, &store).is_ok_and(|form| form.unavailable.is_empty()) {
+            return store;
+        }
+    }
+    panic!("{} is offered whole on no network", template.name)
+}
+
 #[test]
 fn every_builtin_template_expands_and_builds_with_everything_on() {
     let mint = pk(7);
     for builtin_template in &BUILTIN_TEMPLATES {
         let template = builtin_template.template().unwrap();
+        let idls = catalog_for(&template);
         let mut answers = Answers::for_template(&template);
         for option in &template.options {
             answers = answers.turn_on(&option.name);
@@ -411,7 +425,9 @@ fn every_builtin_template_expands_and_builds_with_everything_on() {
                 "mint" => mint.to_string(),
                 "amount" | "fee" => "1".to_string(),
                 "max_fee" => "10".to_string(),
-                "token_name" | "symbol" | "uri" => "x".to_string(),
+                "token_name" | "symbol" | "uri" | "nft_name" => "x".to_string(),
+                "royalty" => "5.5".to_string(),
+                "collection" => pk(23).to_string(),
                 "program" => pk(20).to_string(),
                 "buffer" => pk(21).to_string(),
                 "idl_buffer" => pk(22).to_string(),
@@ -427,19 +443,30 @@ fn every_builtin_template_expands_and_builds_with_everything_on() {
             token_programs: [(mint, TOKEN_PROGRAM_ID)].into(),
             ..Facts::default()
         };
-        let first = run(&template, &answers, &env(), &facts);
+        let first = expand(&template, &answers, &env(), &facts, &idls).unwrap();
         for fact in &first.needs {
             if let Fact::Rent(bytes) = fact {
                 facts.rent.insert(*bytes, 1_000_000);
             }
         }
-        let mut expansion = run(&template, &answers, &env(), &facts);
+        let mut expansion = expand(&template, &answers, &env(), &facts, &idls).unwrap();
         assert!(
             expansion.is_complete(),
             "{}: {expansion:#?}",
             builtin_template.id
         );
-        let built = build_all(&mut expansion);
+        let built: Vec<_> = expansion
+            .blocks
+            .iter_mut()
+            .map(|block| {
+                let client = idls
+                    .program_client(&block.draft.program_id.unwrap())
+                    .unwrap();
+                block.draft.build(&client).unwrap_or_else(|err| {
+                    panic!("{} block {}: {err}", builtin_template.id, block.number)
+                })
+            })
+            .collect();
         assert_eq!(
             built.len(),
             template.blocks.len(),

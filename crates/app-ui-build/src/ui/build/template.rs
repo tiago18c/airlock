@@ -404,6 +404,13 @@ fn template_input(
                         None => Places::Like(argument.clone()),
                     },
                 ),
+                InputScale::FromValue { value, unit } => (
+                    unit.as_deref(),
+                    match expansion.decimals_of(scale) {
+                        Some(decimals) => Places::Fixed(decimals),
+                        None => Places::Like(format!("${value}")),
+                    },
+                ),
             };
             // An optional input can be left blank, as an optional field can.
             let kind = if input.optional {

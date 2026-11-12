@@ -75,8 +75,10 @@ accounts = { mint = "$mint" }
 arguments = { decimals = "$decimals", mintAuthority = "$authority", freezeAuthority = "$freeze_authority" }
 "#;
 
+/// Mainnet's: every program the tests use has its IDL there, Token
+/// Metadata's included.
 pub(super) fn catalog() -> impl IdlCatalog {
-    crate::fixtures::shipped_catalog(IdlNetwork::Devnet)
+    crate::fixtures::shipped_catalog(IdlNetwork::Mainnet)
 }
 
 /// A small template around one block, for refusals.
@@ -707,7 +709,9 @@ fn the_plan_example_checks_and_gives_its_form() {
 fn a_program_with_no_idl_on_the_network_is_named() {
     let template = Template::parse(EXAMPLE).unwrap();
     let problems = check(&template, &NoIdls).unwrap_err();
-    assert_eq!(problems.len(), 3);
+    // Block 2 runs only with the transfer fee: it leaves that option out
+    // instead of refusing the template.
+    assert_eq!(problems.len(), 2);
     has(&problems, 1, None, "No IDL for `$system`");
     has(&problems, 3, None, "No IDL for `$token`");
 }
@@ -970,27 +974,43 @@ fn every_builtin_template_checks_on_every_network_its_programs_run_on() {
             "{}",
             builtin.id
         );
-        let mut checked_on = 0;
+        let mut checked_on = Vec::new();
         for network in IdlNetwork::ALL {
             let store = crate::fixtures::shipped_catalog(network);
+            // A program only an option's blocks run on leaves that option
+            // out where it has no IDL; the others must all be here.
             let runs_here = template
-                .programs
-                .values()
+                .blocks
+                .iter()
+                .filter(|block| block.when.is_none())
+                .filter_map(|block| template.programs.get(&block.program))
                 .chain([&TOKEN_PROGRAM_ID, &TOKEN_2022_PROGRAM_ID])
                 .all(|program| store.program_client(program).is_some());
             if !runs_here {
                 continue;
             }
-            check(&template, &store)
+            let form = check(&template, &store)
                 .unwrap_or_else(|problems| panic!("{} on {network}: {problems:#?}", builtin.id));
-            checked_on += 1;
+            let offered = form.options.len() == template.options.len();
+            checked_on.push((network, offered));
         }
-        // Token, Token-2022, associated-token and System run everywhere;
-        // program-metadata and OtterSec's verify program on mainnet and
-        // devnet only.
+        use IdlNetwork::*;
+        // Token, Token-2022, associated-token, System and the upgradeable
+        // loader run everywhere; program-metadata and OtterSec's verify
+        // program on mainnet and devnet only.
         let expected = match builtin.id {
-            "upgrade-program" => 2,
-            _ => IdlNetwork::ALL.len(),
+            // The upgrade alone runs on every network; updating the IDL and
+            // the verified build only where their programs' IDLs ship.
+            "upgrade-program" => vec![
+                (Mainnet, true),
+                (Devnet, true),
+                (Testnet, false),
+                (Localnet, false),
+            ],
+            _ => IdlNetwork::ALL
+                .into_iter()
+                .map(|network| (network, true))
+                .collect(),
         };
         assert_eq!(checked_on, expected, "{}", builtin.id);
     }

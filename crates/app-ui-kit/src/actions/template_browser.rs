@@ -103,6 +103,8 @@ pub struct ReaderOption {
     /// On when the form opens.
     pub on_at_first: bool,
     pub questions: Vec<ReaderQuestion>,
+    /// Why this network does not offer it, when it does not.
+    pub not_here: Option<String>,
 }
 
 /// Every question of a template, in the order its form asks them: those
@@ -164,6 +166,12 @@ pub fn reader_questions(template: &Template, form: Option<&TemplateForm>) -> Rea
                     .filter(|input| input.option.as_deref() == Some(option.name.as_str()))
                     .map(question)
                     .collect(),
+                not_here: form.and_then(|form| {
+                    form.unavailable
+                        .iter()
+                        .find(|(name, _)| *name == option.name)
+                        .map(|(_, why)| why.clone())
+                }),
             })
             .collect(),
     }
@@ -230,6 +238,9 @@ fn kind_words(kind: &IdlArgKind, scale: &InputScale) -> Option<String> {
             }
             InputScale::FromArgument { argument, .. } => {
                 format!("a number with as many decimal places as {argument}")
+            }
+            InputScale::FromValue { value, .. } => {
+                format!("a number with as many decimal places as ${value}")
             }
         },
         IdlArgKind::Raw { .. } => return None,

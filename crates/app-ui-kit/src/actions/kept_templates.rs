@@ -525,6 +525,15 @@ fn words_of(template: &Template, term: &Term, facts: Option<FactsFrom>) -> Strin
         Function::TokenProgramOf => {
             format!("the token program of the mint {}, {from}", arg(0))
         }
+        Function::MetadataOf => format!("the Token Metadata account of the mint {}", arg(0)),
+        Function::MasterEditionOf => format!("the master edition account of the mint {}", arg(0)),
+        Function::BaseUnits => format!("{} in base units, at {} decimal places", arg(0), arg(1)),
+        Function::SoleCreator => format!(
+            "{} as the only creator, verified, with the whole share",
+            arg(0)
+        ),
+        Function::UnverifiedCollection => format!("the collection {}, unverified", arg(0)),
+        Function::StreamEscrowOf => format!("the escrow token account of the stream {}", arg(0)),
     }
 }
 

@@ -219,6 +219,7 @@ pub fn expand_open(session: &Session) -> Option<OpenExpansion> {
     let form = wallet_core::template::check(&open.template, &*idls).unwrap_or(TemplateForm {
         inputs: Vec::new(),
         options: Vec::new(),
+        unavailable: Vec::new(),
     });
     let expansion =
         wallet_core::template::expand(&open.template, &open.answers, &env, &open.facts(), &*idls);
