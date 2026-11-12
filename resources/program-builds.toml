@@ -752,3 +752,12 @@ programHash = "e6e2305935a5efae038df5cad834d6893338f2304285438864ba1ab54de82d7c"
 authority = "CDFU8tEWsVU2ZMiek57Sgk3Huha2yBNcSHLAts3V3Cbf"
 idlSha256 = "de99318874e636549205a0c8ba0996799de4e2bcd2df5606362df4741b8dd175"
 reviewed = "2026-11-12"
+
+[[builds]]
+# byrealClmm (pack). The binary logs 35 instruction names, the same 35 the IDL has, holds each instruction's discriminator and the super admin address the IDL fixes. Mainnet transactions of 20 of them decode with no byte left over, and every account past those the IDL lists was identified on chain (tick arrays, the bitmap extension, Pyth price accounts, supported-mint records).
+programId = "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2"
+network = "mainnet"
+programHash = "bd0270a92fd7439d19134cc80418a05a0ca41dcaf624ca1e9ed6487aa4513ba5"
+authority = "EmEa9b4yGffixdeFQ9zoyB3V5D9PZAbcE79mfwXb3bhs"
+idlSha256 = "9a407ecbd6548aa195f06be9cd7e0e83eaf14dc72569f7108ad6ab7cdf16c4d3"
+reviewed = "2026-11-12"

@@ -683,6 +683,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("MNFSTqtC93rEfYHB6hF82sKdZpUDFWkViLByLd1k1Ms"),
         "Manifest Program",
     ),
+    (
+        Pubkey::from_str_const("REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2"),
+        "Byreal CLMM Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

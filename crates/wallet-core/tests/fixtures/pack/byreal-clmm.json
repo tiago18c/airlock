@@ -1,0 +1,1595 @@
+{
+  "accounts": {
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": {
+      "data": "AQAAAJj+huiNm+Lqi8HMpIeLKYjCQPUrhCS/tA7Rot3LXhmbrrRdtNC0HgAGAQEAAABicKqKWcWUBbRShshncubNEm6bil06OFNtN/e0FOi2Zw==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "SKHYhSjuRWHgikq8eRKbtBbpABgJSkd7ytQV14i9EQ3": {
+      "data": "AQAAAKIo34ZRjOD0E9Avxy7OHUblGLzX1wzE/a202i3PUI2OAa6ZtAUAAAAGAQEAAAAX80uXa+rt4TKHeP4P0KXOfYzd/VZdEzYuovU7eFMWDwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARIAQAAX80uXa+rt4TKHeP4P0KXOfYzd/VZdEzYuovU7eFMWDwZ8MgnutoEvodshiKeqwMt3/UFDEtV1+tV6ggOUwfS8DAAgABfzS5dr6u3hMod4/g/Qpc59jN39Vl0TNi6i9Tt4UxYPBgABAAEaACEAF/NLl2vq7eEyh3j+D9Clzn2M3f1WXRM2LqL1O3hTFg8ABABBABfzS5dr6u3hMod4/g/Qpc59jN39Vl0TNi6i9Tt4UxYPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgBAABfzS5dr6u3hMod4/g/Qpc59jN39Vl0TNi6i9Tt4UxYPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZADgAoijfhlGM4PQT0C/HLs4dRuUYvNfXDMT9rbTaLc9QjY4AAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8TALAAF/NLl2vq7eEyh3j+D9Clzn2M3f1WXRM2LqL1O3hTFg8GfDIJ7raBL6HbIYinqsDLd/1BQxLVdfrVeoIDlMH0vB4AAABTSyBIeW5peCAtIEJhY2twYWNrIFNlY3VyaXRpZXMEAAAAU0tIWT4AAABodHRwczovL3RyZWstbGFicy5naXRodWIuaW8vaGVhcnQtbWV0YWRhdGEvc3RvY2tzL3NraHkudXMuanNvbgAAAAA=",
+      "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+    },
+    "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu": {
+      "data": "AQAAAGVqQkIv6okUBqQZ0dHeCPQqhHlBtaGulevOYZrDFyk0A1ZExcENAAAIAQEAAAD/3+wbzSzTg5PITaoIyRzA041nf/jQq3tdAz8A9zLMMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARIAQABD+fHuLje4B+pFy3TmAJcivsAJKWAm5ORVi0NeJKXpxgfoFl9SVJE/EJ8rELI25643FYKHO3LpJvUyDP5hJqmSDAAgAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGBgABAAEZADgABm9ZIlHMR3R4JaWa0UIupDVz9SjaXe4q94ErMU+ZReMAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8aACEA/9/sG80s04OTyE2qCMkcwNONZ3/40Kt7XQM/APcyzDAABABBAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgBAAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAKgAQ/nx7i43uAfqRct05gCXIr7ACSlgJuTkVYtDXiSl6cYH6BZfUlSRPxCfKxCyNueuNxWChzty6Sb1Mgz+YSapkg8AAABDb2luYmFzZSB4U3RvY2sFAAAAQ09JTnhEAAAAaHR0cHM6Ly94c3RvY2tzLW1ldGFkYXRhLmJhY2tlZC5maS90b2tlbnMvU29sYW5hL0NPSU54L21ldGFkYXRhLmpzb24AAAAA",
+      "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+    },
+    "Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ": {
+      "data": "AQAAAGVqQkIv6okUBqQZ0dHeCPQqhHlBtaGulevOYZrDFyk0HdVuJqwHAAAIAQEAAAD/3+wbzSzTg5PITaoIyRzA041nf/jQq3tdAz8A9zLMMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARIAQABD+fHuLje4B+pFy3TmAJcivsAJKWAm5ORVi0NeJKXpxgfoGrUJ4eUplG56Y4h7EwYXquLdhe/tGgTaVgwGI3YkDAAgAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGBgABAAEZADgABm9ZIlHMR3R4JaWa0UIupDVz9SjaXe4q94ErMU+ZReMp/ZNmKQvwP/ATr2oAAAAAyjBP9ScO8D8aACEA/9/sG80s04OTyE2qCMkcwNONZ3/40Kt7XQM/APcyzDAABABBAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgBAAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAKQAQ/nx7i43uAfqRct05gCXIr7ACSlgJuTkVYtDXiSl6cYH6Bq1CeHlKZRuemOIexMGF6ri3YXv7RoE2lYMBiN2JA0AAABOYXNkYXEgeFN0b2NrBAAAAFFRUXhDAAAAaHR0cHM6Ly94c3RvY2tzLW1ldGFkYXRhLmJhY2tlZC5maS90b2tlbnMvU29sYW5hL1FRUXgvbWV0YWRhdGEuanNvbgAAAAA=",
+      "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+    },
+    "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB": {
+      "data": "AQAAAGVqQkIv6okUBqQZ0dHeCPQqhHlBtaGulevOYZrDFyk0OTCBkuIUAAAIAQEAAAD/3+wbzSzTg5PITaoIyRzA041nf/jQq3tdAz8A9zLMMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARIAQABD+fHuLje4B+pFy3TmAJcivsAJKWAm5ORVi0NeJKXpxgfoNYJBH+oUgvCZS4CqUSqXyU8l3yg77Fpno4H8hitKDAAgAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGBgABAAEZADgABm9ZIlHMR3R4JaWa0UIupDVz9SjaXe4q94ErMU+ZReMAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8aACEA/9/sG80s04OTyE2qCMkcwNONZ3/40Kt7XQM/APcyzDAABABBAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgBAAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAKUAQ/nx7i43uAfqRct05gCXIr7ACSlgJuTkVYtDXiSl6cYH6DWCQR/qFILwmUuAqlEql8lPJd8oO+xaZ6OB/IYrSgwAAABUZXNsYSB4U3RvY2sFAAAAVFNMQXhEAAAAaHR0cHM6Ly94c3RvY2tzLW1ldGFkYXRhLmJhY2tlZC5maS90b2tlbnMvU29sYW5hL1RTTEF4L21ldGFkYXRhLmpzb24AAAAA",
+      "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+    },
+    "jk1T35eWK41MBMM8AWoYVaNbjHEEQzMDetTsfnqpump": {
+      "data": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA804WYhfqAgAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARIAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAArzBeJ+4DD/d32sKRo3I2kvyGANvRokPOXYpTvh9tlvEwC4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACvMF4n7gMP93fawpGjcjaS/IYA29GiQ85dilO+H22W8VAAAAU29sIFRoZSBUcm9waHkgVG9tYXRvAwAAAFNPTFAAAABodHRwczovL2lwZnMuaW8vaXBmcy9iYWZrcmVpYWRxaGx6Njc2NmpucWxycG5lamJrd3F3c3ViZjNod2Y1dm1vZW5yZmQzZXVyZWV3N3FoaQAAAAA=",
+      "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+    }
+  },
+  "instructions": [
+    {
+      "accounts": [
+        "7YUsiiea5dQYE1x12yopNpAcFPi59im5mvAwpwgzPMDR:w",
+        "96FHuHDcv9FL55qhoBoUGAmxZg9XM47fBM3t2vdefGW2",
+        "23XoPQqGw9WMsLoqTu8HMzJLD6RnXsufbKyWPLJywsCT:w",
+        "HtsNY52xUEe3VaXYVsqEK6k7XVNQhzRRRhZipUqwRKJL:w",
+        "9A9yjQ3NEdM7WdrMW2Rkb85gh67EEntTSLJYQnbi5WwN:w",
+        "J9WJF4NbJwio4DiKiTGsb7uDnxbruWjEVkj7M6bLhCRa:w",
+        "6nMF76wKdFZaE78eRRDcNikVw1jMKMC4zoj7ibq1N25f:w",
+        "EWXF1h46ahk9i4c768wRCxxWjR7eEDs3PAvFwms95hqf:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+        "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "AsotAq6Hb5KW6bAExHq2hJctDNuErLEjaVSaR4yJ5WEj",
+        "5ipEofiHQt2z9EXBZZMbMLcgeD6SFRFGKfQgfo65PKCc:w",
+        "8vdCZ5Ks2TcgAfJjE7q9RKdBt1A9dWPM7fKQPFaC3Z3E:w",
+        "45HT9JFxtNEEKAQ9abyCSf663eZfMAzxUtq2ppsnkKBo:w",
+        "Dpw1EAVrSB1ibxiDQyTAW6Zip3J4Btk2x4SgApQCeFbX",
+        "HT2PLQBcG5EiCcNSaMHAjSgd9F98ecpATbk4Sk5oYuM"
+      ],
+      "data": "e52ed584692828e4588fa5040000000000000000000000000000000000000000000000000000000001",
+      "fields": [
+        [
+          "Amount",
+          "77,959,000 base units"
+        ],
+        [
+          "Minimum Out or Maximum In",
+          "0 base units"
+        ],
+        [
+          "Sqrt Price Limit (Q64.64)",
+          "0"
+        ],
+        [
+          "Exact Input",
+          "true"
+        ],
+        [
+          "Payer",
+          "7YUsiiea5dQYE1x12yopNpAcFPi59im5mvAwpwgzPMDR"
+        ],
+        [
+          "AMM Config",
+          "96FHuHDcv9FL55qhoBoUGAmxZg9XM47fBM3t2vdefGW2"
+        ],
+        [
+          "Pool",
+          "23XoPQqGw9WMsLoqTu8HMzJLD6RnXsufbKyWPLJywsCT"
+        ],
+        [
+          "From",
+          "HtsNY52xUEe3VaXYVsqEK6k7XVNQhzRRRhZipUqwRKJL"
+        ],
+        [
+          "To",
+          "9A9yjQ3NEdM7WdrMW2Rkb85gh67EEntTSLJYQnbi5WwN"
+        ],
+        [
+          "Pool Input Vault",
+          "J9WJF4NbJwio4DiKiTGsb7uDnxbruWjEVkj7M6bLhCRa"
+        ],
+        [
+          "Pool Output Vault",
+          "6nMF76wKdFZaE78eRRDcNikVw1jMKMC4zoj7ibq1N25f"
+        ],
+        [
+          "Observation",
+          "EWXF1h46ahk9i4c768wRCxxWjR7eEDs3PAvFwms95hqf"
+        ],
+        [
+          "Input Mint",
+          "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
+        ],
+        [
+          "Output Mint",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ]
+      ],
+      "from": "2gVqNmSGcmhBd4FBEg5Vn1PayBFiwSURiaFuhuRz5NDQRWxXBT2hx5yFTcA9vpSchm2X6uj5ZNWakJFWZJcsngQF#3.19",
+      "intent": "Swap tokens",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "7YUsiiea5dQYE1x12yopNpAcFPi59im5mvAwpwgzPMDR swaps Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB for EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v in pool 23XoPQqGw9WMsLoqTu8HMzJLD6RnXsufbKyWPLJywsCT, from HtsNY52xUEe3VaXYVsqEK6k7XVNQhzRRRhZipUqwRKJL to 9A9yjQ3NEdM7WdrMW2Rkb85gh67EEntTSLJYQnbi5WwN",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Go968RxsTEPwjE6CT4WSqx13aGL31jTFK24go8qya4oE:sw",
+        "veWyQnnZP5rJgVkif5zL5hvuxFTZMcJVoVEo3ri8ZKA",
+        "27x6aSxcAm6SoazoxmmTtFg6fWMQuNmdKJmHagq1DUZy:w",
+        "CKMrztFXsZKMswQrxzWRFEAptNhv4pJX6DbkS1hDyuJp:w",
+        "FLz3NiYFKDRKbTtvSBfwVXnQNW9GXkQLex66QW8F5Z2j:w",
+        "FGdm1Ww1ch138kWjjEigFUFncxzkvfZ6m8Fo1YvM8BMu:w",
+        "EmgcRJvrSwnHKnqTe8RHyeRsu9GukAYXRQkv8qspGsnf:w",
+        "8xiaXUGsJDzjCiYXRvqaH3VJSwpRT7F3TqX2PrLuq981:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W",
+        "5fSvYhd2q8CFJpJXLA2VhA5VZzafCeieX7JZacRxmpzq",
+        "nFkzPWmt8DYa97bHuFxQCLPi3WiQVxQt1NgSQU7nmVL:w",
+        "GFoEYxpQSQwLgTs5wV2BXWf9ZK6mcVrPu4oXrN8x6PCZ:w",
+        "2j4WinR9FZHGtUymruMvdBzLEo6Ky5CLpHCpzfYms5Yq:w",
+        "Fvnz96iK8XKfr2uwQsgpCPUoywdtByrsQpnRNZSq2dj1:w"
+      ],
+      "data": "e52ed584692828e4feea3e000000000000000000000000000000000000000000000000000000000001",
+      "fields": [
+        [
+          "Amount",
+          "4,123,390 base units"
+        ],
+        [
+          "Minimum Out or Maximum In",
+          "0 base units"
+        ],
+        [
+          "Sqrt Price Limit (Q64.64)",
+          "0"
+        ],
+        [
+          "Exact Input",
+          "true"
+        ],
+        [
+          "Payer",
+          "Go968RxsTEPwjE6CT4WSqx13aGL31jTFK24go8qya4oE"
+        ],
+        [
+          "AMM Config",
+          "veWyQnnZP5rJgVkif5zL5hvuxFTZMcJVoVEo3ri8ZKA"
+        ],
+        [
+          "Pool",
+          "27x6aSxcAm6SoazoxmmTtFg6fWMQuNmdKJmHagq1DUZy"
+        ],
+        [
+          "From",
+          "CKMrztFXsZKMswQrxzWRFEAptNhv4pJX6DbkS1hDyuJp"
+        ],
+        [
+          "To",
+          "FLz3NiYFKDRKbTtvSBfwVXnQNW9GXkQLex66QW8F5Z2j"
+        ],
+        [
+          "Pool Input Vault",
+          "FGdm1Ww1ch138kWjjEigFUFncxzkvfZ6m8Fo1YvM8BMu"
+        ],
+        [
+          "Pool Output Vault",
+          "EmgcRJvrSwnHKnqTe8RHyeRsu9GukAYXRQkv8qspGsnf"
+        ],
+        [
+          "Observation",
+          "8xiaXUGsJDzjCiYXRvqaH3VJSwpRT7F3TqX2PrLuq981"
+        ],
+        [
+          "Input Mint",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Output Mint",
+          "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W"
+        ]
+      ],
+      "from": "2r78eqGopYEdHbCtuJk7hEPSN2a9NSu3dNgMHQ6zvwYRSxNxaj3bv52sR7MhnzouJnyszPUKiM9UUKCrb1SiRkmP#4.14",
+      "intent": "Swap tokens",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "Go968RxsTEPwjE6CT4WSqx13aGL31jTFK24go8qya4oE swaps EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v for XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W in pool 27x6aSxcAm6SoazoxmmTtFg6fWMQuNmdKJmHagq1DUZy, from CKMrztFXsZKMswQrxzWRFEAptNhv4pJX6DbkS1hDyuJp to FLz3NiYFKDRKbTtvSBfwVXnQNW9GXkQLex66QW8F5Z2j",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM:w",
+        "Cgc2VcAefVLKgfueBUAKYNgyiYs4YCHQMeTLJ4DccrTt",
+        "DyzGYEhdgSn5EEUt4XXviavZ7v7SV2YGrYV8HX3Aw5XT:w",
+        "EW9diL91VgHY5i9qYScz53W3PihQPSnPoMtAKCo1Bs7J:w",
+        "6T82i5r6mPwiJzJoZbLN3nMsvWwvcLPSMFQP1MuA88XC:w",
+        "2woLM63wQWnNtQoWhtUfQCUE4fTqyyJN9t3WdtFoF9sN:w",
+        "yCeSRFxf5zn4nTMV4wjsBswhKD1ac6bz1FsTPSqWeG7:w",
+        "9gmyvoNDMpCKn9MQYUc8q23TS7Q2mhkrqiksD8F3RsBS:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+        "So11111111111111111111111111111111111111112",
+        "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB",
+        "AnXYymu5kNhvtsHtaVF2XNkAKA6P9WRyzUFPvgK8k97j:w",
+        "ExhjMVywDhjjhm5DWKbn5ELiVqeV77WbymoBJSSNj8NS:w",
+        "BFfUG4Ej9XRvBNupt4F68yxjdDSj9TUvsGadh9dwBUia:w",
+        "7Qj6EpqzhN7nq3qEnbS1916x7c9Cn7UbgquUbdjiABky:w"
+      ],
+      "data": "2b04ed0b1ac91e62ecc1c400000000000000000000000000513b010001000000000000000000000001",
+      "fields": [
+        [
+          "Amount",
+          "12,894,700 base units"
+        ],
+        [
+          "Minimum Out or Maximum In",
+          "0 base units"
+        ],
+        [
+          "Sqrt Price Limit (Q64.64)",
+          "4,295,048,017"
+        ],
+        [
+          "Exact Input",
+          "true"
+        ],
+        [
+          "Payer",
+          "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM"
+        ],
+        [
+          "AMM Config",
+          "Cgc2VcAefVLKgfueBUAKYNgyiYs4YCHQMeTLJ4DccrTt"
+        ],
+        [
+          "Pool",
+          "DyzGYEhdgSn5EEUt4XXviavZ7v7SV2YGrYV8HX3Aw5XT"
+        ],
+        [
+          "From",
+          "EW9diL91VgHY5i9qYScz53W3PihQPSnPoMtAKCo1Bs7J"
+        ],
+        [
+          "To",
+          "6T82i5r6mPwiJzJoZbLN3nMsvWwvcLPSMFQP1MuA88XC"
+        ],
+        [
+          "Pool Input Vault",
+          "2woLM63wQWnNtQoWhtUfQCUE4fTqyyJN9t3WdtFoF9sN"
+        ],
+        [
+          "Pool Output Vault",
+          "yCeSRFxf5zn4nTMV4wjsBswhKD1ac6bz1FsTPSqWeG7"
+        ],
+        [
+          "Observation",
+          "9gmyvoNDMpCKn9MQYUc8q23TS7Q2mhkrqiksD8F3RsBS"
+        ],
+        [
+          "Input Mint",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Output Mint",
+          "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB"
+        ]
+      ],
+      "from": "48XdEE5jzWLH9UEhtfzXHqm2zjBQbfVAPmBmDa7DqfVYhm8WkCZXVahfDEaFNDQKFJo47x1pJcFV5fYmjDH6fHLz#3.4",
+      "intent": "Swap tokens",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM swaps So11111111111111111111111111111111111111112 for USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB in pool DyzGYEhdgSn5EEUt4XXviavZ7v7SV2YGrYV8HX3Aw5XT, from EW9diL91VgHY5i9qYScz53W3PihQPSnPoMtAKCo1Bs7J to 6T82i5r6mPwiJzJoZbLN3nMsvWwvcLPSMFQP1MuA88XC",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "9nXDunV8eNvYSVys7JSBkm2hz9Q79Q3EYeko19srVeMC:sw",
+        "veWyQnnZP5rJgVkif5zL5hvuxFTZMcJVoVEo3ri8ZKA",
+        "CG57vftDHV6M67mPT2Q5JXGRTtoiXf3fSdFUGtYVfYjJ:w",
+        "mCRv3uFE97H1PMspje5cytWMGq8aNYoFvz1dW9yQ1h4:w",
+        "C7vwpVYhcyUyrLb2HPEq3HCvarXTVWczPLPStEpdbzUa:w",
+        "GfKndpNqHnrdRdvmQhJRrB5MchkqAcG41nhqQSrNtErP:w",
+        "FsCgkPkiujtMogF2kzSyWwbTzvgsyDjG6Yu3s6Eok5FY:w",
+        "41tkvarSWyQPE6oqz52xiCFvadXn94Q2sFpvxtpKdgsc:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "6iASVFwMczoQZqsrBBrefwHzuDSPo41jrvZH9giJWyPZ:w",
+        "CwsrPo83WCdrJdkzoC6NQZy31Joxh87gYMwxCTXJswbW:w",
+        "xf6pzunNmNLHaPZbWQ9XFuSX1NLU8PZRp9FoBUfxNRd:w",
+        "HEB4ku9c52XXbXoNEfbWADACBYCpRdVqmjgrQCjsqYhx:w"
+      ],
+      "data": "f8c69e91e17587c80006ee871000000000127a0000000000a05240ce67e09603000000000000000001",
+      "fields": [
+        [
+          "Amount",
+          "71,000,000,000 base units"
+        ],
+        [
+          "Minimum Out or Maximum In",
+          "8,000,000 base units"
+        ],
+        [
+          "Sqrt Price Limit (Q64.64)",
+          "258,640,765,066,957,472"
+        ],
+        [
+          "Exact Input",
+          "true"
+        ],
+        [
+          "Payer",
+          "9nXDunV8eNvYSVys7JSBkm2hz9Q79Q3EYeko19srVeMC"
+        ],
+        [
+          "AMM Config",
+          "veWyQnnZP5rJgVkif5zL5hvuxFTZMcJVoVEo3ri8ZKA"
+        ],
+        [
+          "Pool",
+          "CG57vftDHV6M67mPT2Q5JXGRTtoiXf3fSdFUGtYVfYjJ"
+        ],
+        [
+          "From",
+          "mCRv3uFE97H1PMspje5cytWMGq8aNYoFvz1dW9yQ1h4"
+        ],
+        [
+          "To",
+          "C7vwpVYhcyUyrLb2HPEq3HCvarXTVWczPLPStEpdbzUa"
+        ],
+        [
+          "Pool Input Vault",
+          "GfKndpNqHnrdRdvmQhJRrB5MchkqAcG41nhqQSrNtErP"
+        ],
+        [
+          "Pool Output Vault",
+          "FsCgkPkiujtMogF2kzSyWwbTzvgsyDjG6Yu3s6Eok5FY"
+        ],
+        [
+          "Observation",
+          "41tkvarSWyQPE6oqz52xiCFvadXn94Q2sFpvxtpKdgsc"
+        ],
+        [
+          "Tick Array",
+          "6iASVFwMczoQZqsrBBrefwHzuDSPo41jrvZH9giJWyPZ"
+        ]
+      ],
+      "from": "4pbF7uUfCT5Q2iKXn19bVoDJtXP982WtiM2tXY2MQo17WZUy1TXh7TyRmFHhSCD1j2CiAquKgZF53kDKVvXsENJK#5",
+      "intent": "Swap tokens",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "9nXDunV8eNvYSVys7JSBkm2hz9Q79Q3EYeko19srVeMC swaps in pool CG57vftDHV6M67mPT2Q5JXGRTtoiXf3fSdFUGtYVfYjJ from mCRv3uFE97H1PMspje5cytWMGq8aNYoFvz1dW9yQ1h4 to C7vwpVYhcyUyrLb2HPEq3HCvarXTVWczPLPStEpdbzUa",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Fh5GnaCKFQZ4zBB1zPGVeZ2FCvWJeHp93dfzJdqdwq1u:sw",
+        "BZqVrakEHpRk6YG5hc6Gzg8pZayNqrrJJUzU9fUH5g7X",
+        "4y93rQhiQgeUaN67btBFTsuELXhQMhZMrzNNqmaexTN:w",
+        "6FQQyf7UcyU86TZC1cmAcfC4a18SJyDggEKtQfTJWmfs:w",
+        "4LK5jQuPNXRB1zsdDs1fMXPcx6QUmdbmuY1tzdhkhhbN:w",
+        "3jw1BUabindVnNny6Y7PTUwYSD4JXofWE6oHraQjvbcB:w",
+        "DmFeEheo21zeRi6y7CLUSVpFVq33MjMYeDeL51iKYwgg:w",
+        "5JSmsR3s6i6LZcfHdGz6AZN61um5eb9x6fGrwVakLbuv:w",
+        "4TsaNFGPbccAW359uS5EKn61rDgLRubnPwkKVBRq52aU:w",
+        "8TLPshqZP3gZUDS8DdtBDqJZ9yAm8XHJuZDKpJ1SfUAZ:w",
+        "35KqJ1US6yJsVGkTBLoP3JdbAiZMdKpDPnYEfvwxVxEg:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+        "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      ],
+      "data": "3a7fbc3e4f52c4600000000000000000000000000000000000000000000000000000000000000000",
+      "fields": [
+        [
+          "Liquidity",
+          "0"
+        ],
+        [
+          "Token 0 Minimum",
+          "0"
+        ],
+        [
+          "Token 1 Minimum",
+          "0"
+        ],
+        [
+          "Position Owner",
+          "Fh5GnaCKFQZ4zBB1zPGVeZ2FCvWJeHp93dfzJdqdwq1u"
+        ],
+        [
+          "Position NFT Account",
+          "BZqVrakEHpRk6YG5hc6Gzg8pZayNqrrJJUzU9fUH5g7X"
+        ],
+        [
+          "Position",
+          "4y93rQhiQgeUaN67btBFTsuELXhQMhZMrzNNqmaexTN"
+        ],
+        [
+          "Pool",
+          "6FQQyf7UcyU86TZC1cmAcfC4a18SJyDggEKtQfTJWmfs"
+        ],
+        [
+          "Pool Vault 0",
+          "3jw1BUabindVnNny6Y7PTUwYSD4JXofWE6oHraQjvbcB"
+        ],
+        [
+          "Pool Vault 1",
+          "DmFeEheo21zeRi6y7CLUSVpFVq33MjMYeDeL51iKYwgg"
+        ],
+        [
+          "Lower Tick Array",
+          "5JSmsR3s6i6LZcfHdGz6AZN61um5eb9x6fGrwVakLbuv"
+        ],
+        [
+          "Upper Tick Array",
+          "4TsaNFGPbccAW359uS5EKn61rDgLRubnPwkKVBRq52aU"
+        ],
+        [
+          "Token 0 To",
+          "8TLPshqZP3gZUDS8DdtBDqJZ9yAm8XHJuZDKpJ1SfUAZ"
+        ],
+        [
+          "Token 1 To",
+          "35KqJ1US6yJsVGkTBLoP3JdbAiZMdKpDPnYEfvwxVxEg"
+        ],
+        [
+          "Token 0 Mint",
+          "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB"
+        ],
+        [
+          "Token 1 Mint",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ]
+      ],
+      "from": "WkFArfyECUAXzq332NRiC3vPJ72CRUTJgTR9BD8Yufzjwqm9aN452siLQ8wkFhcHCq2bBzfE85zUqYVJ9RvJk3B#5",
+      "intent": "Remove liquidity",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "Fh5GnaCKFQZ4zBB1zPGVeZ2FCvWJeHp93dfzJdqdwq1u removes 0 liquidity from position 4y93rQhiQgeUaN67btBFTsuELXhQMhZMrzNNqmaexTN, for at least 0 of XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB and 0 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "B3yjdsv78zMyMfhvrpTnzUopSij3uQafabAhBbeAifLv:sw",
+        "43HqShtzVc2oog56HynE2C1zJMjSMmKVPh28Ub9TfTh5:w",
+        "5H2GinbQBnNYk3JnditZ7r14zMVXWDwEZaRspYPKN5Pd:w",
+        "FSLSua26xaXSLUG31SnyifgS6wgkRh5SirbCZW9zXNoG:w",
+        "FSLSua26xaXSLUG31SnyifgS6wgkRh5SirbCZW9zXNoG:w",
+        "4ggNsGJHgBLJAk4SdKySq8QFpvFQ5qvvPqbwvYCAJBg3:w",
+        "8Q161sJzS6E9SD14eRsHxjLLxr599axBemwcgZy651jx:w",
+        "5YPee7zmgVUE4nohhpAqsz1uXXDs2f5qhZdM6Yf5Sr8J:w",
+        "BVHpuBgNQFikJgWSW78zAmggxSiwEKcu6gv7UePuSL91:w",
+        "AAFVpZYFCqWjSAMmqoh7MXVyfkGT2DfPTGYfas1DhaRV:w",
+        "BUbDuGbfPsp8CaG2EW8gwcb7SjMhDLHv2mYzUCx8q4p6:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+        "Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "9W3yMpEajsWKBmqsFcCP8SCQ1oAgzoiXU77hdvWUqQuh:w"
+      ],
+      "data": "3a7fbc3e4f52c4605a43863201000000000000000000000000000000000000000000000000000000",
+      "fields": [
+        [
+          "Liquidity",
+          "5,142,627,162"
+        ],
+        [
+          "Token 0 Minimum",
+          "0"
+        ],
+        [
+          "Token 1 Minimum",
+          "0"
+        ],
+        [
+          "Position Owner",
+          "B3yjdsv78zMyMfhvrpTnzUopSij3uQafabAhBbeAifLv"
+        ],
+        [
+          "Position NFT Account",
+          "43HqShtzVc2oog56HynE2C1zJMjSMmKVPh28Ub9TfTh5"
+        ],
+        [
+          "Position",
+          "5H2GinbQBnNYk3JnditZ7r14zMVXWDwEZaRspYPKN5Pd"
+        ],
+        [
+          "Pool",
+          "FSLSua26xaXSLUG31SnyifgS6wgkRh5SirbCZW9zXNoG"
+        ],
+        [
+          "Pool Vault 0",
+          "4ggNsGJHgBLJAk4SdKySq8QFpvFQ5qvvPqbwvYCAJBg3"
+        ],
+        [
+          "Pool Vault 1",
+          "8Q161sJzS6E9SD14eRsHxjLLxr599axBemwcgZy651jx"
+        ],
+        [
+          "Lower Tick Array",
+          "5YPee7zmgVUE4nohhpAqsz1uXXDs2f5qhZdM6Yf5Sr8J"
+        ],
+        [
+          "Upper Tick Array",
+          "BVHpuBgNQFikJgWSW78zAmggxSiwEKcu6gv7UePuSL91"
+        ],
+        [
+          "Token 0 To",
+          "AAFVpZYFCqWjSAMmqoh7MXVyfkGT2DfPTGYfas1DhaRV"
+        ],
+        [
+          "Token 1 To",
+          "BUbDuGbfPsp8CaG2EW8gwcb7SjMhDLHv2mYzUCx8q4p6"
+        ],
+        [
+          "Token 0 Mint",
+          "Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ"
+        ],
+        [
+          "Token 1 Mint",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Reward or Tick Bitmap Account",
+          "9W3yMpEajsWKBmqsFcCP8SCQ1oAgzoiXU77hdvWUqQuh"
+        ]
+      ],
+      "from": "Z5dSmHdKRDiYgxc7fcqUe2tLtGHKmvU9w3FcfJKURu1q7WPmzL83t8x937djm9r4aaACFLuDCNa9FsiX43nu9Xs#3.1",
+      "intent": "Remove liquidity",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "B3yjdsv78zMyMfhvrpTnzUopSij3uQafabAhBbeAifLv removes 5142627162 liquidity from position 5H2GinbQBnNYk3JnditZ7r14zMVXWDwEZaRspYPKN5Pd, for at least 0 of Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ and 0 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "F4BHhmQQY3E16bJsYLv6eiKXmk4ecMzX9Fxka2MMFm8Y:sw",
+        "mKwnVETxiJ7fZRdTiRTDaZtfTuJZKs9aBZ22vWUP624",
+        "5pobXosbeGSCRG3HdaRiw2TaihDDQMXkHFVbUTF24weM:w",
+        "Aa5BLHm4niT2MukfYVoAASJU26t6yfmrNZ68Piq7fa1Y:w",
+        "73Cdexsp1h4DnbCR2rsY83cdsb9dBkdy6cSiP13sMpV:w",
+        "6YdLuU79bHzcTuTMYmYvozQEdBeXjNduy6t6bkc9E2r1:w",
+        "5sgYUpNk4H7fns6NRNoDCeb4bDG5UTwAG9HJ8tSz7wRb:w",
+        "3uebaePUYhEiMKshNUqnPewvUFyuX6k9RVWWA8VJ5PDj:w",
+        "Haganskgq4gsQ8eR6zZPi8ysyei4YoyehmiNDKUwsqQY:w",
+        "HDmBqVr4W6QoZL76y5oeLftHRrnmHDUEmvX75pZCgehg:w",
+        "Bykx81MhyMemTa9bkqCcu54RLTFBc3cM8VwCexXiHTiZ:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      ],
+      "data": "851d59df45eeb00a000000000000000000000000000000007c681801000000006eec0600000000000101",
+      "fields": [
+        [
+          "Liquidity",
+          "0"
+        ],
+        [
+          "Token 0 Maximum",
+          "0.18376828"
+        ],
+        [
+          "Token 1 Maximum",
+          "0.453742"
+        ],
+        [
+          "Base On Token 0",
+          "true"
+        ],
+        [
+          "Position Owner",
+          "F4BHhmQQY3E16bJsYLv6eiKXmk4ecMzX9Fxka2MMFm8Y"
+        ],
+        [
+          "Position NFT Account",
+          "mKwnVETxiJ7fZRdTiRTDaZtfTuJZKs9aBZ22vWUP624"
+        ],
+        [
+          "Pool",
+          "5pobXosbeGSCRG3HdaRiw2TaihDDQMXkHFVbUTF24weM"
+        ],
+        [
+          "Position",
+          "73Cdexsp1h4DnbCR2rsY83cdsb9dBkdy6cSiP13sMpV"
+        ],
+        [
+          "Lower Tick Array",
+          "6YdLuU79bHzcTuTMYmYvozQEdBeXjNduy6t6bkc9E2r1"
+        ],
+        [
+          "Upper Tick Array",
+          "5sgYUpNk4H7fns6NRNoDCeb4bDG5UTwAG9HJ8tSz7wRb"
+        ],
+        [
+          "Token 0 From",
+          "3uebaePUYhEiMKshNUqnPewvUFyuX6k9RVWWA8VJ5PDj"
+        ],
+        [
+          "Token 1 From",
+          "Haganskgq4gsQ8eR6zZPi8ysyei4YoyehmiNDKUwsqQY"
+        ],
+        [
+          "Pool Vault 0",
+          "HDmBqVr4W6QoZL76y5oeLftHRrnmHDUEmvX75pZCgehg"
+        ],
+        [
+          "Pool Vault 1",
+          "Bykx81MhyMemTa9bkqCcu54RLTFBc3cM8VwCexXiHTiZ"
+        ],
+        [
+          "Token 0 Mint",
+          "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu"
+        ],
+        [
+          "Token 1 Mint",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ]
+      ],
+      "from": "oZX6Vhtxf1kx8CBpX5L4mMxmr8xUc6RVScBCbL5ywpsUxGw9jJoGgDyAPLSMcByXDeea514wBvyB8Nxbdo295Bb#5",
+      "intent": "Add liquidity",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "F4BHhmQQY3E16bJsYLv6eiKXmk4ecMzX9Fxka2MMFm8Y adds liquidity to position 73Cdexsp1h4DnbCR2rsY83cdsb9dBkdy6cSiP13sMpV, paying at most 0.18376828 of Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu and 0.453742 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "F4BHhmQQY3E16bJsYLv6eiKXmk4ecMzX9Fxka2MMFm8Y:sw",
+        "F4BHhmQQY3E16bJsYLv6eiKXmk4ecMzX9Fxka2MMFm8Y:sw",
+        "8jEsUFyvdGaDE2yXZ5a9dyYwhh5WCx6GUu1eVX8c1BHG:sw",
+        "mKwnVETxiJ7fZRdTiRTDaZtfTuJZKs9aBZ22vWUP624:w",
+        "5pobXosbeGSCRG3HdaRiw2TaihDDQMXkHFVbUTF24weM:w",
+        "Aa5BLHm4niT2MukfYVoAASJU26t6yfmrNZ68Piq7fa1Y:w",
+        "6YdLuU79bHzcTuTMYmYvozQEdBeXjNduy6t6bkc9E2r1:w",
+        "5sgYUpNk4H7fns6NRNoDCeb4bDG5UTwAG9HJ8tSz7wRb:w",
+        "73Cdexsp1h4DnbCR2rsY83cdsb9dBkdy6cSiP13sMpV:w",
+        "3uebaePUYhEiMKshNUqnPewvUFyuX6k9RVWWA8VJ5PDj:w",
+        "Haganskgq4gsQ8eR6zZPi8ysyei4YoyehmiNDKUwsqQY:w",
+        "HDmBqVr4W6QoZL76y5oeLftHRrnmHDUEmvX75pZCgehg:w",
+        "Bykx81MhyMemTa9bkqCcu54RLTFBc3cM8VwCexXiHTiZ:w",
+        "SysvarRent111111111111111111111111111111111",
+        "11111111111111111111111111111111",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      ],
+      "data": "4dffae527d1dc92edc0a0000d21e000060090000781e000000000000000000000000000000000000ae77ed470000000074a5c60100000000010101",
+      "fields": [
+        [
+          "Lower Tick",
+          "2,780"
+        ],
+        [
+          "Upper Tick",
+          "7,890"
+        ],
+        [
+          "Liquidity",
+          "0"
+        ],
+        [
+          "Token 0 Maximum",
+          "12.06745006"
+        ],
+        [
+          "Token 1 Maximum",
+          "29.7957"
+        ],
+        [
+          "With Metadata",
+          "true"
+        ],
+        [
+          "Base On Token 0",
+          "true"
+        ],
+        [
+          "Payer",
+          "F4BHhmQQY3E16bJsYLv6eiKXmk4ecMzX9Fxka2MMFm8Y"
+        ],
+        [
+          "Position NFT Owner",
+          "F4BHhmQQY3E16bJsYLv6eiKXmk4ecMzX9Fxka2MMFm8Y"
+        ],
+        [
+          "Position NFT",
+          "8jEsUFyvdGaDE2yXZ5a9dyYwhh5WCx6GUu1eVX8c1BHG"
+        ],
+        [
+          "Position NFT Account",
+          "mKwnVETxiJ7fZRdTiRTDaZtfTuJZKs9aBZ22vWUP624"
+        ],
+        [
+          "Pool",
+          "5pobXosbeGSCRG3HdaRiw2TaihDDQMXkHFVbUTF24weM"
+        ],
+        [
+          "Lower Tick Array",
+          "6YdLuU79bHzcTuTMYmYvozQEdBeXjNduy6t6bkc9E2r1"
+        ],
+        [
+          "Upper Tick Array",
+          "5sgYUpNk4H7fns6NRNoDCeb4bDG5UTwAG9HJ8tSz7wRb"
+        ],
+        [
+          "Position",
+          "73Cdexsp1h4DnbCR2rsY83cdsb9dBkdy6cSiP13sMpV"
+        ],
+        [
+          "Token 0 From",
+          "3uebaePUYhEiMKshNUqnPewvUFyuX6k9RVWWA8VJ5PDj"
+        ],
+        [
+          "Token 1 From",
+          "Haganskgq4gsQ8eR6zZPi8ysyei4YoyehmiNDKUwsqQY"
+        ],
+        [
+          "Pool Vault 0",
+          "HDmBqVr4W6QoZL76y5oeLftHRrnmHDUEmvX75pZCgehg"
+        ],
+        [
+          "Pool Vault 1",
+          "Bykx81MhyMemTa9bkqCcu54RLTFBc3cM8VwCexXiHTiZ"
+        ],
+        [
+          "Token 0 Mint",
+          "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu"
+        ],
+        [
+          "Token 1 Mint",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ]
+      ],
+      "from": "bax69qF2BcYFHg1NEn7n14KcSKwknrARVTB8oKu9uY3cC11mp8Fc6Wsro3YVXUDdc2JQZddTkAms6gKgZZHvDsu#5",
+      "intent": "Open position",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "F4BHhmQQY3E16bJsYLv6eiKXmk4ecMzX9Fxka2MMFm8Y opens a position in pool 5pobXosbeGSCRG3HdaRiw2TaihDDQMXkHFVbUTF24weM from tick 2780 to 7890, paying at most 12.06745006 of Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu and 29.7957 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v, with its NFT 8jEsUFyvdGaDE2yXZ5a9dyYwhh5WCx6GUu1eVX8c1BHG going to F4BHhmQQY3E16bJsYLv6eiKXmk4ecMzX9Fxka2MMFm8Y",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "B3yjdsv78zMyMfhvrpTnzUopSij3uQafabAhBbeAifLv:sw",
+        "B3yjdsv78zMyMfhvrpTnzUopSij3uQafabAhBbeAifLv:sw",
+        "vGjH5vKuy5oWTJQQ4aYbppYNpK7E92T1o8GT5MFE5Xs:sw",
+        "D1JVKUFhLTzG1DCXriGA3P2XeLTpuadjxj4KjGU9a1Sx:w",
+        "FSLSua26xaXSLUG31SnyifgS6wgkRh5SirbCZW9zXNoG:w",
+        "FSLSua26xaXSLUG31SnyifgS6wgkRh5SirbCZW9zXNoG:w",
+        "EfPDYeTeWzTndARy2axnjQTDRwA6Zq6dhAvYSfzP9v6z:w",
+        "5YPee7zmgVUE4nohhpAqsz1uXXDs2f5qhZdM6Yf5Sr8J:w",
+        "9xWnV99L8cFqwHx2Nar6hBvDUTAxgvRR3Ucs9tuHgBa:w",
+        "AAFVpZYFCqWjSAMmqoh7MXVyfkGT2DfPTGYfas1DhaRV:w",
+        "BUbDuGbfPsp8CaG2EW8gwcb7SjMhDLHv2mYzUCx8q4p6:w",
+        "4ggNsGJHgBLJAk4SdKySq8QFpvFQ5qvvPqbwvYCAJBg3:w",
+        "8Q161sJzS6E9SD14eRsHxjLLxr599axBemwcgZy651jx:w",
+        "SysvarRent111111111111111111111111111111111",
+        "11111111111111111111111111111111",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "9W3yMpEajsWKBmqsFcCP8SCQ1oAgzoiXU77hdvWUqQuh:w"
+      ],
+      "data": "4dffae527d1dc92e62480000884a000050460000a84800000000000000000000000000000000000000000000000000003382d111000000000000",
+      "fields": [
+        [
+          "Lower Tick",
+          "18,530"
+        ],
+        [
+          "Upper Tick",
+          "19,080"
+        ],
+        [
+          "Liquidity",
+          "0"
+        ],
+        [
+          "Token 0 Maximum",
+          "0"
+        ],
+        [
+          "Token 1 Maximum",
+          "298.943027"
+        ],
+        [
+          "With Metadata",
+          "false"
+        ],
+        [
+          "Base On Token 0",
+          "None"
+        ],
+        [
+          "Payer",
+          "B3yjdsv78zMyMfhvrpTnzUopSij3uQafabAhBbeAifLv"
+        ],
+        [
+          "Position NFT Owner",
+          "B3yjdsv78zMyMfhvrpTnzUopSij3uQafabAhBbeAifLv"
+        ],
+        [
+          "Position NFT",
+          "vGjH5vKuy5oWTJQQ4aYbppYNpK7E92T1o8GT5MFE5Xs"
+        ],
+        [
+          "Position NFT Account",
+          "D1JVKUFhLTzG1DCXriGA3P2XeLTpuadjxj4KjGU9a1Sx"
+        ],
+        [
+          "Pool",
+          "FSLSua26xaXSLUG31SnyifgS6wgkRh5SirbCZW9zXNoG"
+        ],
+        [
+          "Lower Tick Array",
+          "EfPDYeTeWzTndARy2axnjQTDRwA6Zq6dhAvYSfzP9v6z"
+        ],
+        [
+          "Upper Tick Array",
+          "5YPee7zmgVUE4nohhpAqsz1uXXDs2f5qhZdM6Yf5Sr8J"
+        ],
+        [
+          "Position",
+          "9xWnV99L8cFqwHx2Nar6hBvDUTAxgvRR3Ucs9tuHgBa"
+        ],
+        [
+          "Token 0 From",
+          "AAFVpZYFCqWjSAMmqoh7MXVyfkGT2DfPTGYfas1DhaRV"
+        ],
+        [
+          "Token 1 From",
+          "BUbDuGbfPsp8CaG2EW8gwcb7SjMhDLHv2mYzUCx8q4p6"
+        ],
+        [
+          "Pool Vault 0",
+          "4ggNsGJHgBLJAk4SdKySq8QFpvFQ5qvvPqbwvYCAJBg3"
+        ],
+        [
+          "Pool Vault 1",
+          "8Q161sJzS6E9SD14eRsHxjLLxr599axBemwcgZy651jx"
+        ],
+        [
+          "Token 0 Mint",
+          "Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ"
+        ],
+        [
+          "Token 1 Mint",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ]
+      ],
+      "from": "Z5dSmHdKRDiYgxc7fcqUe2tLtGHKmvU9w3FcfJKURu1q7WPmzL83t8x937djm9r4aaACFLuDCNa9FsiX43nu9Xs#3.7",
+      "intent": "Open position",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "B3yjdsv78zMyMfhvrpTnzUopSij3uQafabAhBbeAifLv opens a position in pool FSLSua26xaXSLUG31SnyifgS6wgkRh5SirbCZW9zXNoG from tick 18530 to 19080, paying at most 0 of Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ and 298.943027 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v, with its NFT vGjH5vKuy5oWTJQQ4aYbppYNpK7E92T1o8GT5MFE5Xs going to B3yjdsv78zMyMfhvrpTnzUopSij3uQafabAhBbeAifLv",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "B3yjdsv78zMyMfhvrpTnzUopSij3uQafabAhBbeAifLv:sw",
+        "ARQuSaDTQxEFbZ9mjroS2SNz4LfoRPs7pAdh4f7ys9nS:w",
+        "43HqShtzVc2oog56HynE2C1zJMjSMmKVPh28Ub9TfTh5:w",
+        "5H2GinbQBnNYk3JnditZ7r14zMVXWDwEZaRspYPKN5Pd:w",
+        "11111111111111111111111111111111",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+      ],
+      "data": "7b86510031446262",
+      "fields": [
+        [
+          "Position Owner",
+          "B3yjdsv78zMyMfhvrpTnzUopSij3uQafabAhBbeAifLv"
+        ],
+        [
+          "Position NFT",
+          "ARQuSaDTQxEFbZ9mjroS2SNz4LfoRPs7pAdh4f7ys9nS"
+        ],
+        [
+          "Position NFT Account",
+          "43HqShtzVc2oog56HynE2C1zJMjSMmKVPh28Ub9TfTh5"
+        ],
+        [
+          "Position",
+          "5H2GinbQBnNYk3JnditZ7r14zMVXWDwEZaRspYPKN5Pd"
+        ]
+      ],
+      "from": "Z5dSmHdKRDiYgxc7fcqUe2tLtGHKmvU9w3FcfJKURu1q7WPmzL83t8x937djm9r4aaACFLuDCNa9FsiX43nu9Xs#3.3",
+      "intent": "Close position",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "B3yjdsv78zMyMfhvrpTnzUopSij3uQafabAhBbeAifLv closes position 5H2GinbQBnNYk3JnditZ7r14zMVXWDwEZaRspYPKN5Pd and burns its NFT ARQuSaDTQxEFbZ9mjroS2SNz4LfoRPs7pAdh4f7ys9nS",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "J8x44zc8gQKGJd7v9KPrr3o1GreK7borHM7yfpPtHbjw:sw",
+        "8LMN8KhZjUqZx4JLUNnPC8pmWAZk3gqkP66czcvHLRg4:s",
+        "C6rhj2YEH1eKpUsYqcFFVJpnWvmnrxitsv5AMYTGbPJr",
+        "DmwKabMV6cTZ1ejwjRFr2R5LPq6p4dTkr7xAaVJSDxhk",
+        "SKHYhSjuRWHgikq8eRKbtBbpABgJSkd7ytQV14i9EQ3",
+        "2qgbum3v2aLbmS3peKWLnCsGuZkVV8G5cknA8EMSU8N4:w",
+        "rAvAudGxkR7TKdEWepiSHCLhrQBKuRLpWNEiZLu5PH4:w",
+        "55s3pr6UtLa3sdWEZMeiZBEqvdtMeh9qsMiVJnc64QSe",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+      ],
+      "data": "c357dd958dc392138205000000000000",
+      "fields": [
+        [
+          "Amount",
+          "0.00141"
+        ],
+        [
+          "Claimer",
+          "J8x44zc8gQKGJd7v9KPrr3o1GreK7borHM7yfpPtHbjw"
+        ],
+        [
+          "Reward Claim Manager",
+          "8LMN8KhZjUqZx4JLUNnPC8pmWAZk3gqkP66czcvHLRg4"
+        ],
+        [
+          "Pool",
+          "DmwKabMV6cTZ1ejwjRFr2R5LPq6p4dTkr7xAaVJSDxhk"
+        ],
+        [
+          "Reward Mint",
+          "SKHYhSjuRWHgikq8eRKbtBbpABgJSkd7ytQV14i9EQ3"
+        ],
+        [
+          "To",
+          "2qgbum3v2aLbmS3peKWLnCsGuZkVV8G5cknA8EMSU8N4"
+        ],
+        [
+          "Off-Chain Reward Vault",
+          "rAvAudGxkR7TKdEWepiSHCLhrQBKuRLpWNEiZLu5PH4"
+        ],
+        [
+          "Off-Chain Reward Config",
+          "55s3pr6UtLa3sdWEZMeiZBEqvdtMeh9qsMiVJnc64QSe"
+        ]
+      ],
+      "from": "2H4Y1AniGLV7iWAr5upK5gGU5kBZwTuFThN4uFL6HMnZsmkiaQMiXAU1Krz6FQcZuN7uPU8DANqDz52vD4CSxW1r#3",
+      "intent": "Claim rewards",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "J8x44zc8gQKGJd7v9KPrr3o1GreK7borHM7yfpPtHbjw claims 0.00141 of SKHYhSjuRWHgikq8eRKbtBbpABgJSkd7ytQV14i9EQ3 in rewards of pool DmwKabMV6cTZ1ejwjRFr2R5LPq6p4dTkr7xAaVJSDxhk into 2qgbum3v2aLbmS3peKWLnCsGuZkVV8G5cknA8EMSU8N4, approved by 8LMN8KhZjUqZx4JLUNnPC8pmWAZk3gqkP66czcvHLRg4",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HM3yFeCs7c4NUakGCBCY2L8TcTKKtQJgsWTaFG27nrVU:sw",
+        "8LMN8KhZjUqZx4JLUNnPC8pmWAZk3gqkP66czcvHLRg4:s",
+        "C6rhj2YEH1eKpUsYqcFFVJpnWvmnrxitsv5AMYTGbPJr",
+        "6FQQyf7UcyU86TZC1cmAcfC4a18SJyDggEKtQfTJWmfs",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "4zMeJjzTZfta39Nu3oSSY5MFfdquv96ScyKXiYKpvXae:w",
+        "3RJ1Qanfbi4s1HHBbFUGJ9vQcwmXbVJyuqA3CrYU8kyG:w",
+        "7FR1Ej9NiDnS5iNkV7C8vWKBQZLZr4QGqFkwunGqkM7H",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+      ],
+      "data": "c357dd958dc39213f1030f0000000000",
+      "fields": [
+        [
+          "Amount",
+          "0.984049"
+        ],
+        [
+          "Claimer",
+          "HM3yFeCs7c4NUakGCBCY2L8TcTKKtQJgsWTaFG27nrVU"
+        ],
+        [
+          "Reward Claim Manager",
+          "8LMN8KhZjUqZx4JLUNnPC8pmWAZk3gqkP66czcvHLRg4"
+        ],
+        [
+          "Pool",
+          "6FQQyf7UcyU86TZC1cmAcfC4a18SJyDggEKtQfTJWmfs"
+        ],
+        [
+          "Reward Mint",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "To",
+          "4zMeJjzTZfta39Nu3oSSY5MFfdquv96ScyKXiYKpvXae"
+        ],
+        [
+          "Off-Chain Reward Vault",
+          "3RJ1Qanfbi4s1HHBbFUGJ9vQcwmXbVJyuqA3CrYU8kyG"
+        ],
+        [
+          "Off-Chain Reward Config",
+          "7FR1Ej9NiDnS5iNkV7C8vWKBQZLZr4QGqFkwunGqkM7H"
+        ]
+      ],
+      "from": "3Vg6jD6APAuEm5GYAHmXC7e8G8ivaG8gAV2FM1cusuCxbrprBUktiNehz3vmiaFvXLZmTUuLmpuYScpAtWsRaDtf#3",
+      "intent": "Claim rewards",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "HM3yFeCs7c4NUakGCBCY2L8TcTKKtQJgsWTaFG27nrVU claims 0.984049 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v in rewards of pool 6FQQyf7UcyU86TZC1cmAcfC4a18SJyDggEKtQfTJWmfs into 4zMeJjzTZfta39Nu3oSSY5MFfdquv96ScyKXiYKpvXae, approved by 8LMN8KhZjUqZx4JLUNnPC8pmWAZk3gqkP66czcvHLRg4",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "31X4DEovSM7oDg9jqz4HHnGtoovzLKZVm4NiLiFtPb88:w",
+        "31X4DEovSM7oDg9jqz4HHnGtoovzLKZVm4NiLiFtPb88:w",
+        "C6rhj2YEH1eKpUsYqcFFVJpnWvmnrxitsv5AMYTGbPJr",
+        "Hv44BZaqT5URrrAtGk6jvfbWKL2PytWA4ur2r1QnvtQa",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "F9BHzbWTSeGneVabHhvidBZsVuX5RxbQfqbtmVKi5qGU:w",
+        "8xabwPP1ZXdoDj9yN28S1AJZYtzKoRLvZ4hWkKQJ2LMb:w",
+        "C4vos7JxoPpc76dy5CSB96FadiE5cD7ZUHa3o9zm5Eyt:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111"
+      ],
+      "data": "617d30a95cf12c8e80b2e60e00000000",
+      "fields": [
+        [
+          "Amount",
+          "250"
+        ],
+        [
+          "Payer",
+          "31X4DEovSM7oDg9jqz4HHnGtoovzLKZVm4NiLiFtPb88"
+        ],
+        [
+          "Reward Manager",
+          "31X4DEovSM7oDg9jqz4HHnGtoovzLKZVm4NiLiFtPb88"
+        ],
+        [
+          "Pool",
+          "Hv44BZaqT5URrrAtGk6jvfbWKL2PytWA4ur2r1QnvtQa"
+        ],
+        [
+          "Reward Mint",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "From",
+          "F9BHzbWTSeGneVabHhvidBZsVuX5RxbQfqbtmVKi5qGU"
+        ],
+        [
+          "Off-Chain Reward Vault",
+          "8xabwPP1ZXdoDj9yN28S1AJZYtzKoRLvZ4hWkKQJ2LMb"
+        ],
+        [
+          "Off-Chain Reward Config",
+          "C4vos7JxoPpc76dy5CSB96FadiE5cD7ZUHa3o9zm5Eyt"
+        ]
+      ],
+      "from": "2VN8jBVGYKQaa7uRqfDnA7oZ4PgBxPxCQKPh9TQhnH3kqAbvYvdpAC4vgiSTXvLsRNBJf38fJwQnKZxQAY97iMhd#4.1",
+      "intent": "Deposit rewards",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "31X4DEovSM7oDg9jqz4HHnGtoovzLKZVm4NiLiFtPb88 deposits 250 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from F9BHzbWTSeGneVabHhvidBZsVuX5RxbQfqbtmVKi5qGU into the off-chain reward vault of pool Hv44BZaqT5URrrAtGk6jvfbWKL2PytWA4ur2r1QnvtQa, approved by 31X4DEovSM7oDg9jqz4HHnGtoovzLKZVm4NiLiFtPb88",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8:w",
+        "C6rhj2YEH1eKpUsYqcFFVJpnWvmnrxitsv5AMYTGbPJr",
+        "DyzGYEhdgSn5EEUt4XXviavZ7v7SV2YGrYV8HX3Aw5XT:w"
+      ],
+      "data": "a917854a73fbe9340101c800010a01640132015001ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d010a2425d43486780990d8b63543029e20556be51fd756cca584212f4d539611d4",
+      "fields": [
+        [
+          "Dynamic Fee On",
+          "true"
+        ],
+        [
+          "Arbitrage Fee Buffer",
+          "0.02 %"
+        ],
+        [
+          "Trade Slippage Fee Base (1/1000)",
+          "10"
+        ],
+        [
+          "Trade Slippage Fee Threshold (x100)",
+          "100"
+        ],
+        [
+          "Imbalance Fee Base (1/10)",
+          "50"
+        ],
+        [
+          "Imbalance Fee Threshold (1/100)",
+          "80"
+        ],
+        [
+          "Token 0 Pyth Feed ID",
+          "239, 13, 139, 111, 218, 44, 235, 164, 29, 161, 93, 64, 149, 209, 218, 57, 42, 13, 47, 142, 208, 198, 199, 188, 15, 76, 250, 200, 194, 128, 181, 109"
+        ],
+        [
+          "Token 1 Pyth Feed ID",
+          "10, 36, 37, 212, 52, 134, 120, 9, 144, 216, 182, 53, 67, 2, 158, 32, 85, 107, 229, 31, 215, 86, 204, 165, 132, 33, 47, 77, 83, 150, 17, 212"
+        ],
+        [
+          "Pool Manager",
+          "21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8"
+        ],
+        [
+          "Pool",
+          "DyzGYEhdgSn5EEUt4XXviavZ7v7SV2YGrYV8HX3Aw5XT"
+        ]
+      ],
+      "from": "4U8VhtjLaEFah8Hs2Ehp7Nrri2bWKEa2aMfAd3BTuyc85zJvDQ7Mb4bgdgXEJHAu2iGfq9HYEZu3ejZ6Zyz2cX8N#6.1",
+      "intent": "Set dynamic swap fee",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8 sets the dynamic swap fee of pool DyzGYEhdgSn5EEUt4XXviavZ7v7SV2YGrYV8HX3Aw5XT, turned on: true",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8:w",
+        "21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8:w",
+        "C6rhj2YEH1eKpUsYqcFFVJpnWvmnrxitsv5AMYTGbPJr",
+        "G37RVgCrjfeUttKfPB6ivQVAhwMQNUA1xPojfjomkqPu",
+        "FAJMCRnzrLqbBTf6waQDqFk219aoTYaLGtAZNEADCTym:w",
+        "DcGLDZYEiWYwssZTuFom7pdXaJBqx6SwG75WBGoK9vSq:w",
+        "MUxEsUKSMACyw5fZf68wxf5FLnZVhtU9CwH8uNNGay1",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "GqmqVBjE2cvRsTvJbgVdLGSmuV4YrYBbukDCR7HvVo2z:w",
+        "Ceqs2wbBLUrmAWtyPMUGr8HhFXpPHm4etx7TyULFn3wd:w",
+        "5P7sRFbU5whgcEue4X7M1a9vWBQEvpKoDTjBFtQ8Gaaa:w",
+        "GSNjZo77Y5HJW1r7DtCJPAww7sL4YtMfeDz33pP5J2hF:w",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "SysvarRent111111111111111111111111111111111",
+        "DkSSRaZHCYdEyNyeBR6oe2KapQLNbqn2HBE1mfBuZMi4"
+      ],
+      "data": "e992d18ecf6840bca02a5134d1ba0b0f220000000000000040b3386a00000000",
+      "fields": [
+        [
+          "Initial Sqrt Price (Q64.64)",
+          "628,273,464,049,126,156,960"
+        ],
+        [
+          "Open Time",
+          "2026-06-22T04:00:00.000Z"
+        ],
+        [
+          "Pool Creator",
+          "21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8"
+        ],
+        [
+          "Pool Manager",
+          "21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8"
+        ],
+        [
+          "AMM Config",
+          "G37RVgCrjfeUttKfPB6ivQVAhwMQNUA1xPojfjomkqPu"
+        ],
+        [
+          "Pool",
+          "FAJMCRnzrLqbBTf6waQDqFk219aoTYaLGtAZNEADCTym"
+        ],
+        [
+          "Off-Chain Reward Config",
+          "DcGLDZYEiWYwssZTuFom7pdXaJBqx6SwG75WBGoK9vSq"
+        ],
+        [
+          "Token 0 Mint",
+          "MUxEsUKSMACyw5fZf68wxf5FLnZVhtU9CwH8uNNGay1"
+        ],
+        [
+          "Token 1 Mint",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Pool Vault 0",
+          "GqmqVBjE2cvRsTvJbgVdLGSmuV4YrYBbukDCR7HvVo2z"
+        ],
+        [
+          "Pool Vault 1",
+          "Ceqs2wbBLUrmAWtyPMUGr8HhFXpPHm4etx7TyULFn3wd"
+        ],
+        [
+          "Observation",
+          "5P7sRFbU5whgcEue4X7M1a9vWBQEvpKoDTjBFtQ8Gaaa"
+        ],
+        [
+          "Tick Array Bitmap",
+          "GSNjZo77Y5HJW1r7DtCJPAww7sL4YtMfeDz33pP5J2hF"
+        ]
+      ],
+      "from": "jULFy1T3TzNy74xjXPi1xCo3b1r5GAJgw9mwb8eBMPHLNMJaW4cwrie2e9vox1jsTt5X38FTDA19B87SF8d6Xib#11.1",
+      "intent": "Create pool",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8 creates pool FAJMCRnzrLqbBTf6waQDqFk219aoTYaLGtAZNEADCTym for MUxEsUKSMACyw5fZf68wxf5FLnZVhtU9CwH8uNNGay1 and EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v under AMM config G37RVgCrjfeUttKfPB6ivQVAhwMQNUA1xPojfjomkqPu, approved by pool manager 21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8:w",
+        "C6rhj2YEH1eKpUsYqcFFVJpnWvmnrxitsv5AMYTGbPJr",
+        "9GTj99g9tbz9U6UYDsX6YeRTgUnkYG6GTnHv3qLa5aXq:w"
+      ],
+      "data": "6d75aa2257ca321401000000",
+      "fields": [
+        [
+          "Trade Fee (0: the config's)",
+          "0.0001 %"
+        ],
+        [
+          "Pool Manager",
+          "21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8"
+        ],
+        [
+          "Pool",
+          "9GTj99g9tbz9U6UYDsX6YeRTgUnkYG6GTnHv3qLa5aXq"
+        ]
+      ],
+      "from": "MNFraAtjN9RJNyD1iTe3gf4aXb1L5AKFLwGA4SFYAiFHdA7nBkRe4Mnmdn8Dvd3ZmQSkju1wup1SqEdZRiTW2zu#6.1",
+      "intent": "Set pool trade fee",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8 sets the trade fee of pool 9GTj99g9tbz9U6UYDsX6YeRTgUnkYG6GTnHv3qLa5aXq to 0.0001 %, where 0 means the AMM config's fee applies",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "5tCWNtcZzD2ZtS3SeAG1CtYN3aZhJuM2LbxpLm3rHpNL:w",
+        "C6rhj2YEH1eKpUsYqcFFVJpnWvmnrxitsv5AMYTGbPJr",
+        "DHEE5nC1ZnZYzcCfAKaCs4daewVJ4dLMEPb5rGTd5iku:w"
+      ],
+      "data": "82576c062ee0757b01",
+      "fields": [
+        [
+          "Status (bits that pause actions)",
+          "1"
+        ],
+        [
+          "Emergency Manager",
+          "5tCWNtcZzD2ZtS3SeAG1CtYN3aZhJuM2LbxpLm3rHpNL"
+        ],
+        [
+          "Pool",
+          "DHEE5nC1ZnZYzcCfAKaCs4daewVJ4dLMEPb5rGTd5iku"
+        ]
+      ],
+      "from": "rkropXMyEz8R99ZEcQ8P6jz3xw5j6i6zgkiTtVBKr7YYGM2EdudjavnBT1N8Afzje4N2nr7tinLoM8kvTQBToa1#4.1",
+      "intent": "Update pool status",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "5tCWNtcZzD2ZtS3SeAG1CtYN3aZhJuM2LbxpLm3rHpNL sets the status of pool DHEE5nC1ZnZYzcCfAKaCs4daewVJ4dLMEPb5rGTd5iku to 1",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4ffwrzmyiwntY78SurN8E8PAmFZ5B5HAEx8FsHGg44ns:w",
+        "C6rhj2YEH1eKpUsYqcFFVJpnWvmnrxitsv5AMYTGbPJr",
+        "SKHYhSjuRWHgikq8eRKbtBbpABgJSkd7ytQV14i9EQ3",
+        "AdW6SSWoLzJkEMdR4szs428itdz3c9kKY2oDXPyGkfev:w",
+        "11111111111111111111111111111111"
+      ],
+      "data": "11fb415c88f20ea9",
+      "fields": [
+        [
+          "Config Manager",
+          "4ffwrzmyiwntY78SurN8E8PAmFZ5B5HAEx8FsHGg44ns"
+        ],
+        [
+          "Mint",
+          "SKHYhSjuRWHgikq8eRKbtBbpABgJSkd7ytQV14i9EQ3"
+        ],
+        [
+          "Supported Mint Record",
+          "AdW6SSWoLzJkEMdR4szs428itdz3c9kKY2oDXPyGkfev"
+        ]
+      ],
+      "from": "4tPLeJbNbovxb2h5xiPoU8n4YjgG5dD9GsQVyugqHrrBSkBYTd1HBisziyzxqeg3H12UMLMtAwToLuXafj4wwdkD#6.1",
+      "intent": "Add supported mint",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "4ffwrzmyiwntY78SurN8E8PAmFZ5B5HAEx8FsHGg44ns adds SKHYhSjuRWHgikq8eRKbtBbpABgJSkd7ytQV14i9EQ3 to the supported Token-2022 mints",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4ffwrzmyiwntY78SurN8E8PAmFZ5B5HAEx8FsHGg44ns:w",
+        "C6rhj2YEH1eKpUsYqcFFVJpnWvmnrxitsv5AMYTGbPJr",
+        "3mYgrhhxcEWU7YryJMm2GikfhjpckC7DvFTDQmZpqzux:w",
+        "11111111111111111111111111111111"
+      ],
+      "data": "8934edd4d7756c6832003c00b80b0000400d030000000000",
+      "fields": [
+        [
+          "Index",
+          "50"
+        ],
+        [
+          "Tick Spacing",
+          "60"
+        ],
+        [
+          "Trade Fee",
+          "0.3 %"
+        ],
+        [
+          "Protocol Share of Trade Fee",
+          "20 %"
+        ],
+        [
+          "Fund Share of Trade Fee",
+          "0 %"
+        ],
+        [
+          "Config Manager",
+          "4ffwrzmyiwntY78SurN8E8PAmFZ5B5HAEx8FsHGg44ns"
+        ],
+        [
+          "AMM Config",
+          "3mYgrhhxcEWU7YryJMm2GikfhjpckC7DvFTDQmZpqzux"
+        ]
+      ],
+      "from": "5GgTpHS8HjwvJUEy5pe5iiy5YC7MnvYgHE5QAYwY6PHZHtRWHpgVAN4bu439B8JL3dJTi4gyCeTkx8H2d7ZxdREm#4.1",
+      "intent": "Create AMM config",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "4ffwrzmyiwntY78SurN8E8PAmFZ5B5HAEx8FsHGg44ns creates AMM config #50 3mYgrhhxcEWU7YryJMm2GikfhjpckC7DvFTDQmZpqzux with a trade fee of 0.3 % and tick spacing 60",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4ffwrzmyiwntY78SurN8E8PAmFZ5B5HAEx8FsHGg44ns:w",
+        "C6rhj2YEH1eKpUsYqcFFVJpnWvmnrxitsv5AMYTGbPJr",
+        "2kwEGkAQBswrf1WygBS6FBcRrd8vK9Lrh7Mo4AkYRhYM:w"
+      ],
+      "data": "313cae889a1c74c80064000000",
+      "fields": [
+        [
+          "Parameter (0 trade fee, 1 protocol fee, 2 fund fee, 3 owner, 4 fund owner)",
+          "0"
+        ],
+        [
+          "Value",
+          "100"
+        ],
+        [
+          "Config Manager",
+          "4ffwrzmyiwntY78SurN8E8PAmFZ5B5HAEx8FsHGg44ns"
+        ],
+        [
+          "AMM Config",
+          "2kwEGkAQBswrf1WygBS6FBcRrd8vK9Lrh7Mo4AkYRhYM"
+        ]
+      ],
+      "from": "29C37WffrHGxV1scCwj2AZsi2guw3mT8VxpS7aLbNgmw2jFSxHT1dVufLfXZkNr7AxDDSFsTtnATcDPFtHNyyiVK#3.1",
+      "intent": "Update AMM config",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "4ffwrzmyiwntY78SurN8E8PAmFZ5B5HAEx8FsHGg44ns sets parameter 0 of AMM config 2kwEGkAQBswrf1WygBS6FBcRrd8vK9Lrh7Mo4AkYRhYM to 100",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "AY196f8U5EvM999PVnvLmyvaUnzL4GLiFaGKUgnJXN6o:w",
+        "C6rhj2YEH1eKpUsYqcFFVJpnWvmnrxitsv5AMYTGbPJr:w"
+      ],
+      "data": "3db7b9bc52518dc501844c4c26075d6e1fb8f8423d657daf1e081a579713a403bb75daaa2c6782f9d10000000000",
+      "fields": [
+        [
+          "Fee Keeper",
+          "9uSJ3tGBreXMz3dmgCrVvRwBhEn6hnJSk59Y7ZpepoUt"
+        ],
+        [
+          "Reward Manager",
+          "None"
+        ],
+        [
+          "Reward Claim Manager",
+          "None"
+        ],
+        [
+          "Pool Manager",
+          "None"
+        ],
+        [
+          "Emergency Manager",
+          "None"
+        ],
+        [
+          "Config Manager",
+          "None"
+        ],
+        [
+          "Super Admin",
+          "AY196f8U5EvM999PVnvLmyvaUnzL4GLiFaGKUgnJXN6o"
+        ],
+        [
+          "Admin Group",
+          "C6rhj2YEH1eKpUsYqcFFVJpnWvmnrxitsv5AMYTGbPJr"
+        ]
+      ],
+      "from": "3S9vAur4XqfAGyRYrncuQfd8pKGqR6Jpe3FbZpUsGsEB3pQoQxMdBvj91JLUAMmcaFsuqCZGASEwUgHgWGyEivK9#4.1",
+      "intent": "Update admin group",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "AY196f8U5EvM999PVnvLmyvaUnzL4GLiFaGKUgnJXN6o updates the roles of the admin group C6rhj2YEH1eKpUsYqcFFVJpnWvmnrxitsv5AMYTGbPJr",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "C6rhj2YEH1eKpUsYqcFFVJpnWvmnrxitsv5AMYTGbPJr",
+        "2kdeJHNGAChkUGPTWe2FR2ah5bcJrhoynYNccVxV1GCN:w",
+        "DMyZGGDo4R3qKqggvf8tvxrkCLMfiB5798A1oMqWvX8X:w",
+        "5kBMoMY23hPJyvD8du6Mw8BzqkUKGdLhYkCmWPCmicAh:w",
+        "jk1T35eWK41MBMM8AWoYVaNbjHEEQzMDetTsfnqpump",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "4AcTTVydamq6TwPFRepdmPjxyFB9Aj6x6fjRmVK2HaBp:w",
+        "BYudq68uPLq9gemPQVnuuBcCxAW56A3KQjeuh8JgEuu5:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+      ],
+      "data": "8888fcddc2427e59a7da5f040000000001ee030000000000",
+      "fields": [
+        [
+          "Token 0 Amount",
+          "73.390759"
+        ],
+        [
+          "Token 1 Amount",
+          "0.257537"
+        ],
+        [
+          "Pool",
+          "2kdeJHNGAChkUGPTWe2FR2ah5bcJrhoynYNccVxV1GCN"
+        ],
+        [
+          "Pool Vault 0",
+          "DMyZGGDo4R3qKqggvf8tvxrkCLMfiB5798A1oMqWvX8X"
+        ],
+        [
+          "Pool Vault 1",
+          "5kBMoMY23hPJyvD8du6Mw8BzqkUKGdLhYkCmWPCmicAh"
+        ],
+        [
+          "Token 0 Mint",
+          "jk1T35eWK41MBMM8AWoYVaNbjHEEQzMDetTsfnqpump"
+        ],
+        [
+          "Token 1 Mint",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Fee Keeper Token 0 Account",
+          "4AcTTVydamq6TwPFRepdmPjxyFB9Aj6x6fjRmVK2HaBp"
+        ],
+        [
+          "Fee Keeper Token 1 Account",
+          "BYudq68uPLq9gemPQVnuuBcCxAW56A3KQjeuh8JgEuu5"
+        ]
+      ],
+      "from": "tgTo9BSubqgyDD4u4d1zsZdSaCfXjr1q8RKBEbnaVg4MH3a4PBCm8M2U1HQkrcWY8PVrSB9hXi9RUzkG3epRgSE#5",
+      "intent": "Collect protocol fees",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "Send up to 73.390759 of jk1T35eWK41MBMM8AWoYVaNbjHEEQzMDetTsfnqpump and 0.257537 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v in protocol fees from pool 2kdeJHNGAChkUGPTWe2FR2ah5bcJrhoynYNccVxV1GCN to the fee keeper's accounts 4AcTTVydamq6TwPFRepdmPjxyFB9Aj6x6fjRmVK2HaBp and BYudq68uPLq9gemPQVnuuBcCxAW56A3KQjeuh8JgEuu5",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "C6rhj2YEH1eKpUsYqcFFVJpnWvmnrxitsv5AMYTGbPJr",
+        "9uSJ3tGBreXMz3dmgCrVvRwBhEn6hnJSk59Y7ZpepoUt:w",
+        "AgNwPJ2cJmisTEsS8GCx4KYG1Fx4eZNgy8ndUg7D3rDr:w",
+        "11111111111111111111111111111111"
+      ],
+      "data": "c975989055556cb2",
+      "fields": [
+        [
+          "Fee Keeper",
+          "9uSJ3tGBreXMz3dmgCrVvRwBhEn6hnJSk59Y7ZpepoUt"
+        ],
+        [
+          "Protocol Position",
+          "AgNwPJ2cJmisTEsS8GCx4KYG1Fx4eZNgy8ndUg7D3rDr"
+        ]
+      ],
+      "from": "5Hsubw9joKxaGKS31VVbe8Mwssm2EXydYnx72oi99ntXZV1pCqyDuxjqAmR6yhSa31SGmY2vyEdt5WbvBkfz7EPx#3",
+      "intent": "Close protocol position",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "Close protocol position AgNwPJ2cJmisTEsS8GCx4KYG1Fx4eZNgy8ndUg7D3rDr and send its rent to the fee keeper 9uSJ3tGBreXMz3dmgCrVvRwBhEn6hnJSk59Y7ZpepoUt",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8:w",
+        "21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8:w",
+        "C6rhj2YEH1eKpUsYqcFFVJpnWvmnrxitsv5AMYTGbPJr",
+        "4E6xP73xzTs4aCvY92hbXRwWkYptNwvViPZmLcZEBUk4",
+        "A5vkCw1VXPNXq5VFbffPm6Bo4kVKAP1UUoRrEn3gyVey:w",
+        "9VxCd6FDQPV9QLh4JKZrbgaxdaNh7M1uPhKqrDEPPnex:w",
+        "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "8t6tQTYrTCo4d7vruywDhM2BdtsH6rQHRHZftxHPx5qe:w",
+        "3MWb68i9CnXZ4zP8hdSPwiX3AKYsz7h33oer8tr6PAti:w",
+        "2gNGS2F9S4UNHVJ9aM3p4PWTnExwFLe7sMAMEZPQTcYc:w",
+        "HkviPnVfgpn3Wby3128M5qAmtdnKEZwwndei9AZgNJo8:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "SysvarRent111111111111111111111111111111111"
+      ],
+      "data": "fc9ad2bf16d988fcd85b2a39a32888ea1f0000000000000001a8010b69000000000101010201ff",
+      "fields": [
+        [
+          "Initial Sqrt Price (Q64.64)",
+          "588,748,868,568,207,743,960"
+        ],
+        [
+          "Open Time",
+          "2025-11-05T07:50:00.000Z"
+        ],
+        [
+          "Decay Fee",
+          "true"
+        ],
+        [
+          "Decay Fee On Selling Token 0",
+          "true"
+        ],
+        [
+          "Decay Fee On Selling Token 1",
+          "true"
+        ],
+        [
+          "Initial Decay Fee",
+          "2 %"
+        ],
+        [
+          "Decay Fee Decrease Per Interval",
+          "1 %"
+        ],
+        [
+          "Decay Fee Interval",
+          "00:04:15"
+        ],
+        [
+          "Pool Creator",
+          "21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8"
+        ],
+        [
+          "Pool Manager",
+          "21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8"
+        ],
+        [
+          "AMM Config",
+          "4E6xP73xzTs4aCvY92hbXRwWkYptNwvViPZmLcZEBUk4"
+        ],
+        [
+          "Pool",
+          "A5vkCw1VXPNXq5VFbffPm6Bo4kVKAP1UUoRrEn3gyVey"
+        ],
+        [
+          "Off-Chain Reward Config",
+          "9VxCd6FDQPV9QLh4JKZrbgaxdaNh7M1uPhKqrDEPPnex"
+        ],
+        [
+          "Token 0 Mint",
+          "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij"
+        ],
+        [
+          "Token 1 Mint",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Pool Vault 0",
+          "8t6tQTYrTCo4d7vruywDhM2BdtsH6rQHRHZftxHPx5qe"
+        ],
+        [
+          "Pool Vault 1",
+          "3MWb68i9CnXZ4zP8hdSPwiX3AKYsz7h33oer8tr6PAti"
+        ],
+        [
+          "Observation",
+          "2gNGS2F9S4UNHVJ9aM3p4PWTnExwFLe7sMAMEZPQTcYc"
+        ],
+        [
+          "Tick Array Bitmap",
+          "HkviPnVfgpn3Wby3128M5qAmtdnKEZwwndei9AZgNJo8"
+        ]
+      ],
+      "from": "2ysffSs7SR4rsoxebnyYrKbxrzDkPTMpKPEsepnZMKqhB92Vsn4QXdQH5jMLvruFAMWwYqoq931GkbubVre1q8rE#3.1",
+      "intent": "Create pool with decay fee",
+      "programId": "REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2",
+      "sentence": "21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8 creates pool A5vkCw1VXPNXq5VFbffPm6Bo4kVKAP1UUoRrEn3gyVey for cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij and EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v under AMM config 4E6xP73xzTs4aCvY92hbXRwWkYptNwvViPZmLcZEBUk4, approved by pool manager 21ABAHGRWRK2WG5JeQe2DneEVyY37hFiFbpWYzwdhbn8",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}
