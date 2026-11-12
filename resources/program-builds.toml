@@ -349,3 +349,24 @@ programHash = "c3426d783b06a28dc68f8bc31a54a28dceada933ee36d970fe3f85b0ce354e8d"
 authority = "8rHQUMS8qg4qrQriPpTbrZqk2yjLrUHSLpA6MzgMSiM"
 idlSha256 = "baad8c103644c55cb5cd364d2f08ac973b36cd947684d2b8c129ead73cff07a1"
 reviewed = "2026-11-09"
+
+[[builds]]
+# otterVerify (pack). Every instruction the IDL lists is in this binary by its Anchor log name, and in the repository's lib.rs with its accounts in the IDL's order. Mainnet initialize, update and close transactions decode with the IDL. The IDL is the one the program publishes on mainnet; devnet runs the same executable.
+programId = "verifycLy8mB96wd9wqq3WDXQwM4oU6r42Th37Db9fC"
+network = "mainnet"
+programHash = "c117c3610fca94c5be64eed41e4f2f6783a38b493b245207f3d7e3d7a63ae8e0"
+authority = "9VWiUUhgNoRwTH5NVehYJEDwcotwYX3VgW4MChiHPAqU"
+idlSha256 = "d099c7024ea389e87836400f24f3e0b8be2a8da6b4f4d1d187a3f067dd804bff"
+source = { repo = "https://github.com/otter-sec/otter-verify", commit = "a630c42962872ae9adac924151948bb17d87174d" }
+verified = "9VWiUUhgNoRwTH5NVehYJEDwcotwYX3VgW4MChiHPAqU"
+reviewed = "2026-11-12"
+
+[[builds]]
+# otterVerify (pack). Every instruction the IDL lists is in this binary by its Anchor log name, and in the repository's lib.rs with its accounts in the IDL's order. Mainnet initialize, update and close transactions decode with the IDL. The IDL is the one the program publishes on mainnet; devnet runs the same executable.
+programId = "verifycLy8mB96wd9wqq3WDXQwM4oU6r42Th37Db9fC"
+network = "devnet"
+programHash = "c117c3610fca94c5be64eed41e4f2f6783a38b493b245207f3d7e3d7a63ae8e0"
+authority = "9VWiUUhgNoRwTH5NVehYJEDwcotwYX3VgW4MChiHPAqU"
+idlSha256 = "d099c7024ea389e87836400f24f3e0b8be2a8da6b4f4d1d187a3f067dd804bff"
+source = { repo = "https://github.com/otter-sec/otter-verify", commit = "a630c42962872ae9adac924151948bb17d87174d" }
+reviewed = "2026-11-12"

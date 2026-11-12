@@ -1581,6 +1581,113 @@ fn publishing_an_idl_reads_as_program_metadata_calls() {
     );
 }
 
+/// Calls of OtterSec's verify program as mainnet executed them: `solana-verify`
+/// recording the build of a program (transaction `4HWbv76z…`), updating a
+/// record (`4JkaiaHH…`) and closing one (`LESvNbth…`).
+#[test]
+fn recording_a_programs_build_reads_as_a_sentence() {
+    const OTTER_VERIFY: &str = "verifycLy8mB96wd9wqq3WDXQwM4oU6r42Th37Db9fC";
+    const SYSTEM: &str = "11111111111111111111111111111111";
+    let ix = |data: &str, accounts: &[(&str, bool, bool)]| Instruction {
+        program_id: Pubkey::from_str_const(OTTER_VERIFY),
+        accounts: accounts
+            .iter()
+            .map(|&(address, signer, writable)| AccountMeta {
+                pubkey: Pubkey::from_str_const(address),
+                is_signer: signer,
+                is_writable: writable,
+            })
+            .collect(),
+        data: hex::decode(data).unwrap(),
+    };
+    let explain =
+        |signer: &str, ix| explain_one_ix(&builtins(), Pubkey::from_str_const(signer), ix);
+
+    let signer = "9wFWwL8A9g4dSM7or8Nyp7cJCTa5wDYUUcrYYJtuJZhb";
+    let program = "PerpX2pWbVffrbJfb4zbDtGkJeWGyucH2HVPkvdpDit";
+    let initialize = explain(
+        signer,
+        ix(
+            "afaf6d1f0d989bed05000000302e352e322f00000068747470733a2f2f6769746875622e636f6d2f706572706574756178797a2f70657270657475612d70726f6772616d2800000036396165376237653232653862333539336261316138333334363664393963376230313834663933020000000e0000002d2d6c6962726172792d6e616d650800000070657270657475611cf5e81b00000000",
+            &[
+                ("72vh8hZUrtgzUVFpKcMkzU592jThonVHa5MYS2w2hjEi", false, true),
+                (signer, true, true),
+                (program, false, false),
+                (SYSTEM, false, false),
+            ],
+        ),
+    );
+    assert_eq!(initialize.intent, "Record a program's build");
+    assert_eq!(
+        initialize.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "{signer} states that program {program} is built from \
+                 https://github.com/perpetuaxyz/perpetua-program at commit \
+                 69ae7b7e22e8b3593ba1a833466d99c7b0184f93"
+            )
+            .as_str()
+        )
+    );
+    assert_eq!(field(&initialize, "solana-verify Version"), "0.5.2");
+    assert!(field(&initialize, "Build Arguments").contains("--library-name"));
+    assert!(field(&initialize, "Build Arguments").contains("perpetua"));
+    assert_eq!(field(&initialize, "Deploy Slot"), "468,251,932");
+    assert_eq!(initialize.unnamed_accounts, 0);
+
+    let signer = "A4rJLoFB5pxCKvQ6UTb4tHgG8vEPBmz21LrSav5ho5Yj";
+    let program = "DCcHikMZLtykhHRToKGSTYTeyvogsYTkEhFKmHf2NQQr";
+    let update = explain(
+        signer,
+        ix(
+            "dbc858b09e3ffd7f05000000302e352e322a00000068747470733a2f2f6769746875622e636f6d2f6f7675737061642f736d6172742d636f6e7472616374730700000063636663656566070000000e0000002d2d6c6962726172792d6e616d650a0000006c61756e63685f7061640c0000002d2d626173652d696d6167652e000000736f6c616e61666f756e646174696f6e2f736f6c616e612d76657269666961626c652d6275696c643a342e312e30020000002d2d0a0000002d2d6665617475726573060000006e6f2d69646c00afe91b00000000",
+            &[
+                ("BDcRASt8LSj7nFZ5Tj4Qd7fHwsP5TuUFNtzWuvBKDjvR", false, true),
+                (signer, true, true),
+                (program, false, false),
+                (SYSTEM, false, false),
+            ],
+        ),
+    );
+    assert_eq!(update.intent, "Update a program's build record");
+    assert_eq!(
+        update.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "{signer} now states that program {program} is built from \
+                 https://github.com/ovuspad/smart-contracts at commit ccfceef"
+            )
+            .as_str()
+        )
+    );
+    assert!(field(&update, "Build Arguments").contains("no-idl"));
+
+    let signer = "7bCwrqTG91caMtckUsYJsGLL9fQaDmPpseKo1hKVkLaC";
+    let record = "7q8k26n4MJpvK3fGngN8g5u26VxVRi2sQbg7jdWDYTXt";
+    let program = "2vsF3TTo7QwSfqPAwtFV69974QE1bcQJRZKP4VxtsFZt";
+    let close = explain(
+        signer,
+        ix(
+            "62a5c9b16c41ce60",
+            &[
+                (record, false, true),
+                (signer, true, true),
+                (program, false, false),
+            ],
+        ),
+    );
+    assert_eq!(
+        close.interpolated_intent.as_deref(),
+        Some(
+            format!(
+                "{signer} closes its build record {record} for program {program} \
+                 and takes back its rent"
+            )
+            .as_str()
+        )
+    );
+}
+
 /// A Token-2022 mint on devnet with 6 decimals and the metadata pointer and
 /// token metadata extensions, as `getAccountInfo` returned it.
 const MINT_WITH_METADATA: &[u8] =
