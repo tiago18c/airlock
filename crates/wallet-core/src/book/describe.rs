@@ -567,6 +567,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("EtrnLzgbS7nMMy5fbD42kXiUzGg8XQzJ972Xtk1cjWih"),
         "Phoenix Perpetuals Program",
     ),
+    (
+        Pubkey::from_str_const("DF1ow4tspfHX9JwWJsAb9epbkA8hmpSEAtxXy1V27QBH"),
+        "DFlow Swap Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

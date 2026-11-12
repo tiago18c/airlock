@@ -360,3 +360,24 @@ Token program's mint account is added, so spot collateral amounts read their min
 decimals. Collateral amounts are in base units of the collateral token, whose mint is \
 never an account of those instructions; native SOL amounts are in SOL. Display nodes \
 added by hand."""
+
+# DFlow's swap aggregator (swap_orchestrator), which apps that route through
+# DFlow have their users sign: swaps along a route of venues, sponsored swaps,
+# and wrapping and unwrapping SOL. A swap names only its owner and, for some,
+# where the output goes; the input, the mints and the venues' accounts are in
+# its route. Devnet runs another executable and publishes no IDL.
+[[idls]]
+file = "dflow.json"
+programId = "DF1ow4tspfHX9JwWJsAb9epbkA8hmpSEAtxXy1V27QBH"
+name = "swapOrchestrator"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "f4a6f4564bdfd670c4265144c5a628f8a73578a3b2c0d2a04b94166a0cccd19c" }
+changes = """Converted from Anchor to Codama. The swaps and fillOrder declare the accounts their \
+route reads as one remaining-accounts group. swapWithDestination and \
+swap2WithDestination mark destinationTokenAuthority and destinationMint optional, as the \
+program takes its own address for them when the destination token account exists, and \
+set optionalAccountStrategy to programId, as fillOrder does. The Token program's mint \
+account is added, so token amounts read their mint's decimals where the instruction \
+names the mint; a swap's quoted output reads the destination mint's decimals, or SOL's \
+for the swaps that pay SOL, and stays in base units otherwise. Slippage and fees are in \
+percent. Display nodes added by hand."""
