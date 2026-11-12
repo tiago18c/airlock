@@ -519,3 +519,12 @@ programHash = "a44d24cf2976f69f7be510f7f058b00a681eda193c1991b5bc218bccdf725bb9"
 authority = "FytDrVzDybM1TwFQPGb8qaxZR7dBCzNeqT3vtQsceZQK"
 idlSha256 = "172fee9e4a85423ccb40e03487297df472598ed005ba38088824ed3358a33512"
 reviewed = "2026-11-12"
+
+[[builds]]
+# marinade_finance (pack). Deployed at slot 433290841; OtterSec's only record for this hash is not verified. All 29 of the IDL's instructions are in this binary by their Anchor log name, and it logs none the IDL lacks besides Anchor's own IDL-account instructions. Mainnet transactions of 16 instructions (staking SOL and stake accounts, liquid and delayed unstaking, withdrawing a stake account, adding and removing liquidity, validator management and the crank) decode with every account named and with the data length the IDL describes.
+programId = "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
+network = "mainnet"
+programHash = "db89efca1670f85397f978e9a02f6c2806a9adaa17ebb5783e7e99eddcb26be3"
+authority = "551FBXSXdhcRDDkdcb3ThDRg84Mwe5Zs6YjJ1EEoyzBp"
+idlSha256 = "d4c6e6dd963b8dadcdc454c017d5726fac5e152f5358d3da39f32b72ede52c13"
+reviewed = "2026-11-12"

@@ -477,3 +477,19 @@ after the named ones as one hidden group. The Token program's mint account is ad
 the trades' amounts read their base or quote mint's decimals. Rates are per million, as \
 the program counts them; vesting shares and a new pool's curve settings are in base \
 units. Display nodes added by hand."""
+
+# Marinade's liquid staking program, behind mSOL: staking SOL or a stake
+# account for mSOL, unstaking at once through its mSOL-SOL liquidity pool or
+# by a delayed-unstake ticket, and the validator management and crank
+# instructions that move its stake. The IDL is the legacy Anchor IDL the
+# program publishes on mainnet, which carries no program address.
+[[idls]]
+file = "marinade.json"
+programId = "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
+name = "marinadeFinance"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "65934fb1343212eb6d3aefaceea7ff8abbfc3ef1892e2fd200593bf836eb2d22" }
+changes = """Converted from Anchor to Codama; the program address is set, as the legacy IDL has none. \
+The Token program's mint account is added, so mSOL amounts read the mSOL mint's decimals \
+and LP token amounts the LP mint's; SOL amounts are in SOL; fees are in percent. Display \
+nodes added by hand."""
