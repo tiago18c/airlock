@@ -806,3 +806,14 @@ programHash = "d5096f0484bdd6979976074d39b9a11c3560d1f0dc4943abacb0dda9b538ef85"
 authority = "9GWPeu3cBfkGSEit6HMaAFKswoirxqgMqykMh7RVH2Bb"
 idlSha256 = "4ae24a8b0345b552de329947a4b69d06431743cffdc2800c3c1275e8ddc846b7"
 reviewed = "2026-11-12"
+
+[[builds]]
+# futarchy (pack). The binary logs exactly the 32 instruction names the IDL lists, plus Anchor's own IDL instructions. Spot and conditional swaps, proposal drafting, sponsorship, launch and finalization, DAO creation, liquidity and fee collection executed since this deploy decode with the IDL; so do earlier stake, unstake and withdrawal instructions whose accounts and data are the ones it describes.
+programId = "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq"
+network = "mainnet"
+programHash = "24a2497951218a5d7e8b62f94f1dff4034649e7d602a91ab93aafe8157ee70e1"
+authority = "6awyHMshBGVjJ3ozdSJdyyDE1CTAXUwrpNMaRGMsb4sf"
+idlSha256 = "27c6b86106c58ba8804fa0aba7e28358978f39f43e647a1f1583caa32ab6a9e8"
+source = { repo = "https://github.com/metaDAOproject/programs", commit = "56a23aeeac47c08f53f1d37bb78b1a22d201342b" }
+verified = "6awyHMshBGVjJ3ozdSJdyyDE1CTAXUwrpNMaRGMsb4sf"
+reviewed = "2026-11-12"

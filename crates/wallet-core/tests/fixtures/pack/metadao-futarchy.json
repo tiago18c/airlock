@@ -1,0 +1,1172 @@
+{
+  "accounts": {
+    "4WSZkN6p4wfqGqQSwTnvpCTnjNMdazDebYQJu14nmeta": {
+      "data": "AQAAAAWLkl6tstDbL+SoLQJ0NzYmhK1fkQnW9JQiGfIwF40RAJRc0wsSAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "Cbjr1Nvcay3QWDriyRKtokJ7V4PMknesGxeK8z7Zmeta": {
+      "data": "AQAAANmV04+GN09RHICK6JtlrB/N8aZZAckQnrylx6hL/VySrbLx5C8MAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": {
+      "data": "AQAAAJj+huiNm+Lqi8HMpIeLKYjCQPUrhCS/tA7Rot3LXhmbLpICTpILIAAGAQEAAABicKqKWcWUBbRShshncubNEm6bil06OFNtN/e0FOi2Zw==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    }
+  },
+  "instructions": [
+    {
+      "accounts": [
+        "DzYtzoNvPbyFCzwZA6cSm9eDEEmxEB9f8AGkJXUXgnSA:w",
+        "8LPqYdtjmhELkv4s1SLTWSyZ2Tj2sSzaLt6yrkVvhd8F:w",
+        "8P3HZneaKWbJxVgAVhVyarnPnJwFiPNMunvNm5WSybt4:w",
+        "EFtLfKoWcsctiKF4FDvoyjouTd6QvVtRAgWNBNrZd1mR:w",
+        "BjJ3i66YMuybeKsjMNE4NhjghTF3GnWKY9xaCRLqavP3:w",
+        "6CAVjx3DLgfXZPgPMHbuxosvyuxAqz2UUSJDpZWczose:s",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "DGEympSS4qLvdr9r3uGHTfACdN8snShk4iGdJtZPxuBC",
+        "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq"
+      ],
+      "data": "a7610ce7ed4ea6fbc090300100000000000000000000000000",
+      "fields": [
+        [
+          "Amount In",
+          "19,960,000 base units"
+        ],
+        [
+          "Direction",
+          "Buy, quote token in and base token out"
+        ],
+        [
+          "Minimum Out",
+          "0 base units"
+        ],
+        [
+          "DAO",
+          "DzYtzoNvPbyFCzwZA6cSm9eDEEmxEB9f8AGkJXUXgnSA"
+        ],
+        [
+          "Your Base Token Account",
+          "8LPqYdtjmhELkv4s1SLTWSyZ2Tj2sSzaLt6yrkVvhd8F"
+        ],
+        [
+          "Your Quote Token Account",
+          "8P3HZneaKWbJxVgAVhVyarnPnJwFiPNMunvNm5WSybt4"
+        ],
+        [
+          "Spot Market Base Vault",
+          "EFtLfKoWcsctiKF4FDvoyjouTd6QvVtRAgWNBNrZd1mR"
+        ],
+        [
+          "Spot Market Quote Vault",
+          "BjJ3i66YMuybeKsjMNE4NhjghTF3GnWKY9xaCRLqavP3"
+        ],
+        [
+          "Trader",
+          "6CAVjx3DLgfXZPgPMHbuxosvyuxAqz2UUSJDpZWczose"
+        ]
+      ],
+      "from": "QpPeZ5ftagTpynHVy9PhXJ2XD29wHCHdwbXKPdyce4dsQZkdHDeZvm4YDcjoZ7VBUim8TxvyetJwaWD8N9GBZrv#1.1",
+      "intent": "Swap on a DAO's market",
+      "programId": "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq",
+      "sentence": "6CAVjx3DLgfXZPgPMHbuxosvyuxAqz2UUSJDpZWczose swaps 19,960,000 base units for at least 0 base units on the spot market of DAO DzYtzoNvPbyFCzwZA6cSm9eDEEmxEB9f8AGkJXUXgnSA: Buy, quote token in and base token out",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "DzYtzoNvPbyFCzwZA6cSm9eDEEmxEB9f8AGkJXUXgnSA:w",
+        "jvEJXHS2Ffhb8cZ7FSUG9aN8Ag2zSHP63EPU14XfL1R:w",
+        "FhXvBVVr8vM3viZgQ7q1bFzFbd2C6EdrVrDpkKtyd1SM:w",
+        "EFtLfKoWcsctiKF4FDvoyjouTd6QvVtRAgWNBNrZd1mR:w",
+        "BjJ3i66YMuybeKsjMNE4NhjghTF3GnWKY9xaCRLqavP3:w",
+        "6nTMtwShZeWEuVmi9Q6aPhATvqgaZ6ptATRXENjnUufZ:sw",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "DGEympSS4qLvdr9r3uGHTfACdN8snShk4iGdJtZPxuBC",
+        "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq"
+      ],
+      "data": "a7610ce7ed4ea6fbeaa95f0000000000000000000000000000",
+      "fields": [
+        [
+          "Amount In",
+          "6,269,418 base units"
+        ],
+        [
+          "Direction",
+          "Buy, quote token in and base token out"
+        ],
+        [
+          "Minimum Out",
+          "0 base units"
+        ],
+        [
+          "DAO",
+          "DzYtzoNvPbyFCzwZA6cSm9eDEEmxEB9f8AGkJXUXgnSA"
+        ],
+        [
+          "Your Base Token Account",
+          "jvEJXHS2Ffhb8cZ7FSUG9aN8Ag2zSHP63EPU14XfL1R"
+        ],
+        [
+          "Your Quote Token Account",
+          "FhXvBVVr8vM3viZgQ7q1bFzFbd2C6EdrVrDpkKtyd1SM"
+        ],
+        [
+          "Spot Market Base Vault",
+          "EFtLfKoWcsctiKF4FDvoyjouTd6QvVtRAgWNBNrZd1mR"
+        ],
+        [
+          "Spot Market Quote Vault",
+          "BjJ3i66YMuybeKsjMNE4NhjghTF3GnWKY9xaCRLqavP3"
+        ],
+        [
+          "Trader",
+          "6nTMtwShZeWEuVmi9Q6aPhATvqgaZ6ptATRXENjnUufZ"
+        ]
+      ],
+      "from": "2QMQEZAwrTgpj5eM23qzjrYABLJ1WWznTQRYFw1fjF6Dg5DGUfcoS1zi5kXCgVZi2W63Y5wrr7qsyt1HJUu5NQxJ#6.7",
+      "intent": "Swap on a DAO's market",
+      "programId": "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq",
+      "sentence": "6nTMtwShZeWEuVmi9Q6aPhATvqgaZ6ptATRXENjnUufZ swaps 6,269,418 base units for at least 0 base units on the spot market of DAO DzYtzoNvPbyFCzwZA6cSm9eDEEmxEB9f8AGkJXUXgnSA: Buy, quote token in and base token out",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "6wmteHRgbJRSVPg8jaieZziKf7n1itADmWjJWQjCHcG1:w",
+        "66kcxMeuoJsxqsD74kP2thW3rizhG9TJ7HsaYvG2mYcj:w",
+        "7T9TUs2zem15Joq7DvUn6i8Gv76auhUrdu9geX4vN6Mu:w",
+        "BU165bXZphPHdFHV6q3ho4ggjcDN2Tb4mh7wkQt7AAh9",
+        "4tDbCd3QHJZwVj88EmWYLwHCBeVcKSxyongP12HWt7Zn:w",
+        "EmhiVeKVNaf91KuWPevNQZ3zzUkxteJne5z5d6VkAwfD:w",
+        "3tmFELsEfWwKVxTYVEDvLM4AfTDJC7SdDr6b6bYc3F5P:w",
+        "F3aDRD7j6Y9Sahx3WmYXa9BscgqZDFwZutiDKj8g56A9:w",
+        "AWjCySKayUEQFdyBc4zLu7i35BfM3kxAmBxv8qwy1SC5:sw",
+        "AFLtrJwF77cDRvSKNMgYafq3VhkheARVC93yAfWAPuns:w",
+        "9DSN5WrFfb27HyqNiph1AZhyV9PofMiKqjr5grMjf29E:w",
+        "EMGat6eASu3MduGdgS6KPrySVvnGKequuXjhR2DD7sxg:w",
+        "GT9Gn1aTC89Wa7uQqdqwRLSM6dtp29fT4SoiTpHF6X5D:w",
+        "HrU1k9qgLdvycUrAt575eTrRa4PVS1kfz9q4uuETNWBZ:w",
+        "5Ebn96jCFYdkzPc8CV35cegg3mC1ZcTdyfuftL8hXgfb:w",
+        "3ngpvkPpeYkvj5Bgf3e7hXLMSxJx7LzxZLkf2mJFPAA1:w",
+        "GAhwfbZnrqSZBd3wCGuS9NmPKyJb3J12BtPGkZWEaCv7:w",
+        "EKjyeKyzDBiFUHsMv1yH5Wpm3Hw6Zup9s1tSH87Gm8Pf:w",
+        "3nMTMssVpU8cyhG9ZJA6166ezmmVuZk3Ggw5rZnH8e9b:w",
+        "VLTX1ishMBbcX3rdBWGssxawAo1Q2X2qxYFYqiGodVg",
+        "63vUM8JABqSBRiyxzaKF2mwe1m63DuYKB8EUsbukf3Vg",
+        "6Ty4eQmNVCwip2GYRoR4hQaYBwDMEGvwxC1LkL11Eqwu",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "DGEympSS4qLvdr9r3uGHTfACdN8snShk4iGdJtZPxuBC",
+        "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq"
+      ],
+      "data": "c288dc59f2a9829d020146adb0a1000000000000000000000000",
+      "fields": [
+        [
+          "Market",
+          "Fail"
+        ],
+        [
+          "Direction",
+          "Sell, base token in and quote token out"
+        ],
+        [
+          "Amount In",
+          "2,712,710,470 base units"
+        ],
+        [
+          "Minimum Out",
+          "0 base units"
+        ],
+        [
+          "DAO",
+          "6wmteHRgbJRSVPg8jaieZziKf7n1itADmWjJWQjCHcG1"
+        ],
+        [
+          "Proposal",
+          "BU165bXZphPHdFHV6q3ho4ggjcDN2Tb4mh7wkQt7AAh9"
+        ],
+        [
+          "Trader",
+          "AWjCySKayUEQFdyBc4zLu7i35BfM3kxAmBxv8qwy1SC5"
+        ],
+        [
+          "Your Input Token Account",
+          "AFLtrJwF77cDRvSKNMgYafq3VhkheARVC93yAfWAPuns"
+        ],
+        [
+          "Output Token Account",
+          "9DSN5WrFfb27HyqNiph1AZhyV9PofMiKqjr5grMjf29E"
+        ],
+        [
+          "Pass Base Token",
+          "3ngpvkPpeYkvj5Bgf3e7hXLMSxJx7LzxZLkf2mJFPAA1"
+        ],
+        [
+          "Fail Base Token",
+          "GAhwfbZnrqSZBd3wCGuS9NmPKyJb3J12BtPGkZWEaCv7"
+        ],
+        [
+          "Pass Quote Token",
+          "EKjyeKyzDBiFUHsMv1yH5Wpm3Hw6Zup9s1tSH87Gm8Pf"
+        ],
+        [
+          "Fail Quote Token",
+          "3nMTMssVpU8cyhG9ZJA6166ezmmVuZk3Ggw5rZnH8e9b"
+        ]
+      ],
+      "from": "4KNUHCnaQYeY7FK9kyQSkXnGsnm4Rj6ZHNsykfUDSeZUdv57NoF5SMMvk4hZortjtf4mUWraVeTndn7UkPLCy7DZ#3",
+      "intent": "Trade a proposal's market",
+      "programId": "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq",
+      "sentence": "AWjCySKayUEQFdyBc4zLu7i35BfM3kxAmBxv8qwy1SC5 swaps 2,712,710,470 base units for at least 0 base units of conditional tokens on the Fail market of proposal BU165bXZphPHdFHV6q3ho4ggjcDN2Tb4mh7wkQt7AAh9: Sell, base token in and quote token out",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GxpJkPEsPmuRCCTNnfZaDKg4X3gf4ZPgmqgFqtibaPtK:w",
+        "9LmAt9RwbP2bPaYZyy9oZiPkzm4T6fEKhCS3DGuGURsn:w",
+        "Ej5B14mBrjuLe67XaqECQBwaNDeJ6CvKrvDUZ7D9dRrx:w",
+        "FdH8ypaerttJ6A8AoeVDVCt44JQLCYU1qY6SbTmm2wZN",
+        "3g2TXBPo9NjQLECyGdaZPVHqZCCFbJMpqz7CtSwF5uAn:w",
+        "61UxKfizsBBHNuXAp8EKf2XjWxdPaWCH6hVkTBaeUUr2:w",
+        "EXUSH6B7gGrjacf34sp6dNHJsxgJ3TfiePCx8jCEoy3i:w",
+        "B4qtCpRK88aa511YcTy4cYfGHrzB9xBWSQHMhLRDb8CL:w",
+        "8Cwx4yR2sFAC5Pdx2NgGHxCk1gJrtSTxJoyqVonqndhq:sw",
+        "5g912tGVvVeh2rPEmu59THZLFnd1cw5gxjDAQLbREk86:w",
+        "84pW2jLNR5aEFHkYHdoMK3gNQvFEYX8fP8h6cRE5kESx:w",
+        "5dUzgVEwxVapB8wEV7xpMN6KhLtSZbQyWkYZeABu9aRL:w",
+        "6fXgmFvrJ6k8M7YvbkXZk9Ud4cJEM5opsgV3ijUMkmpv:w",
+        "Dmpn5ybuT6moyhK8Yy6GVkbXwVEMoVrwLa6AWxFqPHba:w",
+        "AqwfXytHhFdVV1ZNYUyCjXgEiv9rzgCe1Uj84cruAvP1:w",
+        "7iNYRbGneFhKmrKPeHAfYt6Ta4F41NSJSguNZTZ4GMYF:w",
+        "47KuTP9u9PHeD5haFYQfGSv55gy64joxT3xL4ewtbxT9:w",
+        "98traRk4qVmBrjkh3e5Sp1up93SYqs37qiPSbNtDgCkX:w",
+        "Boo49zFXsacZ2Ck8wixmtFXri9NUCQDGTcFGC1V6uihn:w",
+        "VLTX1ishMBbcX3rdBWGssxawAo1Q2X2qxYFYqiGodVg",
+        "63vUM8JABqSBRiyxzaKF2mwe1m63DuYKB8EUsbukf3Vg",
+        "Bi92zE4UBNzubSg2AgUD5ijZ8SyW5n2ZLHBrviN5Xq2S",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "DGEympSS4qLvdr9r3uGHTfACdN8snShk4iGdJtZPxuBC",
+        "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq"
+      ],
+      "data": "c288dc59f2a9829d010100ca9a3b0000000038c93f0400000000",
+      "fields": [
+        [
+          "Market",
+          "Pass"
+        ],
+        [
+          "Direction",
+          "Sell, base token in and quote token out"
+        ],
+        [
+          "Amount In",
+          "1,000,000,000 base units"
+        ],
+        [
+          "Minimum Out",
+          "71,289,144 base units"
+        ],
+        [
+          "DAO",
+          "GxpJkPEsPmuRCCTNnfZaDKg4X3gf4ZPgmqgFqtibaPtK"
+        ],
+        [
+          "Proposal",
+          "FdH8ypaerttJ6A8AoeVDVCt44JQLCYU1qY6SbTmm2wZN"
+        ],
+        [
+          "Trader",
+          "8Cwx4yR2sFAC5Pdx2NgGHxCk1gJrtSTxJoyqVonqndhq"
+        ],
+        [
+          "Your Input Token Account",
+          "5g912tGVvVeh2rPEmu59THZLFnd1cw5gxjDAQLbREk86"
+        ],
+        [
+          "Output Token Account",
+          "84pW2jLNR5aEFHkYHdoMK3gNQvFEYX8fP8h6cRE5kESx"
+        ],
+        [
+          "Pass Base Token",
+          "7iNYRbGneFhKmrKPeHAfYt6Ta4F41NSJSguNZTZ4GMYF"
+        ],
+        [
+          "Fail Base Token",
+          "47KuTP9u9PHeD5haFYQfGSv55gy64joxT3xL4ewtbxT9"
+        ],
+        [
+          "Pass Quote Token",
+          "98traRk4qVmBrjkh3e5Sp1up93SYqs37qiPSbNtDgCkX"
+        ],
+        [
+          "Fail Quote Token",
+          "Boo49zFXsacZ2Ck8wixmtFXri9NUCQDGTcFGC1V6uihn"
+        ]
+      ],
+      "from": "4Vfr7i5adQwRWg7HiNd27YyrPwJAtdbefMtVKwnoQXC1ckjtFqZ63VAjyUT6CWP55grCdtEePcrGSP4agWjDP1g3#6",
+      "intent": "Trade a proposal's market",
+      "programId": "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq",
+      "sentence": "8Cwx4yR2sFAC5Pdx2NgGHxCk1gJrtSTxJoyqVonqndhq swaps 1,000,000,000 base units for at least 71,289,144 base units of conditional tokens on the Pass market of proposal FdH8ypaerttJ6A8AoeVDVCt44JQLCYU1qY6SbTmm2wZN: Sell, base token in and quote token out",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "3szfyfczcGxe6zpTQQBfnkF24SMakWChxp3aU68HNYij:w",
+        "tSTp6B6kE9o6ZaTmHm2ZwnJBBtgd3x112tapxFhmBEQ:sw",
+        "4r9FMgPjS4fGrwvWHv36eVtTCBFJJVDDs12v6JKmQBCB:w",
+        "6VRTudTaet1Hgp2CHTDirH5UiUxf1TzsKfeQQwt7ivYY:w",
+        "Bj2LMFwMnEEsTsPFi1obRnnys3PBvM4v7tuCw8pnwsap:w",
+        "5Rhv7MUbRnynp4tnMPqwu1QS9ha3Zf4G2DWT8ysxH7HC:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "DGEympSS4qLvdr9r3uGHTfACdN8snShk4iGdJtZPxuBC",
+        "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq"
+      ],
+      "data": "a498cf631eba13b6",
+      "fields": [
+        [
+          "DAO",
+          "3szfyfczcGxe6zpTQQBfnkF24SMakWChxp3aU68HNYij"
+        ],
+        [
+          "MetaDAO Admin",
+          "tSTp6B6kE9o6ZaTmHm2ZwnJBBtgd3x112tapxFhmBEQ"
+        ],
+        [
+          "Base Fee Recipient",
+          "4r9FMgPjS4fGrwvWHv36eVtTCBFJJVDDs12v6JKmQBCB"
+        ],
+        [
+          "Quote Fee Recipient",
+          "6VRTudTaet1Hgp2CHTDirH5UiUxf1TzsKfeQQwt7ivYY"
+        ],
+        [
+          "Spot Market Base Vault",
+          "Bj2LMFwMnEEsTsPFi1obRnnys3PBvM4v7tuCw8pnwsap"
+        ],
+        [
+          "Spot Market Quote Vault",
+          "5Rhv7MUbRnynp4tnMPqwu1QS9ha3Zf4G2DWT8ysxH7HC"
+        ]
+      ],
+      "from": "5GxXvKMrE9roT9dD7P9sDiosLmHWiJM4UsCdtvP3m1vJid6WKfqfsojBLrUghTkdjNvBKJXr1rzRmybppHLNjWaz#3",
+      "intent": "Collect protocol fees",
+      "programId": "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq",
+      "sentence": "tSTp6B6kE9o6ZaTmHm2ZwnJBBtgd3x112tapxFhmBEQ collects the protocol fees of DAO 3szfyfczcGxe6zpTQQBfnkF24SMakWChxp3aU68HNYij's market into 4r9FMgPjS4fGrwvWHv36eVtTCBFJJVDDs12v6JKmQBCB and 6VRTudTaet1Hgp2CHTDirH5UiUxf1TzsKfeQQwt7ivYY",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "FdH8ypaerttJ6A8AoeVDVCt44JQLCYU1qY6SbTmm2wZN:w",
+        "GxpJkPEsPmuRCCTNnfZaDKg4X3gf4ZPgmqgFqtibaPtK:w",
+        "Bi92zE4UBNzubSg2AgUD5ijZ8SyW5n2ZLHBrviN5Xq2S:w",
+        "D2zGQvb1nEsfSGcYaff3niDJ3ZrFmdh9tHNF2s2kWBcy:w",
+        "Gv27nnaXR8UanJmjPZ4MLS81eqee2DfzJSv7C8PkQTEC",
+        "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf",
+        "3g2TXBPo9NjQLECyGdaZPVHqZCCFbJMpqz7CtSwF5uAn:w",
+        "61UxKfizsBBHNuXAp8EKf2XjWxdPaWCH6hVkTBaeUUr2:w",
+        "EXUSH6B7gGrjacf34sp6dNHJsxgJ3TfiePCx8jCEoy3i:w",
+        "B4qtCpRK88aa511YcTy4cYfGHrzB9xBWSQHMhLRDb8CL:w",
+        "9LmAt9RwbP2bPaYZyy9oZiPkzm4T6fEKhCS3DGuGURsn:w",
+        "Ej5B14mBrjuLe67XaqECQBwaNDeJ6CvKrvDUZ7D9dRrx:w",
+        "VLTX1ishMBbcX3rdBWGssxawAo1Q2X2qxYFYqiGodVg",
+        "63vUM8JABqSBRiyxzaKF2mwe1m63DuYKB8EUsbukf3Vg",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Dmpn5ybuT6moyhK8Yy6GVkbXwVEMoVrwLa6AWxFqPHba:w",
+        "AqwfXytHhFdVV1ZNYUyCjXgEiv9rzgCe1Uj84cruAvP1:w",
+        "98traRk4qVmBrjkh3e5Sp1up93SYqs37qiPSbNtDgCkX:w",
+        "Boo49zFXsacZ2Ck8wixmtFXri9NUCQDGTcFGC1V6uihn:w",
+        "7iNYRbGneFhKmrKPeHAfYt6Ta4F41NSJSguNZTZ4GMYF:w",
+        "47KuTP9u9PHeD5haFYQfGSv55gy64joxT3xL4ewtbxT9:w",
+        "5dUzgVEwxVapB8wEV7xpMN6KhLtSZbQyWkYZeABu9aRL:w",
+        "6fXgmFvrJ6k8M7YvbkXZk9Ud4cJEM5opsgV3ijUMkmpv:w",
+        "DGEympSS4qLvdr9r3uGHTfACdN8snShk4iGdJtZPxuBC",
+        "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq"
+      ],
+      "data": "174433a76dadbba4",
+      "fields": [
+        [
+          "Proposal",
+          "FdH8ypaerttJ6A8AoeVDVCt44JQLCYU1qY6SbTmm2wZN"
+        ],
+        [
+          "DAO",
+          "GxpJkPEsPmuRCCTNnfZaDKg4X3gf4ZPgmqgFqtibaPtK"
+        ],
+        [
+          "Proposal Question",
+          "Bi92zE4UBNzubSg2AgUD5ijZ8SyW5n2ZLHBrviN5Xq2S"
+        ],
+        [
+          "Squads Proposal",
+          "D2zGQvb1nEsfSGcYaff3niDJ3ZrFmdh9tHNF2s2kWBcy"
+        ],
+        [
+          "DAO Multisig",
+          "Gv27nnaXR8UanJmjPZ4MLS81eqee2DfzJSv7C8PkQTEC"
+        ],
+        [
+          "Pass Market Base Vault",
+          "3g2TXBPo9NjQLECyGdaZPVHqZCCFbJMpqz7CtSwF5uAn"
+        ],
+        [
+          "Pass Market Quote Vault",
+          "61UxKfizsBBHNuXAp8EKf2XjWxdPaWCH6hVkTBaeUUr2"
+        ],
+        [
+          "Fail Market Base Vault",
+          "EXUSH6B7gGrjacf34sp6dNHJsxgJ3TfiePCx8jCEoy3i"
+        ],
+        [
+          "Fail Market Quote Vault",
+          "B4qtCpRK88aa511YcTy4cYfGHrzB9xBWSQHMhLRDb8CL"
+        ],
+        [
+          "Spot Market Base Vault",
+          "9LmAt9RwbP2bPaYZyy9oZiPkzm4T6fEKhCS3DGuGURsn"
+        ],
+        [
+          "Spot Market Quote Vault",
+          "Ej5B14mBrjuLe67XaqECQBwaNDeJ6CvKrvDUZ7D9dRrx"
+        ],
+        [
+          "Conditional Quote Vault",
+          "Dmpn5ybuT6moyhK8Yy6GVkbXwVEMoVrwLa6AWxFqPHba"
+        ],
+        [
+          "Conditional Quote Vault Tokens",
+          "AqwfXytHhFdVV1ZNYUyCjXgEiv9rzgCe1Uj84cruAvP1"
+        ],
+        [
+          "Pass Quote Token",
+          "98traRk4qVmBrjkh3e5Sp1up93SYqs37qiPSbNtDgCkX"
+        ],
+        [
+          "Fail Quote Token",
+          "Boo49zFXsacZ2Ck8wixmtFXri9NUCQDGTcFGC1V6uihn"
+        ],
+        [
+          "Pass Base Token",
+          "7iNYRbGneFhKmrKPeHAfYt6Ta4F41NSJSguNZTZ4GMYF"
+        ],
+        [
+          "Fail Base Token",
+          "47KuTP9u9PHeD5haFYQfGSv55gy64joxT3xL4ewtbxT9"
+        ],
+        [
+          "Conditional Base Vault",
+          "5dUzgVEwxVapB8wEV7xpMN6KhLtSZbQyWkYZeABu9aRL"
+        ],
+        [
+          "Conditional Base Vault Tokens",
+          "6fXgmFvrJ6k8M7YvbkXZk9Ud4cJEM5opsgV3ijUMkmpv"
+        ]
+      ],
+      "from": "22ojD2RSoyNigE2sPZFKb2vo2L2NgnToFeW8fyHkPePhWPM8geQcK2KGQwVNevG8HMBa4dwMCWvYT1NzMYK2ATJF#1",
+      "intent": "Finalize a proposal",
+      "programId": "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq",
+      "sentence": "Finalizes proposal FdH8ypaerttJ6A8AoeVDVCt44JQLCYU1qY6SbTmm2wZN of DAO GxpJkPEsPmuRCCTNnfZaDKg4X3gf4ZPgmqgFqtibaPtK: it passes or fails by its markets' time-weighted prices, and its Squads proposal is approved or rejected to match",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "DACyvJvSEtPNnAaCX3DerMRxRsx2i5DXWSp6gsBzwtEC:w",
+        "AvdVJdy54QUcsttVdRdrr67mxQdHpdR4W79JPRBgJ8SJ",
+        "8gkTawYN4PfxbxATQrdViJLjMPkSgkWPDEw7BmviwwbV",
+        "5dsMhJgkiMjZkWQQbZP3eHdthJ97jcc8EJThgbdVuhzT",
+        "Ai3dQuGqfnZJqSPs33qoZ28DFTsYiKZdd7xj25TEvFnz",
+        "9XCRoCoPQupkVns5w7HrDRStL3hEuhZYKQ5xxUuFkfNB",
+        "B9mmWoUT9Zj3EL3cuJEy7np4zyKDCu1dydXhSw64KkF7",
+        "7zexEnEDcdo93nyXbcR6syLfFpnFpLRukQUuAW32XxC1:w",
+        "CVBoMe2SaDKmojmn3yWTthEccHhrLZ3E6Z97bUaSFCS5:sw",
+        "FgK9jXADXqwe6bbE6iVym9ZHtABpTejXZtZgYHNx8rPh:w",
+        "6wDqwX1mP6XcdS7hf4ua1wnQZshxBZnMKvdkSCBSAraF:w",
+        "CEaPbn3zhq4druP2YUUNoqMftMDLxmq1JfKvN5KuYCjs:w",
+        "B4WmXVX8VaYZJiJLQMjXFyrMxiJhSFEXvxBgTjr8dyi1:w",
+        "4thBBmwCzWJe7qExAcDGcgCe3Ez9XZK1A3g2uQgDEqvs",
+        "BBTMqhgbWJQLghzmVasSWdcxjyzRj6KMj4hML3XNpWeg",
+        "11111111111111111111111111111111",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "DGEympSS4qLvdr9r3uGHTfACdN8snShk4iGdJtZPxuBC",
+        "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq",
+        "6LF6EdNoFXfSQa8vHrXxrtqpJiB1Tyj3Gq9jKv84z77s"
+      ],
+      "data": "10d3bd77f54800e5",
+      "fields": [
+        [
+          "Proposal",
+          "DACyvJvSEtPNnAaCX3DerMRxRsx2i5DXWSp6gsBzwtEC"
+        ],
+        [
+          "Conditional Base Vault",
+          "AvdVJdy54QUcsttVdRdrr67mxQdHpdR4W79JPRBgJ8SJ"
+        ],
+        [
+          "Conditional Quote Vault",
+          "8gkTawYN4PfxbxATQrdViJLjMPkSgkWPDEw7BmviwwbV"
+        ],
+        [
+          "Pass Base Token",
+          "5dsMhJgkiMjZkWQQbZP3eHdthJ97jcc8EJThgbdVuhzT"
+        ],
+        [
+          "Pass Quote Token",
+          "Ai3dQuGqfnZJqSPs33qoZ28DFTsYiKZdd7xj25TEvFnz"
+        ],
+        [
+          "Fail Base Token",
+          "9XCRoCoPQupkVns5w7HrDRStL3hEuhZYKQ5xxUuFkfNB"
+        ],
+        [
+          "Fail Quote Token",
+          "B9mmWoUT9Zj3EL3cuJEy7np4zyKDCu1dydXhSw64KkF7"
+        ],
+        [
+          "DAO",
+          "7zexEnEDcdo93nyXbcR6syLfFpnFpLRukQUuAW32XxC1"
+        ],
+        [
+          "Payer",
+          "CVBoMe2SaDKmojmn3yWTthEccHhrLZ3E6Z97bUaSFCS5"
+        ],
+        [
+          "Pass Market Base Vault",
+          "FgK9jXADXqwe6bbE6iVym9ZHtABpTejXZtZgYHNx8rPh"
+        ],
+        [
+          "Pass Market Quote Vault",
+          "6wDqwX1mP6XcdS7hf4ua1wnQZshxBZnMKvdkSCBSAraF"
+        ],
+        [
+          "Fail Market Base Vault",
+          "CEaPbn3zhq4druP2YUUNoqMftMDLxmq1JfKvN5KuYCjs"
+        ],
+        [
+          "Fail Market Quote Vault",
+          "B4WmXVX8VaYZJiJLQMjXFyrMxiJhSFEXvxBgTjr8dyi1"
+        ],
+        [
+          "DAO Multisig",
+          "4thBBmwCzWJe7qExAcDGcgCe3Ez9XZK1A3g2uQgDEqvs"
+        ],
+        [
+          "Squads Proposal",
+          "BBTMqhgbWJQLghzmVasSWdcxjyzRj6KMj4hML3XNpWeg"
+        ],
+        [
+          "Launch Check Account",
+          "6LF6EdNoFXfSQa8vHrXxrtqpJiB1Tyj3Gq9jKv84z77s"
+        ]
+      ],
+      "from": "4hWJvarxKgUVtF5HhwPDJhfconkmgx7RvTzEYtDuyS4FgoEfVNgFjPRr7VZyMwoAX95QmTt5qPnRutRwRqp7aJbF#2",
+      "intent": "Launch a proposal",
+      "programId": "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq",
+      "sentence": "CVBoMe2SaDKmojmn3yWTthEccHhrLZ3E6Z97bUaSFCS5 launches proposal DACyvJvSEtPNnAaCX3DerMRxRsx2i5DXWSp6gsBzwtEC of DAO 7zexEnEDcdo93nyXbcR6syLfFpnFpLRukQUuAW32XxC1, opening its pass and fail markets",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "DACyvJvSEtPNnAaCX3DerMRxRsx2i5DXWSp6gsBzwtEC:w",
+        "7zexEnEDcdo93nyXbcR6syLfFpnFpLRukQUuAW32XxC1:w",
+        "CVBoMe2SaDKmojmn3yWTthEccHhrLZ3E6Z97bUaSFCS5:sw",
+        "DGEympSS4qLvdr9r3uGHTfACdN8snShk4iGdJtZPxuBC",
+        "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq"
+      ],
+      "data": "c139aa8865c43aad",
+      "fields": [
+        [
+          "Proposal",
+          "DACyvJvSEtPNnAaCX3DerMRxRsx2i5DXWSp6gsBzwtEC"
+        ],
+        [
+          "DAO",
+          "7zexEnEDcdo93nyXbcR6syLfFpnFpLRukQUuAW32XxC1"
+        ],
+        [
+          "Team",
+          "CVBoMe2SaDKmojmn3yWTthEccHhrLZ3E6Z97bUaSFCS5"
+        ]
+      ],
+      "from": "4M5B351h4RTG87f7jicznvNJnUZMN7nQPAfLKAD4Lqzp5fPv8GRbuoho5vGrMjzivCSq7X1tR1UzdBTEgoLBMb3r#2",
+      "intent": "Sponsor a proposal",
+      "programId": "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq",
+      "sentence": "CVBoMe2SaDKmojmn3yWTthEccHhrLZ3E6Z97bUaSFCS5 sponsors draft proposal DACyvJvSEtPNnAaCX3DerMRxRsx2i5DXWSp6gsBzwtEC as the team of DAO 7zexEnEDcdo93nyXbcR6syLfFpnFpLRukQUuAW32XxC1",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "DACyvJvSEtPNnAaCX3DerMRxRsx2i5DXWSp6gsBzwtEC:w",
+        "BBTMqhgbWJQLghzmVasSWdcxjyzRj6KMj4hML3XNpWeg",
+        "4thBBmwCzWJe7qExAcDGcgCe3Ez9XZK1A3g2uQgDEqvs",
+        "6LF6EdNoFXfSQa8vHrXxrtqpJiB1Tyj3Gq9jKv84z77s",
+        "7zexEnEDcdo93nyXbcR6syLfFpnFpLRukQUuAW32XxC1:w",
+        "GtS6ywxaMx5sDMPgxm8FSRFH6cjhWrUXpEd3X1HisnMi",
+        "8gkTawYN4PfxbxATQrdViJLjMPkSgkWPDEw7BmviwwbV",
+        "AvdVJdy54QUcsttVdRdrr67mxQdHpdR4W79JPRBgJ8SJ",
+        "Jure6vLAa7rxR1kzGj49sAGVMqfJdCGgU5Kht6RTAmg:sw",
+        "Jure6vLAa7rxR1kzGj49sAGVMqfJdCGgU5Kht6RTAmg:sw",
+        "11111111111111111111111111111111",
+        "DGEympSS4qLvdr9r3uGHTfACdN8snShk4iGdJtZPxuBC",
+        "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq"
+      ],
+      "data": "32499c628195159e",
+      "fields": [
+        [
+          "Proposal",
+          "DACyvJvSEtPNnAaCX3DerMRxRsx2i5DXWSp6gsBzwtEC"
+        ],
+        [
+          "Squads Proposal",
+          "BBTMqhgbWJQLghzmVasSWdcxjyzRj6KMj4hML3XNpWeg"
+        ],
+        [
+          "DAO Multisig",
+          "4thBBmwCzWJe7qExAcDGcgCe3Ez9XZK1A3g2uQgDEqvs"
+        ],
+        [
+          "Squads Transaction",
+          "6LF6EdNoFXfSQa8vHrXxrtqpJiB1Tyj3Gq9jKv84z77s"
+        ],
+        [
+          "DAO",
+          "7zexEnEDcdo93nyXbcR6syLfFpnFpLRukQUuAW32XxC1"
+        ],
+        [
+          "Proposal Question",
+          "GtS6ywxaMx5sDMPgxm8FSRFH6cjhWrUXpEd3X1HisnMi"
+        ],
+        [
+          "Conditional Quote Vault",
+          "8gkTawYN4PfxbxATQrdViJLjMPkSgkWPDEw7BmviwwbV"
+        ],
+        [
+          "Conditional Base Vault",
+          "AvdVJdy54QUcsttVdRdrr67mxQdHpdR4W79JPRBgJ8SJ"
+        ],
+        [
+          "Proposer",
+          "Jure6vLAa7rxR1kzGj49sAGVMqfJdCGgU5Kht6RTAmg"
+        ],
+        [
+          "Payer",
+          "Jure6vLAa7rxR1kzGj49sAGVMqfJdCGgU5Kht6RTAmg"
+        ]
+      ],
+      "from": "2voNgErZKePpeaT9uGsgfG9wEjv2hJomuWjKKBjJzeURrC9aS6FyDBrsp22ivPtNoiWEVWCiTjnYdCtbcT131g2s#6",
+      "intent": "Draft a proposal",
+      "programId": "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq",
+      "sentence": "Jure6vLAa7rxR1kzGj49sAGVMqfJdCGgU5Kht6RTAmg drafts proposal DACyvJvSEtPNnAaCX3DerMRxRsx2i5DXWSp6gsBzwtEC for DAO 7zexEnEDcdo93nyXbcR6syLfFpnFpLRukQUuAW32XxC1: if it passes, Squads transaction 6LF6EdNoFXfSQa8vHrXxrtqpJiB1Tyj3Gq9jKv84z77s is approved",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "BbGa5nx6owLwJ9Wt9Pr3FHccpove9uSvNX4C59Andxf3:w",
+        "CkEUCAooQi64UFhPFS5MWpZw6LQqjsDQBj3Z5uiXS1eN:w",
+        "DKMYywHxUwNT84pYP4DssmtmJTQbpJxBCBkV1kvs9352:w",
+        "3wRsDXMWTuxpUgxDAsWomWQif7b5fhJPPua8izpk4Q6D:w",
+        "QYZBNWkDpTTyhazbXAEVWrgoqBhdJEv9jNgovWsHySb:w",
+        "Cbjr1Nvcay3QWDriyRKtokJ7V4PMknesGxeK8z7Zmeta",
+        "HpuFDfdaWsnNvJ1h89ySXzC4WTc9YC9Ano4fLkhfV8sW:sw",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "DGEympSS4qLvdr9r3uGHTfACdN8snShk4iGdJtZPxuBC",
+        "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq"
+      ],
+      "data": "b3dcba56026032a1005847f80d000000",
+      "fields": [
+        [
+          "Amount",
+          "60,000"
+        ],
+        [
+          "Proposal",
+          "BbGa5nx6owLwJ9Wt9Pr3FHccpove9uSvNX4C59Andxf3"
+        ],
+        [
+          "DAO",
+          "CkEUCAooQi64UFhPFS5MWpZw6LQqjsDQBj3Z5uiXS1eN"
+        ],
+        [
+          "Staker Token Account",
+          "DKMYywHxUwNT84pYP4DssmtmJTQbpJxBCBkV1kvs9352"
+        ],
+        [
+          "Proposal Stake Vault",
+          "3wRsDXMWTuxpUgxDAsWomWQif7b5fhJPPua8izpk4Q6D"
+        ],
+        [
+          "Stake Record",
+          "QYZBNWkDpTTyhazbXAEVWrgoqBhdJEv9jNgovWsHySb"
+        ],
+        [
+          "Base Token",
+          "Cbjr1Nvcay3QWDriyRKtokJ7V4PMknesGxeK8z7Zmeta"
+        ],
+        [
+          "Staker",
+          "HpuFDfdaWsnNvJ1h89ySXzC4WTc9YC9Ano4fLkhfV8sW"
+        ]
+      ],
+      "from": "2jzS1Ynbd89AFp6mDZQARNzd9PrJe834xuYTcwBBD4nNYLozo5trFo57VvGmSJCbkRC3QAgsXuoFQDKF7ADF21hv#3",
+      "intent": "Unstake from a proposal",
+      "programId": "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq",
+      "sentence": "HpuFDfdaWsnNvJ1h89ySXzC4WTc9YC9Ano4fLkhfV8sW unstakes 60,000 of Cbjr1Nvcay3QWDriyRKtokJ7V4PMknesGxeK8z7Zmeta from proposal BbGa5nx6owLwJ9Wt9Pr3FHccpove9uSvNX4C59Andxf3",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "BbGa5nx6owLwJ9Wt9Pr3FHccpove9uSvNX4C59Andxf3:w",
+        "CkEUCAooQi64UFhPFS5MWpZw6LQqjsDQBj3Z5uiXS1eN:w",
+        "DKMYywHxUwNT84pYP4DssmtmJTQbpJxBCBkV1kvs9352:w",
+        "3wRsDXMWTuxpUgxDAsWomWQif7b5fhJPPua8izpk4Q6D:w",
+        "QYZBNWkDpTTyhazbXAEVWrgoqBhdJEv9jNgovWsHySb:w",
+        "HpuFDfdaWsnNvJ1h89ySXzC4WTc9YC9Ano4fLkhfV8sW:sw",
+        "HpuFDfdaWsnNvJ1h89ySXzC4WTc9YC9Ano4fLkhfV8sW:sw",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "DGEympSS4qLvdr9r3uGHTfACdN8snShk4iGdJtZPxuBC",
+        "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq"
+      ],
+      "data": "0aa9afee50dd2510005847f80d000000",
+      "fields": [
+        [
+          "Amount",
+          "60,000,000,000 base units"
+        ],
+        [
+          "Proposal",
+          "BbGa5nx6owLwJ9Wt9Pr3FHccpove9uSvNX4C59Andxf3"
+        ],
+        [
+          "DAO",
+          "CkEUCAooQi64UFhPFS5MWpZw6LQqjsDQBj3Z5uiXS1eN"
+        ],
+        [
+          "Staker Token Account",
+          "DKMYywHxUwNT84pYP4DssmtmJTQbpJxBCBkV1kvs9352"
+        ],
+        [
+          "Proposal Stake Vault",
+          "3wRsDXMWTuxpUgxDAsWomWQif7b5fhJPPua8izpk4Q6D"
+        ],
+        [
+          "Stake Record",
+          "QYZBNWkDpTTyhazbXAEVWrgoqBhdJEv9jNgovWsHySb"
+        ],
+        [
+          "Staker",
+          "HpuFDfdaWsnNvJ1h89ySXzC4WTc9YC9Ano4fLkhfV8sW"
+        ],
+        [
+          "Payer",
+          "HpuFDfdaWsnNvJ1h89ySXzC4WTc9YC9Ano4fLkhfV8sW"
+        ]
+      ],
+      "from": "2gYXZcza4STtHPJMCxTNKhnaoPwN4b9eDZTXiPhi8hTAbSLyCCJGstGiXj2CNy3jxivqv75cLN3dCGBBbBYUYCPJ#5",
+      "intent": "Stake on a proposal",
+      "programId": "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq",
+      "sentence": "HpuFDfdaWsnNvJ1h89ySXzC4WTc9YC9Ano4fLkhfV8sW stakes 60,000,000,000 base units of the DAO's token on draft proposal BbGa5nx6owLwJ9Wt9Pr3FHccpove9uSvNX4C59Andxf3",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CLoqV77NtkbrsvtCRDP1vdYxgPZua3nnh7gCNPLzDQQ8:w",
+        "41vxoAGF7XU3JhxJBNihtiWn4xPX2mXPXZjpHSfbP8Ct:w",
+        "DKPMq4PT1WtCybGpuTqSM39WMCQayx6B9EyNXxAkBgKM:w",
+        "36i6zny3EWuRQjVMdjzurtrawZccgnzwv1PBRiRcjBqM:w",
+        "4q52onfmSqL8fuQg6wAjUKfzRGXtpLqTAs8qcnpUxv54:w",
+        "J8ruST5xinsrRvqnAg77xakxUHKiaeyoh8FjfpaoqZFP:w",
+        "MjWjbNkngXfmSesDaeuAxkxTnijDFeh9QEDe4hipHum:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "DGEympSS4qLvdr9r3uGHTfACdN8snShk4iGdJtZPxuBC",
+        "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq"
+      ],
+      "data": "959e21b92ff3fd1f00806aacaf3c0900000000000000000000000000000000000000000000000000",
+      "fields": [
+        [
+          "Liquidity Shares",
+          "2,600,000,000,000,000"
+        ],
+        [
+          "Min Base Out",
+          "0 base units"
+        ],
+        [
+          "Min Quote Out",
+          "0 base units"
+        ],
+        [
+          "DAO",
+          "CLoqV77NtkbrsvtCRDP1vdYxgPZua3nnh7gCNPLzDQQ8"
+        ],
+        [
+          "Position Owner",
+          "41vxoAGF7XU3JhxJBNihtiWn4xPX2mXPXZjpHSfbP8Ct"
+        ],
+        [
+          "Your Base Token Account",
+          "DKPMq4PT1WtCybGpuTqSM39WMCQayx6B9EyNXxAkBgKM"
+        ],
+        [
+          "Your Quote Token Account",
+          "36i6zny3EWuRQjVMdjzurtrawZccgnzwv1PBRiRcjBqM"
+        ],
+        [
+          "Spot Market Base Vault",
+          "4q52onfmSqL8fuQg6wAjUKfzRGXtpLqTAs8qcnpUxv54"
+        ],
+        [
+          "Spot Market Quote Vault",
+          "J8ruST5xinsrRvqnAg77xakxUHKiaeyoh8FjfpaoqZFP"
+        ],
+        [
+          "Liquidity Position",
+          "MjWjbNkngXfmSesDaeuAxkxTnijDFeh9QEDe4hipHum"
+        ]
+      ],
+      "from": "3WxGKRW4Q4LiThrpP2TUzExsU616A4mRXfXYD4dJqBTokgjuKH8wFxY68RMu7qJmgRkk9mkC76VsMhoQwD9xbtKC#1.5",
+      "intent": "Withdraw liquidity",
+      "programId": "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq",
+      "sentence": "41vxoAGF7XU3JhxJBNihtiWn4xPX2mXPXZjpHSfbP8Ct withdraws 2600000000000000 liquidity shares from the spot market of DAO CLoqV77NtkbrsvtCRDP1vdYxgPZua3nnh7gCNPLzDQQ8, for at least 0 base units of the base token and 0 base units of the quote token",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "BbF5ibEVJAgDGvafhQGWqZX5TFJwDNX1AYXt6oxwdfQS:w",
+        "imvhvSrL5HAEdkU7p4Te9XapQ2tsuRuKLaow1Rai9tX:w",
+        "LRrTQLqFzAPxjschuAKQAqH1XHBuBgHqwhybENStARt:sw",
+        "11111111111111111111111111111111",
+        "4WSZkN6p4wfqGqQSwTnvpCTnjNMdazDebYQJu14nmeta:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "16rWZiApV9dxxwxDJrHzJmEkK5moSZCDzZByyFxW2E3:w",
+        "NeUdokZBF3yLWf2T9BeNCKZ26WgcX6GCqU9ahCoJPTn",
+        "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf",
+        "BSTq9w3kZwNwpBXJEvTZz2G9ZTNyKBvoSeXMvwb4cNZr",
+        "5DH2e3cJmFpyi6mk65EGFediunm4ui6BiKNUNrhWtD1b:w",
+        "2u1ugaqXQvD8weWNewmSrCxMfbV6BiYZiieK43yJULky:w",
+        "5b2UXBJNow3N2czDb5sqqxqSkyQyo4LRuF4nGRBEzF9Q:w",
+        "3RatFAj2korhpXx9xcC8mSpDPGvDrDd7xYj4vbkgB5WL:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "DGEympSS4qLvdr9r3uGHTfACdN8snShk4iGdJtZPxuBC",
+        "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq"
+      ],
+      "data": "80e2605a273818c4f8b4222f010000000000000000000000a622280f00000000000000000000000080510100010000000000000001000000000000000098f73e5d0100002c0180f4030000000000000000000100f2052a010000000100000095acc4fe719fca585eb2800949b0e55deccc12a7fe362ee1a028675028185210d4fe95acc4fe719fca585eb2800949b0e55deccc12a7fe362ee1a028675028185210",
+      "fields": [
+        [
+          "TWAP Initial Observation (price × 1e12)",
+          "5,085,771,000"
+        ],
+        [
+          "TWAP Max Change per Update (price × 1e12)",
+          "254,288,550"
+        ],
+        [
+          "TWAP Start Delay",
+          "24:00:00"
+        ],
+        [
+          "Min Quote Liquidity to Launch",
+          "0.000001"
+        ],
+        [
+          "Min Base Liquidity to Launch",
+          "0.000001"
+        ],
+        [
+          "Stake to Launch",
+          "1,500,000"
+        ],
+        [
+          "Pass Threshold",
+          "3 %"
+        ],
+        [
+          "Proposal Duration",
+          "72:00:00"
+        ],
+        [
+          "DAO Nonce",
+          "0"
+        ],
+        [
+          "Monthly Spending Limit (amount in quote base units)",
+          "Amount Per Month: 5000000000, Members: B5GYd32cfgzXSkJ3ZQSRJvWxthXJH2wibjy4PDUNV6yV"
+        ],
+        [
+          "Team-Sponsored Pass Threshold",
+          "-3 %"
+        ],
+        [
+          "Team",
+          "B5GYd32cfgzXSkJ3ZQSRJvWxthXJH2wibjy4PDUNV6yV"
+        ],
+        [
+          "DAO",
+          "BbF5ibEVJAgDGvafhQGWqZX5TFJwDNX1AYXt6oxwdfQS"
+        ],
+        [
+          "DAO Creator",
+          "imvhvSrL5HAEdkU7p4Te9XapQ2tsuRuKLaow1Rai9tX"
+        ],
+        [
+          "Payer",
+          "LRrTQLqFzAPxjschuAKQAqH1XHBuBgHqwhybENStARt"
+        ],
+        [
+          "Base Token",
+          "4WSZkN6p4wfqGqQSwTnvpCTnjNMdazDebYQJu14nmeta"
+        ],
+        [
+          "Quote Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "DAO Multisig",
+          "16rWZiApV9dxxwxDJrHzJmEkK5moSZCDzZByyFxW2E3"
+        ],
+        [
+          "DAO Treasury",
+          "NeUdokZBF3yLWf2T9BeNCKZ26WgcX6GCqU9ahCoJPTn"
+        ],
+        [
+          "Squads Fee Treasury",
+          "5DH2e3cJmFpyi6mk65EGFediunm4ui6BiKNUNrhWtD1b"
+        ],
+        [
+          "Squads Spending Limit",
+          "2u1ugaqXQvD8weWNewmSrCxMfbV6BiYZiieK43yJULky"
+        ],
+        [
+          "Spot Market Base Vault",
+          "5b2UXBJNow3N2czDb5sqqxqSkyQyo4LRuF4nGRBEzF9Q"
+        ],
+        [
+          "Spot Market Quote Vault",
+          "3RatFAj2korhpXx9xcC8mSpDPGvDrDd7xYj4vbkgB5WL"
+        ]
+      ],
+      "from": "3vS28UMiobsbCh6YD3LgR3txgydqR9Hp8sFNXSeNtmFon93tpyaWotcCYaNMZjATA4xStA5Az1vi4s4PNoAC25qT#4.6",
+      "intent": "Create a DAO",
+      "programId": "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq",
+      "sentence": "imvhvSrL5HAEdkU7p4Te9XapQ2tsuRuKLaow1Rai9tX creates DAO BbF5ibEVJAgDGvafhQGWqZX5TFJwDNX1AYXt6oxwdfQS governing 4WSZkN6p4wfqGqQSwTnvpCTnjNMdazDebYQJu14nmeta, with EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v as its quote token",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "BbF5ibEVJAgDGvafhQGWqZX5TFJwDNX1AYXt6oxwdfQS:w",
+        "imvhvSrL5HAEdkU7p4Te9XapQ2tsuRuKLaow1Rai9tX:w",
+        "C1NVRHZLSEFbi6xJDVne5bhJmagMxUxFjrEv5fNCkPF8:w",
+        "6fWcX73HXVETnFCw6fH9rvNNtF8pd1rb1Z7UsnpPH9kA:w",
+        "LRrTQLqFzAPxjschuAKQAqH1XHBuBgHqwhybENStARt:sw",
+        "11111111111111111111111111111111",
+        "5b2UXBJNow3N2czDb5sqqxqSkyQyo4LRuF4nGRBEzF9Q:w",
+        "3RatFAj2korhpXx9xcC8mSpDPGvDrDd7xYj4vbkgB5WL:w",
+        "DLzFqgVoBz3soiBqaEHCJjEhAgoAFM115TuV4RywqVFV:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "DGEympSS4qLvdr9r3uGHTfACdN8snShk4iGdJtZPxuBC",
+        "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq"
+      ],
+      "data": "286e6b74ae7f61ccf069455e0200000000204aa9d101000000000000000000000000000000000000058b925eadb2d0db2fe4a82d027437362684ad5f9109d6f4942219f230178d11",
+      "fields": [
+        [
+          "Quote Amount",
+          "10,171,542,000 base units"
+        ],
+        [
+          "Max Base Amount",
+          "2,000,000,000,000 base units"
+        ],
+        [
+          "Min Liquidity Shares",
+          "0"
+        ],
+        [
+          "Position Owner",
+          "NeUdokZBF3yLWf2T9BeNCKZ26WgcX6GCqU9ahCoJPTn"
+        ],
+        [
+          "DAO",
+          "BbF5ibEVJAgDGvafhQGWqZX5TFJwDNX1AYXt6oxwdfQS"
+        ],
+        [
+          "Liquidity Provider",
+          "imvhvSrL5HAEdkU7p4Te9XapQ2tsuRuKLaow1Rai9tX"
+        ],
+        [
+          "Provider Base Token Account",
+          "C1NVRHZLSEFbi6xJDVne5bhJmagMxUxFjrEv5fNCkPF8"
+        ],
+        [
+          "Provider Quote Token Account",
+          "6fWcX73HXVETnFCw6fH9rvNNtF8pd1rb1Z7UsnpPH9kA"
+        ],
+        [
+          "Payer",
+          "LRrTQLqFzAPxjschuAKQAqH1XHBuBgHqwhybENStARt"
+        ],
+        [
+          "Spot Market Base Vault",
+          "5b2UXBJNow3N2czDb5sqqxqSkyQyo4LRuF4nGRBEzF9Q"
+        ],
+        [
+          "Spot Market Quote Vault",
+          "3RatFAj2korhpXx9xcC8mSpDPGvDrDd7xYj4vbkgB5WL"
+        ],
+        [
+          "Liquidity Position",
+          "DLzFqgVoBz3soiBqaEHCJjEhAgoAFM115TuV4RywqVFV"
+        ]
+      ],
+      "from": "3vS28UMiobsbCh6YD3LgR3txgydqR9Hp8sFNXSeNtmFon93tpyaWotcCYaNMZjATA4xStA5Az1vi4s4PNoAC25qT#4.23",
+      "intent": "Add liquidity",
+      "programId": "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq",
+      "sentence": "imvhvSrL5HAEdkU7p4Te9XapQ2tsuRuKLaow1Rai9tX adds 10,171,542,000 base units of the quote token and at most 2,000,000,000,000 base units of the base token to the spot market of DAO BbF5ibEVJAgDGvafhQGWqZX5TFJwDNX1AYXt6oxwdfQS, for at least 0 liquidity shares owned by NeUdokZBF3yLWf2T9BeNCKZ26WgcX6GCqU9ahCoJPTn",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "FU7mKs4cyAV9pCha1map4K5xTtkWN7uAjeM2dsGVBnGy",
+        "6awyHMshBGVjJ3ozdSJdyyDE1CTAXUwrpNMaRGMsb4sf:w",
+        "CMgwnYTGppFMu47XWRC8quCiL5nJhwegjjoJjW1yWsbJ",
+        "4hSTxgMah39yDSmjJMX9vSJgsb4GMLJbcPHAq832Aj8F",
+        "FG7dpL9qKrzoZcnsLP6pZVJdmzeKyaEvEU2TDZPDdpeh:w",
+        "11111111111111111111111111111111"
+      ],
+      "data": "3dc7f164eedc544e0400000000000000",
+      "fields": [
+        [
+          "Squads Transaction Index",
+          "4"
+        ],
+        [
+          "DAO",
+          "FU7mKs4cyAV9pCha1map4K5xTtkWN7uAjeM2dsGVBnGy"
+        ],
+        [
+          "MetaDAO Admin or Liquidator",
+          "6awyHMshBGVjJ3ozdSJdyyDE1CTAXUwrpNMaRGMsb4sf"
+        ],
+        [
+          "DAO Multisig",
+          "CMgwnYTGppFMu47XWRC8quCiL5nJhwegjjoJjW1yWsbJ"
+        ],
+        [
+          "Squads Proposal",
+          "4hSTxgMah39yDSmjJMX9vSJgsb4GMLJbcPHAq832Aj8F"
+        ],
+        [
+          "Queued Approval",
+          "FG7dpL9qKrzoZcnsLP6pZVJdmzeKyaEvEU2TDZPDdpeh"
+        ]
+      ],
+      "from": "3uPrPzMAQSdpnbScmnKRDQ8fWMrfEwTb1WhEeUDZ38fJj3rhBMZxDxNLgmn7hhBHBhc3hwbMLeGskjbB8bcwozRX#4.1",
+      "intent": "Queue a Squads approval",
+      "programId": "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq",
+      "sentence": "6awyHMshBGVjJ3ozdSJdyyDE1CTAXUwrpNMaRGMsb4sf queues approval of Squads transaction 4 of DAO FU7mKs4cyAV9pCha1map4K5xTtkWN7uAjeM2dsGVBnGy",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "5BhKSFDV3mNzUxCaAyMZtbakhkbApwzLBD4gnQmNoz3Z:w",
+        "tSTp6B6kE9o6ZaTmHm2ZwnJBBtgd3x112tapxFhmBEQ:sw",
+        "6g3jo62yzqq4ARor3ajoeoSNkVLbxb5uc4uMNKewoLSh:w",
+        "E45yD8h2ZsJdHFMPdowKvrC6gS9BgrcansUwHDEDokiF:w",
+        "6trPRH25dw4mpcSVyDqbbb3NUTnfbVJLEwp9i73iAUk8:w",
+        "Gto8fGx3sXSEhbiLZkfbQT4ro5o2uz7gAbfAgdYMX1Hd:w",
+        "EP3SoC2SvR3d4c2eXVBvhEMWSr2j3YtoCY3UMiQV7BPD:s",
+        "cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG",
+        "3rmHSu74h1ZcmAisVcWerTCiRDQbUrBKmcwptYGjHfet",
+        "HLnpSz9h2S4hiLQ43rnSD9XkcUThA7B8hQMKmDaiTLcC",
+        "H24aevTrQjbeAEHbzvDa4yhovsoZUc4FTndtk6sspn7m",
+        "GuFJK9X4Y7YMEepGZM16WRJytDAg4AJakiWQ6C6rRgbx:w",
+        "FK833weFZJP5XqC8Hh85eP6TVtLzweHGYUmrD8ro53kj:w",
+        "6VRTudTaet1Hgp2CHTDirH5UiUxf1TzsKfeQQwt7ivYY:w",
+        "FneU47JDWks6dTbxypKi43P9A2ujnFMiq9D2oHFBQx7L:w",
+        "9QzzC8Y5JYXJogk98f3WMs1kankQ4G8w3SwBMWuwsHLZ:w",
+        "6JSXRGMH6wNiukuLi4x6rSHazJMQL51WGbzirXxsmeta",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "GtvVSN8Vvh17pkt1s5ognz2iMAmWrv9FmywqSuMST3wo",
+        "E45yD8h2ZsJdHFMPdowKvrC6gS9BgrcansUwHDEDokiF:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf",
+        "DGEympSS4qLvdr9r3uGHTfACdN8snShk4iGdJtZPxuBC",
+        "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq"
+      ],
+      "data": "8bd469767e36d68f",
+      "fields": [
+        [
+          "DAO",
+          "5BhKSFDV3mNzUxCaAyMZtbakhkbApwzLBD4gnQmNoz3Z"
+        ],
+        [
+          "MetaDAO Admin",
+          "tSTp6B6kE9o6ZaTmHm2ZwnJBBtgd3x112tapxFhmBEQ"
+        ],
+        [
+          "DAO Multisig",
+          "6g3jo62yzqq4ARor3ajoeoSNkVLbxb5uc4uMNKewoLSh"
+        ],
+        [
+          "DAO Treasury",
+          "E45yD8h2ZsJdHFMPdowKvrC6gS9BgrcansUwHDEDokiF"
+        ],
+        [
+          "Squads Transaction",
+          "6trPRH25dw4mpcSVyDqbbb3NUTnfbVJLEwp9i73iAUk8"
+        ],
+        [
+          "Squads Proposal",
+          "Gto8fGx3sXSEhbiLZkfbQT4ro5o2uz7gAbfAgdYMX1Hd"
+        ],
+        [
+          "Meteora Pool",
+          "H24aevTrQjbeAEHbzvDa4yhovsoZUc4FTndtk6sspn7m"
+        ],
+        [
+          "Meteora Position",
+          "GuFJK9X4Y7YMEepGZM16WRJytDAg4AJakiWQ6C6rRgbx"
+        ],
+        [
+          "Base Fee Recipient",
+          "FK833weFZJP5XqC8Hh85eP6TVtLzweHGYUmrD8ro53kj"
+        ],
+        [
+          "Quote Fee Recipient",
+          "6VRTudTaet1Hgp2CHTDirH5UiUxf1TzsKfeQQwt7ivYY"
+        ],
+        [
+          "Pool Base Vault",
+          "FneU47JDWks6dTbxypKi43P9A2ujnFMiq9D2oHFBQx7L"
+        ],
+        [
+          "Pool Quote Vault",
+          "9QzzC8Y5JYXJogk98f3WMs1kankQ4G8w3SwBMWuwsHLZ"
+        ],
+        [
+          "Base Token",
+          "6JSXRGMH6wNiukuLi4x6rSHazJMQL51WGbzirXxsmeta"
+        ],
+        [
+          "Quote Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Position NFT Account",
+          "GtvVSN8Vvh17pkt1s5ognz2iMAmWrv9FmywqSuMST3wo"
+        ],
+        [
+          "Position Owner",
+          "E45yD8h2ZsJdHFMPdowKvrC6gS9BgrcansUwHDEDokiF"
+        ]
+      ],
+      "from": "4StedgJpDhbjcEuaZVaEiD2iwWWWMT8qaCdAsDfuWEh91uzRcqows68PFDWrop8iyVsUQacJTDTofQ52HQWwwf5V#4",
+      "intent": "Collect Meteora fees",
+      "programId": "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq",
+      "sentence": "tSTp6B6kE9o6ZaTmHm2ZwnJBBtgd3x112tapxFhmBEQ claims the trading fees of Meteora position GuFJK9X4Y7YMEepGZM16WRJytDAg4AJakiWQ6C6rRgbx, held by DAO 5BhKSFDV3mNzUxCaAyMZtbakhkbApwzLBD4gnQmNoz3Z's treasury, into FK833weFZJP5XqC8Hh85eP6TVtLzweHGYUmrD8ro53kj and 6VRTudTaet1Hgp2CHTDirH5UiUxf1TzsKfeQQwt7ivYY",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}

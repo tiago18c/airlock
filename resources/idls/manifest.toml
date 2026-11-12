@@ -1120,3 +1120,23 @@ compressed NFTs: the creators and the merkle proof path); on the instructions th
 an NFT from a pool, one shown group for the creators (Token-2022: a creator and transfer \
 hook accounts); on Token-2022 deposits and withdrawals, one shown group for transfer \
 hook accounts. Display nodes added by hand."""
+
+# MetaDAO's futarchy program (v0.6): DAOs governed by markets, with each DAO's
+# spot market and the pass and fail markets of its proposals built in. The IDL
+# is the legacy-format Anchor IDL mainnet publishes, which carries no program
+# address. Devnet's IDL account holds the same document, but devnet runs an
+# older executable whose stake and unstake take other accounts, so the file is
+# mainnet only.
+[[idls]]
+file = "metadao-futarchy.json"
+programId = "FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq"
+name = "futarchy"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "455068c2b92bffdd44b75bd4a777cdcdb757f7f1306590255c908ea33b92ffcf" }
+changes = """Converted from Anchor to Codama. The legacy IDL carries no address, so \
+`program.publicKey` is set to the program id. `initializeProposal` declares the lookup \
+tables of the Squads transaction it reads, `launchProposal` the accounts its proposal \
+kind's launch check reads, and `adminExecuteMultisigProposal` the accounts of the Squads \
+transaction it executes, as remaining accounts. Unstaking, minting proposals and DAO \
+creation scale their amounts by the base or quote mint among their accounts; other token \
+amounts are in base units. Display nodes added by hand."""

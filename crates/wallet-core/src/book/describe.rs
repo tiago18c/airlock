@@ -707,6 +707,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("mmm3XBJg5gk8XJxEKBvdgptZz6SgK4tXvn36sodowMc"),
         "Magic Eden AMM Program",
     ),
+    (
+        Pubkey::from_str_const("FUTARELBfJfQ8RDGhg1wdhddq1odMAJUePHFuBYfUxKq"),
+        "MetaDAO Futarchy Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.
