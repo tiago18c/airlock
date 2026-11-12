@@ -900,3 +900,21 @@ groups, which Anchor IDLs cannot: the signer, shown as the user, then the rest, 
 Forwarded Account because their order depends on the pair. The amount stays in base \
 units, since the input mint is an argument, not an account. Hylo's fixed-point slippage \
 check shows as bits and exponent. Display nodes added by hand."""
+
+# Hylo's Earn Pool (hylo_earn_pool 2.0.5, formerly the Stability Pool): it
+# takes hyUSD deposits for eHYUSD (formerly sHYUSD), pays them back in hyUSD
+# less a withdrawal fee, and burns pool hyUSD when Hylo's exchange absorbs a
+# loss. The file is the Anchor IDL its IDL account publishes on mainnet, the
+# same document as hylo-idl/idls/hylo_earn_pool.json in Hylo's public SDK; no
+# devnet program.
+[[idls]]
+file = "hylo-earn-pool.json"
+programId = "HysTabVUfmQBFcmzu1ctRd1Y1fxd66RBpboy1bmtDSQQ"
+name = "hyloEarnPool"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "0406aafcc56cadbcc922be3475f17fc2668b13986b21bc623d93afacee773c47" }
+changes = """Converted from Anchor to Codama. The Token program's mint account is added, so deposit, \
+withdrawal and loss amounts read the decimals of the hyUSD and eHYUSD mints the \
+instructions name. Hylo's fixed-point values (limits, the withdrawal fee, the slippage \
+check's expected amount and tolerance) carry their own power of ten and show as bits and \
+exponent. Display nodes added by hand."""

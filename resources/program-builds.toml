@@ -707,3 +707,12 @@ programHash = "3d6835946963032b53e45ec5b263b15268fdfa1451ec50ebc2db01a47f86b6b6"
 authority = "GzyhwK4y7EKPEevAMc2TEpgi1Y3znwj14FUzkHmCMiNP"
 idlSha256 = "cc55ab22f3f4070fb6cb12a77740f3c471135840b2b58e1e20d017e7922aba4a"
 reviewed = "2026-11-12"
+
+[[builds]]
+# hyloEarnPool (pack). Deployed at slot 462250276; OtterSec lists no verify record. Each of the IDL's 11 instructions is in this binary by its Anchor log name and by its discriminator, and the binary logs no other apart from Anchor's IDL instructions. Mainnet transactions of user_deposit and user_withdraw, top level and called by Hylo's router, decode with no data left over and every account named.
+programId = "HysTabVUfmQBFcmzu1ctRd1Y1fxd66RBpboy1bmtDSQQ"
+network = "mainnet"
+programHash = "94aade9f612b54bd33d4be5fd1a294cef52e9f8c20496f63bbf2d67b65bed03f"
+authority = "GzyhwK4y7EKPEevAMc2TEpgi1Y3znwj14FUzkHmCMiNP"
+idlSha256 = "cc8a6ac9ec459487e6e84bded2fb661a1b950a1f6f888824c6b2e057cbb7954d"
+reviewed = "2026-11-12"
