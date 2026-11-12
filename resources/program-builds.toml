@@ -921,3 +921,12 @@ programHash = "ac03e0e39cc7701cf8b95b52d32a6f4ceca99511e1efda3b80444ddb1a56ece3"
 authority = "GhcyhaiSvr6Sd9FDp5Bpe4LT4ny4WqZfwZEvnFxAgMgE"
 idlSha256 = "059ae179f56130e1f078fbbe63e12bc247b47b1da166d6cdc54e11d9f66fad0e"
 reviewed = "2026-11-12"
+
+[[builds]]
+# ember (pack). No verified build. The program is native Rust: it logs `Instruction: Init` only, so the check was by discriminator. Each of the IDL's three discriminators is loaded once as a 64-bit immediate in the binary, which rejects any other tag ("Ember: unknown instruction tag"). Successful mainnet transactions decode with the IDL, every account named and every byte accounted for, for deposit and withdraw, on both the main and the beta exchange's wrapper.
+programId = "EMBERpYNE6ehWmXymZZS2skiFmCa9V5dp14e1iduM5qy"
+network = "mainnet"
+programHash = "d3d674dd897f8fd201f9a0b5e62e2da065afa0ba7809bb144c9ea7479c9c5999"
+authority = "GPgADQrhzGoUgLqxsZMKvSpwcLaJFVTq6gEixKhmcwpm"
+idlSha256 = "230b15e6a408fde31a08b312fc6b352609b1a7daf733e4142557524f630bc975"
+reviewed = "2026-11-12"
