@@ -695,6 +695,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("jupZ4m2GqUCJ5iueMfzQf8khFfH31d4XAQt3RzCT9Vd"),
         "Jupiter Lend DEX Program",
     ),
+    (
+        Pubkey::from_str_const("strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m"),
+        "Streamflow Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.
