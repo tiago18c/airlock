@@ -73,7 +73,10 @@ pub(crate) fn account_metas_from_addresses(
             && ix.optional_account_strategy == Some(OptionalAccountStrategy::ProgramId)
             && address == program_id;
 
-        let is_signer = is_signer_account(account, signers);
+        // The program's address standing in for an omitted account is read
+        // only and signs nothing, as Codama's JavaScript clients write it:
+        // nobody can sign as the program.
+        let is_signer = !downgrade && is_signer_account(account, signers);
         let is_writable = if downgrade {
             false
         } else {

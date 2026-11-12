@@ -383,6 +383,49 @@ mod tests {
     }
 
     #[test]
+    fn optional_program_id_signer_downgraded_to_no_signer() {
+        let program = pk(5);
+        let root = root_with(&program);
+        let mut optional = InstructionAccountNode::new("delegate", false, true); // signer
+        optional.is_optional = Some(true);
+        let mut either = InstructionAccountNode::new("authority", false, IsSigner::Either);
+        either.is_optional = Some(true);
+
+        let ix = InstructionNode {
+            name: "ix".into(),
+            optional_account_strategy: Some(OptionalAccountStrategy::ProgramId),
+            accounts: vec![optional, either],
+            ..Default::default()
+        };
+
+        let instruction = InstructionBuilder::new(&root, &ix)
+            .signers(["delegate", "authority"])
+            .build()
+            .unwrap();
+        let placeholder = AccountMeta {
+            pubkey: program,
+            is_signer: false,
+            is_writable: false,
+        };
+        assert_eq!(instruction.accounts, vec![placeholder.clone(), placeholder]);
+
+        // Provided, it signs.
+        let given = pk(6);
+        let instruction = InstructionBuilder::new(&root, &ix)
+            .account("delegate", given)
+            .build()
+            .unwrap();
+        assert_eq!(
+            instruction.accounts[0],
+            AccountMeta {
+                pubkey: given,
+                is_signer: true,
+                is_writable: false,
+            }
+        );
+    }
+
+    #[test]
     fn remaining_accounts_from_argument() {
         let program = pk(1);
         let root = root_with(&program);
