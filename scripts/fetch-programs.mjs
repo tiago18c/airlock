@@ -3,16 +3,21 @@
 //   node scripts/fetch-programs.mjs            download what is missing, check every hash
 //   node scripts/fetch-programs.mjs --print    download from the cluster and print the hashes found
 //
-// The binaries are read from devnet and are not kept in this repository: the
-// Squads programs are AGPL-3.0, and the signer programs are still changing.
-// Each is pinned by SHA-256 below. A program that was upgraded on devnet fails
-// the check until its hash is updated here on purpose.
+// The binaries are read from devnet, or from mainnet for a program whose
+// devnet build differs from the one its IDL describes, and are not kept in
+// this repository: the Squads programs are AGPL-3.0, and the signer programs
+// are still changing. Each is pinned by SHA-256 below. A program that was
+// upgraded on its network fails the check until its hash is updated here on
+// purpose.
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const RPC = process.env.AIRLOCK_PROGRAMS_RPC ?? "https://api.devnet.solana.com";
+const RPC = {
+  devnet: process.env.AIRLOCK_PROGRAMS_RPC ?? "https://api.devnet.solana.com",
+  mainnet: process.env.AIRLOCK_PROGRAMS_MAINNET_RPC ?? "https://api.mainnet-beta.solana.com",
+};
 const OUT = join(dirname(fileURLToPath(import.meta.url)), "..", "crates", "flow-tests", "programs");
 
 /** Bytes before the program in an upgradeable loader's program data account. */
@@ -72,6 +77,28 @@ export const PROGRAMS = [
     address: "verifycLy8mB96wd9wqq3WDXQwM4oU6r42Th37Db9fC",
     sha256: "b501789b71bb383556f7c1cc7a01e51ae9bb4111bf14e4dec9f09b18e506307a",
   },
+  {
+    // Metaplex Token Metadata, frozen since its deploy of 2025-11-17. Devnet
+    // runs another build.
+    file: "mpl_token_metadata.so",
+    address: "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s",
+    network: "mainnet",
+    sha256: "31f0a627dba051a938de650464e55cc5397a4be0fd496929c1f9cf02fe5e9011",
+  },
+  {
+    // Streamflow's vesting program. Devnet runs another build.
+    file: "streamflow.so",
+    address: "strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m",
+    network: "mainnet",
+    sha256: "8d84b7858e7209d390f2b6f8fcda4b1feba30156b7763810be3b3763f46e506a",
+  },
+  {
+    // Marinade's liquid staking program. Devnet runs another build.
+    file: "marinade.so",
+    address: "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD",
+    network: "mainnet",
+    sha256: "296fd550ce78a556ba05dbaff8f8fd6c04fa538bc99f9a0a836e5e430645a3ac",
+  },
 ];
 
 const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -90,8 +117,9 @@ function base58(bytes) {
 
 export const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
-async function accountData(address) {
-  const response = await fetch(RPC, {
+async function accountData(address, network) {
+  const rpc = RPC[network];
+  const response = await fetch(rpc, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
@@ -103,14 +131,14 @@ async function accountData(address) {
   });
   const body = await response.json();
   const value = body.result?.value;
-  if (!value) throw new Error(`${address} was not found on ${RPC}: ${JSON.stringify(body.error ?? null)}`);
+  if (!value) throw new Error(`${address} was not found on ${rpc}: ${JSON.stringify(body.error ?? null)}`);
   return Buffer.from(value.data[0], "base64");
 }
 
 /** A program account holds a 4-byte tag and the address of its program data. */
-async function download(address) {
-  const program = await accountData(address);
-  const data = await accountData(base58(program.subarray(4, 36)));
+async function download(address, network = "devnet") {
+  const program = await accountData(address, network);
+  const data = await accountData(base58(program.subarray(4, 36)), network);
   return data.subarray(PROGRAM_DATA_HEADER);
 }
 
@@ -124,7 +152,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     if (!print && existsSync(path)) {
       bytes = readFileSync(path);
     } else {
-      bytes = await download(program.address);
+      bytes = await download(program.address, program.network);
       if (!print) writeFileSync(path, bytes);
     }
     const found = sha256(bytes);
@@ -133,7 +161,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     } else if (found !== program.sha256) {
       failed = true;
       console.error(`error: ${program.file} has hash ${found}, not the pinned ${program.sha256}.`);
-      console.error(`       Delete ${path} to download it again. If ${program.address} was upgraded,`);
+      console.error(`       Delete ${path} to download it again. If ${program.address} was upgraded on ${program.network ?? "devnet"},`);
       console.error("       review the change and update the hash in scripts/fetch-programs.mjs.");
     } else {
       console.log(`ok ${program.file}`);
