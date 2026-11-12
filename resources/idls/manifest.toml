@@ -1258,3 +1258,31 @@ utilize's accounts from the optional rent sysvar on, and the accounts collect re
 after the recipient, are remaining-accounts groups. The Token program's mint account is \
 added, so the amounts of transfers, mints, burns, token delegations and escrow transfers \
 read the decimals of the mint they name. Display nodes added by hand."""
+
+# GMX Solana (GMTrade): the store program of the perpetual and spot exchange
+# GMX runs on Solana. Most of what people sign are requests (orders, deposits,
+# withdrawals, shifts, GLV deposits and withdrawals) that keepers execute
+# later. Its Anchor IDL (gmsol_store 0.11.0) is converted after renaming
+# generic type parameters, which the converter otherwise cannot handle.
+[[idls]]
+file = "gmx-solana.json"
+programId = "Gmso1uvJnLbawvw7yezdfCDcPydwW2s2iqG3w6MDucLo"
+name = "gmsolStore"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "c66669a674e15d3b080170ebd1b2e3c7b04ded1faaf561a50e88a6ab765f3604" }
+changes = """Converted from Anchor to Codama after renaming the generic parameters of 25 types (to \
+<Type>__<name>): the converter does not yet handle a generic type that passes its own \
+parameter on under the same name; generic types are monomorphized, so no layout and no \
+name a person sees changes. Instructions with optional accounts set \
+optionalAccountStrategy to programId. Requests to place an order, deposit, withdraw or \
+deposit into and withdraw from a GLV declare the markets of their swap paths as a \
+remaining-accounts group; keeper executions, liquidations, auto-deleveraging, market \
+state updates and the token value queries declare their price feeds and the other \
+accounts they read as one group; setPricesFromPriceFeed declares its price feeds, \
+initializeGlv its market tokens and migrateReferralCode its referral code accounts. The \
+Token program's mint account is added, so market token, GLV token and withdrawal output \
+amounts, and the amount of a claimable account, read their mint's decimals; deposit and \
+order collateral amounts, GT amounts and market transfers are in base units; position \
+sizes and USD values have 20 decimals, the program's fixed point; builder fees, \
+discounts and deviation factors are in percent; trigger and acceptable prices are left \
+raw with their scale in the label. Display nodes added by hand."""

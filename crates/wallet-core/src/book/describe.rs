@@ -731,6 +731,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"),
         "Metaplex Token Metadata Program",
     ),
+    (
+        Pubkey::from_str_const("Gmso1uvJnLbawvw7yezdfCDcPydwW2s2iqG3w6MDucLo"),
+        "GMX Solana Store Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

@@ -872,3 +872,14 @@ network = "mainnet"
 programHash = "8fdb14984e4756f3157881754fdc9444646b15cad27a5c78fa249dc5f507e3a7"
 idlSha256 = "aac0ce1c20ff67eaa2380aeafb20b5788d95168a258371ef868a3c8abc918a30"
 reviewed = "2026-11-12"
+
+[[builds]]
+# gmx-solana.json (pack). The binary logs `Instruction: X` for exactly the IDL's 134 instructions plus Anchor's seven IDL-account instructions, and every sampled instruction decodes with the IDL, names all its accounts and parses to its last byte.
+programId = "Gmso1uvJnLbawvw7yezdfCDcPydwW2s2iqG3w6MDucLo"
+network = "mainnet"
+programHash = "ae4fd7d186bf141f886f7cf4a9146abbe57caac7a2f81f3105be86475535c79e"
+authority = "6qp7veALWas5rxXJRQXUEbffRtDyhB8koxenBpS51SrA"
+idlSha256 = "1f5c3a903d52e2dcb2448854b85298ba3932120a90359bb4ba0a812c9fea4d5d"
+source = { repo = "https://github.com/gmsol-labs/gmx-solana", commit = "8af1e70c0c0b6ff9d6b41ba4997910588fbcec28" }
+verified = "6qp7veALWas5rxXJRQXUEbffRtDyhB8koxenBpS51SrA"
+reviewed = "2026-11-12"
