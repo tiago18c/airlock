@@ -739,6 +739,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC"),
         "Chainlink CCIP Lock-Release Pool Program",
     ),
+    (
+        Pubkey::from_str_const("76y77prsiCMvXMjuoZ5VRrhG5qYBrUMYTE5WgHqgjEn6"),
+        "LayerZero Endpoint Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.
