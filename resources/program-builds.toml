@@ -1038,3 +1038,21 @@ programHash = "9878a501189f6086883e5d9b8b4d5e57cfa92f9b8313a0eee815ed38df505c05"
 authority = "bfQVv6niKVgEURYqQ1beJmiEQQN7MrvLRvk3mZGFubb"
 idlSha256 = "5a89ad49016ea11f02364e810c2e0788d0b2949a135a70eda55927043a0c4a59"
 reviewed = "2026-11-12"
+
+[[builds]]
+# mplCoreProgram (pack). The binary logs exactly the 41 `Instruction: ...` texts the processor dispatch at 8c5cee35 writes, one per instruction of the file but Collect, which logs none, and no other. Executed transfers, burns, creations, updates and plugin instructions (10 instructions, 28 samples) decode with every account named and exactly the data length the file describes.
+programId = "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+network = "mainnet"
+programHash = "af40bd111c783e4c4bf28fa1d36297db012cfcc3838a75a3a5a8361546742eb4"
+authority = "bfQVv6niKVgEURYqQ1beJmiEQQN7MrvLRvk3mZGFubb"
+idlSha256 = "b50e04840a1be9c6f2e98da506d11c0858b031332bdb41e963b940da16b32366"
+reviewed = "2026-11-12"
+
+[[builds]]
+# mplCoreProgram (pack). The same executable as mainnet's (same program hash), so the mainnet checks hold.
+programId = "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+network = "devnet"
+programHash = "af40bd111c783e4c4bf28fa1d36297db012cfcc3838a75a3a5a8361546742eb4"
+authority = "Fsxr5WVKZZoeb7xgwTWRHymSRVGY9vk7m5B5GPu1KU59"
+idlSha256 = "b50e04840a1be9c6f2e98da506d11c0858b031332bdb41e963b940da16b32366"
+reviewed = "2026-11-12"

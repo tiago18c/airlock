@@ -1,0 +1,524 @@
+{
+  "accounts": {},
+  "instructions": [
+    {
+      "accounts": [
+        "FNrJDHHQtYFTHSxV24CzJDDZq8FiFUEXg7Dk8W5JwFRR:sw",
+        "J2vWGYqiKs8CAUo2pUdWmZjbKwFuQoJVEvS7xPsQ12C9:w",
+        "3WHnFjZjfxbhhPmqzYexAJkfNe7AgFQMLENTz9dai9eD:w",
+        "Ab8EMZNj1Wd2rUM34uTEcjwLS1QzGHyY45KmW84F81hW:sw",
+        "Ab8EMZNj1Wd2rUM34uTEcjwLS1QzGHyY45KmW84F81hW:sw",
+        "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+        "11111111111111111111111111111111",
+        "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+      ],
+      "data": "00001000000041525542494b484541445a20233937344e00000068747470733a2f2f676174657761792e697279732e78797a2f464a444372367238714b6a6e64466356314e7065437a334a395a43666761566f587533324a58517264416e482f3937342e6a736f6e0100000000",
+      "fields": [
+        [
+          "Data State",
+          "Account State"
+        ],
+        [
+          "Name",
+          "ARUBIKHEADZ #974"
+        ],
+        [
+          "Link",
+          "https://gateway.irys.xyz/FJDCr6r8qKjndFcV1NpeCz3J9ZCfgaVoXu32JXQrdAnH/974.json"
+        ],
+        [
+          "Plugins (Kinds; Settings and Addresses Not Shown)",
+          ""
+        ],
+        [
+          "Asset",
+          "FNrJDHHQtYFTHSxV24CzJDDZq8FiFUEXg7Dk8W5JwFRR"
+        ],
+        [
+          "Collection (Becomes Update Authority)",
+          "J2vWGYqiKs8CAUo2pUdWmZjbKwFuQoJVEvS7xPsQ12C9"
+        ],
+        [
+          "Authority (Collection's Update Authority or Delegate)",
+          "3WHnFjZjfxbhhPmqzYexAJkfNe7AgFQMLENTz9dai9eD"
+        ],
+        [
+          "Payer",
+          "Ab8EMZNj1Wd2rUM34uTEcjwLS1QzGHyY45KmW84F81hW"
+        ],
+        [
+          "Owner (None: Update Authority, Else Payer)",
+          "Ab8EMZNj1Wd2rUM34uTEcjwLS1QzGHyY45KmW84F81hW"
+        ]
+      ],
+      "from": "2DMiYAsANHHDLQrMjBLcyy56Qft9vpLRHwM8bMqTjoMDnPTXj6mbvUq4xPu6bWoGxRv7YK8Hj2MKp5QZ2ksrc483#5.2",
+      "intent": "Create an asset",
+      "programId": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+      "sentence": "Creates asset FNrJDHHQtYFTHSxV24CzJDDZq8FiFUEXg7Dk8W5JwFRR named ARUBIKHEADZ #974, link https://gateway.irys.xyz/FJDCr6r8qKjndFcV1NpeCz3J9ZCfgaVoXu32JXQrdAnH/974.json, paid by Ab8EMZNj1Wd2rUM34uTEcjwLS1QzGHyY45KmW84F81hW",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "oJuS9ThthBgHjgFm4AcmipvfwmqaeJgrZBrkPcZ8ScL:w",
+        "FCQ2tF7vz9jpAKtLa9Eup8aV6PNatEnHADUWjefJBLE3",
+        "5WAA8yZJTugFB8xrxHPgTvVdzY1VzhKYZiaM5bHeo1o9:sw",
+        "9ZaAAi99ET7xVAe2Bw1p2m5n9Vv77byELKz3r6PmNs5k:w",
+        "8WrPHT6TknZGheUbVxq2V7t6SrBwJRwPs5nn3AUVPnAp",
+        "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+        "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+      ],
+      "data": "0e00",
+      "fields": [
+        [
+          "Compression Proof (Compressed Assets Only)",
+          "None"
+        ],
+        [
+          "Asset",
+          "oJuS9ThthBgHjgFm4AcmipvfwmqaeJgrZBrkPcZ8ScL"
+        ],
+        [
+          "Collection",
+          "FCQ2tF7vz9jpAKtLa9Eup8aV6PNatEnHADUWjefJBLE3"
+        ],
+        [
+          "Payer (Authority When None Given)",
+          "5WAA8yZJTugFB8xrxHPgTvVdzY1VzhKYZiaM5bHeo1o9"
+        ],
+        [
+          "Authority (Owner or Delegate)",
+          "9ZaAAi99ET7xVAe2Bw1p2m5n9Vv77byELKz3r6PmNs5k"
+        ],
+        [
+          "New Owner",
+          "8WrPHT6TknZGheUbVxq2V7t6SrBwJRwPs5nn3AUVPnAp"
+        ]
+      ],
+      "from": "2HpqqbYyj8hdCoGb3rFXXD9YNfqL8hGHjUJdi2atpNP5ESx9rvkZrwgX5cqDB6FXW2pUCZvUqvpLoU3NLq5X5cf6#3.1",
+      "intent": "Transfer an asset",
+      "programId": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+      "sentence": "Transfers asset oJuS9ThthBgHjgFm4AcmipvfwmqaeJgrZBrkPcZ8ScL to 8WrPHT6TknZGheUbVxq2V7t6SrBwJRwPs5nn3AUVPnAp",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "42cRQKWP2LxwiaXLrWU5k38LyvAA31uvDFmc4XEGDipf:w",
+        "CCryptUfeFSZ3Fgc9FLeKrhLVAP67FSqi1GuVoj9CRac",
+        "GachaNgyXTU3zFogQ8Z5jR2BLXs8215X2AtEH18VxJq3:sw",
+        "Atf9nJATebCQ4ghZWxBJPfBfsehTsTGoSGTZLzLF5myd:s",
+        "Low6UekJP3QrFVMfNRTL8CPK2SiGFhvp57sgF2pkmVu",
+        "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+        "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+      ],
+      "data": "0e00",
+      "fields": [
+        [
+          "Compression Proof (Compressed Assets Only)",
+          "None"
+        ],
+        [
+          "Asset",
+          "42cRQKWP2LxwiaXLrWU5k38LyvAA31uvDFmc4XEGDipf"
+        ],
+        [
+          "Collection",
+          "CCryptUfeFSZ3Fgc9FLeKrhLVAP67FSqi1GuVoj9CRac"
+        ],
+        [
+          "Payer (Authority When None Given)",
+          "GachaNgyXTU3zFogQ8Z5jR2BLXs8215X2AtEH18VxJq3"
+        ],
+        [
+          "Authority (Owner or Delegate)",
+          "Atf9nJATebCQ4ghZWxBJPfBfsehTsTGoSGTZLzLF5myd"
+        ],
+        [
+          "New Owner",
+          "Low6UekJP3QrFVMfNRTL8CPK2SiGFhvp57sgF2pkmVu"
+        ]
+      ],
+      "from": "5xKjAAnbyFWTLk8jtB2uRKRTkK9SKaGh8Js1sqahwwbRFP6dbMajQsL8yqSerTtUTJp79EaYm4DidaYHDfJ1LN5L#2",
+      "intent": "Transfer an asset",
+      "programId": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+      "sentence": "Transfers asset 42cRQKWP2LxwiaXLrWU5k38LyvAA31uvDFmc4XEGDipf to Low6UekJP3QrFVMfNRTL8CPK2SiGFhvp57sgF2pkmVu",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "H8BpcCQazvFxVZRqCzPpHupEzCzPUhLNzDRdyuAejhjj:w",
+        "CbNY3JiXdXNE9tPNEk1aRZVEkWdj2v7kfJLNQwZZgpXk"
+      ],
+      "data": "200001000000",
+      "fields": [
+        [
+          "Update",
+          "Minted"
+        ],
+        [
+          "Count",
+          "1"
+        ],
+        [
+          "Collection",
+          "H8BpcCQazvFxVZRqCzPpHupEzCzPUhLNzDRdyuAejhjj"
+        ],
+        [
+          "Bubblegum Signer",
+          "CbNY3JiXdXNE9tPNEk1aRZVEkWdj2v7kfJLNQwZZgpXk"
+        ]
+      ],
+      "from": "5wUWz6RxSroS25XhS6TrtMyhSf6zejDjioKNhCtt9BkvA7pivDrWjUJHAr4CPbZgg3ssUiYpgaFF6zvUtjg2jeX5#1.1",
+      "intent": "Update collection info",
+      "programId": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+      "sentence": "Bubblegum records 1 compressed assets as Minted for collection H8BpcCQazvFxVZRqCzPpHupEzCzPUhLNzDRdyuAejhjj",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4XaRTttPLgverySAu8xbp8K4qfA3e8kNeZ9tVKJvP24u:w",
+        "CCryptUfeFSZ3Fgc9FLeKrhLVAP67FSqi1GuVoj9CRac:w",
+        "FVWiwDoc3Dthm9X7SVshTkRYr78V4doAz79VRJfdeWMq:sw",
+        "FVWiwDoc3Dthm9X7SVshTkRYr78V4doAz79VRJfdeWMq:sw",
+        "11111111111111111111111111111111",
+        "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+      ],
+      "data": "02010101037b0bc4fcdbf69375a73836d1be207e65e63c1f0e092e2385ee8ee3512a01138f",
+      "fields": [
+        [
+          "Plugin",
+          "Freeze Delegate (Frozen: true)"
+        ],
+        [
+          "Plugin Authority (None: Its Default Manager)",
+          "Address (Address: 9HKZEmFCDVrADcqCgq7Gf8yWjw82x99MutR5QpuxHBGJ)"
+        ],
+        [
+          "Asset",
+          "4XaRTttPLgverySAu8xbp8K4qfA3e8kNeZ9tVKJvP24u"
+        ],
+        [
+          "Collection",
+          "CCryptUfeFSZ3Fgc9FLeKrhLVAP67FSqi1GuVoj9CRac"
+        ],
+        [
+          "Payer (Authority When None Given)",
+          "FVWiwDoc3Dthm9X7SVshTkRYr78V4doAz79VRJfdeWMq"
+        ],
+        [
+          "Authority (Plugin's Authority)",
+          "FVWiwDoc3Dthm9X7SVshTkRYr78V4doAz79VRJfdeWMq"
+        ]
+      ],
+      "from": "2dZKfos1DuEuC9TMMxvobStgf25wRXTwVN9spG9oSZS1whmWYYLzyeubUPkTSrM84qS8vN5cEXGu58SaWa6CVSGf#3.4",
+      "intent": "Add a plugin",
+      "programId": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+      "sentence": "Adds a plugin to asset 4XaRTttPLgverySAu8xbp8K4qfA3e8kNeZ9tVKJvP24u: Freeze Delegate (Frozen: true)",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "DbGAshxjgnLvZcJAV9mLdzwTTtRMPVgHiUBKR2odsuHF:w",
+        "CCryptUfeFSZ3Fgc9FLeKrhLVAP67FSqi1GuVoj9CRac:w",
+        "3tS5JNqUuLf79Kmdywqmtj8wfSWxjRdKju5UJ7C1sC4c:sw",
+        "3tS5JNqUuLf79Kmdywqmtj8wfSWxjRdKju5UJ7C1sC4c:sw",
+        "11111111111111111111111111111111",
+        "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+      ],
+      "data": "020301037aa62d988fae2182b78b1687955f30154b51343d2c76c6ef2006fa7e36c98f8d",
+      "fields": [
+        [
+          "Plugin",
+          "Transfer Delegate"
+        ],
+        [
+          "Plugin Authority (None: Its Default Manager)",
+          "Address (Address: 9Fmi4LeKCMy8iYbMiJec3zb3NhLbWJEQp6MmMffnEUap)"
+        ],
+        [
+          "Asset",
+          "DbGAshxjgnLvZcJAV9mLdzwTTtRMPVgHiUBKR2odsuHF"
+        ],
+        [
+          "Collection",
+          "CCryptUfeFSZ3Fgc9FLeKrhLVAP67FSqi1GuVoj9CRac"
+        ],
+        [
+          "Payer (Authority When None Given)",
+          "3tS5JNqUuLf79Kmdywqmtj8wfSWxjRdKju5UJ7C1sC4c"
+        ],
+        [
+          "Authority (Plugin's Authority)",
+          "3tS5JNqUuLf79Kmdywqmtj8wfSWxjRdKju5UJ7C1sC4c"
+        ]
+      ],
+      "from": "4mpMNk9DYGkw7gzuqUex7PsTjvQz9smHmrs76f8yBtcMscSqBEBQREyxpjQ9CrvKVanmB7fuBcWMp7Cr1jdFrBEi#2.2",
+      "intent": "Add a plugin",
+      "programId": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+      "sentence": "Adds a plugin to asset DbGAshxjgnLvZcJAV9mLdzwTTtRMPVgHiUBKR2odsuHF: Transfer Delegate",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "25kQNRQSTcdRsVLcHvsDVjtVPJjpuov9M46tm7nY1JrV:w",
+        "CRittErsK51xrVktQeMeAW2cK7JNqv6Ko9Zrw26eF2cT:w",
+        "8c2yCTo72iSNZnkaqLd9GA8pscGL63VJxZJSedUAe41s:sw",
+        "4Qz9nGYCNr1k1C5bG7mfjeFbyEKt51WBHNyYgo8Mq4Sa:w",
+        "11111111111111111111111111111111:w",
+        "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+      ],
+      "data": "0606260000000700000045646974696f6e060000004d61737465720800000045646974696f6e7301000000300700000046616374696f6e0900000053756e466972652041030000004578700400000035313930050000004c6576656c01000000340300000041544b060000003130362e3237030000004445460500000036342e3239020000004850060000003135362e35370200000043430500000031302e30300200000043440500000035372e30300200000043540800000031333931382e3832030000004861741d000000536f6c616e61204361707b4445463a31302c48503a31392c43433a317d06000000536869656c641a0000005275627920526f756e64656c7b4445463a32332c48503a32337d06000000576561706f6e1800000053746f6e652053706561727b41544b3a31362c43443a377d06000000416d756c6574040000004e6f6e6505000000426f6f7473040000004e6f6e6504000000426f6f6b040000004e6f6e6506000000546f6b656e730a0000003339313334342e343437050000004d61784850060000003135362e3537060000004f726967696e0500000033353235330b00000044657374696e6174696f6e0500000033343035390a000000556e6c6f636b54696d650a000000313739343438383332340a0000004c6173745570646174650a000000313739343438373530390d0000004c6173744f7065726174696f6e01000000370b000000497352657475726e696e6704000000747275651600000050656e64696e67417474726962757465506f696e74730100000030080000004d6f76656d656e7401000000300f000000417474726962757465506f696e74732e0000007b2041544b3a20342c204445463a20302c2048503a20302c2043433a20302c2043443a20302c2043543a2030207d07000000437269747465720400000042656172040000004579657304000000536c6f74030000004178652c00000032466d46645574745470546654507177706b5832724e6364694c776f70676a465951637a686a325644366965070000004d696e74696e6704000000747275650b00000043697263756c6174696f6e010000003006000000537570706c790100000033090000004d696e74507269636504000000302e31360d0000004d696e745374617274446174650a000000313738373131383234300b0000004d696e74456e6444617465020000002d3105000000426f6f73740100000030",
+      "fields": [
+        [
+          "Plugin",
+          "Attributes (Attribute List: Key: Edition, Value: Master, Key: Editions, Value: 0, Key: Faction, Value: SunFire A, Key: Exp, Value: 5190, Key: Level, Value: 4, Key: ATK, Value: 106.27, Key: DEF, Value: 64.29, Key: HP, Value: 156.57, Key: CC, Value: 10.00, Key: CD, Value: 57.00, Key: CT, Value: 13918.82, Key: Hat, Value: Solana Cap{DEF:10,HP:19,CC:1}, Key: Shield, Value: Ruby Roundel{DEF:23,HP:23}, Key: Weapon, Value: Stone Spear{ATK:16,CD:7}, Key: Amulet, Value: None, Key: Boots, Value: None, Key: Book, Value: None, Key: Tokens, Value: 391344.447, Key: MaxHP, Value: 156.57, Key: Origin, Value: 35253, Key: Destination, Value: 34059, Key: UnlockTime, Value: 1794488324, Key: LastUpdate, Value: 1794487509, Key: LastOperation, Value: 7, Key: IsReturning, Value: true, Key: PendingAttributePoints, Value: 0, Key: Movement, Value: 0, Key: AttributePoints, Value: { ATK: 4, DEF: 0, HP: 0, CC: 0, CD: 0, CT: 0 }, Key: Critter, Value: Bear, Key: Eyes, Value: Slot, Key: Axe, Value: 2FmFdUttTpTfTPqwpkX2rNcdiLwopgjFYQczhj2VD6ie, Key: Minting, Value: true, Key: Circulation, Value: 0, Key: Supply, Value: 3, Key: MintPrice, Value: 0.16, Key: MintStartDate, Value: 1787118240, Key: MintEndDate, Value: -1, Key: Boost, Value: 0)"
+        ],
+        [
+          "Asset",
+          "25kQNRQSTcdRsVLcHvsDVjtVPJjpuov9M46tm7nY1JrV"
+        ],
+        [
+          "Collection",
+          "CRittErsK51xrVktQeMeAW2cK7JNqv6Ko9Zrw26eF2cT"
+        ],
+        [
+          "Payer (Authority When None Given)",
+          "8c2yCTo72iSNZnkaqLd9GA8pscGL63VJxZJSedUAe41s"
+        ],
+        [
+          "Authority (Plugin's Authority)",
+          "4Qz9nGYCNr1k1C5bG7mfjeFbyEKt51WBHNyYgo8Mq4Sa"
+        ]
+      ],
+      "from": "4WLCtAqbjgruh1sy7FPYrmyjDaH6eG3urSjzgQgR37xbf9vcvjG93WBJWmsBsGm6qjfywsAfpJmGHFYQXxFmQSxz#3.6",
+      "intent": "Update a plugin",
+      "programId": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+      "sentence": "Sets a plugin of asset 25kQNRQSTcdRsVLcHvsDVjtVPJjpuov9M46tm7nY1JrV to Attributes (Attribute List: Key: Edition, Value: Master, Key: Editions, Value: 0, Key: Faction, Value: SunFire A, Key: Exp, Value: 5190, Key: Level, Value: 4, Key: ATK, Value: 106.27, Key: DEF, Value: 64.29, Key: HP, Value: 156.57, Key: CC, Value: 10.00, Key: CD, Value: 57.00, Key: CT, Value: 13918.82, Key: Hat, Value: Solana Cap{DEF:10,HP:19,CC:1}, Key: Shield, Value: Ruby Roundel{DEF:23,HP:23}, Key: Weapon, Value: Stone Spear{ATK:16,CD:7}, Key: Amulet, Value: None, Key: Boots, Value: None, Key: Book, Value: None, Key: Tokens, Value: 391344.447, Key: MaxHP, Value: 156.57, Key: Origin, Value: 35253, Key: Destination, Value: 34059, Key: UnlockTime, Value: 1794488324, Key: LastUpdate, Value: 1794487509, Key: LastOperation, Value: 7, Key: IsReturning, Value: true, Key: PendingAttributePoints, Value: 0, Key: Movement, Value: 0, Key: AttributePoints, Value: { ATK: 4, DEF: 0, HP: 0, CC: 0, CD: 0, CT: 0 }, Key: Critter, Value: Bear, Key: Eyes, Value: Slot, Key: Axe, Value: 2FmFdUttTpTfTPqwpkX2rNcdiLwopgjFYQczhj2VD6ie, Key: Minting, Value: true, Key: Circulation, Value: 0, Key: Supply, Value: 3, Key: MintPrice, Value: 0.16, Key: MintStartDate, Value: 1787118240, Key: MintEndDate, Value: -1, Key: Boost, Value: 0)",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "EvPRnMVqSz9TwAmqx9eUAazQfEVpuAWwWzb3qUTtMc8o:w",
+        "4UtiaBRmqL8pVKoZm4YyAJRScAvKPmNirMXcZ8bknqZZ",
+        "A2bWbFrnrnW8q6EvmSDsddxHhuqdKX6bysjh3Gkn5Td8:sw",
+        "A2bWbFrnrnW8q6EvmSDsddxHhuqdKX6bysjh3Gkn5Td8:sw",
+        "11111111111111111111111111111111",
+        "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+      ],
+      "data": "0f010900000041584f202331393936014500000068747470733a2f2f676174657761792e697279732e78797a2f3266317768597055556878367a64596353644567743953394c674e75755a486d42333544734c3646315a526a00",
+      "fields": [
+        [
+          "New Name (None: Unchanged)",
+          "AXO #1996"
+        ],
+        [
+          "New Link (None: Unchanged)",
+          "https://gateway.irys.xyz/2f1whYpUUhx6zdYcSdEgt9S9LgNuuZHmB35DsL6F1ZRj"
+        ],
+        [
+          "New Update Authority (Takes Control; None: Unchanged)",
+          "None"
+        ],
+        [
+          "Asset",
+          "EvPRnMVqSz9TwAmqx9eUAazQfEVpuAWwWzb3qUTtMc8o"
+        ],
+        [
+          "Collection",
+          "4UtiaBRmqL8pVKoZm4YyAJRScAvKPmNirMXcZ8bknqZZ"
+        ],
+        [
+          "Payer (Authority When None Given)",
+          "A2bWbFrnrnW8q6EvmSDsddxHhuqdKX6bysjh3Gkn5Td8"
+        ],
+        [
+          "Authority (Update Authority or Delegate)",
+          "A2bWbFrnrnW8q6EvmSDsddxHhuqdKX6bysjh3Gkn5Td8"
+        ]
+      ],
+      "from": "32WXgB9Tu22zWjBzCWPv7Ttw64AUHCyzxY47KsnaZpUxNxnaAn6vEjZ65XLmDFWoJaZNUtXShDvim5Hjj4FWmge2#3",
+      "intent": "Update an asset",
+      "programId": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+      "sentence": "Updates the name, link or update authority of asset EvPRnMVqSz9TwAmqx9eUAazQfEVpuAWwWzb3qUTtMc8o",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "JCpETHe1F32jUiocxCmXQ5Pot5GxRq8u2RWKh3Sndz7q:sw",
+        "46kCejJ7euGEmLAFqvV1j5yUzEumtwEvS9d65f6PbZ7g:w",
+        "7wixESeixiY4f2A6JaDKNewNoiip9Tk9s5u1dze7nRwL:s",
+        "2K9BZnuiNb5Vr1LRqXz6FUrJqu2P5CWviNUm3e1uF7UU:sw",
+        "6uKecEEDfWyWY6HLkPJ2kpKUgq8HekLRjtuTatoPqCaW",
+        "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+        "11111111111111111111111111111111",
+        "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+      ],
+      "data": "14001600000054796c65722044756666657920283638332f383530294b00000068747470733a2f2f63616e64792e7065726d617765622e73657276696365732f5a5a6c4364686f74425341304239536c6b78344d5f72437757676967444b615a337962476f634961377863010200000005000006010000000d00000073657269616c5f6e756d62657203000000363833000100000000",
+      "fields": [
+        [
+          "Data State",
+          "Account State"
+        ],
+        [
+          "Name",
+          "Tyler Duffey (683/850)"
+        ],
+        [
+          "Link",
+          "https://candy.permaweb.services/ZZlCdhotBSA0B9Slkx4M_rCwWgigDKaZ3ybGocIa7xc"
+        ],
+        [
+          "Plugins (Kinds; Settings and Addresses Not Shown)",
+          "Plugin: PermanentFreezeDelegate, Authority: None, Plugin: Attributes, Authority: None"
+        ],
+        [
+          "External Plugins (Kinds; Settings Not Shown)",
+          ""
+        ],
+        [
+          "Asset",
+          "JCpETHe1F32jUiocxCmXQ5Pot5GxRq8u2RWKh3Sndz7q"
+        ],
+        [
+          "Collection (Becomes Update Authority)",
+          "46kCejJ7euGEmLAFqvV1j5yUzEumtwEvS9d65f6PbZ7g"
+        ],
+        [
+          "Authority (Collection's Update Authority or Delegate)",
+          "7wixESeixiY4f2A6JaDKNewNoiip9Tk9s5u1dze7nRwL"
+        ],
+        [
+          "Payer",
+          "2K9BZnuiNb5Vr1LRqXz6FUrJqu2P5CWviNUm3e1uF7UU"
+        ],
+        [
+          "Owner (None: Update Authority, Else Payer)",
+          "6uKecEEDfWyWY6HLkPJ2kpKUgq8HekLRjtuTatoPqCaW"
+        ]
+      ],
+      "from": "2iEj58r6J4KALG7NCYeAm8rRqsSx7yj7SA4FEYnAewdsqdshjY5pWfhTmnWRSchoD3Efgj4N8JJg8ZSuWmMUf2dT#1",
+      "intent": "Create an asset",
+      "programId": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+      "sentence": "Creates asset JCpETHe1F32jUiocxCmXQ5Pot5GxRq8u2RWKh3Sndz7q named Tyler Duffey (683/850), link https://candy.permaweb.services/ZZlCdhotBSA0B9Slkx4M_rCwWgigDKaZ3ybGocIa7xc, paid by 2K9BZnuiNb5Vr1LRqXz6FUrJqu2P5CWviNUm3e1uF7UU",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "5thgbdDxV3Ea8pP5pXV8X2cWwGyx8MDQNgr5Q9qszwmp:w",
+        "4mX8wTrn4xk77rmYHh4WZ7cnkXgCm8MMhKcYWzS7wENP:w",
+        "FJ2Xi5Lw9Yr7gf8gLpabciHotAWrVRNKwWk38e74miNR:sw",
+        "FJ2Xi5Lw9Yr7gf8gLpabciHotAWrVRNKwWk38e74miNR:sw",
+        "11111111111111111111111111111111",
+        "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+      ],
+      "data": "0401",
+      "fields": [
+        [
+          "Plugin",
+          "Freeze Delegate"
+        ],
+        [
+          "Asset",
+          "5thgbdDxV3Ea8pP5pXV8X2cWwGyx8MDQNgr5Q9qszwmp"
+        ],
+        [
+          "Collection",
+          "4mX8wTrn4xk77rmYHh4WZ7cnkXgCm8MMhKcYWzS7wENP"
+        ],
+        [
+          "Payer (Authority When None Given)",
+          "FJ2Xi5Lw9Yr7gf8gLpabciHotAWrVRNKwWk38e74miNR"
+        ],
+        [
+          "Authority (Plugin's Authority)",
+          "FJ2Xi5Lw9Yr7gf8gLpabciHotAWrVRNKwWk38e74miNR"
+        ]
+      ],
+      "from": "hE7DzraDZdRJTgVYZ5y5ENp9dZQKbrs9mi492HqdGBrwWJjAfD11ZWgJFLpLBypK4t6z9euQD2c4KhRe3gCfvMA#3.2",
+      "intent": "Remove a plugin",
+      "programId": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+      "sentence": "Removes the Freeze Delegate plugin from asset 5thgbdDxV3Ea8pP5pXV8X2cWwGyx8MDQNgr5Q9qszwmp",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "368UmYwK2gMiLTx1uDNnYpSpibvo3L27UjYwMrADJirh:w",
+        "CCryptUfeFSZ3Fgc9FLeKrhLVAP67FSqi1GuVoj9CRac:w",
+        "Cc44PQVBy4Kd8gxMVnkWUcYTEquS9Z9qzYgFUzac341D:sw",
+        "5Azb97hM3U7qDzRUY2KhsSntvhoECbd4Rg3KBomXZ5fA:s",
+        "11111111111111111111111111111111",
+        "noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV"
+      ],
+      "data": "0c00",
+      "fields": [
+        [
+          "Compression Proof (Compressed Assets Only)",
+          "None"
+        ],
+        [
+          "Asset",
+          "368UmYwK2gMiLTx1uDNnYpSpibvo3L27UjYwMrADJirh"
+        ],
+        [
+          "Collection",
+          "CCryptUfeFSZ3Fgc9FLeKrhLVAP67FSqi1GuVoj9CRac"
+        ],
+        [
+          "Payer (Authority When None Given)",
+          "Cc44PQVBy4Kd8gxMVnkWUcYTEquS9Z9qzYgFUzac341D"
+        ],
+        [
+          "Authority (Owner or Delegate)",
+          "5Azb97hM3U7qDzRUY2KhsSntvhoECbd4Rg3KBomXZ5fA"
+        ]
+      ],
+      "from": "51Wg4F29fRNjyfWrsdTQb9ncrBtTpKxgoudYCZo9zcFXSaEdtnLhPETXFDKe5yB5jqaHipzBZMvQiv4mE7rPXjGA#3",
+      "intent": "Burn an asset",
+      "programId": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+      "sentence": "Burns asset 368UmYwK2gMiLTx1uDNnYpSpibvo3L27UjYwMrADJirh",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "zJR3EgL8eyBn1wwC9nJKAkNVhpupLKzGNBTrKbdebDW:w",
+        "FCQ2tF7vz9jpAKtLa9Eup8aV6PNatEnHADUWjefJBLE3:w",
+        "9dX2wbJW9TYDSJ1fp5meJn5nVqaVudnYhzZURBXwHS64:sw",
+        "HdaHd2M5SEt3t3uxqo8kAASG8BF9Tk1EzTZHFo2mFmzq:sw",
+        "11111111111111111111111111111111",
+        "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+      ],
+      "data": "0803036e6ae32145c272c5e2c5c80dae89738ec05824fc07a8acfe8c3abbb1af8a502c",
+      "fields": [
+        [
+          "Plugin",
+          "Transfer Delegate"
+        ],
+        [
+          "New Plugin Authority",
+          "Address (Address: 8S2NwoKGA8NwHxcCfhMBAaLdCvM8ypduj5bmwma8d9nj)"
+        ],
+        [
+          "Asset",
+          "zJR3EgL8eyBn1wwC9nJKAkNVhpupLKzGNBTrKbdebDW"
+        ],
+        [
+          "Collection",
+          "FCQ2tF7vz9jpAKtLa9Eup8aV6PNatEnHADUWjefJBLE3"
+        ],
+        [
+          "Payer (Authority When None Given)",
+          "9dX2wbJW9TYDSJ1fp5meJn5nVqaVudnYhzZURBXwHS64"
+        ],
+        [
+          "Authority (Plugin's Authority)",
+          "HdaHd2M5SEt3t3uxqo8kAASG8BF9Tk1EzTZHFo2mFmzq"
+        ]
+      ],
+      "from": "5a284tmQG4KK7PU1FKukRBuctrArqTKPkrvaXQGtMNR8AYyMyXHTXSNcPFFijEDKV8DDkWrTx3NiQJKz1PKXzHB2#3.2",
+      "intent": "Approve a plugin authority",
+      "programId": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+      "sentence": "Gives control of the Transfer Delegate plugin of asset zJR3EgL8eyBn1wwC9nJKAkNVhpupLKzGNBTrKbdebDW to Address (Address: 8S2NwoKGA8NwHxcCfhMBAaLdCvM8ypduj5bmwma8d9nj)",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}
