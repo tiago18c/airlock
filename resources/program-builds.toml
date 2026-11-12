@@ -185,13 +185,14 @@ idlSha256 = "1a2e18158513353622cb6e39c075dc06731af76975af33df1468966d24e1ca95"
 reviewed = "2026-11-09"
 
 [[builds]]
-# ed25519Signer (core). The IDL the program publishes, which its file matches but for display nodes and additional programs.
+# ed25519Signer (core). The build deployed on 2026-11-09 with the transition signer. The file is the repository's idl.json at the commit below, byte for byte; the IDL the program publishes on devnet predates this build. The commit is the one the IDL was read at, not a reproduced build.
 programId = "EdSigVfK1DkeMrjFNDMjwfQaJPhPTtX7jW8uPv3oKEgN"
 network = "devnet"
-programHash = "7c60435f1f799809e8eb552e540018f3149c75b4a981ac4bf9deac51a84d1041"
+programHash = "09709abcaef2b0d973290b98676f366b7aa8de5ca5328b73c89baa87d30f05f0"
 authority = "Br2LeifQQeQpAw1r3yE4Fpk3Xo23HrsksE9adbCTqZ2g"
-idlSha256 = "80adf8b60fdb86130f53fe7ea7c115aad8335266b4833d09a3f1500182c16378"
-reviewed = "2026-11-09"
+idlSha256 = "80a901dfa1a61916a9b9ad30314d6617d8baa4c6788805b135c36d93c03b5309"
+source = { repo = "https://github.com/solana-program/ed25519-programmatic-signer", commit = "2b2cc7f178e27f5d0884483e9cef4aa9384eef63" }
+reviewed = "2026-11-12"
 
 [[builds]]
 # loaderV3 (pack). Built into the validator. Every instruction the IDL lists is UpgradeableLoaderInstruction 0 to 7 of solana-loader-v3-interface, with its account order; the account states are UpgradeableLoaderState.
