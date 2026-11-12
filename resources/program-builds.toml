@@ -1121,3 +1121,12 @@ programHash = "8643382a17e256399c589003cc1d92dddc409f9ce5e705e561e6bafac6b07da6"
 authority = "6Jtj2TDynyyZWkwY5MjWqYqhkQztAdvNFra1HW1BZmKR"
 idlSha256 = "ef4b19baa2804cb213365a66d81235ce954d44debc44dddda01b7d4e0a6bae03"
 reviewed = "2026-11-12"
+
+[[builds]]
+# bankineco (pack). Deployed at slot 466225971; OtterSec lists no verify record and the source is not public. The binary logs 68 instruction names; 39 of the chain IDL's 79 are among them, and the 31 kept match the IDL embedded in Perena's own SDK (@perena/vault-sdk 1.0.76, read for comparison only). Mainnet deposits, withdrawals (direct, from external lending, fee exempt), tranche deposits and withdrawals, share swaps, junior withdrawal requests and the oracle and NAV cranks decode with every account named.
+programId = "save8RQVPMWNTzU18t3GBvBkN9hT7jsGjiCQ28FpD9H"
+network = "mainnet"
+programHash = "fb6eedda54a5356967c6a802a4559184ae88fd3fe3584a34ece24cc459cf85a2"
+authority = "7Tn58JpSvBHeB5Mk1JEby3kCPMKTZaN9pUdhTFpKE5sh"
+idlSha256 = "83c6617b0743fc2f1cb7e93584be07a2d8a80f074e0692c42a07f6a859fe0d3f"
+reviewed = "2026-11-12"
