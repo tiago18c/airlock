@@ -864,3 +864,11 @@ programHash = "75da0a2fc5aee6cf6645922363c417c0f6bfce4acb5c3624b5eb9392d3f0a29b"
 authority = "9eZbWiHsPRsxLSiHxzg2pkXsAuQMwAjQrda7C7e21Fw6"
 idlSha256 = "d1ca41a2e83d6908838a694ef62cdf3b11d0bb1af1cb728c2796b878e4956b45"
 reviewed = "2026-11-12"
+
+[[builds]]
+# Metaplex Token Metadata (pack). Frozen since its last deploy at slot 380725176 (2025-11-17). The program logs a name for most instructions; the binary holds all 44 of those logs and all 163 error messages of mpl-token-metadata at 17e99434, including "IX: Close Accounts", which only that branch logs, and the instruction enum the IDL was generated from is unchanged there. Executed transactions of 21 of the file's instructions (16 on mainnet, 5 more on devnet) decode with every account named and every data byte read.
+programId = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+network = "mainnet"
+programHash = "8fdb14984e4756f3157881754fdc9444646b15cad27a5c78fa249dc5f507e3a7"
+idlSha256 = "aac0ce1c20ff67eaa2380aeafb20b5788d95168a258371ef868a3c8abc918a30"
+reviewed = "2026-11-12"
