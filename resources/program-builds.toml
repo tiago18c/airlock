@@ -770,3 +770,12 @@ programHash = "43e399e7d8e5763842f9159b52b8a4321c62b26b9f3e5d50846b9a7841c4ad18"
 authority = "4MsgBB5VPoTrUSp5XnfbViV386C1UnsTdifLBw33ZMSJ"
 idlSha256 = "671f48d5599bf222286a5a4b2732bc82ac3d3a90f518394c4c55ada42cabc11a"
 reviewed = "2026-11-12"
+
+[[builds]]
+# dex (pack). Deployed at slot 449990119; OtterSec lists no verify record. Each of the 41 instructions the file lists is in this binary by its Anchor log name and by its discriminator, and the binary logs no other apart from Anchor's IDL instructions. Mainnet swaps, deposits, a one-token withdrawal and twelve admin instructions decode with every account named and the account counts this file gives; the chain's 0.1.0 IDL gets swap, position and pool-creation account lists wrong.
+programId = "jupZ4m2GqUCJ5iueMfzQf8khFfH31d4XAQt3RzCT9Vd"
+network = "mainnet"
+programHash = "f8ab32018e0b50fb05b7790baf1694f87f4a1b86b3cf78efdcee22192ed8ea9e"
+authority = "4MsgBB5VPoTrUSp5XnfbViV386C1UnsTdifLBw33ZMSJ"
+idlSha256 = "e12b2ee7118953eea6652bf68ee5afea6e1d74d414e2429d083ea084997d1143"
+reviewed = "2026-11-12"
