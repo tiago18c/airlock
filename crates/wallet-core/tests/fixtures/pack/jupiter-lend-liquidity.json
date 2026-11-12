@@ -1,0 +1,1048 @@
+{
+  "accounts": {
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": {
+      "data": "AQAAAJj+huiNm+Lqi8HMpIeLKYjCQPUrhCS/tA7Rot3LXhmbFDIWOIjpHgAGAQEAAABicKqKWcWUBbRShshncubNEm6bil06OFNtN/e0FOi2Zw==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB": {
+      "data": "AQAAAAXqnPFs5BGY8aSZN8iMNwqU1K//ibW6y470XmMku3j3Bfu9GF+kDQAGAQEAAAAF6pzxbOQRmPGkmTfIjDcKlNSv/4m1usuO9F5jJLt49w==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "So11111111111111111111111111111111111111112": {
+      "data": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    }
+  },
+  "instructions": [
+    {
+      "accounts": [
+        "ALXWtv2P4GqH1B7Lq731joag52yRBRqmHV4naiXPTYWL:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "J9dyC4pBTBPvzzPh7J9rhFhg8RvgerDNKkUH9kEwGMsj:w",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "81cd9e9bc69b4885c6fa7af3bedbad3a3d65f36aabc97431b1bbe4c2d2f6e0e47ca60203452f5d61",
+      "fields": [
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Protocol",
+          "ALXWtv2P4GqH1B7Lq731joag52yRBRqmHV4naiXPTYWL"
+        ],
+        [
+          "Protocol Borrow Position",
+          "J9dyC4pBTBPvzzPh7J9rhFhg8RvgerDNKkUH9kEwGMsj"
+        ],
+        [
+          "Liquidity Vault",
+          "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB"
+        ],
+        [
+          "Token Reserve",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ]
+      ],
+      "from": "5niUqt9kzYDr9M7v54AZCeH5qiwND1JbXPVZnE3772PdDTYnyxagkaJ8NHox4jEJuUGGw5CouRJwg1Sys3etqhcn#5.1",
+      "intent": "Prepare a liquidity operation",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "ALXWtv2P4GqH1B7Lq731joag52yRBRqmHV4naiXPTYWL records the balance of liquidity vault BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB before it operates on EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z:w",
+        "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "81cd9e9bc69b4885c6fa7af3bedbad3a3d65f36aabc97431b1bbe4c2d2f6e0e47ca60203452f5d61",
+      "fields": [
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Protocol",
+          "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ"
+        ],
+        [
+          "Protocol Supply Position",
+          "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF"
+        ],
+        [
+          "Liquidity Vault",
+          "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB"
+        ],
+        [
+          "Token Reserve",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ]
+      ],
+      "from": "4ZLmzR7Vtz6MTEztPgUG7uFNg2rn1NfYTYoq2fAM7CRVEv8ofuQfndr9xH3BGbQ5wZPYrhktREkjd4yZEyAJXVFG#3.1",
+      "intent": "Prepare a liquidity operation",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ records the balance of liquidity vault BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB before it operates on EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "FfEJYz4hLLFe4KyNyKYCjvfhMfbtpLH3CXpcPe8nhmfy:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "6gVvQNMBecUAqSswntizqMHy6QEJnsUryWLa4Us1Lva5:w",
+        "4NB8MfVbDzZEEKAda5kxChxPSqJJ2vjTb7hRFZyJ5EWr:w",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "d96ad06374972a8700000000000000000000000000000000e7288afeffffffffffffffffffffffff551196127ad09898889868b588f6c33f3cfef42f53c3ef752f69d13728f0b70b551196127ad09898889868b588f6c33f3cfef42f53c3ef752f69d13728f0b70b01",
+      "fields": [
+        [
+          "Supply Change (positive supplies, negative withdraws)",
+          "0"
+        ],
+        [
+          "Borrow Change (positive borrows, negative repays)",
+          "-24.499993"
+        ],
+        [
+          "Withdrawal Recipient",
+          "6j5D3YGqEzd4Wdaq8SXtKo18KWVU7YbCUqKLgeSEFSmp"
+        ],
+        [
+          "Borrow Recipient",
+          "6j5D3YGqEzd4Wdaq8SXtKo18KWVU7YbCUqKLgeSEFSmp"
+        ],
+        [
+          "Transfer Type",
+          "Direct"
+        ],
+        [
+          "Protocol",
+          "FfEJYz4hLLFe4KyNyKYCjvfhMfbtpLH3CXpcPe8nhmfy"
+        ],
+        [
+          "Token Reserve",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Liquidity Vault",
+          "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB"
+        ],
+        [
+          "Protocol Supply Position",
+          "6gVvQNMBecUAqSswntizqMHy6QEJnsUryWLa4Us1Lva5"
+        ],
+        [
+          "Protocol Borrow Position",
+          "4NB8MfVbDzZEEKAda5kxChxPSqJJ2vjTb7hRFZyJ5EWr"
+        ],
+        [
+          "Interest Rate Model",
+          "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688"
+        ]
+      ],
+      "from": "59kPS46JiBV2Mb8HacWCy4ig2rT82rty6Z74f9gRUwCB2gYd32iAdBqQnJY7ZtpeqWwV8paiKPLRyPsYK7sYwicu#1.4",
+      "intent": "Change supply and borrowing",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "FfEJYz4hLLFe4KyNyKYCjvfhMfbtpLH3CXpcPe8nhmfy changes its EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v supply on the liquidity layer by 0 and its borrowing by -24.499993",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "FfEJYz4hLLFe4KyNyKYCjvfhMfbtpLH3CXpcPe8nhmfy:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z",
+        "Enao27EWUV2fv3rUqwknJ1eRaM5aAeN5ijeCrM9tayRX:w",
+        "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+        "4HTRHjdgy4VSVRcsumuzVFCgWywNhjGsD5oG3kqAt5vo:w",
+        "A6YLsnavkN39xSCEb8YEczPwKdJdkWd7Z5PD7r6a57hR:w",
+        "37PKKRw8Jv6sXUWi16hjj4TsCmXGugZejsRpWmGzf2PZ:w",
+        "6sAbVeSvEfjQGRAGg9W4PAfhB5qNhYiGdx6Fh9uVEsEC",
+        "7heHM8S8fHPGoWuU9LigrKNYEykydW5obCizV71jNKVh:w",
+        "7heHM8S8fHPGoWuU9LigrKNYEykydW5obCizV71jNKVh:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "d96ad06374972a87000000000000000000000000000000001b277601000000000000000000000000551196127ad09898889868b588f6c33f3cfef42f53c3ef752f69d13728f0b70b551196127ad09898889868b588f6c33f3cfef42f53c3ef752f69d13728f0b70b01",
+      "fields": [
+        [
+          "Supply Change (positive supplies, negative withdraws)",
+          "0"
+        ],
+        [
+          "Borrow Change (positive borrows, negative repays)",
+          "24.520475"
+        ],
+        [
+          "Withdrawal Recipient",
+          "6j5D3YGqEzd4Wdaq8SXtKo18KWVU7YbCUqKLgeSEFSmp"
+        ],
+        [
+          "Borrow Recipient",
+          "6j5D3YGqEzd4Wdaq8SXtKo18KWVU7YbCUqKLgeSEFSmp"
+        ],
+        [
+          "Transfer Type",
+          "Direct"
+        ],
+        [
+          "Protocol",
+          "FfEJYz4hLLFe4KyNyKYCjvfhMfbtpLH3CXpcPe8nhmfy"
+        ],
+        [
+          "Token Reserve",
+          "Enao27EWUV2fv3rUqwknJ1eRaM5aAeN5ijeCrM9tayRX"
+        ],
+        [
+          "Token",
+          "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
+        ],
+        [
+          "Liquidity Vault",
+          "4HTRHjdgy4VSVRcsumuzVFCgWywNhjGsD5oG3kqAt5vo"
+        ],
+        [
+          "Protocol Supply Position",
+          "A6YLsnavkN39xSCEb8YEczPwKdJdkWd7Z5PD7r6a57hR"
+        ],
+        [
+          "Protocol Borrow Position",
+          "37PKKRw8Jv6sXUWi16hjj4TsCmXGugZejsRpWmGzf2PZ"
+        ],
+        [
+          "Interest Rate Model",
+          "6sAbVeSvEfjQGRAGg9W4PAfhB5qNhYiGdx6Fh9uVEsEC"
+        ],
+        [
+          "Withdrawn Tokens To",
+          "7heHM8S8fHPGoWuU9LigrKNYEykydW5obCizV71jNKVh"
+        ],
+        [
+          "Borrowed Tokens To",
+          "7heHM8S8fHPGoWuU9LigrKNYEykydW5obCizV71jNKVh"
+        ]
+      ],
+      "from": "59kPS46JiBV2Mb8HacWCy4ig2rT82rty6Z74f9gRUwCB2gYd32iAdBqQnJY7ZtpeqWwV8paiKPLRyPsYK7sYwicu#1.5",
+      "intent": "Change supply and borrowing",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "FfEJYz4hLLFe4KyNyKYCjvfhMfbtpLH3CXpcPe8nhmfy changes its Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB supply on the liquidity layer by 0 and its borrowing by 24.520475",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "7whadCYBxcbDiksLq9wW2JANDwsaZaKqqnaSbqgb8jnt",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "4v1VSsayiDF51orz58RtwhYzHSYyKw6QBQF9w34qza69:w",
+        "79sNeDBuT4numgu16Rps5ViSppqnJYNsgYW32E954JeL:w",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "8tw4EDkMFVQTgR7cb1ciGcMAQW5uN9FQw4vgc7avTr57:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "d96ad06374972a870000000000000000000000000000000000e1f50500000000000000000000000065f5dffd7c84af75a8a5f7bdcea1622e2b3abf87fc53a871b908561a3a8b1bde7fad06bf263cab2884f38e962eeaa795e9309f427d85fd7c31363f6e257c7fdf01",
+      "fields": [
+        [
+          "Supply Change (positive supplies, negative withdraws)",
+          "0"
+        ],
+        [
+          "Borrow Change (positive borrows, negative repays)",
+          "100"
+        ],
+        [
+          "Withdrawal Recipient",
+          "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z"
+        ],
+        [
+          "Borrow Recipient",
+          "9bPoaJ2gHRByZveCBZuG5iBr8SRXaHetFRN8qR4XbLzz"
+        ],
+        [
+          "Transfer Type",
+          "Direct"
+        ],
+        [
+          "Protocol",
+          "7whadCYBxcbDiksLq9wW2JANDwsaZaKqqnaSbqgb8jnt"
+        ],
+        [
+          "Token Reserve",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Liquidity Vault",
+          "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB"
+        ],
+        [
+          "Protocol Supply Position",
+          "4v1VSsayiDF51orz58RtwhYzHSYyKw6QBQF9w34qza69"
+        ],
+        [
+          "Protocol Borrow Position",
+          "79sNeDBuT4numgu16Rps5ViSppqnJYNsgYW32E954JeL"
+        ],
+        [
+          "Interest Rate Model",
+          "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688"
+        ],
+        [
+          "Borrowed Tokens To",
+          "8tw4EDkMFVQTgR7cb1ciGcMAQW5uN9FQw4vgc7avTr57"
+        ]
+      ],
+      "from": "3zGwjRBZzo3PfTUkyeasg6mbakkKuNsqYU9RRwForT9iEUbfjKMvUKVRm5TXr3mU5niWK73G1kDsV51Z9psjpsTX#3.2",
+      "intent": "Change supply and borrowing",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "7whadCYBxcbDiksLq9wW2JANDwsaZaKqqnaSbqgb8jnt changes its EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v supply on the liquidity layer by 0 and its borrowing by 100",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "nMzVs8GiXMVUENEwkev7JZfDcCENmz18ScheeVRdnb1",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z",
+        "4Y66HtUEqbbbpZdENGtFdVhUMS3tnagffn3M4do59Nfy:w",
+        "So11111111111111111111111111111111111111112",
+        "5JP5zgYCb9W37QQLgAHRHuinFLrKt87akDY1CgZoTPzr:w",
+        "FxiMGrJ2MBatwxKmJPdddS4Gbijvj5QdipoQrmmBAXoQ:w",
+        "8W2SoErPPcYvbBvfSBHZECTXsFu8ZSLSYfQkaTatxKVv:w",
+        "Acvyi9HBGmqh3Exe1N4PjBVyY8fokq2AdC6fSLqV6KSo",
+        "BUP8uo4DFp4F2GuWacpL8MXEw69YaHStgqQJebPqssyS:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "d96ad06374972a8717cebcfcfcffffffffffffffffffffff000000000000000000000000000000009658e78192189a94978a3587e036fda88778ed34f9aa1f845f6e5c2ed2cbdc6765f5dffd7c84af75a8a5f7bdcea1622e2b3abf87fc53a871b908561a3a8b1bde01",
+      "fields": [
+        [
+          "Supply Change (positive supplies, negative withdraws)",
+          "-12.939637225"
+        ],
+        [
+          "Borrow Change (positive borrows, negative repays)",
+          "0"
+        ],
+        [
+          "Withdrawal Recipient",
+          "B7tnMyMrTSARw9aHC45d4dJuDCz3Kw45BQfLRxPeBS3G"
+        ],
+        [
+          "Borrow Recipient",
+          "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z"
+        ],
+        [
+          "Transfer Type",
+          "Direct"
+        ],
+        [
+          "Protocol",
+          "nMzVs8GiXMVUENEwkev7JZfDcCENmz18ScheeVRdnb1"
+        ],
+        [
+          "Token Reserve",
+          "4Y66HtUEqbbbpZdENGtFdVhUMS3tnagffn3M4do59Nfy"
+        ],
+        [
+          "Token",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Liquidity Vault",
+          "5JP5zgYCb9W37QQLgAHRHuinFLrKt87akDY1CgZoTPzr"
+        ],
+        [
+          "Protocol Supply Position",
+          "FxiMGrJ2MBatwxKmJPdddS4Gbijvj5QdipoQrmmBAXoQ"
+        ],
+        [
+          "Protocol Borrow Position",
+          "8W2SoErPPcYvbBvfSBHZECTXsFu8ZSLSYfQkaTatxKVv"
+        ],
+        [
+          "Interest Rate Model",
+          "Acvyi9HBGmqh3Exe1N4PjBVyY8fokq2AdC6fSLqV6KSo"
+        ],
+        [
+          "Withdrawn Tokens To",
+          "BUP8uo4DFp4F2GuWacpL8MXEw69YaHStgqQJebPqssyS"
+        ]
+      ],
+      "from": "3DCUbZpVtjk3j46FWnDudD12FFY55d48J3tuL9ZUVvvnvvwbGJYP4stk1qQy2edTMV4fbrez2fkpV1mhQkrShoXD#3.1",
+      "intent": "Change supply and borrowing",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "nMzVs8GiXMVUENEwkev7JZfDcCENmz18ScheeVRdnb1 changes its So11111111111111111111111111111111111111112 supply on the liquidity layer by -12.939637225 and its borrowing by 0",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z:w",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "d96ad06374972a870cbc30090000000000000000000000000000000000000000000000000000000065f5dffd7c84af75a8a5f7bdcea1622e2b3abf87fc53a871b908561a3a8b1bde65f5dffd7c84af75a8a5f7bdcea1622e2b3abf87fc53a871b908561a3a8b1bde01",
+      "fields": [
+        [
+          "Supply Change (positive supplies, negative withdraws)",
+          "154.188812"
+        ],
+        [
+          "Borrow Change (positive borrows, negative repays)",
+          "0"
+        ],
+        [
+          "Withdrawal Recipient",
+          "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z"
+        ],
+        [
+          "Borrow Recipient",
+          "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z"
+        ],
+        [
+          "Transfer Type",
+          "Direct"
+        ],
+        [
+          "Protocol",
+          "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ"
+        ],
+        [
+          "Token Reserve",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Liquidity Vault",
+          "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB"
+        ],
+        [
+          "Protocol Supply Position",
+          "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF"
+        ],
+        [
+          "Interest Rate Model",
+          "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688"
+        ]
+      ],
+      "from": "4ZLmzR7Vtz6MTEztPgUG7uFNg2rn1NfYTYoq2fAM7CRVEv8ofuQfndr9xH3BGbQ5wZPYrhktREkjd4yZEyAJXVFG#3.3",
+      "intent": "Change supply and borrowing",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ changes its EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v supply on the liquidity layer by 154.188812 and its borrowing by 0",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z:w",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC:w",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688",
+        "EpdaePzdqRkMtdZJquVPUWgyoJ5YEEpYALki6dv9VBrt:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "d96ad06374972a878d6867ffffffffffffffffffffffffff0000000000000000000000000000000063c89b1cc117db142040a0125cf9bbfde93a6b8d7c8ab026428b6f2ec232ebc365f5dffd7c84af75a8a5f7bdcea1622e2b3abf87fc53a871b908561a3a8b1bde01",
+      "fields": [
+        [
+          "Supply Change (positive supplies, negative withdraws)",
+          "-10.000243"
+        ],
+        [
+          "Borrow Change (positive borrows, negative repays)",
+          "0"
+        ],
+        [
+          "Withdrawal Recipient",
+          "7iWnBRRhBCiNXXPhqiGzvvBkKrvFSWqqmxRyu9VyYBxE"
+        ],
+        [
+          "Borrow Recipient",
+          "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z"
+        ],
+        [
+          "Transfer Type",
+          "Direct"
+        ],
+        [
+          "Protocol",
+          "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ"
+        ],
+        [
+          "Token Reserve",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Liquidity Vault",
+          "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB"
+        ],
+        [
+          "Protocol Supply Position",
+          "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF"
+        ],
+        [
+          "Interest Rate Model",
+          "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688"
+        ],
+        [
+          "Withdrawn Tokens To",
+          "EpdaePzdqRkMtdZJquVPUWgyoJ5YEEpYALki6dv9VBrt"
+        ]
+      ],
+      "from": "5LPJp4AJU2c4wLnwuX3xTTBki2oMDtF1jsi5fqLTLJ5nHVNEr2dqSj7TkxyUVmHyVyyY4Q2ouZYR3Rtac7aF9K8m#3.4",
+      "intent": "Change supply and borrowing",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ changes its EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v supply on the liquidity layer by -10.000243 and its borrowing by 0",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4Y66HtUEqbbbpZdENGtFdVhUMS3tnagffn3M4do59Nfy:w",
+        "Acvyi9HBGmqh3Exe1N4PjBVyY8fokq2AdC6fSLqV6KSo:w"
+      ],
+      "data": "eff40af874193596069b8857feab8184fb687f634618c035dac439dc1aeb3b5598a0f00000000001",
+      "fields": [
+        [
+          "Token",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Token Reserve",
+          "4Y66HtUEqbbbpZdENGtFdVhUMS3tnagffn3M4do59Nfy"
+        ],
+        [
+          "Interest Rate Model",
+          "Acvyi9HBGmqh3Exe1N4PjBVyY8fokq2AdC6fSLqV6KSo"
+        ]
+      ],
+      "from": "5EYGdBtBT5QbTuVyE4bagGRj1odxgzxptoUXkQMjjyzQAp2nYD5c9qK2tUNajuYutQEZbujzHtRNrnSs6fqKPVGb#1",
+      "intent": "Update exchange prices",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "Brings the exchange prices and borrow rate of So11111111111111111111111111111111111111112 up to date",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa:w",
+        "9Eio7YRtCRQQaVrcsfByWUinVzY6QMb8rXFaTmkDVtfR",
+        "AD4Wz8PcmhM6rFhMN5fD4y75NtbqNHpJdgv4qrMrUdKb",
+        "5BxfXqPPbGwnhSp1wHsTwwqEXVeoKebHMZvyZcxh7U9P",
+        "sUSDai6Y3GxysDEtA9BVcEFTaog6UZpYUVxJiMhAKYE",
+        "2zhomdC3giLb5vf91fCZiKWiFXAD9NwMcV8EQo8NmA3i:w",
+        "ErrcgPb89aLAbpGAimnc26kGUGsKqyZqnqBDwfbJRmwC:w"
+      ],
+      "data": "d9efe1da2131eab701c40900000000000000000000000000006054000000000000000000000000000000041e157c0600000000000000000000",
+      "fields": [
+        [
+          "Mode (0 interest free, 1 with interest)",
+          "1"
+        ],
+        [
+          "Withdrawal Limit Expansion",
+          "25 %"
+        ],
+        [
+          "Withdrawal Limit Expansion Time",
+          "06:00:00"
+        ],
+        [
+          "Base Withdrawal Limit (raw amount)",
+          "7,130,000,000,000"
+        ],
+        [
+          "Authority",
+          "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa"
+        ],
+        [
+          "Protocol",
+          "9Eio7YRtCRQQaVrcsfByWUinVzY6QMb8rXFaTmkDVtfR"
+        ],
+        [
+          "Interest Rate Model",
+          "5BxfXqPPbGwnhSp1wHsTwwqEXVeoKebHMZvyZcxh7U9P"
+        ],
+        [
+          "Token",
+          "sUSDai6Y3GxysDEtA9BVcEFTaog6UZpYUVxJiMhAKYE"
+        ],
+        [
+          "Token Reserve",
+          "2zhomdC3giLb5vf91fCZiKWiFXAD9NwMcV8EQo8NmA3i"
+        ],
+        [
+          "Protocol Supply Position",
+          "ErrcgPb89aLAbpGAimnc26kGUGsKqyZqnqBDwfbJRmwC"
+        ]
+      ],
+      "from": "5PcMsoqHcsijQfcDTjaNss9F9ehZgBv2tRKHnbbqVkV2fdvxt2Hdoc9EjmZ6PYj3VAz3EWYAjsxZggE2yRjFrKtr#4.1",
+      "intent": "Set a protocol's supply limits",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa sets the supply mode and withdrawal limits of protocol 9Eio7YRtCRQQaVrcsfByWUinVzY6QMb8rXFaTmkDVtfR for sUSDai6Y3GxysDEtA9BVcEFTaog6UZpYUVxJiMhAKYE",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa:w",
+        "9Eio7YRtCRQQaVrcsfByWUinVzY6QMb8rXFaTmkDVtfR",
+        "AD4Wz8PcmhM6rFhMN5fD4y75NtbqNHpJdgv4qrMrUdKb",
+        "3oupTPkWkbGhcGYMm2fdZwiqv2ynmUTYe7BdW3wvkFv6",
+        "72puLt71H93Z9CzHuBRTwFpL4TG3WZUhnoCC7p8gxigu",
+        "7azQBZTPxJBoq74c538uAURWknrAAZBv5txS7YmgnzgX:w",
+        "F511f1Ymd9adoQik2W2EdLPWGnZrb9XSVQ5vyGJyCv4w:w"
+      ],
+      "data": "64b0c9aef70236a801c409000000000000000000000000000060540000000000000000000000000000008028a5460700000000000000000000008028a5460700000000000000000000",
+      "fields": [
+        [
+          "Mode (0 interest free, 1 with interest)",
+          "1"
+        ],
+        [
+          "Debt Ceiling Expansion",
+          "25 %"
+        ],
+        [
+          "Debt Ceiling Expansion Time",
+          "06:00:00"
+        ],
+        [
+          "Base Debt Ceiling (raw amount)",
+          "8,000,000,000,000"
+        ],
+        [
+          "Maximum Debt Ceiling (raw amount)",
+          "8,000,000,000,000"
+        ],
+        [
+          "Authority",
+          "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa"
+        ],
+        [
+          "Protocol",
+          "9Eio7YRtCRQQaVrcsfByWUinVzY6QMb8rXFaTmkDVtfR"
+        ],
+        [
+          "Interest Rate Model",
+          "3oupTPkWkbGhcGYMm2fdZwiqv2ynmUTYe7BdW3wvkFv6"
+        ],
+        [
+          "Token",
+          "72puLt71H93Z9CzHuBRTwFpL4TG3WZUhnoCC7p8gxigu"
+        ],
+        [
+          "Token Reserve",
+          "7azQBZTPxJBoq74c538uAURWknrAAZBv5txS7YmgnzgX"
+        ],
+        [
+          "Protocol Borrow Position",
+          "F511f1Ymd9adoQik2W2EdLPWGnZrb9XSVQ5vyGJyCv4w"
+        ]
+      ],
+      "from": "5PcMsoqHcsijQfcDTjaNss9F9ehZgBv2tRKHnbbqVkV2fdvxt2Hdoc9EjmZ6PYj3VAz3EWYAjsxZggE2yRjFrKtr#4.2",
+      "intent": "Set a protocol's borrow limits",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa sets the borrow mode and debt ceilings of protocol 9Eio7YRtCRQQaVrcsfByWUinVzY6QMb8rXFaTmkDVtfR for 72puLt71H93Z9CzHuBRTwFpL4TG3WZUhnoCC7p8gxigu",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa:w",
+        "AD4Wz8PcmhM6rFhMN5fD4y75NtbqNHpJdgv4qrMrUdKb",
+        "GQNC5TgNuUJwjqPpc5n7vmtQW1vxAJKMBwya241Si5Ms:w"
+      ],
+      "data": "e29648d39f33e22797e0a537eca625c876d526380f6d3c76515c0e01a178a2537e33720d7722cb8e",
+      "fields": [
+        [
+          "Token",
+          "BDsEuxFWznAP5cUCannnfjyjDtTwqN57CkGfDbjx2nNZ"
+        ],
+        [
+          "Authority",
+          "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa"
+        ],
+        [
+          "Token Reserve",
+          "GQNC5TgNuUJwjqPpc5n7vmtQW1vxAJKMBwya241Si5Ms"
+        ]
+      ],
+      "from": "5rjjj1C6hLQAJ5bGtuCTJRwZSpNnnfR2dKTnwiKThzDJFm8oMfbBR4kaQbUo6cWSiuxNnoSoW6cmn38djcUviJrj#4.3",
+      "intent": "Pause a token",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa pauses token BDsEuxFWznAP5cUCannnfjyjDtTwqN57CkGfDbjx2nNZ on the liquidity layer",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa:w",
+        "AD4Wz8PcmhM6rFhMN5fD4y75NtbqNHpJdgv4qrMrUdKb",
+        "88YPhYntMQ4wuBpDmTe5BBAn25LBFX4jrbcfz8GbyQcu:w",
+        "FpaQyfK6QrwzNTGuVMWvZMeuKXBXGcuJ4WZxs6ZoF2V3:w"
+      ],
+      "data": "123f2b5eef35650e800ab49b3be44b6360218b18a3e85b7452f37dc0f8858934ea32c48998ba4d4b97e0a537eca625c876d526380f6d3c76515c0e01a178a2537e33720d7722cb8e069b8857feab8184fb687f634618c035dac439dc1aeb3b5598a0f0000000000101010101",
+      "fields": [
+        [
+          "Protocol",
+          "9cpetiuPL2A9on3MCxUTJY9GYgfqmPpBB8BgbCvoaafc"
+        ],
+        [
+          "Supply Token",
+          "BDsEuxFWznAP5cUCannnfjyjDtTwqN57CkGfDbjx2nNZ"
+        ],
+        [
+          "Borrow Token",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Pause Supply (1 pauses, empty leaves it)",
+          "1"
+        ],
+        [
+          "Pause Borrowing (1 pauses, empty leaves it)",
+          "1"
+        ],
+        [
+          "Guardian",
+          "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa"
+        ],
+        [
+          "Protocol Supply Position",
+          "88YPhYntMQ4wuBpDmTe5BBAn25LBFX4jrbcfz8GbyQcu"
+        ],
+        [
+          "Protocol Borrow Position",
+          "FpaQyfK6QrwzNTGuVMWvZMeuKXBXGcuJ4WZxs6ZoF2V3"
+        ]
+      ],
+      "from": "5rjjj1C6hLQAJ5bGtuCTJRwZSpNnnfR2dKTnwiKThzDJFm8oMfbBR4kaQbUo6cWSiuxNnoSoW6cmn38djcUviJrj#4.4",
+      "intent": "Pause a protocol",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa pauses the supply or borrowing of protocol 9cpetiuPL2A9on3MCxUTJY9GYgfqmPpBB8BgbCvoaafc",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z",
+        "AD4Wz8PcmhM6rFhMN5fD4y75NtbqNHpJdgv4qrMrUdKb",
+        "72puLt71H93Z9CzHuBRTwFpL4TG3WZUhnoCC7p8gxigu",
+        "EA4wj2Bw792ngZJTgU1T5Qggjfm6p1b1Lq8xS1D6KMRt:w",
+        "3oupTPkWkbGhcGYMm2fdZwiqv2ynmUTYe7BdW3wvkFv6:w",
+        "7azQBZTPxJBoq74c538uAURWknrAAZBv5txS7YmgnzgX:w",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111"
+      ],
+      "data": "e4eb41819f0f0654",
+      "fields": [
+        [
+          "Authority",
+          "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa"
+        ],
+        [
+          "Token",
+          "72puLt71H93Z9CzHuBRTwFpL4TG3WZUhnoCC7p8gxigu"
+        ],
+        [
+          "Liquidity Vault",
+          "EA4wj2Bw792ngZJTgU1T5Qggjfm6p1b1Lq8xS1D6KMRt"
+        ],
+        [
+          "Interest Rate Model",
+          "3oupTPkWkbGhcGYMm2fdZwiqv2ynmUTYe7BdW3wvkFv6"
+        ],
+        [
+          "Token Reserve",
+          "7azQBZTPxJBoq74c538uAURWknrAAZBv5txS7YmgnzgX"
+        ]
+      ],
+      "from": "fSLg2CvivETxSuTtcrsh8TGN1RRGgSUG4eKfxbayTwdfEbfVrYbXF65GY1BYG37BiKqokLXCkPhi4XUavMehSth#4.1",
+      "intent": "Add a token",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa adds 72puLt71H93Z9CzHuBRTwFpL4TG3WZUhnoCC7p8gxigu to the liquidity layer, creating its token reserve, interest rate model and vault",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa:w",
+        "AD4Wz8PcmhM6rFhMN5fD4y75NtbqNHpJdgv4qrMrUdKb",
+        "3oupTPkWkbGhcGYMm2fdZwiqv2ynmUTYe7BdW3wvkFv6:w",
+        "72puLt71H93Z9CzHuBRTwFpL4TG3WZUhnoCC7p8gxigu",
+        "7azQBZTPxJBoq74c538uAURWknrAAZBv5txS7YmgnzgX:w"
+      ],
+      "data": "74493592d82de47c342100000000000000000000000000005424000000000000000000000000000000000000000000000000000000000000db010000000000000000000000000000a3020000000000000000000000000000dc050000000000000000000000000000",
+      "fields": [
+        [
+          "First Kink Utilization",
+          "85 %"
+        ],
+        [
+          "Second Kink Utilization",
+          "93 %"
+        ],
+        [
+          "Borrow Rate at 0% Utilization",
+          "0 %"
+        ],
+        [
+          "Borrow Rate at First Kink",
+          "4.75 %"
+        ],
+        [
+          "Borrow Rate at Second Kink",
+          "6.75 %"
+        ],
+        [
+          "Borrow Rate at 100% Utilization",
+          "15 %"
+        ],
+        [
+          "Authority",
+          "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa"
+        ],
+        [
+          "Interest Rate Model",
+          "3oupTPkWkbGhcGYMm2fdZwiqv2ynmUTYe7BdW3wvkFv6"
+        ],
+        [
+          "Token",
+          "72puLt71H93Z9CzHuBRTwFpL4TG3WZUhnoCC7p8gxigu"
+        ],
+        [
+          "Token Reserve",
+          "7azQBZTPxJBoq74c538uAURWknrAAZBv5txS7YmgnzgX"
+        ]
+      ],
+      "from": "fSLg2CvivETxSuTtcrsh8TGN1RRGgSUG4eKfxbayTwdfEbfVrYbXF65GY1BYG37BiKqokLXCkPhi4XUavMehSth#4.9",
+      "intent": "Set a two-kink rate curve",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa sets the borrow rate curve of 72puLt71H93Z9CzHuBRTwFpL4TG3WZUhnoCC7p8gxigu, with two kinks",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa:w",
+        "AD4Wz8PcmhM6rFhMN5fD4y75NtbqNHpJdgv4qrMrUdKb",
+        "3oupTPkWkbGhcGYMm2fdZwiqv2ynmUTYe7BdW3wvkFv6:w",
+        "72puLt71H93Z9CzHuBRTwFpL4TG3WZUhnoCC7p8gxigu",
+        "7azQBZTPxJBoq74c538uAURWknrAAZBv5txS7YmgnzgX:w"
+      ],
+      "data": "e77ab54fff4f90a7599ddda88fa3e1e3817a431e22cb8a415f741c9c1a8afea2bb7d161b670a44f6e803000000000000000000000000000010270000000000000000000000000000",
+      "fields": [
+        [
+          "Configured Token",
+          "72puLt71H93Z9CzHuBRTwFpL4TG3WZUhnoCC7p8gxigu"
+        ],
+        [
+          "Fee on Borrowers' Interest",
+          "10 %"
+        ],
+        [
+          "Maximum Utilization",
+          "100 %"
+        ],
+        [
+          "Authority",
+          "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa"
+        ],
+        [
+          "Interest Rate Model",
+          "3oupTPkWkbGhcGYMm2fdZwiqv2ynmUTYe7BdW3wvkFv6"
+        ],
+        [
+          "Token",
+          "72puLt71H93Z9CzHuBRTwFpL4TG3WZUhnoCC7p8gxigu"
+        ],
+        [
+          "Token Reserve",
+          "7azQBZTPxJBoq74c538uAURWknrAAZBv5txS7YmgnzgX"
+        ]
+      ],
+      "from": "fSLg2CvivETxSuTtcrsh8TGN1RRGgSUG4eKfxbayTwdfEbfVrYbXF65GY1BYG37BiKqokLXCkPhi4XUavMehSth#4.10",
+      "intent": "Set a token's fee and limit",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa sets the fee on borrowers' interest of 72puLt71H93Z9CzHuBRTwFpL4TG3WZUhnoCC7p8gxigu to 10 % and its maximum utilization to 100 %",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa:w",
+        "AD4Wz8PcmhM6rFhMN5fD4y75NtbqNHpJdgv4qrMrUdKb",
+        "Cc8H46qwMfkpfmQurbkBntMzV3iSEfA5Qsm8unSaXQUr:w",
+        "8XYt7XbFytGvvq2n7NBohVuiAnDXBCw3LVx2guCYsFaW:w",
+        "11111111111111111111111111111111"
+      ],
+      "data": "c19305208a87d59e0cee0fa11c2fb7894152985828ab6a1fbe6171e29669f1e5af626ba79680afc30cee0fa11c2fb7894152985828ab6a1fbe6171e29669f1e5af626ba79680afc38ab9b8bc03d5e20b1140c78b75e547ae75491615227f9481268be00ec37433f1",
+      "fields": [
+        [
+          "Supply Token",
+          "sUSDai6Y3GxysDEtA9BVcEFTaog6UZpYUVxJiMhAKYE"
+        ],
+        [
+          "Borrow Token",
+          "sUSDai6Y3GxysDEtA9BVcEFTaog6UZpYUVxJiMhAKYE"
+        ],
+        [
+          "Protocol",
+          "ALXWtv2P4GqH1B7Lq731joag52yRBRqmHV4naiXPTYWL"
+        ],
+        [
+          "Authority",
+          "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa"
+        ],
+        [
+          "Protocol Supply Position",
+          "Cc8H46qwMfkpfmQurbkBntMzV3iSEfA5Qsm8unSaXQUr"
+        ],
+        [
+          "Protocol Borrow Position",
+          "8XYt7XbFytGvvq2n7NBohVuiAnDXBCw3LVx2guCYsFaW"
+        ]
+      ],
+      "from": "QAxzUBJjJ2hmhKsjiUk3Bn3cw5SkodRZsJyLjAvLGfmtTRyxdXXfnZf1Lc9FUs1mxv9nwQdMbdZwAJaiJLfMEcm#4.1",
+      "intent": "Add a protocol",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa adds protocol ALXWtv2P4GqH1B7Lq731joag52yRBRqmHV4naiXPTYWL, creating its sUSDai6Y3GxysDEtA9BVcEFTaog6UZpYUVxJiMhAKYE supply position and sUSDai6Y3GxysDEtA9BVcEFTaog6UZpYUVxJiMhAKYE borrow position",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z",
+        "AD4Wz8PcmhM6rFhMN5fD4y75NtbqNHpJdgv4qrMrUdKb",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "8oSYXFsT6TbgyYEjGxAn5H67hpCCnr8H5HukBAzm4TuE:w",
+        "Cvnta5ecoiCgNbLEXYm6kvhJMmRv3JM3ksKgTLVPg4hk",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111"
+      ],
+      "data": "5760d324f02bf657",
+      "fields": [
+        [
+          "Authority",
+          "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Revenue Collector Token Account",
+          "8oSYXFsT6TbgyYEjGxAn5H67hpCCnr8H5HukBAzm4TuE"
+        ],
+        [
+          "Revenue Collector",
+          "Cvnta5ecoiCgNbLEXYm6kvhJMmRv3JM3ksKgTLVPg4hk"
+        ],
+        [
+          "Token Reserve",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ],
+        [
+          "Liquidity Vault",
+          "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB"
+        ]
+      ],
+      "from": "3gnwoBAZzGgTUSEpqoA4HWm8rzNZ6BpwT1NrUkidBqpcTfET5spgYp7zpH3xgbRCtfUj5ofRp8XRvZei5tK3zM1h#1.1",
+      "intent": "Collect protocol revenue",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa collects the EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v revenue of the liquidity layer into 8oSYXFsT6TbgyYEjGxAn5H67hpCCnr8H5HukBAzm4TuE",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "3H8C6yYTXUcN9RRRDmcLDt3e4aZLYRRX4x2HbEjTqQAA:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z:w",
+        "AD4Wz8PcmhM6rFhMN5fD4y75NtbqNHpJdgv4qrMrUdKb:w"
+      ],
+      "data": "202e401c954bf358fa20b7645eeeecdca805b93db8c46089cb858ff0d84fe5d0a478a3c4e18fe495",
+      "fields": [
+        [
+          "New Authority",
+          "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa"
+        ],
+        [
+          "Authority",
+          "3H8C6yYTXUcN9RRRDmcLDt3e4aZLYRRX4x2HbEjTqQAA"
+        ]
+      ],
+      "from": "3mi63XC7auXsk77wuAiQiLcpfrcxLh5LYCgSAs7LHrRWmH4NHPb6Zxgv9BKnhGUGZR2MKb4Fq4wV8voUTG5Sm3AC#4.4",
+      "intent": "Change the authority",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "3H8C6yYTXUcN9RRRDmcLDt3e4aZLYRRX4x2HbEjTqQAA hands the authority of the liquidity layer to HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "3H8C6yYTXUcN9RRRDmcLDt3e4aZLYRRX4x2HbEjTqQAA:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z",
+        "AD4Wz8PcmhM6rFhMN5fD4y75NtbqNHpJdgv4qrMrUdKb:w"
+      ],
+      "data": "2b3efa8a8d7584610100000021d8cc553596db2400584e8c9ceab2f4f55c85d537653f6a452e2ce49d6cabef01",
+      "fields": [
+        [
+          "Guardians",
+          "Addr: 3H8C6yYTXUcN9RRRDmcLDt3e4aZLYRRX4x2HbEjTqQAA, Value: true"
+        ],
+        [
+          "Authority",
+          "3H8C6yYTXUcN9RRRDmcLDt3e4aZLYRRX4x2HbEjTqQAA"
+        ]
+      ],
+      "from": "x4KfCNxUQ76Choyee1Cd1MP73FTemGrEEz9x1BvTiBuBpAWZSLZuuUeBqQmWncxsSvknpvJp4cjsqGfF43QomdQ#4.1",
+      "intent": "Update guardians",
+      "programId": "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+      "sentence": "3H8C6yYTXUcN9RRRDmcLDt3e4aZLYRRX4x2HbEjTqQAA adds or removes guardians of the liquidity layer",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}

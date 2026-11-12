@@ -687,6 +687,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("REALQqNEomY6cQGZJUGwywTBD2UmDT32rZcNnfxQ5N2"),
         "Byreal CLMM Program",
     ),
+    (
+        Pubkey::from_str_const("jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC"),
+        "Jupiter Lend Liquidity Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.
