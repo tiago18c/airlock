@@ -380,3 +380,12 @@ programHash = "cc25380fd0736b57d051f28cada432b35b01d9e24dc1d3e1b5d81773279eb772"
 authority = "JADaUV8kvDpDbJr55wxXJHVaBS3VCj8thZZHjfeuCVLd"
 idlSha256 = "452ecdd5f32753d00f6e31c7bd3c1f53a4418b2eace26aa1dd88c21f7f4bb953"
 reviewed = "2026-11-12"
+
+[[builds]]
+# cpAmm (pack). The IDL is version 0.2.0 and this binary is 0.2.4 or 0.2.5 of MeteoraAg/damm-v2. The binary logs 38 instruction names: 35 of the IDL's 38 are among them and the other three are left out of the file, as are three whose arguments releases 0.2.1 and 0.2.4 lengthened. The 32 kept were compared with the repository's source at release 0.2.5, account by account and argument by argument, and mainnet transactions of 11 of them decode with no byte or account left over. The binary also has `claimProtocolFee2`, `withdrawDeadLiquidityReward` and `updateDelegatePermission`, which the IDL lacks and which read raw.
+programId = "cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG"
+network = "mainnet"
+programHash = "0712ca6d350757b9a71a0ea40da8fe9d5b48fca044f2deae0b65a33320e6a59b"
+authority = "JADaUV8kvDpDbJr55wxXJHVaBS3VCj8thZZHjfeuCVLd"
+idlSha256 = "3bfdcdc15d1b4809917b2f2c68c46d506cbc38ee73d13ae5f950341a9d16237b"
+reviewed = "2026-11-12"
