@@ -555,3 +555,12 @@ programHash = "880aca643455fd2cf1963612591ba4ade512fb2c37aca922c4c49a12300fb1ae"
 authority = "Em3wKQYD83ph9LmSt6xBZeB9DpozT55AcGa61EYxHRVh"
 idlSha256 = "53527fd98e91180a0c55e16fbc6b5bf3072be967e60cb2739f8779d2997f257c"
 reviewed = "2026-11-12"
+
+[[builds]]
+# vaults (pack). Deployed at slot 449989995; OtterSec lists no verify record. Each of the 34 instructions the file lists is in this binary by its Anchor log name and by its discriminator, and the binary logs no other apart from Anchor's IDL instructions. Mainnet transactions of operate, initPosition, liquidate, operatePerfectDex, rebalance, the tick set-up instructions and four admin instructions decode with every account named.
+programId = "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi"
+network = "mainnet"
+programHash = "9470945b79ddb0283629e518c3c1239815ad953acf3b776dcdca306582287bcb"
+authority = "4MsgBB5VPoTrUSp5XnfbViV386C1UnsTdifLBw33ZMSJ"
+idlSha256 = "9b312df249485d609885e915e9ee05685254119c4902d2f06f51d7c7b6b62d53"
+reviewed = "2026-11-12"

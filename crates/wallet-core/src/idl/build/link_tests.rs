@@ -265,16 +265,23 @@ fn every_linked_choice_of_the_shipped_idls_opens_as_chosen_and_builds_the_same()
     );
     assert!(variants >= 30, "only {variants} variants built");
     // An instruction is skipped when another of its fields has no widget on
-    // Build. That stays the exception however many IDLs ship: a share of the
-    // choices found, not a fixed count, with each instruction counted once
-    // whatever the number of networks it is read on.
+    // Build, so its choices are not checked here. Each one is listed, counted
+    // once whatever the number of networks it is read on: one more is then a
+    // decision made with the IDL that brings it, and one fewer is a widget
+    // Build gained.
+    const SKIPPED: [&str; 8] = [
+        "kaminoLending.idlMissingTypes",
+        "programMetadata.initialize",
+        "raydiumLaunchpad.initializeV2",
+        "raydiumLaunchpad.initializeWithToken2022",
+        "vaults.liquidateDex",
+        "vaults.liquidatePerfectDex",
+        "vaults.operateDex",
+        "vaults.operatePerfectDex",
+    ];
     skipped.sort();
     skipped.dedup();
-    assert!(
-        skipped.len() * 5 <= fields.len(),
-        "skipped {skipped:?} of {} choices",
-        fields.len()
-    );
+    assert_eq!(skipped, SKIPPED);
 }
 
 // What an author can write: a program whose types the form reads by hand,

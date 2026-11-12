@@ -548,3 +548,25 @@ they read (tick arrays, the bitmap extension, reward accounts, supported-mint re
 swap route), which Anchor IDLs cannot. The Token program's mint account is added, so \
 liquidity limits, fee collections and a routed swap's input read their mint's decimals; \
 the other swap amounts are in base units. Display nodes added by hand."""
+
+# Jupiter Lend's Borrow program (vaults): positions held as NFTs, each with
+# collateral in one token and debt in another, changed by one operate
+# instruction; also liquidations and the smart collateral and smart debt (DEX)
+# vaults. It calls Jupiter Lend's liquidity program
+# (jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC). The program publishes no IDL
+# on chain; the file is the Anchor IDL in Jupiter's jup-ag/jupiter-lend
+# repository.
+[[idls]]
+file = "jupiter-lend-borrow.json"
+programId = "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi"
+name = "vaults"
+networks = ["mainnet"]
+source = { kind = "repository", url = "https://github.com/jup-ag/jupiter-lend/blob/7960a14a5a760abc41db3ed1395dc5cb56a1f8db/target/idl/vaults.json" }
+changes = """Converted from Anchor to Codama. Instructions with optional accounts set \
+optionalAccountStrategy to programId. operate, liquidate and the four DEX instructions \
+declare their remaining accounts (oracle sources, branches, ticks and tick-has-debt \
+arrays, counted by remainingAccountsIndices): hidden for operate and liquidate, shown as \
+Additional Account for the DEX instructions, whose groups are not documented. operate's \
+collateral and debt changes are in the decimals of the collateral and debt mints and \
+liquidate's debt amount in the debt mint's, read from chain; the DEX and rebalance \
+amounts are in base units. Display nodes added by hand."""
