@@ -1,0 +1,392 @@
+{
+  "accounts": {},
+  "instructions": [
+    {
+      "accounts": [
+        "63ULLUChkJWESeQ9B92dfqcWGxRwbvvLWjrkk6ut5SG8:w",
+        "25fwg615BL4zYkEbb5wNsyTQrPehZ9ePbQvwaDjETy7t:sw",
+        "25fwg615BL4zYkEbb5wNsyTQrPehZ9ePbQvwaDjETy7t:sw",
+        "25fwg615BL4zYkEbb5wNsyTQrPehZ9ePbQvwaDjETy7t:sw",
+        "11111111111111111111111111111111"
+      ],
+      "data": "afaf6d1f0d989bed37000000020200000000000000e1f50500000000100e0af267784ea7885d98f6b5d645410cf41970010faa8ed5466577ec91690f01190000000000",
+      "fields": [
+        [
+          "Guards (bytes)",
+          "020200000000000000e1f50500000000100e0af267784ea7885d98f6b5d645410cf41970010faa8ed5466577ec91690f01190000000000"
+        ],
+        [
+          "Candy Guard",
+          "63ULLUChkJWESeQ9B92dfqcWGxRwbvvLWjrkk6ut5SG8"
+        ],
+        [
+          "Base Key",
+          "25fwg615BL4zYkEbb5wNsyTQrPehZ9ePbQvwaDjETy7t"
+        ],
+        [
+          "Authority",
+          "25fwg615BL4zYkEbb5wNsyTQrPehZ9ePbQvwaDjETy7t"
+        ],
+        [
+          "Payer",
+          "25fwg615BL4zYkEbb5wNsyTQrPehZ9ePbQvwaDjETy7t"
+        ]
+      ],
+      "from": "9TnAf61aPbunU1QrUkoCDdsKTywyePVJnvQLiABFF8wDtp2bhePHEF4Z1PDmcYyE9w5E8mtQ6P9jKz4yTZn5P9x#3",
+      "intent": "Create a candy guard",
+      "programId": "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g",
+      "sentence": "25fwg615BL4zYkEbb5wNsyTQrPehZ9ePbQvwaDjETy7t creates candy guard 63ULLUChkJWESeQ9B92dfqcWGxRwbvvLWjrkk6ut5SG8 with 25fwg615BL4zYkEbb5wNsyTQrPehZ9ePbQvwaDjETy7t as its authority; its guards (prices, dates, limits) show only as bytes",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "63ULLUChkJWESeQ9B92dfqcWGxRwbvvLWjrkk6ut5SG8:w",
+        "25fwg615BL4zYkEbb5wNsyTQrPehZ9ePbQvwaDjETy7t:sw",
+        "EGYwwrX66kNPkh8UMU6rPXWuV6tXjggomXzvtLSHfAmZ:w",
+        "CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR",
+        "25fwg615BL4zYkEbb5wNsyTQrPehZ9ePbQvwaDjETy7t:sw"
+      ],
+      "data": "b2280abde481ba8c",
+      "fields": [
+        [
+          "Candy Guard",
+          "63ULLUChkJWESeQ9B92dfqcWGxRwbvvLWjrkk6ut5SG8"
+        ],
+        [
+          "Candy Guard Authority",
+          "25fwg615BL4zYkEbb5wNsyTQrPehZ9ePbQvwaDjETy7t"
+        ],
+        [
+          "Candy Machine",
+          "EGYwwrX66kNPkh8UMU6rPXWuV6tXjggomXzvtLSHfAmZ"
+        ],
+        [
+          "Candy Machine Authority",
+          "25fwg615BL4zYkEbb5wNsyTQrPehZ9ePbQvwaDjETy7t"
+        ]
+      ],
+      "from": "9TnAf61aPbunU1QrUkoCDdsKTywyePVJnvQLiABFF8wDtp2bhePHEF4Z1PDmcYyE9w5E8mtQ6P9jKz4yTZn5P9x#4",
+      "intent": "Wrap a candy machine",
+      "programId": "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g",
+      "sentence": "25fwg615BL4zYkEbb5wNsyTQrPehZ9ePbQvwaDjETy7t makes candy guard 63ULLUChkJWESeQ9B92dfqcWGxRwbvvLWjrkk6ut5SG8 the mint authority of candy machine EGYwwrX66kNPkh8UMU6rPXWuV6tXjggomXzvtLSHfAmZ, so it mints only through the guard",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "H2WKNR82Mz6LJM8xg6xwevNyQZfUNBf5g6EraRiywqVs",
+        "CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR",
+        "6VjBYfhJrMVGCpvwYxLoscswCo1oZG9fq4froSFZE7Dy:w",
+        "129MiV2F1AbcPKSbZcHZ3y5qYpW5XyjZxLYfjn7WDjSA:w",
+        "GZnxfKndF9p3UnCifPYpK5mrfptxgWK24Ly3qLJXuEi3:sw",
+        "GZnxfKndF9p3UnCifPYpK5mrfptxgWK24Ly3qLJXuEi3:sw",
+        "4tifqL5r3rUePowfRPavTokNNhy71RCnePB5R8wvgcEp:sw",
+        "GZnxfKndF9p3UnCifPYpK5mrfptxgWK24Ly3qLJXuEi3:sw",
+        "6KPvMHdHuCfLE2iNFcwuW5rf2aLdMAAQJjyMCzqgtPAG:w",
+        "5eGHs29dm8ZUQZFD9qA4fQdmFts1655gPGKxivqwiBta:w",
+        "68ZbkfsigXukocEoR1fuHo9rxyBeEM9RFK2atTQhP8V8:w",
+        "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g",
+        "EspTvLyeHhZBEtZLuDCRktSahiNQmED7hBnWCcA8Jcxu",
+        "9rd8Ed2a75sWBdVYdZwEvjht6zpuVF7nopRwB4yJj3GU",
+        "41aEwdxhHmQBB6Xfojv3SMADkFcaKpUoKbSRbKMs37bv:w",
+        "3D4S8kiHxbv8bQZeaSM6aBstH7QqvnhfnosNueCpGrPy",
+        "GZnxfKndF9p3UnCifPYpK5mrfptxgWK24Ly3qLJXuEi3:sw",
+        "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "Sysvar1nstructions1111111111111111111111111",
+        "SysvarS1otHashes111111111111111111111111111",
+        "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g",
+        "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g",
+        "FoHEtZWnCc7CXiaKiFJ8M2PEn1rT1VBoDJudSY6q3PAe:w",
+        "55vM1tLBJr7kAGuQD7nUvdGSbrmK58UC5nG5Q8LiFcGo:w"
+      ],
+      "data": "78791792ad6ec7cd0000000001060000007075626c6963",
+      "fields": [
+        [
+          "Guard Arguments (bytes)",
+          ""
+        ],
+        [
+          "Guard Group (none: default guards)",
+          "public"
+        ],
+        [
+          "Candy Guard",
+          "H2WKNR82Mz6LJM8xg6xwevNyQZfUNBf5g6EraRiywqVs"
+        ],
+        [
+          "Candy Machine",
+          "6VjBYfhJrMVGCpvwYxLoscswCo1oZG9fq4froSFZE7Dy"
+        ],
+        [
+          "Payer",
+          "GZnxfKndF9p3UnCifPYpK5mrfptxgWK24Ly3qLJXuEi3"
+        ],
+        [
+          "Minter (NFT owner)",
+          "GZnxfKndF9p3UnCifPYpK5mrfptxgWK24Ly3qLJXuEi3"
+        ],
+        [
+          "NFT Mint",
+          "4tifqL5r3rUePowfRPavTokNNhy71RCnePB5R8wvgcEp"
+        ],
+        [
+          "NFT Mint Authority",
+          "GZnxfKndF9p3UnCifPYpK5mrfptxgWK24Ly3qLJXuEi3"
+        ],
+        [
+          "NFT Token Account",
+          "68ZbkfsigXukocEoR1fuHo9rxyBeEM9RFK2atTQhP8V8"
+        ],
+        [
+          "Collection",
+          "9rd8Ed2a75sWBdVYdZwEvjht6zpuVF7nopRwB4yJj3GU"
+        ],
+        [
+          "Collection Update Authority",
+          "GZnxfKndF9p3UnCifPYpK5mrfptxgWK24Ly3qLJXuEi3"
+        ],
+        [
+          "Guard Account #1",
+          "FoHEtZWnCc7CXiaKiFJ8M2PEn1rT1VBoDJudSY6q3PAe"
+        ],
+        [
+          "Guard Account #2",
+          "55vM1tLBJr7kAGuQD7nUvdGSbrmK58UC5nG5Q8LiFcGo"
+        ]
+      ],
+      "from": "4hAzfnWP1QgohJApVp6assyiyoTwfHrZnESwoK5PGUvTGcsk1U3Snuv138TaUHqGxCDEdutxRSDyt9zGfQmuJy5Q#3",
+      "intent": "Mint an NFT",
+      "programId": "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g",
+      "sentence": "GZnxfKndF9p3UnCifPYpK5mrfptxgWK24Ly3qLJXuEi3 mints NFT 4tifqL5r3rUePowfRPavTokNNhy71RCnePB5R8wvgcEp of collection 9rd8Ed2a75sWBdVYdZwEvjht6zpuVF7nopRwB4yJj3GU from candy machine 6VjBYfhJrMVGCpvwYxLoscswCo1oZG9fq4froSFZE7Dy through candy guard H2WKNR82Mz6LJM8xg6xwevNyQZfUNBf5g6EraRiywqVs; what it costs is set by the candy guard's guards, not by this transaction",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "F2SxNk84eYswTwFBPeHveyAqv8DByYPDFUXP5AscWuzw",
+        "CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR",
+        "DHm3kJguuD3Mqv6k4zyS2SMnpiS1N5YCumw6ocJTQFnL:w",
+        "BdZDqujGRMneizb1S4dddSK3z9g2aYf7C44PCWVRa7PW:w",
+        "ocfPytyBF2fpkLbuZofXK86C2dZNTM9mCnKH2nBat5V:sw",
+        "ocfPytyBF2fpkLbuZofXK86C2dZNTM9mCnKH2nBat5V:sw",
+        "83wZzu7wx2tuwHAWgjhxsxLRgk3T6TPQGY2VrzTmJQ7e:sw",
+        "ocfPytyBF2fpkLbuZofXK86C2dZNTM9mCnKH2nBat5V:sw",
+        "Dn7rziCmLcuvzEevuvRj5JcGs6jbQ31ejpgQTWo6MWia:w",
+        "C5EbaGSFUeEAhxGg9CuEVq4Zfopb2HwVpPewTehVdUnR:w",
+        "2kvLyL28gsYEdTYahvt6a3baixwi58rmtazsiLRLi2sd:w",
+        "BdnEi7aaPZrNutiFzdPeFHNmxgBvDuiT6RfxJxM7fdxh:w",
+        "2cSWRzi3V7wVP6dztsdoARdRSBRhbqnE1nyLwLfTt2JW",
+        "D1YbE6tpf7m8itvWRL1n5N6m1Vx6Yck2mLgy52gGpSGS",
+        "BUDgSivphNYLsdb1raPLqNBUcaEd8iDwbRetBD8TGb9r:w",
+        "6Uzk6jGUwLp3wqwhzewnc2tZ13RjregihDnbxfA8U6Jz",
+        "7L5JkyZwAgGqGjdCvntuT2jUU8on6xpGEbcArWtXZVGk",
+        "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "Sysvar1nstructions1111111111111111111111111",
+        "SysvarS1otHashes111111111111111111111111111",
+        "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g",
+        "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g",
+        "JAfuYdcyj9Dxd6Wtmo2ArcZTWGQoQRmN7rQo4AsJoNGd",
+        "DEBiE1jxkuj8dEkFFaThhoTeDAXcpC86ifntyD6B4WUC:w"
+      ],
+      "data": "78791792ad6ec7cd0000000001050000006c69737437",
+      "fields": [
+        [
+          "Guard Arguments (bytes)",
+          ""
+        ],
+        [
+          "Guard Group (none: default guards)",
+          "list7"
+        ],
+        [
+          "Candy Guard",
+          "F2SxNk84eYswTwFBPeHveyAqv8DByYPDFUXP5AscWuzw"
+        ],
+        [
+          "Candy Machine",
+          "DHm3kJguuD3Mqv6k4zyS2SMnpiS1N5YCumw6ocJTQFnL"
+        ],
+        [
+          "Payer",
+          "ocfPytyBF2fpkLbuZofXK86C2dZNTM9mCnKH2nBat5V"
+        ],
+        [
+          "Minter (NFT owner)",
+          "ocfPytyBF2fpkLbuZofXK86C2dZNTM9mCnKH2nBat5V"
+        ],
+        [
+          "NFT Mint",
+          "83wZzu7wx2tuwHAWgjhxsxLRgk3T6TPQGY2VrzTmJQ7e"
+        ],
+        [
+          "NFT Mint Authority",
+          "ocfPytyBF2fpkLbuZofXK86C2dZNTM9mCnKH2nBat5V"
+        ],
+        [
+          "NFT Token Account",
+          "2kvLyL28gsYEdTYahvt6a3baixwi58rmtazsiLRLi2sd"
+        ],
+        [
+          "Collection",
+          "D1YbE6tpf7m8itvWRL1n5N6m1Vx6Yck2mLgy52gGpSGS"
+        ],
+        [
+          "Collection Update Authority",
+          "7L5JkyZwAgGqGjdCvntuT2jUU8on6xpGEbcArWtXZVGk"
+        ],
+        [
+          "Guard Account #1",
+          "JAfuYdcyj9Dxd6Wtmo2ArcZTWGQoQRmN7rQo4AsJoNGd"
+        ],
+        [
+          "Guard Account #2",
+          "DEBiE1jxkuj8dEkFFaThhoTeDAXcpC86ifntyD6B4WUC"
+        ]
+      ],
+      "from": "1KZJjL5VZixuCpusbp2kJfAiuVTBJmxSLDBJULwKEonmNYkEiYPFJaFsATeUVejguvTPrbTmcDgYDuN1PvEbBDn#2",
+      "intent": "Mint an NFT",
+      "programId": "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g",
+      "sentence": "ocfPytyBF2fpkLbuZofXK86C2dZNTM9mCnKH2nBat5V mints NFT 83wZzu7wx2tuwHAWgjhxsxLRgk3T6TPQGY2VrzTmJQ7e of collection D1YbE6tpf7m8itvWRL1n5N6m1Vx6Yck2mLgy52gGpSGS from candy machine DHm3kJguuD3Mqv6k4zyS2SMnpiS1N5YCumw6ocJTQFnL through candy guard F2SxNk84eYswTwFBPeHveyAqv8DByYPDFUXP5AscWuzw; what it costs is set by the candy guard's guards, not by this transaction",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "7CyZD33yFCPpAXW4MUWoXMbUFJequuTB6RDyfquHfEAw:w",
+        "7ihN8QaTfNoDTRTQGULCzbUT3PHwPDTu5Brcu4iT2paP:sw"
+      ],
+      "data": "85fa25156ea31a790756fe64f333128f45a818c896663bc8ebe98d5b5827e5aaf0745fb33104bfd7",
+      "fields": [
+        [
+          "New Authority (takes control)",
+          "VenusRGtz1JLBgXK6mvKp1rFysvU34Nvzvm6GzmbTQA"
+        ],
+        [
+          "Candy Guard",
+          "7CyZD33yFCPpAXW4MUWoXMbUFJequuTB6RDyfquHfEAw"
+        ],
+        [
+          "Authority",
+          "7ihN8QaTfNoDTRTQGULCzbUT3PHwPDTu5Brcu4iT2paP"
+        ]
+      ],
+      "from": "5c2KctqRZXMZ28Xd8h4FhsUuE8EeFxexjCBfaguDCFsc5jmY1uXKpDTv8yejGLVE25NaeSAgcZMVQpWe7cb2nsko#1",
+      "intent": "Set the candy guard authority",
+      "programId": "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g",
+      "sentence": "7ihN8QaTfNoDTRTQGULCzbUT3PHwPDTu5Brcu4iT2paP hands the authority of candy guard 7CyZD33yFCPpAXW4MUWoXMbUFJequuTB6RDyfquHfEAw to VenusRGtz1JLBgXK6mvKp1rFysvU34Nvzvm6GzmbTQA",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CVARsdZnhzpf58PEJ7u8x9NUV2vN94fhHnLp4BabovFX:w",
+        "HWPRgtDGpBm8mByTGS57BWCsijMo53qPPSbskWDukfTc:sw"
+      ],
+      "data": "b712469c946da122",
+      "fields": [
+        [
+          "Candy Guard",
+          "CVARsdZnhzpf58PEJ7u8x9NUV2vN94fhHnLp4BabovFX"
+        ],
+        [
+          "Authority",
+          "HWPRgtDGpBm8mByTGS57BWCsijMo53qPPSbskWDukfTc"
+        ]
+      ],
+      "from": "QiJXjHUPjYkmFFdXKgw9YuaeuC6YrnbJmGH4XVL8e3KgNLZhewny1tLZTwVa82aNWJiHJdGxeNwtxUejmbkUsbk#4",
+      "intent": "Close a candy guard",
+      "programId": "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g",
+      "sentence": "HWPRgtDGpBm8mByTGS57BWCsijMo53qPPSbskWDukfTc closes candy guard CVARsdZnhzpf58PEJ7u8x9NUV2vN94fhHnLp4BabovFX and takes its rent",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "F2SxNk84eYswTwFBPeHveyAqv8DByYPDFUXP5AscWuzw",
+        "DHm3kJguuD3Mqv6k4zyS2SMnpiS1N5YCumw6ocJTQFnL:w",
+        "2cgFYv3Wz3gwtMaJGkGyG9heCjz8J26PJjre8TMxYneT:sw",
+        "ABLW7dC4cus5YpxnDYAQAtzYMzqQA1zsSfYAf3brbpac:w",
+        "11111111111111111111111111111111",
+        "GQumjbSuCmNVK3aATkGWRk5Qo78CmdsoioqMJVDhquit"
+      ],
+      "data": "e517cb977ae3ad2a086400000003000000d4a4c14e7c9b73cfa75f74925d6337f2883a5d378f585929a778dd3b9a4ff164947409bfc9ab661bf5c6adc1e607b22336249db1d39cface1f027a6224c9146dcbe42fce15812081dd9c00022e8997874df7fa0dd6c84e68085ead60e19ed1af01050000006c69737434",
+      "fields": [
+        [
+          "Guard",
+          "Allow List"
+        ],
+        [
+          "Guard Action Data (bytes)",
+          "03000000d4a4c14e7c9b73cfa75f74925d6337f2883a5d378f585929a778dd3b9a4ff164947409bfc9ab661bf5c6adc1e607b22336249db1d39cface1f027a6224c9146dcbe42fce15812081dd9c00022e8997874df7fa0dd6c84e68085ead60e19ed1af"
+        ],
+        [
+          "Guard Group (none: default guards)",
+          "list4"
+        ],
+        [
+          "Candy Guard",
+          "F2SxNk84eYswTwFBPeHveyAqv8DByYPDFUXP5AscWuzw"
+        ],
+        [
+          "Candy Machine",
+          "DHm3kJguuD3Mqv6k4zyS2SMnpiS1N5YCumw6ocJTQFnL"
+        ],
+        [
+          "Payer",
+          "2cgFYv3Wz3gwtMaJGkGyG9heCjz8J26PJjre8TMxYneT"
+        ],
+        [
+          "Guard Account #1",
+          "ABLW7dC4cus5YpxnDYAQAtzYMzqQA1zsSfYAf3brbpac"
+        ],
+        [
+          "Guard Account #2",
+          "11111111111111111111111111111111"
+        ],
+        [
+          "Guard Account #3",
+          "GQumjbSuCmNVK3aATkGWRk5Qo78CmdsoioqMJVDhquit"
+        ]
+      ],
+      "from": "5AG1vNUnWwLDBvjGV9FJw3MgUhGHZb1UcGsCnRdfHXdxBA3dWChztLmSoAoQfj6VPtgCKisPWCWhsnZ3fAnKTuYf#1",
+      "intent": "Run a guard action",
+      "programId": "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g",
+      "sentence": "2cgFYv3Wz3gwtMaJGkGyG9heCjz8J26PJjre8TMxYneT runs the Allow List guard's action of candy guard F2SxNk84eYswTwFBPeHveyAqv8DByYPDFUXP5AscWuzw for candy machine DHm3kJguuD3Mqv6k4zyS2SMnpiS1N5YCumw6ocJTQFnL",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "13K3xRsaZ1N78cj1Uxq8BDsYfAWjR8iwu8Q9jycJzkNU:w",
+        "AnykR1uKrpeNF7CzGNxZNWNx6ytzeLCERRauSgBa8zx8:sw",
+        "AnykR1uKrpeNF7CzGNxZNWNx6ytzeLCERRauSgBa8zx8:sw",
+        "11111111111111111111111111111111"
+      ],
+      "data": "dbc858b09e3ffd7f34000000020000000000000080b14f010000000091807c082cfbc77248def6b4b90e92a72483ae542849a89b1cda485ee186302900000000",
+      "fields": [
+        [
+          "New Guards (bytes)",
+          "020000000000000080b14f010000000091807c082cfbc77248def6b4b90e92a72483ae542849a89b1cda485ee186302900000000"
+        ],
+        [
+          "Candy Guard",
+          "13K3xRsaZ1N78cj1Uxq8BDsYfAWjR8iwu8Q9jycJzkNU"
+        ],
+        [
+          "Authority",
+          "AnykR1uKrpeNF7CzGNxZNWNx6ytzeLCERRauSgBa8zx8"
+        ],
+        [
+          "Payer",
+          "AnykR1uKrpeNF7CzGNxZNWNx6ytzeLCERRauSgBa8zx8"
+        ]
+      ],
+      "from": "28yk9LPY8UzM2NxXHJv22Jh78MVWNC3eqR9QKM8eQGc69HhTRZimGzdtvKYq9fowUSXxRBsC78Pa8J4N8bSFyrNV#3",
+      "intent": "Update a candy guard",
+      "programId": "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g",
+      "sentence": "AnykR1uKrpeNF7CzGNxZNWNx6ytzeLCERRauSgBa8zx8 replaces the guards of candy guard 13K3xRsaZ1N78cj1Uxq8BDsYfAWjR8iwu8Q9jycJzkNU; the new guards (prices, dates, limits) show only as bytes",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}

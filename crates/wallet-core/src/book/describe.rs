@@ -779,6 +779,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("SAGE2HAwep459SNq61LHvjxPk4pLPEJLoMETef7f7EE"),
         "Star Atlas SAGE Program",
     ),
+    (
+        Pubkey::from_str_const("Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g"),
+        "Metaplex Candy Guard Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

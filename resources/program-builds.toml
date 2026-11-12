@@ -993,3 +993,21 @@ programHash = "ebcf05f6fed90147daa9a57440a36988ef0e9614a3a24792d1596387d85695b3"
 authority = "BVJESvrDeXZcSX5UVdK2Tt57Lur9gyakgCfdX45pVQ1V"
 idlSha256 = "f48549c465a65b8bca2b509be191ef7c4c933991a5671134c80652535f68396f"
 reviewed = "2026-11-12"
+
+[[builds]]
+# Metaplex Candy Guard Program (pack). The binary logs the nine instruction names the IDL lists (Initialize, Mint, MintV2, Route, SetAuthority, Unwrap, Update, Withdraw, Wrap) and holds all 52 of its error messages. The IDL is the one the program publishes, the same document on mainnet and devnet, which run the same executable; executed initialize, mintV2, route, update, wrap, setAuthority and withdraw instructions on both networks decode with it and name every account.
+programId = "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g"
+network = "mainnet"
+programHash = "6e9d8e58441be5da5305d273610b25f0dbf4b357ba4b0b2b0c233d7d5a7f1bbd"
+authority = "AuthgDeTCAHVZiM2Hoi2wzXiPn9YPbtibzK3ztttY4c4"
+idlSha256 = "7424994d5c6df1b5a34b8cdb655e0682756bcb54127c1412715012a9fb895f5e"
+reviewed = "2026-11-12"
+
+[[builds]]
+# Metaplex Candy Guard Program (pack). The binary logs the nine instruction names the IDL lists (Initialize, Mint, MintV2, Route, SetAuthority, Unwrap, Update, Withdraw, Wrap) and holds all 52 of its error messages. The IDL is the one the program publishes, the same document on mainnet and devnet, which run the same executable; executed initialize, mintV2, route, update, wrap, setAuthority and withdraw instructions on both networks decode with it and name every account.
+programId = "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g"
+network = "devnet"
+programHash = "6e9d8e58441be5da5305d273610b25f0dbf4b357ba4b0b2b0c233d7d5a7f1bbd"
+authority = "AuthgDeTCAHVZiM2Hoi2wzXiPn9YPbtibzK3ztttY4c4"
+idlSha256 = "7424994d5c6df1b5a34b8cdb655e0682756bcb54127c1412715012a9fb895f5e"
+reviewed = "2026-11-12"
