@@ -1,0 +1,777 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "otterVerify",
+    "publicKey": "verifycLy8mB96wd9wqq3WDXQwM4oU6r42Th37Db9fC",
+    "version": "0.1.0",
+    "origin": "anchor",
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "name": "buildParams",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "ce65c2888771730c",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "address",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "signer",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "version",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "gitUrl",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "commit",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "args",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "sizePrefixTypeNode",
+                  "type": {
+                    "kind": "stringTypeNode",
+                    "encoding": "utf8"
+                  },
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                },
+                "count": {
+                  "kind": "prefixedCountNode",
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "deploySlot",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "close",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "dataAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "dataAccount",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "36zLJuvsuHez4shm2",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "authority",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "programAddress",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "authority",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "authority"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "programAddress",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "programAddress"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Build Record"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programAddress",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "62a5c9b16c41ce60",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Close a program's build record",
+          "interpolatedIntent": "${accounts.authority} closes its build record ${accounts.dataAccount} for program ${accounts.programAddress} and takes back its rent"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initialize",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "buildParams",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "buildParams",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "36zLJuvsuHez4shm2",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "authority",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "programAddress",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "authority",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "authority"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "programAddress",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "programAddress"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Build Record"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programAddress",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "afaf6d1f0d989bed",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "params",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "inputParams"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Record a program's build",
+          "interpolatedIntent": "${accounts.authority} states that program ${accounts.programAddress} is built from ${data.params.gitUrl} at commit ${data.params.commit}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "update",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "buildParams",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "buildParams",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "36zLJuvsuHez4shm2",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "authority",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "programAddress",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "authority",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "authority"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "programAddress",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "programAddress"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Build Record"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programAddress",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "dbc858b09e3ffd7f",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "params",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "inputParams"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update a program's build record",
+          "interpolatedIntent": "${accounts.authority} now states that program ${accounts.programAddress} is built from ${data.params.gitUrl} at commit ${data.params.commit}"
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "inputParams",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "version",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "solana-verify Version"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "gitUrl",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Repository"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "commit",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Commit"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "args",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "sizePrefixTypeNode",
+                  "type": {
+                    "kind": "stringTypeNode",
+                    "encoding": "utf8"
+                  },
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                },
+                "count": {
+                  "kind": "prefixedCountNode",
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Build Arguments"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "deploySlot",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Deploy Slot"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "events": [
+      {
+        "kind": "eventNode",
+        "name": "otterVerifyEvent",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "signer",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "program",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "params",
+                "type": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "inputParams"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "350d6533a641c062",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "350d6533a641c062",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
