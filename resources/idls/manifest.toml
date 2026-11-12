@@ -192,3 +192,23 @@ name = "otterVerify"
 networks = ["mainnet", "devnet"]
 source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "0a14cc509e7c553d9d45093012a351c924090360ea931d75b92938a4614ac630" }
 changes = "Converted from Anchor to Codama. Display nodes added by hand."
+
+# Meteora DLMM (lb_clmm), Meteora's bin-based liquidity AMM. The file is the
+# IDL its Anchor IDL account publishes on mainnet (0.12.0); it has no
+# program-metadata account there. Devnet runs another executable and publishes
+# other IDLs, so the file is mainnet only.
+[[idls]]
+file = "meteora-dlmm.json"
+programId = "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+name = "lbClmm"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "57ee0b91fb1505f9af4be8d073ecdea65adc395bae49c96a707a263b257eca84" }
+changes = """Converted from Anchor to Codama. forIdlTypeGenerationDoNotCall, which the deployed \
+program does not have, is removed. Instructions with optional accounts set \
+optionalAccountStrategy to programId. The swap, liquidity, reward, limit order and \
+protocol fee instructions declare the remaining accounts they read (bin arrays, transfer \
+hook accounts), which Anchor IDLs cannot, and the two position resize instructions the \
+unused address the SDK appends. The Token program's mint account is added, so liquidity, \
+reward and protocol fee amounts read their mint's decimals; swap amounts are in base \
+units, because a swap names no input mint. Shares and price impact are in percent. \
+Display nodes added by hand."""
