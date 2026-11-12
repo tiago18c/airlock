@@ -957,3 +957,12 @@ programHash = "f68db9d3438a910db30dcf09cbcc78c33a545d3be0c9f6209ff954cad4e22b67"
 authority = "C1QcnxAXEj5wnigHwUDNDXz6Ae856A29NahrvHUJe9XF"
 idlSha256 = "206b0fa9769fdb922aeaeba594b3dec6cc3167d67497eec9be452799f6b8e61c"
 reviewed = "2026-11-12"
+
+[[builds]]
+# hadron (pack). A native program that logs no instruction names, so the IDL was read against executed instructions: mainnet transactions of 14 of its 38 one-byte discriminators decode with no byte left over once lists, options and optional accounts are redescribed. Where Hadron's SDK says the deployed and the coming program differ (staleness width, spread trigger rows, spread config accounts), the executed instructions follow the IDL.
+programId = "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8"
+network = "mainnet"
+programHash = "4f8b6c92ace4c6b17191321024aedfe34936b38f916771bf06c1d2254bbff00d"
+authority = "wrEKphuVCu1HmKFy4Syagj7hhTZcpZqF6B193wacXZK"
+idlSha256 = "11eec08861e0fd937de385bf54955dd60996947271ef29279b1823284bd37889"
+reviewed = "2026-11-12"

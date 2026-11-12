@@ -1441,3 +1441,24 @@ carries none). The Token program's mint account is added, so the amount redeem_c
 redeems reads the decimals of its token. burn_credits declares the Instructions sysvar \
 that executed instructions pass after the accounts the IDL lists, hidden. Display nodes \
 added by hand."""
+
+# Hadron (hadron 2.0.0), Hadron's "programmable prop AMM": each pool quotes
+# around a price its own operator pushes, and routers such as Jupiter fill
+# against it. Not an Anchor program: its wire format is packed and not Borsh,
+# as the IDL itself warns, so lists, options and optional accounts are
+# redescribed from executed instructions and Hadron's own SDK.
+[[idls]]
+file = "hadron.json"
+programId = "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8"
+name = "hadron"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "f4c862fbe54788917f40fb7ab55d37944eed18c52eb2cd8a10ff5c3b1c55adea" }
+changes = """Converted to Codama after dropping the IDL's six account entries, which have no layout \
+and stop the converter. The lists of `setCurve`, `setRiskCurve`, `submitCurveUpdates`, \
+`updateSpreadConfig` and `removeSpreadTriggers` carry no length prefix: the last three \
+become remainder lists, and the curve points of the first two, which an 8-byte sequence \
+may follow, become raw bytes. `initialize`'s three trailing options carry no tag and \
+become remainder options. The optional accounts at the end of `deposit`, `withdraw`, \
+`swapExactIn` and `closePool`, passed only when needed, become one remaining-accounts \
+group each. A staleness limit of 0 reads as none. Token amounts are in base units. \
+Display nodes added by hand."""

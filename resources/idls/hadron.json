@@ -1,0 +1,6082 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "hadron",
+    "publicKey": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+    "version": "2.0.0",
+    "origin": "anchor",
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "initialize",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "creator",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Must equal the signer that called allocateCurvePrefabs (curve_prefabs PDA is creator-bound, L-14)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Creator"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mintX",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token X Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mintY",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Y Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultX",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token X Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultY",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token Y Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgramX",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgramY",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ataProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "midpriceOracle",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Midprice Oracle"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveMeta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Meta"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curvePrefabs",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Prefabs"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveUpdates",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Updates Queue"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "00",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "seed",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Pool Seed"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "mintX",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Token X Mint"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "mintY",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Token Y Mint"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "authority",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Pool Authority"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "initialMidpriceQ32",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Initial Midprice (Q32.32)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "lpSelfRotate",
+            "type": {
+              "kind": "booleanTypeNode",
+              "size": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "LP Self Rotate"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "maxPrefabSlots",
+            "type": {
+              "kind": "remainderOptionTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Max Curve Slots"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "maxCurvePoints",
+            "type": {
+              "kind": "remainderOptionTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Max Curve Points"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "combinedFactorMaxQ32",
+            "type": {
+              "kind": "remainderOptionTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Combined Factor Max (Q32.32)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a pool",
+          "interpolatedIntent": "${accounts.creator} creates pool ${accounts.config} for ${accounts.mintX} and ${accounts.mintY}, with ${data.authority} as its authority"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "deposit",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "user",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Depositor"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultX",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token X Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultY",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token Y Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userXata",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Depositor Token X Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userYata",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Depositor Token Y Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "midpriceOracle",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Read for the drawdown guard (v2)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Midprice Oracle"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgramX",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgramY",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "01",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "xAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Token X Amount"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "yAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Token Y Amount"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "expiration",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "i64",
+              "endian": "le",
+              "display": {
+                "kind": "dateTimeNumberDisplayNode"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Expires"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "tokenMints"
+            },
+            "isOptional": true,
+            "isWritable": false,
+            "docs": [
+              "Token-2022 mints of the pool, X before Y, each passed only when its transfer needs TransferChecked: a single mint here may be X or Y."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Mint"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Deposit into a pool",
+          "interpolatedIntent": "${accounts.user} deposits ${data.xAmount} of token X from ${accounts.userXata} and ${data.yAmount} of token Y from ${accounts.userYata} into pool ${accounts.config}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdraw",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "user",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Withdrawer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultX",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token X Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultY",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token Y Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userXata",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Withdrawer Token X Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userYata",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Withdrawer Token Y Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "midpriceOracle",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Read for the drawdown guard (v2)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Midprice Oracle"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgramX",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgramY",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "02",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "xAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Token X Amount"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "yAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Token Y Amount"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "expiration",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "i64",
+              "endian": "le",
+              "display": {
+                "kind": "dateTimeNumberDisplayNode"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Expires"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "tokenMints"
+            },
+            "isOptional": true,
+            "isWritable": false,
+            "docs": [
+              "Token-2022 mints of the pool, X before Y, each passed only when its transfer needs TransferChecked: a single mint here may be X or Y."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Mint"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw from a pool",
+          "interpolatedIntent": "${accounts.user} withdraws ${data.xAmount} of token X to ${accounts.userXata} and ${data.yAmount} of token Y to ${accounts.userYata} from pool ${accounts.config}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "swapExactIn",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgramX",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgramY",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "midpriceOracle",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Midprice Oracle"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveMeta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Meta"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curvePrefabs",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Prefabs"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Unused slot (destructured as _authority on-chain); kept for v1 layout compatibility."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Unused Slot (Pool Authority)"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "user",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "User"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userSource",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Source Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultSource",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Vault Paid In"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultDest",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Vault Paid Out"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userDest",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Destination Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Fee Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeRecipientAta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Fee Recipient Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "clock",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveUpdates",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Updates Queue"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "03",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "isX",
+            "type": {
+              "kind": "booleanTypeNode",
+              "size": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Input Is Token X"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount In"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "minOut",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Minimum Out"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "expiration",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "i64",
+              "endian": "le",
+              "display": {
+                "kind": "dateTimeNumberDisplayNode"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Expires"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "optionalAccounts"
+            },
+            "isOptional": true,
+            "isWritable": false,
+            "docs": [
+              "Passed only when needed, in this order: mint X and mint Y (each only when its transfer needs TransferChecked), then the pool's spread config and the instructions sysvar (when the pool has spread triggers). Which ones are present cannot be told by position."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Additional Account"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Swap tokens",
+          "interpolatedIntent": "${accounts.user} swaps ${data.amount} from ${accounts.userSource} for at least ${data.minOut} into ${accounts.userDest} in pool ${accounts.config}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setCurve",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Quoting Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveMeta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Meta"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curvePrefabs",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Prefabs"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "04",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "slot",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Curve Slot"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "side",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Side (0 = bid, 1 = ask)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "defaultInterpolation",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Default Interpolation (0 step, 1 linear, 2 marginal, 3 hyperbolic, 4 quad, 5 cubic)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "numPoints",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Points"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "xMode",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "X Axis Mode (0 = native, 1 = alternate)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "points",
+            "type": {
+              "kind": "bytesTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Curve Points (raw, 21 bytes each, then an 8-byte sequence if sent)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set a price curve",
+          "interpolatedIntent": "${accounts.authority} writes a price curve of ${data.numPoints} points to slot ${data.slot} of ${accounts.curvePrefabs}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateMidprice",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Quoting Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "midpriceOracle",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Midprice Oracle"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "clock",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "05",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "sequence",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Sequence"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newMidpriceQ32",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New Midprice (Q32.32)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update the midprice",
+          "interpolatedIntent": "${accounts.authority} updates the midprice in ${accounts.midpriceOracle}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initializeFeeConfig",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeConfig",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Fee Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "06",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "feePpm",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 4
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "%"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Fee"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "feeAdmin",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Fee Admin"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "feeRecipient",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Fee Recipient"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create the fee config",
+          "interpolatedIntent": "${accounts.authority} creates fee config ${accounts.feeConfig} with a fee of ${data.feePpm} paid to ${data.feeRecipient}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateFeeConfig",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeAdmin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Fee Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeConfig",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Fee Config"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "07",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "feePpm",
+            "docs": [
+              "u32::MAX (0xFFFFFFFF) means no change."
+            ],
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 4
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "%"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Fee"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "feeRecipient",
+            "docs": [
+              "Always 32 bytes; an all-zero pubkey leaves the recipient unchanged."
+            ],
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Fee Recipient"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update the fee config",
+          "interpolatedIntent": "${accounts.feeAdmin} sets the fee of ${accounts.feeConfig} to ${data.feePpm}, paid to ${data.feeRecipient}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setRiskCurve",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Quoting Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveMeta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Meta"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curvePrefabs",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Prefabs"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "08",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "slot",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Curve Slot"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "side",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Side (0 = bid, 1 = ask)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "defaultInterpolation",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Default Interpolation (0 step, 1 linear, 2 marginal, 3 hyperbolic, 4 quad, 5 cubic)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "numPoints",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Points"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "xMode",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "X Axis Mode (0 = native, 1 = alternate)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "riskMode",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Risk Mode (0 = virtual, 1 = integrated)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "points",
+            "type": {
+              "kind": "bytesTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Curve Points (raw, 21 bytes each, then an 8-byte sequence if sent)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set a risk curve",
+          "interpolatedIntent": "${accounts.authority} writes a risk curve of ${data.numPoints} points to slot ${data.slot} of ${accounts.curvePrefabs}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateSpreadFactor",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Quoting Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "midpriceOracle",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Midprice Oracle"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "clock",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "09",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "spreadFactorQ32",
+            "docs": [
+              "Spread as a discount factor in Q32 (e.g. toQ32(0.9995) = 5 bps)."
+            ],
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New Spread Factor (Q32.32)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update the spread factor",
+          "interpolatedIntent": "${accounts.authority} updates the spread factor in ${accounts.midpriceOracle}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateMidpriceAndSpreadFactor",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Quoting Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "midpriceOracle",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Midprice Oracle"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "clock",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "0a",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "sequence",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Sequence"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newMidpriceQ32",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New Midprice (Q32.32)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "spreadFactorQ32",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New Spread Factor (Q32.32)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update midprice and spread",
+          "interpolatedIntent": "${accounts.authority} updates the midprice and spread factor in ${accounts.midpriceOracle}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "switchPriceCurve",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Quoting Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveMeta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Meta"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "0b",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "sequence",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Sequence"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "side",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Side (0 = bid, 1 = ask)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "slot",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Curve Slot"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Switch the price curve",
+          "interpolatedIntent": "${accounts.authority} switches a side of ${accounts.curveMeta} to the price curve in slot ${data.slot}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "switchRiskCurve",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Quoting Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveMeta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Meta"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "0c",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "sequence",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Sequence"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "side",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Side (0 = bid, 1 = ask)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "slot",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Curve Slot"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Switch the risk curve",
+          "interpolatedIntent": "${accounts.authority} switches a side of ${accounts.curveMeta} to the risk curve in slot ${data.slot}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initializeSpreadConfig",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "spreadConfig",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Spread Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "0d",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "admin",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Spread Admin"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a spread config",
+          "interpolatedIntent": "${accounts.authority} creates spread config ${accounts.spreadConfig} for pool ${accounts.config}, with ${data.admin} as its spread admin"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateSpreadConfig",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Spread Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "spreadConfig",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Spread Config"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "0e",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "numTriggers",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Triggers"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "triggers",
+            "type": {
+              "kind": "arrayTypeNode",
+              "item": {
+                "kind": "definedTypeLinkNode",
+                "name": "spreadTriggerInput"
+              },
+              "count": {
+                "kind": "remainderCountNode"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Spread Triggers"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set spread triggers",
+          "interpolatedIntent": "${accounts.admin} sets ${data.numTriggers} spread triggers in ${accounts.spreadConfig} of pool ${accounts.config}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateDeltaStaleness",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Quoting authority (CurveMeta.authority)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Quoting Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveMeta",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Meta"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "0f",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "deltaStaleness",
+            "type": {
+              "kind": "zeroableOptionTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Staleness Limit in Slots (none: no limit)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set the staleness limit",
+          "interpolatedIntent": "${accounts.authority} sets the oracle staleness limit of pool ${accounts.config}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "nominateAuthority",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "clock",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "10",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newAuthority",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Nominee"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "expirySlot",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Nomination Expires at Slot"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Nominate a pool authority",
+          "interpolatedIntent": "${accounts.authority} nominates ${data.newAuthority} as the authority of pool ${accounts.config}, open until slot ${data.expirySlot}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "acceptAuthority",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "newAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Pool Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "clock",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "11",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Accept the pool authority",
+          "interpolatedIntent": "${accounts.newAuthority} accepts the authority of pool ${accounts.config}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "submitCurveUpdates",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Quoting Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveUpdates",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Updates Queue"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "12",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "sequence",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Sequence"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "numOps",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Changes"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "ops",
+            "type": {
+              "kind": "arrayTypeNode",
+              "item": {
+                "kind": "definedTypeLinkNode",
+                "name": "curveUpdateOp"
+              },
+              "count": {
+                "kind": "remainderCountNode"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Curve Point Changes"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Queue curve updates",
+          "interpolatedIntent": "${accounts.authority} queues ${data.numOps} curve point changes in ${accounts.curveUpdates}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "applyCurveUpdates",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Quoting Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveMeta",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Meta"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curvePrefabs",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Prefabs"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveUpdates",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Updates Queue"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "13",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Apply queued curve updates",
+          "interpolatedIntent": "${accounts.authority} applies the curve changes queued in ${accounts.curveUpdates} to ${accounts.curvePrefabs}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "closePool",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Writable: close_token_account CPIs vault lamports to the authority."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "midpriceOracle",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Midprice Oracle"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveMeta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Meta"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curvePrefabs",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Prefabs"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveUpdates",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Updates Queue"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultX",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token X Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultY",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token Y Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgramX",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgramY",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "14",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "optionalAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "Passed only when needed: the pool's spread config, then the authority's token accounts for X and Y that receive what the vaults hold (Hadron's SDK may also put the mints first). Which ones are present cannot be told by position."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Additional Account"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Close a pool",
+          "interpolatedIntent": "${accounts.authority} closes pool ${accounts.config}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setPoolState",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveMeta",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Read for the quoting-authority check (v2)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Meta"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "15",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newState",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New State (1 = live, 2 = paused, 3 = rejects swaps)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set the pool state",
+          "interpolatedIntent": "${accounts.authority} changes the state of pool ${accounts.config}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "allocateCurvePrefabs",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "creator",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "curve_prefabs PDA is bound to this signer (L-14)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Creator"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curvePrefabs",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Prefabs"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "16",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "seed",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Pool Seed"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "mintX",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Token X Mint"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "mintY",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Token Y Mint"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "maxPrefabSlots",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Max Curve Slots"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "maxCurvePoints",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Max Curve Points"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Allocate curve storage",
+          "interpolatedIntent": "${accounts.creator} allocates curve storage ${accounts.curvePrefabs} for a pool of ${data.mintX} and ${data.mintY}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "rotateFeeAdmin",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeAdmin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Fee Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeConfig",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Fee Config"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "18",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newFeeAdmin",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New Fee Admin"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Change the fee admin",
+          "interpolatedIntent": "${accounts.feeAdmin} makes ${data.newFeeAdmin} the fee admin of ${accounts.feeConfig}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initializePoolFeeConfig",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeAdmin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Fee Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "poolFeeConfig",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Fee Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "globalFeeConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Global Fee Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "19",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "feePpm",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 4
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "%"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Fee"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "feeAdmin",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Pool Fee Admin"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "feeRecipient",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Fee Recipient"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a pool fee config",
+          "interpolatedIntent": "${accounts.feeAdmin} creates fee config ${accounts.poolFeeConfig} for pool ${accounts.config} with a fee of ${data.feePpm} paid to ${data.feeRecipient}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updatePoolFeeConfig",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeAdmin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Fee Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "poolFeeConfig",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Fee Config"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "1a",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "feePpm",
+            "docs": [
+              "u32::MAX (0xFFFFFFFF) means no change."
+            ],
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 4
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "%"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Fee"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "feeRecipient",
+            "docs": [
+              "Always 32 bytes; an all-zero pubkey leaves the recipient unchanged."
+            ],
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Fee Recipient"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update a pool fee config",
+          "interpolatedIntent": "${accounts.feeAdmin} sets the fee of ${accounts.poolFeeConfig} to ${data.feePpm}, paid to ${data.feeRecipient}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setAssetFee",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeAdmin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Fee Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeConfig",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Fee Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "1b",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "mintA",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Mint A"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "mintB",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Mint B"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "feePpm",
+            "docs": [
+              "0 removes the per-pair override. Mints are sorted canonically on-chain."
+            ],
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 4
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "%"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Fee"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set a token pair fee",
+          "interpolatedIntent": "${accounts.feeAdmin} sets the fee for ${data.mintA} and ${data.mintB} in ${accounts.feeConfig} to ${data.feePpm}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "validateCurveUpdates",
+        "docs": [
+          "Dry-run: applies queued ops in-place then intentionally reverts with ValidationSimulationSuccess (73). Use via simulateTransaction."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Quoting Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveMeta",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Meta"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curvePrefabs",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Prefabs"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveUpdates",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Updates Queue"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "1c",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Test queued curve updates",
+          "interpolatedIntent": "${accounts.authority} test-applies the curve changes queued in ${accounts.curveUpdates}; this always fails on purpose and changes nothing"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "removeSpreadTriggers",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Spread Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "spreadConfig",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Spread Config"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "1d",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "numKeys",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Triggers"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "keys",
+            "type": {
+              "kind": "arrayTypeNode",
+              "item": {
+                "kind": "definedTypeLinkNode",
+                "name": "spreadTriggerKey"
+              },
+              "count": {
+                "kind": "remainderCountNode"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Triggers Removed"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Remove spread triggers",
+          "interpolatedIntent": "${accounts.admin} removes ${data.numKeys} spread triggers from ${accounts.spreadConfig} of pool ${accounts.config}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateDrawdownGuard",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "midpriceOracle",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Midprice Oracle"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultX",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token X Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultY",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token Y Vault"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "1e",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "thresholdBps",
+            "docs": [
+              "Sum-of-losses trip threshold in bps. 0 disables the guard."
+            ],
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u16",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 2
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "%"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Drawdown Threshold"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "rotationIntervalSlots",
+            "docs": [
+              "Half-period for HWM rotation, in slots. 0 disables."
+            ],
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Peak Reset Interval in Slots"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set the drawdown guard",
+          "interpolatedIntent": "${accounts.authority} sets the drawdown guard of pool ${accounts.config} to ${data.thresholdBps} per ${data.rotationIntervalSlots} slots"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateFactorClamp",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "1f",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "combinedFactorMaxQ32",
+            "docs": [
+              "Hard ceiling on combined factor. Must be >= Q32_ONE (1.0)."
+            ],
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Combined Factor Max (Q32.32)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set the factor clamp",
+          "interpolatedIntent": "${accounts.authority} sets the factor clamp of pool ${accounts.config}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "closePoolFeeConfig",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeAdmin",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Writable: receives the closed pool_fee_config rent. Signer is the GLOBAL fee_admin."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Fee Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "poolFeeConfig",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Fee Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "globalFeeConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Global Fee Config"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "20",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Close a pool fee config",
+          "interpolatedIntent": "${accounts.feeAdmin} closes ${accounts.poolFeeConfig} of pool ${accounts.config}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "rotateDepositAuthority",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "signer",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "deposit_authority, or pool authority when lp_self_rotate == false."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "21",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newAuthority",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New Deposit Authority"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Change the deposit authority",
+          "interpolatedIntent": "${accounts.signer} makes ${data.newAuthority} the deposit authority of pool ${accounts.config}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "rotateWithdrawAuthority",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "signer",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "withdraw_authority, or pool authority when lp_self_rotate == false."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "22",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newAuthority",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New Withdraw Authority"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Change the withdraw authority",
+          "interpolatedIntent": "${accounts.signer} makes ${data.newAuthority} the withdraw authority of pool ${accounts.config}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "rotateQuotingAuthority",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "midpriceOracle",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Midprice Oracle"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveMeta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Meta"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "curveUpdates",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Curve Updates Queue"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "23",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newQuotingAuthority",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New Quoting Authority"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Change the quoting authority",
+          "interpolatedIntent": "${accounts.authority} makes ${data.newQuotingAuthority} the quoting authority of pool ${accounts.config}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "rotateSpreadAdmin",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Pool authority (config.authority), not the spread admin."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "spreadConfig",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Spread Config"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "24",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newSpreadAdmin",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New Spread Admin"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Change the spread admin",
+          "interpolatedIntent": "${accounts.authority} makes ${data.newSpreadAdmin} the spread admin of pool ${accounts.config}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "rotatePauseAuthority",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Pool authority (config.authority)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "25",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newAuthority",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New Pause Authority"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Change the pause authority",
+          "interpolatedIntent": "${accounts.authority} makes ${data.newAuthority} the pause authority of pool ${accounts.config}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "pokeDrawdownGuard",
+        "docs": [
+          "Oracle-authority-gated drawdown-guard evaluation; acts purely on current state (no args). Signer must be the midprice oracle authority."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Must equal the midprice oracle authority."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Quoting Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "midpriceOracle",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Midprice Oracle"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultX",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token X Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultY",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token Y Vault"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "26",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Check the drawdown guard",
+          "interpolatedIntent": "${accounts.authority} has pool ${accounts.config} check its drawdown guard"
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "curvePoint",
+        "docs": [
+          "On-chain stored curve point (24 bytes, repr(C, packed)). Stored inside the variable-length CurvePrefabs account."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "xIn",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Point Position"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "priceFactorQ32",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Price Factor (Q32.32)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "interpolation",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Interpolation (0 step, 1 linear, 2 marginal, 3 hyperbolic, 4 quad, 5 cubic)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "params",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 4
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Shape Parameters"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "reserved",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 3
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "curvePointInput",
+        "docs": [
+          "Wire-format curve point in setCurve / setRiskCurve instruction data (21 bytes, no reserved tail)."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amountIn",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Point Position"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "priceFactorQ32",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Price Factor (Q32.32)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "interpolation",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Interpolation (0 step, 1 linear, 2 marginal, 3 hyperbolic, 4 quad, 5 cubic)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "params",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 4
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Shape Parameters"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "curveUpdateOp",
+        "docs": [
+          "Pending curve update op (33 bytes, repr(C, packed)). Same layout in CurveUpdates.ops and in submitCurveUpdates instruction data."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "curveType",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Curve (0 price bid, 1 price ask, 2 risk bid, 3 risk ask)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "opKind",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Change (0 edit, 1 add, 2 remove)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pointIndex",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Point Index"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "interpolation",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Interpolation (0 step, 1 linear, 2 marginal, 3 hyperbolic, 4 quad, 5 cubic)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amountIn",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Point Position"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "priceFactorQ32",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Price Factor (Q32.32)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "params",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 4
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Shape Parameters"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "targetSlot",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Target Curve Slot"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "expectedXin",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Expected Current Position"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "spreadTrigger",
+        "docs": [
+          "On-chain spread trigger (72 bytes, repr(C)). Stored inside SpreadConfig.triggers."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "account",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Trigger Account"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "programId",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Trigger Program"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "spreadBps",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "decimals": {
+                    "kind": "numberValueNode",
+                    "number": 2
+                  },
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Spread"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "padding",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 6
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "spreadTriggerInput",
+        "docs": [
+          "Wire-format spread trigger in updateSpreadConfig instruction data (66 bytes, no padding)."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "account",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Trigger Account"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "programId",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Trigger Program"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "spreadBps",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "decimals": {
+                    "kind": "numberValueNode",
+                    "number": 2
+                  },
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "%"
+                  }
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Spread"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "spreadTriggerKey",
+        "docs": [
+          "Trigger identity key in removeSpreadTriggers instruction data (64 bytes)."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "account",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Trigger Account"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "programId",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Trigger Program"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "poolState",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "uninitialized"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "initialized"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "paused"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "rejectSwaps"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "closed"
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "oracleMode",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "authority"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "relative"
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "curvePrefabType",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "priceBid"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "priceAsk"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "riskBid"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "riskAsk"
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "curveUpdateOpKind",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "edit"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "add"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "remove"
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "interpolation",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "step"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "linear"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "marginalStep"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "hyperbolic"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "quadratic"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "cubic"
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "curveXmode",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "native"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "alternate"
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "riskMode",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "virtual"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "integrated"
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "side",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "sellBase"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "buyBase"
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "notSigner",
+        "code": 0,
+        "message": "Not the signer",
+        "docs": [
+          "NotSigner: Not the signer"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidOwner",
+        "code": 1,
+        "message": "Invalid account owner",
+        "docs": [
+          "InvalidOwner: Invalid account owner"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidAccountData",
+        "code": 2,
+        "message": "Invalid account data",
+        "docs": [
+          "InvalidAccountData: Invalid account data"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidAddress",
+        "code": 3,
+        "message": "Invalid address",
+        "docs": [
+          "InvalidAddress: Invalid address"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unauthorized",
+        "code": 4,
+        "message": "Unauthorized: not the pool authority",
+        "docs": [
+          "Unauthorized: Unauthorized: not the pool authority"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "poolNotInitialized",
+        "code": 5,
+        "message": "Pool not initialized",
+        "docs": [
+          "PoolNotInitialized: Pool not initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "poolAlreadyInitialized",
+        "code": 6,
+        "message": "Pool already initialized",
+        "docs": [
+          "PoolAlreadyInitialized: Pool already initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "insufficientLiquidity",
+        "code": 7,
+        "message": "Insufficient liquidity",
+        "docs": [
+          "InsufficientLiquidity: Insufficient liquidity"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "slippageExceeded",
+        "code": 8,
+        "message": "Slippage exceeded",
+        "docs": [
+          "SlippageExceeded: Slippage exceeded"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "curvePointsNotSorted",
+        "code": 9,
+        "message": "Invalid curve: points not sorted",
+        "docs": [
+          "CurvePointsNotSorted: Invalid curve: points not sorted"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "curveDuplicateX",
+        "code": 10,
+        "message": "Invalid curve: duplicate x values",
+        "docs": [
+          "CurveDuplicateX: Invalid curve: duplicate x values"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "curveTooManyPoints",
+        "code": 11,
+        "message": "Invalid curve: too many points",
+        "docs": [
+          "CurveTooManyPoints: Invalid curve: too many points"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "curveEmpty",
+        "code": 12,
+        "message": "Invalid curve: empty curve",
+        "docs": [
+          "CurveEmpty: Invalid curve: empty curve"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidMidprice",
+        "code": 13,
+        "message": "Invalid midprice",
+        "docs": [
+          "InvalidMidprice: Invalid midprice"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "mathOverflow",
+        "code": 14,
+        "message": "Overflow in calculation",
+        "docs": [
+          "MathOverflow: Overflow in calculation"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "zeroSwapAmount",
+        "code": 15,
+        "message": "Swap amount is zero",
+        "docs": [
+          "ZeroSwapAmount: Swap amount is zero"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "poolPaused",
+        "code": 16,
+        "message": "Pool is paused",
+        "docs": [
+          "PoolPaused: Pool is paused"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "feeConfigAlreadyInitialized",
+        "code": 17,
+        "message": "Fee config already initialized",
+        "docs": [
+          "FeeConfigAlreadyInitialized: Fee config already initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "feeConfigNotInitialized",
+        "code": 18,
+        "message": "Fee config not initialized",
+        "docs": [
+          "FeeConfigNotInitialized: Fee config not initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "notFeeAdmin",
+        "code": 19,
+        "message": "Not the fee admin",
+        "docs": [
+          "NotFeeAdmin: Not the fee admin"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidFeePpm",
+        "code": 20,
+        "message": "Invalid fee PPM",
+        "docs": [
+          "InvalidFeePpm: Invalid fee PPM"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "riskCurveXoutOfRange",
+        "code": 21,
+        "message": "Risk curve x-value out of range (must be 0 to Q32_ONE)",
+        "docs": [
+          "RiskCurveXOutOfRange: Risk curve x-value out of range (must be 0 to Q32_ONE)"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "sequenceTooOld",
+        "code": 22,
+        "message": "Sequence too old - must be >= current sequence",
+        "docs": [
+          "SequenceTooOld: Sequence too old - must be >= current sequence"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "prefabSlotOutOfRange",
+        "code": 23,
+        "message": "Prefab slot index out of range (must be 0 to max_prefab_slots-1)",
+        "docs": [
+          "PrefabSlotOutOfRange: Prefab slot index out of range (must be 0 to max_prefab_slots-1)"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "prefabSlotNotInitialized",
+        "code": 25,
+        "message": "Prefab slot not initialized",
+        "docs": [
+          "PrefabSlotNotInitialized: Prefab slot not initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "spreadConfigAlreadyInitialized",
+        "code": 27,
+        "message": "Spread config already initialized",
+        "docs": [
+          "SpreadConfigAlreadyInitialized: Spread config already initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "spreadConfigNotInitialized",
+        "code": 28,
+        "message": "Spread config not initialized",
+        "docs": [
+          "SpreadConfigNotInitialized: Spread config not initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "tooManySpreadTriggers",
+        "code": 29,
+        "message": "Too many spread triggers",
+        "docs": [
+          "TooManySpreadTriggers: Too many spread triggers"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "spreadConfigRequired",
+        "code": 30,
+        "message": "Spread config required - pool has spread config initialized but it was not provided",
+        "docs": [
+          "SpreadConfigRequired: Spread config required - pool has spread config initialized but it was not provided"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "spreadConfigInvalidOwner",
+        "code": 31,
+        "message": "Spread config account not owned by program",
+        "docs": [
+          "SpreadConfigInvalidOwner: Spread config account not owned by program"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "configInvalidOwner",
+        "code": 32,
+        "message": "Config account not owned by program",
+        "docs": [
+          "ConfigInvalidOwner: Config account not owned by program"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "midpriceOracleInvalidOwner",
+        "code": 33,
+        "message": "MidpriceOracle account not owned by program",
+        "docs": [
+          "MidpriceOracleInvalidOwner: MidpriceOracle account not owned by program"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "curveMetaInvalidOwner",
+        "code": 34,
+        "message": "CurveMeta account not owned by program",
+        "docs": [
+          "CurveMetaInvalidOwner: CurveMeta account not owned by program"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "curvePrefabsInvalidOwner",
+        "code": 35,
+        "message": "CurvePrefabs account not owned by program",
+        "docs": [
+          "CurvePrefabsInvalidOwner: CurvePrefabs account not owned by program"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "feeConfigInvalidOwner",
+        "code": 36,
+        "message": "FeeConfig account not owned by program",
+        "docs": [
+          "FeeConfigInvalidOwner: FeeConfig account not owned by program"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "staleOracle",
+        "code": 37,
+        "message": "Stale oracle",
+        "docs": [
+          "StaleOracle: Stale oracle"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "expired",
+        "code": 38,
+        "message": "Transaction expired",
+        "docs": [
+          "Expired: Transaction expired"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "noPendingNomination",
+        "code": 39,
+        "message": "No pending authority nomination",
+        "docs": [
+          "NoPendingNomination: No pending authority nomination"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "nominationExpired",
+        "code": 40,
+        "message": "Authority nomination has expired",
+        "docs": [
+          "NominationExpired: Authority nomination has expired"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidNominee",
+        "code": 41,
+        "message": "Signer is not the nominated authority",
+        "docs": [
+          "InvalidNominee: Signer is not the nominated authority"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "nominateSelf",
+        "code": 42,
+        "message": "Cannot nominate self as new authority",
+        "docs": [
+          "NominateSelf: Cannot nominate self as new authority"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidNominationExpiry",
+        "code": 43,
+        "message": "Nomination expiry must be in the future",
+        "docs": [
+          "InvalidNominationExpiry: Nomination expiry must be in the future"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTokenProgram",
+        "code": 44,
+        "message": "Invalid token program (must be SPL Token or Token2022)",
+        "docs": [
+          "InvalidTokenProgram: Invalid token program (must be SPL Token or Token2022)"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "priceCurveXoutOfRange",
+        "code": 45,
+        "message": "Price curve x-value out of range (must be 0 to Q32_ONE in percent mode)",
+        "docs": [
+          "PriceCurveXOutOfRange: Price curve x-value out of range (must be 0 to Q32_ONE in percent mode)"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "curveUpdatesBufferFull",
+        "code": 46,
+        "message": "Curve updates buffer is full",
+        "docs": [
+          "CurveUpdatesBufferFull: Curve updates buffer is full"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "curveUpdatesInvalidOwner",
+        "code": 47,
+        "message": "CurveUpdates account not owned by program",
+        "docs": [
+          "CurveUpdatesInvalidOwner: CurveUpdates account not owned by program"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "curveMetaMismatch",
+        "code": 48,
+        "message": "CurveMeta address mismatch: account does not belong to this pool",
+        "docs": [
+          "CurveMetaMismatch: CurveMeta address mismatch: account does not belong to this pool"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidRiskMode",
+        "code": 50,
+        "message": "Invalid risk mode (must be 0=Virtual or 1=Integrated)",
+        "docs": [
+          "InvalidRiskMode: Invalid risk mode (must be 0=Virtual or 1=Integrated)"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "integratedRiskUnsupportedInterpolation",
+        "code": 51,
+        "message": "Integrated risk mode is not supported for this interpolation type",
+        "docs": [
+          "IntegratedRiskUnsupportedInterpolation: Integrated risk mode is not supported for this interpolation type"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultsNotEmpty",
+        "code": 52,
+        "message": "Vaults must be empty before closing pool",
+        "docs": [
+          "VaultsNotEmpty: Vaults must be empty before closing pool"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidPoolState",
+        "code": 53,
+        "message": "Invalid pool state (must be 1=Initialized, 2=Paused, or 3=RejectSwaps, and different from current)",
+        "docs": [
+          "InvalidPoolState: Invalid pool state (must be 1=Initialized, 2=Paused, or 3=RejectSwaps, and different from current)"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "maxPrefabSlotsOutOfRange",
+        "code": 54,
+        "message": "Max prefab slots out of range (must be 1-16)",
+        "docs": [
+          "MaxPrefabSlotsOutOfRange: Max prefab slots out of range (must be 1-16)"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "maxCurvePointsOutOfRange",
+        "code": 55,
+        "message": "Max curve points out of range (must be 1-128)",
+        "docs": [
+          "MaxCurvePointsOutOfRange: Max curve points out of range (must be 1-128)"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultAddressMismatch",
+        "code": 56,
+        "message": "Vault address does not match derived PDA",
+        "docs": [
+          "VaultAddressMismatch: Vault address does not match derived PDA"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultTokenAccountTooSmall",
+        "code": 57,
+        "message": "Vault token account data too small",
+        "docs": [
+          "VaultTokenAccountTooSmall: Vault token account data too small"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "userTokenAccountTooSmall",
+        "code": 58,
+        "message": "User token account data too small",
+        "docs": [
+          "UserTokenAccountTooSmall: User token account data too small"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultMintMismatch",
+        "code": 59,
+        "message": "Vault token account mint does not match config",
+        "docs": [
+          "VaultMintMismatch: Vault token account mint does not match config"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "userTokenAccountInvalid",
+        "code": 60,
+        "message": "User token account has wrong owner or mint",
+        "docs": [
+          "UserTokenAccountInvalid: User token account has wrong owner or mint"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "concavityViolation",
+        "code": 61,
+        "message": "Curve interpolation params violate output concavity constraints",
+        "docs": [
+          "ConcavityViolation: Curve interpolation params violate output concavity constraints"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "priceFactorTooLarge",
+        "code": 62,
+        "message": "Price factor exceeds 1.0 (Q32_ONE) — price curves must have factors <= 1.0",
+        "docs": [
+          "PriceFactorTooLarge: Price factor exceeds 1.0 (Q32_ONE) — price curves must have factors <= 1.0"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "poolFeeConfigAlreadyInitialized",
+        "code": 63,
+        "message": "Pool fee config already initialized",
+        "docs": [
+          "PoolFeeConfigAlreadyInitialized: Pool fee config already initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "poolFeeConfigNotInitialized",
+        "code": 64,
+        "message": "Pool fee config not initialized",
+        "docs": [
+          "PoolFeeConfigNotInitialized: Pool fee config not initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "assetFeeCapExceeded",
+        "code": 66,
+        "message": "Asset fee cap exceeded",
+        "docs": [
+          "AssetFeeCapExceeded: Asset fee cap exceeded"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "curveUpdateSlotMismatch",
+        "code": 67,
+        "message": "Curve update target_slot does not match active slot for the op's curve_type",
+        "docs": [
+          "CurveUpdateSlotMismatch: Curve update target_slot does not match active slot for the op's curve_type"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "riskCurveMonotonicityViolation",
+        "code": 68,
+        "message": "Risk curve is not monotone (segment shape or factor sequence)",
+        "docs": [
+          "RiskCurveMonotonicityViolation: Risk curve is not monotone (segment shape or factor sequence)"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTriggerSpreadBps",
+        "code": 70,
+        "message": "Spread trigger spread_bps must be non-zero",
+        "docs": [
+          "InvalidTriggerSpreadBps: Spread trigger spread_bps must be non-zero"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "poolAlreadyClosed",
+        "code": 71,
+        "message": "Pool is closed (terminal state); operation not permitted",
+        "docs": [
+          "PoolAlreadyClosed: Pool is closed (terminal state); operation not permitted"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "curveUpdateExpectedXmismatch",
+        "code": 72,
+        "message": "Curve update expected_x_in does not match the current point at point_index",
+        "docs": [
+          "CurveUpdateExpectedXMismatch: Curve update expected_x_in does not match the current point at point_index"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "validationSimulationSuccess",
+        "code": 73,
+        "message": "ValidateCurveUpdates dry-run succeeded",
+        "docs": [
+          "ValidationSimulationSuccess: ValidateCurveUpdates dry-run succeeded"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "notDepositAuthority",
+        "code": 74,
+        "message": "Not the deposit authority",
+        "docs": [
+          "NotDepositAuthority: Not the deposit authority"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "notWithdrawAuthority",
+        "code": 75,
+        "message": "Not the withdraw authority",
+        "docs": [
+          "NotWithdrawAuthority: Not the withdraw authority"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rotateToZero",
+        "code": 76,
+        "message": "Rotation target is the zero pubkey",
+        "docs": [
+          "RotateToZero: Rotation target is the zero pubkey"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "rotateNoOp",
+        "code": 77,
+        "message": "Rotation target equals the current authority (no-op)",
+        "docs": [
+          "RotateNoOp: Rotation target equals the current authority (no-op)"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "drawdownGuardDisabled",
+        "code": 78,
+        "message": "Drawdown guard is disabled",
+        "docs": [
+          "DrawdownGuardDisabled: Drawdown guard is disabled"
+        ]
+      }
+    ]
+  }
+}

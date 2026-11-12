@@ -763,6 +763,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("FD1amxhTsDpwzoVX41dxp2ygAESURV2zdUACzxM1Dfw9"),
         "Coinflow Program",
     ),
+    (
+        Pubkey::from_str_const("HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8"),
+        "Hadron Prop AMM Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.
