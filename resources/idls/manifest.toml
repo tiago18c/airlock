@@ -814,3 +814,23 @@ their mint's decimals where that mint is an account of the instruction; amounts 
 vault deposit and withdrawal modes, timelocked changes and market caps stay in base \
 units. Rates, fees, LTVs and liquidation thresholds in Loopscale's cbps (1,000,000 = \
 100%) read as percent where they are single numbers. Display nodes added by hand."""
+
+# Huma 2.0 (permissionless), Huma Finance's open payment-financing pool:
+# lenders deposit USDC into the classic mode (PST) or the maxi mode (mPST) and
+# redeem through a queue that pays out later, or instantly for a fee. The file
+# is the Anchor IDL its Anchor IDL account publishes on mainnet (4.1.0); it
+# has no program-metadata account and no devnet deployment.
+[[idls]]
+file = "huma-permissionless.json"
+programId = "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn"
+name = "permissionless"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "21b987637201d99fe0acffa51cf710c081b8896a62d381e333c62484222bae4c" }
+changes = """Converted from Anchor to Codama. instantWithdraw, instantWithdrawPrivileged and \
+processRedemptionRequest take an absent optional account as the program's address \
+(optionalAccountStrategy programId). refreshPoolAssets declares the pool's mode configs \
+as remaining accounts, and deployLiquidity, payBackLiquidity, instantWithdraw and \
+instantWithdrawPrivileged the deployment target's lending-protocol accounts, which \
+Anchor IDLs cannot. The Token program's mint account is added, so deposit, deployment, \
+loss and fee amounts read the stablecoin's decimals and share amounts the mode token's, \
+where that mint is an account of the instruction. Display nodes added by hand."""
