@@ -1029,3 +1029,12 @@ programHash = "7e6265350b94f2f6c56ba0666c664968266b9bdaa4790fd5021c000d09024bcc"
 authority = "CandyWZGCKPmkMETExHzCTM4XLUBzBx3KsexWjpEkMVU"
 idlSha256 = "47273ba4431b5098a316a1a646890fdcdc0cb10c3c97452d0c16090caa772e22"
 reviewed = "2026-11-12"
+
+[[builds]]
+# Metaplex Token Auth Rules Program (pack). The binary logs the four instruction names of processor/mod.rs (CreateOrUpdate, Validate, WriteToBuffer, PuffRuleSet) and holds all 41 error messages of mpl-token-auth-rules at 5b8b8973, whose instruction enum and processors are those of the v1.4.3 deploy commit apart from one client-side Shank attribute. Executed validate instructions decode with every account named and every data byte read.
+programId = "auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg"
+network = "mainnet"
+programHash = "9878a501189f6086883e5d9b8b4d5e57cfa92f9b8313a0eee815ed38df505c05"
+authority = "bfQVv6niKVgEURYqQ1beJmiEQQN7MrvLRvk3mZGFubb"
+idlSha256 = "5a89ad49016ea11f02364e810c2e0788d0b2949a135a70eda55927043a0c4a59"
+reviewed = "2026-11-12"

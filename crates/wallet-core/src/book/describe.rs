@@ -787,6 +787,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR"),
         "Metaplex Candy Machine Program",
     ),
+    (
+        Pubkey::from_str_const("auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg"),
+        "Metaplex Token Auth Rules Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.
