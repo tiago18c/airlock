@@ -28,6 +28,8 @@ How Airlock uses IDLs to read and build instructions, and the rules that keep wh
 
 Every review row and every Build form comes from an IDL. The hand-written decoders and forms are gone. The one byte-level rule left is the runtime's: a leading System `AdvanceNonceAccount` makes a durable-nonce transaction. Compute budget and the nonce advance are under Build's Advanced section.
 
+Build types an amount in the unit Review shows it in, from the same `amountNumberDisplayNode`: a fixed number of decimals and a unit (`transferSol.amount`, 9 and SOL; `createAccount.space`, bytes), or the decimals another argument of the instruction holds (`transferChecked.amount`, from `decimals`, which the form asks for first). The text becomes the integer digit by digit, never through a float, and a value with more decimal places than the unit has, or one the field's integer cannot hold, is refused. A scale that needs an account's data (`mintTo.amount`, from its mint) is not read on Build: that field is typed in base units and says so. Opening an instruction on Build (`edit::idl_draft_for`) writes its amounts in the same unit, so building it again gives the same bytes. The accounts the IDL derives and the arguments left to their default fold under "Filled in for you", at the end of the instruction.
+
 ## Embedded IDLs
 
 The app ships the IDL of each program it needs without an import, in two sets that read the same once in the catalog (`EmbeddedIdl`, origin `Builtin`):

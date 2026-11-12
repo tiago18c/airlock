@@ -2,27 +2,41 @@
 
 use super::*;
 
+/// The value `text` stands for in a field of `kind`. `decimals` is the
+/// field's scale ([`IdlArgScale`]): an integer typed with up to that many
+/// decimal places, encoded in base units. `None` reads an integer as typed.
 pub(super) fn parse_argument(
     kind: &IdlArgKind,
     text: &str,
     blank_uses_default: bool,
+    decimals: Option<u8>,
 ) -> Result<Option<Value>, String> {
     let text = text.trim();
     if text.is_empty() && blank_uses_default {
         return Ok(None);
     }
     match kind {
-        IdlArgKind::Option(inner) if text.is_empty() => Ok(Some(Value::Option(None))),
+        IdlArgKind::Option(_) if text.is_empty() => Ok(Some(Value::Option(None))),
         IdlArgKind::Option(inner) => {
-            let value =
-                parse_argument(inner, text, false)?.ok_or_else(|| "Enter a value.".to_string())?;
+            let value = parse_argument(inner, text, false, decimals)?
+                .ok_or_else(|| "Enter a value.".to_string())?;
             Ok(Some(Value::Option(Some(Box::new(value)))))
         }
-        IdlArgKind::Integer { signed, float } => {
+        IdlArgKind::Integer {
+            signed,
+            float,
+            bits,
+        } => {
             if text.is_empty() {
                 return Err("Enter a number.".into());
             }
-            parse_integer(*signed, *float, text).map(Some)
+            match decimals {
+                Some(decimals) if !*float => {
+                    let digits = scaled_digits(text, decimals)?;
+                    parse_integer(*signed, false, *bits, &digits, text).map(Some)
+                }
+                _ => parse_integer(*signed, *float, *bits, text, text).map(Some),
+            }
         }
         IdlArgKind::Pubkey => {
             if text.is_empty() {
@@ -67,20 +81,63 @@ pub(super) fn parse_argument(
     }
 }
 
-pub(super) fn parse_integer(signed: bool, float: bool, text: &str) -> Result<Value, String> {
+/// The integer in `digits`, refused when a field of `bits` bits cannot hold
+/// it: the encoder would otherwise keep only its low bytes. `shown` is what
+/// was typed, for the message.
+pub(super) fn parse_integer(
+    signed: bool,
+    float: bool,
+    bits: u8,
+    digits: &str,
+    shown: &str,
+) -> Result<Value, String> {
     if float {
-        return text
+        return digits
             .parse::<f64>()
             .map(Value::from)
-            .map_err(|_| format!("Enter a number, not `{text}`."));
+            .map_err(|_| format!("Enter a number, not `{shown}`."));
     }
+    let bits = u32::from(bits.clamp(1, 128));
     if signed {
-        return text
+        let value = digits
             .parse::<i128>()
-            .map(Value::from)
-            .map_err(|_| format!("Enter an integer, not `{text}`."));
+            .map_err(|_| too_large_or_not(digits, shown))?;
+        let max = i128::MAX >> (128 - bits);
+        let min = -max - 1;
+        if value > max {
+            return Err(format!("`{shown}` is too large for this field."));
+        }
+        if value < min {
+            return Err(format!("`{shown}` is too small for this field."));
+        }
+        return Ok(Value::from(value));
     }
-    text.parse::<u128>()
-        .map(Value::from)
-        .map_err(|_| format!("Enter an integer, not `{text}`."))
+    if let Some(rest) = digits.strip_prefix('-') {
+        if rest.bytes().all(|b| b.is_ascii_digit()) && !rest.is_empty() {
+            return Err(format!("Enter zero or more, not `{shown}`."));
+        }
+    }
+    let value = digits
+        .parse::<u128>()
+        .map_err(|_| too_large_or_not(digits, shown))?;
+    let max = u128::MAX >> (128 - bits);
+    if value > max {
+        return Err(format!("`{shown}` is too large for this field."));
+    }
+    Ok(Value::from(value))
+}
+
+/// Digits too many for any integer are too large; anything else is not an
+/// integer.
+fn too_large_or_not(digits: &str, shown: &str) -> String {
+    let body = digits.strip_prefix('-').unwrap_or(digits);
+    if !body.is_empty() && body.bytes().all(|b| b.is_ascii_digit()) {
+        if digits.starts_with('-') {
+            format!("`{shown}` is too small for this field.")
+        } else {
+            format!("`{shown}` is too large for this field.")
+        }
+    } else {
+        format!("Enter an integer, not `{shown}`.")
+    }
 }

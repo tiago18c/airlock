@@ -108,7 +108,7 @@ pub(in crate::ui) fn idl_argument_field(
     let name = argument.name.clone();
     let text = idl.argument(&argument.name).to_string();
     let kind = argument.kind.clone();
-    let label = argument.name.clone();
+    let label = argument_label(&argument);
 
     if bare_bool(&kind) {
         let checked = text == "true";
@@ -174,14 +174,7 @@ pub(in crate::ui) fn idl_argument_field(
         };
     }
 
-    let placeholder = match &kind {
-        IdlArgKind::Bytes => "hex",
-        IdlArgKind::Integer { .. } => "integer",
-        IdlArgKind::Raw { note } => note.as_str(),
-        IdlArgKind::Option(_) => "blank for none",
-        _ => "",
-    };
-    let placeholder = placeholder.to_string();
+    let placeholder = argument_placeholder(&argument);
     rsx! {
         label { "{label}"
             input {
@@ -196,6 +189,51 @@ pub(in crate::ui) fn idl_argument_field(
                 },
             }
         }
+    }
+}
+
+/// An argument's name, and the unit it is typed in when its IDL names one:
+/// "amount · SOL".
+pub(in crate::ui) fn argument_label(argument: &IdlArgField) -> String {
+    match argument.scale.unit() {
+        Some(unit) => format!("{} · {unit}", argument.name),
+        None => argument.name.clone(),
+    }
+}
+
+/// What a text field takes: an amount says how many decimal places, and a
+/// number the IDL gives no unit for is in base units.
+pub(in crate::ui) fn argument_placeholder(argument: &IdlArgField) -> String {
+    let (optional, inner) = match &argument.kind {
+        IdlArgKind::Option(inner) => (true, inner.as_ref()),
+        kind => (false, kind),
+    };
+    let takes = match inner {
+        IdlArgKind::Bytes => "hex".to_string(),
+        IdlArgKind::Raw { note } => note.clone(),
+        IdlArgKind::Integer { float: true, .. } => "number".to_string(),
+        IdlArgKind::Integer { .. } => match &argument.scale {
+            IdlArgScale::None => "whole number, in base units".to_string(),
+            IdlArgScale::Fixed { decimals: 0, .. } => "whole number".to_string(),
+            IdlArgScale::Fixed { decimals: 1, .. } => "up to 1 decimal place".to_string(),
+            IdlArgScale::Fixed { decimals, .. } => format!("up to {decimals} decimal places"),
+            IdlArgScale::FromArgument { argument, .. } => {
+                format!("as many decimal places as {argument}")
+            }
+        },
+        _ => String::new(),
+    };
+    let blank = if argument.blank_uses_default {
+        Some("blank for the default")
+    } else if optional {
+        Some("blank for none")
+    } else {
+        None
+    };
+    match (blank, takes.is_empty()) {
+        (Some(blank), true) => blank.to_string(),
+        (Some(blank), false) => format!("{takes} · {blank}"),
+        (None, _) => takes,
     }
 }
 

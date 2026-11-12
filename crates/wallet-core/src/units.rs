@@ -59,13 +59,60 @@ pub fn group_thousands(text: &str) -> String {
 
 /// A token amount in the token's own units, by its number of decimals.
 pub fn format_token_amount(amount: u64, decimals: u8) -> String {
-    let (whole, frac) = split_digits(&amount.to_string(), decimals);
+    format_base_digits(&amount.to_string(), decimals)
+}
+
+/// The decimal digits of an amount in base units, written in the unit
+/// `decimals` places up: "1500000" at 6 as "1.5". Trailing zeros of the
+/// fraction are dropped, and there are no thousands separators, so the text
+/// reads back through [`decimal_to_base`] to the same digits.
+pub fn format_base_digits(digits: &str, decimals: u8) -> String {
+    let (whole, frac) = split_digits(digits, decimals);
     let frac = frac.trim_end_matches('0');
     if frac.is_empty() {
         whole
     } else {
         format!("{whole}.{frac}")
     }
+}
+
+/// Why [`decimal_to_base`] refused a text.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DecimalError {
+    /// Not digits with at most one point and an optional leading minus.
+    NotANumber,
+    /// More decimal places than the unit has, not counting trailing zeros.
+    TooManyPlaces,
+}
+
+/// An amount typed in a unit with `decimals` decimal places, such as "1.5",
+/// as the digits of the integer in base units ("1500000" at 6), with a
+/// leading minus when it is below zero. It works on the digits, never
+/// through a float, so the result is exact for any number of decimals; the
+/// caller checks that the integer fits its field.
+pub fn decimal_to_base(text: &str, decimals: u8) -> Result<String, DecimalError> {
+    let text = text.trim();
+    let (negative, body) = match text.strip_prefix('-') {
+        Some(rest) => (true, rest),
+        None => (false, text),
+    };
+    let (whole, frac) = body.split_once('.').unwrap_or((body, ""));
+    let digits = |part: &str| part.bytes().all(|b| b.is_ascii_digit());
+    if (whole.is_empty() && frac.is_empty()) || !digits(whole) || !digits(frac) {
+        return Err(DecimalError::NotANumber);
+    }
+    let frac = frac.trim_end_matches('0');
+    let places = usize::from(decimals);
+    if frac.len() > places {
+        return Err(DecimalError::TooManyPlaces);
+    }
+    let joined = format!("{whole}{frac:0<places$}");
+    let joined = joined.trim_start_matches('0');
+    Ok(match (joined.is_empty(), negative) {
+        (true, _) => "0".to_string(),
+        (false, true) => format!("-{joined}"),
+        (false, false) => joined.to_string(),
+    })
 }
 
 /// The decimal digits of an amount split `decimals` places from the right:
@@ -188,6 +235,39 @@ mod tests {
             assert_eq!(parse_amount(bad, 6), None, "{bad}");
         }
         assert_eq!(parse_amount("1", 20), None);
+    }
+
+    #[test]
+    fn decimals_read_into_base_unit_digits_exactly() {
+        assert_eq!(decimal_to_base("1.5", 9).unwrap(), "1500000000");
+        assert_eq!(decimal_to_base("0.000000001", 9).unwrap(), "1");
+        assert_eq!(decimal_to_base(" .25 ", 2).unwrap(), "25");
+        assert_eq!(decimal_to_base("3.", 0).unwrap(), "3");
+        assert_eq!(decimal_to_base("1.50", 1).unwrap(), "15");
+        assert_eq!(decimal_to_base("007", 0).unwrap(), "7");
+        assert_eq!(decimal_to_base("0.00", 2).unwrap(), "0");
+        assert_eq!(decimal_to_base("-0", 2).unwrap(), "0");
+        assert_eq!(decimal_to_base("-1.25", 2).unwrap(), "-125");
+        assert_eq!(
+            decimal_to_base("1", 40).unwrap(),
+            format!("1{}", "0".repeat(40))
+        );
+        assert_eq!(
+            decimal_to_base("0.0000000001", 9),
+            Err(DecimalError::TooManyPlaces)
+        );
+        assert_eq!(decimal_to_base("1.5", 0), Err(DecimalError::TooManyPlaces));
+        for bad in ["", ".", "-", "1.2.3", "1e3", "1,5", "+1", "--1", "0x10"] {
+            assert_eq!(
+                decimal_to_base(bad, 6),
+                Err(DecimalError::NotANumber),
+                "{bad}"
+            );
+        }
+        for (digits, decimals) in [("1500000000", 9), ("1", 9), ("25", 2), ("7", 0)] {
+            let text = format_base_digits(digits, decimals);
+            assert_eq!(decimal_to_base(&text, decimals).unwrap(), digits);
+        }
     }
 
     #[test]

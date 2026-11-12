@@ -27,7 +27,13 @@ pub fn idl_instruction_form(
             }
         }
     }
-    let args = argument_text(input);
+    let arguments: Vec<IdlArgField> = node
+        .arguments
+        .iter()
+        .filter_map(|argument| argument_field(node, argument))
+        .collect();
+    // Seeds read an argument as the program does: in base units.
+    let args = base_unit_text(&arguments, &argument_text(input));
     Ok(IdlForm {
         program_id: client.program_address(),
         instruction: instruction.to_string(),
@@ -44,7 +50,7 @@ pub fn idl_instruction_form(
                 )
             })
             .collect(),
-        arguments: node.arguments.iter().filter_map(argument_field).collect(),
+        arguments,
     })
 }
 
@@ -122,15 +128,34 @@ pub(super) fn account_field(
     }
 }
 
-pub(super) fn argument_field(argument: &InstructionArgumentNode) -> Option<IdlArgField> {
+pub(super) fn argument_field(
+    instruction: &InstructionNode,
+    argument: &InstructionArgumentNode,
+) -> Option<IdlArgField> {
     if argument.default_value_strategy == Some(DefaultValueStrategy::Omitted) {
         return None;
     }
+    let kind = classify(&argument.r#type);
+    let scale = if integer_inside(&kind) {
+        argument_scale(instruction, &argument.r#type)
+    } else {
+        IdlArgScale::None
+    };
     Some(IdlArgField {
         name: argument.name.to_string(),
-        kind: classify(&argument.r#type),
+        kind,
         blank_uses_default: argument.default_value_strategy == Some(DefaultValueStrategy::Optional),
+        scale,
     })
+}
+
+/// An integer, or an option of one.
+fn integer_inside(kind: &IdlArgKind) -> bool {
+    match kind {
+        IdlArgKind::Integer { float, .. } => !float,
+        IdlArgKind::Option(inner) => integer_inside(inner),
+        _ => false,
+    }
 }
 
 pub(super) fn classify(ty: &TypeNode) -> IdlArgKind {
@@ -171,7 +196,15 @@ pub(super) fn unwrap_type(ty: &TypeNode) -> &TypeNode {
 }
 
 pub(super) fn integer_kind(format: NumberFormat) -> IdlArgKind {
+    let bits = match format {
+        NumberFormat::U8 | NumberFormat::I8 => 8,
+        NumberFormat::U16 | NumberFormat::I16 | NumberFormat::ShortU16 => 16,
+        NumberFormat::U32 | NumberFormat::I32 | NumberFormat::F32 => 32,
+        NumberFormat::U64 | NumberFormat::I64 | NumberFormat::F64 => 64,
+        NumberFormat::U128 | NumberFormat::I128 => 128,
+    };
     IdlArgKind::Integer {
+        bits,
         signed: matches!(
             format,
             NumberFormat::I8
