@@ -7,20 +7,20 @@ use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use wallet_core::IdlCheck;
 
+#[cfg(not(target_arch = "wasm32"))]
+use crate::platform::idl_files::{IdlFiles, IdlFilesError};
+
+/// Ask for one IDL file and import it: a dialog on desktop, which holds
+/// the pane's `file_dialog` flag while it is open; in a browser, the page's
+/// hidden file field, whose change reads it (see [`read_one`]).
 pub fn import_one(session: Session, note: Signal<Option<String>>, error: Signal<Option<String>>) {
     #[cfg(not(target_arch = "wasm32"))]
-    {
-        let mut note = note;
-        let mut error = error;
-        match crate::platform::idl_files::pick_idl_file() {
-            None => {}
-            Some(Ok(bytes)) => apply_one(&session, &bytes, note, error),
-            Some(Err(err)) => {
-                note.set(None);
-                error.set(Some(err.to_string()));
-            }
-        }
-    }
+    import_one_from(
+        session,
+        note,
+        error,
+        crate::platform::idl_files::pick_idl_file(),
+    );
     #[cfg(target_arch = "wasm32")]
     {
         let _ = (session, note, error);
@@ -28,24 +28,21 @@ pub fn import_one(session: Session, note: Signal<Option<String>>, error: Signal<
     }
 }
 
+/// Ask for a bundle folder and import its files: a dialog on desktop, as
+/// [`import_one`]; in a browser, the page's hidden folder field (see
+/// [`read_bundle`]).
 pub fn import_folder(
     session: Session,
     note: Signal<Option<String>>,
     error: Signal<Option<String>>,
 ) {
     #[cfg(not(target_arch = "wasm32"))]
-    {
-        let mut note = note;
-        let mut error = error;
-        match crate::platform::idl_files::pick_idl_bundle() {
-            None => {}
-            Some(Ok(files)) => apply_bundle(&session, &files, note, error),
-            Some(Err(err)) => {
-                note.set(None);
-                error.set(Some(err.to_string()));
-            }
-        }
-    }
+    import_folder_from(
+        session,
+        note,
+        error,
+        crate::platform::idl_files::pick_idl_bundle(),
+    );
     #[cfg(target_arch = "wasm32")]
     {
         let _ = (session, note, error);
@@ -53,41 +50,27 @@ pub fn import_folder(
     }
 }
 
+/// Write every imported IDL into a folder the user picks: a dialog on
+/// desktop, as [`import_one`]; in a browser, the page's folder picker.
 pub fn export_folder(
     session: Session,
     note: Signal<Option<String>>,
     error: Signal<Option<String>>,
 ) {
-    let mut note = note;
-    let mut error = error;
     let files = match session.export_idl_files() {
         Ok(files) => files,
         Err(err) => {
-            note.set(None);
-            error.set(Some(err.to_string()));
+            report(note, error, Err(err.to_string()));
             return;
         }
     };
     #[cfg(not(target_arch = "wasm32"))]
-    {
-        match crate::platform::idl_files::save_idl_bundle(&files) {
-            None => {}
-            Some(Ok(dir)) => {
-                error.set(None);
-                note.set(Some(format!(
-                    "Saved {} files to {}.",
-                    files.len(),
-                    dir.display()
-                )));
-            }
-            Some(Err(err)) => {
-                note.set(None);
-                error.set(Some(err.to_string()));
-            }
-        }
-    }
+    export_to(session, note, error, files, |files| async move {
+        crate::platform::idl_files::save_idl_bundle(&files).await
+    });
     #[cfg(target_arch = "wasm32")]
     {
+        let (mut note, mut error) = (note, error);
         use base64::engine::general_purpose::STANDARD;
         use base64::Engine;
         let payload: Vec<serde_json::Value> = files
@@ -125,31 +108,147 @@ pub fn export_folder(
     }
 }
 
+/// Run `task`, a file dialog and what comes of it, in a task of its own
+/// while the pane's `file_dialog` flag is held, so the click that asked for
+/// the dialog returns before it opens. Does nothing while one is open
+/// already: the dialog is not modal to the window, so the pane disables its
+/// buttons while the flag is held, and this refuses a second one should a
+/// click get through anyway.
+///
+/// On desktop dioxus runs an event handler inside the webview's request
+/// for the event, holding the window's elements borrowed. A blocking file
+/// dialog opened there runs its own message loop on the same thread, and
+/// anything that renders the window while it is open, such as a site's
+/// request arriving through the browser bridge, panics on the first node
+/// it makes ("RefCell already borrowed"); the handler then panics on a
+/// scope that is gone (an `unwrap` on `None`) and the app dies.
+///
+/// The task runs in the scope that owns the flag, the session's, not the
+/// pane's: the pane can be left while the dialog is open, and the import or
+/// export still finishes and lets go of the flag. What it says then goes
+/// nowhere (see [`report`]).
+#[cfg(not(target_arch = "wasm32"))]
+fn file_dialog(session: Session, task: impl std::future::Future<Output = ()> + 'static) {
+    let mut busy = session.forms.program.file_dialog;
+    if *busy.peek() {
+        return;
+    }
+    busy.set(true);
+    dioxus::core::Runtime::current().in_scope(busy.origin_scope(), || {
+        spawn(async move {
+            task.await;
+            busy.set(false);
+        })
+    });
+}
+
+/// Await `picked`, the file the dialog gives, in a task of its own, and
+/// import it.
+#[cfg(not(target_arch = "wasm32"))]
+fn import_one_from(
+    session: Session,
+    note: Signal<Option<String>>,
+    error: Signal<Option<String>>,
+    picked: impl std::future::Future<Output = Option<Result<Vec<u8>, IdlFilesError>>> + 'static,
+) {
+    file_dialog(session, async move {
+        match picked.await {
+            None => {}
+            Some(Ok(bytes)) => apply_one(&session, &bytes, note, error),
+            Some(Err(err)) => report(note, error, Err(err.to_string())),
+        }
+    });
+}
+
+/// Await `picked`, the bundle folder's files, in a task of its own, and
+/// import them.
+#[cfg(not(target_arch = "wasm32"))]
+fn import_folder_from(
+    session: Session,
+    note: Signal<Option<String>>,
+    error: Signal<Option<String>>,
+    picked: impl std::future::Future<Output = Option<Result<IdlFiles, IdlFilesError>>> + 'static,
+) {
+    file_dialog(session, async move {
+        match picked.await {
+            None => {}
+            Some(Ok(files)) => apply_bundle(&session, &files, note, error),
+            Some(Err(err)) => report(note, error, Err(err.to_string())),
+        }
+    });
+}
+
+/// Hand `files` to `save`, which asks for a folder and writes them there,
+/// in a task of its own, and say where they went.
+#[cfg(not(target_arch = "wasm32"))]
+fn export_to<F>(
+    session: Session,
+    note: Signal<Option<String>>,
+    error: Signal<Option<String>>,
+    files: IdlFiles,
+    save: impl FnOnce(IdlFiles) -> F,
+) where
+    F: std::future::Future<Output = Option<Result<std::path::PathBuf, IdlFilesError>>> + 'static,
+{
+    let count = files.len();
+    let saved = save(files);
+    file_dialog(session, async move {
+        match saved.await {
+            None => {}
+            Some(Ok(dir)) => report(
+                note,
+                error,
+                Ok(format!("Saved {count} files to {}.", dir.display())),
+            ),
+            Some(Err(err)) => report(note, error, Err(err.to_string())),
+        }
+    });
+}
+
+/// Say how an import or an export went: `Ok` in `note`, `Err` in `error`,
+/// clearing the other. Says nothing once the pane that showed them has
+/// gone, which a file dialog can outlive.
+fn report(
+    note: Signal<Option<String>>,
+    error: Signal<Option<String>>,
+    outcome: Result<String, String>,
+) {
+    let (shown, cleared, text) = match outcome {
+        Ok(text) => (note, error, text),
+        Err(text) => (error, note, text),
+    };
+    put(cleared, None);
+    put(shown, Some(text));
+}
+
+/// Put `value` in `signal`, unless the scope that owned it has gone.
+fn put(mut signal: Signal<Option<String>>, value: Option<String>) {
+    if let Ok(mut slot) = signal.try_write() {
+        *slot = value;
+    }
+}
+
 pub fn apply_one(
     session: &Session,
     bytes: &[u8],
-    mut note: Signal<Option<String>>,
-    mut error: Signal<Option<String>>,
+    note: Signal<Option<String>>,
+    error: Signal<Option<String>>,
 ) {
     match session.import_idl(bytes, None) {
         Ok(record) => {
-            error.set(None);
-            note.set(Some(format!("Imported {}.", record.name)));
+            report(note, error, Ok(format!("Imported {}.", record.name)));
             let mut selected = session.forms.program.selected;
             selected.set(Some(record.program_id));
         }
-        Err(err) => {
-            note.set(None);
-            error.set(Some(err.to_string()));
-        }
+        Err(err) => report(note, error, Err(err.to_string())),
     }
 }
 
 pub fn apply_bundle(
     session: &Session,
     files: &[(String, Vec<u8>)],
-    mut note: Signal<Option<String>>,
-    mut error: Signal<Option<String>>,
+    note: Signal<Option<String>>,
+    error: Signal<Option<String>>,
 ) {
     let borrowed: Vec<(&str, &[u8])> = files
         .iter()
@@ -162,17 +261,13 @@ pub fn apply_bundle(
                 text.push_str(" Skipped: ");
                 text.push_str(&report.skipped.join("; "));
             }
-            error.set(None);
-            note.set(Some(text));
+            self::report(note, error, Ok(text));
             if let Some(record) = report.imported.first() {
                 let mut selected = session.forms.program.selected;
                 selected.set(Some(record.program_id));
             }
         }
-        Err(err) => {
-            note.set(None);
-            error.set(Some(err.to_string()));
-        }
+        Err(err) => self::report(note, error, Err(err.to_string())),
     }
 }
 
@@ -359,47 +454,4 @@ try {
 "#;
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn checked(same: bool, source: bool) -> Result<IdlCheck, String> {
-        Ok(IdlCheck {
-            remote_sha256: None,
-            same,
-            source,
-        })
-    }
-
-    #[test]
-    fn a_run_of_checks_says_how_many_matched_and_why_the_last_failure_failed() {
-        let mut tally = CheckTally::default();
-        tally.count(checked(true, false));
-        tally.count(checked(true, false));
-        tally.count(checked(false, false));
-        assert_eq!(
-            tally.sentence(),
-            "2 match, 1 differ. Stored files were not replaced."
-        );
-
-        tally.count(Err::<IdlCheck, _>("first"));
-        tally.count(Err::<IdlCheck, _>("Offline"));
-        assert_eq!(
-            tally.sentence(),
-            "2 match, 1 differ, 2 failed (Offline). Stored files were not replaced."
-        );
-    }
-
-    /// A file made from what the chain publishes is current, not different.
-    #[test]
-    fn a_file_whose_source_the_chain_publishes_is_counted_apart() {
-        let mut tally = CheckTally::default();
-        tally.count(checked(true, false));
-        tally.count(checked(false, true));
-        assert_eq!(
-            tally.sentence(),
-            "1 match, 1 match their source, 0 differ. Stored files were not replaced."
-        );
-        let check = checked(false, true).unwrap();
-        assert!(check_sentence("raydiumClmm", &check).contains("made from"));
-    }
-}
+mod tests;

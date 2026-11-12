@@ -1,5 +1,11 @@
 //! Desktop file dialogs and folder I/O for importing and exporting IDLs.
 //! Each function returns `None` when the dialog was cancelled.
+//!
+//! The dialogs are awaited, never waited on: call them from a task, not
+//! from inside an event handler. A blocking dialog runs its own message
+//! loop on the window's thread, which lets the window render while the
+//! handler that opened it is still running, and dioxus panics there (see
+//! `file_dialog` in `actions/programs.rs`).
 
 use std::path::{Path, PathBuf};
 
@@ -18,24 +24,28 @@ pub enum IdlFilesError {
 
 /// Ask for one IDL file and read it.
 #[cfg(not(target_os = "android"))]
-pub fn pick_idl_file() -> Option<Result<Vec<u8>, IdlFilesError>> {
-    let path = rfd::FileDialog::new()
+pub async fn pick_idl_file() -> Option<Result<Vec<u8>, IdlFilesError>> {
+    let file = rfd::AsyncFileDialog::new()
         .add_filter("IDL", &["json"])
-        .pick_file()?;
-    Some(std::fs::read(path).map_err(IdlFilesError::from))
+        .pick_file()
+        .await?;
+    Some(std::fs::read(file.path()).map_err(IdlFilesError::from))
 }
 
 /// Ask for a bundle folder and read its JSON files.
 #[cfg(not(target_os = "android"))]
-pub fn pick_idl_bundle() -> Option<Result<IdlFiles, IdlFilesError>> {
-    let dir = rfd::FileDialog::new().pick_folder()?;
-    Some(read_json_dir(&dir))
+pub async fn pick_idl_bundle() -> Option<Result<IdlFiles, IdlFilesError>> {
+    let dir = rfd::AsyncFileDialog::new().pick_folder().await?;
+    Some(read_json_dir(dir.path()))
 }
 
 /// Ask for a folder and write `files` into it. Returns the folder.
 #[cfg(not(target_os = "android"))]
-pub fn save_idl_bundle(files: &[(String, Vec<u8>)]) -> Option<Result<PathBuf, IdlFilesError>> {
-    let dir = rfd::FileDialog::new().pick_folder()?;
+pub async fn save_idl_bundle(
+    files: &[(String, Vec<u8>)],
+) -> Option<Result<PathBuf, IdlFilesError>> {
+    let dir = rfd::AsyncFileDialog::new().pick_folder().await?;
+    let dir = dir.path().to_path_buf();
     Some(write_files(&dir, files).map(|()| dir))
 }
 
@@ -43,17 +53,19 @@ pub fn save_idl_bundle(files: &[(String, Vec<u8>)]) -> Option<Result<PathBuf, Id
 // screen ask anyway (Programs leaves its buttons out there).
 
 #[cfg(target_os = "android")]
-pub fn pick_idl_file() -> Option<Result<Vec<u8>, IdlFilesError>> {
+pub async fn pick_idl_file() -> Option<Result<Vec<u8>, IdlFilesError>> {
     Some(Err(IdlFilesError::NoDialog))
 }
 
 #[cfg(target_os = "android")]
-pub fn pick_idl_bundle() -> Option<Result<IdlFiles, IdlFilesError>> {
+pub async fn pick_idl_bundle() -> Option<Result<IdlFiles, IdlFilesError>> {
     Some(Err(IdlFilesError::NoDialog))
 }
 
 #[cfg(target_os = "android")]
-pub fn save_idl_bundle(_files: &[(String, Vec<u8>)]) -> Option<Result<PathBuf, IdlFilesError>> {
+pub async fn save_idl_bundle(
+    _files: &[(String, Vec<u8>)],
+) -> Option<Result<PathBuf, IdlFilesError>> {
     Some(Err(IdlFilesError::NoDialog))
 }
 

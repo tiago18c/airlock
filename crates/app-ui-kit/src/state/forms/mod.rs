@@ -27,6 +27,11 @@ pub struct ProgramForm {
     pub selected: Signal<Option<Pubkey>>,
     /// The part of the IDL shown, or the original JSON.
     pub section: Signal<IdlSection>,
+    /// A file dialog of the Programs pane is open: Import IDL, Import
+    /// bundle and Export IDLs are disabled until it returns. Kept here, not
+    /// on the pane, so that leaving the pane while one is open neither lets
+    /// a second one open nor drops what the first one picks.
+    pub file_dialog: Signal<bool>,
 }
 
 /// A tab of a program's IDL.
@@ -176,6 +181,7 @@ pub fn use_forms() -> Forms {
         program: ProgramForm {
             selected: use_signal(|| None::<Pubkey>),
             section: use_signal(IdlSection::default),
+            file_dialog: use_signal(|| false),
         },
         history: HistoryForm {
             wallet: use_signal(|| None::<Pubkey>),

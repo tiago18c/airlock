@@ -50,6 +50,9 @@ pub fn ProgramsPanel() -> Element {
         .collect();
     // Android has no file picker for the app to open IDL files or folders with.
     let files = !cfg!(target_os = "android");
+    // A file dialog is open: it is not modal to the window, so nothing here
+    // opens another until it returns.
+    let dialog_open = (session.forms.program.file_dialog)();
 
     rsx! {
         section { class: "page",
@@ -99,17 +102,20 @@ pub fn ProgramsPanel() -> Element {
                             // the bundle actions behind the menu.
                             div { class: "btn-row",
                                 button {
+                                    disabled: dialog_open,
                                     onclick: move |_| import_one(session, note, error),
                                     "Import IDL"
                                 }
                                 PaneMenu { label: "More program actions",
                                     button { class: "pane-menu-item",
                                         role: "menuitem",
+                                        disabled: dialog_open,
                                         onclick: move |_| import_folder(session, note, error),
                                         "Import bundle"
                                     }
                                     button { class: "pane-menu-item",
                                         role: "menuitem",
+                                        disabled: dialog_open,
                                         onclick: move |_| export_folder(session, note, error),
                                         "Export IDLs"
                                     }
