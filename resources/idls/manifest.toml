@@ -960,3 +960,22 @@ links to is added. initialize2, deposit, withdraw, swapBaseIn and swapBaseOut na
 the accounts every accepted layout starts with, then a group of the signers and a group \
 of the other accounts in order. Deposit and withdrawal minimums are scaled by the \
 decimals the pool account records. Display nodes added by hand."""
+
+# Meteora DAMM v1 (amm), Meteora's first dynamic AMM: constant-product and
+# stable pools whose reserves sit in Meteora's dynamic vaults. Mainnet has no
+# program-metadata account; its Anchor IDL account holds a legacy IDL, version
+# 0.5.2, a little older than the program deployed there. Devnet runs another
+# build.
+[[idls]]
+file = "meteora-damm-v1.json"
+programId = "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB"
+name = "amm"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "eec18cf72af8c1e8ae0a1def70d8df625ff0448a11c7fe44a1fd25de871d8184" }
+changes = """Converted from Anchor to Codama. The legacy IDL carries no program address, so the \
+program's address is set. `withdrawProtocolFees` is left out: the deployed program takes \
+more arguments and accounts than this IDL describes. `swap` declares the staking price \
+and referral accounts it may read after the listed ones, and the liquidity instructions \
+the staking price account. The Token program's mint account is added, so LP token \
+amounts and the deposits of a new pool read their mint's decimals; swap and liquidity \
+token amounts are in base units. Display nodes added by hand."""

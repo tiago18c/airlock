@@ -734,3 +734,12 @@ programHash = "d4cee0cd4f78f69d05f5d645fc6d120dff830f231162d35cf2b2dae1df7b2c9f"
 authority = "FytDrVzDybM1TwFQPGb8qaxZR7dBCzNeqT3vtQsceZQK"
 idlSha256 = "e56df1b17e3ee62f146fa6068c707078b59d336dc6a029894a6d5394c4666dec"
 reviewed = "2026-11-12"
+
+[[builds]]
+# amm (pack). The binary logs 30 instruction names: all 26 of the IDL's are among them, and `zapProtocolFee`, `claimProtocolFee2`, `createOperatorAccount` and `closeOperatorAccount`, which the IDL lacks, read raw. Compared with Meteora's damm-v1-sdk IDL 0.5.7, which lists the binary's 30, the IDL differs only in `withdrawProtocolFees`, which is left out. Mainnet transactions of ten instructions decode with no byte or account left over.
+programId = "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB"
+network = "mainnet"
+programHash = "8fef5f63ddaf33ae6ac7153b039dc1eac0451fc9c7038e3bc972f245938a3c38"
+authority = "JADaUV8kvDpDbJr55wxXJHVaBS3VCj8thZZHjfeuCVLd"
+idlSha256 = "fc5fe35dcd0c5a476e6443fdcea9b262fb349170d3f6ccc84130034a5c9b2b65"
+reviewed = "2026-11-12"
