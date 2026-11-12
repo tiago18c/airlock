@@ -77,6 +77,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - An account state that claims more leaves than a key has is refused. Before, scanning one made the key unable to sign on that device.
 
 ### Fixed
+- **The desktop app no longer closes when something comes up while a Programs file dialog is open**, such as a site's request through the browser bridge. **Import IDL**, **Import bundle** and **Export IDLs** now open their dialog without freezing the window, and are greyed out until it closes, so a second one cannot open beside it.
 - **The notifications offer the same on a desktop as on a phone**: **Mark all read** shows only with something unread, **Clear** only with something to clear, and the filters only once there is something to filter.
 - **An offline wallet is called that everywhere.** The Address Book and an address's card said "Cold wallet · offline key"; they say "Offline wallet · key on another device", as the Wallets pane's group does.
 - On Android the app now follows the phone's dark mode when its theme is System. Before, the lock screen and the app's frame stayed light.

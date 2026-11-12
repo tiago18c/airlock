@@ -4525,6 +4525,7 @@ textarea.short { min-height: 64px; }
   white-space: nowrap;
 }
 .pane-menu-item:hover, .pane-menu-item:focus-visible { background: var(--surface-2); box-shadow: inset 3px 0 0 var(--brand); }
+.pane-menu-item:disabled:hover { background: transparent; box-shadow: none; }
 .pane-menu-item .icon { width: 16px; height: 16px; color: var(--text-2); }
 .migrate-tokens { max-height: 30vh; overflow: auto; }
 .modal.migrate .book-row select { width: auto; min-width: 7rem; }
