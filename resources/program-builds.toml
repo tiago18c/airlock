@@ -490,3 +490,14 @@ programHash = "0cc349e31e35912b861c98dfa79cb006740b71ad77d7e1c3ec2dd4d709796466"
 authority = "5myNNmEmPm3UAnJ2ggLEpnTFb9t9Gk8369wKw6n3uAKx"
 idlSha256 = "4d58263940409c40636cce9969b2cbff52d34d9f4317f1c5ecf88f7adb5c88ee"
 reviewed = "2026-11-12"
+
+[[builds]]
+# kaminoLending (pack). Every instruction the IDL lists is in this binary by its Anchor log name, and the binary has none the IDL lacks. Successful mainnet transactions decode with the IDL, every account named, for depositReserveLiquidityAndObligationCollateral, depositReserveLiquidityAndObligationCollateralV2, withdrawObligationCollateralAndRedeemReserveCollateralV2, borrowObligationLiquidityV2, repayObligationLiquidityV2, depositReserveLiquidity, redeemReserveCollateral, flashBorrowReserveLiquidity, flashRepayReserveLiquidity, initObligation, initUserMetadata, initObligationFarmsForReserve, refreshReserve, refreshReservesBatch, refreshObligation. The build is OtterSec-verified at the 1.27.0 release, the IDL's version.
+programId = "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
+network = "mainnet"
+programHash = "1a71bd2229fecb87daef1a4d7fda373bf17253af0c0bc2f19093aff881700702"
+authority = "GzFgdRJXmawPhGeBsyRCDLx4jAKPsvbUqoqitzppkzkW"
+idlSha256 = "c3d85eb60030373c4eb64e8ae9e8063345b08a2385f0942f533fb133826d0b9d"
+source = { repo = "https://github.com/Kamino-Finance/klend", commit = "77e81854909ab7ffea3a2e898b2554d96e07daac" }
+verified = "GzFgdRJXmawPhGeBsyRCDLx4jAKPsvbUqoqitzppkzkW"
+reviewed = "2026-11-12"
