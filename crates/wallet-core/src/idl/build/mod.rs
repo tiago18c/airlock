@@ -33,6 +33,7 @@ mod scale_tests;
 #[cfg(test)]
 mod tests;
 
+pub(crate) use arguments::data_variant;
 use arguments::*;
 pub use form::*;
 use pda::*;

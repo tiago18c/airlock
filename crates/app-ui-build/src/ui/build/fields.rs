@@ -266,8 +266,28 @@ pub(in crate::ui) fn kind_placeholder(
         IdlArgKind::List(item) => match **item {
             IdlArgKind::String | IdlArgKind::Pubkey => r#"a JSON list, ["a", "b"]"#.to_string(),
             IdlArgKind::Bool => "a JSON list, [true, false]".to_string(),
+            IdlArgKind::Struct { .. } | IdlArgKind::Variants { .. } => {
+                r#"a JSON list, [{"a": 1}]"#.to_string()
+            }
             _ => "a JSON list, [1, 2]".to_string(),
         },
+        IdlArgKind::FixedBytes { len } => format!("text, or hex after 0x · up to {len} bytes"),
+        IdlArgKind::Struct { fields } => format!(
+            "a JSON object, {{{}}}",
+            fields
+                .iter()
+                .map(|(name, _)| format!("\"{name}\": …"))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ),
+        IdlArgKind::Variants { variants } => variants
+            .iter()
+            .map(|(name, held)| match held {
+                IdlVariant::Empty => name.clone(),
+                _ => format!("{{\"{name}\": …}}"),
+            })
+            .collect::<Vec<_>>()
+            .join(" or "),
         IdlArgKind::Raw { note } => note.clone(),
         IdlArgKind::Integer { float: true, .. } => "number".to_string(),
         IdlArgKind::Integer { .. } => match places {

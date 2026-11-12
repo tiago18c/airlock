@@ -57,11 +57,39 @@ pub enum IdlArgKind {
     /// booleans are items.
     List(Box<IdlArgKind>),
     Bytes,
+    /// A fixed number of bytes, such as a name kept in `[u8; 64]`: typed as
+    /// text, kept as its UTF-8 bytes followed by zeros, or as hex after
+    /// `0x`, followed by zeros too. Blank is all zeros.
+    FixedBytes {
+        len: usize,
+    },
+    /// A struct inside a list, an option or another struct: typed as a JSON
+    /// object with a key for each field, each written as the item of a list
+    /// of its kind would be. Every field is needed.
+    Struct {
+        fields: Vec<(String, IdlArgKind)>,
+    },
+    /// An enum some of whose variants hold fields. A variant that holds
+    /// nothing is typed by its name, as a choice is; one that holds fields
+    /// as a JSON object with the variant as its one key: `{"limited": 5}`
+    /// for a tuple of one item, `{"pair": [1, 2]}` for more, `{"v1":
+    /// {"size": 0}}` for a struct.
+    Variants {
+        variants: Vec<(String, IdlVariant)>,
+    },
     /// A Codama type this form does not have a widget for. The text is rejected
     /// at build time with `note`.
     Raw {
         note: String,
     },
+}
+
+/// What one variant of [`IdlArgKind::Variants`] holds.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum IdlVariant {
+    Empty,
+    Tuple(Vec<IdlArgKind>),
+    Struct(Vec<(String, IdlArgKind)>),
 }
 
 /// How the text of an integer argument reads, from the IDL's amount display.
@@ -87,7 +115,11 @@ impl IdlArgField {
     /// Whether the field may be left blank: it then takes the IDL default,
     /// none for an option, or the empty list.
     pub fn may_be_blank(&self) -> bool {
-        self.blank_uses_default || matches!(self.kind, IdlArgKind::Option(_) | IdlArgKind::List(_))
+        self.blank_uses_default
+            || matches!(
+                self.kind,
+                IdlArgKind::Option(_) | IdlArgKind::List(_) | IdlArgKind::FixedBytes { .. }
+            )
     }
 }
 

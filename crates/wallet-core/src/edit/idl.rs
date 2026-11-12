@@ -1,8 +1,8 @@
 //! An instruction read back onto its IDL's form.
 
 use crate::idl::build::{
-    idl_instruction_form, scaled_text, IdlAccountSource, IdlArgKind, IdlArgScale,
-    STRUCT_FIELD_SEPARATOR,
+    data_variant, idl_instruction_form, scaled_text, IdlAccountSource, IdlArgKind, IdlArgScale,
+    IdlVariant, STRUCT_FIELD_SEPARATOR,
 };
 use crate::idl::draft::IdlDraft;
 use codama_dynamic_client::{NumberValue, ProgramClient, Value};
@@ -122,16 +122,163 @@ fn argument_text(kind: &IdlArgKind, value: &Value, decimals: Option<u8>) -> Opti
         (IdlArgKind::List(item), Value::Array(items)) => {
             let items = items
                 .iter()
-                .map(|value| {
-                    let text = argument_text(item, value, None)?;
-                    Some(match **item {
-                        IdlArgKind::Bool => serde_json::Value::Bool(text == "true"),
-                        _ => serde_json::Value::String(text),
-                    })
-                })
+                .map(|value| json_of(item, value))
                 .collect::<Option<Vec<_>>>()?;
-            serde_json::to_string(&items).ok()
+            Some(Json::List(items).to_string())
+        }
+        (IdlArgKind::FixedBytes { len }, Value::Array(items)) if items.len() == *len => {
+            let bytes = items
+                .iter()
+                .map(|item| match item {
+                    Value::Number(NumberValue::Unsigned(n)) => u8::try_from(*n).ok(),
+                    _ => None,
+                })
+                .collect::<Option<Vec<u8>>>()?;
+            Some(fixed_bytes_text(&bytes))
+        }
+        (IdlArgKind::Variants { variants }, Value::Enum { variant, fields }) if matches!(fields.as_ref(), Value::Struct(map) if map.is_empty()) => {
+            variants
+                .iter()
+                .find(|(name, held)| *held == IdlVariant::Empty && data_variant(name) == *variant)
+                .map(|(name, _)| name.clone())
+        }
+        (IdlArgKind::Struct { .. } | IdlArgKind::Variants { .. }, value) => {
+            Some(json_of(kind, value)?.to_string())
         }
         _ => None,
+    }
+}
+
+/// A fixed byte array as it is typed: its text when it is UTF-8 with no
+/// control character and only zeros after it, otherwise hex after `0x`.
+/// Either reads back to the same bytes.
+fn fixed_bytes_text(bytes: &[u8]) -> String {
+    let end = bytes
+        .iter()
+        .rposition(|byte| *byte != 0)
+        .map_or(0, |at| at + 1);
+    match std::str::from_utf8(&bytes[..end]) {
+        Ok(text)
+            if !text.starts_with("0x")
+                && !text.chars().any(char::is_control)
+                && text.trim() == text =>
+        {
+            text.to_string()
+        }
+        _ => format!("0x{}", hex::encode(&bytes[..end])),
+    }
+}
+
+/// `value` as the JSON a field of `kind` reads inside a list or an object:
+/// text, addresses, bytes and big numbers as strings, small numbers as
+/// numbers, an option as `null` or its value.
+fn json_of(kind: &IdlArgKind, value: &Value) -> Option<Json> {
+    Some(match (kind, value) {
+        (IdlArgKind::Option(_), Value::Option(None)) => Json::Plain(serde_json::Value::Null),
+        (IdlArgKind::Option(inner), Value::Option(Some(value))) => json_of(inner, value)?,
+        (IdlArgKind::Bool, Value::Bool(flag)) => Json::Plain(serde_json::Value::Bool(*flag)),
+        (IdlArgKind::Integer { float: false, .. }, Value::Number(NumberValue::Unsigned(n))) => {
+            match u64::try_from(*n) {
+                Ok(n) if n <= (1 << 53) => Json::Plain(serde_json::Value::from(n)),
+                _ => Json::Plain(serde_json::Value::String(n.to_string())),
+            }
+        }
+        (IdlArgKind::Integer { float: false, .. }, Value::Number(NumberValue::Signed(n))) => {
+            match i64::try_from(*n) {
+                Ok(n) if n.unsigned_abs() <= (1 << 53) => Json::Plain(serde_json::Value::from(n)),
+                _ => Json::Plain(serde_json::Value::String(n.to_string())),
+            }
+        }
+        (IdlArgKind::List(item), Value::Array(items)) => Json::List(
+            items
+                .iter()
+                .map(|value| json_of(item, value))
+                .collect::<Option<_>>()?,
+        ),
+        (IdlArgKind::Struct { fields }, Value::Struct(map)) => {
+            Json::Object(json_fields(fields, |name| map.get(name))?)
+        }
+        (IdlArgKind::Variants { variants }, Value::Enum { variant, fields }) => {
+            let (variant, held) = variants
+                .iter()
+                .find(|(name, _)| data_variant(name) == *variant)?;
+            let Value::Struct(map) = fields.as_ref() else {
+                return None;
+            };
+            let held = match held {
+                IdlVariant::Empty => {
+                    return Some(Json::Plain(serde_json::Value::String(variant.clone())))
+                }
+                IdlVariant::Struct(fields) => {
+                    Json::Object(json_fields(fields, |name| map.get(name))?)
+                }
+                IdlVariant::Tuple(items) => {
+                    let values = match map.get("fields")? {
+                        Value::Tuple(values) | Value::Array(values) => values,
+                        _ => return None,
+                    };
+                    if values.len() != items.len() {
+                        return None;
+                    }
+                    let mut out = items
+                        .iter()
+                        .zip(values)
+                        .map(|(item, value)| json_of(item, value))
+                        .collect::<Option<Vec<_>>>()?;
+                    if out.len() == 1 {
+                        out.pop()?
+                    } else {
+                        Json::List(out)
+                    }
+                }
+            };
+            Json::Object(vec![(variant.clone(), held)])
+        }
+        (kind, value) => Json::Plain(serde_json::Value::String(argument_text(kind, value, None)?)),
+    })
+}
+
+fn json_fields<'a>(
+    fields: &[(String, IdlArgKind)],
+    get: impl Fn(&str) -> Option<&'a Value>,
+) -> Option<Vec<(String, Json)>> {
+    fields
+        .iter()
+        .map(|(name, kind)| Some((name.clone(), json_of(kind, get(name)?)?)))
+        .collect()
+}
+
+/// JSON written with an object's keys in the order its struct declares them.
+enum Json {
+    Plain(serde_json::Value),
+    List(Vec<Json>),
+    Object(Vec<(String, Json)>),
+}
+
+impl std::fmt::Display for Json {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Plain(value) => write!(f, "{value}"),
+            Self::List(items) => {
+                f.write_str("[")?;
+                for (at, item) in items.iter().enumerate() {
+                    if at > 0 {
+                        f.write_str(",")?;
+                    }
+                    write!(f, "{item}")?;
+                }
+                f.write_str("]")
+            }
+            Self::Object(fields) => {
+                f.write_str("{")?;
+                for (at, (name, value)) in fields.iter().enumerate() {
+                    if at > 0 {
+                        f.write_str(",")?;
+                    }
+                    write!(f, "{}:{value}", serde_json::Value::String(name.clone()))?;
+                }
+                f.write_str("}")
+            }
+        }
     }
 }

@@ -188,8 +188,31 @@ fn kind_words(kind: &IdlArgKind, scale: &InputScale) -> Option<String> {
             IdlArgKind::String => "a list of text, as JSON".into(),
             IdlArgKind::Pubkey => "a list of addresses, as JSON".into(),
             IdlArgKind::Bool => "a list of yes or no, as JSON".into(),
+            IdlArgKind::Struct { .. } => "a list of JSON objects".into(),
+            IdlArgKind::Variants { .. } => "a list of choices, as JSON".into(),
             _ => "a list of whole numbers, as JSON".into(),
         },
+        IdlArgKind::FixedBytes { len } => format!("text of up to {len} bytes, or hex after 0x"),
+        IdlArgKind::Struct { fields } => format!(
+            "a JSON object of {}",
+            listed(
+                &fields
+                    .iter()
+                    .map(|(name, _)| name.clone())
+                    .collect::<Vec<_>>(),
+                "and"
+            )
+        ),
+        IdlArgKind::Variants { variants } => format!(
+            "a choice of {}, as JSON where it holds values",
+            listed(
+                &variants
+                    .iter()
+                    .map(|(name, _)| name.clone())
+                    .collect::<Vec<_>>(),
+                "or"
+            )
+        ),
         IdlArgKind::Enum { variants } => format!("a choice of {}", listed(variants, "or")),
         IdlArgKind::Integer { float: true, .. } => "a number".into(),
         IdlArgKind::Integer { .. } => match scale {
