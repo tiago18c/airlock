@@ -1,0 +1,3682 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "raydiumAmm",
+    "publicKey": "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8",
+    "version": "0.3.0",
+    "origin": "shank",
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "name": "targetOrders",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "owner",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 4
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "buyOrders",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "targetOrder"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 50
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "padding1",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 8
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "targetX",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "targetY",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "planXbuy",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "planYbuy",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "planXsell",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "planYsell",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "placedX",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "placedY",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "calcPnlX",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "calcPnlY",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "sellOrders",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "targetOrder"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 50
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "padding2",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 6
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "replaceBuyClientId",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 10
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "replaceSellClientId",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 10
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lastOrderNumerator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lastOrderDenominator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "planOrdersCur",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "placeOrdersCur",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "validBuyOrderNum",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "validSellOrderNum",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "padding3",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 10
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "freeSlotBits",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "accountNode",
+        "name": "fees",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "minSeparateNumerator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "minSeparateDenominator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tradeFeeNumerator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tradeFeeDenominator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pnlNumerator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pnlDenominator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "swapFeeNumerator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "swapFeeDenominator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "accountNode",
+        "name": "ammInfo",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "status",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "nonce",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "orderNum",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "depth",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "coinDecimals",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pcDecimals",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "state",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "resetFlag",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "minSize",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "volMaxCutRatio",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amountWave",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "coinLotSize",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pcLotSize",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "minPriceMultiplier",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "maxPriceMultiplier",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "sysDecimalValue",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "fees",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "fees"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "outPut",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "outPutData"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tokenCoin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tokenPc",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "coinMint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pcMint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lpMint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "openOrders",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "market",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "serumDex",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "targetOrders",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "withdrawQueue",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tokenTempLp",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "ammOwner",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lpAmount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "clientOrderId",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "padding",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 2
+                }
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "initialize2",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "splAssociatedTokenAccount",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rent",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "amm",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "01",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "nonce",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "openTime",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "dateTimeNumberDisplayNode"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Open Time"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "initPcAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Quote Amount"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "initCoinAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Base Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "signers"
+            },
+            "isOptional": true,
+            "isSigner": true,
+            "docs": [
+              "The accounts among the rest that sign: the pool creator's wallet, which pays for the new accounts and the pool creation fee. The program finds the user's wallet by its place, which differs between layouts, so it cannot be named; it is the signer here unless a program signs for it."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signer"
+            }
+          },
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "poolAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts after the pool authority, in order. With 19 accounts: the LP mint, the base mint, the quote mint, the pool's base and quote vaults, the target orders account, the AMM config, the pool creation fee receiver, the market (a seed for the pool's address, any account), the creator's wallet, the creator's base and quote token accounts and the creator's LP token account. With 21 or more: the open orders account comes after the pool authority and the market program before the market; neither is used."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Account"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create pool",
+          "interpolatedIntent": "Creates pool ${accounts.amm}, depositing ${data.initCoinAmount} of its base token and ${data.initPcAmount} of its quote token"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "deposit",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "amm",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "ammInfo"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "03",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "maxCoinAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "coinDecimals"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Base Maximum"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "maxPcAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "pcDecimals"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Quote Maximum"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "baseSide",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Fixed Side (0 Base, Other Quote)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "otherAmountMin",
+            "type": {
+              "kind": "remainderOptionTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "base units"
+                  }
+                }
+              }
+            },
+            "docs": [
+              "Minimum of the side not fixed by baseSide; read only when present."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Other Side Minimum"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "signers"
+            },
+            "isOptional": true,
+            "isSigner": true,
+            "docs": [
+              "The accounts among the rest that sign: the user's wallet, which owns the token accounts. The program finds the user's wallet by its place, which differs between layouts, so it cannot be named; it is the signer here unless a program signs for it."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signer"
+            }
+          },
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "poolAndUserAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts after the pool authority, in order. With 11 accounts: the target orders account, the LP mint, the pool's base and quote vaults, the user's base and quote token accounts (deposited from), the user's LP token account (LP tokens to) and the user's wallet. With 14 or 15: the open orders account comes first, the market comes before the user's token accounts and the market event queue after the wallet; none of the three is used."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Account"
+            }
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "coinDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "amm",
+              "path": "coinDecimals"
+            }
+          },
+          {
+            "kind": "providedNode",
+            "name": "pcDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "amm",
+              "path": "pcDecimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Add liquidity",
+          "interpolatedIntent": "Deposits at most ${data.maxCoinAmount} of the base token and at most ${data.maxPcAmount} of the quote token into pool ${accounts.amm} for LP tokens"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdraw",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "amm",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "ammInfo"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "04",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "LP Tokens"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "minCoinAmount",
+            "type": {
+              "kind": "remainderOptionTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "decimals": {
+                    "kind": "injectedValueNode",
+                    "key": "coinDecimals"
+                  }
+                }
+              }
+            },
+            "docs": [
+              "Minimum base token out; read, with minPcAmount, only when both are present."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Base Minimum"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "minPcAmount",
+            "type": {
+              "kind": "remainderOptionTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "decimals": {
+                    "kind": "injectedValueNode",
+                    "key": "pcDecimals"
+                  }
+                }
+              }
+            },
+            "docs": [
+              "Minimum quote token out."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Quote Minimum"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "signers"
+            },
+            "isOptional": true,
+            "isSigner": true,
+            "docs": [
+              "The accounts among the rest that sign: the user's wallet, which owns the LP token account. The program finds the user's wallet by its place, which differs between layouts, so it cannot be named; it is the signer here unless a program signs for it."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signer"
+            }
+          },
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "poolAndUserAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts after the pool authority, in order. With 11 accounts: the target orders account, the LP mint, the pool's base and quote vaults, the user's LP token account (burned from), the user's base and quote token accounts (paid to) and the user's wallet. With 20 to 23: the open orders account comes first; with 22 or 23 two padding accounts follow the pool vaults; then the market program, the market, its base and quote vaults and vault signer, the user's LP, base and quote token accounts, the user's wallet, and the market event queue, bids and asks. The open orders, padding and market accounts are not used."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Account"
+            }
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "coinDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "amm",
+              "path": "coinDecimals"
+            }
+          },
+          {
+            "kind": "providedNode",
+            "name": "pcDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "amm",
+              "path": "pcDecimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Remove liquidity",
+          "interpolatedIntent": "Withdraws from pool ${accounts.amm} by burning ${data.amount} of its LP tokens"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setParams",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "amm",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammAdminAccount",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "06",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "param",
+            "type": {
+              "kind": "enumTypeNode",
+              "variants": [
+                {
+                  "kind": "enumStructVariantTypeNode",
+                  "name": "status",
+                  "discriminator": 0,
+                  "struct": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                      {
+                        "kind": "structFieldTypeNode",
+                        "name": "value",
+                        "type": {
+                          "kind": "numberTypeNode",
+                          "format": "u64",
+                          "endian": "le"
+                        }
+                      }
+                    ]
+                  },
+                  "display": {
+                    "kind": "enumVariantDisplayNode",
+                    "label": "Status"
+                  }
+                },
+                {
+                  "kind": "enumStructVariantTypeNode",
+                  "name": "state",
+                  "discriminator": 1,
+                  "struct": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                      {
+                        "kind": "structFieldTypeNode",
+                        "name": "value",
+                        "type": {
+                          "kind": "numberTypeNode",
+                          "format": "u64",
+                          "endian": "le"
+                        }
+                      }
+                    ]
+                  },
+                  "display": {
+                    "kind": "enumVariantDisplayNode",
+                    "label": "State"
+                  }
+                },
+                {
+                  "kind": "enumStructVariantTypeNode",
+                  "name": "fees",
+                  "discriminator": 2,
+                  "struct": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                      {
+                        "kind": "structFieldTypeNode",
+                        "name": "fees",
+                        "type": {
+                          "kind": "definedTypeLinkNode",
+                          "name": "fees"
+                        }
+                      }
+                    ]
+                  },
+                  "display": {
+                    "kind": "enumVariantDisplayNode",
+                    "label": "Fees"
+                  }
+                },
+                {
+                  "kind": "enumStructVariantTypeNode",
+                  "name": "setOpenTime",
+                  "discriminator": 3,
+                  "struct": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                      {
+                        "kind": "structFieldTypeNode",
+                        "name": "openTime",
+                        "type": {
+                          "kind": "numberTypeNode",
+                          "format": "u64",
+                          "endian": "le",
+                          "display": {
+                            "kind": "dateTimeNumberDisplayNode"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "display": {
+                    "kind": "enumVariantDisplayNode",
+                    "label": "Open Time"
+                  }
+                }
+              ],
+              "size": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "docs": [
+              "What to change, and the value: the tag is the parameter (0 status, 1 state, 2 fees, 3 open time)."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Change"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set pool parameters",
+          "interpolatedIntent": "${accounts.ammAdminAccount} changes a setting of pool ${accounts.amm}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawPnl",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "amm",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "poolCoinTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Base Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "poolPcTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Quote Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "coinPnlTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Base To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "pcPnlTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Quote To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "pnlOwnerAccount",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Protocol Fee Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammTargetOrders",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "07",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Collect protocol fees",
+          "interpolatedIntent": "${accounts.pnlOwnerAccount} collects the protocol fees of pool ${accounts.amm} into ${accounts.coinPnlTokenAccount} and ${accounts.pcPnlTokenAccount}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "swapBaseIn",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "amm",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammOpenOrders",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "09",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amountIn",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount In"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "minimumAmountOut",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Minimum Out"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "signers"
+            },
+            "isOptional": true,
+            "isSigner": true,
+            "docs": [
+              "The accounts among the rest that sign: the user's wallet, which owns the source token account. The program finds the user's wallet by its place, which differs between layouts, so it cannot be named; it is the signer here unless a program signs for it."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signer"
+            }
+          },
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "swapAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts after the open orders account, in order. With 18 accounts: the target orders account, the pool's base and quote vaults, the market program, the market, its bids, asks and event queue, its base and quote vaults, its vault signer, the user's source token account, the user's destination token account and the user's wallet. With 17 accounts the target orders account is left out. The program reads only the pool vaults and the user's accounts; the market accounts are passed and ignored."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Account"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Swap tokens",
+          "interpolatedIntent": "Swaps ${data.amountIn} for at least ${data.minimumAmountOut} in pool ${accounts.amm}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "swapBaseOut",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "amm",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammOpenOrders",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "0b",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "maxAmountIn",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Maximum In"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amountOut",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount Out"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "signers"
+            },
+            "isOptional": true,
+            "isSigner": true,
+            "docs": [
+              "The accounts among the rest that sign: the user's wallet, which owns the source token account. The program finds the user's wallet by its place, which differs between layouts, so it cannot be named; it is the signer here unless a program signs for it."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Signer"
+            }
+          },
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "swapAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts after the open orders account, in order. With 18 accounts: the target orders account, the pool's base and quote vaults, the market program, the market, its bids, asks and event queue, its base and quote vaults, its vault signer, the user's source token account, the user's destination token account and the user's wallet. With 17 accounts the target orders account is left out. The program reads only the pool vaults and the user's accounts; the market accounts are passed and ignored."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Account"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Swap tokens",
+          "interpolatedIntent": "Swaps at most ${data.maxAmountIn} for ${data.amountOut} in pool ${accounts.amm}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "createConfigAccount",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammConfig",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "AMM Config"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "owner",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Protocol Fee Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rent",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "0e",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create AMM config",
+          "interpolatedIntent": "${accounts.admin} creates the AMM config ${accounts.ammConfig} with ${accounts.owner} as the protocol fee owner"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateConfigAccount",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammConfig",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "AMM Config"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "0f",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "param",
+            "type": {
+              "kind": "enumTypeNode",
+              "variants": [
+                {
+                  "kind": "enumStructVariantTypeNode",
+                  "name": "pnlOwner",
+                  "discriminator": 0,
+                  "struct": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                      {
+                        "kind": "structFieldTypeNode",
+                        "name": "owner",
+                        "type": {
+                          "kind": "publicKeyTypeNode"
+                        }
+                      }
+                    ]
+                  },
+                  "display": {
+                    "kind": "enumVariantDisplayNode",
+                    "label": "Protocol Fee Owner"
+                  }
+                },
+                {
+                  "kind": "enumStructVariantTypeNode",
+                  "name": "cancelOwner",
+                  "discriminator": 1,
+                  "struct": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                      {
+                        "kind": "structFieldTypeNode",
+                        "name": "owner",
+                        "type": {
+                          "kind": "publicKeyTypeNode"
+                        }
+                      }
+                    ]
+                  },
+                  "display": {
+                    "kind": "enumVariantDisplayNode",
+                    "label": "Order Cancel Owner"
+                  }
+                },
+                {
+                  "kind": "enumStructVariantTypeNode",
+                  "name": "createPoolFee",
+                  "discriminator": 2,
+                  "struct": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                      {
+                        "kind": "structFieldTypeNode",
+                        "name": "createPoolFee",
+                        "type": {
+                          "kind": "numberTypeNode",
+                          "format": "u64",
+                          "endian": "le",
+                          "display": {
+                            "kind": "amountNumberDisplayNode",
+                            "decimals": {
+                              "kind": "numberValueNode",
+                              "number": 9
+                            },
+                            "unit": {
+                              "kind": "stringValueNode",
+                              "string": "SOL"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "display": {
+                    "kind": "enumVariantDisplayNode",
+                    "label": "Pool Creation Fee"
+                  }
+                }
+              ],
+              "size": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "docs": [
+              "What to change, and the value: 0 the protocol fee owner, 1 the order cancel owner, 2 the pool creation fee in lamports."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Change"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update AMM config",
+          "interpolatedIntent": "${accounts.admin} changes a setting of the AMM config ${accounts.ammConfig}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "swapBaseInV2",
+        "docs": [
+          "Swap from a pool with the order book disabled: an exact amount in, at least an amount out."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "amm",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammCoinVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammPcVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userSourceTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userDestinationTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userSourceOwner",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "10",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amountIn",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount In"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "minimumAmountOut",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Minimum Out"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Swap tokens",
+          "interpolatedIntent": "${accounts.userSourceOwner} swaps ${data.amountIn} from ${accounts.userSourceTokenAccount} for at least ${data.minimumAmountOut} into ${accounts.userDestinationTokenAccount} in pool ${accounts.amm}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "swapBaseOutV2",
+        "docs": [
+          "Swap from a pool with the order book disabled: an exact amount out, at most an amount in."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "amm",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammCoinVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammPcVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userSourceTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userDestinationTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userSourceOwner",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "11",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "maxAmountIn",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Maximum In"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amountOut",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount Out"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Swap tokens",
+          "interpolatedIntent": "${accounts.userSourceOwner} swaps at most ${data.maxAmountIn} from ${accounts.userSourceTokenAccount} for ${data.amountOut} into ${accounts.userDestinationTokenAccount} in pool ${accounts.amm}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawExcessLamports",
+        "docs": [
+          "Collect excess lamports, including accounts for SPL tokens owned by authority and Program PDA."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "collectLamports",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collector"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ammAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "12",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "sourceAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts the excess SOL is taken from: token accounts the pool authority owns and accounts this program owns. Each keeps its rent-exempt minimum (and a wrapped SOL account its token balance); accounts of other owners are skipped."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collected From"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Collect excess SOL",
+          "interpolatedIntent": "${accounts.collectLamports} collects the excess SOL held in this program's accounts and the pool authority's token accounts"
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "withdrawDestToken",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "withdrawAmount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "coinAmount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pcAmount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "destTokenCoin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "destTokenPc",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "withdrawQueue",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "owner",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 4
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "head",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "count",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "buf",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "withdrawDestToken"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 64
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "targetOrder",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "price",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vol",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "outPutData",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "needTakePnlCoin",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "needTakePnlPc",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "totalPnlPc",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "totalPnlCoin",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "poolOpenTime",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "punishPcAmount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "punishCoinAmount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "orderbookToInitTime",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "swapCoinInAmount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "swapPcOutAmount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "swapTakePcFee",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "swapPcInAmount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "swapCoinOutAmount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "swapTakeCoinFee",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "ammConfig",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pnlOwner",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "cancelOwner",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pending1",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 28
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pending2",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 32
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "lastOrderDistance",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lastOrderNumerator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lastOrderDenominator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "needTake",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "needTakePc",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "needTakeCoin",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "swapInstructionBaseIn",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amountIn",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "minimumAmountOut",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "swapInstructionBaseOut",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "maxAmountIn",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amountOut",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "fees",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "minSeparateNumerator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "minSeparateDenominator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tradeFeeNumerator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tradeFeeDenominator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pnlNumerator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pnlDenominator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "swapFeeNumerator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "swapFeeDenominator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "alreadyInUse",
+        "code": 0,
+        "message": "AlreadyInUse",
+        "docs": [
+          "AlreadyInUse: AlreadyInUse"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidProgramAddress",
+        "code": 1,
+        "message": "InvalidProgramAddress",
+        "docs": [
+          "InvalidProgramAddress: InvalidProgramAddress"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "expectedMint",
+        "code": 2,
+        "message": "ExpectedMint",
+        "docs": [
+          "ExpectedMint: ExpectedMint"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "expectedAccount",
+        "code": 3,
+        "message": "ExpectedAccount",
+        "docs": [
+          "ExpectedAccount: ExpectedAccount"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidCoinVault",
+        "code": 4,
+        "message": "InvalidCoinVault",
+        "docs": [
+          "InvalidCoinVault: InvalidCoinVault"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidPcvault",
+        "code": 5,
+        "message": "InvalidPCVault",
+        "docs": [
+          "InvalidPCVault: InvalidPCVault"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTokenLp",
+        "code": 6,
+        "message": "InvalidTokenLP",
+        "docs": [
+          "InvalidTokenLP: InvalidTokenLP"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidDestTokenCoin",
+        "code": 7,
+        "message": "InvalidDestTokenCoin",
+        "docs": [
+          "InvalidDestTokenCoin: InvalidDestTokenCoin"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidDestTokenPc",
+        "code": 8,
+        "message": "InvalidDestTokenPC",
+        "docs": [
+          "InvalidDestTokenPC: InvalidDestTokenPC"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidPoolMint",
+        "code": 9,
+        "message": "InvalidPoolMint",
+        "docs": [
+          "InvalidPoolMint: InvalidPoolMint"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidOpenOrders",
+        "code": 10,
+        "message": "InvalidOpenOrders",
+        "docs": [
+          "InvalidOpenOrders: InvalidOpenOrders"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidSerumMarket",
+        "code": 11,
+        "message": "InvalidSerumMarket",
+        "docs": [
+          "InvalidSerumMarket: InvalidSerumMarket"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidSerumProgram",
+        "code": 12,
+        "message": "InvalidSerumProgram",
+        "docs": [
+          "InvalidSerumProgram: InvalidSerumProgram"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTargetOrders",
+        "code": 13,
+        "message": "InvalidTargetOrders",
+        "docs": [
+          "InvalidTargetOrders: InvalidTargetOrders"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidWithdrawQueue",
+        "code": 14,
+        "message": "InvalidWithdrawQueue",
+        "docs": [
+          "InvalidWithdrawQueue: InvalidWithdrawQueue"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTempLp",
+        "code": 15,
+        "message": "InvalidTempLp",
+        "docs": [
+          "InvalidTempLp: InvalidTempLp"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidCoinMint",
+        "code": 16,
+        "message": "InvalidCoinMint",
+        "docs": [
+          "InvalidCoinMint: InvalidCoinMint"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidPcmint",
+        "code": 17,
+        "message": "InvalidPCMint",
+        "docs": [
+          "InvalidPCMint: InvalidPCMint"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidOwner",
+        "code": 18,
+        "message": "InvalidOwner",
+        "docs": [
+          "InvalidOwner: InvalidOwner"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidSupply",
+        "code": 19,
+        "message": "InvalidSupply",
+        "docs": [
+          "InvalidSupply: InvalidSupply"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidDelegate",
+        "code": 20,
+        "message": "InvalidDelegate",
+        "docs": [
+          "InvalidDelegate: InvalidDelegate"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidSignAccount",
+        "code": 21,
+        "message": "Invalid Sign Account",
+        "docs": [
+          "InvalidSignAccount: Invalid Sign Account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidStatus",
+        "code": 22,
+        "message": "InvalidStatus",
+        "docs": [
+          "InvalidStatus: InvalidStatus"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidInstruction",
+        "code": 23,
+        "message": "Invalid instruction",
+        "docs": [
+          "InvalidInstruction: Invalid instruction"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "wrongAccountsNumber",
+        "code": 24,
+        "message": "Wrong accounts number",
+        "docs": [
+          "WrongAccountsNumber: Wrong accounts number"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "withdrawTransferBusy",
+        "code": 25,
+        "message": "Withdraw_transfer is busy",
+        "docs": [
+          "WithdrawTransferBusy: Withdraw_transfer is busy"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "withdrawQueueFull",
+        "code": 26,
+        "message": "WithdrawQueue is full",
+        "docs": [
+          "WithdrawQueueFull: WithdrawQueue is full"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "withdrawQueueEmpty",
+        "code": 27,
+        "message": "WithdrawQueue is empty",
+        "docs": [
+          "WithdrawQueueEmpty: WithdrawQueue is empty"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidParamsSet",
+        "code": 28,
+        "message": "Params Set is invalid",
+        "docs": [
+          "InvalidParamsSet: Params Set is invalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidInput",
+        "code": 29,
+        "message": "InvalidInput",
+        "docs": [
+          "InvalidInput: InvalidInput"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "exceededSlippage",
+        "code": 30,
+        "message": "instruction exceeds desired slippage limit",
+        "docs": [
+          "ExceededSlippage: instruction exceeds desired slippage limit"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "calculationExRateFailure",
+        "code": 31,
+        "message": "CalculationExRateFailure",
+        "docs": [
+          "CalculationExRateFailure: CalculationExRateFailure"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "checkedSubOverflow",
+        "code": 32,
+        "message": "Checked_Sub Overflow",
+        "docs": [
+          "CheckedSubOverflow: Checked_Sub Overflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "checkedAddOverflow",
+        "code": 33,
+        "message": "Checked_Add Overflow",
+        "docs": [
+          "CheckedAddOverflow: Checked_Add Overflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "checkedMulOverflow",
+        "code": 34,
+        "message": "Checked_Mul Overflow",
+        "docs": [
+          "CheckedMulOverflow: Checked_Mul Overflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "checkedDivOverflow",
+        "code": 35,
+        "message": "Checked_Div Overflow",
+        "docs": [
+          "CheckedDivOverflow: Checked_Div Overflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "checkedEmptyFunds",
+        "code": 36,
+        "message": "Empty Funds",
+        "docs": [
+          "CheckedEmptyFunds: Empty Funds"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "calcPnlError",
+        "code": 37,
+        "message": "Calc pnl error",
+        "docs": [
+          "CalcPnlError: Calc pnl error"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidSplTokenProgram",
+        "code": 38,
+        "message": "InvalidSplTokenProgram",
+        "docs": [
+          "InvalidSplTokenProgram: InvalidSplTokenProgram"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "takePnlError",
+        "code": 39,
+        "message": "Take Pnl error",
+        "docs": [
+          "TakePnlError: Take Pnl error"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "insufficientFunds",
+        "code": 40,
+        "message": "Insufficient funds",
+        "docs": [
+          "InsufficientFunds: Insufficient funds"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "conversionFailure",
+        "code": 41,
+        "message": "Conversion to u64 failed with an overflow or underflow",
+        "docs": [
+          "ConversionFailure: Conversion to u64 failed with an overflow or underflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidUserToken",
+        "code": 42,
+        "message": "user token input does not match amm",
+        "docs": [
+          "InvalidUserToken: user token input does not match amm"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidSrmMint",
+        "code": 43,
+        "message": "InvalidSrmMint",
+        "docs": [
+          "InvalidSrmMint: InvalidSrmMint"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidSrmToken",
+        "code": 44,
+        "message": "InvalidSrmToken",
+        "docs": [
+          "InvalidSrmToken: InvalidSrmToken"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "tooManyOpenOrders",
+        "code": 45,
+        "message": "TooManyOpenOrders",
+        "docs": [
+          "TooManyOpenOrders: TooManyOpenOrders"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "orderAtSlotIsPlaced",
+        "code": 46,
+        "message": "OrderAtSlotIsPlaced",
+        "docs": [
+          "OrderAtSlotIsPlaced: OrderAtSlotIsPlaced"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidSysProgramAddress",
+        "code": 47,
+        "message": "InvalidSysProgramAddress",
+        "docs": [
+          "InvalidSysProgramAddress: InvalidSysProgramAddress"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidFee",
+        "code": 48,
+        "message": "The provided fee does not match the program owner's constraints",
+        "docs": [
+          "InvalidFee: The provided fee does not match the program owner's constraints"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "repeatCreateAmm",
+        "code": 49,
+        "message": "Repeat create amm about market",
+        "docs": [
+          "RepeatCreateAmm: Repeat create amm about market"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "notAllowZeroLp",
+        "code": 50,
+        "message": "Not allow Zero LP",
+        "docs": [
+          "NotAllowZeroLP: Not allow Zero LP"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidCloseAuthority",
+        "code": 51,
+        "message": "Token account has a close authority",
+        "docs": [
+          "InvalidCloseAuthority: Token account has a close authority"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidFreezeAuthority",
+        "code": 52,
+        "message": "Pool token mint has a freeze authority",
+        "docs": [
+          "InvalidFreezeAuthority: Pool token mint has a freeze authority"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidReferPcmint",
+        "code": 53,
+        "message": "InvalidReferPCMint",
+        "docs": [
+          "InvalidReferPCMint: InvalidReferPCMint"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidConfigAccount",
+        "code": 54,
+        "message": "InvalidConfigAccount",
+        "docs": [
+          "InvalidConfigAccount: InvalidConfigAccount"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "repeatCreateConfigAccount",
+        "code": 55,
+        "message": "Repeat create staking config account",
+        "docs": [
+          "RepeatCreateConfigAccount: Repeat create staking config account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unknownAmmError",
+        "code": 56,
+        "message": "Unknown Amm Error",
+        "docs": [
+          "UnknownAmmError: Unknown Amm Error"
+        ]
+      }
+    ]
+  }
+}

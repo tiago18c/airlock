@@ -936,3 +936,27 @@ program does not have them. `depositStrategy`, `withdrawStrategy` and \
 the listed ones. The Token program's mint account is added, so LP token amounts read the \
 LP mint's decimals; amounts of the vault's own token are in base units. Display nodes \
 added by hand."""
+
+# Raydium's original constant-product pool program (Liquidity Pool V4). It
+# publishes no IDL on chain; the file is the IDL raydium-io/raydium-idl held
+# until May 2026 (written in 2023), brought up to raydium-amm at d26944bf,
+# which the deployed program matches. Most instructions take several account
+# layouts under one tag, so only the accounts every layout shares are named.
+[[idls]]
+file = "raydium-amm-v4.json"
+programId = "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8"
+name = "raydiumAmm"
+networks = ["mainnet"]
+source = { kind = "repository", url = "https://github.com/raydium-io/raydium-idl/blob/0fcb7e862c8a61444970c773f9a3d67ed2f26ecd/raydium_amm/idl.json" }
+changes = """Marked as Shank (a one-byte instruction index, as the program reads it) and converted to \
+Codama. Checked against raydium-amm at d26944bf: dropped initialize, monitorStep, \
+migrateToOpenBook, withdrawSrm, preInitialize, simulateInfo and adminCancelOrders, which \
+the program refuses; added swapBaseInV2, swapBaseOutV2 and withdrawExcessLamports (tags \
+16 to 18); added the optional trailing minimums of deposit and withdraw; setParams takes \
+the pool and the admin only, and its data is an enum of the four parameters it sets; \
+updateConfigAccount's data is an enum of its three settings; withdrawPnl loses the open \
+orders and market accounts the program no longer reads; the `fees` type the pool account \
+links to is added. initialize2, deposit, withdraw, swapBaseIn and swapBaseOut name only \
+the accounts every accepted layout starts with, then a group of the signers and a group \
+of the other accounts in order. Deposit and withdrawal minimums are scaled by the \
+decimals the pool account records. Display nodes added by hand."""
