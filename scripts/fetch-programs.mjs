@@ -78,6 +78,12 @@ export const PROGRAMS = [
     sha256: "b501789b71bb383556f7c1cc7a01e51ae9bb4111bf14e4dec9f09b18e506307a",
   },
   {
+    // Metaplex Core. Devnet runs the code mainnet does.
+    file: "mpl_core.so",
+    address: "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d",
+    sha256: "7e033fd24ce189d9e7dc2600152c6c88ce80d662deeeb7ecc64f0c8437867cf7",
+  },
+  {
     // Metaplex Token Metadata, frozen since its deploy of 2025-11-17. Devnet
     // runs another build.
     file: "mpl_token_metadata.so",

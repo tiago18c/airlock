@@ -1,0 +1,41 @@
+format = 1
+name = "Create a Core NFT"
+summary = "A new NFT on Metaplex Core: one account, its key made on this device, holding the NFT's name, link and owner. This wallet pays its rent."
+
+[programs]
+core = "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+system = "11111111111111111111111111111111"
+
+[[option]]
+name = "in_collection"
+label = "Part of a collection"
+hint = "Adds the NFT to a Core collection, which then holds its update authority. The collection's update authority signs this transaction, so it has to be this wallet."
+
+[[input]]
+name = "nft_name"
+label = "Name"
+
+[[input]]
+name = "uri"
+label = "Details link"
+hint = "A link to a JSON file with the NFT's image, description and attributes."
+
+[[input]]
+name = "owner"
+label = "Owner"
+hint = "Holds the NFT. Without a collection, this wallet keeps its update authority."
+default = "$wallet"
+
+[[input]]
+name = "collection"
+label = "Collection"
+option = "in_collection"
+
+[values]
+asset = "new-keypair"
+
+[[block]]
+program = "$core"
+instruction = "createV2"
+accounts = { asset = "$asset", authority = "$wallet", collection = "$collection", owner = "$owner", payer = "$wallet", systemProgram = "$system" }
+arguments = { "createV2Args.dataState" = "accountState", "createV2Args.name" = "$nft_name", "createV2Args.uri" = "$uri" }

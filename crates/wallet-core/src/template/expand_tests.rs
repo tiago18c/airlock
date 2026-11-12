@@ -20,6 +20,8 @@ fn env() -> Env {
             ("mint".to_string(), pk(3)),
             ("stream".to_string(), pk(31)),
             ("ticket".to_string(), pk(32)),
+            ("asset".to_string(), pk(33)),
+            ("collection".to_string(), pk(34)),
         ]
         .into(),
     }
@@ -585,6 +587,7 @@ fn every_builtin_template_expands_and_builds_with_everything_on() {
                 "period" => "60".to_string(),
                 "stream_name" => "Payroll".to_string(),
                 "ticket" => pk(25).to_string(),
+                "collection_name" => "x".to_string(),
                 "program" => pk(20).to_string(),
                 "buffer" => pk(21).to_string(),
                 "idl_buffer" => pk(22).to_string(),
