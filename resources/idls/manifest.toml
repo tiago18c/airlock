@@ -742,3 +742,26 @@ account pairs after updateValidatorListBalance's accounts are one hidden \
 remaining-accounts group. The Token program's mint account is added, so pool token \
 amounts read the pool mint's decimals; SOL amounts are in SOL; fees are shown as their \
 numerator and denominator. Display nodes added by hand."""
+
+# Sanctum's single-validator deployment of the SPL Stake Pool program, behind
+# many Sanctum LSTs. It publishes no IDL anywhere. This file is the
+# hand-written SPL Stake Pool file (program/src/instruction.rs at
+# program@v2.0.3,
+# https://github.com/solana-program/stake-pool/blob/864ba3c1c564cc270ca62b6e6b558f57538ae092/program/src/instruction.rs)
+# limited to the 9 instructions this executable was seen to run with that
+# layout; the program's own source is not public.
+[[idls]]
+file = "sanctum-spl-stake-pool.json"
+programId = "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY"
+name = "sanctumSplStakePool"
+networks = ["mainnet"]
+source = { kind = "hand" }
+changes = """Written by hand from StakePoolInstruction in solana-program/stake-pool at \
+program@v2.0.3, as spl-stake-pool.json, with this program's address, and only the 9 \
+instructions this program's executed transactions decode exactly with: the two deposits, \
+the two withdrawals, the balance cranks and the staker's additional increase and \
+decrease. SOL deposit and withdraw authorities are optional trailing accounts, omitted \
+when absent. The validator and transient stake account pairs after \
+updateValidatorListBalance's accounts are one hidden remaining-accounts group. The Token \
+program's mint account is added, so pool token amounts read the pool mint's decimals. \
+Display nodes added by hand."""
