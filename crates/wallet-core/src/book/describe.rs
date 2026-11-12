@@ -743,6 +743,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("76y77prsiCMvXMjuoZ5VRrhG5qYBrUMYTE5WgHqgjEn6"),
         "LayerZero Endpoint Program",
     ),
+    (
+        Pubkey::from_str_const("5ocnV1qiCgaQR8Jb8xWnVbApfaygJ8tNoZfgPwsgx9kx"),
+        "Sanctum Infinity Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

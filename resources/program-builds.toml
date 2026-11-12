@@ -903,3 +903,12 @@ programHash = "9012552d8a15d230791e2582e6320eff872a651fb110d2198020ed12e5547e74"
 authority = "4QMpxbFQpupw6QzteuYnjgnfaP6BGZx4fW3PZTfBzTuY"
 idlSha256 = "1d3a7a74c3983e5acf9f393596ba54922f27b492dee2b32d013b19d676c3583d"
 reviewed = "2026-11-12"
+
+[[builds]]
+# infController (pack). Deployed at slot 411884877 (2026-04-08) from inf-1.5's controller; OtterSec has only unverified records naming a 2024 commit of the archived S repository. The binary logs exactly the file's 27 instruction names, with no Initialize at tag 22, and holds the whitelisted SOL value calculator check that inf-1.5 merged on 2026-04-10 (29dbbd4), whose IDL and instruction layouts are those of the V2 merge (781fc2e). Mainnet transactions of syncSolValue, swapExactIn, swapExactInV2, removeLiquidity, startRebalance and endRebalance decode with exactly the data length the arguments take and every account named, the calculator and pricing programs at the positions the count arguments give.
+programId = "5ocnV1qiCgaQR8Jb8xWnVbApfaygJ8tNoZfgPwsgx9kx"
+network = "mainnet"
+programHash = "25d3ade9efe70e40df16a1553c2cceac511a96e5a305046d273d884065e6e6e4"
+authority = "47SND7bGKvNXrqfP1bjsLCbwTgZhFBzAgmZ42QSkRScz"
+idlSha256 = "e1fb8b0653a469257fd6d597abe2372da6eb962d7bb9d5f9db96102b67dd7573"
+reviewed = "2026-11-12"
