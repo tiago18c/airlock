@@ -83,6 +83,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 ### Security
 - Restoring a Vector XMSS wallet from its recovery phrase a second time now signs the same rotation with the same signature. Before, each restore made a new signature with the key's last leaf, and two of those could give the key away.
 - An account state that claims more leaves than a key has is refused. Before, scanning one made the key unable to sign on that device.
+- **An Anchor IDL whose generic type hands its own parameter to another is now read**, as GMX's does with its prices. Before, reading one closed the app, and since a program's IDL is read from the chain as soon as a transaction names the program, a transaction of such a program could not be reviewed at all. An IDL whose generic types hold themselves, or expand into more than a type may hold, is refused, and its instructions read raw.
 
 ### Fixed
 - **The desktop app no longer closes when something comes up while a Programs file dialog is open**, such as a site's request through the browser bridge. **Import IDL**, **Import bundle** and **Export IDLs** now open their dialog without freezing the window, and are greyed out until it closes, so a second one cannot open beside it.

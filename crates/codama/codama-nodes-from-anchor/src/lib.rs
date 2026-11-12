@@ -44,6 +44,10 @@ pub enum AnchorIdlError {
     EventTypeMissing(String),
     #[error("generic type `{0}` is not defined in the IDL")]
     GenericTypeMissing(String),
+    #[error("generic type `{0}` expands without end, or further than a type may")]
+    GenericExpansionLimit(String),
+    #[error("a type nests more than {0} levels deep")]
+    TypeTooDeep(usize),
     #[error("PDA seed kind `{0}` is not supported")]
     SeedKindUnimplemented(String),
     #[error("account `{0}` data must be a struct type")]

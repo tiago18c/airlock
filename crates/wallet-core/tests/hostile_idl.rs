@@ -240,6 +240,98 @@ fn an_anchor_idl_is_held_to_the_same_limit() {
     assert!(!reads(anchor_vectors(120), data));
 }
 
+/// An Anchor file of the 0.30 spec with `types`, and one instruction tagged
+/// `1..=8` whose argument is `argument`.
+fn anchor_generics(types: &[String], argument: &str) -> String {
+    format!(
+        r#"{{"address":"{PROGRAM}","metadata":{{"name":"evil","version":"0.1.0","spec":"0.1.0"}},
+          "instructions":[{{"name":"boom","discriminator":[1,2,3,4,5,6,7,8],"accounts":[],
+            "args":[{{"name":"x","type":{argument}}}]}}],
+          "types":[{}]}}"#,
+        types.join(",")
+    )
+}
+
+/// A generic struct `name<T>` of the 0.30 spec, with `fields` as
+/// `(name, type)`.
+fn template(name: &str, fields: &[(&str, String)]) -> String {
+    let fields: Vec<String> = fields
+        .iter()
+        .map(|(name, ty)| format!(r#"{{"name":"{name}","type":{ty}}}"#))
+        .collect();
+    format!(
+        r#"{{"name":"{name}","generics":[{{"kind":"type","name":"T"}}],
+          "type":{{"kind":"struct","fields":[{}]}}}}"#,
+        fields.join(",")
+    )
+}
+
+/// The generic `name`, used with the type `argument`.
+fn used(name: &str, argument: &str) -> String {
+    format!(r#"{{"defined":{{"name":"{name}","generics":[{{"kind":"type","type":{argument}}}]}}}}"#)
+}
+
+const T: &str = r#"{"generic":"T"}"#;
+
+/// [`reads`], for an Anchor file with generic `types` and `data` after the
+/// instruction's tag.
+fn reads_generics(types: &[String], argument: &str, data: &[u8]) -> bool {
+    let mut tagged = vec![1, 2, 3, 4, 5, 6, 7, 8];
+    tagged.extend_from_slice(data);
+    reads(anchor_generics(types, argument), tagged)
+}
+
+/// A generic that hands its own parameter to another, under the same name,
+/// as a program's price types do.
+#[test]
+fn an_anchor_generic_that_passes_its_parameter_on_is_read() {
+    let types = [
+        template("Price", &[("min", T.into()), ("max", T.into())]),
+        template("Prices", &[("index", used("Price", T))]),
+    ];
+    assert!(reads_generics(&types, &used("Prices", r#""u8""#), &[1, 2]));
+}
+
+#[test]
+fn an_anchor_generic_that_holds_itself_is_left_unread() {
+    let own = format!(r#"{{"option":{}}}"#, used("Node", T));
+    let types = [template("Node", &[("value", T.into()), ("next", own)])];
+    assert!(!reads_generics(&types, &used("Node", r#""u8""#), &[1, 0]));
+
+    let types = [
+        template("Ping", &[("pong", used("Pong", T))]),
+        template("Pong", &[("ping", used("Ping", T))]),
+    ];
+    assert!(!reads_generics(&types, &used("Ping", r#""u8""#), &[1]));
+}
+
+/// A few lines that expand to a tree of 2^14 structs, or hand on an argument
+/// of 2^15 parts.
+#[test]
+fn anchor_generics_that_double_at_each_level_are_left_unread() {
+    let level = |at: usize| format!("Level{at}");
+    let mut wide: Vec<String> = (0..14)
+        .map(|at| {
+            let next = level(at + 1);
+            template(&level(at), &[("a", used(&next, T)), ("b", used(&next, T))])
+        })
+        .collect();
+    wide.push(template(&level(14), &[("v", T.into())]));
+    assert!(!reads_generics(&wide, &used("Level0", r#""u8""#), &[0; 64]));
+
+    let pair = format!(r#"{{"array":[{T},2]}}"#);
+    let pairs = (0..3).fold(pair, |inner, _| format!(r#"{{"array":[{inner},2]}}"#));
+    let mut heavy: Vec<String> = (0..15)
+        .map(|at| template(&level(at), &[("next", used(&level(at + 1), &pairs))]))
+        .collect();
+    heavy.push(template(&level(15), &[("v", T.into())]));
+    assert!(!reads_generics(
+        &heavy,
+        &used("Level0", r#""u8""#),
+        &[0; 64]
+    ));
+}
+
 #[test]
 fn discriminators_that_each_copy_the_tree_stop_at_a_limit() {
     let types = [defined("tag", U8)];
