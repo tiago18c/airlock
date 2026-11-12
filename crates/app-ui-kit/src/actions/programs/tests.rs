@@ -112,6 +112,21 @@ impl Screen {
         }
     }
 
+    /// Runs the window until the dialog's task has let go of the flag, or
+    /// fails after a deadline far past what any runner takes. A fixed number
+    /// of short waits is not enough on a loaded CI runner: the task that
+    /// reads the file may not have run by the last of them.
+    async fn returned(&mut self) {
+        let deadline = tokio::time::Instant::now() + Duration::from_secs(20);
+        while self.dialog_open() {
+            assert!(
+                tokio::time::Instant::now() < deadline,
+                "the dialog's task never returned"
+            );
+            self.settle().await;
+        }
+    }
+
     /// The pane's note and error.
     fn pane(&self) -> (Signal<Option<String>>, Signal<Option<String>>) {
         self.act(|| (Signal::new(None), Signal::new(None)))
@@ -187,7 +202,7 @@ async fn a_file_is_imported_after_the_click_that_asked_for_it_returns() {
     assert!(!opened.get(), "a second dialog opened");
 
     answer.send(Ok(MEMO.to_vec())).unwrap();
-    screen.settle().await;
+    screen.returned().await;
     assert_eq!(screen.said(note).as_deref(), Some("Imported memo."));
     assert_eq!(screen.said(error), None);
     assert_eq!(screen.selected(), Some(screen.memo_id()));
@@ -197,7 +212,7 @@ async fn a_file_is_imported_after_the_click_that_asked_for_it_returns() {
     let (answer, picked) = dialog::<Vec<u8>>();
     screen.act(|| import_one_from(screen.session, note, error, picked));
     drop(answer);
-    screen.settle().await;
+    screen.returned().await;
     assert_eq!(screen.said(note).as_deref(), Some("Imported memo."));
     assert!(!screen.dialog_open());
 
@@ -205,7 +220,7 @@ async fn a_file_is_imported_after_the_click_that_asked_for_it_returns() {
     let (answer, picked) = dialog::<IdlFiles>();
     screen.act(|| import_folder_from(screen.session, note, error, picked));
     answer.send(Err(IdlFilesError::NoIndex)).unwrap();
-    screen.settle().await;
+    screen.returned().await;
     assert_eq!(screen.said(note), None);
     assert_eq!(
         screen.said(error).as_deref(),
@@ -237,7 +252,7 @@ async fn an_export_says_where_it_went_once_its_dialog_returns() {
     assert_eq!(screen.said(note), None);
 
     answer.send(Ok(std::path::PathBuf::from("out"))).unwrap();
-    screen.settle().await;
+    screen.returned().await;
     assert_eq!(screen.said(note).as_deref(), Some("Saved 2 files to out."));
     assert!(!screen.dialog_open());
 }
@@ -258,7 +273,7 @@ async fn an_import_finishes_when_the_pane_is_left_while_its_dialog_is_open() {
     });
 
     answer.send(Ok(MEMO.to_vec())).unwrap();
-    screen.settle().await;
+    screen.returned().await;
     assert_eq!(screen.selected(), Some(screen.memo_id()));
     assert!(!screen.dialog_open());
 
@@ -266,11 +281,11 @@ async fn an_import_finishes_when_the_pane_is_left_while_its_dialog_is_open() {
     let (answer, picked) = dialog::<IdlFiles>();
     screen.act(|| import_folder_from(screen.session, note, error, picked));
     answer.send(Err(IdlFilesError::NoIndex)).unwrap();
-    screen.settle().await;
+    screen.returned().await;
     assert!(!screen.dialog_open());
     let (answer, picked) = dialog::<std::path::PathBuf>();
     screen.act(|| export_to(screen.session, note, error, Vec::new(), |_| picked));
     answer.send(Ok(std::path::PathBuf::from("out"))).unwrap();
-    screen.settle().await;
+    screen.returned().await;
     assert!(!screen.dialog_open());
 }
