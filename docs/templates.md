@@ -107,6 +107,8 @@ Order is the order of the `[[block]]` entries, so an option's block sits where i
 
 **An input has no declared type.** It takes the widget of the field it is bound to: an address picker for an account or a public key argument, a select for an enum, a checkbox for a boolean, a scaled amount where the IDL declares a scale (phase 1). Bound to several fields, they must agree, or the file is refused. An input used only as a function's argument takes that parameter's type. An optional input left blank leaves its fields blank, which the IDL form reads as it does on Build (`None`, the IDL default, or an optional account left out); a required field bound to an optional input refuses the file.
 
+**An argument made of fields** (a struct, directly or through a type the IDL defines) is one field per member, named `argument.member`, as Build shows it: `arguments = { "params.commit" = "$commit" }`. The key is quoted, since TOML reads a bare dotted key as a table. **A list** of text, numbers, addresses or booleans is typed as a JSON array, and blank is the empty list, so it may be bound to an optional input.
+
 **A field the template does not mention** is left to the IDL: a derived account is derived, an argument with a default takes it. A required field with no binding and no default refuses the file when it is checked against the IDL.
 
 ### Built-in names
@@ -129,6 +131,8 @@ The whole list. A function is pure, or names the chain fact it needs.
 | `rent-for <bytes>` | Lamports | the node's rent for that size |
 | `decimals-of <mint>` | The mint's decimals | the mint account |
 | `token-program-of <mint>` | Token or Token-2022, whichever owns the mint | the mint account |
+| `program-data-of <program>` | The program data account the upgradeable loader keeps the program's code in | nothing |
+| `idl-metadata-of <program>` | The program's canonical IDL account on program-metadata (seed `idl`) | nothing |
 
 The two size functions read the template's own enabled blocks, so the checkboxes and the size cannot disagree. They count each enabled block whose program is a Token-2022 alias and whose `mint` is bound to the same reference as the function's argument, each extension once. A length that would equal a multisig's (355) is two bytes more, as Token-2022 makes it. An `initialize…` instruction on that mint the table does not know refuses the template when it is checked. A Token-2022 mint is created at the size without metadata and funded for the size with it, because `initializeTokenMetadata` grows the account itself. The extension sizes are a table in Rust, checked by running every shipped option against the real program ([Adding a shipped template](#adding-a-shipped-template)). Beside the shipped options it knows interest-bearing, transfer hook, group pointer, group member pointer, pausable, scaled UI amount, default account state and confidential transfers with their fee, each landed by a flow test. The program takes the confidential transfer fee only on a mint with a transfer fee and confidential transfers, and refuses those two together without it; a mint whose accounts start frozen needs a freeze authority. A template cannot say options go together, so the size functions do not check this: the simulation does.
 

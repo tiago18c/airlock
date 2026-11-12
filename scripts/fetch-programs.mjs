@@ -58,6 +58,20 @@ export const PROGRAMS = [
     address: "7xs3LhQjKoCGfXm2qst7LUhismrG1bGxz5Jw6AHij7eu",
     sha256: "1e4f8833eca89476327d32f24a356af1b5ba8a9fa17483d82d0eb055f69f5b39",
   },
+  {
+    // The program-metadata program, which keeps programs' IDLs:
+    // github.com/solana-program/program-metadata.
+    file: "program_metadata.so",
+    address: "ProgM6JCCvbYkfKqJYHePx4xxSUSqJp7rh8Lyv7nk7S",
+    sha256: "879f5bf7653cda05305a013c2e05b2463abfcc0c8e9b823eef238a027b63c05e",
+  },
+  {
+    // OtterSec's verify program, where solana-verify records the repository
+    // and commit a program is built from.
+    file: "otter_verify.so",
+    address: "verifycLy8mB96wd9wqq3WDXQwM4oU6r42Th37Db9fC",
+    sha256: "b501789b71bb383556f7c1cc7a01e51ae9bb4111bf14e4dec9f09b18e506307a",
+  },
 ];
 
 const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";

@@ -51,6 +51,11 @@ pub enum IdlArgKind {
         variants: Vec<String>,
     },
     Option(Box<IdlArgKind>),
+    /// A list of any length, typed as a JSON array of its items: strings
+    /// for text and addresses, numbers or strings for integers, `true` and
+    /// `false`. Blank is the empty list. Only text, integers, addresses and
+    /// booleans are items.
+    List(Box<IdlArgKind>),
     Bytes,
     /// A Codama type this form does not have a widget for. The text is rejected
     /// at build time with `note`.
@@ -78,6 +83,14 @@ pub enum IdlArgScale {
     },
 }
 
+impl IdlArgField {
+    /// Whether the field may be left blank: it then takes the IDL default,
+    /// none for an option, or the empty list.
+    pub fn may_be_blank(&self) -> bool {
+        self.blank_uses_default || matches!(self.kind, IdlArgKind::Option(_) | IdlArgKind::List(_))
+    }
+}
+
 impl IdlArgScale {
     /// The unit the IDL names, if any.
     pub fn unit(&self) -> Option<&str> {
@@ -89,6 +102,10 @@ impl IdlArgScale {
 }
 
 /// One argument row. Omitted defaults are absent.
+///
+/// An argument whose type is a struct is one row per field of the struct,
+/// named `argument.field` ([`STRUCT_FIELD_SEPARATOR`]), and the build puts
+/// the struct back together from them.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct IdlArgField {
     pub name: String,

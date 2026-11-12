@@ -1,0 +1,124 @@
+format = 1
+name = "Upgrade a program"
+summary = "Deploys the build written to a buffer, and can update the program's IDL and its verified build in the same transaction."
+
+[programs]
+loader = "BPFLoaderUpgradeab1e11111111111111111111111"
+metadata = "ProgM6JCCvbYkfKqJYHePx4xxSUSqJp7rh8Lyv7nk7S"
+verify = "verifycLy8mB96wd9wqq3WDXQwM4oU6r42Th37Db9fC"
+
+[[option]]
+name = "idl"
+label = "Update its IDL"
+hint = "Copies the IDL written to a program-metadata buffer into the program's IDL account, then closes the buffer. The IDL account must exist already."
+
+[[option]]
+name = "verified_build"
+label = "Update its verified build"
+hint = "Rewrites the record solana-verify keeps of the repository and commit the program is built from. The record must exist already."
+
+[[input]]
+name = "program"
+label = "Program"
+
+[[input]]
+name = "buffer"
+label = "Buffer"
+hint = "Holds the new build, as solana program write-buffer leaves it. Its authority must be the program's upgrade authority."
+
+[[input]]
+name = "refund"
+label = "Refund to"
+hint = "Receives the lamports of the closed buffers and what the IDL account no longer needs."
+default = "$wallet"
+
+[[input]]
+name = "idl_buffer"
+label = "IDL buffer"
+hint = "A program-metadata buffer holding the new IDL, as program-metadata write idl leaves it with --buffer. It may grow the IDL account by at most 10 KiB."
+option = "idl"
+
+[[input]]
+name = "encoding"
+label = "Encoding"
+hint = "How the IDL in the buffer is encoded. program-metadata writes UTF-8 unless told otherwise."
+default = "utf8"
+option = "idl"
+
+[[input]]
+name = "compression"
+label = "Compression"
+hint = "How the IDL in the buffer is compressed. program-metadata compresses with zlib unless told otherwise."
+default = "zlib"
+option = "idl"
+
+[[input]]
+name = "format"
+label = "Format"
+default = "json"
+option = "idl"
+
+[[input]]
+name = "repository"
+label = "Repository"
+hint = "The repository the build is made from, as solana-verify was given it."
+option = "verified_build"
+
+[[input]]
+name = "commit"
+label = "Commit"
+option = "verified_build"
+
+[[input]]
+name = "version"
+label = "solana-verify version"
+hint = "The version of solana-verify that made the build, as solana-verify --version prints it."
+option = "verified_build"
+
+[[input]]
+name = "build_args"
+label = "Build arguments"
+hint = "What solana-verify passed to the build, such as --library-name and its value, as a JSON list of strings. Leave blank for none."
+optional = true
+option = "verified_build"
+
+[[input]]
+name = "deploy_slot"
+label = "Deploy slot"
+hint = "solana-verify records the slot of the program's last deploy, which for this upgrade is not known until it lands. Type the slot you expect, or update the record again once it has landed."
+option = "verified_build"
+
+[values]
+idl_account = "idl-metadata-of $program"
+program_data = "program-data-of $program"
+
+[[block]]
+program = "$loader"
+instruction = "upgrade"
+accounts = { authority = "$wallet", bufferAccount = "$buffer", programAccount = "$program", programDataAccount = "$program_data", spillAccount = "$refund" }
+
+[[block]]
+when = "idl"
+program = "$metadata"
+instruction = "setData"
+accounts = { authority = "$wallet", buffer = "$idl_buffer", metadata = "$idl_account", program = "$program", programData = "$program_data" }
+arguments = { compression = "$compression", dataSource = "direct", encoding = "$encoding", format = "$format" }
+
+[[block]]
+when = "idl"
+program = "$metadata"
+instruction = "close"
+accounts = { account = "$idl_buffer", authority = "$wallet", destination = "$idl_account", program = "$program", programData = "$program_data" }
+
+[[block]]
+when = "idl"
+program = "$metadata"
+instruction = "trim"
+accounts = { account = "$idl_account", authority = "$wallet", destination = "$refund", program = "$program", programData = "$program_data" }
+
+[[block]]
+when = "verified_build"
+program = "$verify"
+instruction = "update"
+accounts = { authority = "$wallet", programAddress = "$program" }
+arguments = { "params.args" = "$build_args", "params.commit" = "$commit", "params.deploySlot" = "$deploy_slot", "params.gitUrl" = "$repository", "params.version" = "$version" }

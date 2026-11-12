@@ -30,7 +30,7 @@ pub fn idl_instruction_form(
     let arguments: Vec<IdlArgField> = node
         .arguments
         .iter()
-        .filter_map(|argument| argument_field(&client.root().program, node, argument))
+        .flat_map(|argument| argument_fields(&client.root().program, node, argument))
         .collect();
     // Seeds read an argument as the program does: in base units.
     let args = base_unit_text(&arguments, &argument_text(input));
@@ -128,6 +128,57 @@ pub(super) fn account_field(
     }
 }
 
+/// Between a struct argument's name and one of its fields: `params.gitUrl`.
+pub const STRUCT_FIELD_SEPARATOR: char = '.';
+
+/// The rows of one argument: one, or one per field when its type is a
+/// struct, directly or through a link to the program's own types, and it
+/// has no default. A field is typed as an argument of its type would be,
+/// in base units; a struct inside a struct is a field nobody can fill.
+pub(super) fn argument_fields(
+    program: &ProgramNode,
+    instruction: &InstructionNode,
+    argument: &InstructionArgumentNode,
+) -> Vec<IdlArgField> {
+    if argument.default_value_strategy == Some(DefaultValueStrategy::Omitted) {
+        return Vec::new();
+    }
+    match struct_fields(program, &argument.r#type, 0) {
+        Some(fields) if !fields.is_empty() && argument.default_value.is_none() => fields
+            .iter()
+            .map(|field| IdlArgField {
+                name: format!(
+                    "{}{STRUCT_FIELD_SEPARATOR}{}",
+                    argument.name.as_str(),
+                    field.name.as_str()
+                ),
+                kind: classify_in(program, &field.r#type),
+                blank_uses_default: false,
+                scale: IdlArgScale::None,
+            })
+            .collect(),
+        _ => argument_field(program, instruction, argument)
+            .into_iter()
+            .collect(),
+    }
+}
+
+/// The fields of `ty` when it is a struct, following links as
+/// [`classify_in`] does.
+fn struct_fields<'a>(
+    program: &'a ProgramNode,
+    ty: &'a TypeNode,
+    links: usize,
+) -> Option<&'a [codama_nodes::StructFieldTypeNode]> {
+    match unwrap_type(ty) {
+        TypeNode::Struct(node) => Some(&node.fields),
+        TypeNode::Link(link) if links < LINK_DEPTH => {
+            struct_fields(program, linked_type(program, link)?, links + 1)
+        }
+        _ => None,
+    }
+}
+
 pub(super) fn argument_field(
     program: &ProgramNode,
     instruction: &InstructionNode,
@@ -196,6 +247,26 @@ fn classify_at(program: Option<&ProgramNode>, ty: &TypeNode, links: usize) -> Id
         }
         TypeNode::ZeroableOption(node) => {
             IdlArgKind::Option(Box::new(classify_at(program, &node.item, links)))
+        }
+        TypeNode::Array(node) => {
+            let item = classify_at(program, &node.item, links);
+            let listable = matches!(
+                item,
+                IdlArgKind::String
+                    | IdlArgKind::Pubkey
+                    | IdlArgKind::Bool
+                    | IdlArgKind::Integer { float: false, .. }
+            );
+            match node.count.as_ref() {
+                codama_nodes::CountNode::Prefixed(_) | codama_nodes::CountNode::Remainder(_)
+                    if listable =>
+                {
+                    IdlArgKind::List(Box::new(item))
+                }
+                _ => IdlArgKind::Raw {
+                    note: "array".to_string(),
+                },
+            }
         }
         TypeNode::Enum(node) => match unit_variants(node) {
             Some(variants) => IdlArgKind::Enum { variants },

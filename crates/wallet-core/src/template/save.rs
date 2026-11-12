@@ -213,8 +213,7 @@ impl SavePlan {
                 let address = (*strip_option(&argument.kind) == IdlArgKind::Pubkey)
                     .then(|| Pubkey::from_str(text.trim()).ok())
                     .flatten();
-                let optional =
-                    argument.blank_uses_default || matches!(argument.kind, IdlArgKind::Option(_));
+                let optional = argument.may_be_blank();
                 fields.push(field(
                     FieldAt::new(index, &argument.name),
                     false,

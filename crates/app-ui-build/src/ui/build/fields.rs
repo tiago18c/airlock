@@ -242,7 +242,7 @@ pub(in crate::ui) fn argument_placeholder(argument: &IdlArgField) -> String {
     };
     let blank = if argument.blank_uses_default {
         Some("blank for the default")
-    } else if matches!(argument.kind, IdlArgKind::Option(_)) {
+    } else if matches!(argument.kind, IdlArgKind::Option(_) | IdlArgKind::List(_)) {
         Some("blank for none")
     } else {
         None
@@ -263,6 +263,11 @@ pub(in crate::ui) fn kind_placeholder(
     };
     let takes = match inner {
         IdlArgKind::Bytes => "hex".to_string(),
+        IdlArgKind::List(item) => match **item {
+            IdlArgKind::String | IdlArgKind::Pubkey => r#"a JSON list, ["a", "b"]"#.to_string(),
+            IdlArgKind::Bool => "a JSON list, [true, false]".to_string(),
+            _ => "a JSON list, [1, 2]".to_string(),
+        },
         IdlArgKind::Raw { note } => note.clone(),
         IdlArgKind::Integer { float: true, .. } => "number".to_string(),
         IdlArgKind::Integer { .. } => match places {

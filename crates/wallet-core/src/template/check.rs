@@ -383,7 +383,7 @@ impl Pass<'_> {
             };
             self.value_fits(number, block, name, term, address, integer);
             self.observe(number, block, name, term, kind);
-            if !field.blank_uses_default && !matches!(field.kind, IdlArgKind::Option(_)) {
+            if !field.may_be_blank() {
                 self.required(number, block, name, term);
             }
         }
@@ -403,10 +403,7 @@ impl Pass<'_> {
             }
         }
         for field in &form.arguments {
-            if !field.blank_uses_default
-                && !matches!(field.kind, IdlArgKind::Option(_))
-                && !block.arguments.contains_key(&field.name)
-            {
+            if !field.may_be_blank() && !block.arguments.contains_key(&field.name) {
                 self.problem(
                     number,
                     instruction,
