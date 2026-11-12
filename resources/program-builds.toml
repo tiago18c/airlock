@@ -626,3 +626,12 @@ idlSha256 = "e39eaed10c3c9819c00989f1eaa2463926292fb1429e7aaf14080d3860482492"
 source = { repo = "https://github.com/smartcontractkit/chainlink-ccip", commit = "9546a59bd0a3cee4ddc8ae4042da533e62225b78" }
 verified = "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf"
 reviewed = "2026-11-12"
+
+[[builds]]
+# splStakePool (pack). Deployed at slot 429882117 (2026-06-30); OtterSec has no verify record. Its security.txt names program@v2.0.3, but since commit 0438d99 (2026-04-13) that text is made from the crate version, which stayed 2.0.3 until 2026-09-09, so the build is from a commit after the tag, likely the program@v2.1.0 tag (54cdceda); the instruction enum, its account lists and the processor's account reads are the same at the v2.0.3 tag and at every commit of that range. The binary logs exactly the IDL's 27 instruction names. Mainnet transactions of 10 instructions decode with every account named and exactly the data length the IDL describes.
+programId = "SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy"
+network = "mainnet"
+programHash = "8df58bc9f9428c02bf34fa845ae2961274156e7ff07a8dc1be0018dd765baeff"
+authority = "dPpFfahSWhm5M2RB3nVaHsXfnh9ooz5bWtR3WeUguDH"
+idlSha256 = "f4050d693768bf24797eff1d1214c9fcfc511e1de8e872536b07b5a0dcc5dd01"
+reviewed = "2026-11-12"

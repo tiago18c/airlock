@@ -718,3 +718,27 @@ table again there. The Token program's mint account is added, so the amount \
 withdrawBilledFunds withdraws reads the fee token's decimals; the token amounts of \
 ccipSend, getFee and deriveAccountsCcipSend sit in a list whose mints are not accounts \
 of the instruction, so they are in base units. Display nodes added by hand."""
+
+# The SPL Stake Pool program, behind JitoSOL and most other liquid staking
+# tokens. It publishes no IDL anywhere: no program-metadata or Anchor account
+# on any network, and none in solana-program/stake-pool. This file is written
+# by hand from program/src/instruction.rs at program@v2.0.3
+# (https://github.com/solana-program/stake-pool/blob/864ba3c1c564cc270ca62b6e6b558f57538ae092/program/src/instruction.rs)
+# and checked against mainnet transactions of 10 of its 27 instructions;
+# devnet and testnet run other builds.
+[[idls]]
+file = "spl-stake-pool.json"
+programId = "SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy"
+name = "splStakePool"
+networks = ["mainnet"]
+source = { kind = "hand" }
+changes = """Written by hand from StakePoolInstruction in program/src/instruction.rs at \
+program@v2.0.3: a one-byte tag, then the variant's Borsh fields; account orders and \
+flags from each variant's doc comment, and from the source's own instruction builders \
+where the two differ. The trailing accounts the program reads only when passed (the SOL \
+deposit and withdraw authorities, initialize's deposit authority, setFundingAuthority's \
+new authority) are optional and omitted when absent. The validator and transient stake \
+account pairs after updateValidatorListBalance's accounts are one hidden \
+remaining-accounts group. The Token program's mint account is added, so pool token \
+amounts read the pool mint's decimals; SOL amounts are in SOL; fees are shown as their \
+numerator and denominator. Display nodes added by hand."""
