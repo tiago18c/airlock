@@ -1101,3 +1101,22 @@ amounts and a pool's stake cap read the decimals of the staked token. create_poo
 stake cap and expiry time are read as absent when zero, which the program and \
 Streamflow's SDK take as "no cap" and "never", instead of as 0 tokens and 1 January \
 1970. Display nodes added by hand."""
+
+# Magic Eden's NFT AMM (mmm): the pools behind collection offers and instant
+# NFT buys and sells on Magic Eden. Its Anchor IDL account holds a legacy
+# Anchor IDL (0.2.0), which carries no program address.
+[[idls]]
+file = "magic-eden-mmm.json"
+programId = "mmm3XBJg5gk8XJxEKBvdgptZz6SgK4tXvn36sodowMc"
+name = "mmm"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "eeacd7eb330cf464fc1c8e49cf3bdb381172930b3a90dce44ab836e651e1dece" }
+changes = """Converted from Anchor (legacy format) to Codama. Set program.publicKey to the program \
+id, which a legacy Anchor IDL does not carry. Declared remaining accounts from the \
+program source (magiceden-oss/mmm): on the instructions that sell an NFT to a pool, one \
+shown group for the Magic Eden (M2) program and shared escrow when the pool draws on it, \
+then the NFT's creators (Token-2022 NFTs: a creator and transfer hook accounts; \
+compressed NFTs: the creators and the merkle proof path); on the instructions that buy \
+an NFT from a pool, one shown group for the creators (Token-2022: a creator and transfer \
+hook accounts); on Token-2022 deposits and withdrawals, one shown group for transfer \
+hook accounts. Display nodes added by hand."""
