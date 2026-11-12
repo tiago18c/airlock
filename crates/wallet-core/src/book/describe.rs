@@ -811,6 +811,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("up12bytoZBmwofqsySf2uqKQ7zpfeKiAWwfvqzJjtRt"),
         "Upshift Vault Program",
     ),
+    (
+        Pubkey::from_str_const("QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB"),
+        "Quarry Mine Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

@@ -1,0 +1,597 @@
+{
+  "accounts": {},
+  "instructions": [
+    {
+      "accounts": [
+        "4Kf7FLWtEPPPcUpizxK82QYNoLSPd2fQTiVLSBx5oKqz:w",
+        "QMWoBmAyJLAsA1Lh9ugMTw2gciTihncciphzdNzdZYV",
+        "Foxgykzeevp3dSPmjfudgwKhqEJDvtzudM2p2ZkuwUvN:w",
+        "vPtS4ywrbEuufwPkBXsCYkeTBfpzCd6hF52p8kJGt9b:w",
+        "DF7n1yapwfYhbXCzyf5TCoj2RBARE8unfPqn5QwwCHAV:w",
+        "B9C2pyDJv3bjLP3nL5wQ1tkjxhSgFPJpeNvkjhTzdqF7:w",
+        "CoQrWV1Rck8LLsNRqmrjAMYt19bBHPvLZiMzZPgcxr9B:sw",
+        "4Z6SYygC1uAtEwcG973Y7vncMTRhm42hPPuHUDmJNi1q:w",
+        "EkyQJrSAepqKMwZj7juUdaCFszHD5kiy3AT7S9fLMpwE:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "9aE2s74qwiyWkRyRtfxKYLTX6XFLdoaTx8UEr6DE8SEd"
+      ],
+      "data": "45319ee5d48588e3",
+      "fields": [
+        [
+          "Mint Wrapper",
+          "4Kf7FLWtEPPPcUpizxK82QYNoLSPd2fQTiVLSBx5oKqz"
+        ],
+        [
+          "Rewarder's Minter Entry",
+          "Foxgykzeevp3dSPmjfudgwKhqEJDvtzudM2p2ZkuwUvN"
+        ],
+        [
+          "Rewards Token",
+          "vPtS4ywrbEuufwPkBXsCYkeTBfpzCd6hF52p8kJGt9b"
+        ],
+        [
+          "Rewards Token Account",
+          "DF7n1yapwfYhbXCzyf5TCoj2RBARE8unfPqn5QwwCHAV"
+        ],
+        [
+          "Claim Fee Token Account",
+          "B9C2pyDJv3bjLP3nL5wQ1tkjxhSgFPJpeNvkjhTzdqF7"
+        ],
+        [
+          "Miner Owner",
+          "CoQrWV1Rck8LLsNRqmrjAMYt19bBHPvLZiMzZPgcxr9B"
+        ],
+        [
+          "Miner",
+          "4Z6SYygC1uAtEwcG973Y7vncMTRhm42hPPuHUDmJNi1q"
+        ],
+        [
+          "Quarry",
+          "EkyQJrSAepqKMwZj7juUdaCFszHD5kiy3AT7S9fLMpwE"
+        ],
+        [
+          "Rewarder",
+          "9aE2s74qwiyWkRyRtfxKYLTX6XFLdoaTx8UEr6DE8SEd"
+        ]
+      ],
+      "from": "jsJXoGnsizL4gAbJoWYHq8rVqVQpt9m8awi74gQBC1Gk2iEGNixDSF2Kh868JP3k8ohYWbKFoZfonyyXqLwjsms#1",
+      "intent": "Claim mining rewards",
+      "programId": "QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB",
+      "sentence": "CoQrWV1Rck8LLsNRqmrjAMYt19bBHPvLZiMzZPgcxr9B claims the rewards miner 4Z6SYygC1uAtEwcG973Y7vncMTRhm42hPPuHUDmJNi1q has earned in quarry EkyQJrSAepqKMwZj7juUdaCFszHD5kiy3AT7S9fLMpwE, minted in vPtS4ywrbEuufwPkBXsCYkeTBfpzCd6hF52p8kJGt9b into DF7n1yapwfYhbXCzyf5TCoj2RBARE8unfPqn5QwwCHAV less the rewarder's claim fee, which goes to B9C2pyDJv3bjLP3nL5wQ1tkjxhSgFPJpeNvkjhTzdqF7",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "5nv4zcxgd45xnKg5jZk3M5ogy2JjWyA7FU1jXNQxKPVe:w",
+        "QMWoBmAyJLAsA1Lh9ugMTw2gciTihncciphzdNzdZYV",
+        "BwPEsaHAnvS4indyoDpKR4NDpSYCXTxB3gaUN1piTqgJ:w",
+        "iouFd9x3xkhMvY9SGHcecG8jbzD6xKtdrTQo4yJnePs:w",
+        "EBH82qx8HcjQrhgcLnoKyLwUM1TpAWSLgE1V6RKDWQpB:w",
+        "ArvEcdQbR94HN3uYGYeyEwnCXZvqjuWHrL6ocZp6EuPB:w",
+        "BHBYuva9ZB3mGC2HeEjRR2BgFDJ32tPVxZSS5qa7ULxW:w",
+        "EpqKRBTXP6jZCPyXLwyYxcwmg7zw9EMkVyUZwHsV1LoL:w",
+        "Do6ReMoNPVNrWxjvmshpPGUg3tNs6px59y5UeLfahf2R:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "BFkV6nWN53hLypuDrpSdmjViHK98Aq6VET2qFtb9JV7W"
+      ],
+      "data": "45319ee5d48588e3",
+      "fields": [
+        [
+          "Mint Wrapper",
+          "5nv4zcxgd45xnKg5jZk3M5ogy2JjWyA7FU1jXNQxKPVe"
+        ],
+        [
+          "Rewarder's Minter Entry",
+          "BwPEsaHAnvS4indyoDpKR4NDpSYCXTxB3gaUN1piTqgJ"
+        ],
+        [
+          "Rewards Token",
+          "iouFd9x3xkhMvY9SGHcecG8jbzD6xKtdrTQo4yJnePs"
+        ],
+        [
+          "Rewards Token Account",
+          "EBH82qx8HcjQrhgcLnoKyLwUM1TpAWSLgE1V6RKDWQpB"
+        ],
+        [
+          "Claim Fee Token Account",
+          "ArvEcdQbR94HN3uYGYeyEwnCXZvqjuWHrL6ocZp6EuPB"
+        ],
+        [
+          "Miner Owner",
+          "BHBYuva9ZB3mGC2HeEjRR2BgFDJ32tPVxZSS5qa7ULxW"
+        ],
+        [
+          "Miner",
+          "EpqKRBTXP6jZCPyXLwyYxcwmg7zw9EMkVyUZwHsV1LoL"
+        ],
+        [
+          "Quarry",
+          "Do6ReMoNPVNrWxjvmshpPGUg3tNs6px59y5UeLfahf2R"
+        ],
+        [
+          "Rewarder",
+          "BFkV6nWN53hLypuDrpSdmjViHK98Aq6VET2qFtb9JV7W"
+        ]
+      ],
+      "from": "2ufyWxdLfiuHESfxoxy5KXEgsgN5qmYmzibtwtFV3DjYz3CGZNMux84Nd78DG48Us34cExmsVfvaFYmD4y7GNaq6#5.1",
+      "intent": "Claim mining rewards",
+      "programId": "QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB",
+      "sentence": "BHBYuva9ZB3mGC2HeEjRR2BgFDJ32tPVxZSS5qa7ULxW claims the rewards miner EpqKRBTXP6jZCPyXLwyYxcwmg7zw9EMkVyUZwHsV1LoL has earned in quarry Do6ReMoNPVNrWxjvmshpPGUg3tNs6px59y5UeLfahf2R, minted in iouFd9x3xkhMvY9SGHcecG8jbzD6xKtdrTQo4yJnePs into EBH82qx8HcjQrhgcLnoKyLwUM1TpAWSLgE1V6RKDWQpB less the rewarder's claim fee, which goes to ArvEcdQbR94HN3uYGYeyEwnCXZvqjuWHrL6ocZp6EuPB",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "2r6Qofh8uF1536BDjfHEK5r6SyKXcnLPgVHYwMSDZREu:w",
+        "3UE9zrhfwQBiM4n2yad3zYF3vDULdMWezRr8MBtJu7j4"
+      ],
+      "data": "2ad5f3f97d912cf2",
+      "fields": [
+        [
+          "Quarry",
+          "2r6Qofh8uF1536BDjfHEK5r6SyKXcnLPgVHYwMSDZREu"
+        ],
+        [
+          "Rewarder",
+          "3UE9zrhfwQBiM4n2yad3zYF3vDULdMWezRr8MBtJu7j4"
+        ]
+      ],
+      "from": "594wDnVdqhFLpL37XsKhKFrVziAEx5SaEB8nmxaCNodqjWiyKB7G2omqUSLhPxaxTxeLdeBEbySC9QbBZ4u99nMs#3",
+      "intent": "Update a quarry's rewards",
+      "programId": "QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB",
+      "sentence": "Brings quarry 2r6Qofh8uF1536BDjfHEK5r6SyKXcnLPgVHYwMSDZREu's reward rate up to date with rewarder 3UE9zrhfwQBiM4n2yad3zYF3vDULdMWezRr8MBtJu7j4",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "DQP4cuy1EbX1QZwAMj72W5Czd9koCfk5YXUrSQEd6dK8:w",
+        "3UE9zrhfwQBiM4n2yad3zYF3vDULdMWezRr8MBtJu7j4:w",
+        "5n9FiBqZJo22gBhiJw8rsmvL7Aqn2yeGsR496tFN18ja:w"
+      ],
+      "data": "baa8220fb287bd813f7dbd2b5e000000",
+      "fields": [
+        [
+          "Rewards Share (of the rewarder's total shares)",
+          "404,460,764,479"
+        ],
+        [
+          "Rewarder Authority",
+          "DQP4cuy1EbX1QZwAMj72W5Czd9koCfk5YXUrSQEd6dK8"
+        ],
+        [
+          "Rewarder",
+          "3UE9zrhfwQBiM4n2yad3zYF3vDULdMWezRr8MBtJu7j4"
+        ],
+        [
+          "Quarry",
+          "5n9FiBqZJo22gBhiJw8rsmvL7Aqn2yeGsR496tFN18ja"
+        ]
+      ],
+      "from": "3XcX5KYL1RGAMQh6fmvrYV6C9AUbcGh8B2Sh739KTKEJhvtxyXUpTCDKWnKJS3uCGTewpvPDV72nLniDGZQLysKV#3.2",
+      "intent": "Set a quarry's rewards share",
+      "programId": "QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB",
+      "sentence": "DQP4cuy1EbX1QZwAMj72W5Czd9koCfk5YXUrSQEd6dK8 sets quarry 5n9FiBqZJo22gBhiJw8rsmvL7Aqn2yeGsR496tFN18ja's share of rewarder 3UE9zrhfwQBiM4n2yad3zYF3vDULdMWezRr8MBtJu7j4's rewards to 404460764479 shares",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HEdzMSqMyhhu7tqrM9KbA3gHUYc6cFE3goWrRktikTrc:w",
+        "7s1eoR9QfqyTcEe54tMzTkY4HYkBCictPf53CfLSZShc:w",
+        "8k36P2RifbC9rYFqfvyYfgLmyq7RgA2JfmtYo57KMBLa:w",
+        "7PpGXYAzMPyqdaLcX7MjbQySPDnp5DJDnQiuyemrneGz:w",
+        "Cx8s4a1cd1bTeQvnZcxCuiJCL2Rao9eALJj5sA2B5Yjm:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "J829VB5Fi7DMoMLK7bsVGFM82cRU61BKtiPz9PNFdL7b"
+      ],
+      "data": "0204e13d13b66aaa002acf7702000000",
+      "fields": [
+        [
+          "Amount",
+          "10,600,000,000 base units"
+        ],
+        [
+          "Miner Owner",
+          "HEdzMSqMyhhu7tqrM9KbA3gHUYc6cFE3goWrRktikTrc"
+        ],
+        [
+          "Miner",
+          "7s1eoR9QfqyTcEe54tMzTkY4HYkBCictPf53CfLSZShc"
+        ],
+        [
+          "Quarry",
+          "8k36P2RifbC9rYFqfvyYfgLmyq7RgA2JfmtYo57KMBLa"
+        ],
+        [
+          "Miner Vault (staked tokens)",
+          "7PpGXYAzMPyqdaLcX7MjbQySPDnp5DJDnQiuyemrneGz"
+        ],
+        [
+          "To Token Account",
+          "Cx8s4a1cd1bTeQvnZcxCuiJCL2Rao9eALJj5sA2B5Yjm"
+        ],
+        [
+          "Rewarder",
+          "J829VB5Fi7DMoMLK7bsVGFM82cRU61BKtiPz9PNFdL7b"
+        ]
+      ],
+      "from": "2Qpr2amZq1WHEQSBUck8kfNW9vevk6gvWwocG6JDevnzk4f26Bnkg9S6HobSsmSEPtrwjKo6oJ73AFyb9R9yQ6Z2#1.1",
+      "intent": "Withdraw staked tokens",
+      "programId": "QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB",
+      "sentence": "HEdzMSqMyhhu7tqrM9KbA3gHUYc6cFE3goWrRktikTrc withdraws 10,600,000,000 base units of their staked tokens from quarry 8k36P2RifbC9rYFqfvyYfgLmyq7RgA2JfmtYo57KMBLa into Cx8s4a1cd1bTeQvnZcxCuiJCL2Rao9eALJj5sA2B5Yjm",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "8NiGomVBAa5zf1ekAmnS8tPgaPKmpWAvb13midVHnGCt:sw",
+        "EJcTD8poYAKefjQX9voY39UVeC9HJAf3DwjuoVyodcor:w",
+        "3nH3FHZZTcjSfVf2efB4CQqnN7HJfgn3HaYMKSRiGRTM:w",
+        "C3ucVHhFfpxR5UUTjC29z3mbWPipweq1c2CP1epopJRT:w",
+        "9ZtwkK4r7TQgejfvwzVuDCxSuH4u3kYB9XDdz8bmxXMd:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "9aE2s74qwiyWkRyRtfxKYLTX6XFLdoaTx8UEr6DE8SEd"
+      ],
+      "data": "0204e13d13b66aaad9fae50000000000",
+      "fields": [
+        [
+          "Amount",
+          "15,071,961 base units"
+        ],
+        [
+          "Miner Owner",
+          "8NiGomVBAa5zf1ekAmnS8tPgaPKmpWAvb13midVHnGCt"
+        ],
+        [
+          "Miner",
+          "EJcTD8poYAKefjQX9voY39UVeC9HJAf3DwjuoVyodcor"
+        ],
+        [
+          "Quarry",
+          "3nH3FHZZTcjSfVf2efB4CQqnN7HJfgn3HaYMKSRiGRTM"
+        ],
+        [
+          "Miner Vault (staked tokens)",
+          "C3ucVHhFfpxR5UUTjC29z3mbWPipweq1c2CP1epopJRT"
+        ],
+        [
+          "To Token Account",
+          "9ZtwkK4r7TQgejfvwzVuDCxSuH4u3kYB9XDdz8bmxXMd"
+        ],
+        [
+          "Rewarder",
+          "9aE2s74qwiyWkRyRtfxKYLTX6XFLdoaTx8UEr6DE8SEd"
+        ]
+      ],
+      "from": "4e6jzResdjqdYsqZBwEqPdKBe6hQK1BFJcdG48nWruy3uYXayCWoVYFFvjVCW2AeQk65Vaq4Uwd2BJo2iHv7P186#7",
+      "intent": "Withdraw staked tokens",
+      "programId": "QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB",
+      "sentence": "8NiGomVBAa5zf1ekAmnS8tPgaPKmpWAvb13midVHnGCt withdraws 15,071,961 base units of their staked tokens from quarry 3nH3FHZZTcjSfVf2efB4CQqnN7HJfgn3HaYMKSRiGRTM into 9ZtwkK4r7TQgejfvwzVuDCxSuH4u3kYB9XDdz8bmxXMd",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "AcuaR8N2sjUUuMgWX9WsVVwZfPN8F2tKenrS1oUugaJR:w",
+        "FxJJxTWdZj6DvXjBK11b8vmg72RY67hFZt9bFccuzi58:w",
+        "Do6ReMoNPVNrWxjvmshpPGUg3tNs6px59y5UeLfahf2R:w",
+        "4cqtyrnc23bSAG4y85LUsEbzHEHQHoSAK5dgoictacbT:w",
+        "6z8LGwgoXc7Tb8JZopZE5r3mRZ8QVg3ce9BVSMX93djT:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "BFkV6nWN53hLypuDrpSdmjViHK98Aq6VET2qFtb9JV7W"
+      ],
+      "data": "887e5ba228830d7f107c9825c70e0100",
+      "fields": [
+        [
+          "Amount",
+          "297,723,468,741,648 base units"
+        ],
+        [
+          "Miner Owner",
+          "AcuaR8N2sjUUuMgWX9WsVVwZfPN8F2tKenrS1oUugaJR"
+        ],
+        [
+          "Miner",
+          "FxJJxTWdZj6DvXjBK11b8vmg72RY67hFZt9bFccuzi58"
+        ],
+        [
+          "Quarry",
+          "Do6ReMoNPVNrWxjvmshpPGUg3tNs6px59y5UeLfahf2R"
+        ],
+        [
+          "Miner Vault (staked tokens)",
+          "4cqtyrnc23bSAG4y85LUsEbzHEHQHoSAK5dgoictacbT"
+        ],
+        [
+          "From Token Account",
+          "6z8LGwgoXc7Tb8JZopZE5r3mRZ8QVg3ce9BVSMX93djT"
+        ],
+        [
+          "Rewarder",
+          "BFkV6nWN53hLypuDrpSdmjViHK98Aq6VET2qFtb9JV7W"
+        ]
+      ],
+      "from": "EC7DFDQDWXVRRdusrBTaKW6YPPLhWtTrwMrXAWQp99yHm5TJQWzpgTbq44iYUtPfkCm5bFBpm5yxr1rjVpJ5vGe#5.3",
+      "intent": "Stake tokens in a quarry",
+      "programId": "QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB",
+      "sentence": "AcuaR8N2sjUUuMgWX9WsVVwZfPN8F2tKenrS1oUugaJR stakes 297,723,468,741,648 base units from 6z8LGwgoXc7Tb8JZopZE5r3mRZ8QVg3ce9BVSMX93djT in quarry Do6ReMoNPVNrWxjvmshpPGUg3tNs6px59y5UeLfahf2R, into their miner's vault 4cqtyrnc23bSAG4y85LUsEbzHEHQHoSAK5dgoictacbT",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CrZsVMWSBxvFQZwoko1p9bjU6MVEdZa34fW5E4EGrmUG:w",
+        "QMWoBmAyJLAsA1Lh9ugMTw2gciTihncciphzdNzdZYV",
+        "4EdRX3SrkDLfCWRn13DUuGLkkceNJJbf6BmN3EEGL9Ga:w",
+        "8uXiaHhJVxXq6PJRp8swPgBpo5eUrYET3HCqf6e6uyuT:w",
+        "ASvRyJjKu5F8912fNkxkcryrXBdavwVVXDvGU6M7UvCX:w",
+        "CYci91gFwMqumUJdEcW12QyhDVwvf5VhvQc3uFr5FTFJ:w",
+        "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a:sw",
+        "3nkyLnNkBnRaWJWPNVwKH12G5Ygpu2Bp61ZqKzcuUHpa:w",
+        "GMAAQudg8gHqQricctT99PoU34TWzdVStaiEu4FGiQt:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "9pwexskKrB8dr7NQfbPCx6zRh5MQDsJrTG9aJ5m2Ke5K"
+      ],
+      "data": "0490844774179750",
+      "fields": [
+        [
+          "Mint Wrapper",
+          "CrZsVMWSBxvFQZwoko1p9bjU6MVEdZa34fW5E4EGrmUG"
+        ],
+        [
+          "Rewarder's Minter Entry",
+          "4EdRX3SrkDLfCWRn13DUuGLkkceNJJbf6BmN3EEGL9Ga"
+        ],
+        [
+          "Rewards Token",
+          "8uXiaHhJVxXq6PJRp8swPgBpo5eUrYET3HCqf6e6uyuT"
+        ],
+        [
+          "Rewards Token Account",
+          "ASvRyJjKu5F8912fNkxkcryrXBdavwVVXDvGU6M7UvCX"
+        ],
+        [
+          "Claim Fee Token Account",
+          "CYci91gFwMqumUJdEcW12QyhDVwvf5VhvQc3uFr5FTFJ"
+        ],
+        [
+          "Miner Owner",
+          "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a"
+        ],
+        [
+          "Miner",
+          "3nkyLnNkBnRaWJWPNVwKH12G5Ygpu2Bp61ZqKzcuUHpa"
+        ],
+        [
+          "Quarry",
+          "GMAAQudg8gHqQricctT99PoU34TWzdVStaiEu4FGiQt"
+        ],
+        [
+          "Rewarder",
+          "9pwexskKrB8dr7NQfbPCx6zRh5MQDsJrTG9aJ5m2Ke5K"
+        ]
+      ],
+      "from": "5LT3n57LBpKmNgfoRCKPm8LbJWX3LzF8Wez8g136aAjJDpdkkbSeXzAHGxbrzSUW8rGsXFZkJVqT4Ged3nSVSqbJ#1",
+      "intent": "Claim mining rewards",
+      "programId": "QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB",
+      "sentence": "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a claims the rewards miner 3nkyLnNkBnRaWJWPNVwKH12G5Ygpu2Bp61ZqKzcuUHpa has earned in quarry GMAAQudg8gHqQricctT99PoU34TWzdVStaiEu4FGiQt, minted in 8uXiaHhJVxXq6PJRp8swPgBpo5eUrYET3HCqf6e6uyuT into ASvRyJjKu5F8912fNkxkcryrXBdavwVVXDvGU6M7UvCX less the rewarder's claim fee, which goes to CYci91gFwMqumUJdEcW12QyhDVwvf5VhvQc3uFr5FTFJ",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a:sw",
+        "3nkyLnNkBnRaWJWPNVwKH12G5Ygpu2Bp61ZqKzcuUHpa:w",
+        "GMAAQudg8gHqQricctT99PoU34TWzdVStaiEu4FGiQt:w",
+        "9pwexskKrB8dr7NQfbPCx6zRh5MQDsJrTG9aJ5m2Ke5K",
+        "11111111111111111111111111111111",
+        "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a:sw",
+        "BUtiMLzLgdDC6JfYm99JeWcGVatGG3UazbJQ6whkx8eP",
+        "DastxYEUyMQiEmdeLBQAckiUmV3hg5roFoLjFi9LcQZ5:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "b1f21db00dd92447",
+      "fields": [
+        [
+          "Miner Owner",
+          "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a"
+        ],
+        [
+          "Miner",
+          "3nkyLnNkBnRaWJWPNVwKH12G5Ygpu2Bp61ZqKzcuUHpa"
+        ],
+        [
+          "Quarry",
+          "GMAAQudg8gHqQricctT99PoU34TWzdVStaiEu4FGiQt"
+        ],
+        [
+          "Rewarder",
+          "9pwexskKrB8dr7NQfbPCx6zRh5MQDsJrTG9aJ5m2Ke5K"
+        ],
+        [
+          "Payer",
+          "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a"
+        ],
+        [
+          "Staked Token",
+          "BUtiMLzLgdDC6JfYm99JeWcGVatGG3UazbJQ6whkx8eP"
+        ],
+        [
+          "Miner Vault (staked tokens)",
+          "DastxYEUyMQiEmdeLBQAckiUmV3hg5roFoLjFi9LcQZ5"
+        ]
+      ],
+      "from": "2M3ZYr1EJWE7bCgMLThZYm9VtynkMphZq21HgHivLN1pCoscS2bcCXSAsNHHjoEMEnAmvD2K9AG1JLatMD1qUNJ6#2",
+      "intent": "Create a miner",
+      "programId": "QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB",
+      "sentence": "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a creates miner 3nkyLnNkBnRaWJWPNVwKH12G5Ygpu2Bp61ZqKzcuUHpa to stake BUtiMLzLgdDC6JfYm99JeWcGVatGG3UazbJQ6whkx8eP in quarry GMAAQudg8gHqQricctT99PoU34TWzdVStaiEu4FGiQt, holding the staked tokens in DastxYEUyMQiEmdeLBQAckiUmV3hg5roFoLjFi9LcQZ5",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "9omcZNxvdaLyUUyhqH7Za2bkY1ov4E2mqvcc3NErBRA4:s",
+        "6NGx54QdTqBdTHnEusnvmyTAXRyKH4DZkZqJJLFvm5tQ:w",
+        "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a:sw",
+        "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a:sw",
+        "11111111111111111111111111111111",
+        "HrPdCu7DY8nbGgiJWxHdeXjRwDTGXPJ3cJpjBqMvm6tR:w",
+        "EFkGhTai4Ukbrd9sBKoaj8BQ3Mti1cgAo5bMvMqbuYQd:sw",
+        "HRmNLrauzehwzrkQAFaDjYGeGdyo9Zw4c592Cv68WNsb:w"
+      ],
+      "data": "adbd1a194fb13cad",
+      "fields": [
+        [
+          "Base (rewarder seed)",
+          "9omcZNxvdaLyUUyhqH7Za2bkY1ov4E2mqvcc3NErBRA4"
+        ],
+        [
+          "Rewarder",
+          "6NGx54QdTqBdTHnEusnvmyTAXRyKH4DZkZqJJLFvm5tQ"
+        ],
+        [
+          "Initial Authority",
+          "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a"
+        ],
+        [
+          "Payer",
+          "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a"
+        ],
+        [
+          "Mint Wrapper",
+          "HrPdCu7DY8nbGgiJWxHdeXjRwDTGXPJ3cJpjBqMvm6tR"
+        ],
+        [
+          "Rewards Token",
+          "EFkGhTai4Ukbrd9sBKoaj8BQ3Mti1cgAo5bMvMqbuYQd"
+        ],
+        [
+          "Claim Fee Token Account",
+          "HRmNLrauzehwzrkQAFaDjYGeGdyo9Zw4c592Cv68WNsb"
+        ]
+      ],
+      "from": "3zG3awJnDxnwMAUQ6cekF6Fy1b4n7Uv8Rub5CHpLAceuTPgftD9CvQC1pqmCCAxzMoPtjTevkms9juBn1NqbsDd1#5",
+      "intent": "Create a rewarder",
+      "programId": "QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB",
+      "sentence": "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a creates rewarder 6NGx54QdTqBdTHnEusnvmyTAXRyKH4DZkZqJJLFvm5tQ, which pays rewards in EFkGhTai4Ukbrd9sBKoaj8BQ3Mti1cgAo5bMvMqbuYQd through mint wrapper HrPdCu7DY8nbGgiJWxHdeXjRwDTGXPJ3cJpjBqMvm6tR, with 6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a as its authority",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "EXBDBaTD83vSeY8WSgevi3Jb8Sosr7yVn7wj9Zux6CM6:w",
+        "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a:sw",
+        "6NGx54QdTqBdTHnEusnvmyTAXRyKH4DZkZqJJLFvm5tQ:w",
+        "BeGnDjnHHMcyn5RtMdkJBEd83F41RLCo8jjrqRtFbxy8",
+        "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a:sw",
+        "11111111111111111111111111111111"
+      ],
+      "data": "2e542143aefc4394",
+      "fields": [
+        [
+          "Quarry",
+          "EXBDBaTD83vSeY8WSgevi3Jb8Sosr7yVn7wj9Zux6CM6"
+        ],
+        [
+          "Rewarder Authority",
+          "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a"
+        ],
+        [
+          "Rewarder",
+          "6NGx54QdTqBdTHnEusnvmyTAXRyKH4DZkZqJJLFvm5tQ"
+        ],
+        [
+          "Staked Token",
+          "BeGnDjnHHMcyn5RtMdkJBEd83F41RLCo8jjrqRtFbxy8"
+        ],
+        [
+          "Payer",
+          "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a"
+        ]
+      ],
+      "from": "3zG3awJnDxnwMAUQ6cekF6Fy1b4n7Uv8Rub5CHpLAceuTPgftD9CvQC1pqmCCAxzMoPtjTevkms9juBn1NqbsDd1#8",
+      "intent": "Create a quarry",
+      "programId": "QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB",
+      "sentence": "6M867pbpY9W2PSYzHndFhy3aS1UCE7Yo4R7c37FHcU6a creates quarry EXBDBaTD83vSeY8WSgevi3Jb8Sosr7yVn7wj9Zux6CM6 in rewarder 6NGx54QdTqBdTHnEusnvmyTAXRyKH4DZkZqJJLFvm5tQ, for staking BeGnDjnHHMcyn5RtMdkJBEd83F41RLCo8jjrqRtFbxy8",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HP9xLmeSjGQK3y5SS6nnA23ENoQqUMeX5a5ncUrJiA3d:w",
+        "BFkV6nWN53hLypuDrpSdmjViHK98Aq6VET2qFtb9JV7W:w"
+      ],
+      "data": "877d5ca064658d5458ace53e01000000",
+      "fields": [
+        [
+          "Annual Rewards (of the rewards token)",
+          "5,350,206,552 base units"
+        ],
+        [
+          "Rewarder Authority",
+          "HP9xLmeSjGQK3y5SS6nnA23ENoQqUMeX5a5ncUrJiA3d"
+        ],
+        [
+          "Rewarder",
+          "BFkV6nWN53hLypuDrpSdmjViHK98Aq6VET2qFtb9JV7W"
+        ]
+      ],
+      "from": "2dtESEKh5bLeCQt2CZe7fQztwhV1T8aUw8SRdTRPAKzcUoX8Y8FvPa4cmgYwKS6oZoZWVyq2ovz3eR7ztAvd2xPF#1.4",
+      "intent": "Set a rewarder's annual rewards",
+      "programId": "QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB",
+      "sentence": "HP9xLmeSjGQK3y5SS6nnA23ENoQqUMeX5a5ncUrJiA3d sets the rewards rewarder BFkV6nWN53hLypuDrpSdmjViHK98Aq6VET2qFtb9JV7W pays across its quarries to 5,350,206,552 base units a year",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Ez91guXNfTDfgEHTFCTaw5qjBqdpeZwcyqVa1uPTNfsd:w",
+        "6U68kVmyhymiTureYtdy7xRi7Que5osKRuHNZHpNfK1z:w"
+      ],
+      "data": "877d5ca064658d54a9899d0d2a000000",
+      "fields": [
+        [
+          "Annual Rewards (of the rewards token)",
+          "180,617,054,633 base units"
+        ],
+        [
+          "Rewarder Authority",
+          "Ez91guXNfTDfgEHTFCTaw5qjBqdpeZwcyqVa1uPTNfsd"
+        ],
+        [
+          "Rewarder",
+          "6U68kVmyhymiTureYtdy7xRi7Que5osKRuHNZHpNfK1z"
+        ]
+      ],
+      "from": "5mphF7gN8nML3y8Hx49fViRCTwWkM8SnxmRnE8SRfznf6md6GR7BGWMpz2SA85ea2NRsMqNPmSYUoGWh6gdQXhoZ#5.2",
+      "intent": "Set a rewarder's annual rewards",
+      "programId": "QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB",
+      "sentence": "Ez91guXNfTDfgEHTFCTaw5qjBqdpeZwcyqVa1uPTNfsd sets the rewards rewarder 6U68kVmyhymiTureYtdy7xRi7Que5osKRuHNZHpNfK1z pays across its quarries to 180,617,054,633 base units a year",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Ez91guXNfTDfgEHTFCTaw5qjBqdpeZwcyqVa1uPTNfsd:w",
+        "6U68kVmyhymiTureYtdy7xRi7Que5osKRuHNZHpNfK1z:w",
+        "8mgQ79KyC6AxpbknDo3mBHg4LfWs6ZBvVjKbMisW5Grz:w"
+      ],
+      "data": "1e3215a967449bc0f1066c6a00000000",
+      "fields": [
+        [
+          "Rewards Stop At",
+          "2026-07-31T02:22:41.000Z"
+        ],
+        [
+          "Rewarder Authority",
+          "Ez91guXNfTDfgEHTFCTaw5qjBqdpeZwcyqVa1uPTNfsd"
+        ],
+        [
+          "Rewarder",
+          "6U68kVmyhymiTureYtdy7xRi7Que5osKRuHNZHpNfK1z"
+        ],
+        [
+          "Quarry",
+          "8mgQ79KyC6AxpbknDo3mBHg4LfWs6ZBvVjKbMisW5Grz"
+        ]
+      ],
+      "from": "5mphF7gN8nML3y8Hx49fViRCTwWkM8SnxmRnE8SRfznf6md6GR7BGWMpz2SA85ea2NRsMqNPmSYUoGWh6gdQXhoZ#5.4",
+      "intent": "Set a quarry's famine",
+      "programId": "QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB",
+      "sentence": "Ez91guXNfTDfgEHTFCTaw5qjBqdpeZwcyqVa1uPTNfsd stops quarry 8mgQ79KyC6AxpbknDo3mBHg4LfWs6ZBvVjKbMisW5Grz's rewards from 2026-07-31T02:22:41.000Z",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}
