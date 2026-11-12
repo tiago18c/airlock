@@ -694,3 +694,27 @@ account is added, so purchase, sale, redemption, vault and mint amounts read the
 decimals of the mint the instruction names; the Prop AMM's minimum sell haircut, the \
 supply and mint caps and the asset adjustment of a NAV burn are in base units. Display \
 nodes added by hand."""
+
+# Chainlink CCIP router (ccip_router), the program people call to send tokens
+# and messages from Solana to another chain through CCIP. The file is the
+# Anchor IDL its Anchor IDL account publishes on mainnet (1.6.2); it has no
+# program-metadata account there. Devnet runs a newer build (2.0.1) at the
+# same address, which publishes its own IDL, so the file is mainnet only.
+[[idls]]
+file = "ccip-router.json"
+programId = "Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C"
+name = "ccipRouter"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "6b87d8d4aefea54e1cc44b9a0eee23cd74ff55ad3e66b5c397cbf259db847287" }
+changes = """Converted from Anchor to Codama. ccipSend declares the accounts it reads for each token \
+sent after its named ones (the sender's token account, the token's pool, lookup table, \
+token admin registry entry and billing accounts, then any accounts the pool asks for) as \
+one remaining-accounts group, shown, because their number depends on each token's pool \
+and they cannot be named by position; getFee declares the tokens' billing configs and \
+deriveAccountsCcipSend the accounts the previous stage asked for, both hidden. setPool \
+declares the accounts after its named ones, which the program does not read, as a shown \
+group: a mainnet setPool executed by the router owner's timelock passes the pool lookup \
+table again there. The Token program's mint account is added, so the amount \
+withdrawBilledFunds withdraws reads the fee token's decimals; the token amounts of \
+ccipSend, getFee and deriveAccountsCcipSend sit in a list whose mints are not accounts \
+of the instruction, so they are in base units. Display nodes added by hand."""

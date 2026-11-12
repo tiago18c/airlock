@@ -1,0 +1,680 @@
+{
+  "accounts": {
+    "LinkhB3afbBKb2EQQu7s7umdZceV3wcvAUJhQAfQ23L": {
+      "data": "AQAAAJeW4j9mQ94wTaf9GYCIL+yi7Jp/Ysitho9Aadaec0fdHylmmBYqAAAJAQEAAADquMCuBRFYAJA87f8UKJ5UGUjQKFcFzmV7fGDcZj7pPg==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "So11111111111111111111111111111111111111112": {
+      "data": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    }
+  },
+  "instructions": [
+    {
+      "accounts": [
+        "3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3",
+        "ERSfqUKiaCKBbYYgjLuuLaWatXuWxrgc6x1qC9rMGvWJ:w",
+        "FeeQPGkKDeRV1MgoYfMH6L8o3KeuYjwUZrgn4LRKfjHi",
+        "Jexa4tyW5xjDuucnNpTc3cz3Jsq1qY8fp4P4Dd4NQAb",
+        "qTSwBrHuURzvgoDYRzGPg8jj2JAX7Dup6T8ep5gDTco",
+        "7e8EXjofujRmNxSMwo8CT8yxs1xxTexx55BN62xwWrKN",
+        "8qWXPpijw2y5kYhJhUvPwyju8baEDdV5jESKrTBdpYy6"
+      ],
+      "data": "73c3eba119db3c1d796092f9779cb575200000000000000000000000000000009ec0e4a4c411493773e01e2abf4d42395788846b48000000000000000000000000000000cc7150deedc2cea70d44033c5c31ea3466a9dd0de83b22c2b25922f3000000000000000000000000000000000000000000000000004d57a2d06f640000000000000000000000000000000000000000000000000000000000000000000000000015000000181dcf10e093040000000000000000000000000001",
+      "fields": [
+        [
+          "Destination Chain Selector",
+          "8,481,857,512,324,358,265"
+        ],
+        [
+          "Receiver on Destination Chain (hex)",
+          "0000000000000000000000009ec0e4a4c411493773e01e2abf4d42395788846b"
+        ],
+        [
+          "Message Data (hex)",
+          "000000000000000000000000cc7150deedc2cea70d44033c5c31ea3466a9dd0de83b22c2b25922f3000000000000000000000000000000000000000000000000004d57a2d06f6400"
+        ],
+        [
+          "Tokens Sent (amounts in base units)",
+          ""
+        ],
+        [
+          "Fee Token (the default key 1111…1111 means native SOL)",
+          "11111111111111111111111111111111"
+        ],
+        [
+          "Extra Arguments (hex)",
+          "181dcf10e093040000000000000000000000000001"
+        ],
+        [
+          "Destination Chain",
+          "ERSfqUKiaCKBbYYgjLuuLaWatXuWxrgc6x1qC9rMGvWJ"
+        ]
+      ],
+      "from": "31AsyJPhyNaQ2w2JhtexuX8xg7UVvbiMnwsMfjRyS9xwptj4rNkUEBkeqz8oCi8i8b4bM4JukTsfaTnmwrZ8ovtX#3.2",
+      "intent": "Quote a cross-chain fee",
+      "programId": "Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C",
+      "sentence": "Quotes the CCIP fee to send a message to destination chain selector 8481857512324358265",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3",
+        "ERSfqUKiaCKBbYYgjLuuLaWatXuWxrgc6x1qC9rMGvWJ:w",
+        "Hfj9tJM2q4ugMhrDcTvq8paVdQEDZ1stvQppsV1mP1eJ:w",
+        "A8JPtC8mYrZKvainsrr3cGhTcoBeUV2vd8SXun55in3u:w",
+        "11111111111111111111111111111111",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "So11111111111111111111111111111111111111112",
+        "11111111111111111111111111111111",
+        "9TKiJBGMu1c6aqxaKuzV6G1otYaYM3PLZf5VoUHhjKY2:w",
+        "2AjuzTy6z2webxEUu7eZ1DkAyLagZaqH2dgzhbBYjJiG",
+        "FeeQPGkKDeRV1MgoYfMH6L8o3KeuYjwUZrgn4LRKfjHi",
+        "Jexa4tyW5xjDuucnNpTc3cz3Jsq1qY8fp4P4Dd4NQAb",
+        "qTSwBrHuURzvgoDYRzGPg8jj2JAX7Dup6T8ep5gDTco",
+        "7e8EXjofujRmNxSMwo8CT8yxs1xxTexx55BN62xwWrKN",
+        "8qWXPpijw2y5kYhJhUvPwyju8baEDdV5jESKrTBdpYy6",
+        "RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7",
+        "CpbeEvmTR4UE8CgDDL5b1nqjSz7JCD4wNJhxPLZRkSL1",
+        "GbQFCDTPbhwPjeUvhu7hXEM3Wm2S6t3FCxoCmQtKxetw"
+      ],
+      "data": "6cd886bff9ea2154796092f9779cb575200000000000000000000000000000009ec0e4a4c411493773e01e2abf4d42395788846b48000000000000000000000000000000cc7150deedc2cea70d44033c5c31ea3466a9dd0de83b22c2b25922f3000000000000000000000000000000000000000000000000004d57a2d06f640000000000000000000000000000000000000000000000000000000000000000000000000015000000181dcf10e09304000000000000000000000000000100000000",
+      "fields": [
+        [
+          "Destination Chain Selector",
+          "8,481,857,512,324,358,265"
+        ],
+        [
+          "Receiver on Destination Chain (hex)",
+          "0000000000000000000000009ec0e4a4c411493773e01e2abf4d42395788846b"
+        ],
+        [
+          "Message Data (hex)",
+          "000000000000000000000000cc7150deedc2cea70d44033c5c31ea3466a9dd0de83b22c2b25922f3000000000000000000000000000000000000000000000000004d57a2d06f6400"
+        ],
+        [
+          "Tokens Sent (amounts in base units)",
+          ""
+        ],
+        [
+          "Fee Token (the default key 1111…1111 means native SOL)",
+          "11111111111111111111111111111111"
+        ],
+        [
+          "Extra Arguments (hex)",
+          "181dcf10e093040000000000000000000000000001"
+        ],
+        [
+          "Destination Chain",
+          "ERSfqUKiaCKBbYYgjLuuLaWatXuWxrgc6x1qC9rMGvWJ"
+        ],
+        [
+          "Sender",
+          "A8JPtC8mYrZKvainsrr3cGhTcoBeUV2vd8SXun55in3u"
+        ],
+        [
+          "Fee Token",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Your Fee Token Account (not used when paying in SOL)",
+          "11111111111111111111111111111111"
+        ],
+        [
+          "Fee Paid To (router's billing account)",
+          "9TKiJBGMu1c6aqxaKuzV6G1otYaYM3PLZf5VoUHhjKY2"
+        ]
+      ],
+      "from": "31AsyJPhyNaQ2w2JhtexuX8xg7UVvbiMnwsMfjRyS9xwptj4rNkUEBkeqz8oCi8i8b4bM4JukTsfaTnmwrZ8ovtX#3.5",
+      "intent": "Send through CCIP",
+      "programId": "Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C",
+      "sentence": "A8JPtC8mYrZKvainsrr3cGhTcoBeUV2vd8SXun55in3u sends a CCIP message to receiver 0000000000000000000000009ec0e4a4c411493773e01e2abf4d42395788846b on destination chain selector 8481857512324358265, paying the fee in So11111111111111111111111111111111111111112. Tokens sent, in base units: []",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3",
+        "6sxG68dNYSLe6BQcum5qdrnNPk8EXK2MjbomtiZ9gAra:w",
+        "5YA9ebyKHTUg6i4P3J97HLNRecjZSJcanjBU46Dku5PM:w",
+        "HDtwFZmHMqY16KhqmZ8GXyHUsxBTnmXzy7UcZcioBCZA:sw",
+        "11111111111111111111111111111111",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "So11111111111111111111111111111111111111112",
+        "11111111111111111111111111111111",
+        "9TKiJBGMu1c6aqxaKuzV6G1otYaYM3PLZf5VoUHhjKY2:w",
+        "2AjuzTy6z2webxEUu7eZ1DkAyLagZaqH2dgzhbBYjJiG",
+        "FeeQPGkKDeRV1MgoYfMH6L8o3KeuYjwUZrgn4LRKfjHi",
+        "Jexa4tyW5xjDuucnNpTc3cz3Jsq1qY8fp4P4Dd4NQAb",
+        "89v6akGDzw1c5eiFSUB5oR8BtNodyhNU9vVWYDAZCapi",
+        "7e8EXjofujRmNxSMwo8CT8yxs1xxTexx55BN62xwWrKN",
+        "8qWXPpijw2y5kYhJhUvPwyju8baEDdV5jESKrTBdpYy6",
+        "RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7",
+        "CpbeEvmTR4UE8CgDDL5b1nqjSz7JCD4wNJhxPLZRkSL1",
+        "GbQFCDTPbhwPjeUvhu7hXEM3Wm2S6t3FCxoCmQtKxetw",
+        "y7F4SDKov7yFYusxeLh6Q5c3VrVkpB5Hf2ThRg1mAmD:w",
+        "5NsfErMqW9dJkBS1dR3TAncDd68tenNFkvvA99VGCeY3",
+        "2t93XdDZJi1cRnuVxze4vEDn9YGMdRZeSA4WpDdpt4Sb:w",
+        "7HzeCC5rBmWxuSqtKrMMsrzSFBiKWG4rQCZ8L4donN6R",
+        "EQTNybXPGHDpjH33ntdhyXGZ443X2tXPraffy38sS2hk",
+        "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+        "H3J5vWM3d5YRkSaf9LS9KJtiMiKtzTnW9zN2rJMyWnk5:w",
+        "Gjh2QDQbeVRwPyjYmpTC61n3qWHue7QhxYSgg6Zasacq:w",
+        "FKDAtA37CNvgg7t8oE37iC7j7A5i8AfdVc1qt88RE32y",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "Dx68jydZnXJkp6Xngku8FbjFFovp9tZmXT66jrLXpump:w",
+        "GaXr2KxnHjzJVZ5uFE2iQJncSotQB7mRkuF3gKgf1Dnv",
+        "DPyeT76APQQVQD7EJRVw8Y6gLYjGkC5CdbdHQTQkpoN2"
+      ],
+      "data": "6cd886bff9ea215429b3c0e82772c65520000000000000000000000000000000be9306ddf2c0ddd69227adb2c7e7ef4d0b5697d50000000001000000c068fdf683fac8344a8fb1059cdab12b9225a8e21a5f04a2ac53ecf066b08fcf2e6685ef05000000000000000000000000000000000000000000000000000000000000000000000015000000181dcf1000000000000000000000000000000000010100000000",
+      "fields": [
+        [
+          "Destination Chain Selector",
+          "6,180,753,054,346,818,345"
+        ],
+        [
+          "Receiver on Destination Chain (hex)",
+          "000000000000000000000000be9306ddf2c0ddd69227adb2c7e7ef4d0b5697d5"
+        ],
+        [
+          "Message Data (hex)",
+          ""
+        ],
+        [
+          "Tokens Sent (amounts in base units)",
+          "Token: Dx68jydZnXJkp6Xngku8FbjFFovp9tZmXT66jrLXpump, Amount: 25493333550"
+        ],
+        [
+          "Fee Token (the default key 1111…1111 means native SOL)",
+          "11111111111111111111111111111111"
+        ],
+        [
+          "Extra Arguments (hex)",
+          "181dcf100000000000000000000000000000000001"
+        ],
+        [
+          "Destination Chain",
+          "6sxG68dNYSLe6BQcum5qdrnNPk8EXK2MjbomtiZ9gAra"
+        ],
+        [
+          "Sender",
+          "HDtwFZmHMqY16KhqmZ8GXyHUsxBTnmXzy7UcZcioBCZA"
+        ],
+        [
+          "Fee Token",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Your Fee Token Account (not used when paying in SOL)",
+          "11111111111111111111111111111111"
+        ],
+        [
+          "Fee Paid To (router's billing account)",
+          "9TKiJBGMu1c6aqxaKuzV6G1otYaYM3PLZf5VoUHhjKY2"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #1",
+          "y7F4SDKov7yFYusxeLh6Q5c3VrVkpB5Hf2ThRg1mAmD"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #2",
+          "5NsfErMqW9dJkBS1dR3TAncDd68tenNFkvvA99VGCeY3"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #3",
+          "2t93XdDZJi1cRnuVxze4vEDn9YGMdRZeSA4WpDdpt4Sb"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #4",
+          "7HzeCC5rBmWxuSqtKrMMsrzSFBiKWG4rQCZ8L4donN6R"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #5",
+          "EQTNybXPGHDpjH33ntdhyXGZ443X2tXPraffy38sS2hk"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #6",
+          "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #7",
+          "H3J5vWM3d5YRkSaf9LS9KJtiMiKtzTnW9zN2rJMyWnk5"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #8",
+          "Gjh2QDQbeVRwPyjYmpTC61n3qWHue7QhxYSgg6Zasacq"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #9",
+          "FKDAtA37CNvgg7t8oE37iC7j7A5i8AfdVc1qt88RE32y"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #10",
+          "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #11",
+          "Dx68jydZnXJkp6Xngku8FbjFFovp9tZmXT66jrLXpump"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #12",
+          "GaXr2KxnHjzJVZ5uFE2iQJncSotQB7mRkuF3gKgf1Dnv"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #13",
+          "DPyeT76APQQVQD7EJRVw8Y6gLYjGkC5CdbdHQTQkpoN2"
+        ]
+      ],
+      "from": "WpVtWEonxT6JwyAFxh7AYAjBteVMYoXJHGRoEzHHG3uTWqPxQvWesjWWLgQp8ehJXXpMKjUjN6NfjYqCp4RZx8F#4",
+      "intent": "Send through CCIP",
+      "programId": "Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C",
+      "sentence": "HDtwFZmHMqY16KhqmZ8GXyHUsxBTnmXzy7UcZcioBCZA sends a CCIP message to receiver 000000000000000000000000be9306ddf2c0ddd69227adb2c7e7ef4d0b5697d5 on destination chain selector 6180753054346818345, paying the fee in So11111111111111111111111111111111111111112. Tokens sent, in base units: [Token: Dx68jydZnXJkp6Xngku8FbjFFovp9tZmXT66jrLXpump, Amount: 25493333550]",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3",
+        "7s1M1ZgUTM8C5pWAMQZMQFo7w4oVj6imr7QsQNU3Rat8:w",
+        "3tsSzm4Rk7KrABB8PMs9E7FFW1yeY1gRsAVk4jZ4e21c:w",
+        "AQFnRFkK8Jrxi91h2HCxQrdtdayWPSHKvAURR85ZeLWG:sw",
+        "11111111111111111111111111111111",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "So11111111111111111111111111111111111111112",
+        "GbLrv8PP4Tf24xNqfRS17QekYDXQEhUQn2Jf5gGH7ak6:w",
+        "9TKiJBGMu1c6aqxaKuzV6G1otYaYM3PLZf5VoUHhjKY2:w",
+        "2AjuzTy6z2webxEUu7eZ1DkAyLagZaqH2dgzhbBYjJiG",
+        "FeeQPGkKDeRV1MgoYfMH6L8o3KeuYjwUZrgn4LRKfjHi",
+        "Jexa4tyW5xjDuucnNpTc3cz3Jsq1qY8fp4P4Dd4NQAb",
+        "AKpAagT3dFnpXARtn4E5oCuZ5xooJadsS6nULNNXUSLB",
+        "7e8EXjofujRmNxSMwo8CT8yxs1xxTexx55BN62xwWrKN",
+        "8qWXPpijw2y5kYhJhUvPwyju8baEDdV5jESKrTBdpYy6",
+        "RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7",
+        "CpbeEvmTR4UE8CgDDL5b1nqjSz7JCD4wNJhxPLZRkSL1",
+        "GbQFCDTPbhwPjeUvhu7hXEM3Wm2S6t3FCxoCmQtKxetw",
+        "HuRzHoibCsB6WYMrE1KK8aXjQAjMgibNMVU71ntw9dem:w",
+        "8TNZf2n93vBE3i3E2968751exUAuEo5Awwv4fWJZgP8q",
+        "DmTZoqVqgFvvboKpy8qseJrxjVZ84Tckg8JbD5cceRGk:w",
+        "5iYdvry47RmFwLCbkLZrpRMaxAum33Qgm2RDcGbBx1tX",
+        "5pb7qipyKpfwiY1HKME6w6PTcitjiRoH9LAkyzw7XH2R",
+        "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+        "5sw763ZzSQKviYg7Q15qHHBYWdDfpmZfwtiyXnDmdh7t:w",
+        "CV4AJ2cjCtZvhRdRE9RDeRJk8vrDtFWCi9a8mjKrzQrY:w",
+        "2aMmW44Afe1zwUmkufSdJAYgTQGdtdgoWARnKdjJHFcw",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "SLXdx4BUt2v9uJQNzWqSfzTJ9UKLUDsvxHFMEEdrfgq:w",
+        "F9vnVwAp4GDSFuUxpFFcg5JGgNEXJ6hTN4S3CwfeJgVF",
+        "DPyeT76APQQVQD7EJRVw8Y6gLYjGkC5CdbdHQTQkpoN2"
+      ],
+      "data": "6cd886bff9ea2154cf3b258e6d57709d2000000000000000000000000000000049719d256a5ea16bfa579ea16e95bea9fa41a4520000000001000000067d99d20d4142f6ad2f50a30d5ab47b28659a8812aa3459c5aecbad5c4c02a6260816d300000000000000000000000000000000000000000000000000000000000000000000000015000000181dcf1000000000000000000000000000000000010100000000",
+      "fields": [
+        [
+          "Destination Chain Selector",
+          "11,344,663,589,394,136,015"
+        ],
+        [
+          "Receiver on Destination Chain (hex)",
+          "00000000000000000000000049719d256a5ea16bfa579ea16e95bea9fa41a452"
+        ],
+        [
+          "Message Data (hex)",
+          ""
+        ],
+        [
+          "Tokens Sent (amounts in base units)",
+          "Token: SLXdx4BUt2v9uJQNzWqSfzTJ9UKLUDsvxHFMEEdrfgq, Amount: 3541436454"
+        ],
+        [
+          "Fee Token (the default key 1111…1111 means native SOL)",
+          "11111111111111111111111111111111"
+        ],
+        [
+          "Extra Arguments (hex)",
+          "181dcf100000000000000000000000000000000001"
+        ],
+        [
+          "Destination Chain",
+          "7s1M1ZgUTM8C5pWAMQZMQFo7w4oVj6imr7QsQNU3Rat8"
+        ],
+        [
+          "Sender",
+          "AQFnRFkK8Jrxi91h2HCxQrdtdayWPSHKvAURR85ZeLWG"
+        ],
+        [
+          "Fee Token",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Your Fee Token Account (not used when paying in SOL)",
+          "GbLrv8PP4Tf24xNqfRS17QekYDXQEhUQn2Jf5gGH7ak6"
+        ],
+        [
+          "Fee Paid To (router's billing account)",
+          "9TKiJBGMu1c6aqxaKuzV6G1otYaYM3PLZf5VoUHhjKY2"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #1",
+          "HuRzHoibCsB6WYMrE1KK8aXjQAjMgibNMVU71ntw9dem"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #2",
+          "8TNZf2n93vBE3i3E2968751exUAuEo5Awwv4fWJZgP8q"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #3",
+          "DmTZoqVqgFvvboKpy8qseJrxjVZ84Tckg8JbD5cceRGk"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #4",
+          "5iYdvry47RmFwLCbkLZrpRMaxAum33Qgm2RDcGbBx1tX"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #5",
+          "5pb7qipyKpfwiY1HKME6w6PTcitjiRoH9LAkyzw7XH2R"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #6",
+          "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #7",
+          "5sw763ZzSQKviYg7Q15qHHBYWdDfpmZfwtiyXnDmdh7t"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #8",
+          "CV4AJ2cjCtZvhRdRE9RDeRJk8vrDtFWCi9a8mjKrzQrY"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #9",
+          "2aMmW44Afe1zwUmkufSdJAYgTQGdtdgoWARnKdjJHFcw"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #10",
+          "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #11",
+          "SLXdx4BUt2v9uJQNzWqSfzTJ9UKLUDsvxHFMEEdrfgq"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #12",
+          "F9vnVwAp4GDSFuUxpFFcg5JGgNEXJ6hTN4S3CwfeJgVF"
+        ],
+        [
+          "Token Transfer Account (per token: yours, then pool accounts) #13",
+          "DPyeT76APQQVQD7EJRVw8Y6gLYjGkC5CdbdHQTQkpoN2"
+        ]
+      ],
+      "from": "58qAQoaYg8h3DmG1Q1giHJ9pB7sBjA42CDPCin6JZGC4du2LnkaSd9TMvrXRtwDEsiWRDAmbsuKmLkCNts2hKsA5#3",
+      "intent": "Send through CCIP",
+      "programId": "Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C",
+      "sentence": "AQFnRFkK8Jrxi91h2HCxQrdtdayWPSHKvAURR85ZeLWG sends a CCIP message to receiver 00000000000000000000000049719d256a5ea16bfa579ea16e95bea9fa41a452 on destination chain selector 11344663589394136015, paying the fee in So11111111111111111111111111111111111111112. Tokens sent, in base units: [Token: SLXdx4BUt2v9uJQNzWqSfzTJ9UKLUDsvxHFMEEdrfgq, Amount: 3541436454]",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3",
+        "J5S5pyFk3Uz3ZkCCnGjdMqXS6JeFFqAktNgCd8Bn1FTX:w",
+        "3b8X44fLF9ooXaUm3hhSgjpmVs6rZZ3pPoGnGahc3Uu7",
+        "F28bHvJKMdwPpFUPLoRBdc1kdpr7nSYAnuGbZZAP4KYJ",
+        "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf:w",
+        "F28bHvJKMdwPpFUPLoRBdc1kdpr7nSYAnuGbZZAP4KYJ"
+      ],
+      "data": "771e0eb473e1a7ee03000000030407",
+      "fields": [
+        [
+          "Writable Lookup Table Indexes (hex)",
+          "030407"
+        ],
+        [
+          "Token Admin Registry Entry",
+          "J5S5pyFk3Uz3ZkCCnGjdMqXS6JeFFqAktNgCd8Bn1FTX"
+        ],
+        [
+          "Token",
+          "3b8X44fLF9ooXaUm3hhSgjpmVs6rZZ3pPoGnGahc3Uu7"
+        ],
+        [
+          "Pool Lookup Table (the default key 1111…1111 delists the token)",
+          "F28bHvJKMdwPpFUPLoRBdc1kdpr7nSYAnuGbZZAP4KYJ"
+        ],
+        [
+          "Token Administrator",
+          "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf"
+        ],
+        [
+          "Additional Account (not read by the router)",
+          "F28bHvJKMdwPpFUPLoRBdc1kdpr7nSYAnuGbZZAP4KYJ"
+        ]
+      ],
+      "from": "5zpXCgyFxuPvajt3W2Bi25gQ4fiz5usTyhjKbAPRT5mn9nf4XBzDvM9eWznRPWnBWmFv6mq8Tjc4LjZuNqjW7Tq6#1.1",
+      "intent": "Set a token's pool",
+      "programId": "Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C",
+      "sentence": "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf sets the CCIP pool of 3b8X44fLF9ooXaUm3hhSgjpmVs6rZZ3pPoGnGahc3Uu7 to the one in lookup table F28bHvJKMdwPpFUPLoRBdc1kdpr7nSYAnuGbZZAP4KYJ",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3",
+        "EQTNybXPGHDpjH33ntdhyXGZ443X2tXPraffy38sS2hk:w",
+        "Dx68jydZnXJkp6Xngku8FbjFFovp9tZmXT66jrLXpump",
+        "7HzeCC5rBmWxuSqtKrMMsrzSFBiKWG4rQCZ8L4donN6R:w",
+        "otjVvkMhuoysshQrTMi3AWtnR6XEwLrW5MRj8o8vyLr:sw"
+      ],
+      "data": "771e0eb473e1a7ee03000000030407",
+      "fields": [
+        [
+          "Writable Lookup Table Indexes (hex)",
+          "030407"
+        ],
+        [
+          "Token Admin Registry Entry",
+          "EQTNybXPGHDpjH33ntdhyXGZ443X2tXPraffy38sS2hk"
+        ],
+        [
+          "Token",
+          "Dx68jydZnXJkp6Xngku8FbjFFovp9tZmXT66jrLXpump"
+        ],
+        [
+          "Pool Lookup Table (the default key 1111…1111 delists the token)",
+          "7HzeCC5rBmWxuSqtKrMMsrzSFBiKWG4rQCZ8L4donN6R"
+        ],
+        [
+          "Token Administrator",
+          "otjVvkMhuoysshQrTMi3AWtnR6XEwLrW5MRj8o8vyLr"
+        ]
+      ],
+      "from": "2uzbqbX68Ysws9Ubf18dkcGYNccQ7jqN4CzNDxybodHDpCYnbrmrUN4fXxRrfee4de9mAhmfxJqNss67Jf28nNcJ#6",
+      "intent": "Set a token's pool",
+      "programId": "Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C",
+      "sentence": "otjVvkMhuoysshQrTMi3AWtnR6XEwLrW5MRj8o8vyLr sets the CCIP pool of Dx68jydZnXJkp6Xngku8FbjFFovp9tZmXT66jrLXpump to the one in lookup table 7HzeCC5rBmWxuSqtKrMMsrzSFBiKWG4rQCZ8L4donN6R",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "5iP5hCRwPjF7wMjTCaTfRQmcNXrvc1Tu2BKKFJ8NvJSd:w",
+        "3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3",
+        "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf:w",
+        "11111111111111111111111111111111"
+      ],
+      "data": "1c3cab00c371380796129f6342bddb29000000000000",
+      "fields": [
+        [
+          "Destination Chain Selector",
+          "3,016,212,468,291,539,606"
+        ],
+        [
+          "Lane Code Version",
+          "Default (the router's default)"
+        ],
+        [
+          "Allowed Senders",
+          ""
+        ],
+        [
+          "Sender Allow List On",
+          "false"
+        ],
+        [
+          "Destination Chain",
+          "5iP5hCRwPjF7wMjTCaTfRQmcNXrvc1Tu2BKKFJ8NvJSd"
+        ],
+        [
+          "Router Owner",
+          "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf"
+        ]
+      ],
+      "from": "xKqXtUTwFR1csd9nZL1Zn1rKvt4BJpsjJ4j42hJEKjRYj1vR6c7CK6JHhW52iiMN9VcoWhhoked3rbhxzNuuYsP#1.1",
+      "intent": "Add a destination chain",
+      "programId": "Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C",
+      "sentence": "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf adds destination chain selector 3016212468291539606 to the CCIP router",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3",
+        "EQTNybXPGHDpjH33ntdhyXGZ443X2tXPraffy38sS2hk:w",
+        "Dx68jydZnXJkp6Xngku8FbjFFovp9tZmXT66jrLXpump",
+        "otjVvkMhuoysshQrTMi3AWtnR6XEwLrW5MRj8o8vyLr:sw"
+      ],
+      "data": "6af010ad89d5a3f6",
+      "fields": [
+        [
+          "Token Admin Registry Entry",
+          "EQTNybXPGHDpjH33ntdhyXGZ443X2tXPraffy38sS2hk"
+        ],
+        [
+          "Token",
+          "Dx68jydZnXJkp6Xngku8FbjFFovp9tZmXT66jrLXpump"
+        ],
+        [
+          "New Token Administrator",
+          "otjVvkMhuoysshQrTMi3AWtnR6XEwLrW5MRj8o8vyLr"
+        ]
+      ],
+      "from": "3hwBgotZNaYgS26RWGYx8vAv8hzRbbfpjnSH7G6ThWdJCwMdyzpiw6JDDVHz5k4dhrKTeztSEhNoa4gcLUH31Rdb#3",
+      "intent": "Accept the token administrator role",
+      "programId": "Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C",
+      "sentence": "otjVvkMhuoysshQrTMi3AWtnR6XEwLrW5MRj8o8vyLr becomes the CCIP token administrator of Dx68jydZnXJkp6Xngku8FbjFFovp9tZmXT66jrLXpump",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3",
+        "EQTNybXPGHDpjH33ntdhyXGZ443X2tXPraffy38sS2hk:w",
+        "Dx68jydZnXJkp6Xngku8FbjFFovp9tZmXT66jrLXpump",
+        "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf:w",
+        "11111111111111111111111111111111"
+      ],
+      "data": "da258b6b8ee433db0c03362c09aed571a1ef480e19bbf76150c636c4d16840a86646fc7b775db997",
+      "fields": [
+        [
+          "Proposed Token Administrator",
+          "otjVvkMhuoysshQrTMi3AWtnR6XEwLrW5MRj8o8vyLr"
+        ],
+        [
+          "Token Admin Registry Entry",
+          "EQTNybXPGHDpjH33ntdhyXGZ443X2tXPraffy38sS2hk"
+        ],
+        [
+          "Token",
+          "Dx68jydZnXJkp6Xngku8FbjFFovp9tZmXT66jrLXpump"
+        ],
+        [
+          "Router Owner",
+          "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf"
+        ]
+      ],
+      "from": "qUCfycXwNZjAynL85B8wnR184qxd6Ez7tbgFrzWX4GEnfqh2Lk6BidP6Tw1cM7sqsFsoJSYHeW8U545ejGTqGws#1.1",
+      "intent": "Register a token with CCIP",
+      "programId": "Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C",
+      "sentence": "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf, the router owner, registers Dx68jydZnXJkp6Xngku8FbjFFovp9tZmXT66jrLXpump with CCIP and proposes otjVvkMhuoysshQrTMi3AWtnR6XEwLrW5MRj8o8vyLr as its token administrator",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "LinkhB3afbBKb2EQQu7s7umdZceV3wcvAUJhQAfQ23L",
+        "HwNaXJWSrVGRotFVQ8sF33Ar36tKsGYcjZqMU3Kz91pG:w",
+        "6TH53jeSQRzJsrjUVRYYyPweCRYoGcvVFYBz74PrRSwQ:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "2AjuzTy6z2webxEUu7eZ1DkAyLagZaqH2dgzhbBYjJiG",
+        "3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3",
+        "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf:w"
+      ],
+      "data": "107449264de8061c010000000000000000",
+      "fields": [
+        [
+          "Withdraw All",
+          "true"
+        ],
+        [
+          "Amount (0 when withdrawing all)",
+          "0"
+        ],
+        [
+          "Fee Token",
+          "LinkhB3afbBKb2EQQu7s7umdZceV3wcvAUJhQAfQ23L"
+        ],
+        [
+          "Billed Fees Account",
+          "HwNaXJWSrVGRotFVQ8sF33Ar36tKsGYcjZqMU3Kz91pG"
+        ],
+        [
+          "Fee Aggregator Account",
+          "6TH53jeSQRzJsrjUVRYYyPweCRYoGcvVFYBz74PrRSwQ"
+        ],
+        [
+          "Router Owner",
+          "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf"
+        ]
+      ],
+      "from": "2pXQXhiZPQDmVmZpntyrTyKGb6Xb8vK8Bii87Sm9DK9v7N3WJpyUjJbYuMwkahyMocju6iUBQXbwendrYWTx6noF#1.1",
+      "intent": "Withdraw billed fees",
+      "programId": "Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C",
+      "sentence": "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf, the router owner, withdraws billed CCIP fees in LinkhB3afbBKb2EQQu7s7umdZceV3wcvAUJhQAfQ23L from HwNaXJWSrVGRotFVQ8sF33Ar36tKsGYcjZqMU3Kz91pG to the fee aggregator's account 6TH53jeSQRzJsrjUVRYYyPweCRYoGcvVFYBz74PrRSwQ",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "So11111111111111111111111111111111111111112",
+        "9TKiJBGMu1c6aqxaKuzV6G1otYaYM3PLZf5VoUHhjKY2:w",
+        "g44NqwmvYhFSRKkk1NBkU98bC7SceqGz1w98PvwqZtg:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "2AjuzTy6z2webxEUu7eZ1DkAyLagZaqH2dgzhbBYjJiG",
+        "3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3",
+        "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf:w"
+      ],
+      "data": "107449264de8061c010000000000000000",
+      "fields": [
+        [
+          "Withdraw All",
+          "true"
+        ],
+        [
+          "Amount (0 when withdrawing all)",
+          "0"
+        ],
+        [
+          "Fee Token",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Billed Fees Account",
+          "9TKiJBGMu1c6aqxaKuzV6G1otYaYM3PLZf5VoUHhjKY2"
+        ],
+        [
+          "Fee Aggregator Account",
+          "g44NqwmvYhFSRKkk1NBkU98bC7SceqGz1w98PvwqZtg"
+        ],
+        [
+          "Router Owner",
+          "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf"
+        ]
+      ],
+      "from": "2pXQXhiZPQDmVmZpntyrTyKGb6Xb8vK8Bii87Sm9DK9v7N3WJpyUjJbYuMwkahyMocju6iUBQXbwendrYWTx6noF#1.3",
+      "intent": "Withdraw billed fees",
+      "programId": "Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C",
+      "sentence": "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf, the router owner, withdraws billed CCIP fees in So11111111111111111111111111111111111111112 from 9TKiJBGMu1c6aqxaKuzV6G1otYaYM3PLZf5VoUHhjKY2 to the fee aggregator's account g44NqwmvYhFSRKkk1NBkU98bC7SceqGz1w98PvwqZtg",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}
