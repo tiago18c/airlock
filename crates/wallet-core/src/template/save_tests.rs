@@ -230,6 +230,10 @@ fn the_blocks_a_built_in_template_shows_open_to_the_same_blocks() {
                 "token_name" | "symbol" | "uri" | "nft_name" => "x".to_string(),
                 "royalty" => "5.5".to_string(),
                 "collection" => pk(23).to_string(),
+                "recipient" => pk(24).to_string(),
+                "cliff_amount" | "per_period" => "1".to_string(),
+                "period" => "60".to_string(),
+                "stream_name" => "Payroll".to_string(),
                 "freeze_authority" => pk(8).to_string(),
                 "program" => pk(20).to_string(),
                 "buffer" => pk(21).to_string(),
@@ -244,7 +248,12 @@ fn the_blocks_a_built_in_template_shows_open_to_the_same_blocks() {
         let env = Env {
             wallet: wallet(),
             fee_payer: fee_payer(),
-            keypairs: [("mint".to_string(), pk(MADE_HERE))].into(),
+            keypairs: [
+                ("mint".to_string(), pk(MADE_HERE)),
+                ("stream".to_string(), pk(31)),
+                ("ticket".to_string(), pk(32)),
+            ]
+            .into(),
         };
         let mut facts = Facts {
             decimals: [(mint, 6)].into(),

@@ -13,6 +13,7 @@ mod sign_panel;
 mod site_request;
 mod squads_checks;
 mod stake;
+mod stream_template;
 mod templates;
 mod token_plan;
 mod upgrade_template;

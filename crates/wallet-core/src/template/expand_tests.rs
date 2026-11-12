@@ -16,7 +16,12 @@ fn env() -> Env {
     Env {
         wallet: Some(pk(1)),
         fee_payer: Some(pk(2)),
-        keypairs: [("mint".to_string(), pk(3))].into(),
+        keypairs: [
+            ("mint".to_string(), pk(3)),
+            ("stream".to_string(), pk(31)),
+            ("ticket".to_string(), pk(32)),
+        ]
+        .into(),
     }
 }
 
@@ -397,6 +402,71 @@ fn every_function_works_out_its_value() {
     assert_eq!(built[3].accounts[1].pubkey, account);
 }
 
+/// A stream's escrow and its accounts as a create on mainnet named them,
+/// and amounts typed in the mint's units once its decimals are known.
+#[test]
+fn a_stream_derives_its_escrow_and_takes_amounts_in_the_tokens_units() {
+    let template = builtin("create-stream");
+    let mint = Pubkey::from_str_const("2hVjgoesyZSbSGXEQY83hCjC19Grge8ud2kyTN2Rpump");
+    let stream = Pubkey::from_str_const("BYw33zBVjfANmDt1cWHLGqJiJcpjLwUujsoDp2D28sMG");
+    let sender = Pubkey::from_str_const("2k8Hgck8w3mQ2kZy2akG4GfpxTHMT3XaHjCEJtRf62Jm");
+    let env = Env {
+        wallet: Some(sender),
+        fee_payer: Some(sender),
+        keypairs: [("stream".to_string(), stream)].into(),
+    };
+    let answers = Answers::for_template(&template)
+        .answer("recipient", &sender.to_string())
+        .answer("mint", &mint.to_string())
+        .answer("amount", "65955934.550769")
+        .answer("per_period", "0.000001")
+        .answer("period", "1");
+    // The decimals are a fact: until they are known, nothing is scaled.
+    let waiting = run(&template, &answers, &env, &Facts::default());
+    assert!(waiting.needs.contains(&Fact::MintDecimals(mint)));
+    assert_eq!(waiting.blocks[0].draft.argument("netAmountDeposited"), "");
+    let facts = Facts {
+        decimals: [(mint, 6)].into(),
+        token_programs: [(mint, TOKEN_2022_PROGRAM_ID)].into(),
+        ..Facts::default()
+    };
+    let expansion = run(&template, &answers, &env, &facts);
+    assert!(expansion.is_complete(), "{expansion:#?}");
+    let create = &expansion.blocks[0].draft;
+    let account = |name: &str| create.account(name).unwrap().to_string();
+    assert_eq!(
+        account("escrowTokens"),
+        "FUXfokqb8p1w1ZphpdgUmW3PCjCq5qgP2dZmtxrfkRZD"
+    );
+    assert_eq!(
+        account("senderTokens"),
+        "GvGWqdqUYEsTY7FD7VhswqHq4aTKZz8rrvqNMmpNunwH"
+    );
+    assert_eq!(
+        account("streamflowTreasuryTokens"),
+        "F6Dpjn554aGTtPXkhoShFLnHTeDV2i1LuzcxiCvVdzAA"
+    );
+    assert_eq!(account("partnerTokens"), account("senderTokens"));
+    assert_eq!(create.argument("netAmountDeposited"), "65955934550769");
+    assert_eq!(create.argument("amountPerPeriod"), "1");
+    assert_eq!(create.argument("cliffAmount"), "0");
+    // Each amount is typed with the mint's decimals.
+    let form = check(&template, &catalog()).unwrap();
+    let amount = form.inputs.iter().find(|i| i.name == "amount").unwrap();
+    let InputKind::Argument { scale, .. } = &amount.kind else {
+        panic!("{amount:?}")
+    };
+    assert_eq!(
+        *scale,
+        InputScale::FromValue {
+            value: "decimals".to_string(),
+            unit: None
+        }
+    );
+    assert_eq!(expansion.decimals_of(scale), Some(6));
+    assert_eq!(waiting.decimals_of(scale), None);
+}
+
 /// The shipped IDLs of the first network that offers every block of
 /// `template`, mainnet first.
 fn catalog_for(template: &Template) -> impl IdlCatalog {
@@ -510,6 +580,10 @@ fn every_builtin_template_expands_and_builds_with_everything_on() {
                 "token_name" | "symbol" | "uri" | "nft_name" => "x".to_string(),
                 "royalty" => "5.5".to_string(),
                 "collection" => pk(23).to_string(),
+                "recipient" => pk(24).to_string(),
+                "cliff_amount" | "per_period" => "1".to_string(),
+                "period" => "60".to_string(),
+                "stream_name" => "Payroll".to_string(),
                 "program" => pk(20).to_string(),
                 "buffer" => pk(21).to_string(),
                 "idl_buffer" => pk(22).to_string(),

@@ -1,0 +1,93 @@
+format = 1
+name = "Create a vesting or payment stream"
+summary = "Locks tokens with Streamflow, which unlocks them to a recipient on a schedule: an amount at the cliff, then an amount every period until all have unlocked."
+
+[programs]
+streamflow = "strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m"
+
+[[input]]
+name = "recipient"
+label = "Recipient"
+hint = "Can withdraw what has unlocked. Its token account is created if missing."
+
+[[input]]
+name = "mint"
+label = "Token"
+hint = "The mint of the token to lock."
+
+[[input]]
+name = "amount"
+label = "Total amount"
+hint = "Everything the stream unlocks. Streamflow takes its fee on top, from the same token account."
+
+[[input]]
+name = "cliff_amount"
+label = "Amount at the cliff"
+hint = "Unlocks all at once at the cliff. The rest unlocks period by period after it."
+default = "0"
+
+[[input]]
+name = "per_period"
+label = "Amount per period"
+
+[[input]]
+name = "period"
+label = "Period, in seconds"
+hint = "How often the amount per period unlocks: 86400 is a day, 604800 a week, 2592000 thirty days."
+
+[[input]]
+name = "start"
+label = "Start, as a Unix time"
+hint = "Seconds since 1 January 1970 (UTC) when the stream starts. Leave blank to start when it lands."
+optional = true
+
+[[input]]
+name = "cliff"
+label = "Cliff, as a Unix time"
+hint = "When the amount at the cliff unlocks. Leave blank for the start."
+optional = true
+
+[[input]]
+name = "sender_cancels"
+label = "This wallet can cancel"
+hint = "Cancelling sends what has unlocked to the recipient and the rest back here."
+default = "true"
+
+[[input]]
+name = "recipient_cancels"
+label = "The recipient can cancel"
+default = "false"
+
+[[input]]
+name = "sender_transfers"
+label = "This wallet can hand the stream to another recipient"
+default = "false"
+
+[[input]]
+name = "recipient_transfers"
+label = "The recipient can hand the stream to another recipient"
+default = "false"
+
+[[input]]
+name = "stream_name"
+label = "Name"
+hint = "Shown in Streamflow's app. Up to 64 bytes."
+optional = true
+
+[values]
+at_cliff = "base-units $cliff_amount $decimals"
+decimals = "decimals-of $mint"
+deposit = "base-units $amount $decimals"
+escrow = "stream-escrow-of $stream"
+fee_tokens = "associated-token-account 5SEpbdjFK5FxwTvfsGMXVQTD2v4M2c5tyRTxhdsPkgDw $mint $token"
+per_period_units = "base-units $per_period $decimals"
+recipient_tokens = "associated-token-account $recipient $mint $token"
+sender_tokens = "associated-token-account $wallet $mint $token"
+stream = "new-keypair"
+token = "token-program-of $mint"
+
+[[block]]
+program = "$streamflow"
+instruction = "create"
+accounts = { escrowTokens = "$escrow", feeOracle = "B743wFVk2pCYhV91cn287e1xY7f1vt4gdY48hhNiuQmT", metadata = "$stream", mint = "$mint", partner = "$wallet", partnerTokens = "$sender_tokens", recipient = "$recipient", recipientTokens = "$recipient_tokens", sender = "$wallet", senderTokens = "$sender_tokens", streamflowTreasury = "5SEpbdjFK5FxwTvfsGMXVQTD2v4M2c5tyRTxhdsPkgDw", streamflowTreasuryTokens = "$fee_tokens", timelockProgram = "$streamflow", tokenProgram = "$token", withdrawor = "wdrwhnCv4pzW8beKsbPa4S2UDZrXenjg16KJdKSpb5u" }
+arguments = { amountPerPeriod = "$per_period_units", automaticWithdrawal = "false", canTopup = "false", canUpdateRate = "false", cancelableByRecipient = "$recipient_cancels", cancelableBySender = "$sender_cancels", cliff = "$cliff", cliffAmount = "$at_cliff", netAmountDeposited = "$deposit", pausable = "false", period = "$period", startTime = "$start", streamName = "$stream_name", transferableByRecipient = "$recipient_transfers", transferableBySender = "$sender_transfers", withdrawFrequency = "$period" }

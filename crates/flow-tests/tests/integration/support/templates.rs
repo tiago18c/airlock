@@ -201,7 +201,20 @@ impl TemplateDesk {
     }
 }
 
+const CLOCK: Pubkey = Pubkey::from_str_const("SysvarC1ock11111111111111111111111111111111");
+
 impl Chain {
+    /// Set the clock's time and epoch, and when that epoch started: the
+    /// Clock sysvar's `unix_timestamp`, `epoch` and `epoch_start_timestamp`.
+    pub fn set_time(&mut self, unix_timestamp: i64, epoch: u64, epoch_start: i64) {
+        let mut clock = self.svm.get_account(&CLOCK).expect("the clock");
+        clock.data[8..16].copy_from_slice(&epoch_start.to_le_bytes());
+        clock.data[16..24].copy_from_slice(&epoch.to_le_bytes());
+        clock.data[24..32].copy_from_slice(&(epoch + 1).to_le_bytes());
+        clock.data[32..40].copy_from_slice(&unix_timestamp.to_le_bytes());
+        self.svm.set_account(CLOCK, clock).unwrap();
+    }
+
     /// Load the program in `programs/<file>` at `program_id`.
     pub fn load_program(&mut self, program_id: Pubkey, file: &str) {
         let path = flow_file(&format!("programs/{file}"));

@@ -1060,7 +1060,7 @@ fn every_builtin_template_checks_on_every_network_its_programs_run_on() {
                 (Testnet, false),
                 (Localnet, false),
             ],
-            "add-token-metadata" | "create-nft" => vec![(Mainnet, true)],
+            "add-token-metadata" | "create-nft" | "create-stream" => vec![(Mainnet, true)],
             "create-token" => IdlNetwork::ALL
                 .into_iter()
                 .map(|network| (network, network == Mainnet))
