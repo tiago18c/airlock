@@ -1,0 +1,4108 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "stakePool",
+    "publicKey": "STAKEvGqQTtzJZH6BWDcbpzXXn2BBerPAgQ3EGLN2GH",
+    "version": "2.4.0",
+    "origin": "anchor",
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "name": "lookupTableLink",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "8558bb8d013548ec",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "nonce",
+              "docs": [
+                "Nonce to differentiate lookup tables for the same stake pool"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "stakePool",
+              "docs": [
+                "Stake Pool for which tokens were staked"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "authority",
+              "docs": [
+                "Authority of the Entry"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lookupTable",
+              "docs": [
+                "Pubkey of the address lookup table"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "buffer",
+              "docs": [
+                "Buffer for additional fields"
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 64
+                }
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "stakeEntry",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "bb7f09239b445628",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "nonce",
+              "docs": [
+                "Nonce to differentiate stakes for the same pool"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "stakePool",
+              "docs": [
+                "Stake Pool for which tokens were staked"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "payer",
+              "docs": [
+                "Original Owner of Staked tokens"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "authority",
+              "docs": [
+                "Authority of the Entry"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amount",
+              "docs": [
+                "Amount of deposited funds"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "duration",
+              "docs": [
+                "Duration of the lockup"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "effectiveAmount",
+              "docs": [
+                "Effective Amount staked, does not equal to deposited amount, accounts for Stake Weight"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "createdTs",
+              "docs": [
+                "Timestamp when Deposit was made"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "closedTs",
+              "docs": [
+                "Timestamp when entry has been closed"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "priorTotalEffectiveStake",
+              "docs": [
+                "Total effective stake at the time of staking"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "unstakeTs",
+              "docs": [
+                "Timestamp when unstake was requested, will be used in case `unstake_period` is set"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isSponsored",
+              "docs": [
+                "Whether the entry rent has been sponsored by the rent vault"
+              ],
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "autoUnstake",
+              "docs": [
+                "Whether auto unstaking is enabled, copied from the stake pool for use in instructions that don't require the stake pool account"
+              ],
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "buffer",
+              "docs": [
+                "Buffer for additional fields"
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 38
+                }
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "stakePool",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "7922ce154f7fff1c",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bump",
+              "docs": [
+                "Bump Seed used to sign transactions"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "nonce",
+              "docs": [
+                "Nonce to differentiate pools for the same mint"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mint",
+              "docs": [
+                "Mint of the Stake Pool"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "creator",
+              "docs": [
+                "Initial Creator"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "authority",
+              "docs": [
+                "Current authority"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "minWeight",
+              "docs": [
+                "The lowest weight awarded for staking, measured as a fraction of `1 / SCALE_FACTOR_BASE`.",
+                "For instance:",
+                "* `min_weight = 1 x SCALE_FACTOR_BASE` signifies a minimum multiplier of 1x for min staking duration",
+                "* `min_weight = 2 x SCALE_FACTOR_BASE` indicates a minimum multiplier of 2x for min staking duration"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "maxWeight",
+              "docs": [
+                "The highest weight awarded for staking, measured as a fraction of `1 / SCALE_FACTOR_BASE`.",
+                "For instance:",
+                "* `max_weight = 1 x SCALE_FACTOR_BASE` signifies a max multiplier of 1x for max staking duration",
+                "* `max_weight = 2 x SCALE_FACTOR_BASE` indicates a max multiplier of 2x for max staking duration"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "minDuration",
+              "docs": [
+                "Min Duration of stake in seconds"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "maxDuration",
+              "docs": [
+                "Max Duration of stake in seconds, the more duration, the more weight the stake has"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "permissionless",
+              "docs": [
+                "Whether anyone can add Reward Pools or just admin"
+              ],
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vault",
+              "docs": [
+                "Escrow Account that stores staked tokens"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "stakeMint",
+              "docs": [
+                "Stake Mint, will be returned in exchange for stake tokens"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "totalStake",
+              "docs": [
+                "Total number of Staked tokens"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "totalEffectiveStake",
+              "docs": [
+                "Total staked tokens accounting for each stake weight, does not equal `total_stake`,",
+                "represents a sum of effective stake multiplied by 10^9 for precision"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "freezeStakeMint",
+              "docs": [
+                "Whether we should freeze stake mint token accounts"
+              ],
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "unstakePeriod",
+              "docs": [
+                "Period for unstaking, if set unstake at first should be requested, and the real unstake can only happen after this period"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isTotalStakeCapped",
+              "docs": [
+                "Whether amount of total staked tokens is limited by `remaining_total_stake` - stored as separate flag to not deal with `Option`"
+              ],
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "remainingTotalStake",
+              "docs": [
+                "Remaining total amount of staked tokens (cumulative)"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "expiryTs",
+              "docs": [
+                "Time when stake pool expires, staking is not possible after expiration"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "autoUnstake",
+              "docs": [
+                "Whether auto unstaking is enabled, stake entries will be unstaked after duration"
+              ],
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "buffer",
+              "docs": [
+                "Buffer for additional fields"
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 37
+                }
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mintAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority used to mint new tokens. The mint authority may only",
+                "be provided during mint creation. If no mint authority is present",
+                "then the mint has a fixed supply and no further tokens may be minted."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "supply",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "docs": [
+                "Total supply of tokens."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "decimals",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "docs": [
+                "Number of base 10 digits to the right of the decimal place."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isInitialized",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "docs": [
+                "Is `true` if this structure has been initialized."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "freezeAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority to freeze token accounts."
+              ]
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "sizeDiscriminatorNode",
+            "size": 82
+          }
+        ],
+        "name": "mint",
+        "docs": [],
+        "size": 82
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "changeAuthority",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake Pool"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Current Authority"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Current Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "newAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Authority"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "326a426863769158",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Change a stake pool's authority",
+          "interpolatedIntent": "${accounts.authority} makes ${accounts.newAuthority} the authority of pool ${accounts.stakePool}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "closeEntry",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake Pool"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeEntry",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake Entry"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rentSponsor",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "rentSponsor",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "3AD42p7btaxV9nhj7",
+                      "encoding": "base58"
+                    }
+                  }
+                ]
+              }
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "841aca91be257243",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Close a stake entry",
+          "interpolatedIntent": "${accounts.authority} closes stake entry ${accounts.stakeEntry} of pool ${accounts.stakePool}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "createLookupTable",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake Pool"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lookupTableLink",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Link that will store address of the actual Lookup Table"
+            ],
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "lookupTableLink",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "33geKgVLqEiSo2MYg",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "stakePool",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "authority",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "nonce",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u32",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "stakePool",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "stakePool"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "authority",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "authority"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "nonce",
+                  "value": {
+                    "kind": "argumentValueNode",
+                    "name": "nonce"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lookup Table Record"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lookupTable",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lookup Table"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lookupTableProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "AddressLookupTab1e1111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Payer of the transaction"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lookup Table Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "4a1a2dd6179b8f99",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "nonce",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "recentSlot",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Recent Slot"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a pool lookup table",
+          "interpolatedIntent": "${accounts.payer} creates an address lookup table ${accounts.lookupTable} for pool ${accounts.stakePool}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "createPool",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "stakePool",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "7VDRBGbV2Ne2t3",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "mint",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "creator",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "nonce",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u8",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "mint",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "mint"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "creator",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "creator"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "nonce",
+                  "value": {
+                    "kind": "argumentValueNode",
+                    "name": "nonce"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Mint used for staking"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Staked Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "vault",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "VdXoiKqChjQvU6F",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "stakePool",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "stakePool",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "stakePool"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "stakeMint",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "7VDRBGbV2JA459",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "stakePool",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "stakePool",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "stakePool"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Receipt Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "creator",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Stake Pool creator"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Creator"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "e992d18ecf6840bc",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "nonce",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "maxWeight",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 9
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "times"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Weight of the Longest Stake"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "minDuration",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "durationNumberDisplayNode"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Shortest Lock"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "maxDuration",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "durationNumberDisplayNode"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Longest Lock"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "permissionless",
+            "type": {
+              "kind": "booleanTypeNode",
+              "size": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Anyone Can Add Reward Pools"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "freezeStakeMint",
+            "type": {
+              "kind": "optionTypeNode",
+              "item": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Receipt Token Accounts Frozen"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "unstakePeriod",
+            "type": {
+              "kind": "optionTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "durationNumberDisplayNode"
+                }
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Wait After an Unstake Request"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a stake pool",
+          "interpolatedIntent": "${accounts.creator} creates a stake pool ${accounts.stakePool} for ${accounts.mint}: stakes lock for ${data.minDuration} to ${data.maxDuration}, and the longest lock weighs ${data.maxWeight} as much as the shortest"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "createPoolV2",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "stakePool",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "7VDRBGbV2Ne2t3",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "mint",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "creator",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "nonce",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u8",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "mint",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "mint"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "creator",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "creator"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "nonce",
+                  "value": {
+                    "kind": "argumentValueNode",
+                    "name": "nonce"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Mint used for staking"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Staked Token"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "vault",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "VdXoiKqChjQvU6F",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "stakePool",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "stakePool",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "stakePool"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "stakeMint",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "7VDRBGbV2JA459",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "stakePool",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "stakePool",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "stakePool"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Receipt Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "creator",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Stake Pool creator"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Creator"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "851b152643565b84",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "nonce",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "maxWeight",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 9
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "times"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Weight of the Longest Stake"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "minDuration",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "durationNumberDisplayNode"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Shortest Lock"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "maxDuration",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "durationNumberDisplayNode"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Longest Lock"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "permissionless",
+            "type": {
+              "kind": "booleanTypeNode",
+              "size": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Anyone Can Add Reward Pools"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "freezeStakeMint",
+            "type": {
+              "kind": "booleanTypeNode",
+              "size": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Receipt Token Accounts Frozen"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "unstakePeriod",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "durationNumberDisplayNode"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Wait After an Unstake Request"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "maxTotalStakeCumulative",
+            "type": {
+              "kind": "zeroableOptionTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "decimals": {
+                    "kind": "injectedValueNode",
+                    "key": "tokenDecimals"
+                  }
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Most That Can Ever Be Staked (none: no limit)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "expiryTs",
+            "type": {
+              "kind": "zeroableOptionTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "dateTimeNumberDisplayNode"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Staking Closes At (none: never)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "autoUnstake",
+            "type": {
+              "kind": "booleanTypeNode",
+              "size": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Unstaked Automatically When the Lock Ends"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "tokenDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "mint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a stake pool",
+          "interpolatedIntent": "${accounts.creator} creates a stake pool ${accounts.stakePool} for ${accounts.mint}: stakes lock for ${data.minDuration} to ${data.maxDuration}, and the longest lock weighs ${data.maxWeight} as much as the shortest"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "migrateEntry",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePoolFrom",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake Pool"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "Cja9f8JFS6sTgBqSRZGBrA2HDbUj4MZUGdtRYruKTeJp"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePoolTo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake Pool"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "BXRBbWMkscNBZoBL4fgRk77GBUX9eVP4AendQEumtPi8"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeEntryFrom",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Entry that will store Stake Metadata"
+            ],
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "stakeEntryFrom",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "VdXoiKqCfpW9sJg",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "stakePoolFrom",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "authority",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "nonce",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u32",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "stakePoolFrom",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "stakePoolFrom"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "authority",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "authority"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "nonce",
+                  "value": {
+                    "kind": "argumentValueNode",
+                    "name": "nonce"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From Stake Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeEntryTo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Entry that will store Stake Metadata"
+            ],
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "stakeEntryTo",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "VdXoiKqCfpW9sJg",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "stakePoolTo",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "authority",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "newNonce",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u32",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "stakePoolTo",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "stakePoolTo"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "authority",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "authority"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "newNonce",
+                  "value": {
+                    "kind": "argumentValueNode",
+                    "name": "newNonce"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Stake Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultFrom",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake Pool Vault that stores staked tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From Pool Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vaultTo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake Pool Vault that stores staked tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To Pool Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "to",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token Account to transfer Stake Mint tokens to"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Receipt Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Owner of the Token Account from which tokens will be staked"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Original mint of staked tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Staked Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeMintFrom",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Mint of stake tokens that will be minted in return for staking"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From Receipt Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeMintTo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Mint of stake tokens that will be minted in return for staking"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To Receipt Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "ef9a37ad6e24bcd6",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "nonce",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newNonce",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Move a stake to another pool",
+          "interpolatedIntent": "${accounts.payer} moves stake entry ${accounts.stakeEntryFrom} of ${accounts.authority} from pool ${accounts.stakePoolFrom} to pool ${accounts.stakePoolTo}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "requestUnstake",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeEntry",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Entry that stores Stake Metadata"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Stake Entry Authority"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Owner"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "2c9a6efda0ca3622",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Request an unstake",
+          "interpolatedIntent": "${accounts.authority} asks to unstake stake entry ${accounts.stakeEntry} from pool ${accounts.stakePool}; the tokens can be taken out once the pool's waiting period has passed"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setTokenMetadataSpl",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Stake Pool Authority"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Receipt Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "metadataAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "metadataAccount",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "KJHK1EAZuVA",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "metadataProgram",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "stakeMint",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "metadataProgram",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "metadataProgram"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "stakeMint",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "stakeMint"
+                  }
+                }
+              ],
+              "programId": {
+                "kind": "accountValueNode",
+                "name": "metadataProgram"
+              }
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Metadata"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "metadataProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "MPL Program"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rent",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarRent111111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "f4a2e3da810519fd",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "name",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Name"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "symbol",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Symbol"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "uri",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Metadata URI"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Name a pool's receipt token",
+          "interpolatedIntent": "${accounts.authority} sets the name ${data.name} and symbol ${data.symbol} of the receipt token ${accounts.stakeMint} of pool ${accounts.stakePool}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setTokenMetadataT22",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Stake Pool Authority"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Receipt Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "ef865b53c439786a",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "name",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Name"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "symbol",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Symbol"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "uri",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Metadata URI"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Name a pool's receipt token",
+          "interpolatedIntent": "${accounts.authority} sets the name ${data.name} and symbol ${data.symbol} of the receipt token ${accounts.stakeMint} of pool ${accounts.stakePool}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "stake",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake Pool"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeEntry",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Entry that will store Stake Metadata"
+            ],
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "stakeEntry",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "VdXoiKqCfpW9sJg",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "stakePool",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "authority",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "nonce",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u32",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "stakePool",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "stakePool"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "authority",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "authority"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "nonce",
+                  "value": {
+                    "kind": "argumentValueNode",
+                    "name": "nonce"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "from",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token Account from which stake tokens will be transferred"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Your Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake Pool Vault that stores staked tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "to",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token Account to transfer Stake Mint tokens to"
+            ],
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "to",
+                "programId": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+                "seeds": [
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "authority",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "tokenProgram",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "stakeMint",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "authority",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "authority"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "tokenProgram",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "tokenProgram"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "stakeMint",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "stakeMint"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Receipt Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Owner of the Token Account from which tokens will be staked"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Staker"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Original mint of staked tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Staked Token"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Mint of stake tokens that will be minted in return for staking"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Receipt Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rentSponsor",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "rentSponsor",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "3AD42p7btaxV9nhj7",
+                      "encoding": "base58"
+                    }
+                  }
+                ]
+              }
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "ceb0ca12c8d1b36c",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "nonce",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "tokenDecimals"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount Staked"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "duration",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "durationNumberDisplayNode"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Lock Duration"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "tokenDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "mint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Stake tokens",
+          "interpolatedIntent": "${accounts.payer} stakes ${data.amount} of ${accounts.mint} from ${accounts.from} in pool ${accounts.stakePool}, locked for ${data.duration}, for ${accounts.authority}, who gets the pool's receipt tokens in ${accounts.to}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "unstake",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeEntry",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Entry that stores Stake Metadata"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "from",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake Mint Token account"
+            ],
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "from",
+                "programId": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+                "seeds": [
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "authority",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "tokenProgram",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "stakeMint",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "authority",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "authority"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "tokenProgram",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "tokenProgram"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "stakeMint",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "stakeMint"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Receipt Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Escrow Account that stores Staked tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "to",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token account to withdraw Staked tokens to"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Your Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Stake Entry Authority"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Original mint of staked tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Staked Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake Mint used to exchanged Staked tokens to"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Receipt Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rentSponsor",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "rentSponsor",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "3AD42p7btaxV9nhj7",
+                      "encoding": "base58"
+                    }
+                  }
+                ]
+              }
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "5a5f6b2acd7c32e1",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "shouldClose",
+            "type": {
+              "kind": "optionTypeNode",
+              "item": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Close the Stake Entry"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Unstake tokens",
+          "interpolatedIntent": "${accounts.authority} unstakes stake entry ${accounts.stakeEntry} from pool ${accounts.stakePool}, returning the receipt tokens from ${accounts.from} and taking the staked ${accounts.mint} back to ${accounts.to}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "unstakeAsWorker",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeEntry",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Entry that stores Stake Metadata"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "from",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake Mint Token account"
+            ],
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "from",
+                "programId": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+                "seeds": [
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "authority",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "tokenProgram",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "stakeMint",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "authority",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "authority"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "tokenProgram",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "tokenProgram"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "stakeMint",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "stakeMint"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Receipt Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Escrow Account that stores Staked tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "to",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "worker",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Auto unstake worker"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "wdrwhnCv4pzW8beKsbPa4S2UDZrXenjg16KJdKSpb5u"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Automatic Unstake Service"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Original mint of staked tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Staked Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake Mint used to exchanged Staked tokens to"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Receipt Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "associatedTokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "1224e0f12eb9e48e",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Unstake an expired stake",
+          "interpolatedIntent": "${accounts.worker} unstakes stake entry ${accounts.stakeEntry} of ${accounts.authority} from pool ${accounts.stakePool}, returning the receipt tokens from ${accounts.from} and the staked ${accounts.mint} to ${accounts.to}"
+        }
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "invalidDuration",
+        "code": 6000,
+        "message": "Minimum duration must be less than the maximum, maximum should be a realistic number of seconds",
+        "docs": [
+          "InvalidDuration: Minimum duration must be less than the maximum, maximum should be a realistic number of seconds"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidWeight",
+        "code": 6001,
+        "message": "Weight should be more than minimum",
+        "docs": [
+          "InvalidWeight: Weight should be more than minimum"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "durationTooShort",
+        "code": 6002,
+        "message": "Duration of staking can't be less than minimum duration of the pool",
+        "docs": [
+          "DurationTooShort: Duration of staking can't be less than minimum duration of the pool"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidStakeAmount",
+        "code": 6003,
+        "message": "Stake amount should be more than 0",
+        "docs": [
+          "InvalidStakeAmount: Stake amount should be more than 0"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "arithmeticError",
+        "code": 6004,
+        "message": "Arithmetic Error (overflow/underflow)",
+        "docs": [
+          "ArithmeticError: Arithmetic Error (overflow/underflow)"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unauthorized",
+        "code": 6005,
+        "message": "Account is not authorized to execute this instruction",
+        "docs": [
+          "Unauthorized: Account is not authorized to execute this instruction"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "ownerMismatch",
+        "code": 6006,
+        "message": "Token account owner did not match intended owner",
+        "docs": [
+          "OwnerMismatch: Token account owner did not match intended owner"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidMint",
+        "code": 6007,
+        "message": "Provided Mint does not equal the Pool Mint",
+        "docs": [
+          "InvalidMint: Provided Mint does not equal the Pool Mint"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidStakeVault",
+        "code": 6008,
+        "message": "Provided Stake Vault does not equal the Pool Vault",
+        "docs": [
+          "InvalidStakeVault: Provided Stake Vault does not equal the Pool Vault"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidStakeMint",
+        "code": 6009,
+        "message": "Provided Stake Mint does not equal the Pool Stake Mint",
+        "docs": [
+          "InvalidStakeMint: Provided Stake Mint does not equal the Pool Stake Mint"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidStakePool",
+        "code": 6010,
+        "message": "Provided Stake Pool does not equal the Entry Stake Pool",
+        "docs": [
+          "InvalidStakePool: Provided Stake Pool does not equal the Entry Stake Pool"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidPoolMint",
+        "code": 6011,
+        "message": "Provided Mint does not equal the Pool Mint",
+        "docs": [
+          "InvalidPoolMint: Provided Mint does not equal the Pool Mint"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "closedStake",
+        "code": 6012,
+        "message": "Stake Entry is already closed and can't be used",
+        "docs": [
+          "ClosedStake: Stake Entry is already closed and can't be used"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "lockedStake",
+        "code": 6013,
+        "message": "Stake is locked, unstake is not possible",
+        "docs": [
+          "LockedStake: Stake is locked, unstake is not possible"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unsupportedTokenExtensions",
+        "code": 6014,
+        "message": "Mint has unsupported Token Extensions",
+        "docs": [
+          "UnsupportedTokenExtensions: Mint has unsupported Token Extensions"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unstakeRequestNotRequired",
+        "code": 6015,
+        "message": "Unstake request is not required",
+        "docs": [
+          "UnstakeRequestNotRequired: Unstake request is not required"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unstakeRequestRequired",
+        "code": 6016,
+        "message": "Stake pool has unstake period, request is required prior to unstake",
+        "docs": [
+          "UnstakeRequestRequired: Stake pool has unstake period, request is required prior to unstake"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unstakeTooEarly",
+        "code": 6017,
+        "message": "Unstake is not possible until unstake period has passed",
+        "docs": [
+          "UnstakeTooEarly: Unstake is not possible until unstake period has passed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "activeStake",
+        "code": 6018,
+        "message": "Stake Entry is still active, can't be closed",
+        "docs": [
+          "ActiveStake: Stake Entry is still active, can't be closed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidMinDuration",
+        "code": 6019,
+        "message": "Minimum duration should be at least 1, for auto-unstake 7 days at least",
+        "docs": [
+          "InvalidMinDuration: Minimum duration should be at least 1, for auto-unstake 7 days at least"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "autoUnstakeNotPossible",
+        "code": 6020,
+        "message": "Auto unstake is not possible with unstake period or with a permissionless pool",
+        "docs": [
+          "AutoUnstakeNotPossible: Auto unstake is not possible with unstake period or with a permissionless pool"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidExpiry",
+        "code": 6021,
+        "message": "Expiry can not be less than max duration",
+        "docs": [
+          "InvalidExpiry: Expiry can not be less than max duration"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "stakePayerNotSupported",
+        "code": 6022,
+        "message": "Separate payer account is not supported when staking in a pool with auto-unstake",
+        "docs": [
+          "StakePayerNotSupported: Separate payer account is not supported when staking in a pool with auto-unstake"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "stakeAmountExceedsMax",
+        "code": 6023,
+        "message": "Stake amount exceeds max total stake",
+        "docs": [
+          "StakeAmountExceedsMax: Stake amount exceeds max total stake"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "stakeDurationExceedsExpiry",
+        "code": 6024,
+        "message": "Stake duration exceeds stake pool expiry",
+        "docs": [
+          "StakeDurationExceedsExpiry: Stake duration exceeds stake pool expiry"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "accountDelegateRevoked",
+        "code": 6025,
+        "message": "Token account delegate has been revoked by staker, can't burn tokens",
+        "docs": [
+          "AccountDelegateRevoked: Token account delegate has been revoked by staker, can't burn tokens"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "refundNotPossible",
+        "code": 6026,
+        "message": "Refund not possible for this stake entry",
+        "docs": [
+          "RefundNotPossible: Refund not possible for this stake entry"
+        ]
+      }
+    ]
+  }
+}
