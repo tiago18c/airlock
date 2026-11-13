@@ -1,0 +1,1014 @@
+{
+  "accounts": {
+    "472wjciN9cdAdMAWA3aQXBqTeoX6UV1ahTVELdrcncD2": {
+      "data": "AQAAAC06F5GVBkziF2N30wPyPgHAqvl4LaCbcCl3JuWG1kAxS6utYQAAAAAIAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "5jKZ6MkXwmksdiBWqpC8PzYKJ7skrz5ckGS6pvxuCanm": {
+      "data": "AQAAAE2Wq/Yi0K6B1dd0V9gaDUocqivS/q5hMdFiwUHm7RqYAp6T5X9kAAAJAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "7D1Y16DJ33MhEYsKQyHrgLMzFFQFZupq3pxBNMj8MQCU": {
+      "data": "AQAAAMU5pCiVPY48dxm1NCmbhlQ7sunwHTzCwfT7bFckiMCNyMcYoQQAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "CKvm3X51XwrAcUN4439WkxLSgtPzVf3ECaMHrtogbtRz": {
+      "data": "AQAAACZVDnu3zYUMjG6f5I4RgABqxeMS/u2a5XSkwSftt9zmeWhPVwQAAAAJAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "Em6vDAFnnEhJ61tnpcJaHX7VyHKuiDHD9TXJnRZthinz": {
+      "data": "AAAAANpjaB9yhrzIBnGeLCtQogFXJDv8lmixFSC8U4Q+3NsIWnvGpH6NAwAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "So11111111111111111111111111111111111111112": {
+      "data": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "xLebAypjbaQ9tmxUKHV6DZU4mY8ATAAP2sfkNNQLXjf": {
+      "data": "AQAAAA+4yGlAhI/0zMGi56xYtJz+ltNW9QUjjUYA8Qz5iK8tDmge7qAAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    }
+  },
+  "instructions": [
+    {
+      "accounts": [
+        "5NQTw1WqVEt6wP1LmohsrYDyJp2NDipdv6eULVNByXMb:w",
+        "4etwiZ4bd3NB1rdqtb7nZzn2mscaGs1ZfavHGPKDREDZ:w",
+        "5Ko2WSP1691B37EpMRyMCstqV1RKw8Rxyf3wExvwnAgf:w",
+        "3ESUFCnRNgZ7Mn2mPPUMmXYaKU8jpnV9VtA17M7t2mHQ:w",
+        "mPWBpKzzchEjitz7x4Q2d7cbQ3fHibF2BHWbWk8YGnH:w",
+        "C2QoQ111jGHEy5918XkNXQro7gGwC9PKLXd1LqBiYNwA:w",
+        "Gs1dVEjVT3mSBKFxLsGw2BtQnkKaGKFkPc4CwchtqvP7:w",
+        "3RpEekjLE5cdcG15YcXJUpxSepemvq2FpmMcgo342BwC:w",
+        "4nCGSVN8ZGuewX36TznzisceaNYzURWPesxyGtDvA2iP:w",
+        "43YixEfZjD2oidQohFvGSkSaAZXdv6qY89F38gtTSka4:w",
+        "2jPua1PG2YRi2ZVNYhuneLkHz3kRpeFy29n5b29qVS72:w",
+        "CDnseKpFLqEn8zCZorrsdsrgWtVQDXKRpcjaCLfJSdzz:w",
+        "7DYPrxbhsrHf2rsip6sV5mtmDfDZEdVUPM2vJrVf9f2Z:sw",
+        "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "f8c69e91e17587c8dc110000000000000000000000000000",
+      "fields": [
+        [
+          "Amount In",
+          "4,572 base units"
+        ],
+        [
+          "Minimum Out",
+          "0 base units"
+        ],
+        [
+          "Pool",
+          "5NQTw1WqVEt6wP1LmohsrYDyJp2NDipdv6eULVNByXMb"
+        ],
+        [
+          "From",
+          "4etwiZ4bd3NB1rdqtb7nZzn2mscaGs1ZfavHGPKDREDZ"
+        ],
+        [
+          "To",
+          "5Ko2WSP1691B37EpMRyMCstqV1RKw8Rxyf3wExvwnAgf"
+        ],
+        [
+          "Vault A",
+          "3ESUFCnRNgZ7Mn2mPPUMmXYaKU8jpnV9VtA17M7t2mHQ"
+        ],
+        [
+          "Vault B",
+          "mPWBpKzzchEjitz7x4Q2d7cbQ3fHibF2BHWbWk8YGnH"
+        ],
+        [
+          "Vault A Token Account",
+          "C2QoQ111jGHEy5918XkNXQro7gGwC9PKLXd1LqBiYNwA"
+        ],
+        [
+          "Vault B Token Account",
+          "Gs1dVEjVT3mSBKFxLsGw2BtQnkKaGKFkPc4CwchtqvP7"
+        ],
+        [
+          "Vault A LP Mint",
+          "3RpEekjLE5cdcG15YcXJUpxSepemvq2FpmMcgo342BwC"
+        ],
+        [
+          "Vault B LP Mint",
+          "4nCGSVN8ZGuewX36TznzisceaNYzURWPesxyGtDvA2iP"
+        ],
+        [
+          "Pool's Vault A LP Account",
+          "43YixEfZjD2oidQohFvGSkSaAZXdv6qY89F38gtTSka4"
+        ],
+        [
+          "Pool's Vault B LP Account",
+          "2jPua1PG2YRi2ZVNYhuneLkHz3kRpeFy29n5b29qVS72"
+        ],
+        [
+          "Protocol Fee Account",
+          "CDnseKpFLqEn8zCZorrsdsrgWtVQDXKRpcjaCLfJSdzz"
+        ],
+        [
+          "Owner",
+          "7DYPrxbhsrHf2rsip6sV5mtmDfDZEdVUPM2vJrVf9f2Z"
+        ]
+      ],
+      "from": "2fnPVkNDaUYD5ZcUyJepDPNnL4ecELWrVGjPPZCHFUN27JpfM9jPM8M5vLXenbyyaV2ERPPJqBe9cz6Dnc8HWDrJ#6.7",
+      "intent": "Swap tokens",
+      "programId": "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB",
+      "sentence": "7DYPrxbhsrHf2rsip6sV5mtmDfDZEdVUPM2vJrVf9f2Z swaps 4,572 base units from 4etwiZ4bd3NB1rdqtb7nZzn2mscaGs1ZfavHGPKDREDZ for at least 0 base units into 5Ko2WSP1691B37EpMRyMCstqV1RKw8Rxyf3wExvwnAgf, in pool 5NQTw1WqVEt6wP1LmohsrYDyJp2NDipdv6eULVNByXMb",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "7EHkSAy4J8LJxuCBmapSeYdBX3nqQhfx1tV2Fewiei8C:w",
+        "CWYbW9nN63fZiSbg6dLNvHSGQypokqPtothwDwZnsjxh:w",
+        "FgjscS5aZB8yqskMXxNUixRA7Como2iN3NN88HhrW5kK:w",
+        "7hZ3rCsQND5p2uyVBzwsbsBhK3hHSdP7ZD5jyi5hU4Bs:w",
+        "FERjPVNEa7Udq8CEv68h6tPL46Tq7ieE49HrE2wea3XT:w",
+        "DgpAwiG7Rcd7BF3sDYojrZn6Jd62mFNURDPw2dx2FxY9:w",
+        "HZeLxbZ9uHtSpwZC3LBr4Nubd14iHwz7bRSghRZf5VCG:w",
+        "GAmbThwyvX8rbAVQ5h749BchLgCKaMfm4N8eat2KTUcY:w",
+        "FZN7QZ8ZUUAxMPfxYEYkH3cXUASzH8EqA6B4tyCL8f1j:w",
+        "3d6GvJVupRDSN5MAq4GboPPNm9zVT7pQdzVHn5rmHnip:w",
+        "Am7GHXuBtH2TAgVK26ESbFsgCq2J5wVCuUJQkhBRAQff:w",
+        "AMsjaQW2wbfqvvkwquHkVMBLQV7UuM8ADxYbYHhcU6Yn:w",
+        "GLiCiNEnku3pQsmkVkRvnDLbfUN9BWbsrPDWLdPaADng:sw",
+        "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "f8c69e91e17587c81ec06c00000000000100000000000000",
+      "fields": [
+        [
+          "Amount In",
+          "7,127,070 base units"
+        ],
+        [
+          "Minimum Out",
+          "1 base units"
+        ],
+        [
+          "Pool",
+          "7EHkSAy4J8LJxuCBmapSeYdBX3nqQhfx1tV2Fewiei8C"
+        ],
+        [
+          "From",
+          "CWYbW9nN63fZiSbg6dLNvHSGQypokqPtothwDwZnsjxh"
+        ],
+        [
+          "To",
+          "FgjscS5aZB8yqskMXxNUixRA7Como2iN3NN88HhrW5kK"
+        ],
+        [
+          "Vault A",
+          "7hZ3rCsQND5p2uyVBzwsbsBhK3hHSdP7ZD5jyi5hU4Bs"
+        ],
+        [
+          "Vault B",
+          "FERjPVNEa7Udq8CEv68h6tPL46Tq7ieE49HrE2wea3XT"
+        ],
+        [
+          "Vault A Token Account",
+          "DgpAwiG7Rcd7BF3sDYojrZn6Jd62mFNURDPw2dx2FxY9"
+        ],
+        [
+          "Vault B Token Account",
+          "HZeLxbZ9uHtSpwZC3LBr4Nubd14iHwz7bRSghRZf5VCG"
+        ],
+        [
+          "Vault A LP Mint",
+          "GAmbThwyvX8rbAVQ5h749BchLgCKaMfm4N8eat2KTUcY"
+        ],
+        [
+          "Vault B LP Mint",
+          "FZN7QZ8ZUUAxMPfxYEYkH3cXUASzH8EqA6B4tyCL8f1j"
+        ],
+        [
+          "Pool's Vault A LP Account",
+          "3d6GvJVupRDSN5MAq4GboPPNm9zVT7pQdzVHn5rmHnip"
+        ],
+        [
+          "Pool's Vault B LP Account",
+          "Am7GHXuBtH2TAgVK26ESbFsgCq2J5wVCuUJQkhBRAQff"
+        ],
+        [
+          "Protocol Fee Account",
+          "AMsjaQW2wbfqvvkwquHkVMBLQV7UuM8ADxYbYHhcU6Yn"
+        ],
+        [
+          "Owner",
+          "GLiCiNEnku3pQsmkVkRvnDLbfUN9BWbsrPDWLdPaADng"
+        ]
+      ],
+      "from": "2W6b5v1AKzeUfPSwigwumjw458eAzSGq82dY9m4u6NkKFTafetR2pHqWvYLtj2QeRgLh4rwxXyssx3Crpyj1RQi3#3.1",
+      "intent": "Swap tokens",
+      "programId": "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB",
+      "sentence": "GLiCiNEnku3pQsmkVkRvnDLbfUN9BWbsrPDWLdPaADng swaps 7,127,070 base units from CWYbW9nN63fZiSbg6dLNvHSGQypokqPtothwDwZnsjxh for at least 1 base units into FgjscS5aZB8yqskMXxNUixRA7Como2iN3NN88HhrW5kK, in pool 7EHkSAy4J8LJxuCBmapSeYdBX3nqQhfx1tV2Fewiei8C",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "8uwRhe6YeGXSKup7YsNh4K4NDTKcsZhofDiv4HeEztmi:w",
+        "5jKZ6MkXwmksdiBWqpC8PzYKJ7skrz5ckGS6pvxuCanm:w",
+        "2Fm7ibnEkXfCVqoeGfx3LecLwdErETgKd9vx7debcZBj:w",
+        "2S2e3rJwhjUEJqinGwV6RmGhVAKJXXkNpFsmhKmpcPH1:sw",
+        "DE2egwszs55CbZZPFbq919dDYMPZnyYFLBzcvTUhKWAx:w",
+        "7BGxmo1A5xroCajREHh5MujnSQzYkzWCRqVWmwmVSkBA:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "HZeLxbZ9uHtSpwZC3LBr4Nubd14iHwz7bRSghRZf5VCG:w",
+        "RZUNmkubYTnH2jiLa5uabu5LGUgzVhYNGppcnDZQEEB:w",
+        "FERjPVNEa7Udq8CEv68h6tPL46Tq7ieE49HrE2wea3XT:w",
+        "CeXYcjte8L1x7REe1Vf6LcH7W25fwWBt43LxS1q331fV:w",
+        "6DseZQcorfj5Sqqk8cePoBNkMsgVT4aV9De63tUQGpjH:w",
+        "6eKWZPb3UZdj4Sr7dXaXaiRpdFuuUv4g5YrX9PwPxVjN:w",
+        "FZN7QZ8ZUUAxMPfxYEYkH3cXUASzH8EqA6B4tyCL8f1j:w",
+        "4xPtqQQBkXvQQ3n5XHTToTZhdk9qsTBBh6PHxqm7PTS4:w",
+        "52xi6bHu8X44zRZZn6gLgQ2e3e4qg9TM2wNsBEsH1VhX:w",
+        "3ThmkxXb79vxgqnjJoBX5aZ6dAYYbzSauygHc716cPCz:w",
+        "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi"
+      ],
+      "data": "a9204f8988e846890ee7b00400000000",
+      "fields": [
+        [
+          "LP Fee Claimed at Most",
+          "0.07870235"
+        ],
+        [
+          "Pool",
+          "8uwRhe6YeGXSKup7YsNh4K4NDTKcsZhofDiv4HeEztmi"
+        ],
+        [
+          "Pool LP Mint",
+          "5jKZ6MkXwmksdiBWqpC8PzYKJ7skrz5ckGS6pvxuCanm"
+        ],
+        [
+          "Lock Escrow",
+          "2Fm7ibnEkXfCVqoeGfx3LecLwdErETgKd9vx7debcZBj"
+        ],
+        [
+          "Escrow Owner",
+          "2S2e3rJwhjUEJqinGwV6RmGhVAKJXXkNpFsmhKmpcPH1"
+        ],
+        [
+          "Owner's LP Account",
+          "DE2egwszs55CbZZPFbq919dDYMPZnyYFLBzcvTUhKWAx"
+        ],
+        [
+          "Escrow LP Account",
+          "7BGxmo1A5xroCajREHh5MujnSQzYkzWCRqVWmwmVSkBA"
+        ],
+        [
+          "Vault A Token Account",
+          "HZeLxbZ9uHtSpwZC3LBr4Nubd14iHwz7bRSghRZf5VCG"
+        ],
+        [
+          "Vault B Token Account",
+          "RZUNmkubYTnH2jiLa5uabu5LGUgzVhYNGppcnDZQEEB"
+        ],
+        [
+          "Vault A",
+          "FERjPVNEa7Udq8CEv68h6tPL46Tq7ieE49HrE2wea3XT"
+        ],
+        [
+          "Vault B",
+          "CeXYcjte8L1x7REe1Vf6LcH7W25fwWBt43LxS1q331fV"
+        ],
+        [
+          "Pool's Vault A LP Account",
+          "6DseZQcorfj5Sqqk8cePoBNkMsgVT4aV9De63tUQGpjH"
+        ],
+        [
+          "Pool's Vault B LP Account",
+          "6eKWZPb3UZdj4Sr7dXaXaiRpdFuuUv4g5YrX9PwPxVjN"
+        ],
+        [
+          "Vault A LP Mint",
+          "FZN7QZ8ZUUAxMPfxYEYkH3cXUASzH8EqA6B4tyCL8f1j"
+        ],
+        [
+          "Vault B LP Mint",
+          "4xPtqQQBkXvQQ3n5XHTToTZhdk9qsTBBh6PHxqm7PTS4"
+        ],
+        [
+          "Token A To",
+          "52xi6bHu8X44zRZZn6gLgQ2e3e4qg9TM2wNsBEsH1VhX"
+        ],
+        [
+          "Token B To",
+          "3ThmkxXb79vxgqnjJoBX5aZ6dAYYbzSauygHc716cPCz"
+        ]
+      ],
+      "from": "2Ti5C9gKZmXHxN96FDZiRj9Z91BnUgiE7L3radSDBbvJFAqLZhmx6uV63UpZwuVnvrBDFKTqAD2xee5qqsTikZoM#3",
+      "intent": "Claim fees of locked liquidity",
+      "programId": "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB",
+      "sentence": "2S2e3rJwhjUEJqinGwV6RmGhVAKJXXkNpFsmhKmpcPH1 claims the fees of the liquidity locked in lock escrow 2Fm7ibnEkXfCVqoeGfx3LecLwdErETgKd9vx7debcZBj of pool 8uwRhe6YeGXSKup7YsNh4K4NDTKcsZhofDiv4HeEztmi, up to 0.07870235 of LP token 5jKZ6MkXwmksdiBWqpC8PzYKJ7skrz5ckGS6pvxuCanm, paid to 52xi6bHu8X44zRZZn6gLgQ2e3e4qg9TM2wNsBEsH1VhX and 3ThmkxXb79vxgqnjJoBX5aZ6dAYYbzSauygHc716cPCz",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4xfxqsZP78PMCgWsGcE2ywMBqLtusQYzQ8zuy8aWooym:w",
+        "ANjnErFe1k3QAwiH9vGVxZ5mWZ5GeZJpva13ZXxto3AJ:w",
+        "7XrX7jF4zzkKQDaDsbuC3pj83JDzRY3RPZk3yWvU5s82",
+        "CKvm3X51XwrAcUN4439WkxLSgtPzVf3ECaMHrtogbtRz",
+        "CQdrEsYAxRqkwmpycuTwnMKggr3cr9fqY8Qma4J9TudY:sw",
+        "11111111111111111111111111111111"
+      ],
+      "data": "3657a51345e3dae0",
+      "fields": [
+        [
+          "Pool",
+          "4xfxqsZP78PMCgWsGcE2ywMBqLtusQYzQ8zuy8aWooym"
+        ],
+        [
+          "Lock Escrow",
+          "ANjnErFe1k3QAwiH9vGVxZ5mWZ5GeZJpva13ZXxto3AJ"
+        ],
+        [
+          "Escrow Owner",
+          "7XrX7jF4zzkKQDaDsbuC3pj83JDzRY3RPZk3yWvU5s82"
+        ],
+        [
+          "Pool LP Mint",
+          "CKvm3X51XwrAcUN4439WkxLSgtPzVf3ECaMHrtogbtRz"
+        ],
+        [
+          "Payer",
+          "CQdrEsYAxRqkwmpycuTwnMKggr3cr9fqY8Qma4J9TudY"
+        ]
+      ],
+      "from": "2XXx9ceWq8iNhNbXRjNAhuno4ANe8U2ZNJC8KLozbXLozAw6x7zQScLb9m6iPiP3s9RXoYnNBidcEb4vpoLrYezd#2",
+      "intent": "Create a lock escrow",
+      "programId": "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB",
+      "sentence": "CQdrEsYAxRqkwmpycuTwnMKggr3cr9fqY8Qma4J9TudY creates lock escrow ANjnErFe1k3QAwiH9vGVxZ5mWZ5GeZJpva13ZXxto3AJ for 7XrX7jF4zzkKQDaDsbuC3pj83JDzRY3RPZk3yWvU5s82 in pool 4xfxqsZP78PMCgWsGcE2ywMBqLtusQYzQ8zuy8aWooym",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4xfxqsZP78PMCgWsGcE2ywMBqLtusQYzQ8zuy8aWooym:w",
+        "CKvm3X51XwrAcUN4439WkxLSgtPzVf3ECaMHrtogbtRz",
+        "ANjnErFe1k3QAwiH9vGVxZ5mWZ5GeZJpva13ZXxto3AJ:w",
+        "FhVo3mqL8PW5pH5U2CN4XE33DokiyZnUwuGpH2hmHLuM:w",
+        "BEj53DRkwEgcpgF7ws29A4Rfo1w4A9uaVbTcc3Kevyh6:w",
+        "7u1VVUhDXGvFi5eprKppNMNuN7Lhgs84wj9JRnxtHmzw:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "9f3v2RbF32SAN7qQv7vkNC4eUF7yTjHiLwjoQbLK9cX1",
+        "FERjPVNEa7Udq8CEv68h6tPL46Tq7ieE49HrE2wea3XT",
+        "3adiavexUQUDezboZkwBWgjm3NJfohGb3f87LJfMbEcM",
+        "Ak9JAXgKAq2f8QTred4ymTBE1zZ3vKahzcMGJMdoiqzM",
+        "EiFR9sMaWLK7RWvJbmEZpgAMu4J41nvTVfHeuQTcB9ap",
+        "FZN7QZ8ZUUAxMPfxYEYkH3cXUASzH8EqA6B4tyCL8f1j"
+      ],
+      "data": "1513d02bed3eff5778684f5704000000",
+      "fields": [
+        [
+          "LP Tokens Locked at Most",
+          "18.644691064"
+        ],
+        [
+          "Pool",
+          "4xfxqsZP78PMCgWsGcE2ywMBqLtusQYzQ8zuy8aWooym"
+        ],
+        [
+          "Pool LP Mint",
+          "CKvm3X51XwrAcUN4439WkxLSgtPzVf3ECaMHrtogbtRz"
+        ],
+        [
+          "Lock Escrow",
+          "ANjnErFe1k3QAwiH9vGVxZ5mWZ5GeZJpva13ZXxto3AJ"
+        ],
+        [
+          "Escrow Owner",
+          "FhVo3mqL8PW5pH5U2CN4XE33DokiyZnUwuGpH2hmHLuM"
+        ],
+        [
+          "LP Tokens From",
+          "BEj53DRkwEgcpgF7ws29A4Rfo1w4A9uaVbTcc3Kevyh6"
+        ],
+        [
+          "Escrow LP Account",
+          "7u1VVUhDXGvFi5eprKppNMNuN7Lhgs84wj9JRnxtHmzw"
+        ],
+        [
+          "Vault A",
+          "9f3v2RbF32SAN7qQv7vkNC4eUF7yTjHiLwjoQbLK9cX1"
+        ],
+        [
+          "Vault B",
+          "FERjPVNEa7Udq8CEv68h6tPL46Tq7ieE49HrE2wea3XT"
+        ],
+        [
+          "Pool's Vault A LP Account",
+          "3adiavexUQUDezboZkwBWgjm3NJfohGb3f87LJfMbEcM"
+        ],
+        [
+          "Pool's Vault B LP Account",
+          "Ak9JAXgKAq2f8QTred4ymTBE1zZ3vKahzcMGJMdoiqzM"
+        ],
+        [
+          "Vault A LP Mint",
+          "EiFR9sMaWLK7RWvJbmEZpgAMu4J41nvTVfHeuQTcB9ap"
+        ],
+        [
+          "Vault B LP Mint",
+          "FZN7QZ8ZUUAxMPfxYEYkH3cXUASzH8EqA6B4tyCL8f1j"
+        ]
+      ],
+      "from": "2XXx9ceWq8iNhNbXRjNAhuno4ANe8U2ZNJC8KLozbXLozAw6x7zQScLb9m6iPiP3s9RXoYnNBidcEb4vpoLrYezd#3.1",
+      "intent": "Lock liquidity",
+      "programId": "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB",
+      "sentence": "FhVo3mqL8PW5pH5U2CN4XE33DokiyZnUwuGpH2hmHLuM locks at most 18.644691064 of LP token CKvm3X51XwrAcUN4439WkxLSgtPzVf3ECaMHrtogbtRz from BEj53DRkwEgcpgF7ws29A4Rfo1w4A9uaVbTcc3Kevyh6 in lock escrow ANjnErFe1k3QAwiH9vGVxZ5mWZ5GeZJpva13ZXxto3AJ of pool 4xfxqsZP78PMCgWsGcE2ywMBqLtusQYzQ8zuy8aWooym",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4xfxqsZP78PMCgWsGcE2ywMBqLtusQYzQ8zuy8aWooym:w",
+        "8f848CEy8eY6PhJ3VcemtBDzPPSD4Vq7aJczLZ3o8MmX",
+        "CKvm3X51XwrAcUN4439WkxLSgtPzVf3ECaMHrtogbtRz:w",
+        "Em6vDAFnnEhJ61tnpcJaHX7VyHKuiDHD9TXJnRZthinz:w",
+        "So11111111111111111111111111111111111111112",
+        "9f3v2RbF32SAN7qQv7vkNC4eUF7yTjHiLwjoQbLK9cX1:w",
+        "FERjPVNEa7Udq8CEv68h6tPL46Tq7ieE49HrE2wea3XT:w",
+        "FGsrC8QnbvvYfmzcKsPGrxmmAgp3qyuntpA6gMf1hJu8:w",
+        "HZeLxbZ9uHtSpwZC3LBr4Nubd14iHwz7bRSghRZf5VCG:w",
+        "EiFR9sMaWLK7RWvJbmEZpgAMu4J41nvTVfHeuQTcB9ap:w",
+        "FZN7QZ8ZUUAxMPfxYEYkH3cXUASzH8EqA6B4tyCL8f1j:w",
+        "3adiavexUQUDezboZkwBWgjm3NJfohGb3f87LJfMbEcM:w",
+        "Ak9JAXgKAq2f8QTred4ymTBE1zZ3vKahzcMGJMdoiqzM:w",
+        "4wJKSKJUAvGUHF3odVD4dTw16XrmuXDuoMTveYBJtmYP:w",
+        "31fkApB99fFzKeLhmnavHxRC4oMahmBhfnhfmM5X5ois:w",
+        "BEj53DRkwEgcpgF7ws29A4Rfo1w4A9uaVbTcc3Kevyh6:w",
+        "GhGCnN33V2bjds5CfCjtq2v1aq6gdZW2AGayqAV2BSLh:w",
+        "7maYY3ZViFEtrmd3MePsUWRcgVCnx3VGFKV8gCf4gsjA:w",
+        "FhVo3mqL8PW5pH5U2CN4XE33DokiyZnUwuGpH2hmHLuM:w",
+        "SysvarRent111111111111111111111111111111111",
+        "BW1UmGHuBzvfKCrr1pZUkgvzDDDfECMid3byvnoSWGzP:w",
+        "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s",
+        "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111"
+      ],
+      "data": "3095dc823d0b09b21437f0892e0200000042d3c90200000000",
+      "fields": [
+        [
+          "Token A Deposited",
+          "2,398,905.9725"
+        ],
+        [
+          "Token B Deposited",
+          "11.976"
+        ],
+        [
+          "Activation Point (Slot or Unix Time)",
+          "None"
+        ],
+        [
+          "Pool",
+          "4xfxqsZP78PMCgWsGcE2ywMBqLtusQYzQ8zuy8aWooym"
+        ],
+        [
+          "Config",
+          "8f848CEy8eY6PhJ3VcemtBDzPPSD4Vq7aJczLZ3o8MmX"
+        ],
+        [
+          "Pool LP Mint",
+          "CKvm3X51XwrAcUN4439WkxLSgtPzVf3ECaMHrtogbtRz"
+        ],
+        [
+          "Token A Mint",
+          "Em6vDAFnnEhJ61tnpcJaHX7VyHKuiDHD9TXJnRZthinz"
+        ],
+        [
+          "Token B Mint",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Vault A",
+          "9f3v2RbF32SAN7qQv7vkNC4eUF7yTjHiLwjoQbLK9cX1"
+        ],
+        [
+          "Vault B",
+          "FERjPVNEa7Udq8CEv68h6tPL46Tq7ieE49HrE2wea3XT"
+        ],
+        [
+          "Vault A Token Account",
+          "FGsrC8QnbvvYfmzcKsPGrxmmAgp3qyuntpA6gMf1hJu8"
+        ],
+        [
+          "Vault B Token Account",
+          "HZeLxbZ9uHtSpwZC3LBr4Nubd14iHwz7bRSghRZf5VCG"
+        ],
+        [
+          "Vault A LP Mint",
+          "EiFR9sMaWLK7RWvJbmEZpgAMu4J41nvTVfHeuQTcB9ap"
+        ],
+        [
+          "Vault B LP Mint",
+          "FZN7QZ8ZUUAxMPfxYEYkH3cXUASzH8EqA6B4tyCL8f1j"
+        ],
+        [
+          "Pool's Vault A LP Account",
+          "3adiavexUQUDezboZkwBWgjm3NJfohGb3f87LJfMbEcM"
+        ],
+        [
+          "Pool's Vault B LP Account",
+          "Ak9JAXgKAq2f8QTred4ymTBE1zZ3vKahzcMGJMdoiqzM"
+        ],
+        [
+          "Token A From",
+          "4wJKSKJUAvGUHF3odVD4dTw16XrmuXDuoMTveYBJtmYP"
+        ],
+        [
+          "Token B From",
+          "31fkApB99fFzKeLhmnavHxRC4oMahmBhfnhfmM5X5ois"
+        ],
+        [
+          "LP Tokens To",
+          "BEj53DRkwEgcpgF7ws29A4Rfo1w4A9uaVbTcc3Kevyh6"
+        ],
+        [
+          "Protocol Fee Account A",
+          "GhGCnN33V2bjds5CfCjtq2v1aq6gdZW2AGayqAV2BSLh"
+        ],
+        [
+          "Protocol Fee Account B",
+          "7maYY3ZViFEtrmd3MePsUWRcgVCnx3VGFKV8gCf4gsjA"
+        ],
+        [
+          "Payer",
+          "FhVo3mqL8PW5pH5U2CN4XE33DokiyZnUwuGpH2hmHLuM"
+        ],
+        [
+          "LP Mint Metadata",
+          "BW1UmGHuBzvfKCrr1pZUkgvzDDDfECMid3byvnoSWGzP"
+        ]
+      ],
+      "from": "5GXneujWBYDvUk5TXcmQcq8Q38U34cZdkQTtb88msBwMzCkTN1kD4X5geBsW4UUQNGeLbnMshoqQEPsSWvArtMye#1.1",
+      "intent": "Create a pool under a config",
+      "programId": "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB",
+      "sentence": "FhVo3mqL8PW5pH5U2CN4XE33DokiyZnUwuGpH2hmHLuM creates pool 4xfxqsZP78PMCgWsGcE2ywMBqLtusQYzQ8zuy8aWooym of Em6vDAFnnEhJ61tnpcJaHX7VyHKuiDHD9TXJnRZthinz and So11111111111111111111111111111111111111112 under config 8f848CEy8eY6PhJ3VcemtBDzPPSD4Vq7aJczLZ3o8MmX, depositing 2,398,905.9725 of Em6vDAFnnEhJ61tnpcJaHX7VyHKuiDHD9TXJnRZthinz from 4wJKSKJUAvGUHF3odVD4dTw16XrmuXDuoMTveYBJtmYP and 11.976 of So11111111111111111111111111111111111111112 from 31fkApB99fFzKeLhmnavHxRC4oMahmBhfnhfmM5X5ois",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "5NQTw1WqVEt6wP1LmohsrYDyJp2NDipdv6eULVNByXMb:w",
+        "472wjciN9cdAdMAWA3aQXBqTeoX6UV1ahTVELdrcncD2:w",
+        "4CzkpdewKhKDPoF31yogYPVdn2tqf8nYYU4X7ry1qKzg:w",
+        "43YixEfZjD2oidQohFvGSkSaAZXdv6qY89F38gtTSka4:w",
+        "2jPua1PG2YRi2ZVNYhuneLkHz3kRpeFy29n5b29qVS72:w",
+        "3ESUFCnRNgZ7Mn2mPPUMmXYaKU8jpnV9VtA17M7t2mHQ:w",
+        "mPWBpKzzchEjitz7x4Q2d7cbQ3fHibF2BHWbWk8YGnH:w",
+        "3RpEekjLE5cdcG15YcXJUpxSepemvq2FpmMcgo342BwC:w",
+        "4nCGSVN8ZGuewX36TznzisceaNYzURWPesxyGtDvA2iP:w",
+        "C2QoQ111jGHEy5918XkNXQro7gGwC9PKLXd1LqBiYNwA:w",
+        "Gs1dVEjVT3mSBKFxLsGw2BtQnkKaGKFkPc4CwchtqvP7:w",
+        "7UVThuvmdbA9vgvQp7b93NSB14ustm5CtpiW7ZapfvA9:w",
+        "4dihvaWuN5vAgwfYghVXk8d8dEPxWNzfTu7j9kPeKLM5:w",
+        "5aNoY4UuwRp8eyuZ1tDkoBNXNfPE2vEjDngBrA9p3hLy:sw",
+        "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "856d2cb338ee722105402c00000000006c66e206000000006490010000000000",
+      "fields": [
+        [
+          "LP Tokens Burned",
+          "0.02899973"
+        ],
+        [
+          "Token A Minimum",
+          "115,500,652 base units"
+        ],
+        [
+          "Token B Minimum",
+          "102,500 base units"
+        ],
+        [
+          "Pool",
+          "5NQTw1WqVEt6wP1LmohsrYDyJp2NDipdv6eULVNByXMb"
+        ],
+        [
+          "Pool LP Mint",
+          "472wjciN9cdAdMAWA3aQXBqTeoX6UV1ahTVELdrcncD2"
+        ],
+        [
+          "LP Tokens From",
+          "4CzkpdewKhKDPoF31yogYPVdn2tqf8nYYU4X7ry1qKzg"
+        ],
+        [
+          "Pool's Vault A LP Account",
+          "43YixEfZjD2oidQohFvGSkSaAZXdv6qY89F38gtTSka4"
+        ],
+        [
+          "Pool's Vault B LP Account",
+          "2jPua1PG2YRi2ZVNYhuneLkHz3kRpeFy29n5b29qVS72"
+        ],
+        [
+          "Vault A",
+          "3ESUFCnRNgZ7Mn2mPPUMmXYaKU8jpnV9VtA17M7t2mHQ"
+        ],
+        [
+          "Vault B",
+          "mPWBpKzzchEjitz7x4Q2d7cbQ3fHibF2BHWbWk8YGnH"
+        ],
+        [
+          "Vault A LP Mint",
+          "3RpEekjLE5cdcG15YcXJUpxSepemvq2FpmMcgo342BwC"
+        ],
+        [
+          "Vault B LP Mint",
+          "4nCGSVN8ZGuewX36TznzisceaNYzURWPesxyGtDvA2iP"
+        ],
+        [
+          "Vault A Token Account",
+          "C2QoQ111jGHEy5918XkNXQro7gGwC9PKLXd1LqBiYNwA"
+        ],
+        [
+          "Vault B Token Account",
+          "Gs1dVEjVT3mSBKFxLsGw2BtQnkKaGKFkPc4CwchtqvP7"
+        ],
+        [
+          "Token A To",
+          "7UVThuvmdbA9vgvQp7b93NSB14ustm5CtpiW7ZapfvA9"
+        ],
+        [
+          "Token B To",
+          "4dihvaWuN5vAgwfYghVXk8d8dEPxWNzfTu7j9kPeKLM5"
+        ],
+        [
+          "Owner",
+          "5aNoY4UuwRp8eyuZ1tDkoBNXNfPE2vEjDngBrA9p3hLy"
+        ]
+      ],
+      "from": "e3q37D8efSAgYCA9ZqUJFHxZhYdZipHjnF2KDcyBVR7aAZoydEV32bd3pGQ16KyCZQsMgB8CQvR9nVTbA9hkW7c#1",
+      "intent": "Remove liquidity",
+      "programId": "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB",
+      "sentence": "5aNoY4UuwRp8eyuZ1tDkoBNXNfPE2vEjDngBrA9p3hLy burns 0.02899973 of LP token 472wjciN9cdAdMAWA3aQXBqTeoX6UV1ahTVELdrcncD2 from 4CzkpdewKhKDPoF31yogYPVdn2tqf8nYYU4X7ry1qKzg to remove liquidity from pool 5NQTw1WqVEt6wP1LmohsrYDyJp2NDipdv6eULVNByXMb, for at least 115,500,652 base units into 7UVThuvmdbA9vgvQp7b93NSB14ustm5CtpiW7ZapfvA9 and 102,500 base units into 4dihvaWuN5vAgwfYghVXk8d8dEPxWNzfTu7j9kPeKLM5",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "5NQTw1WqVEt6wP1LmohsrYDyJp2NDipdv6eULVNByXMb:w",
+        "472wjciN9cdAdMAWA3aQXBqTeoX6UV1ahTVELdrcncD2:w",
+        "D9maB8oj9MVAsDycvUowivVpumymRotjzssYtKNYJhfn:w",
+        "43YixEfZjD2oidQohFvGSkSaAZXdv6qY89F38gtTSka4:w",
+        "2jPua1PG2YRi2ZVNYhuneLkHz3kRpeFy29n5b29qVS72:w",
+        "3ESUFCnRNgZ7Mn2mPPUMmXYaKU8jpnV9VtA17M7t2mHQ:w",
+        "mPWBpKzzchEjitz7x4Q2d7cbQ3fHibF2BHWbWk8YGnH:w",
+        "3RpEekjLE5cdcG15YcXJUpxSepemvq2FpmMcgo342BwC:w",
+        "4nCGSVN8ZGuewX36TznzisceaNYzURWPesxyGtDvA2iP:w",
+        "C2QoQ111jGHEy5918XkNXQro7gGwC9PKLXd1LqBiYNwA:w",
+        "Gs1dVEjVT3mSBKFxLsGw2BtQnkKaGKFkPc4CwchtqvP7:w",
+        "32QxLWnmGTSyvcoDsqKdHUho98nzdYQ7asHvUvdexiw7:w",
+        "C15G3GDaUmS2irSpAdM3RMfRSAZP5z9oLRFeq3YorDmf:w",
+        "5Wcy5pLcCcvHJTFJUvhUhNS1EixVR1qKFxoS5gZvPU6:sw",
+        "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "a8e3323ebdab54b0684c150000000000c4df770300000000debb000000000000",
+      "fields": [
+        [
+          "LP Tokens",
+          "0.01395816"
+        ],
+        [
+          "Token A Maximum",
+          "58,187,716 base units"
+        ],
+        [
+          "Token B Maximum",
+          "48,094 base units"
+        ],
+        [
+          "Pool",
+          "5NQTw1WqVEt6wP1LmohsrYDyJp2NDipdv6eULVNByXMb"
+        ],
+        [
+          "Pool LP Mint",
+          "472wjciN9cdAdMAWA3aQXBqTeoX6UV1ahTVELdrcncD2"
+        ],
+        [
+          "LP Tokens To",
+          "D9maB8oj9MVAsDycvUowivVpumymRotjzssYtKNYJhfn"
+        ],
+        [
+          "Pool's Vault A LP Account",
+          "43YixEfZjD2oidQohFvGSkSaAZXdv6qY89F38gtTSka4"
+        ],
+        [
+          "Pool's Vault B LP Account",
+          "2jPua1PG2YRi2ZVNYhuneLkHz3kRpeFy29n5b29qVS72"
+        ],
+        [
+          "Vault A",
+          "3ESUFCnRNgZ7Mn2mPPUMmXYaKU8jpnV9VtA17M7t2mHQ"
+        ],
+        [
+          "Vault B",
+          "mPWBpKzzchEjitz7x4Q2d7cbQ3fHibF2BHWbWk8YGnH"
+        ],
+        [
+          "Vault A LP Mint",
+          "3RpEekjLE5cdcG15YcXJUpxSepemvq2FpmMcgo342BwC"
+        ],
+        [
+          "Vault B LP Mint",
+          "4nCGSVN8ZGuewX36TznzisceaNYzURWPesxyGtDvA2iP"
+        ],
+        [
+          "Vault A Token Account",
+          "C2QoQ111jGHEy5918XkNXQro7gGwC9PKLXd1LqBiYNwA"
+        ],
+        [
+          "Vault B Token Account",
+          "Gs1dVEjVT3mSBKFxLsGw2BtQnkKaGKFkPc4CwchtqvP7"
+        ],
+        [
+          "Token A From",
+          "32QxLWnmGTSyvcoDsqKdHUho98nzdYQ7asHvUvdexiw7"
+        ],
+        [
+          "Token B From",
+          "C15G3GDaUmS2irSpAdM3RMfRSAZP5z9oLRFeq3YorDmf"
+        ],
+        [
+          "Owner",
+          "5Wcy5pLcCcvHJTFJUvhUhNS1EixVR1qKFxoS5gZvPU6"
+        ]
+      ],
+      "from": "4iufrsbcHRHrfPTETQQsxTh4qM4KNKAA5Dc6SRfu5xvCFA2TGzN4bPCjo6LKfeFK1N1vUv9oWHyQVXaj4Sk7Tp2h#1",
+      "intent": "Add liquidity",
+      "programId": "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB",
+      "sentence": "5Wcy5pLcCcvHJTFJUvhUhNS1EixVR1qKFxoS5gZvPU6 adds liquidity to pool 5NQTw1WqVEt6wP1LmohsrYDyJp2NDipdv6eULVNByXMb for 0.01395816 of LP token 472wjciN9cdAdMAWA3aQXBqTeoX6UV1ahTVELdrcncD2, paying at most 58,187,716 base units from 32QxLWnmGTSyvcoDsqKdHUho98nzdYQ7asHvUvdexiw7 and 48,094 base units from C15G3GDaUmS2irSpAdM3RMfRSAZP5z9oLRFeq3YorDmf",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "32D4zRxNc1EssbJieVHfPhZM3rH6CzfUPrWUuWxD9prG:w",
+        "xLebAypjbaQ9tmxUKHV6DZU4mY8ATAAP2sfkNNQLXjf:w",
+        "3QQUVQ21MCCFc7Yf3BV4gGbT4a2ciQayK7T1NMSyrGsS:w",
+        "24NYE3hHQyUTrHUT4n1CcVrMP9Xy3ULuT1Uurw1HDeck:w",
+        "Hv5ogVb2BZCF3ET2KnaEYj2seKHN5ffGDazm6BGt5DD9:w",
+        "3ESUFCnRNgZ7Mn2mPPUMmXYaKU8jpnV9VtA17M7t2mHQ:w",
+        "5XCP3oD3JAuQyDpfBFFVUxsBxNjPQojpKuL4aVhHsDok:w",
+        "3RpEekjLE5cdcG15YcXJUpxSepemvq2FpmMcgo342BwC:w",
+        "EZun6G5514FeqYtUv26cBHWLqXjAEdjGuoX6ThBpBtKj:w",
+        "C2QoQ111jGHEy5918XkNXQro7gGwC9PKLXd1LqBiYNwA:w",
+        "DQjGWHN9ERn1zSMpWLNvSpTFUSfnxbanBt9A7xyU2bVE:w",
+        "F9guaEK8hVkmvPx2VwtWWz6gLoyJyXYirM8pjWP2JKHL:w",
+        "Dsdjpej274s4vcRhuoJGc6kLLrRJP7swySWm2u89eVgi:sw",
+        "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "5454b142feb90afba9b2220000000000d2682a0000000000",
+      "fields": [
+        [
+          "LP Tokens Burned",
+          "2.273961"
+        ],
+        [
+          "Minimum Out",
+          "2,779,346 base units"
+        ],
+        [
+          "Pool",
+          "32D4zRxNc1EssbJieVHfPhZM3rH6CzfUPrWUuWxD9prG"
+        ],
+        [
+          "Pool LP Mint",
+          "xLebAypjbaQ9tmxUKHV6DZU4mY8ATAAP2sfkNNQLXjf"
+        ],
+        [
+          "LP Tokens From",
+          "3QQUVQ21MCCFc7Yf3BV4gGbT4a2ciQayK7T1NMSyrGsS"
+        ],
+        [
+          "Pool's Vault A LP Account",
+          "24NYE3hHQyUTrHUT4n1CcVrMP9Xy3ULuT1Uurw1HDeck"
+        ],
+        [
+          "Pool's Vault B LP Account",
+          "Hv5ogVb2BZCF3ET2KnaEYj2seKHN5ffGDazm6BGt5DD9"
+        ],
+        [
+          "Vault A",
+          "3ESUFCnRNgZ7Mn2mPPUMmXYaKU8jpnV9VtA17M7t2mHQ"
+        ],
+        [
+          "Vault B",
+          "5XCP3oD3JAuQyDpfBFFVUxsBxNjPQojpKuL4aVhHsDok"
+        ],
+        [
+          "Vault A LP Mint",
+          "3RpEekjLE5cdcG15YcXJUpxSepemvq2FpmMcgo342BwC"
+        ],
+        [
+          "Vault B LP Mint",
+          "EZun6G5514FeqYtUv26cBHWLqXjAEdjGuoX6ThBpBtKj"
+        ],
+        [
+          "Vault A Token Account",
+          "C2QoQ111jGHEy5918XkNXQro7gGwC9PKLXd1LqBiYNwA"
+        ],
+        [
+          "Vault B Token Account",
+          "DQjGWHN9ERn1zSMpWLNvSpTFUSfnxbanBt9A7xyU2bVE"
+        ],
+        [
+          "To",
+          "F9guaEK8hVkmvPx2VwtWWz6gLoyJyXYirM8pjWP2JKHL"
+        ],
+        [
+          "Owner",
+          "Dsdjpej274s4vcRhuoJGc6kLLrRJP7swySWm2u89eVgi"
+        ]
+      ],
+      "from": "4VWwEb6zndRjBGpU612C4k7LqJ4tHgNvxhcW4hLuY7E9kxAVtoZVX4PaxtZAFjnESbcM2f67NcgYEmuwsgN4hUTC#2",
+      "intent": "Remove liquidity as one token",
+      "programId": "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB",
+      "sentence": "Dsdjpej274s4vcRhuoJGc6kLLrRJP7swySWm2u89eVgi burns 2.273961 of LP token xLebAypjbaQ9tmxUKHV6DZU4mY8ATAAP2sfkNNQLXjf from 3QQUVQ21MCCFc7Yf3BV4gGbT4a2ciQayK7T1NMSyrGsS to remove liquidity from pool 32D4zRxNc1EssbJieVHfPhZM3rH6CzfUPrWUuWxD9prG as one token, for at least 2,779,346 base units into F9guaEK8hVkmvPx2VwtWWz6gLoyJyXYirM8pjWP2JKHL",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "VeUxoUzPpMPCpvZBP9ysjSPtrTqPo7AJvG6AH2UdXCG:w",
+        "7D1Y16DJ33MhEYsKQyHrgLMzFFQFZupq3pxBNMj8MQCU:w",
+        "2PeF5XUtURhgBvw8dNK4kz6oSz1M95VJNALCMp8WEvyR:w",
+        "EGtJ6GBXcMUyHAG4oztfnQ1Kk3RyhMkAspMj94MC4Nha:w",
+        "B9rcpp1S6HLpNSDUYYKhJq7BCjBJHy15aWmBM3SVhEYe:w",
+        "5XCP3oD3JAuQyDpfBFFVUxsBxNjPQojpKuL4aVhHsDok:w",
+        "3ESUFCnRNgZ7Mn2mPPUMmXYaKU8jpnV9VtA17M7t2mHQ:w",
+        "EZun6G5514FeqYtUv26cBHWLqXjAEdjGuoX6ThBpBtKj:w",
+        "3RpEekjLE5cdcG15YcXJUpxSepemvq2FpmMcgo342BwC:w",
+        "DQjGWHN9ERn1zSMpWLNvSpTFUSfnxbanBt9A7xyU2bVE:w",
+        "C2QoQ111jGHEy5918XkNXQro7gGwC9PKLXd1LqBiYNwA:w",
+        "7YouEGQPjP3vWBAz5JkaSXPcxgVdQPKAqsygYWjhYRyN:w",
+        "6VY3SpD5VYyUtTGxU9AgeX3kRNms4cqwSahpK6Nd979t:sw",
+        "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "5454b142feb90afbc4ae9802000000003eeb260300000000",
+      "fields": [
+        [
+          "LP Tokens Burned",
+          "43.560644"
+        ],
+        [
+          "Minimum Out",
+          "52,882,238 base units"
+        ],
+        [
+          "Pool",
+          "VeUxoUzPpMPCpvZBP9ysjSPtrTqPo7AJvG6AH2UdXCG"
+        ],
+        [
+          "Pool LP Mint",
+          "7D1Y16DJ33MhEYsKQyHrgLMzFFQFZupq3pxBNMj8MQCU"
+        ],
+        [
+          "LP Tokens From",
+          "2PeF5XUtURhgBvw8dNK4kz6oSz1M95VJNALCMp8WEvyR"
+        ],
+        [
+          "Pool's Vault A LP Account",
+          "EGtJ6GBXcMUyHAG4oztfnQ1Kk3RyhMkAspMj94MC4Nha"
+        ],
+        [
+          "Pool's Vault B LP Account",
+          "B9rcpp1S6HLpNSDUYYKhJq7BCjBJHy15aWmBM3SVhEYe"
+        ],
+        [
+          "Vault A",
+          "5XCP3oD3JAuQyDpfBFFVUxsBxNjPQojpKuL4aVhHsDok"
+        ],
+        [
+          "Vault B",
+          "3ESUFCnRNgZ7Mn2mPPUMmXYaKU8jpnV9VtA17M7t2mHQ"
+        ],
+        [
+          "Vault A LP Mint",
+          "EZun6G5514FeqYtUv26cBHWLqXjAEdjGuoX6ThBpBtKj"
+        ],
+        [
+          "Vault B LP Mint",
+          "3RpEekjLE5cdcG15YcXJUpxSepemvq2FpmMcgo342BwC"
+        ],
+        [
+          "Vault A Token Account",
+          "DQjGWHN9ERn1zSMpWLNvSpTFUSfnxbanBt9A7xyU2bVE"
+        ],
+        [
+          "Vault B Token Account",
+          "C2QoQ111jGHEy5918XkNXQro7gGwC9PKLXd1LqBiYNwA"
+        ],
+        [
+          "To",
+          "7YouEGQPjP3vWBAz5JkaSXPcxgVdQPKAqsygYWjhYRyN"
+        ],
+        [
+          "Owner",
+          "6VY3SpD5VYyUtTGxU9AgeX3kRNms4cqwSahpK6Nd979t"
+        ]
+      ],
+      "from": "3va8uCBiep7GAVqUmfPWUoc2hiu2vjpYDsDedK8jxQEJJRK3Xehszpassnz5nBnUiG8GJBVPvrNkqwggvxs4VWDn#1",
+      "intent": "Remove liquidity as one token",
+      "programId": "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB",
+      "sentence": "6VY3SpD5VYyUtTGxU9AgeX3kRNms4cqwSahpK6Nd979t burns 43.560644 of LP token 7D1Y16DJ33MhEYsKQyHrgLMzFFQFZupq3pxBNMj8MQCU from 2PeF5XUtURhgBvw8dNK4kz6oSz1M95VJNALCMp8WEvyR to remove liquidity from pool VeUxoUzPpMPCpvZBP9ysjSPtrTqPo7AJvG6AH2UdXCG as one token, for at least 52,882,238 base units into 7YouEGQPjP3vWBAz5JkaSXPcxgVdQPKAqsygYWjhYRyN",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "VeUxoUzPpMPCpvZBP9ysjSPtrTqPo7AJvG6AH2UdXCG:w",
+        "7D1Y16DJ33MhEYsKQyHrgLMzFFQFZupq3pxBNMj8MQCU:w",
+        "6QLmiATZc1nFGFCbgX88bpqz7g9RgtYsURi4rTaQ5keC:w",
+        "EGtJ6GBXcMUyHAG4oztfnQ1Kk3RyhMkAspMj94MC4Nha:w",
+        "B9rcpp1S6HLpNSDUYYKhJq7BCjBJHy15aWmBM3SVhEYe:w",
+        "5XCP3oD3JAuQyDpfBFFVUxsBxNjPQojpKuL4aVhHsDok:w",
+        "3ESUFCnRNgZ7Mn2mPPUMmXYaKU8jpnV9VtA17M7t2mHQ:w",
+        "EZun6G5514FeqYtUv26cBHWLqXjAEdjGuoX6ThBpBtKj:w",
+        "3RpEekjLE5cdcG15YcXJUpxSepemvq2FpmMcgo342BwC:w",
+        "DQjGWHN9ERn1zSMpWLNvSpTFUSfnxbanBt9A7xyU2bVE:w",
+        "C2QoQ111jGHEy5918XkNXQro7gGwC9PKLXd1LqBiYNwA:w",
+        "CdtXcRi1vc3DxNQCLzyK2K3KaEL2LtcEJgRPddjWaP2s:w",
+        "3VwmnZN6FNfReE6igUF36QvNtdaPUdHZ4trKntg98wRb:w",
+        "EPeo6ra2Z8zoSLFbApiBXL3V6pUTDwrjYt4Bfw24tPgb:sw",
+        "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "4f237a54ad0f5dbf42b08f000000000060ec530000000000f4af590000000000",
+      "fields": [
+        [
+          "Minimum LP Tokens",
+          "9.41677"
+        ],
+        [
+          "Token A Amount",
+          "5,500,000 base units"
+        ],
+        [
+          "Token B Amount",
+          "5,877,748 base units"
+        ],
+        [
+          "Pool",
+          "VeUxoUzPpMPCpvZBP9ysjSPtrTqPo7AJvG6AH2UdXCG"
+        ],
+        [
+          "Pool LP Mint",
+          "7D1Y16DJ33MhEYsKQyHrgLMzFFQFZupq3pxBNMj8MQCU"
+        ],
+        [
+          "LP Tokens To",
+          "6QLmiATZc1nFGFCbgX88bpqz7g9RgtYsURi4rTaQ5keC"
+        ],
+        [
+          "Pool's Vault A LP Account",
+          "EGtJ6GBXcMUyHAG4oztfnQ1Kk3RyhMkAspMj94MC4Nha"
+        ],
+        [
+          "Pool's Vault B LP Account",
+          "B9rcpp1S6HLpNSDUYYKhJq7BCjBJHy15aWmBM3SVhEYe"
+        ],
+        [
+          "Vault A",
+          "5XCP3oD3JAuQyDpfBFFVUxsBxNjPQojpKuL4aVhHsDok"
+        ],
+        [
+          "Vault B",
+          "3ESUFCnRNgZ7Mn2mPPUMmXYaKU8jpnV9VtA17M7t2mHQ"
+        ],
+        [
+          "Vault A LP Mint",
+          "EZun6G5514FeqYtUv26cBHWLqXjAEdjGuoX6ThBpBtKj"
+        ],
+        [
+          "Vault B LP Mint",
+          "3RpEekjLE5cdcG15YcXJUpxSepemvq2FpmMcgo342BwC"
+        ],
+        [
+          "Vault A Token Account",
+          "DQjGWHN9ERn1zSMpWLNvSpTFUSfnxbanBt9A7xyU2bVE"
+        ],
+        [
+          "Vault B Token Account",
+          "C2QoQ111jGHEy5918XkNXQro7gGwC9PKLXd1LqBiYNwA"
+        ],
+        [
+          "Token A From",
+          "CdtXcRi1vc3DxNQCLzyK2K3KaEL2LtcEJgRPddjWaP2s"
+        ],
+        [
+          "Token B From",
+          "3VwmnZN6FNfReE6igUF36QvNtdaPUdHZ4trKntg98wRb"
+        ],
+        [
+          "Owner",
+          "EPeo6ra2Z8zoSLFbApiBXL3V6pUTDwrjYt4Bfw24tPgb"
+        ]
+      ],
+      "from": "3BR6GtXa6RKrLJieGnGqn5LaV7Xtx3b9v7Eau3hpJb3T2tRzAhcNSvjzQPchn2GKrTHqexv7XBvKxpiAiehZxeVi#1",
+      "intent": "Add liquidity in any ratio",
+      "programId": "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB",
+      "sentence": "EPeo6ra2Z8zoSLFbApiBXL3V6pUTDwrjYt4Bfw24tPgb adds 5,500,000 base units from CdtXcRi1vc3DxNQCLzyK2K3KaEL2LtcEJgRPddjWaP2s and 5,877,748 base units from 3VwmnZN6FNfReE6igUF36QvNtdaPUdHZ4trKntg98wRb to pool VeUxoUzPpMPCpvZBP9ysjSPtrTqPo7AJvG6AH2UdXCG, for at least 9.41677 of LP token 7D1Y16DJ33MhEYsKQyHrgLMzFFQFZupq3pxBNMj8MQCU",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}
