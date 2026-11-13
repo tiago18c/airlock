@@ -689,3 +689,12 @@ programHash = "6cfb329aa73780f4ed9e255d98038a666a8d4b9d63285cb9f50c6512e6791665"
 authority = "7PWzcTrxjskRB6spuxPqQ81aqWextu9AhspZiq8iAnz6"
 idlSha256 = "24c8a87384df30c60d726ce30950793db0eb83661e31bd29373643b3ac1f473b"
 reviewed = "2026-11-12"
+
+[[builds]]
+# hyloExchange (pack). The binary logs an `Instruction: <Name>` for each of the IDL's 77 instructions and for no other. Successful mainnet transactions decode with the IDL, every account named and no data left over, for the mint, redeem and convert instructions of the SOL, collateral and USDC pools, swapLstToLst, harvestYield, updateLstPrices, withdrawFees, genesisMintExo and eight admin setters.
+programId = "HYEXCHtHkBagdStcJCp3xbbb9B7sdMdWXFNj6mdsG4hn"
+network = "mainnet"
+programHash = "c083df6d55d0b3b7586be546940776c79fda86942e8dd3a4b29ea2e3dbe5b94f"
+authority = "GzyhwK4y7EKPEevAMc2TEpgi1Y3znwj14FUzkHmCMiNP"
+idlSha256 = "c19c5d2610aef3eb8ab8509a51769de436d44488b6e8777f9aec5b0a12477a70"
+reviewed = "2026-11-12"

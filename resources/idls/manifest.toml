@@ -858,3 +858,25 @@ beyond those the IDL lists as a remaining-accounts group, shown as "Additional A
 The Token program's mint account is added, so deposit, borrowing, payment and fee \
 amounts read the stablecoin's decimals and redemption shares the tranche token's, where \
 that mint is an account of the instruction. Display nodes added by hand."""
+
+# Hylo's exchange program (hylo_exchange 2.0.5): it mints and redeems the
+# hyUSD stablecoin and the leveraged xSOL and xASSET tokens against liquid
+# staking tokens, other collateral (cbBTC, HYPE, ZEC and more) and USDC,
+# converts between them, swaps LSTs and runs the USDC rebalance routes. The
+# file is the Anchor IDL its IDL account publishes on mainnet, the same
+# document as hylo-idl/idls/hylo_exchange.json in Hylo's public SDK; there is
+# no program-metadata account and no devnet program.
+[[idls]]
+file = "hylo.json"
+programId = "HYEXCHtHkBagdStcJCp3xbbb9B7sdMdWXFNj6mdsG4hn"
+name = "hyloExchange"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "d56a87540057f249a8b70bc9d46b374aa25bab2be70f96e311d16b41c1f8174c" }
+changes = """Converted from Anchor to Codama. harvestYield and updateLstPrices declare the accounts \
+of the LST registry lookup table they read after their own (the stake-pool and Sanctum \
+calculator accounts, then each LST's header, mint, vault and stake pool) as a \
+remaining-accounts group, hidden, which Anchor IDLs cannot. The Token program's mint \
+account is added, so mint, redeem, convert and swap amounts read the decimals of the \
+mint the instruction names. Hylo's fixed-point values (fees, thresholds, the slippage \
+check's expected amount and tolerance) carry their own power of ten and show as bits and \
+exponent. Display nodes added by hand."""
