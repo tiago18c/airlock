@@ -22,6 +22,7 @@ A release is a tag. Pushing `v1.2.3` builds the files and opens a **draft** rele
 | `bridge-host-<version>-macos-arm64.tar.gz` | The same, for macOS. The online app has it inside |
 | `airlock-mobile-<version>-android-arm64.apk` | Android app, for Android 14 and later on arm64 phones |
 | `airlock-extension-<version>.zip` | Browser extension, ready to load or to upload to a store |
+| `THIRD-PARTY-NOTICES.md` | Where each IDL file the apps ship was taken from, and the licence of that source. Copied from the repository as it is at the tag |
 | `SHA256SUMS.txt` | Checksum of every file above |
 | `airlock-<version>.sigstore.json` | The provenance attestation of every file above, as a Sigstore bundle |
 
@@ -46,11 +47,12 @@ Both prove where a file was built, to whoever checks. Neither is what Windows or
 
 ## Versions
 
-One version number for everything. It is written in five files, and the release refuses to build unless they agree:
+One version number for everything. It is written in six files. The release refuses to build unless the first five agree:
 
 - `Cargo.toml`, under `[workspace.package]`. Every crate inherits it with `version.workspace = true`; `release-check.mjs` also checks that the apps, `wallet-*`, `qr-protocol` and `bridge-host` still do.
 - `extension/package.json`, `extension/manifest.json`
 - `apps/airlock/Info.plist`, `apps/airlock-offline/Info.plist`, as `CFBundleShortVersionString` and `CFBundleVersion`. `dx bundle` copies them into the macOS apps: the plist dx writes itself leaves out the camera description.
+- `extension/package-lock.json`, in its two `version` fields (the top one and the one under `packages[""]`). `release-check.mjs` does not read it, so nothing fails when it is left behind: set it with the others.
 
 Versions follow semantic versioning. While the version is below 1.0, a change that breaks a stored file, the QR protocol or the bridge protocol raises the minor number.
 
@@ -58,7 +60,7 @@ Versions follow semantic versioning. While the version is below 1.0, a change th
 
 `CHANGELOG.md` is written by hand, for users. A pull request that changes behavior adds a line under **Unreleased**, in one of Added, Changed, Fixed, Removed, Security. The Changelog workflow fails a pull request that does not touch the changelog unless it carries the `no-changelog` label, and checks again when the label is added or removed, which is right for refactors, tests and dependency updates.
 
-The release notes are that version's section of the changelog, copied as is. There is nothing separate to write.
+The release notes are [`docs/release-notes-header.md`](release-notes-header.md), with the version filled in, then that version's section of the changelog, copied as is. The header is the same for every release: the prototype warning, which file is for whom, how to load the extension, what Windows, macOS and Android say the first time, and how to check a download. Change it there, not on the draft. There is nothing else to write.
 
 Commit messages are not parsed. They can stay as full sentences.
 
@@ -68,27 +70,27 @@ Commit messages are not parsed. They can stay as full sentences.
    - Set the new version in the files above, then run `cargo check` so `Cargo.lock` follows.
    - In `CHANGELOG.md`, rename `## [Unreleased]` to `## [1.2.3] - YYYY-MM-DD` and add a new empty `## [Unreleased]` above it.
    - Run `node scripts/release-check.mjs 1.2.3`. It prints the release notes, or says what is inconsistent.
-2. **Merge** that pull request once CI and the security checks pass.
-3. **Tag** the merge commit and push the tag:
+2. **Merge** that pull request once CI, Security, Changelog and Dependency age pass.
+3. **Tag** the merge commit and push the tag, on the day, once two things are green: Security for that commit (`gh run list --workflow Security --branch main --limit 1`), since the release does not run it; and a Program watch run on `main` (`gh run list --workflow "Program watch" --branch main --limit 1`), scheduled at 06:41 UTC or started by hand from the Actions tab. If Program watch reports something, deal with what its issue lists first.
    ```bash
    git tag -a v1.2.3 -m "Airlock 1.2.3"
    git push origin v1.2.3
    ```
-4. **Wait** for the Release workflow. It re-runs every check, builds the files, and opens the draft.
-5. **Check the draft.** Install the online app from its installer on a clean machine, load the extension zip, and confirm one QR transfer and one browser connect. Optionally install the airgap build and confirm a durable-nonce transfer can be built, signed and shown as QR. Start each portable zip once. On a Mac with Apple Silicon, open each disk image, get the app past Gatekeeper, and confirm the scanner gets the camera. Compare a checksum, and verify one file's attestation.
+4. **Wait** for the Release workflow. It runs `release-check.mjs` and CI (`ci.yml`: format, Clippy, the tests, the on-chain flows and the extension), builds the files, and opens the draft. It does not run Security (cargo-deny, npm audit, CodeQL) or Fuzz. A release takes 35 minutes with warm caches and about an hour cold. No job sets a time limit (`timeout-minutes`), so a stuck step, such as `apt-get` waiting on an unreachable mirror, runs until GitHub stops it after six hours: cancel the run and re-run its failed jobs.
+5. **Check the draft.** Its notes already start with the header, so paste nothing into them by hand that the header covers. Install the online app from its installer on a clean machine, load the extension zip, and confirm one QR transfer and one browser connect. Optionally install the airgap build and confirm a durable-nonce transfer can be built, signed and shown as QR. Start each portable zip once. On a Mac with Apple Silicon, open each disk image, get the app past Gatekeeper, and confirm the scanner gets the camera. Compare a checksum, and verify one file's attestation.
 6. **Publish** the draft.
 
-A version with a suffix, such as `1.2.3-rc.1`, is opened as a pre-release.
+A version with a suffix, such as `1.2.3-rc.1`, cannot be released yet, though the workflow would open it as a pre-release. `release-check.mjs` requires every file it reads to hold the whole version, suffix included, and `extension/build.mjs` copies `manifest.json` into the zip as it is. Chrome and Firefox load only a manifest `version` of one to four numbers separated by dots, so the extension would not load. The Windows installer writes `VIProductVersion "{{version}}.0"` (`apps/airlock/installer.nsi`), which NSIS requires to be four numbers, and macOS expects `CFBundleVersion` to be numbers separated by dots too. Until `release-check.mjs` compares those files with the version's numeric part, tag plain versions only: the nightly is the release candidate.
 
 If a build is wrong, delete the draft and the tag, fix it on the default branch, and tag again. A published release is never replaced: fix forward with a new version.
 
 ## Nightly
 
-`.github/workflows/build.yml` builds every file above from the commit it runs on. `release.yml` calls it for a tag; `nightly.yml` calls it once a day, at 03:17 UTC, when `main` has moved since the last nightly, and publishes the files as a **prerelease** tagged `nightly`, named like `airlock-0.2.0-nightly.20261109.8e52ed1-windows-x64-setup.exe`.
+`.github/workflows/build.yml` builds every file above from the commit it runs on. `release.yml` calls it for a tag; `nightly.yml` calls it once a day when `main` has moved since the last nightly, and publishes the files as a **prerelease** tagged `nightly`. Its schedule says 03:17 UTC, but GitHub starts a scheduled run when it has room: in November 2026 they started at about 11:00 UTC. A nightly takes the version in `Cargo.toml` and adds the date and commit, so its files are named like `airlock-0.1.0-nightly.20261113.1a2a81d-windows-x64-setup.exe`. That sorts below the release of the same number, as a pre-release version should.
 
 - **There is only one.** Each nightly deletes the one before, its tag included, before it publishes, so old builds do not accumulate. Its workflow artifacts are kept for 3 days, not the repository's 90.
-- **It is not "latest".** GitHub leaves prereleases out of `/releases/latest`, which the app's Extension chip and the README link to. Its notes are the changelog's Unreleased section, under a warning that nobody has tried the build.
-- **It checks what a release checks**, except the changelog and version checks (`release-check.mjs`) and CI, which already ran on every merge to `main`: the Linux job installs the `.deb`, starts both formats and registers the bridge, and the Android APK is signed with the release key and refused if debuggable. A failed nightly mails whoever last changed the schedule, and leaves the previous nightly in place unless the publish step itself failed.
+- **It is not "latest".** GitHub leaves prereleases out of `/releases/latest`, which the app's Extension chip and the README link to. Its notes are a warning that nobody has tried the build, the same header as a release's, and the changelog's Unreleased section.
+- **It checks what a release checks**, except the changelog and version checks (`release-check.mjs`) and CI. CI runs on every push to `main`, but the nightly neither waits for it nor asks whether it passed: the commit it builds may still be in CI, may have failed it, or may never have had its own run, since a CI run still queued when the next push arrives is replaced by that push's. Neither the nightly nor the release runs Security or Fuzz. Both build alike: the Linux job installs the `.deb`, starts both formats and registers the bridge, and the Android APK is signed with the release key and refused if debuggable. A failed nightly mails whoever last changed the schedule, and leaves the previous nightly in place unless the publish step itself failed.
 - **The same provenance.** Its files have attestations too; with cosign, check the identity `^https://github.com/tiago18c/airlock/.github/workflows/nightly.yml@refs/heads/main$`.
 - **Run it by hand** from the Actions tab (Nightly, Run workflow) to build now, even when `main` has not moved. From another branch it builds and uploads the workflow artifacts without publishing, which is how to try a packaging change before merging it. Pull requests never build the bundles: CI only builds and tests.
 

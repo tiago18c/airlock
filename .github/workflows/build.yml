@@ -1,7 +1,8 @@
 name: Build
 
 # Every release file, from the commit it runs on, uploaded as this run's
-# artifacts: desktop, airgap, macos, linux-<app>, android, extension. The
+# artifacts: desktop, airgap, macos, linux-<app>, android, extension (which
+# also carries THIRD-PARTY-NOTICES.md). The
 # release (release.yml) and the nightly (nightly.yml) call it, then publish
 # what it uploads. See docs/releasing.md.
 on:
@@ -213,6 +214,10 @@ jobs:
           mkdir out
           cd extension/dist
           zip -r "../../out/airlock-extension-${{ inputs.version }}.zip" . -x '*.map'
+      # Published beside the files: where each IDL the apps ship comes from,
+      # and its licence.
+      - name: Third-party notices
+        run: cp THIRD-PARTY-NOTICES.md out/
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: extension

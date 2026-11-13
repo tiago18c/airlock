@@ -125,3 +125,6 @@ jobs:
       - name: Release script tests
         working-directory: .
         run: node --test scripts/release-check.test.mjs scripts/check-dep-age.test.mjs
+      - name: Third-party notices list every shipped IDL
+        working-directory: .
+        run: node scripts/third-party-notices.mjs --check

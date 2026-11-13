@@ -24,6 +24,20 @@ jobs:
         run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
       - name: Versions agree and the changelog has this release
         run: node scripts/release-check.mjs "${{ steps.version.outputs.version }}" notes.md
+      # The warning, which file is for whom and how to install each, above
+      # the changelog section. See docs/release-notes-header.md.
+      - name: Install steps above the notes
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          {
+            sed "s/{{version}}/$VERSION/g" docs/release-notes-header.md
+            echo
+            echo "## What's new in $VERSION"
+            echo
+            cat notes.md
+          } > notes-full.md
+          mv notes-full.md notes.md
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: notes

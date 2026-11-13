@@ -50,12 +50,17 @@ jobs:
       # What has changed since the last release, from the changelog.
       - name: Notes
         if: steps.decide.outputs.build == 'true'
+        env:
+          VERSION: ${{ steps.decide.outputs.version }}
         run: |
           {
             echo "Built from ${GITHUB_SHA} on $(date -u +%Y-%m-%d), by the Nightly workflow. Each nightly replaces the one before."
             echo
             echo "> [!WARNING]"
             echo "> Not a release. Nobody has tried these builds, and they may lose or corrupt what they open. Use them on a test vault, not with funds you cannot lose."
+            echo
+            # Which file is for whom and how to install each, as on a release.
+            sed "s/{{version}}/$VERSION/g" docs/release-notes-header.md
             echo
             echo "## Unreleased"
             awk '/^## \[Unreleased\]/ { on = 1; next } /^## \[/ { on = 0 } on' CHANGELOG.md
