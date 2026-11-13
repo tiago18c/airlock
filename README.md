@@ -4,7 +4,7 @@ A Solana wallet that keeps preparing a transaction apart from signing it. An onl
 
 **Not ready for production, and not formally audited.** This is a prototype that handles private keys and signs transactions. Do not use it to hold or move real funds. Read the [disclaimer](#disclaimer) first.
 
-**Download:** [the latest release](https://github.com/tiago18c/airlock/releases/latest). Its page says which file is for which computer or phone, and how to install each.
+**Download:** [the latest release](https://github.com/tiago18c/airlock/releases/latest). Its page says which file is for which computer or phone, and how to install each. To report a vulnerability, see [SECURITY.md](SECURITY.md).
 
 ## Scope
 
@@ -249,6 +249,7 @@ QRS1 carries a payload of one to 64 typed objects, written with wincode, as one 
 | [docs/android.md](docs/android.md) | Airlock for Android: how it is put together, the Seed Vault, Mobile Wallet Adapter, building and running |
 | [docs/design-system.md](docs/design-system.md) | Tokens and components shared by the app and the extension popup |
 | [docs/releasing.md](docs/releasing.md) | Tagging, building and publishing a release, and what each file of a release is |
+| [SECURITY.md](SECURITY.md) | How to report a vulnerability, and what is in scope |
 | [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) | Where each shipped IDL file comes from, and its licence |
 
 ## License
