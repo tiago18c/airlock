@@ -237,7 +237,7 @@ pub fn apply_one(
     note: Signal<Option<String>>,
     error: Signal<Option<String>>,
 ) {
-    let replaces = session.idls.peek().shipped_replaced_by_file(bytes);
+    let replaces = shipped_names(session.idls.peek().shipped_replaced_by_file(bytes));
     if !replaces.is_empty() {
         ask_first(
             session,
@@ -249,6 +249,17 @@ pub fn apply_one(
         return;
     }
     import_one_now(session, bytes, &[], note, error);
+}
+
+/// Each shipped IDL an import would replace, as "<program> on <network>".
+fn shipped_names(shipped: Vec<(Pubkey, String, wallet_core::IdlNetwork)>) -> Vec<String> {
+    shipped
+        .into_iter()
+        .map(|(program, name, network)| {
+            let name = wallet_core::program_display_name(&program).map_or(name, str::to_string);
+            format!("{name} on {}", network.words())
+        })
+        .collect()
 }
 
 /// Hold an import that replaces shipped IDLs until the user says yes.
@@ -337,7 +348,7 @@ pub fn apply_bundle(
         .iter()
         .map(|(name, bytes)| (name.as_str(), bytes.as_slice()))
         .collect();
-    let replaces = session.idls.peek().shipped_replaced_by_bundle(&borrowed);
+    let replaces = shipped_names(session.idls.peek().shipped_replaced_by_bundle(&borrowed));
     if !replaces.is_empty() {
         ask_first(
             session,

@@ -481,12 +481,10 @@ pub(crate) fn analyze(template: &Template, idls: &dyn IdlCatalog) -> Result<Chec
         let mut idl_forms = Vec::new();
         for program_id in candidates(template, block) {
             let Some((program_name, client)) = lookup(idls, &program_id) else {
-                let named = match crate::book::program_display_name(&program_id) {
-                    Some(name) => format!("the {name}"),
-                    None => format!("the program `${}`", block.program),
-                };
-                let message =
-                    format!("Airlock has no IDL for {named} ({program_id}) on this network.");
+                let message = format!(
+                    "Airlock has no IDL for the program `${}` ({program_id}) on this network.",
+                    block.program
+                );
                 // An option whose block this network cannot build is not
                 // offered here; the rest of the template is.
                 if let Some(option) = &block.when {

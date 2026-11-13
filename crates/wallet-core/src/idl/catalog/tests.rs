@@ -1094,7 +1094,7 @@ fn an_import_says_which_shipped_idls_it_would_replace() {
     let shipped = builtin_idl(IdlNetwork::Devnet, &token).unwrap();
     let replaced = store.shipped_replaced_by_file(shipped.json.as_bytes());
     assert_eq!(replaced.len(), 1, "{replaced:?}");
-    assert!(replaced[0].ends_with(" on Devnet"), "{replaced:?}");
+    assert_eq!((replaced[0].0, replaced[0].2), (token, IdlNetwork::Devnet));
     // Nothing ships for this program, so nothing is replaced.
     assert!(store
         .shipped_replaced_by_file(&codama(pk(9), "1.0.0"))

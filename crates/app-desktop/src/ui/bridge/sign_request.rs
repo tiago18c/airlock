@@ -178,8 +178,7 @@ fn ModalSimulation(simulation: Signal<SimState>) -> Element {
         },
         SimState::Done(done) => match done.error {
             Some(error) => {
-                let worded =
-                    wallet_core::simulate::word_simulation_error(&error, &*session.idls.read());
+                let worded = wallet_core::word_simulation_error(&error, &*session.idls.read());
                 let why = worded.trim_end_matches('.');
                 rsx! {
                     p { class: "warn", role: "alert",
