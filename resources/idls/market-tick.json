@@ -1,0 +1,401 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "marketTick",
+    "publicKey": "tickUcsEQegChaAuo9VYQQztB4ZGApY6ZT4FkULWY6N",
+    "version": "0.1.0",
+    "origin": "anchor",
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "name": "marketTickV1Account",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "4d524b544b563031",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "signer",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "slot",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "firstTimestampNs",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "i64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "timestampNs",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "i64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "sequence",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "targetMarketTickIntervalNs",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "observedMarketTickIntervalNs",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "increment",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "pda",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "signer",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Tick Signer"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "01",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "slot",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Slot"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "timestampNs",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "i64",
+              "endian": "le",
+              "display": {
+                "kind": "dateTimeNumberDisplayNode",
+                "ticksPerSecond": 1000000000
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Timestamp (Signer's Clock)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "targetMarketTickIntervalNs",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 6
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "ms"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Target Tick Interval"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Record a market tick",
+          "interpolatedIntent": "${accounts.signer} records a market tick at ${data.timestampNs} for slot ${data.slot}, with a target interval of ${data.targetMarketTickIntervalNs}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initialize",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "pda",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "pda",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "U8Az4XwmqCfSuuk",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "9zg",
+                      "encoding": "base58"
+                    }
+                  }
+                ]
+              }
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Market Tick Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 1,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "00",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create the market tick account",
+          "interpolatedIntent": "${accounts.payer} pays to create the market tick account ${accounts.pda}"
+        }
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "slotMismatch",
+        "code": 6000,
+        "message": "Instruction slot does not match the runtime clock slot",
+        "docs": [
+          "SlotMismatch: Instruction slot does not match the runtime clock slot"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "notSlotSigner",
+        "code": 6001,
+        "message": "Signer is not the signer selected for this slot",
+        "docs": [
+          "NotSlotSigner: Signer is not the signer selected for this slot"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "nonMonotonic",
+        "code": 6002,
+        "message": "Timestamp must strictly increase within a slot",
+        "docs": [
+          "NonMonotonic: Timestamp must strictly increase within a slot"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "intervalMismatch",
+        "code": 6003,
+        "message": "Target interval cannot change within a slot",
+        "docs": [
+          "IntervalMismatch: Target interval cannot change within a slot"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "counterOverflow",
+        "code": 6004,
+        "message": "Sequence counter overflow",
+        "docs": [
+          "CounterOverflow: Sequence counter overflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTimestamp",
+        "code": 6005,
+        "message": "Timestamp must be positive",
+        "docs": [
+          "InvalidTimestamp: Timestamp must be positive"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidInterval",
+        "code": 6006,
+        "message": "Target interval must be nonzero",
+        "docs": [
+          "InvalidInterval: Target interval must be nonzero"
+        ]
+      }
+    ]
+  }
+}
