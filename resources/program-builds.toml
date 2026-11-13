@@ -817,3 +817,12 @@ idlSha256 = "27c6b86106c58ba8804fa0aba7e28358978f39f43e647a1f1583caa32ab6a9e8"
 source = { repo = "https://github.com/metaDAOproject/programs", commit = "56a23aeeac47c08f53f1d37bb78b1a22d201342b" }
 verified = "6awyHMshBGVjJ3ozdSJdyyDE1CTAXUwrpNMaRGMsb4sf"
 reviewed = "2026-11-12"
+
+[[builds]]
+# raydiumRouter (pack). Written by hand: the devnet router's file with this program's address. Mainnet transactions of tags 0, 1, 5 and 6 decode with it, every account named and no byte left over, and the amounts of an exact-in and an exact-out swap match their token balance changes. Tag 8 (swapBaseIn) did not occur in 120 sampled mainnet transactions and rests on the devnet transactions the file was written from. OtterSec lists no verify record.
+programId = "routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS"
+network = "mainnet"
+programHash = "18d2499713f34dc79efcbedd72833c79472b273ee048b0d7b2c7ff027edb83ff"
+authority = "FytDrVzDybM1TwFQPGb8qaxZR7dBCzNeqT3vtQsceZQK"
+idlSha256 = "c484c23190a57fb16669df1bb8c897a34313352a043d61c6e9f828885efc1ce8"
+reviewed = "2026-11-12"
