@@ -755,7 +755,7 @@ fn an_option_on_a_program_with_no_idl_here_is_not_offered() {
     assert!(
         form.unavailable[0]
             .1
-            .contains("has no IDL for the Metaplex Token Metadata Program"),
+            .contains("has no IDL for the program `$token_metadata`"),
         "{:?}",
         form.unavailable
     );

@@ -29,10 +29,11 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
     }
 
     /// The IDLs that ship with the app an import of the IDL file `bytes`, for
-    /// the network shown, would take the place of, each as "<name> on
-    /// <network>". Empty when nothing ships for its program there, or when
-    /// the file is not an IDL (the import then says why).
-    pub fn shipped_replaced_by_file(&self, bytes: &[u8]) -> Vec<String> {
+    /// the network shown, would take the place of: each program, the name in
+    /// its shipped file, and the network. Empty when nothing ships for its
+    /// program there, or when the file is not an IDL (the import then says
+    /// why).
+    pub fn shipped_replaced_by_file(&self, bytes: &[u8]) -> Vec<(Pubkey, String, IdlNetwork)> {
         inspect_idl(bytes, None)
             .ok()
             .and_then(|inspected| self.shipped_name(&inspected.program_id, self.network))
@@ -42,7 +43,10 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
 
     /// As [`Self::shipped_replaced_by_file`], for every file a bundle's
     /// `index.json` names, each on the network it is listed under.
-    pub fn shipped_replaced_by_bundle(&self, files: &[(&str, &[u8])]) -> Vec<String> {
+    pub fn shipped_replaced_by_bundle(
+        &self,
+        files: &[(&str, &[u8])],
+    ) -> Vec<(Pubkey, String, IdlNetwork)> {
         let Some(index) = files
             .iter()
             .find(|(name, _)| file_name(name).eq_ignore_ascii_case("index.json"))
@@ -53,25 +57,27 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
         let mut out = Vec::new();
         for entry in index.records {
             let network = entry.network.unwrap_or(self.network);
-            if let Some(name) = self.shipped_name(&entry.record.program_id, network) {
-                if !out.contains(&name) {
-                    out.push(name);
+            if let Some(shipped) = self.shipped_name(&entry.record.program_id, network) {
+                if !out.contains(&shipped) {
+                    out.push(shipped);
                 }
             }
         }
         out
     }
 
-    /// "<name> on <network>" when an IDL ships with the app for `program_id`
-    /// on `network`.
-    fn shipped_name(&self, program_id: &Pubkey, network: IdlNetwork) -> Option<String> {
+    /// The program, its shipped file's name and the network, when an IDL
+    /// ships with the app for `program_id` on `network`.
+    fn shipped_name(
+        &self,
+        program_id: &Pubkey,
+        network: IdlNetwork,
+    ) -> Option<(Pubkey, String, IdlNetwork)> {
         let idl = self
             .embedded
             .iter()
             .find(|idl| idl.program_id == *program_id && idl.runs_on(network))?;
-        let name = crate::book::program_display_name(program_id)
-            .map_or_else(|| idl.name.clone(), str::to_string);
-        Some(format!("{name} on {}", network.words()))
+        Some((*program_id, idl.name.clone(), network))
     }
 
     /// Import every body named by `index.json`, each for the network it is

@@ -122,6 +122,23 @@ pub fn program_error_words(
     Some((error.name.to_string(), error.message.clone()))
 }
 
+/// The failure in words, with what the IDL of the program that returned a
+/// custom error says of its code.
+pub fn word_simulation_error(
+    error: &crate::tx::simulate::SimulationError,
+    catalog: &(impl IdlCatalog + ?Sized),
+) -> String {
+    let words = error
+        .custom
+        .as_deref()
+        .and_then(|custom| program_error_words(catalog, &custom.program?, custom.code));
+    error.worded(
+        words
+            .as_ref()
+            .map(|(name, message)| (name.as_str(), message.as_str())),
+    )
+}
+
 fn outline_client(client: &ProgramClient) -> Result<IdlOutline, IdlError> {
     let value =
         serde_json::to_value(client.root()).map_err(|err| IdlError::Invalid(err.to_string()))?;

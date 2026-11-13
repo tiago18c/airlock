@@ -83,23 +83,6 @@ impl SimulationError {
     }
 }
 
-/// The failure in words, with what the IDL of the program that returned a
-/// custom error says of its code.
-pub fn word_simulation_error(
-    error: &SimulationError,
-    catalog: &(impl crate::idl::IdlCatalog + ?Sized),
-) -> String {
-    let words = error
-        .custom
-        .as_deref()
-        .and_then(|custom| crate::idl::program_error_words(catalog, &custom.program?, custom.code));
-    error.worded(
-        words
-            .as_ref()
-            .map(|(name, message)| (name.as_str(), message.as_str())),
-    )
-}
-
 /// `notEnoughUserFunds` or `NotEnoughUserFunds` as "not enough user funds".
 fn spaced_name(name: &str) -> String {
     let mut out = String::with_capacity(name.len() + 8);
@@ -512,7 +495,7 @@ mod tests {
             })
         );
         assert_eq!(
-            word_simulation_error(&own, &catalog),
+            crate::idl::word_simulation_error(&own, &catalog),
             "instruction 1: account does not have enough SOL to perform the operation (the program returned error 1, 0x1)"
         );
 
@@ -530,14 +513,14 @@ mod tests {
         assert_eq!(called.program, Some(TOKEN_PROGRAM_ID));
         assert!(called.called);
         assert_eq!(
-            word_simulation_error(&deep, &catalog),
+            crate::idl::word_simulation_error(&deep, &catalog),
             "instruction 1: Insufficient funds (a program it called returned error 1, 0x1)"
         );
 
         // Logs that do not say, or a code the IDL does not hold: the number.
         let unsaid = failing(Vec::new(), 1);
         assert_eq!(
-            word_simulation_error(&unsaid, &catalog),
+            crate::idl::word_simulation_error(&unsaid, &catalog),
             "instruction 1: the program returned error 1 (0x1)"
         );
         let unknown = failing(
@@ -547,7 +530,7 @@ mod tests {
             99,
         );
         assert_eq!(
-            word_simulation_error(&unknown, &catalog),
+            crate::idl::word_simulation_error(&unknown, &catalog),
             "instruction 1: the program returned error 99 (0x63)"
         );
     }
