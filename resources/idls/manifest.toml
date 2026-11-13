@@ -493,3 +493,24 @@ changes = """Converted from Anchor to Codama; the program address is set, as the
 The Token program's mint account is added, so mSOL amounts read the mSOL mint's decimals \
 and LP token amounts the LP mint's; SOL amounts are in SOL; fees are in percent. Display \
 nodes added by hand."""
+
+# Meteora Dynamic Bonding Curve, the launchpad curve behind Believe, Jupiter
+# Studio and other launchpads. The file is the 0.2.2 IDL in Meteora's
+# TypeScript SDK repository, not the one the program publishes: its Anchor IDL
+# account holds 0.1.10, which lacks nine instructions of the deployed 0.2.2
+# program, the partner and creator fee claims that partners now sign among
+# them. Devnet runs another build.
+[[idls]]
+file = "meteora-dbc.json"
+programId = "dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN"
+name = "dynamicBondingCurve"
+networks = ["mainnet"]
+source = { kind = "repository", url = "https://github.com/MeteoraAg/dynamic-bonding-curve-sdk/blob/309496bd1ae49e99fb21774942493e019839ed54/packages/dynamic-bonding-curve/src/idl/dynamic-bonding-curve/idl.json" }
+changes = """Converted from Anchor to Codama. The swaps, the six pool and config creations, the two \
+v2 fee claims, `transferPoolCreator` and `migrationDammV2` declare the accounts they \
+read after the named ones as a remaining-accounts group: the swaps' instructions sysvar, \
+the transfer hook accounts of a base token, the quote token's badge, the DAMM v2 config \
+and the DAMM v1 migration metadata. The three swaps and `migrationDammV2` set \
+optionalAccountStrategy to programId. The Token program's mint account is added, so fee \
+claim limits and a config's migration threshold read their mint's decimals; swap amounts \
+are in base units. Display nodes added by hand."""

@@ -528,3 +528,12 @@ programHash = "db89efca1670f85397f978e9a02f6c2806a9adaa17ebb5783e7e99eddcb26be3"
 authority = "551FBXSXdhcRDDkdcb3ThDRg84Mwe5Zs6YjJ1EEoyzBp"
 idlSha256 = "d4c6e6dd963b8dadcdc454c017d5726fac5e152f5358d3da39f32b72ede52c13"
 reviewed = "2026-11-12"
+
+[[builds]]
+# dynamicBondingCurve (pack). This binary is release 0.2.2 of MeteoraAg/dynamic-bonding-curve: it logs 35 instruction names, exactly the IDL's 35, and its instruction arguments match the program source at the 0.2.2 merge (`91e696e`). Mainnet transactions of 20 of them decode with no byte left over and name every account, the swaps, partner and creator fee claims and pool creations among them.
+programId = "dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN"
+network = "mainnet"
+programHash = "4c1433047f0260817fa6b3376e166b2e3503a7b54718caf54a92941da5404613"
+authority = "JADaUV8kvDpDbJr55wxXJHVaBS3VCj8thZZHjfeuCVLd"
+idlSha256 = "b402e2e48af151e73ed0ad41628345b81db652b7361af0dcb6a16d36a69ab581"
+reviewed = "2026-11-12"
