@@ -51,8 +51,11 @@ impl std::fmt::Display for Problem {
 pub struct TemplateForm {
     /// The questions, in the order written.
     pub inputs: Vec<FormInput>,
-    /// The checkboxes, in the order written.
+    /// The checkboxes this network offers, in the order written.
     pub options: Vec<TemplateOption>,
+    /// The options this network does not offer, by name, each with why: a
+    /// block under it needs a program this network has no IDL for.
+    pub unavailable: Vec<(String, String)>,
 }
 
 /// One question, with the widget its fields call for.
@@ -93,6 +96,13 @@ pub enum InputScale {
     FromArgument {
         block: usize,
         argument: String,
+        unit: Option<String>,
+    },
+    /// With as many decimal places as the value `value` holds once it is
+    /// worked out: an input given to `base-units` with a value as its
+    /// decimals. See [`super::Expansion::decimals_of`].
+    FromValue {
+        value: String,
         unit: Option<String>,
     },
 }
@@ -285,6 +295,7 @@ impl Pass<'_> {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn value_fits(
         &mut self,
         number: usize,
@@ -293,6 +304,7 @@ impl Pass<'_> {
         term: &Term,
         address: bool,
         integer: bool,
+        json: Option<&IdlArgField>,
     ) {
         let Some(ty) = term_type(self.template, term) else {
             return;
@@ -300,12 +312,39 @@ impl Pass<'_> {
         let fits = match ty {
             ValueType::Address | ValueType::Program => address,
             ValueType::Integer => integer,
+            ValueType::Amount | ValueType::Shape => false,
+            ValueType::Json => json.is_some(),
         };
+        if fits && ty == ValueType::Json {
+            // What the function writes must read in this field.
+            let function = term
+                .reference()
+                .and_then(|name| self.template.values.get(name))
+                .map(|call| call.function);
+            let sample = function.and_then(|function| function.json_for(&Pubkey::default()));
+            if let (Some(field_kind), Some(sample)) = (json, sample) {
+                let text: HashMap<String, String> = [(field_kind.name.clone(), sample)].into();
+                if let Err(err) = parse_field(field_kind, &text) {
+                    self.problem(
+                        number,
+                        &block.instruction,
+                        Some(field),
+                        format!(
+                            "`{}` writes what this field does not take: {err}",
+                            term.text()
+                        ),
+                    );
+                }
+            }
+            return;
+        }
         if !fits {
             let what = match ty {
                 ValueType::Address => "an address",
                 ValueType::Program => "a program",
-                ValueType::Integer => "a number",
+                ValueType::Integer | ValueType::Amount => "a number",
+                ValueType::Json => "JSON",
+                ValueType::Shape => "a tree shape",
             };
             self.problem(
                 number,
@@ -341,7 +380,7 @@ impl Pass<'_> {
                     );
                 }
             }
-            self.value_fits(number, block, name, term, true, false);
+            self.value_fits(number, block, name, term, true, false, None);
             self.observe(number, block, name, term, InputKind::Address);
             if !field.optional && field.source != IdlAccountSource::Derived {
                 self.required(number, block, name, term);
@@ -381,7 +420,12 @@ impl Pass<'_> {
                     matches!(kind, IdlArgKind::Integer { float: false, .. }),
                 ),
             };
-            self.value_fits(number, block, name, term, address, integer);
+            let json = matches!(
+                strip_option(&field.kind),
+                IdlArgKind::List(_) | IdlArgKind::Struct { .. } | IdlArgKind::Variants { .. }
+            )
+            .then_some(field);
+            self.value_fits(number, block, name, term, address, integer, json);
             self.observe(number, block, name, term, kind);
             if !field.may_be_blank() {
                 self.required(number, block, name, term);
@@ -423,19 +467,29 @@ pub(crate) fn analyze(template: &Template, idls: &dyn IdlCatalog) -> Result<Chec
         seen: BTreeMap::new(),
     };
     let mut blocks = Vec::new();
+    let mut unavailable: Vec<(String, String)> = Vec::new();
     for (index, block) in template.blocks.iter().enumerate() {
         let number = index + 1;
         let mut idl_forms = Vec::new();
         for program_id in candidates(template, block) {
             let Some((program_name, client)) = lookup(idls, &program_id) else {
+                let message = format!(
+                    "No IDL for `${}` ({program_id}) on this network.",
+                    block.program
+                );
+                // An option whose block this network cannot build is not
+                // offered here; the rest of the template is.
+                if let Some(option) = &block.when {
+                    if !unavailable.iter().any(|(name, _)| name == option) {
+                        unavailable.push((option.clone(), message));
+                    }
+                    continue;
+                }
                 pass.problems.push(Problem {
                     block: Some(number),
                     instruction: Some(block.instruction.clone()),
                     field: None,
-                    message: format!(
-                        "No IDL for `${}` ({program_id}) on this network.",
-                        block.program
-                    ),
+                    message,
                 });
                 continue;
             };
@@ -510,7 +564,13 @@ pub(crate) fn analyze(template: &Template, idls: &dyn IdlCatalog) -> Result<Chec
     Ok(Checked {
         form: TemplateForm {
             inputs,
-            options: template.options.clone(),
+            options: template
+                .options
+                .iter()
+                .filter(|option| !unavailable.iter().any(|(name, _)| *name == option.name))
+                .cloned()
+                .collect(),
+            unavailable,
         },
         blocks,
     })
@@ -524,10 +584,14 @@ fn parameter_problem(template: &Template, input: &str, kind: &InputKind) -> Opti
                 continue;
             }
             let fits = match (param, kind) {
-                (ValueType::Integer, InputKind::Argument { kind, .. }) => {
+                (ValueType::Integer | ValueType::Amount, InputKind::Argument { kind, .. }) => {
                     matches!(kind, IdlArgKind::Integer { float: false, .. })
                 }
-                (ValueType::Integer, InputKind::Address) => false,
+                (ValueType::Integer | ValueType::Amount, InputKind::Address) => false,
+                (ValueType::Shape, InputKind::Argument { kind, .. }) => {
+                    *kind == super::tree::tree_shape_kind()
+                }
+                (ValueType::Shape | ValueType::Json, _) => false,
                 (_, InputKind::Address) => true,
                 (_, InputKind::Argument { .. }) => false,
             };
@@ -549,8 +613,45 @@ fn parameter_problem(template: &Template, input: &str, kind: &InputKind) -> Opti
 }
 
 /// The kind of an input bound to no field: what the functions it is given
-/// to take.
+/// to take. An amount given to `base-units` is typed with the decimals it
+/// is given with.
 fn kind_from_parameters(template: &Template, input: &str) -> InputKind {
+    let amount = template.values.values().find_map(|call| {
+        (call.function == Function::BaseUnits && call.args[0].reference() == Some(input))
+            .then(|| call.args[1].clone())
+    });
+    let shape = template.values.values().any(|call| {
+        call.args
+            .iter()
+            .zip(call.function.params())
+            .any(|(arg, param)| arg.reference() == Some(input) && *param == ValueType::Shape)
+    });
+    if shape {
+        return InputKind::Argument {
+            kind: super::tree::tree_shape_kind(),
+            scale: InputScale::None,
+        };
+    }
+    if let Some(decimals) = amount {
+        let scale = match decimals {
+            Term::Literal(text) => match text.parse() {
+                Ok(decimals) => InputScale::Fixed {
+                    decimals,
+                    unit: None,
+                },
+                Err(_) => InputScale::None,
+            },
+            Term::Ref(value) => InputScale::FromValue { value, unit: None },
+        };
+        return InputKind::Argument {
+            kind: IdlArgKind::Integer {
+                signed: false,
+                float: false,
+                bits: 64,
+            },
+            scale,
+        };
+    }
     let integer = template.values.values().any(|call| {
         call.args
             .iter()

@@ -269,22 +269,13 @@ fn every_linked_choice_of_the_shipped_idls_opens_as_chosen_and_builds_the_same()
     // once whatever the number of networks it is read on: one more is then a
     // decision made with the IDL that brings it, and one fewer is a widget
     // Build gained.
-    const SKIPPED: [&str; 15] = [
+    const SKIPPED: [&str; 6] = [
         "bankineco.executeTrancheDepositFeeExempt",
         "bankineco.executeTrancheWithdrawFeeExempt",
-        "bubblegum.mintV2",
-        "bubblegum.updateAssetDataV2",
         "kaminoLending.idlMissingTypes",
         "programMetadata.initialize",
-        "raydiumLaunchpad.initializeV2",
-        "raydiumLaunchpad.initializeWithToken2022",
         "tokenMetadata.updateAsAuthorityItemDelegateV2",
         "tokenMetadata.updateAsUpdateAuthorityV2",
-        "vault.initializeStrategy",
-        "vaults.liquidateDex",
-        "vaults.liquidatePerfectDex",
-        "vaults.operateDex",
-        "vaults.operatePerfectDex",
     ];
     skipped.sort();
     skipped.dedup();
@@ -346,7 +337,7 @@ fn a_link_is_followed_one_link_further_and_no_more() {
 }
 
 #[test]
-fn a_link_to_anything_but_a_plain_enum_of_this_program_is_not_filled() {
+fn a_link_to_another_program_a_missing_type_or_a_plain_number_is_not_filled() {
     let mut elsewhere = DefinedTypeLinkNode::new("switch");
     elsewhere.program = Some(ProgramLinkNode::new("other"));
     let mut here = DefinedTypeLinkNode::new("switch");
@@ -379,8 +370,31 @@ fn a_link_to_anything_but_a_plain_enum_of_this_program_is_not_filled() {
     assert_eq!(classify_in(&program, &elsewhere.into()), unread);
     assert_eq!(classify_in(&program, &link("missing")), unread);
     assert_eq!(classify_in(&program, &link("number")), unread);
-    assert_eq!(classify_in(&program, &link("record")), unread);
-    assert_eq!(classify_in(&program, &link("withFields")), unread);
+    // A struct of this program, and an enum whose variants hold fields,
+    // are typed as JSON.
+    let byte = IdlArgKind::Integer {
+        signed: false,
+        float: false,
+        bits: 8,
+    };
+    assert_eq!(
+        classify_in(&program, &link("record")),
+        IdlArgKind::Struct {
+            fields: vec![("x".to_string(), byte.clone())]
+        }
+    );
+    assert_eq!(
+        classify_in(&program, &link("withFields")),
+        IdlArgKind::Variants {
+            variants: vec![
+                ("none".to_string(), IdlVariant::Empty),
+                (
+                    "some".to_string(),
+                    IdlVariant::Struct(vec![("x".to_string(), byte)])
+                ),
+            ]
+        }
+    );
 }
 
 #[test]

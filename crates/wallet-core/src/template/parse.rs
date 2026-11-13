@@ -552,7 +552,13 @@ fn validate(template: &Template) -> Result<(), TemplateError> {
                     if let Some(other) = template.values.get(name) {
                         let fits = match param {
                             ValueType::Integer => other.function.returns() == ValueType::Integer,
-                            _ => other.function.returns() != ValueType::Integer,
+                            // An amount or a shape is typed: it is an input
+                            // or a literal.
+                            ValueType::Amount | ValueType::Shape | ValueType::Json => false,
+                            ValueType::Address | ValueType::Program => matches!(
+                                other.function.returns(),
+                                ValueType::Address | ValueType::Program
+                            ),
                         };
                         if !fits {
                             return Err(invalid(
@@ -569,7 +575,10 @@ fn validate(template: &Template) -> Result<(), TemplateError> {
                 Term::Literal(text) => {
                     let fits = match param {
                         ValueType::Integer => text.parse::<u64>().is_ok(),
-                        _ => Pubkey::from_str(text).is_ok(),
+                        ValueType::Amount => crate::units::decimal_to_base(text, 18).is_ok(),
+                        ValueType::Shape => super::tree::tree_shape(text).is_some(),
+                        ValueType::Json => false,
+                        ValueType::Address | ValueType::Program => Pubkey::from_str(text).is_ok(),
                     };
                     if !fits {
                         return Err(invalid(

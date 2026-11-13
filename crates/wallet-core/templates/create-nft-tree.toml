@@ -1,0 +1,47 @@
+format = 1
+name = "Create a compressed NFT tree"
+summary = "A merkle tree on Metaplex Bubblegum (version 2, on MPL Account Compression) that compressed NFTs are minted into, its key made on this device. This wallet can mint into it."
+
+[programs]
+bubblegum = "BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY"
+compression = "mcmt6YrQEMKw8Mw43FmpRLmf7BqRnFMKmAcbxE3xkAW"
+noop = "mnoopTCrg4p8ry25e4bcWA9XZjbNjMTfgYVGGEdRsf3"
+system = "11111111111111111111111111111111"
+
+[[input]]
+name = "shape"
+label = "Size"
+hint = "How many NFTs it holds, and how many changes to it can land in one block. The rent grows with both."
+default = "16,384 NFTs (depth 14, buffer 64)"
+
+[[input]]
+name = "canopy"
+label = "Canopy depth"
+hint = "Levels of the tree kept on chain, so mints and transfers carry shorter proofs. Each level about doubles their rent. A tree of depth over 17 needs at least its depth less 17."
+default = "0"
+
+[[input]]
+name = "public"
+label = "Anyone can mint"
+hint = "Off, only this wallet and the delegates it names can mint into the tree."
+default = "false"
+
+[values]
+buffer = "tree-buffer $shape"
+depth = "tree-depth $shape"
+lamports = "rent-for $space"
+space = "merkle-tree-space $shape $canopy"
+tree = "new-keypair"
+tree_config = "tree-config-of $tree"
+
+[[block]]
+program = "$system"
+instruction = "createAccount"
+accounts = { newAccount = "$tree", payer = "$fee-payer" }
+arguments = { lamports = "$lamports", programAddress = "$compression", space = "$space" }
+
+[[block]]
+program = "$bubblegum"
+instruction = "createTreeV2"
+accounts = { compressionProgram = "$compression", logWrapper = "$noop", merkleTree = "$tree", payer = "$fee-payer", systemProgram = "$system", treeAuthority = "$tree_config", treeCreator = "$wallet" }
+arguments = { maxBufferSize = "$buffer", maxDepth = "$depth", public = "$public" }

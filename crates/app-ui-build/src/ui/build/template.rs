@@ -160,11 +160,14 @@ pub(in crate::ui) fn TemplateForm() -> Element {
         }
     };
 
-    let marked: Vec<String> = expansion
+    // A blank input is marked once Review and Sign was asked for; an answer
+    // a function cannot take, at once, with why.
+    let marked: Vec<(String, Option<String>)> = expansion
         .missing
         .iter()
         .filter_map(|missing| match missing {
-            Missing::Input(name) if open.marked.contains(name) => Some(name.clone()),
+            Missing::Input(name) if open.marked.contains(name) => Some((name.clone(), None)),
+            Missing::Invalid { input, message } => Some((input.clone(), Some(message.clone()))),
             _ => None,
         })
         .collect();
@@ -175,7 +178,10 @@ pub(in crate::ui) fn TemplateForm() -> Element {
             &env,
             &expansion,
             input,
-            marked.contains(&input.name),
+            marked
+                .iter()
+                .find(|(name, _)| *name == input.name)
+                .map(|(_, why)| why.as_deref().unwrap_or("Fill this in.")),
         )
     };
     let plain: Vec<Element> = questions
@@ -373,7 +379,7 @@ fn template_input(
     env: &wallet_core::template::Env,
     expansion: &Expansion,
     input: &FormInput,
-    missing: bool,
+    missing: Option<&str>,
 ) -> Element {
     let text = open.input_text(&input.name, env);
     let name = input.name.clone();
@@ -404,6 +410,13 @@ fn template_input(
                         None => Places::Like(argument.clone()),
                     },
                 ),
+                InputScale::FromValue { value, unit } => (
+                    unit.as_deref(),
+                    match expansion.decimals_of(scale) {
+                        Some(decimals) => Places::Fixed(decimals),
+                        None => Places::Like(format!("${value}")),
+                    },
+                ),
             };
             // An optional input can be left blank, as an optional field can.
             let kind = if input.optional {
@@ -424,14 +437,14 @@ fn template_input(
     };
     rsx! {
         div {
-            class: if missing { "template-input missing" } else { "template-input" },
+            class: if missing.is_some() { "template-input missing" } else { "template-input" },
             key: "{input.name}",
             {widget}
             if let Some(hint) = &input.hint {
                 p { class: "hint", "{hint}" }
             }
-            if missing {
-                p { class: "field-missing", "Fill this in." }
+            if let Some(why) = missing {
+                p { class: "field-missing", "{why}" }
             }
         }
     }

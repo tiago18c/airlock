@@ -127,12 +127,19 @@ pub fn idls_from_pack(
         .collect()
 }
 
-/// The pack built from `resources/idls`, as the app ships it.
+/// The pack built from `resources/idls`, as the app ships it. It is packed
+/// and read back once for the whole test run: many tests open it, and
+/// compressing every file again for each took most of the run.
 #[cfg(test)]
 pub(crate) fn shipped_idls() -> Vec<EmbeddedIdl> {
-    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../resources/idls");
-    let packed = idl_pack::pack_dir(&dir).expect("resources/idls packs");
-    idls_from_pack(&packed.bytes, &packed.sha256).expect("the pack reads back")
+    static SHIPPED: std::sync::OnceLock<Vec<EmbeddedIdl>> = std::sync::OnceLock::new();
+    SHIPPED
+        .get_or_init(|| {
+            let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../resources/idls");
+            let packed = idl_pack::pack_dir(&dir).expect("resources/idls packs");
+            idls_from_pack(&packed.bytes, &packed.sha256).expect("the pack reads back")
+        })
+        .clone()
 }
 
 #[cfg(test)]

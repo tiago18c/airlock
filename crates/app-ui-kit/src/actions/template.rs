@@ -219,6 +219,7 @@ pub fn expand_open(session: &Session) -> Option<OpenExpansion> {
     let form = wallet_core::template::check(&open.template, &*idls).unwrap_or(TemplateForm {
         inputs: Vec::new(),
         options: Vec::new(),
+        unavailable: Vec::new(),
     });
     let expansion =
         wallet_core::template::expand(&open.template, &open.answers, &env, &open.facts(), &*idls);
@@ -350,6 +351,15 @@ fn missing_words(open: &OpenTemplate, missing: &[Missing]) -> (Vec<String>, BTre
                     .map(|input| input.label.clone())
                     .unwrap_or_else(|| name.clone());
                 words.push(label);
+            }
+            Missing::Invalid { input, message } => {
+                inputs.insert(input.clone());
+                let label = open
+                    .template
+                    .input(input)
+                    .map(|input| input.label.clone())
+                    .unwrap_or_else(|| input.clone());
+                words.push(format!("{label} ({message})"));
             }
             Missing::Wallet => words.push("a wallet to act as".to_string()),
             Missing::FeePayer => words.push("Fee payer".to_string()),

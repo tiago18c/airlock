@@ -58,7 +58,7 @@ pub use idl::{
     IdlArgKind, IdlArgOutline, IdlArgScale, IdlBodies, IdlBuildFailure, IdlBuildInput,
     IdlBundleReport, IdlCatalog, IdlChainSource, IdlCheck, IdlDraft, IdlError, IdlErrorOutline,
     IdlFieldOutline, IdlForm, IdlIxOutline, IdlNamed, IdlNetwork, IdlOrigin, IdlOutline,
-    IdlPackError, IdlPdaOutline, IdlRecord, IdlSource, IdlSpec, IdlStore, InspectedIdl,
+    IdlPackError, IdlPdaOutline, IdlRecord, IdlSource, IdlSpec, IdlStore, IdlVariant, InspectedIdl,
     MemoryBodies, NoIdls, PinnedProgram, BUILTIN_IDLS, ED25519_SIGNER_PROGRAM_ID, MAX_IDL_BYTES,
     PINNED_PROGRAMS,
 };

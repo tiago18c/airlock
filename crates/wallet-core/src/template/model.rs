@@ -123,6 +123,32 @@ pub enum Function {
     /// `<program>`: the program's canonical IDL account on the
     /// program-metadata program, seed `idl`.
     IdlMetadataOf,
+    /// `<mint>`: the mint's metadata account on Metaplex Token Metadata.
+    MetadataOf,
+    /// `<mint>`: the mint's master edition account on Metaplex Token
+    /// Metadata.
+    MasterEditionOf,
+    /// `<amount> <decimals>`: an amount typed in a token's units, in base
+    /// units.
+    BaseUnits,
+    /// `<address>`: a Metaplex creator list naming only `<address>`, with
+    /// the whole share, verified, as JSON.
+    SoleCreator,
+    /// `<collection>`: a Metaplex collection naming `<collection>`, not
+    /// verified, as JSON.
+    UnverifiedCollection,
+    /// `<stream>`: the token account a Streamflow stream holds its tokens
+    /// in.
+    StreamEscrowOf,
+    /// `<tree>`: the config account Bubblegum keeps for a merkle tree.
+    TreeConfigOf,
+    /// `<shape>`: the depth of a merkle tree of that shape.
+    TreeDepth,
+    /// `<shape>`: the buffer size of a merkle tree of that shape.
+    TreeBuffer,
+    /// `<shape> <canopy>`: the bytes a merkle tree account of that shape
+    /// and canopy depth takes on MPL Account Compression.
+    MerkleTreeSpace,
 }
 
 /// What a value or an argument is.
@@ -133,10 +159,17 @@ pub(crate) enum ValueType {
     Program,
     /// An integer in base units.
     Integer,
+    /// A number typed in a token's units, as an input: a parameter only.
+    Amount,
+    /// A value written as JSON into a field made of fields: a result only.
+    Json,
+    /// One of the merkle tree shapes [`super::tree::TREE_SHAPES`] names, as
+    /// an input: a parameter only.
+    Shape,
 }
 
 impl Function {
-    pub const ALL: [Function; 9] = [
+    pub const ALL: [Function; 19] = [
         Self::NewKeypair,
         Self::AssociatedTokenAccount,
         Self::Token2022MintSpace,
@@ -146,6 +179,16 @@ impl Function {
         Self::TokenProgramOf,
         Self::ProgramDataOf,
         Self::IdlMetadataOf,
+        Self::MetadataOf,
+        Self::MasterEditionOf,
+        Self::BaseUnits,
+        Self::SoleCreator,
+        Self::UnverifiedCollection,
+        Self::StreamEscrowOf,
+        Self::TreeConfigOf,
+        Self::TreeDepth,
+        Self::TreeBuffer,
+        Self::MerkleTreeSpace,
     ];
 
     /// The name a file writes it by.
@@ -160,6 +203,16 @@ impl Function {
             Self::TokenProgramOf => "token-program-of",
             Self::ProgramDataOf => "program-data-of",
             Self::IdlMetadataOf => "idl-metadata-of",
+            Self::MetadataOf => "metadata-of",
+            Self::MasterEditionOf => "master-edition-of",
+            Self::BaseUnits => "base-units",
+            Self::SoleCreator => "sole-creator",
+            Self::UnverifiedCollection => "unverified-collection",
+            Self::StreamEscrowOf => "stream-escrow-of",
+            Self::TreeConfigOf => "tree-config-of",
+            Self::TreeDepth => "tree-depth",
+            Self::TreeBuffer => "tree-buffer",
+            Self::MerkleTreeSpace => "merkle-tree-space",
         }
     }
 
@@ -180,8 +233,17 @@ impl Function {
             | Self::DecimalsOf
             | Self::TokenProgramOf
             | Self::ProgramDataOf
-            | Self::IdlMetadataOf => &[Address],
+            | Self::IdlMetadataOf
+            | Self::MetadataOf
+            | Self::MasterEditionOf
+            | Self::SoleCreator
+            | Self::UnverifiedCollection
+            | Self::StreamEscrowOf
+            | Self::TreeConfigOf => &[Address],
             Self::RentFor => &[Integer],
+            Self::BaseUnits => &[Amount, Integer],
+            Self::TreeDepth | Self::TreeBuffer => &[Shape],
+            Self::MerkleTreeSpace => &[Shape, Integer],
         }
     }
 
@@ -194,6 +256,14 @@ impl Function {
             Self::RentFor => "a size in bytes",
             Self::DecimalsOf | Self::TokenProgramOf => "a mint",
             Self::ProgramDataOf | Self::IdlMetadataOf => "a program",
+            Self::MetadataOf | Self::MasterEditionOf => "a mint",
+            Self::BaseUnits => "an amount in a token's units and its decimals",
+            Self::SoleCreator => "an address",
+            Self::UnverifiedCollection => "a collection",
+            Self::StreamEscrowOf => "a stream",
+            Self::TreeConfigOf => "a merkle tree",
+            Self::TreeDepth | Self::TreeBuffer => "a tree shape",
+            Self::MerkleTreeSpace => "a tree shape and a canopy depth",
         }
     }
 
@@ -202,12 +272,34 @@ impl Function {
             Self::NewKeypair
             | Self::AssociatedTokenAccount
             | Self::ProgramDataOf
-            | Self::IdlMetadataOf => ValueType::Address,
+            | Self::IdlMetadataOf
+            | Self::MetadataOf
+            | Self::MasterEditionOf
+            | Self::StreamEscrowOf
+            | Self::TreeConfigOf => ValueType::Address,
             Self::Token2022MintSpace
             | Self::Token2022MintFundedSpace
             | Self::RentFor
-            | Self::DecimalsOf => ValueType::Integer,
+            | Self::DecimalsOf
+            | Self::BaseUnits
+            | Self::TreeDepth
+            | Self::TreeBuffer
+            | Self::MerkleTreeSpace => ValueType::Integer,
             Self::TokenProgramOf => ValueType::Program,
+            Self::SoleCreator | Self::UnverifiedCollection => ValueType::Json,
+        }
+    }
+
+    /// The JSON a function of [`ValueType::Json`] writes for `address`.
+    pub(crate) fn json_for(self, address: &Pubkey) -> Option<String> {
+        match self {
+            Self::SoleCreator => Some(format!(
+                r#"[{{"address":"{address}","verified":true,"share":100}}]"#
+            )),
+            Self::UnverifiedCollection => {
+                Some(format!(r#"{{"verified":false,"key":"{address}"}}"#))
+            }
+            _ => None,
         }
     }
 }

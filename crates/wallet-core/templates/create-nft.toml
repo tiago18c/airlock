@@ -1,0 +1,73 @@
+format = 1
+name = "Create an NFT"
+summary = "A new NFT on Metaplex Token Metadata, the classic standard: a mint of one token with its metadata and master edition, the token held by this wallet."
+
+[programs]
+associated_token = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+system = "11111111111111111111111111111111"
+token = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+token_metadata = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+
+[[option]]
+name = "in_collection"
+label = "Part of a collection"
+hint = "Names the collection the NFT says it belongs to, unverified: wallets and marketplaces count it in the collection only once the collection's update authority verifies it, since anyone can make the same claim."
+
+[[input]]
+name = "nft_name"
+label = "Name"
+
+[[input]]
+name = "symbol"
+label = "Symbol"
+
+[[input]]
+name = "uri"
+label = "Details link"
+hint = "A link to a JSON file with the NFT's image, description and attributes."
+
+[[input]]
+name = "royalty"
+label = "Royalty, in percent"
+hint = "The share of each resale that marketplaces pay this wallet, its only creator. Marketplaces choose whether to honour it."
+default = "0"
+
+[[input]]
+name = "collection"
+label = "Collection"
+hint = "The mint of the collection's NFT."
+option = "in_collection"
+
+[values]
+account = "associated-token-account $wallet $mint $token"
+collection_claim = "unverified-collection $collection"
+creators = "sole-creator $wallet"
+edition = "master-edition-of $mint"
+lamports = "rent-for 82"
+metadata_account = "metadata-of $mint"
+mint = "new-keypair"
+royalty_points = "base-units $royalty 2"
+
+[[block]]
+program = "$system"
+instruction = "createAccount"
+accounts = { newAccount = "$mint", payer = "$fee-payer" }
+arguments = { lamports = "$lamports", programAddress = "$token", space = "82" }
+
+[[block]]
+program = "$token"
+instruction = "initializeMint2"
+accounts = { mint = "$mint" }
+arguments = { decimals = "0", freezeAuthority = "$wallet", mintAuthority = "$wallet" }
+
+[[block]]
+program = "$token_metadata"
+instruction = "createV1"
+accounts = { authority = "$wallet", masterEdition = "$edition", metadata = "$metadata_account", mint = "$mint", payer = "$fee-payer", splTokenProgram = "$token", systemProgram = "$system", sysvarInstructions = "Sysvar1nstructions1111111111111111111111111", updateAuthority = "$wallet" }
+arguments = { "assetData.collection" = "$collection_claim", "assetData.creators" = "$creators", "assetData.isMutable" = "true", "assetData.name" = "$nft_name", "assetData.primarySaleHappened" = "false", "assetData.sellerFeeBasisPoints" = "$royalty_points", "assetData.symbol" = "$symbol", "assetData.tokenStandard" = "nonFungible", "assetData.uri" = "$uri", printSupply = "zero" }
+
+[[block]]
+program = "$token_metadata"
+instruction = "mintV1"
+accounts = { authority = "$wallet", masterEdition = "$edition", metadata = "$metadata_account", mint = "$mint", payer = "$fee-payer", splAtaProgram = "$associated_token", splTokenProgram = "$token", systemProgram = "$system", sysvarInstructions = "Sysvar1nstructions1111111111111111111111111", token = "$account", tokenOwner = "$wallet" }
+arguments = { amount = "1" }

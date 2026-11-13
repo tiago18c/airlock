@@ -21,7 +21,7 @@ impl BuiltinTemplate {
 }
 
 /// In the order the picker lists them.
-pub static BUILTIN_TEMPLATES: [BuiltinTemplate; 4] = [
+pub static BUILTIN_TEMPLATES: [BuiltinTemplate; 15] = [
     BuiltinTemplate {
         id: "create-token",
         toml: include_str!("../../templates/create-token.toml"),
@@ -33,6 +33,50 @@ pub static BUILTIN_TEMPLATES: [BuiltinTemplate; 4] = [
     BuiltinTemplate {
         id: "mint-tokens",
         toml: include_str!("../../templates/mint-tokens.toml"),
+    },
+    BuiltinTemplate {
+        id: "add-token-metadata",
+        toml: include_str!("../../templates/add-token-metadata.toml"),
+    },
+    BuiltinTemplate {
+        id: "create-nft",
+        toml: include_str!("../../templates/create-nft.toml"),
+    },
+    BuiltinTemplate {
+        id: "create-core-nft",
+        toml: include_str!("../../templates/create-core-nft.toml"),
+    },
+    BuiltinTemplate {
+        id: "create-core-collection",
+        toml: include_str!("../../templates/create-core-collection.toml"),
+    },
+    BuiltinTemplate {
+        id: "create-nft-tree",
+        toml: include_str!("../../templates/create-nft-tree.toml"),
+    },
+    BuiltinTemplate {
+        id: "mint-compressed-nft",
+        toml: include_str!("../../templates/mint-compressed-nft.toml"),
+    },
+    BuiltinTemplate {
+        id: "create-stream",
+        toml: include_str!("../../templates/create-stream.toml"),
+    },
+    BuiltinTemplate {
+        id: "stake-marinade",
+        toml: include_str!("../../templates/stake-marinade.toml"),
+    },
+    BuiltinTemplate {
+        id: "unstake-marinade",
+        toml: include_str!("../../templates/unstake-marinade.toml"),
+    },
+    BuiltinTemplate {
+        id: "order-unstake-marinade",
+        toml: include_str!("../../templates/order-unstake-marinade.toml"),
+    },
+    BuiltinTemplate {
+        id: "claim-marinade-ticket",
+        toml: include_str!("../../templates/claim-marinade-ticket.toml"),
     },
     BuiltinTemplate {
         id: "upgrade-program",

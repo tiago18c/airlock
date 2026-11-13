@@ -256,12 +256,27 @@ fn classify_at(program: Option<&ProgramNode>, ty: &TypeNode, links: usize) -> Id
                     | IdlArgKind::Pubkey
                     | IdlArgKind::Bool
                     | IdlArgKind::Integer { float: false, .. }
+                    | IdlArgKind::Struct { .. }
+                    | IdlArgKind::Variants { .. }
             );
+            let byte = item
+                == IdlArgKind::Integer {
+                    signed: false,
+                    float: false,
+                    bits: 8,
+                };
             match node.count.as_ref() {
                 codama_nodes::CountNode::Prefixed(_) | codama_nodes::CountNode::Remainder(_)
                     if listable =>
                 {
                     IdlArgKind::List(Box::new(item))
+                }
+                codama_nodes::CountNode::Fixed(count)
+                    if byte && count.value <= MAX_FIXED_BYTES as u64 =>
+                {
+                    IdlArgKind::FixedBytes {
+                        len: count.value as usize,
+                    }
                 }
                 _ => IdlArgKind::Raw {
                     note: "array".to_string(),
@@ -270,21 +285,111 @@ fn classify_at(program: Option<&ProgramNode>, ty: &TypeNode, links: usize) -> Id
         }
         TypeNode::Enum(node) => match unit_variants(node) {
             Some(variants) => IdlArgKind::Enum { variants },
-            None => IdlArgKind::Raw {
+            None => data_variants(program, node, links).unwrap_or_else(|| IdlArgKind::Raw {
                 note: "enum with fields".to_string(),
+            }),
+        },
+        TypeNode::Struct(node) => match struct_kinds(program, &node.fields, links) {
+            Some(fields) if !fields.is_empty() => IdlArgKind::Struct { fields },
+            _ => IdlArgKind::Raw {
+                note: "struct".to_string(),
             },
         },
         TypeNode::Link(link) => program
             .filter(|_| links < LINK_DEPTH)
             .and_then(|program| linked_type(program, link))
             .map(|linked| classify_at(program, linked, links + 1))
-            .filter(|kind| matches!(kind, IdlArgKind::Enum { .. }))
+            .filter(|kind| {
+                matches!(
+                    kind,
+                    IdlArgKind::Enum { .. }
+                        | IdlArgKind::Struct { .. }
+                        | IdlArgKind::Variants { .. }
+                )
+            })
             .unwrap_or_else(|| IdlArgKind::Raw {
                 note: link.kind().to_string(),
             }),
         other => IdlArgKind::Raw {
             note: other.kind().to_string(),
         },
+    }
+}
+
+/// The most bytes a fixed byte array is typed as text for. Larger arrays,
+/// such as a whole account's worth, stay fields nobody can fill.
+pub(super) const MAX_FIXED_BYTES: usize = 1024;
+
+/// The kind of each field, or `None` when one is a field nobody can fill.
+fn struct_kinds(
+    program: Option<&ProgramNode>,
+    fields: &[codama_nodes::StructFieldTypeNode],
+    links: usize,
+) -> Option<Vec<(String, IdlArgKind)>> {
+    fields
+        .iter()
+        .map(|field| {
+            let kind = classify_at(program, &field.r#type, links);
+            (!raw_inside(&kind)).then(|| (field.name.to_string(), kind))
+        })
+        .collect()
+}
+
+/// An enum whose variants hold fields, each of a kind the form can type.
+fn data_variants(
+    program: Option<&ProgramNode>,
+    node: &codama_nodes::EnumTypeNode,
+    links: usize,
+) -> Option<IdlArgKind> {
+    let mut variants = Vec::with_capacity(node.variants.len());
+    for variant in &node.variants {
+        let (name, held) = match variant {
+            codama_nodes::EnumVariantTypeNode::Empty(empty) => {
+                (empty.name.to_string(), IdlVariant::Empty)
+            }
+            codama_nodes::EnumVariantTypeNode::Struct(node) => {
+                let fields = struct_fields_of(program, &node.r#struct, links)?;
+                (node.name.to_string(), IdlVariant::Struct(fields))
+            }
+            codama_nodes::EnumVariantTypeNode::Tuple(node) => {
+                let items = node
+                    .tuple
+                    .get_nested_type_node()
+                    .items
+                    .iter()
+                    .map(|item| {
+                        let kind = classify_at(program, item, links);
+                        (!raw_inside(&kind)).then_some(kind)
+                    })
+                    .collect::<Option<Vec<_>>>()?;
+                (node.name.to_string(), IdlVariant::Tuple(items))
+            }
+        };
+        variants.push((name, held));
+    }
+    Some(IdlArgKind::Variants { variants })
+}
+
+fn struct_fields_of(
+    program: Option<&ProgramNode>,
+    node: &codama_nodes::NestedTypeNode<codama_nodes::StructTypeNode>,
+    links: usize,
+) -> Option<Vec<(String, IdlArgKind)>> {
+    struct_kinds(program, &node.get_nested_type_node().fields, links)
+}
+
+/// Whether a field nobody can fill is inside `kind`.
+pub(crate) fn raw_inside(kind: &IdlArgKind) -> bool {
+    match kind {
+        IdlArgKind::Raw { .. } => true,
+        IdlArgKind::Option(inner) | IdlArgKind::List(inner) => raw_inside(inner),
+        IdlArgKind::Struct { fields } => fields.iter().any(|(_, kind)| raw_inside(kind)),
+        IdlArgKind::Variants { variants } => variants.iter().any(|(_, held)| match held {
+            IdlVariant::Empty => false,
+            IdlVariant::Tuple(items) => items.iter().any(raw_inside),
+            IdlVariant::Struct(fields) => fields.iter().any(|(_, kind)| raw_inside(kind)),
+        }),
+        _ => false,
     }
 }
 

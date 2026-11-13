@@ -10,8 +10,8 @@ use std::str::FromStr;
 use wallet_core::edit::{CarrierKind, RawAccountDraft};
 use wallet_core::{
     idl_instruction_form, pinned_program, AddressKind, IdlAccountField, IdlAccountSource,
-    IdlArgField, IdlArgKind, IdlArgScale, IdlDraft, IdlOrigin, IdlRecord, PinnedProgram,
-    PINNED_PROGRAMS,
+    IdlArgField, IdlArgKind, IdlArgScale, IdlDraft, IdlOrigin, IdlRecord, IdlVariant,
+    PinnedProgram, PINNED_PROGRAMS,
 };
 
 mod advanced;

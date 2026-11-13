@@ -64,8 +64,16 @@ async fn every_field_a_shipped_template_sets_is_on_its_blocks_tab_once() {
         let source = TemplateSource::Builtin(builtin.id);
         let shown_view = view(&screen, &source);
         let template = &shown_view.template;
+        // On devnet, a mainnet-only template lacks its programs' IDLs and
+        // nothing else; its Blocks tab is drawn from the file all the same.
+        let mainnet_only = crate::actions::template::tests::MAINNET_ONLY.contains(&builtin.id);
         assert!(
-            shown_view.problems.is_empty(),
+            shown_view.problems.is_empty()
+                || mainnet_only
+                    && shown_view
+                        .problems
+                        .iter()
+                        .all(|problem| problem.contains("No IDL")),
             "{}: {:?}",
             builtin.id,
             shown_view.problems
@@ -359,11 +367,19 @@ async fn the_filter_reads_names_and_summaries() {
     assert_eq!(names("2022"), ["Create a Token-2022 token"]);
     assert_eq!(
         names("MINT"),
-        ["Create a token", "Create a Token-2022 token", "Mint tokens"]
+        [
+            "Create a token",
+            "Create a Token-2022 token",
+            "Mint tokens",
+            "Add a name and symbol to a token",
+            "Create an NFT",
+            "Create a compressed NFT tree",
+            "Mint a compressed NFT"
+        ]
     );
     // "extensions" is only in a summary.
     assert_eq!(names("extensions"), ["Create a Token-2022 token"]);
-    assert!(names("swap").is_empty());
+    assert!(names("bridge").is_empty());
 }
 
 #[tokio::test]

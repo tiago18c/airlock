@@ -611,6 +611,9 @@ pub(in crate::ui) fn QuestionsTab(questions: ReaderQuestions) -> Element {
                         if let Some(hint) = &option.hint {
                             p { class: "hint", "{hint}" }
                         }
+                        if let Some(why) = &option.not_here {
+                            p { class: "muted", "Not offered on this network. {why}" }
+                        }
                         if option.questions.is_empty() {
                             p { class: "muted reader-option-none", "It asks nothing more." }
                         } else {

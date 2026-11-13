@@ -2,6 +2,10 @@ mod support;
 
 mod cleanup;
 mod combined_approvals;
+mod compressed_templates;
+mod core_templates;
+mod marinade_templates;
+mod metadata_templates;
 mod migrate;
 mod mixed_approvals;
 mod offline_nonce;
@@ -12,6 +16,7 @@ mod sign_panel;
 mod site_request;
 mod squads_checks;
 mod stake;
+mod stream_template;
 mod templates;
 mod token_plan;
 mod upgrade_template;

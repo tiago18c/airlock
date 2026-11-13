@@ -301,8 +301,60 @@ pub(super) fn sample_text(kind: &IdlArgKind, scale: &IdlArgScale, source: bool) 
             IdlArgKind::String => r#"["a","b"]"#.to_string(),
             IdlArgKind::Bool => "[true]".to_string(),
             IdlArgKind::Pubkey => format!(r#"["{}"]"#, pk(50)),
+            IdlArgKind::Struct { .. } | IdlArgKind::Variants { .. } => {
+                serde_json::Value::Array(vec![sample_json(item)?]).to_string()
+            }
             _ => r#"["15"]"#.to_string(),
         },
+        IdlArgKind::FixedBytes { .. } => "x".to_string(),
+        IdlArgKind::Variants { variants } => match variants.first()? {
+            (name, IdlVariant::Empty) => name.clone(),
+            _ => sample_json(kind)?.to_string(),
+        },
+        IdlArgKind::Struct { .. } => sample_json(kind)?.to_string(),
+        IdlArgKind::Raw { .. } => return None,
+    })
+}
+
+/// What a filled form could hold for `kind` inside JSON: the last variant
+/// of an enum with fields, so a variant that holds values is built too.
+fn sample_json(kind: &IdlArgKind) -> Option<serde_json::Value> {
+    use serde_json::Value as Json;
+    Some(match kind {
+        IdlArgKind::Option(inner) => sample_json(inner)?,
+        IdlArgKind::Integer { float: true, .. } => Json::from(1.5),
+        IdlArgKind::Integer { .. } => Json::from(15),
+        IdlArgKind::Pubkey => Json::String(pk(50).to_string()),
+        IdlArgKind::String => Json::String("x".into()),
+        IdlArgKind::Bool => Json::Bool(false),
+        IdlArgKind::Enum { variants } => Json::String(variants.first()?.clone()),
+        IdlArgKind::Bytes => Json::String("00".into()),
+        IdlArgKind::FixedBytes { .. } => Json::String("x".into()),
+        IdlArgKind::List(item) => Json::Array(vec![sample_json(item)?]),
+        IdlArgKind::Struct { fields } => Json::Object(
+            fields
+                .iter()
+                .map(|(name, kind)| Some((name.clone(), sample_json(kind)?)))
+                .collect::<Option<_>>()?,
+        ),
+        IdlArgKind::Variants { variants } => {
+            let (name, held) = variants.last()?;
+            let held = match held {
+                IdlVariant::Empty => return Some(Json::String(name.clone())),
+                IdlVariant::Tuple(items) => {
+                    let mut items = items.iter().map(sample_json).collect::<Option<Vec<_>>>()?;
+                    if items.len() == 1 {
+                        items.pop()?
+                    } else {
+                        Json::Array(items)
+                    }
+                }
+                IdlVariant::Struct(fields) => sample_json(&IdlArgKind::Struct {
+                    fields: fields.clone(),
+                })?,
+            };
+            Json::Object([(name.clone(), held)].into_iter().collect())
+        }
         IdlArgKind::Raw { .. } => return None,
     })
 }

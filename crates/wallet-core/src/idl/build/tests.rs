@@ -452,3 +452,209 @@ fn a_struct_argument_is_one_field_per_member_and_a_list_reads_as_json() {
         );
     }
 }
+
+/// Token Metadata's `createV1` holds a struct with a list of structs
+/// (creators), an optional struct (the collection) and an enum some of whose
+/// variants hold a value (the print supply). Each is typed as JSON, or by a
+/// variant's name, encodes as the program reads it, and an instruction read
+/// back opens onto the same text.
+#[test]
+fn structs_in_lists_and_options_and_enums_with_fields_read_as_json() {
+    let catalog = crate::fixtures::shipped_catalog(crate::IdlNetwork::Mainnet);
+    let program = Pubkey::from_str("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s").unwrap();
+    let client = catalog.program_client(&program).unwrap();
+    let creators = format!(r#"[{{"address":"{}","verified":true,"share":100}}]"#, pk(4));
+    let collection = format!(r#"{{"verified":false,"key":"{}"}}"#, pk(5));
+    let mut input = IdlBuildInput {
+        accounts: [
+            "metadata",
+            "masterEdition",
+            "mint",
+            "authority",
+            "payer",
+            "updateAuthority",
+            "systemProgram",
+            "sysvarInstructions",
+            "splTokenProgram",
+        ]
+        .iter()
+        .enumerate()
+        .map(|(at, name)| (name.to_string(), Some(pk(10 + at as u8))))
+        .collect(),
+        arguments: vec![
+            ("assetData.name".to_string(), "Ape".to_string()),
+            ("assetData.symbol".to_string(), "APE".to_string()),
+            (
+                "assetData.uri".to_string(),
+                "https://e.x/a.json".to_string(),
+            ),
+            (
+                "assetData.sellerFeeBasisPoints".to_string(),
+                "500".to_string(),
+            ),
+            ("assetData.creators".to_string(), creators.clone()),
+            (
+                "assetData.primarySaleHappened".to_string(),
+                "false".to_string(),
+            ),
+            ("assetData.isMutable".to_string(), "true".to_string()),
+            (
+                "assetData.tokenStandard".to_string(),
+                "nonFungible".to_string(),
+            ),
+            ("assetData.collection".to_string(), collection.clone()),
+            ("assetData.uses".to_string(), String::new()),
+            ("assetData.collectionDetails".to_string(), String::new()),
+            ("assetData.ruleSet".to_string(), String::new()),
+            ("decimals".to_string(), String::new()),
+            ("printSupply".to_string(), "zero".to_string()),
+        ],
+    };
+    let form = idl_instruction_form(&client, "createV1", &input).unwrap();
+    let kind = |name: &str| {
+        form.arguments
+            .iter()
+            .find(|field| field.name == name)
+            .map(|field| field.kind.clone())
+            .unwrap()
+    };
+    let byte = IdlArgKind::Integer {
+        signed: false,
+        float: false,
+        bits: 8,
+    };
+    assert_eq!(
+        kind("assetData.creators"),
+        IdlArgKind::Option(Box::new(IdlArgKind::List(Box::new(IdlArgKind::Struct {
+            fields: vec![
+                ("address".to_string(), IdlArgKind::Pubkey),
+                ("verified".to_string(), IdlArgKind::Bool),
+                ("share".to_string(), byte.clone()),
+            ]
+        }))))
+    );
+    assert_eq!(
+        kind("printSupply"),
+        IdlArgKind::Option(Box::new(IdlArgKind::Variants {
+            variants: vec![
+                ("zero".to_string(), IdlVariant::Empty),
+                (
+                    "limited".to_string(),
+                    IdlVariant::Tuple(vec![IdlArgKind::Integer {
+                        signed: false,
+                        float: false,
+                        bits: 64
+                    }])
+                ),
+                ("unlimited".to_string(), IdlVariant::Empty),
+            ]
+        }))
+    );
+
+    let built = build_idl_instruction(&client, "createV1", &input).unwrap();
+    let mut want = vec![42, 0];
+    for text in ["Ape", "APE", "https://e.x/a.json"] {
+        want.extend_from_slice(&(text.len() as u32).to_le_bytes());
+        want.extend_from_slice(text.as_bytes());
+    }
+    want.extend_from_slice(&500u16.to_le_bytes());
+    want.extend_from_slice(&[1, 1, 0, 0, 0]);
+    want.extend_from_slice(pk(4).as_ref());
+    want.extend_from_slice(&[1, 100]);
+    want.extend_from_slice(&[0, 1, 0]); // not sold, mutable, non-fungible
+    want.extend_from_slice(&[1, 0]);
+    want.extend_from_slice(pk(5).as_ref());
+    want.extend_from_slice(&[0, 0, 0]); // no uses, details or rule set
+    want.extend_from_slice(&[0, 1, 0]); // no decimals, print supply zero
+    assert_eq!(built.data, want);
+
+    let opened = crate::edit::idl_draft_for(&client, "tokenMetadata", &built).unwrap();
+    assert_eq!(opened.argument("assetData.creators"), creators);
+    assert_eq!(opened.argument("assetData.collection"), collection);
+    assert_eq!(opened.argument("printSupply"), "zero");
+
+    // A variant that holds a value, and what is refused.
+    let at = input.arguments.len() - 1;
+    input.arguments[at].1 = r#"{"limited": 7}"#.to_string();
+    let built = build_idl_instruction(&client, "createV1", &input).unwrap();
+    assert_eq!(
+        &built.data[built.data.len() - 9..],
+        &[1, 7, 0, 0, 0, 0, 0, 0, 0][..]
+    );
+    let opened = crate::edit::idl_draft_for(&client, "tokenMetadata", &built).unwrap();
+    assert_eq!(opened.argument("printSupply"), r#"{"limited":7}"#);
+    for bad in ["limited", r#"{"limited": [7]}"#, r#"{"other": 1}"#, "{}"] {
+        input.arguments[at].1 = bad.to_string();
+        assert!(
+            build_idl_instruction(&client, "createV1", &input).is_err(),
+            "{bad}"
+        );
+    }
+    input.arguments[at].1 = "zero".to_string();
+    for bad in [
+        format!(r#"[{{"address":"{}","verified":true}}]"#, pk(4)),
+        format!(
+            r#"[{{"address":"{}","verified":true,"share":100,"x":1}}]"#,
+            pk(4)
+        ),
+        r#"[{"address":"nope","verified":true,"share":100}]"#.to_string(),
+        format!(r#"{{"address":"{}","verified":true,"share":100}}"#, pk(4)),
+    ] {
+        input.arguments[4].1 = bad.clone();
+        assert!(
+            build_idl_instruction(&client, "createV1", &input).is_err(),
+            "{bad}"
+        );
+    }
+}
+
+/// Streamflow keeps a stream's name in `[u8; 64]`: it is typed as text and
+/// kept as its bytes followed by zeros, or as hex after `0x`, and blank is
+/// all zeros.
+#[test]
+fn a_fixed_byte_array_reads_as_text_or_hex() {
+    assert_eq!(fixed_bytes("Payroll", 8).unwrap(), b"Payroll\0".to_vec());
+    assert_eq!(fixed_bytes("0x00ff", 3).unwrap(), vec![0, 255, 0]);
+    assert_eq!(fixed_bytes("", 2).unwrap(), vec![0, 0]);
+    assert!(fixed_bytes("too long", 4).is_err());
+    assert!(fixed_bytes("0xzz", 4).is_err());
+
+    let catalog = crate::fixtures::shipped_catalog(crate::IdlNetwork::Mainnet);
+    let program = Pubkey::from_str("strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m").unwrap();
+    let client = catalog.program_client(&program).unwrap();
+    let form = idl_instruction_form(&client, "create", &IdlBuildInput::default()).unwrap();
+    let name = form
+        .arguments
+        .iter()
+        .find(|field| field.name == "streamName")
+        .unwrap();
+    assert_eq!(name.kind, IdlArgKind::FixedBytes { len: 64 });
+    assert!(name.may_be_blank());
+    for (typed, opens) in [("Payroll", "Payroll"), ("0x0001", "0x0001"), ("", "")] {
+        let mut draft = crate::idl::draft::IdlDraft::for_instruction(
+            program,
+            "streamflow",
+            &client,
+            Some("create"),
+        );
+        for (at, account) in form.accounts.iter().enumerate() {
+            if account.source != IdlAccountSource::Derived {
+                draft.set_account(&account.name, Some(pk(20 + at as u8)));
+            }
+        }
+        for field in &form.arguments {
+            let text = match field.name.as_str() {
+                "streamName" => typed.to_string(),
+                _ => match &field.kind {
+                    IdlArgKind::Bool => "false".to_string(),
+                    IdlArgKind::Option(_) => String::new(),
+                    _ => "1".to_string(),
+                },
+            };
+            draft.set_argument(&field.name, text);
+        }
+        let built = draft.build(&client).unwrap();
+        let opened = crate::edit::idl_draft_for(&client, "streamflow", &built).unwrap();
+        assert_eq!(opened.argument("streamName"), opens, "{typed}");
+    }
+}

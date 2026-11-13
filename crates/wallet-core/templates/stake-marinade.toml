@@ -1,0 +1,34 @@
+format = 1
+name = "Stake SOL with Marinade"
+summary = "Stakes SOL with Marinade for mSOL, which earns the staking yield and can be unstaked at once for a fee, or in a few days without one."
+
+[programs]
+associated_token = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+marinade = "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
+system = "11111111111111111111111111111111"
+token = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+
+[[input]]
+name = "amount"
+label = "Amount"
+hint = "The SOL to stake, from this wallet."
+
+[[input]]
+name = "to"
+label = "mSOL to"
+hint = "Receives the mSOL in its token account, which is created if missing."
+default = "$wallet"
+
+[values]
+msol_account = "associated-token-account $to mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So $token"
+
+[[block]]
+program = "$associated_token"
+instruction = "createAssociatedTokenIdempotent"
+accounts = { mint = "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So", owner = "$to", payer = "$fee-payer" }
+
+[[block]]
+program = "$marinade"
+instruction = "deposit"
+accounts = { liqPoolMsolLeg = "7GgPYjS5Dza89wV6FpZ23kUJRG5vbQ1GM25ezspYFSoE", liqPoolMsolLegAuthority = "EyaSjUtSgo9aRD1f8LWXwdvkpDTmXAW54yoSHZRF14WL", liqPoolSolLegPda = "UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q", mintTo = "$msol_account", msolMint = "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So", msolMintAuthority = "3JLPCS1qM2zRw3Dp6V4hZnYHd4toMNPkNesXdX9tg6KM", reservePda = "Du3Ysj1wKbxPKkuPPnvzQLQh8oMSVifs3jGZjJWXFmHN", state = "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC", systemProgram = "$system", tokenProgram = "$token", transferFrom = "$wallet" }
+arguments = { lamports = "$amount" }

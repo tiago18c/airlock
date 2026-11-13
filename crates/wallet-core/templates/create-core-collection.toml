@@ -1,0 +1,31 @@
+format = 1
+name = "Create a Core collection"
+summary = "A new collection on Metaplex Core, its key made on this device, that Core NFTs can be added to by its update authority."
+
+[programs]
+core = "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+system = "11111111111111111111111111111111"
+
+[[input]]
+name = "collection_name"
+label = "Name"
+
+[[input]]
+name = "uri"
+label = "Details link"
+hint = "A link to a JSON file with the collection's image and description."
+
+[[input]]
+name = "update_authority"
+label = "Update authority"
+hint = "Can add NFTs to the collection, and change its name and link."
+default = "$wallet"
+
+[values]
+collection = "new-keypair"
+
+[[block]]
+program = "$core"
+instruction = "createCollectionV2"
+accounts = { collection = "$collection", payer = "$fee-payer", systemProgram = "$system", updateAuthority = "$update_authority" }
+arguments = { "createCollectionV2Args.name" = "$collection_name", "createCollectionV2Args.uri" = "$uri" }

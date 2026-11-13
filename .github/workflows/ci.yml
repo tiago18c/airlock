@@ -80,8 +80,9 @@ jobs:
   flows:
     name: On-chain flows
     # Runs what wallet-core builds, and the use cases of wallet-flows, against
-    # the real signer, Squads and stake programs in an in-process VM. The binaries come from devnet, pinned by hash, and
-    # are cached so a devnet outage does not fail an unrelated pull request.
+    # the real signer, Squads and stake programs in an in-process VM. The binaries come from devnet, or from mainnet for
+    # a program whose devnet build differs, pinned by hash, and are cached so an outage of either does not fail an
+    # unrelated pull request.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
