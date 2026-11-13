@@ -977,6 +977,15 @@ idlSha256 = "75537d95287c69ce87f9846973cdced58389add2f3d64ece386215c72bbeaac0"
 reviewed = "2026-11-12"
 
 [[builds]]
+# riptideAmmProgram (pack). Devnet runs another build than mainnet (deployed at slot 471688291) and its program-metadata account publishes the same IDL document (dc84c88e…). Its binary holds the same 16 instruction names as mainnet's, and the text in its read-only data differs from mainnet's only by the source path of a router module mainnet's has. Devnet transactions of oracleUpdate, swapExactIn, swapExactOut and marketDeposit decode with every account named and no byte left over.
+programId = "riptK81hDxhe5pW5jSzSM9iRA8azgEgLJ4dXkPtBS7j"
+network = "devnet"
+programHash = "7222d78aa7d4a669ad91ed8a32ebec0c39456e6fc536937bcc016c45ab5bdbc1"
+authority = "BWyVTPPRW7A5kpHM3tNgPhRz6JekR9sL8iFx2o4X1w9C"
+idlSha256 = "75537d95287c69ce87f9846973cdced58389add2f3d64ece386215c72bbeaac0"
+reviewed = "2026-11-13"
+
+[[builds]]
 # cargo (pack). Deployed at slot 258006208; OtterSec lists no verify record. The binary logs exactly the IDL's 17 instruction names apart from Anchor's IDL instructions, and mainnet calls of add_cargo, remove_cargo, transfer_cargo, consume_cargo, legitimize_cargo, close_token_account, init_cargo_pod, close_cargo_pod and transfer_authority decode with every account named and no data left over.
 programId = "Cargo2VNTPPTi9c1vq1Jw5d3BWUNr18MjRtSupAghKEk"
 network = "mainnet"
