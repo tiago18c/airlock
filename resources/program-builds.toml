@@ -662,3 +662,12 @@ programHash = "bfaa5c6675e76399f0ced2872019738089651d7f6b0814fd037876218e7bd03d"
 authority = "DwBXwJDZ4Av4miT62sEssWJUinkzwkmPPB4Fg3fKEfft"
 idlSha256 = "707d50d420c2c4b07e0fc755d65ee883edfd8f65385b9dd3cb4b40fde22d5edb"
 reviewed = "2026-11-12"
+
+[[builds]]
+# permissionless (pack). The binary logs the names of all 61 instructions of the IDL and no others besides Anchor's own IDL instructions. Successful mainnet transactions decode with the IDL, every account named and every data length exact, for addRedemptionRequestV2, cancelRedemptionRequest, closeLenderAccounts, createLenderAccountsV2, deployLiquidity, deposit, disburse, instantWithdraw, instantWithdrawPrivileged, payBackLiquidity, processRedemptionRequest, refreshModeAssets, refreshPoolAssets, setLiquidAssetsDeployed, switchMode.
+programId = "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn"
+network = "mainnet"
+programHash = "3e3743fadc302a970f0c664e493d64e8a1f245572701da0ef48101184567d0ab"
+authority = "D6GEJYVtQGVrLVj1QSZbxWW73NnKJyHEzMBDAtCzraaF"
+idlSha256 = "64c22a081090f982f74a8d7c09ab2865e80f8a4bc2f1bc386a37b0681f446718"
+reviewed = "2026-11-12"

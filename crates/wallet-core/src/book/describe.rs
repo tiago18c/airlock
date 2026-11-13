@@ -647,6 +647,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78"),
         "Loopscale Program",
     ),
+    (
+        Pubkey::from_str_const("HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn"),
+        "Huma Permissionless Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

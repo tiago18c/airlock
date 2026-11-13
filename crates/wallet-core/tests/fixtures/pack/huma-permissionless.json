@@ -1,0 +1,985 @@
+{
+  "accounts": {
+    "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw": {
+      "data": "AQAAAHjsgqCW4GhE/YFIAzTwh4sVY9ytf1xMT0zDRdpalSyoYARaGJAyAQAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": {
+      "data": "AQAAAJj+huiNm+Lqi8HMpIeLKYjCQPUrhCS/tA7Rot3LXhmba9mueGtnHwAGAQEAAABicKqKWcWUBbRShshncubNEm6bil06OFNtN/e0FOi2Zw==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "HUPfpnsaJtJGpJxAPNX1vXah7BgYiQYt1c2JMgMumvPs": {
+      "data": "AQAAAHjsgqCW4GhE/YFIAzTwh4sVY9ytf1xMT0zDRdpalSyoI/guh1sAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    }
+  },
+  "instructions": [
+    {
+      "accounts": [
+        "Afm5PSuVT6A3QksJ8ZAcCVcDSxnorokh4qtpYwunXnDY:sw",
+        "Afm5PSuVT6A3QksJ8ZAcCVcDSxnorokh4qtpYwunXnDY:sw",
+        "Fh2WKYCJfota6k76gDGnhTELUuhPa7FHQvVza4cE11ja",
+        "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+        "iFgP2EbzHUZzMjqbjaagJQ8zmn6as3Hw95aVUKm67od:w",
+        "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN",
+        "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw",
+        "7RfhA51xB3jLoKTwrvho22gsk24YTPABxc5GTskAjz9R:w",
+        "CJhx7uoRif95Px5BSWoiYVhNcNavBRJ2Pbfmaee4QM3d:w",
+        "9936VFvgRmW1STvdgeyPQaKHDx5DwBtbhZkT3HcdL3QK",
+        "4AFwhfpkqoYkpo4J3DoKE1XE2VYhATasDYpMV1G4euEd:w",
+        "HXWfnjaRESqqX63DtonSvxAq6j3mc9pbwzW9TM8gYifi:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111"
+      ],
+      "data": "60ad3124c92ef4bd0948c8a0040000000000000000000000",
+      "fields": [
+        [
+          "Shares to Redeem",
+          "19,877.349385"
+        ],
+        [
+          "Rent Payer",
+          "Afm5PSuVT6A3QksJ8ZAcCVcDSxnorokh4qtpYwunXnDY"
+        ],
+        [
+          "Lender",
+          "Afm5PSuVT6A3QksJ8ZAcCVcDSxnorokh4qtpYwunXnDY"
+        ],
+        [
+          "Pool",
+          "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS"
+        ],
+        [
+          "Mode",
+          "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN"
+        ],
+        [
+          "Mode Token",
+          "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw"
+        ],
+        [
+          "Redemption Request",
+          "7RfhA51xB3jLoKTwrvho22gsk24YTPABxc5GTskAjz9R"
+        ],
+        [
+          "Lender State",
+          "CJhx7uoRif95Px5BSWoiYVhNcNavBRJ2Pbfmaee4QM3d"
+        ],
+        [
+          "Pool Mode Token Account",
+          "4AFwhfpkqoYkpo4J3DoKE1XE2VYhATasDYpMV1G4euEd"
+        ],
+        [
+          "From",
+          "HXWfnjaRESqqX63DtonSvxAq6j3mc9pbwzW9TM8gYifi"
+        ]
+      ],
+      "from": "sRheBwmeLur385dwCcbHLffw8zNoYFgiyv5brcMdHuSrhD9uWo5c9UPmcd49DrHUcJMK4MYwb9DiGFvPxzSWTkg#3",
+      "intent": "Request a redemption",
+      "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
+      "sentence": "Afm5PSuVT6A3QksJ8ZAcCVcDSxnorokh4qtpYwunXnDY asks to redeem 19,877.349385 of 59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw from pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS, to be paid out later: the tokens move from HXWfnjaRESqqX63DtonSvxAq6j3mc9pbwzW9TM8gYifi to the pool until the request is processed",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Huma3jh5pZd1WKKEApB66W5c75vzHfFdRUHM7oMLwdQV:sw",
+        "EQ6UUR8XKp6gsYWb7UgFTVtjnHL8jbvgMmbpeEds7oYj:w",
+        "EQ6UUR8XKp6gsYWb7UgFTVtjnHL8jbvgMmbpeEds7oYj:w",
+        "Fh2WKYCJfota6k76gDGnhTELUuhPa7FHQvVza4cE11ja",
+        "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+        "iFgP2EbzHUZzMjqbjaagJQ8zmn6as3Hw95aVUKm67od:w",
+        "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN",
+        "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw:w",
+        "FZ4NoMxKtAb2BWxizWYXNXFJNpFpU8da93LEvzWA1zqz:w",
+        "5HPwmSjppNp8zCtcQTYp9vmergVRLnNbsG2ywDVqLe8J:w",
+        "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "9936VFvgRmW1STvdgeyPQaKHDx5DwBtbhZkT3HcdL3QK",
+        "6Xh2Jg9sWJE16VQGppJFTHvQ8Vii3ABUvUF8Pwcwy7Vq:w",
+        "4cC8D4brdf5rrYRiVuTTKjgdXzLUboeWZYgd1nSvLU2B:w",
+        "4AFwhfpkqoYkpo4J3DoKE1XE2VYhATasDYpMV1G4euEd:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "d35a24fb5bb9d823",
+      "fields": [
+        [
+          "Pool Owner or Sentinel",
+          "Huma3jh5pZd1WKKEApB66W5c75vzHfFdRUHM7oMLwdQV"
+        ],
+        [
+          "Lender",
+          "EQ6UUR8XKp6gsYWb7UgFTVtjnHL8jbvgMmbpeEds7oYj"
+        ],
+        [
+          "Request Rent Payer",
+          "EQ6UUR8XKp6gsYWb7UgFTVtjnHL8jbvgMmbpeEds7oYj"
+        ],
+        [
+          "Pool",
+          "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS"
+        ],
+        [
+          "Mode",
+          "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN"
+        ],
+        [
+          "Mode Token",
+          "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw"
+        ],
+        [
+          "Redemption Request",
+          "FZ4NoMxKtAb2BWxizWYXNXFJNpFpU8da93LEvzWA1zqz"
+        ],
+        [
+          "Lender State",
+          "5HPwmSjppNp8zCtcQTYp9vmergVRLnNbsG2ywDVqLe8J"
+        ],
+        [
+          "Underlying Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Pool Token Account",
+          "6Xh2Jg9sWJE16VQGppJFTHvQ8Vii3ABUvUF8Pwcwy7Vq"
+        ],
+        [
+          "Lender Token Account",
+          "4cC8D4brdf5rrYRiVuTTKjgdXzLUboeWZYgd1nSvLU2B"
+        ],
+        [
+          "Pool Mode Token Account",
+          "4AFwhfpkqoYkpo4J3DoKE1XE2VYhATasDYpMV1G4euEd"
+        ]
+      ],
+      "from": "jg8KqnPSwN2BpStduhqUUWPx9dNFnVTCTsYxy5cxBuTZkkGsfVw3g7z6KuVjQkZ5NaUP5xp1bkmFYayKZYqmh69#3",
+      "intent": "Process a redemption request",
+      "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
+      "sentence": "Huma3jh5pZd1WKKEApB66W5c75vzHfFdRUHM7oMLwdQV processes redemption request FZ4NoMxKtAb2BWxizWYXNXFJNpFpU8da93LEvzWA1zqz of EQ6UUR8XKp6gsYWb7UgFTVtjnHL8jbvgMmbpeEds7oYj, the first in the queue of pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Fh2WKYCJfota6k76gDGnhTELUuhPa7FHQvVza4cE11ja",
+        "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+        "iFgP2EbzHUZzMjqbjaagJQ8zmn6as3Hw95aVUKm67od:w",
+        "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN"
+      ],
+      "data": "be85d190dd647ecd",
+      "fields": [
+        [
+          "Pool",
+          "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS"
+        ],
+        [
+          "Mode",
+          "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN"
+        ]
+      ],
+      "from": "3B5XK8zs3KtnGi7N3kUgfytNs9DaoGnofU6o9GyWUpn3JJywuV2fVKivSuDxRYb67aNhgoRxYagNuayGPaBs1TbG#3.1",
+      "intent": "Refresh a mode's assets",
+      "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
+      "sentence": "Brings the assets of mode 3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN of pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS up to date",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "BWaCZZq4taPguDFmZ7LapC4SVCdRBnngLpJp7ZEfBxTV:sw",
+        "BWaCZZq4taPguDFmZ7LapC4SVCdRBnngLpJp7ZEfBxTV:sw",
+        "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+        "iFgP2EbzHUZzMjqbjaagJQ8zmn6as3Hw95aVUKm67od",
+        "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN",
+        "24UZRw8f2J7cqHqk9qASdMBr7thmA7wFaQ1tsYfer3Sp:w"
+      ],
+      "data": "de7e24cdc1adc2e0",
+      "fields": [
+        [
+          "Payer",
+          "BWaCZZq4taPguDFmZ7LapC4SVCdRBnngLpJp7ZEfBxTV"
+        ],
+        [
+          "Lender",
+          "BWaCZZq4taPguDFmZ7LapC4SVCdRBnngLpJp7ZEfBxTV"
+        ],
+        [
+          "Pool",
+          "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS"
+        ],
+        [
+          "Mode",
+          "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN"
+        ],
+        [
+          "Lender State",
+          "24UZRw8f2J7cqHqk9qASdMBr7thmA7wFaQ1tsYfer3Sp"
+        ]
+      ],
+      "from": "i9672ekwa6HmDzD7sSruAfYTPYLiFvgqXkcw7yYBBpYic63kKw6fEKEjtap3XTrN87mt4bepzA4GqweLq4aGPKL#3",
+      "intent": "Close lender accounts",
+      "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
+      "sentence": "BWaCZZq4taPguDFmZ7LapC4SVCdRBnngLpJp7ZEfBxTV closes their lender state in mode 3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN of pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Fh2WKYCJfota6k76gDGnhTELUuhPa7FHQvVza4cE11ja",
+        "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+        "iFgP2EbzHUZzMjqbjaagJQ8zmn6as3Hw95aVUKm67od:w",
+        "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN:w",
+        "AcHvC47rpoMAY22CbHRpp7vsAskRyhyZGYQCqdm4BWcH:w"
+      ],
+      "data": "b3dc7001d66703e6",
+      "fields": [
+        [
+          "Pool",
+          "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS"
+        ]
+      ],
+      "from": "4eV5G16vVZnZLsKZ3wRLBJcMQDnK89nybd6acYZ2WRKyMHEvE9iJ6rpsiwm6EXPP1aPZCspMq7QRssNmc96Y4YtJ#1",
+      "intent": "Refresh a pool's assets",
+      "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
+      "sentence": "Brings the assets of every mode of pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS up to date",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "3HPgBbMGu9aQebpaiXHMxTF3E5K33jGHq5CY17hboiVT:sw",
+        "3HPgBbMGu9aQebpaiXHMxTF3E5K33jGHq5CY17hboiVT:sw",
+        "Fh2WKYCJfota6k76gDGnhTELUuhPa7FHQvVza4cE11ja",
+        "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+        "iFgP2EbzHUZzMjqbjaagJQ8zmn6as3Hw95aVUKm67od:w",
+        "AcHvC47rpoMAY22CbHRpp7vsAskRyhyZGYQCqdm4BWcH",
+        "HUPfpnsaJtJGpJxAPNX1vXah7BgYiQYt1c2JMgMumvPs",
+        "ER4CuZmqtMK3MsJEHq6qZ4bqUpNrosykNNJDL8uCX6Zm:w",
+        "HxwdFPjsHSjtVDgajcoSdhxoJQ79RYx4PeuPz4z4ibr3:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111"
+      ],
+      "data": "cb34b9e7c04a796c",
+      "fields": [
+        [
+          "Rent Payer",
+          "3HPgBbMGu9aQebpaiXHMxTF3E5K33jGHq5CY17hboiVT"
+        ],
+        [
+          "Lender",
+          "3HPgBbMGu9aQebpaiXHMxTF3E5K33jGHq5CY17hboiVT"
+        ],
+        [
+          "Pool",
+          "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS"
+        ],
+        [
+          "Mode",
+          "AcHvC47rpoMAY22CbHRpp7vsAskRyhyZGYQCqdm4BWcH"
+        ],
+        [
+          "Mode Token",
+          "HUPfpnsaJtJGpJxAPNX1vXah7BgYiQYt1c2JMgMumvPs"
+        ],
+        [
+          "Lender State",
+          "ER4CuZmqtMK3MsJEHq6qZ4bqUpNrosykNNJDL8uCX6Zm"
+        ],
+        [
+          "Mode Token Account",
+          "HxwdFPjsHSjtVDgajcoSdhxoJQ79RYx4PeuPz4z4ibr3"
+        ]
+      ],
+      "from": "5NkaUXGmHCApkNvzfgPYvNDpqQ3T7cg4aEQwHnDVmfqhheFDsN1VwEduw7v13t744Mh7ShywmeuNZT1Sfkd4zru3#3",
+      "intent": "Open lender accounts",
+      "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
+      "sentence": "3HPgBbMGu9aQebpaiXHMxTF3E5K33jGHq5CY17hboiVT opens the lender accounts of 3HPgBbMGu9aQebpaiXHMxTF3E5K33jGHq5CY17hboiVT in mode AcHvC47rpoMAY22CbHRpp7vsAskRyhyZGYQCqdm4BWcH of pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "6KMbL3TWGE2ZyUWAXNVNZhh24yzJev3ArF9Sa1a739mT",
+        "Fh2WKYCJfota6k76gDGnhTELUuhPa7FHQvVza4cE11ja",
+        "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+        "iFgP2EbzHUZzMjqbjaagJQ8zmn6as3Hw95aVUKm67od:w",
+        "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN",
+        "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw:w",
+        "9936VFvgRmW1STvdgeyPQaKHDx5DwBtbhZkT3HcdL3QK",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "6Xh2Jg9sWJE16VQGppJFTHvQ8Vii3ABUvUF8Pwcwy7Vq:w",
+        "7dQakaes8ArU7ZSyUJ62z52LbD8DxWr5XoiAmKAW5qML:w",
+        "DiZNAac3kNABo4Zj5E9c1PaPdiG43MswCGec2fT5W654:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "f223c68952e1f2b680fdd7ce080000000d0000004e4f5f434f4d4d49544d454e5400",
+      "fields": [
+        [
+          "Amount",
+          "37,830"
+        ],
+        [
+          "Lock-Up Commitment (Tracked Off Chain)",
+          "NO_COMMITMENT"
+        ],
+        [
+          "Commitment Renews Automatically",
+          "false"
+        ],
+        [
+          "Depositor",
+          "6KMbL3TWGE2ZyUWAXNVNZhh24yzJev3ArF9Sa1a739mT"
+        ],
+        [
+          "Pool",
+          "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS"
+        ],
+        [
+          "Mode",
+          "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN"
+        ],
+        [
+          "Mode Token",
+          "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw"
+        ],
+        [
+          "Underlying Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Pool Token Account",
+          "6Xh2Jg9sWJE16VQGppJFTHvQ8Vii3ABUvUF8Pwcwy7Vq"
+        ],
+        [
+          "From",
+          "7dQakaes8ArU7ZSyUJ62z52LbD8DxWr5XoiAmKAW5qML"
+        ],
+        [
+          "Mode Tokens To",
+          "DiZNAac3kNABo4Zj5E9c1PaPdiG43MswCGec2fT5W654"
+        ]
+      ],
+      "from": "4NDjtMPXmkJgvEyct3rhFvHCt8utusBnDNGbK9djJEMkj3VHHAgPPdkvFYsCdfssCLWMVXrrJRo9rtLwVHfCojxG#1.1",
+      "intent": "Deposit into a mode",
+      "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
+      "sentence": "6KMbL3TWGE2ZyUWAXNVNZhh24yzJev3ArF9Sa1a739mT deposits 37,830 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v into mode 3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN of pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS, for 59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw paid to DiZNAac3kNABo4Zj5E9c1PaPdiG43MswCGec2fT5W654",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "DTjNdfYmKpwGjnX6UPGvxwXQ7PZEGM7M43BQLtyASnvh:sw",
+        "Fh2WKYCJfota6k76gDGnhTELUuhPa7FHQvVza4cE11ja",
+        "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+        "iFgP2EbzHUZzMjqbjaagJQ8zmn6as3Hw95aVUKm67od:w",
+        "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN",
+        "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw:w",
+        "9936VFvgRmW1STvdgeyPQaKHDx5DwBtbhZkT3HcdL3QK",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "6Xh2Jg9sWJE16VQGppJFTHvQ8Vii3ABUvUF8Pwcwy7Vq:w",
+        "6dfHeXctKhZah77mJpq83XvgdsXhPYLi8KEeSNKqjFAK:w",
+        "3UHCWyEQZ1XtaWhYwEnpcSRVT2QmGNv84vX7rTMFj4F5:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "f223c68952e1f2b6681a3fa8040000000d0000004e4f5f434f4d4d49544d454e5400",
+      "fields": [
+        [
+          "Amount",
+          "20,002.577"
+        ],
+        [
+          "Lock-Up Commitment (Tracked Off Chain)",
+          "NO_COMMITMENT"
+        ],
+        [
+          "Commitment Renews Automatically",
+          "false"
+        ],
+        [
+          "Depositor",
+          "DTjNdfYmKpwGjnX6UPGvxwXQ7PZEGM7M43BQLtyASnvh"
+        ],
+        [
+          "Pool",
+          "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS"
+        ],
+        [
+          "Mode",
+          "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN"
+        ],
+        [
+          "Mode Token",
+          "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw"
+        ],
+        [
+          "Underlying Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Pool Token Account",
+          "6Xh2Jg9sWJE16VQGppJFTHvQ8Vii3ABUvUF8Pwcwy7Vq"
+        ],
+        [
+          "From",
+          "6dfHeXctKhZah77mJpq83XvgdsXhPYLi8KEeSNKqjFAK"
+        ],
+        [
+          "Mode Tokens To",
+          "3UHCWyEQZ1XtaWhYwEnpcSRVT2QmGNv84vX7rTMFj4F5"
+        ]
+      ],
+      "from": "j1cJqj6ZJQTngpWUohUYayLd3WUm6KkneLgDkLVtxkiVbYzhcHBPCJtibrMhDBVSum7TXJb6BGDAe82W42h2hT3#1.4",
+      "intent": "Deposit into a mode",
+      "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
+      "sentence": "DTjNdfYmKpwGjnX6UPGvxwXQ7PZEGM7M43BQLtyASnvh deposits 20,002.577 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v into mode 3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN of pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS, for 59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw paid to 3UHCWyEQZ1XtaWhYwEnpcSRVT2QmGNv84vX7rTMFj4F5",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GwviWo7dkGuaYX2LCcUXwnFFinBM7FP3s3GHmG8nNmdU:sw",
+        "Fh2WKYCJfota6k76gDGnhTELUuhPa7FHQvVza4cE11ja",
+        "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+        "iFgP2EbzHUZzMjqbjaagJQ8zmn6as3Hw95aVUKm67od:w",
+        "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN",
+        "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw:w",
+        "9GHuU98sbhg4afFFP54oeL7hJJC6aNPDwhP1T6JBS9y4",
+        "6NTQ6KEkomCrZJqkh6CXEoqMuqhNWXhx3UzCARFkVuh6:w",
+        "35bTXjviGzqdMhraPWk3iw16kMSqQUiysr9yUngVae6z:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "9936VFvgRmW1STvdgeyPQaKHDx5DwBtbhZkT3HcdL3QK:w",
+        "6Xh2Jg9sWJE16VQGppJFTHvQ8Vii3ABUvUF8Pwcwy7Vq:w",
+        "ECKSr9MXgzdhirp1Sw8bHswG6TBXNLbq1W3LoDVRebf4:w",
+        "2TwuSak9zCfwDj4B2NtnfT82PNJbw5CQtPGe3aa1obon:w",
+        "B1zXSCjs3g27jenrMjEdvkreyzdaEYLq3tUj18kg55LQ:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "31iooTgSCbrfZ2kdsriR5mXdGeSrPd6C9hzqQTJPwA5E:w",
+        "5nmGjA4s7ATzpBQXC5RNceRpaJ7pYw2wKsNBWyuSAZV6",
+        "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ:w",
+        "9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D:w",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF:w",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC:w",
+        "5xSPBiD3TibamAnwHDhZABdB4z4F9dcj5PnbteroBTTd",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9"
+      ],
+      "data": "ab3191b0306570a2ec879200000000005556000000000000",
+      "fields": [
+        [
+          "Shares",
+          "9.603052"
+        ],
+        [
+          "Maximum Fee",
+          "0.022101"
+        ],
+        [
+          "Lender",
+          "GwviWo7dkGuaYX2LCcUXwnFFinBM7FP3s3GHmG8nNmdU"
+        ],
+        [
+          "Pool",
+          "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS"
+        ],
+        [
+          "Mode",
+          "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN"
+        ],
+        [
+          "Mode Token",
+          "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw"
+        ],
+        [
+          "Deployment Target",
+          "9GHuU98sbhg4afFFP54oeL7hJJC6aNPDwhP1T6JBS9y4"
+        ],
+        [
+          "Deployment Target State",
+          "6NTQ6KEkomCrZJqkh6CXEoqMuqhNWXhx3UzCARFkVuh6"
+        ],
+        [
+          "Lender State",
+          "35bTXjviGzqdMhraPWk3iw16kMSqQUiysr9yUngVae6z"
+        ],
+        [
+          "Underlying Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Pool Token Account",
+          "6Xh2Jg9sWJE16VQGppJFTHvQ8Vii3ABUvUF8Pwcwy7Vq"
+        ],
+        [
+          "To",
+          "ECKSr9MXgzdhirp1Sw8bHswG6TBXNLbq1W3LoDVRebf4"
+        ],
+        [
+          "Fee Recipient (Pool Owner Treasury)",
+          "2TwuSak9zCfwDj4B2NtnfT82PNJbw5CQtPGe3aa1obon"
+        ],
+        [
+          "From",
+          "B1zXSCjs3g27jenrMjEdvkreyzdaEYLq3tUj18kg55LQ"
+        ]
+      ],
+      "from": "5ENowKDfMaHwjTbPbh2UR9sp5v8ubn5ZSyMcRTuhtkHhjpHK3WPif5DzWUXia7xWgrRhjdfaA1eQuesRs9SjGM3j#6",
+      "intent": "Withdraw instantly",
+      "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
+      "sentence": "GwviWo7dkGuaYX2LCcUXwnFFinBM7FP3s3GHmG8nNmdU redeems 9.603052 of 59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw from pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS at once, without the redemption queue, for EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v paid to ECKSr9MXgzdhirp1Sw8bHswG6TBXNLbq1W3LoDVRebf4, paying a fee of at most 0.022101",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "shakRDxyKwaBbduqZTZt8Q4etTALbDLnAANStv9TLH3:sw",
+        "Fh2WKYCJfota6k76gDGnhTELUuhPa7FHQvVza4cE11ja",
+        "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+        "iFgP2EbzHUZzMjqbjaagJQ8zmn6as3Hw95aVUKm67od:w",
+        "9936VFvgRmW1STvdgeyPQaKHDx5DwBtbhZkT3HcdL3QK",
+        "AcHvC47rpoMAY22CbHRpp7vsAskRyhyZGYQCqdm4BWcH",
+        "HUPfpnsaJtJGpJxAPNX1vXah7BgYiQYt1c2JMgMumvPs:w",
+        "6vMXPomzoemeWVKg3Ss3k7XEPUqyt3pZSBNmrHoQE9Nn:w",
+        "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN",
+        "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw:w",
+        "29LGJ8o6ttqQ6dy1PB3EPyHFokKhc3Jk5rSLw46sE4Pm:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "4573eb4ad09b6c3e50db1b060000000000000000000000000800000053564d5f54455354",
+      "fields": [
+        [
+          "Shares",
+          "102.488912"
+        ],
+        [
+          "Investment ID (Not Used by the Program)",
+          ""
+        ],
+        [
+          "Lender",
+          "shakRDxyKwaBbduqZTZt8Q4etTALbDLnAANStv9TLH3"
+        ],
+        [
+          "Pool",
+          "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS"
+        ],
+        [
+          "From Mode",
+          "AcHvC47rpoMAY22CbHRpp7vsAskRyhyZGYQCqdm4BWcH"
+        ],
+        [
+          "From Mode Token",
+          "HUPfpnsaJtJGpJxAPNX1vXah7BgYiQYt1c2JMgMumvPs"
+        ],
+        [
+          "From",
+          "6vMXPomzoemeWVKg3Ss3k7XEPUqyt3pZSBNmrHoQE9Nn"
+        ],
+        [
+          "To Mode",
+          "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN"
+        ],
+        [
+          "To Mode Token",
+          "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw"
+        ],
+        [
+          "To",
+          "29LGJ8o6ttqQ6dy1PB3EPyHFokKhc3Jk5rSLw46sE4Pm"
+        ]
+      ],
+      "from": "2eZVB3bFdByYDqa6oUT9guSGQJkgQYY1TN9amQ2XBbqQuBS27TNpFgZASTXoYSGe7SVFzy2cbfMBeixG9CGnD9YF#5.6",
+      "intent": "Switch modes",
+      "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
+      "sentence": "shakRDxyKwaBbduqZTZt8Q4etTALbDLnAANStv9TLH3 switches 102.488912 of HUPfpnsaJtJGpJxAPNX1vXah7BgYiQYt1c2JMgMumvPs from mode AcHvC47rpoMAY22CbHRpp7vsAskRyhyZGYQCqdm4BWcH to mode 3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN of pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS, for 59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw paid to 29LGJ8o6ttqQ6dy1PB3EPyHFokKhc3Jk5rSLw46sE4Pm",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GZKfsMk3pNVRUZq35HWCGxxAmr48aYbWCaU9o2eRKe23:sw",
+        "Fh2WKYCJfota6k76gDGnhTELUuhPa7FHQvVza4cE11ja",
+        "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+        "iFgP2EbzHUZzMjqbjaagJQ8zmn6as3Hw95aVUKm67od:w",
+        "AcHvC47rpoMAY22CbHRpp7vsAskRyhyZGYQCqdm4BWcH",
+        "6kFVobB1ZRo6VpkHeqf7kXDfjQx9GSJxYasNX1JYDtSF:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "9936VFvgRmW1STvdgeyPQaKHDx5DwBtbhZkT3HcdL3QK",
+        "6Xh2Jg9sWJE16VQGppJFTHvQ8Vii3ABUvUF8Pwcwy7Vq:w",
+        "6DjvXUeLQ3VxitJghndXGDG1vmCnDTnYtwTKviibYfwn:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "44facd59d98e0d2c",
+      "fields": [
+        [
+          "Lender",
+          "GZKfsMk3pNVRUZq35HWCGxxAmr48aYbWCaU9o2eRKe23"
+        ],
+        [
+          "Pool",
+          "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS"
+        ],
+        [
+          "Mode",
+          "AcHvC47rpoMAY22CbHRpp7vsAskRyhyZGYQCqdm4BWcH"
+        ],
+        [
+          "Lender State",
+          "6kFVobB1ZRo6VpkHeqf7kXDfjQx9GSJxYasNX1JYDtSF"
+        ],
+        [
+          "Underlying Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Pool Token Account",
+          "6Xh2Jg9sWJE16VQGppJFTHvQ8Vii3ABUvUF8Pwcwy7Vq"
+        ],
+        [
+          "To",
+          "6DjvXUeLQ3VxitJghndXGDG1vmCnDTnYtwTKviibYfwn"
+        ]
+      ],
+      "from": "2wRMevN8cevaeGSAauur8n51HQLAPwmNZ82B9TLHEp24v1Kk3ziDw5ixuSsPaUxMdakAHuir2nnDkPUH4FYAqwqZ#4",
+      "intent": "Claim redeemed funds",
+      "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
+      "sentence": "GZKfsMk3pNVRUZq35HWCGxxAmr48aYbWCaU9o2eRKe23 claims all the EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v owed to them from processed redemptions in pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS, paid to 6DjvXUeLQ3VxitJghndXGDG1vmCnDTnYtwTKviibYfwn",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HGLsFsHy9NxuYWJe88Lyyrxvw95rDkHfPvid3AUPMbpj:sw",
+        "Fh2WKYCJfota6k76gDGnhTELUuhPa7FHQvVza4cE11ja",
+        "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+        "iFgP2EbzHUZzMjqbjaagJQ8zmn6as3Hw95aVUKm67od:w",
+        "9GHuU98sbhg4afFFP54oeL7hJJC6aNPDwhP1T6JBS9y4",
+        "6NTQ6KEkomCrZJqkh6CXEoqMuqhNWXhx3UzCARFkVuh6:w",
+        "Gj9JcmBg6178oZg1NQuDEpvAYMriP8V6HzL7yJr8Y4u8",
+        "9936VFvgRmW1STvdgeyPQaKHDx5DwBtbhZkT3HcdL3QK:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "6Xh2Jg9sWJE16VQGppJFTHvQ8Vii3ABUvUF8Pwcwy7Vq:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "31iooTgSCbrfZ2kdsriR5mXdGeSrPd6C9hzqQTJPwA5E:w",
+        "5nmGjA4s7ATzpBQXC5RNceRpaJ7pYw2wKsNBWyuSAZV6",
+        "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ:w",
+        "9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D:w",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF:w",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC:w",
+        "5xSPBiD3TibamAnwHDhZABdB4z4F9dcj5PnbteroBTTd",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9"
+      ],
+      "data": "3123654c5d041f350180c8318207000000",
+      "fields": [
+        [
+          "Strategy",
+          "Jupiter Lend"
+        ],
+        [
+          "Amount",
+          "32,249.071744"
+        ],
+        [
+          "Strategy Manager Wallet",
+          "HGLsFsHy9NxuYWJe88Lyyrxvw95rDkHfPvid3AUPMbpj"
+        ],
+        [
+          "Pool",
+          "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS"
+        ],
+        [
+          "Deployment Target",
+          "9GHuU98sbhg4afFFP54oeL7hJJC6aNPDwhP1T6JBS9y4"
+        ],
+        [
+          "Deployment Target State",
+          "6NTQ6KEkomCrZJqkh6CXEoqMuqhNWXhx3UzCARFkVuh6"
+        ],
+        [
+          "Strategy Manager Record",
+          "Gj9JcmBg6178oZg1NQuDEpvAYMriP8V6HzL7yJr8Y4u8"
+        ],
+        [
+          "Underlying Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Pool Token Account",
+          "6Xh2Jg9sWJE16VQGppJFTHvQ8Vii3ABUvUF8Pwcwy7Vq"
+        ]
+      ],
+      "from": "4cEHYX6GQEHVa3fbeHDCg9ScfiKUoBEwd6T68T964BodxWYKCroybLjXLUUEsDvU7qk4y3Drj7PBHMCe3Vz9TJeK#3",
+      "intent": "Deploy liquidity",
+      "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
+      "sentence": "HGLsFsHy9NxuYWJe88Lyyrxvw95rDkHfPvid3AUPMbpj deploys 32,249.071744 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS to deployment target 9GHuU98sbhg4afFFP54oeL7hJJC6aNPDwhP1T6JBS9y4 (Jupiter Lend)",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HGLosmCDk1fbgioWVsjgPdYrnhk5u39ox7ntjBAhuWsZ:sw",
+        "Fh2WKYCJfota6k76gDGnhTELUuhPa7FHQvVza4cE11ja",
+        "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+        "iFgP2EbzHUZzMjqbjaagJQ8zmn6as3Hw95aVUKm67od:w",
+        "4yWauF7jG2UYMnGP9dMeSZtnmW7AsqJwdUgu6CbttVod",
+        "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN",
+        "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw:w",
+        "9GHuU98sbhg4afFFP54oeL7hJJC6aNPDwhP1T6JBS9y4",
+        "6NTQ6KEkomCrZJqkh6CXEoqMuqhNWXhx3UzCARFkVuh6:w",
+        "FuGMXpcyVR2hqtzLcpHFy1BiNTo54yyEUPBRjRm3NLfy:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "9936VFvgRmW1STvdgeyPQaKHDx5DwBtbhZkT3HcdL3QK:w",
+        "6Xh2Jg9sWJE16VQGppJFTHvQ8Vii3ABUvUF8Pwcwy7Vq:w",
+        "FcJjq7q9AD976tDknCjRKQBnY1rhVn5eLtJ1FB4KUq7Q:w",
+        "C6Br3VNtNbAJ2uoBm3RXxozuQpSBLK9Tw9GxgFrrXG15:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "31iooTgSCbrfZ2kdsriR5mXdGeSrPd6C9hzqQTJPwA5E:w",
+        "5nmGjA4s7ATzpBQXC5RNceRpaJ7pYw2wKsNBWyuSAZV6",
+        "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ:w",
+        "9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D:w",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF:w",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC:w",
+        "5xSPBiD3TibamAnwHDhZABdB4z4F9dcj5PnbteroBTTd",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9"
+      ],
+      "data": "6561d6dee8f66830f51fef31c8000000",
+      "fields": [
+        [
+          "Shares",
+          "859,831.214069"
+        ],
+        [
+          "Lender",
+          "HGLosmCDk1fbgioWVsjgPdYrnhk5u39ox7ntjBAhuWsZ"
+        ],
+        [
+          "Pool",
+          "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS"
+        ],
+        [
+          "Instant Withdrawal Lender Record",
+          "4yWauF7jG2UYMnGP9dMeSZtnmW7AsqJwdUgu6CbttVod"
+        ],
+        [
+          "Mode",
+          "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN"
+        ],
+        [
+          "Mode Token",
+          "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw"
+        ],
+        [
+          "Deployment Target",
+          "9GHuU98sbhg4afFFP54oeL7hJJC6aNPDwhP1T6JBS9y4"
+        ],
+        [
+          "Deployment Target State",
+          "6NTQ6KEkomCrZJqkh6CXEoqMuqhNWXhx3UzCARFkVuh6"
+        ],
+        [
+          "Lender State",
+          "FuGMXpcyVR2hqtzLcpHFy1BiNTo54yyEUPBRjRm3NLfy"
+        ],
+        [
+          "Underlying Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Pool Token Account",
+          "6Xh2Jg9sWJE16VQGppJFTHvQ8Vii3ABUvUF8Pwcwy7Vq"
+        ],
+        [
+          "To",
+          "FcJjq7q9AD976tDknCjRKQBnY1rhVn5eLtJ1FB4KUq7Q"
+        ],
+        [
+          "From",
+          "C6Br3VNtNbAJ2uoBm3RXxozuQpSBLK9Tw9GxgFrrXG15"
+        ]
+      ],
+      "from": "2gnJjGo16Sc7EfQYyumCC7ZhxugWb74Mbrh1U6LrVfTLRrYFnx6SpfVDSDZB2JXEbxd9Kv4TzsLdpFrZ28VKGLrH#4",
+      "intent": "Withdraw instantly (privileged)",
+      "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
+      "sentence": "HGLosmCDk1fbgioWVsjgPdYrnhk5u39ox7ntjBAhuWsZ, an authorized instant withdrawal lender, redeems 859,831.214069 of 59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw from pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS at once and without a fee, for EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v paid to FcJjq7q9AD976tDknCjRKQBnY1rhVn5eLtJ1FB4KUq7Q",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HGLsFsHy9NxuYWJe88Lyyrxvw95rDkHfPvid3AUPMbpj:sw",
+        "Fh2WKYCJfota6k76gDGnhTELUuhPa7FHQvVza4cE11ja",
+        "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+        "iFgP2EbzHUZzMjqbjaagJQ8zmn6as3Hw95aVUKm67od:w",
+        "9GHuU98sbhg4afFFP54oeL7hJJC6aNPDwhP1T6JBS9y4",
+        "6NTQ6KEkomCrZJqkh6CXEoqMuqhNWXhx3UzCARFkVuh6:w",
+        "Gj9JcmBg6178oZg1NQuDEpvAYMriP8V6HzL7yJr8Y4u8",
+        "9936VFvgRmW1STvdgeyPQaKHDx5DwBtbhZkT3HcdL3QK:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "6Xh2Jg9sWJE16VQGppJFTHvQ8Vii3ABUvUF8Pwcwy7Vq:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "31iooTgSCbrfZ2kdsriR5mXdGeSrPd6C9hzqQTJPwA5E:w",
+        "5nmGjA4s7ATzpBQXC5RNceRpaJ7pYw2wKsNBWyuSAZV6",
+        "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ:w",
+        "9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D:w",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF:w",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC:w",
+        "5xSPBiD3TibamAnwHDhZABdB4z4F9dcj5PnbteroBTTd",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9"
+      ],
+      "data": "61abe04ea2a4b5e4019487be906d000000",
+      "fields": [
+        [
+          "Strategy",
+          "Jupiter Lend"
+        ],
+        [
+          "Amount",
+          "470,579.840916"
+        ],
+        [
+          "Strategy Manager Wallet",
+          "HGLsFsHy9NxuYWJe88Lyyrxvw95rDkHfPvid3AUPMbpj"
+        ],
+        [
+          "Pool",
+          "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS"
+        ],
+        [
+          "Deployment Target",
+          "9GHuU98sbhg4afFFP54oeL7hJJC6aNPDwhP1T6JBS9y4"
+        ],
+        [
+          "Deployment Target State",
+          "6NTQ6KEkomCrZJqkh6CXEoqMuqhNWXhx3UzCARFkVuh6"
+        ],
+        [
+          "Strategy Manager Record",
+          "Gj9JcmBg6178oZg1NQuDEpvAYMriP8V6HzL7yJr8Y4u8"
+        ],
+        [
+          "Underlying Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Pool Token Account",
+          "6Xh2Jg9sWJE16VQGppJFTHvQ8Vii3ABUvUF8Pwcwy7Vq"
+        ]
+      ],
+      "from": "3Xse1E9AxqY2o7HPULoGP1sT1UyixLgw6ZAaKJEqceim4f7EVs93brh5rDzpixKVUdfEPxv7kqUuce4FrXT6rivH#3",
+      "intent": "Pay back liquidity",
+      "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
+      "sentence": "HGLsFsHy9NxuYWJe88Lyyrxvw95rDkHfPvid3AUPMbpj pays back 470,579.840916 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from deployment target 9GHuU98sbhg4afFFP54oeL7hJJC6aNPDwhP1T6JBS9y4 (Jupiter Lend) to pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HGLsFsHy9NxuYWJe88Lyyrxvw95rDkHfPvid3AUPMbpj:sw",
+        "Fh2WKYCJfota6k76gDGnhTELUuhPa7FHQvVza4cE11ja",
+        "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+        "iFgP2EbzHUZzMjqbjaagJQ8zmn6as3Hw95aVUKm67od:w",
+        "Gj9JcmBg6178oZg1NQuDEpvAYMriP8V6HzL7yJr8Y4u8"
+      ],
+      "data": "bbaa2dd80e299740aa404d102e1b0000",
+      "fields": [
+        [
+          "Liquid Assets Deployed",
+          "29,884,655,943,850 base units"
+        ],
+        [
+          "Strategy Manager Wallet",
+          "HGLsFsHy9NxuYWJe88Lyyrxvw95rDkHfPvid3AUPMbpj"
+        ],
+        [
+          "Pool",
+          "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS"
+        ],
+        [
+          "Strategy Manager Record",
+          "Gj9JcmBg6178oZg1NQuDEpvAYMriP8V6HzL7yJr8Y4u8"
+        ]
+      ],
+      "from": "57DgUfexUVS5FPdp2kTouiUUQ97McoupA1Z5KJawsFj1FgqMPrTwxkEAjcTwK4hDacGKMfWVrrrarZTyhNsfb9HM#3",
+      "intent": "Set liquid assets deployed",
+      "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
+      "sentence": "HGLsFsHy9NxuYWJe88Lyyrxvw95rDkHfPvid3AUPMbpj records 29,884,655,943,850 base units as the liquid assets pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS has deployed",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Huma3jh5pZd1WKKEApB66W5c75vzHfFdRUHM7oMLwdQV:sw",
+        "Fh2WKYCJfota6k76gDGnhTELUuhPa7FHQvVza4cE11ja",
+        "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS",
+        "iFgP2EbzHUZzMjqbjaagJQ8zmn6as3Hw95aVUKm67od:w",
+        "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN",
+        "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw:w",
+        "8gKp1VNqSMC6AgEtAMYs98VNBX45TMYbwSXZN3b1XaK4:w",
+        "H8Vf6mg3mNQRPaUwfDxGF8gon4XgbgyY8zCkyHFmhMuP:w",
+        "9936VFvgRmW1STvdgeyPQaKHDx5DwBtbhZkT3HcdL3QK",
+        "4AFwhfpkqoYkpo4J3DoKE1XE2VYhATasDYpMV1G4euEd:w",
+        "7HxywXw6Y3rqTXWNWdc9fgYVDDPULmazkgfnmi5cxp32:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "4d9b04b372e9a22d2bffec1e00000000",
+      "fields": [
+        [
+          "Shares to Cancel",
+          "518.848299"
+        ],
+        [
+          "Pool Owner or Sentinel",
+          "Huma3jh5pZd1WKKEApB66W5c75vzHfFdRUHM7oMLwdQV"
+        ],
+        [
+          "Pool",
+          "28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS"
+        ],
+        [
+          "Mode",
+          "3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN"
+        ],
+        [
+          "Mode Token",
+          "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw"
+        ],
+        [
+          "Redemption Request",
+          "8gKp1VNqSMC6AgEtAMYs98VNBX45TMYbwSXZN3b1XaK4"
+        ],
+        [
+          "Lender State",
+          "H8Vf6mg3mNQRPaUwfDxGF8gon4XgbgyY8zCkyHFmhMuP"
+        ],
+        [
+          "Pool Mode Token Account",
+          "4AFwhfpkqoYkpo4J3DoKE1XE2VYhATasDYpMV1G4euEd"
+        ],
+        [
+          "Returned To",
+          "7HxywXw6Y3rqTXWNWdc9fgYVDDPULmazkgfnmi5cxp32"
+        ]
+      ],
+      "from": "3DQrao1SyzbVJgA3ybXm8VsGcVbstBe61mQ24CT632XyjLkM5wVv1eiRWxwaV758r2r8vAsfbmnFGKVMaT8RoS7S#3",
+      "intent": "Cancel a redemption request",
+      "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
+      "sentence": "Huma3jh5pZd1WKKEApB66W5c75vzHfFdRUHM7oMLwdQV cancels 518.848299 of 59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw from redemption request 8gKp1VNqSMC6AgEtAMYs98VNBX45TMYbwSXZN3b1XaK4 in pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS, returning them to 7HxywXw6Y3rqTXWNWdc9fgYVDDPULmazkgfnmi5cxp32",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}
