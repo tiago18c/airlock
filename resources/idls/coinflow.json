@@ -1,0 +1,2992 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "coinflow",
+    "publicKey": "FD1amxhTsDpwzoVX41dxp2ygAESURV2zdUACzxM1Dfw9",
+    "version": "0.1.0",
+    "origin": "anchor",
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "name": "programAccessInfo",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "8c6de3740cc08adb",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "invokingProgram",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bump",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 1
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "creditSeed",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "creditsInfo",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "91d9b1907f1c5f29",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "user",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bump",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 1
+                }
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "solPriceInfo",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "19f08a905e9a005d",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "price",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "solBalance",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "rent",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "usdcBalance",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bump",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 1
+                }
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mintAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority used to mint new tokens. The mint authority may only",
+                "be provided during mint creation. If no mint authority is present",
+                "then the mint has a fixed supply and no further tokens may be minted."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "supply",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "docs": [
+                "Total supply of tokens."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "decimals",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "docs": [
+                "Number of base 10 digits to the right of the decimal place."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isInitialized",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "docs": [
+                "Is `true` if this structure has been initialized."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "freezeAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority to freeze token accounts."
+              ]
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "sizeDiscriminatorNode",
+            "size": 82
+          }
+        ],
+        "name": "mint",
+        "docs": [],
+        "size": 82
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "approveProgram",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "adminWallet",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Coinflow Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programAccessInfo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program Approval"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Credits Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "7c418a07250d36a2",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "projectId",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Approved Program"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "creditSeed",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Credit Seed"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Approve a program for credits",
+          "interpolatedIntent": "${accounts.adminWallet} approves program ${data.projectId} for credit redemptions, recorded in ${accounts.programAccessInfo}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "revokeProgram",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "adminWallet",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Coinflow Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programAccessInfo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program Approval"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "979b5446c1db0f2b",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "projectId",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Program"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "creditSeed",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Credit Seed"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Revoke a program's approval",
+          "interpolatedIntent": "${accounts.adminWallet} revokes the approval of program ${data.projectId} for credit redemptions, recorded in ${accounts.programAccessInfo}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "mintCredits",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payerTokenAta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Credits Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userWallet",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Customer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "creditsInfo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Credits Record"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "creditsRentPayer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rent Payer"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "d22b4fb004d41f74",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "creditSeed",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Credit Seed"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Add credits",
+          "interpolatedIntent": "${accounts.payer} adds ${data.amount} of credits for ${accounts.userWallet}, paid from ${accounts.payerTokenAta} into vault ${accounts.tokenVault}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "redeemCredits",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Coinflow Fee Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userWallet",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Customer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userTokenAta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Customer Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Credits Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "creditsInfo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Credits Record"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "instructionSysvarAccount",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rent",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "associatedTokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programAccessInfo",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program Approval"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "87240bf80fced4ac",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "tokenDecimals"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "tokenDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "tokenMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Redeem Coinflow credits",
+          "interpolatedIntent": "${accounts.userWallet} redeems ${data.amount} of ${accounts.tokenMint} from its Coinflow credits, sent from vault ${accounts.tokenVault} to ${accounts.userTokenAta} to spend in this transaction; if that token account is created here, ${accounts.payer} pays for it and becomes its close authority"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "cleanupIx",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "userWallet",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Customer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userTokenAta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Customer Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Credits Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "creditsInfo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Credits Record"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Coinflow Fee Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "instructionSysvarAccount",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "eb2122e43a97f93d",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Balance Before the Redemption"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "End a credits redemption",
+          "interpolatedIntent": "${accounts.userWallet} ends a credits redemption: tokens in ${accounts.userTokenAta} above its balance before it (${data.amount}) go back to vault ${accounts.tokenVault} as credits, and if that token account was created for the redemption it is closed, its rent going to ${accounts.payer}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "burnCredits",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "adminWallet",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Coinflow Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "receiverTokenAta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Receiver Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Credits Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userWallet",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Customer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "creditsInfo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Credits Record"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "2c6925b972126158",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "creditSeed",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Credit Seed"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "instructionsSysvar"
+            },
+            "isOptional": true,
+            "docs": [
+              "The Instructions sysvar (Sysvar1nstructions1111111111111111111111111), which every mainnet burn_credits passes after the listed accounts."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Settle credits to a merchant",
+          "interpolatedIntent": "${accounts.adminWallet} spends ${data.amount} of the credits of ${accounts.userWallet}, paying that amount from vault ${accounts.tokenVault} to ${accounts.receiverTokenAta}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "redeemCreditsV2",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Coinflow Fee Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userWallet",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Customer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "usdcMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "USDC Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "usdcVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Credits USDC Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "creditsInfo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Credits Record"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "instructionSysvarAccount",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rent",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "associatedTokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programAccessInfo",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program Approval"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userSpendingMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Spent"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userSpendingCurrencyAta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Customer Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "whirlpool",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Orca Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVaultA",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Vault A"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVaultB",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Vault B"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tickArray0",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Tick Array 1"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tickArray1",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Tick Array 2"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tickArray2",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Tick Array 3"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "oracle",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Oracle"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "whirlpoolProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "e3b50308fcd98c0a",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "spendingCurrencyAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "maxCreditsToUse",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Most Credits Used"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "nativeSolToConvert",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 9
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "SOL"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "SOL Also Provided"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Redeem credits for another token",
+          "interpolatedIntent": "${accounts.userWallet} redeems Coinflow credits for ${data.spendingCurrencyAmount} of ${accounts.userSpendingMint} in ${accounts.userSpendingCurrencyAta}, using at most ${data.maxCreditsToUse} of credits, swapped from USDC through Orca pool ${accounts.whirlpool}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "cleanupV2Ix",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "userWallet",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Customer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "usdcVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Credits USDC Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "creditsInfo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Credits Record"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userSpendingMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Spent"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userSpendingCurrencyAta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Customer Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "whirlpool",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Orca Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVaultA",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Vault A"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVaultB",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Vault B"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tickArray0",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Tick Array 1"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tickArray1",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Tick Array 2"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tickArray2",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Tick Array 3"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "oracle",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Oracle"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "whirlpoolProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Coinflow Fee Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "instructionSysvarAccount",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "c7d6251cb4e6196e",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "spendingCurrencyBalanceBeforeRedeem",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Token Balance Before the Redemption"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "conversionPrice",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Conversion Price"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "slippageBp",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 2
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "%"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Slippage"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "solBalBeforeRedeem",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 9
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "SOL"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "SOL Balance Before the Redemption"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "End a credits redemption",
+          "interpolatedIntent": "${accounts.userWallet} ends a credits redemption paid in ${accounts.userSpendingMint}; Coinflow takes back what is left above the balances before it, through Orca pool ${accounts.whirlpool}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateSolPrice",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "adminWallet",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Coinflow Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "solPriceInfo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "SOL Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "usdcMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "USDC Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "getSolUsdcVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "SOL Purchase USDC Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "a662b7af7d516d77",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "price",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 6
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "USDC per SOL"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "SOL Price"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set the SOL price",
+          "interpolatedIntent": "${accounts.adminWallet} sets the SOL price kept in ${accounts.solPriceInfo} to ${data.price}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "depositSol",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "solPriceInfo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "SOL Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "6c514e757d9b38c8",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 9
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "SOL"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Deposit SOL into the reserve",
+          "interpolatedIntent": "${accounts.payer} deposits ${data.amount} into the SOL reserve ${accounts.solPriceInfo}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawSol",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "adminWallet",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Coinflow Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "solPriceInfo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "SOL Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destinationWallet",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Destination"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "91834a8841892a26",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 9
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "SOL"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw SOL from the reserve",
+          "interpolatedIntent": "${accounts.adminWallet} withdraws ${data.amount} from the SOL reserve ${accounts.solPriceInfo} to ${accounts.destinationWallet}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawUsdc",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "adminWallet",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Coinflow Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "receiverUsdcAta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Receiver USDC Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "getSolUsdcVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "SOL Purchase USDC Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "solPriceInfo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "SOL Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "723148b81b9cf39b",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw USDC from the SOL vault",
+          "interpolatedIntent": "${accounts.adminWallet} withdraws USDC from ${accounts.getSolUsdcVault} to ${accounts.receiverUsdcAta}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "getSol",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "userWallet",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Customer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "creditsInfo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Credits Record"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "instructionSysvarAccount",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "solPriceInfo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "SOL Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programAccessInfo",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program Approval"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "getSolUsdcVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "SOL Purchase USDC Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "usdcVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Credits USDC Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "29b25ce8d6c8986c",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "lamportsNeeded",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 9
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "SOL"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "SOL Needed"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Get SOL with credits",
+          "interpolatedIntent": "${accounts.userWallet} gets ${data.lamportsNeeded} from the SOL reserve ${accounts.solPriceInfo} for this transaction, paid with credits: their USDC moves from ${accounts.usdcVault} to ${accounts.getSolUsdcVault}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "cleanupSolIx",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "userWallet",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Customer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "creditsInfo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Credits Record"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "solPriceInfo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "SOL Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "getSolUsdcVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "SOL Purchase USDC Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "usdcVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Credits USDC Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "instructionSysvarAccount",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "16e647dc1874b7e9",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "solBalBeforeGetSol",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 9
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "SOL"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "SOL Balance Before Getting SOL"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Return unused SOL",
+          "interpolatedIntent": "${accounts.userWallet} returns the SOL it holds above its balance before getting SOL (${data.solBalBeforeGetSol}) to the SOL reserve ${accounts.solPriceInfo}, and the matching USDC goes back from ${accounts.getSolUsdcVault} to ${accounts.usdcVault} as credits"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "refillSol",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payerUsdcAta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer USDC Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "usdcMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "USDC Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "getSolUsdcVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "SOL Purchase USDC Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "solPriceInfo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "SOL Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rent",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "associatedTokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "wsolMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Wrapped SOL Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payerWsolAta",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer Wrapped SOL Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "whirlpool",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Orca Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVaultA",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Vault A"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVaultB",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Vault B"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tickArray0",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Tick Array 1"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tickArray1",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Tick Array 2"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tickArray2",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Tick Array 3"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "oracle",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Oracle"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "whirlpoolProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "cf9138da5ca34dec",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Refill the SOL reserve"
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "swapData",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "otherAmountThreshold",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "sqrtPriceLimit",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amountSpecifiedIsInput",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "aToB",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "invalidAdminError",
+        "code": 6000,
+        "message": "InvalidAdminError",
+        "docs": [
+          "InvalidAdminError: InvalidAdminError"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "programNotWhitelisted",
+        "code": 6001,
+        "message": "Program not whitelisted",
+        "docs": [
+          "ProgramNotWhitelisted: Program not whitelisted"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "spendingCurrencyAtacreatedButPassedBalanceIsNotMax",
+        "code": 6002,
+        "message": "Spending currency ATA was created, but the balance was not u64::MAX",
+        "docs": [
+          "SpendingCurrencyATACreatedButPassedBalanceIsNotMax: Spending currency ATA was created, but the balance was not u64::MAX"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "tokenMintMismatchWithTokenVaultMint",
+        "code": 6003,
+        "message": "Token mint mismatch with token vault mint",
+        "docs": [
+          "TokenMintMismatchWithTokenVaultMint: Token mint mismatch with token vault mint"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "tokenVaultMintMismatchWithTokenMint",
+        "code": 6004,
+        "message": "Token vault mint mismatch with token mint",
+        "docs": [
+          "TokenVaultMintMismatchWithTokenMint: Token vault mint mismatch with token mint"
+        ]
+      }
+    ]
+  }
+}

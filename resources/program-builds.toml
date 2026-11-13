@@ -939,3 +939,21 @@ programHash = "adeb955a5239519e769e971dc36dccc485bc111f4e00542fb4c8c6e362b550ec"
 authority = "4ivLcnNLhe4cKdpV9b4jyEmxgbYWFgktHcTyyBvYavsD"
 idlSha256 = "785f216ff8088afb9d0b6fa7d9e115cc5032a9043990a353d38a19df74ea1b01"
 reviewed = "2026-11-12"
+
+[[builds]]
+# coinflow (pack). Deployed at slot 452043128; OtterSec lists no verify record. The binary logs the IDL's 15 instruction names plus MintCreditsPrefunded and MintCreditsPrefundedRestrictedsol, which the IDL lacks and which read raw; mainnet redeem_credits, get_sol, cleanup_sol_ix, cleanup_ix and burn_credits decode with every account named and no data left over.
+programId = "FD1amxhTsDpwzoVX41dxp2ygAESURV2zdUACzxM1Dfw9"
+network = "mainnet"
+programHash = "56d44c54a58523001548dae6c970021adab8d74faa8b100c5a580d5eb5c5ec48"
+authority = "6zD6BAcY5xoSvPhbFz9sxPtGeMPTBFtRcjJUoegXsSMd"
+idlSha256 = "206b0fa9769fdb922aeaeba594b3dec6cc3167d67497eec9be452799f6b8e61c"
+reviewed = "2026-11-12"
+
+[[builds]]
+# coinflow (pack). Deployed at slot 506417628; its Anchor IDL account holds the same bytes as mainnet's. The binary logs the same 17 instruction names as mainnet's; devnet burn_credits decode with every account named.
+programId = "FD1amxhTsDpwzoVX41dxp2ygAESURV2zdUACzxM1Dfw9"
+network = "devnet"
+programHash = "f68db9d3438a910db30dcf09cbcc78c33a545d3be0c9f6209ff954cad4e22b67"
+authority = "C1QcnxAXEj5wnigHwUDNDXz6Ae856A29NahrvHUJe9XF"
+idlSha256 = "206b0fa9769fdb922aeaeba594b3dec6cc3167d67497eec9be452799f6b8e61c"
+reviewed = "2026-11-12"
