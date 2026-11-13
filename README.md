@@ -156,7 +156,7 @@ Never put a key in a file in the repository. The app does not read these variabl
 flowchart TD
   Online["apps/airlock<br/>online app"] --> Shell["app-ui<br/>shell, settings"]
   Airgap["apps/airlock-offline<br/>airgap app"] --> Shell
-  Online --> OnlinePieces["app-online<br/>network, sync, submit, Stake, proposals"]
+  Online --> OnlinePieces["app-online<br/>network, sync, submit, Portfolio, History, Stake, proposals"]
   Online --> Desktop["app-desktop<br/>tray, window, toasts, bridge"]
   Airgap --> Desktop
   Mobile["apps/airlock-mobile<br/>Android app"] --> Shell
@@ -210,7 +210,7 @@ QRS1 carries a payload of one to 64 typed objects, written with wincode, as one 
 | `crates/app-ui` | The shared shell: navigation, settings, notices and toasts |
 | `crates/app-ui-wallets`, `app-ui-book`, `app-ui-build`, `app-ui-sign` | Screens: wallets; address book and programs; build; sign and QR transfer |
 | `crates/app-ui-kit` | Actions, the session and each screen's form, platform glue (files, camera, QR drawing), CSS and shared widgets such as the lock dialog |
-| `crates/app-online` | The node monitor, balance sync, submitting and tracking, and the Portfolio, Stake and proposals screens |
+| `crates/app-online` | The node monitor, balance sync, submitting and tracking, and the Portfolio, History, Stake and proposals screens |
 | `crates/app-desktop` | Desktop services: tray, window, OS toasts, and the browser bridge listener and request modals |
 | `crates/app-mobile` | Android services over JNI: the private folder, links, online or offline, the Seed Vault, USB hardware wallets and Mobile Wallet Adapter requests |
 | `crates/app-core` | The app's state, saving and logging, with no UI and no network |
