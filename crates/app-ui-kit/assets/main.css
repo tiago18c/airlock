@@ -4413,6 +4413,7 @@ textarea.editor-input:focus { box-shadow: none; }
 }
 .ix-body { display: grid; gap: var(--space-2); min-width: 0; }
 .ix-title { font-weight: var(--weight-semibold); }
+.ix-title .ix-origin { margin-left: var(--space-2); font-weight: var(--weight-medium); vertical-align: middle; }
 .inner-block {
   display: grid;
   gap: var(--space-2);

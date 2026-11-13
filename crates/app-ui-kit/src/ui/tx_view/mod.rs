@@ -142,6 +142,11 @@ pub fn TxView(
             {children}
         }
         RiskNotice { explained: explained.clone() }
+        if worded_from_chain(&explained.instructions) {
+            p { class: "warn", role: "note",
+                "Instructions marked \"IDL from the chain\" were put in words by an IDL read from the chain, which whoever controls the program wrote. Review the transaction before signing it."
+            }
+        }
         ReadingNote { waiting, gave_up }
         // Above the cards, so the numbers they start at explain themselves.
         if let Some((places, on_inspect)) = left_out {
@@ -505,4 +510,18 @@ fn UnknownInstruction(ix: ExplainedIx, inspect: bool) -> Element {
             DataBytes { hex }
         }
     }
+}
+
+/// Whether an IDL read from the chain puts any of `instructions` in words,
+/// at any depth.
+fn worded_from_chain(instructions: &[ExplainedIx]) -> bool {
+    instructions.iter().any(|ix| {
+        ix.idl
+            .as_ref()
+            .is_some_and(|idl| idl.origin.is_read_from_chain())
+            || ix
+                .inner
+                .as_ref()
+                .is_some_and(|inner| worded_from_chain(&inner.instructions))
+    })
 }
