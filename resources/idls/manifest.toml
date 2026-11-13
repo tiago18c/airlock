@@ -212,3 +212,24 @@ unused address the SDK appends. The Token program's mint account is added, so li
 reward and protocol fee amounts read their mint's decimals; swap amounts are in base \
 units, because a swap names no input mint. Shares and price impact are in percent. \
 Display nodes added by hand."""
+
+# Meteora DAMM v2 (cp_amm), Meteora's constant-product AMM, whose positions
+# are NFTs. Mainnet has no program-metadata account; its Anchor IDL account
+# holds version 0.2.0, older than the program deployed there (0.2.4 or 0.2.5).
+# Devnet runs another build and publishes a 0.2.1 IDL in its program-metadata
+# account.
+[[idls]]
+file = "meteora-damm-v2.json"
+programId = "cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG"
+name = "cpAmm"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "0a46fba854959a8f64c0b052a2656e163c1b61751b8e91cfa4b584bf17c0f6d3" }
+changes = """Converted from Anchor to Codama. Six instructions are left out: `claimProtocolFee`, \
+`zapProtocolFee` and `dummyIx`, which the deployed program does not have, and \
+`createConfig`, `createDynamicConfig` and `updatePoolFees`, whose arguments the deployed \
+program reads further than this IDL describes. `swap` and `swap2` set \
+optionalAccountStrategy to programId. The swaps, the three pool creations, \
+`initializeReward`, `updateRewardDuration`, `updateRewardFunder` and `refreshVesting` \
+declare the remaining accounts they read. The Token program's mint account is added, so \
+liquidity limits and reward funding read their mint's decimals; swap amounts are in base \
+units. Display nodes added by hand."""
