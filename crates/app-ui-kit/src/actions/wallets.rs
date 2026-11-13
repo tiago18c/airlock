@@ -416,6 +416,7 @@ mod tests {
             fee_payer: None,
             derivation_path: None,
             durable_nonce: None,
+            nonce_network: None,
             default_path: None,
             on_device: None,
             device: None,
