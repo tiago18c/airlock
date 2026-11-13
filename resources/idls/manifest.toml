@@ -570,3 +570,35 @@ Additional Account for the DEX instructions, whose groups are not documented. op
 collateral and debt changes are in the decimals of the collateral and debt mints and \
 liquidate's debt amount in the debt mint's, read from chain; the DEX and rebalance \
 amounts are in base units. Display nodes added by hand."""
+
+# marginfi v2 (marginfi), the lending program of marginfi, now also run as
+# Project 0. The file is the Anchor IDL its program-metadata account holds on
+# mainnet (0.1.12); its Anchor IDL account holds an older one (0.1.8, 91
+# instructions) that the deployed program no longer matches. The program does
+# not exist on devnet.
+[[idls]]
+file = "marginfi.json"
+programId = "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA"
+name = "marginfi"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "f621c9e4eb789084b088dbd61e5e086224546934b6f0859caea837241501d79f" }
+changes = """Converted from Anchor to Codama. The program's address is set, which the IDL in the \
+program-metadata account leaves empty. Instructions with an optional account (the Kamino \
+farm accounts, the Drift oracles and reward accounts, the fee payer of endLiquidation, \
+the signer of marginfiAccountCloseRebalanceOrder, the Scope prices of \
+kaminoHarvestReward) take the programId strategy, as Anchor passes an absent optional \
+account as the program's address. Instructions that read accounts after their named ones \
+declare them as remaining accounts, which Anchor IDLs cannot: a Token-2022 bank's mint \
+and transfer-hook accounts for deposits, repayments, withdrawals, borrows, fee and admin \
+transfers; the banks and oracle accounts of an account's balances for the health checks \
+of withdrawals, borrows, flash loans, liquidations, orders and rebalances; a bank's \
+oracle accounts when its price is refreshed or its oracle set; the oracle and \
+integration account of a new bank; the marginfi accounts of syncIndexerFlags; the mints \
+of monitorArchiveUpsertBatch. The Token program's mint account is added, so amounts read \
+their mint's decimals where the mint is an account of the instruction (deposits into and \
+withdrawals from Kamino, Drift, Solend and Jupiter Lend, seed deposits, emissions \
+deposits, Drift bad-debt claims; Kamino and Solend withdrawals are in the reserve's \
+collateral token); amounts of the core deposit, repay, withdraw, borrow and liquidate \
+instructions, which name no mint, are in base units. Flat protocol fees and rebalance \
+tips are in SOL, durations are durations, basis points are percent; I80F48 fixed-point \
+values show their bytes. Display nodes added by hand."""

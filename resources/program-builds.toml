@@ -564,3 +564,12 @@ programHash = "9470945b79ddb0283629e518c3c1239815ad953acf3b776dcdca306582287bcb"
 authority = "4MsgBB5VPoTrUSp5XnfbViV386C1UnsTdifLBw33ZMSJ"
 idlSha256 = "9b312df249485d609885e915e9ee05685254119c4902d2f06f51d7c7b6b62d53"
 reviewed = "2026-11-12"
+
+[[builds]]
+# marginfi (pack). The binary logs exactly 124 `Instruction: Name` strings, one for each instruction of the IDL and none it lacks; none of the four instructions only the older Anchor IDL account lists is in it. Successful mainnet transactions decode with the IDL, every account named and no trailing bytes, for 22 instructions, among them the deposit, withdraw, borrow, repay, flash-loan, liquidation, receivership and Kamino and Jupiter Lend deposit and withdraw instructions.
+programId = "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA"
+network = "mainnet"
+programHash = "9a497328283c266534ae14136692f06c2367777d1389be8e0f056dce0ef908a9"
+authority = "J3oBkTkDXU3TcAggJEa3YeBZE5om5yNAdTtLVNXFD47"
+idlSha256 = "0fc2669aaf1da3b2161d1e446207a2045da3e6eb4349a45e06922015fc21c135"
+reviewed = "2026-11-12"

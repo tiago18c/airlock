@@ -1,0 +1,1357 @@
+{
+  "accounts": {
+    "DKaVQFXD6Qz4USTkRWyPun3oU6r1RfYsWJ8YqLpnSnN5": {
+      "data": "AQAAAH1atCEP4xT4J56HYW9Xeli1o2iz6EMUqx7zTuANvtK8+0ZWpJkbAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": {
+      "data": "AQAAAJj+huiNm+Lqi8HMpIeLKYjCQPUrhCS/tA7Rot3LXhmbqPVquohxHwAGAQEAAABicKqKWcWUBbRShshncubNEm6bil06OFNtN/e0FOi2Zw==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    }
+  },
+  "instructions": [
+    {
+      "accounts": [
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "8LaUZadNqtzuCG7iCvZd7d5cbquuYfv19KjAg6GPuuCb:w",
+        "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE",
+        "8VpRhuxa7sUUepdY3kQiTmX9rS5vx4WgaXiAnXq4KCtr"
+      ],
+      "data": "c013c98769cb20de",
+      "fields": [
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Bank",
+          "8LaUZadNqtzuCG7iCvZd7d5cbquuYfv19KjAg6GPuuCb"
+        ]
+      ],
+      "from": "5hnWfFQ1Jr7uYjKDCL9crv2XdLiZ5yuuMaQE6TWU8hMChnCxqNxiSKCX8UyeGXt3UmjxL1NXCScNuCa8TeSWVGSw#1",
+      "intent": "Refresh a bank's price",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "Refreshes the cached oracle price of bank 8LaUZadNqtzuCG7iCvZd7d5cbquuYfv19KjAg6GPuuCb",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd:w",
+        "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk:sw",
+        "Sysvar1nstructions1111111111111111111111111"
+      ],
+      "data": "0e8321dc51bab46b0700000000000000",
+      "fields": [
+        [
+          "End Instruction Number",
+          "7"
+        ],
+        [
+          "Marginfi Account",
+          "AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd"
+        ],
+        [
+          "Owner",
+          "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk"
+        ]
+      ],
+      "from": "527ywitTHstDfyctn3GdqQuEXH5kYs1JMW6iaT49Zy9mjL7FJmqHzwB6dW7fhLwG1URtaA35F6fvBpuHTYxKyzmB#1",
+      "intent": "Start a flash loan",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk starts a flash loan on marginfi account AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd; health checks wait until the flash loan ends in instruction 7 of this transaction",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "CCKtUs6Cgwo4aaQUmBPmyoApH2gUDErxNZCAntD6LYGh:w",
+        "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB:w",
+        "AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd:w",
+        "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk:sw",
+        "EuGV4amQdJkaNJ5w11aeC5hU1dGdGNt6wsEWrqRtmemj:w",
+        "3uxNepDbmkDNq6JhRja5Z8QwbTrfmkKP8AKZV5chYDGG",
+        "7jaiZR5Sk8hdYN9MxTpczTcwbWpb5WEoxSANuUwveuat:w",
+        "GD1uQyAWbC1P9ZCb7BaEPXq83ntCqQCwxiwWhpJJuCaK:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE",
+        "6HAuqASbHEh4w4REJEUUUCginTLfj1kwCh215ZLtMkrT",
+        "CCKtUs6Cgwo4aaQUmBPmyoApH2gUDErxNZCAntD6LYGh:w",
+        "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE",
+        "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB:w",
+        "6HAuqASbHEh4w4REJEUUUCginTLfj1kwCh215ZLtMkrT",
+        "EdB7YADw4XUt6wErT8kHGCUok4mnTpWGzPUU9rWDebzb:w",
+        "AMjqm5S4QaAHWLv52jJiRpFNW1qo23F6ZM5ChCF5tYgc",
+        "CCKtUs6Cgwo4aaQUmBPmyoApH2gUDErxNZCAntD6LYGh:w",
+        "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE",
+        "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB:w",
+        "6HAuqASbHEh4w4REJEUUUCginTLfj1kwCh215ZLtMkrT"
+      ],
+      "data": "d6a997d5fba756db52130300000000000604",
+      "fields": [
+        [
+          "Collateral Amount",
+          "201,554 base units"
+        ],
+        [
+          "Liquidatee Accounts",
+          "6"
+        ],
+        [
+          "Liquidator Accounts",
+          "4"
+        ],
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Collateral Bank",
+          "CCKtUs6Cgwo4aaQUmBPmyoApH2gUDErxNZCAntD6LYGh"
+        ],
+        [
+          "Debt Bank",
+          "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB"
+        ],
+        [
+          "Liquidator's Marginfi Account",
+          "AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd"
+        ],
+        [
+          "Liquidator",
+          "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk"
+        ],
+        [
+          "Liquidated Marginfi Account",
+          "EuGV4amQdJkaNJ5w11aeC5hU1dGdGNt6wsEWrqRtmemj"
+        ],
+        [
+          "Debt Bank Liquidity Vault",
+          "7jaiZR5Sk8hdYN9MxTpczTcwbWpb5WEoxSANuUwveuat"
+        ],
+        [
+          "Debt Bank Insurance Vault",
+          "GD1uQyAWbC1P9ZCb7BaEPXq83ntCqQCwxiwWhpJJuCaK"
+        ]
+      ],
+      "from": "527ywitTHstDfyctn3GdqQuEXH5kYs1JMW6iaT49Zy9mjL7FJmqHzwB6dW7fhLwG1URtaA35F6fvBpuHTYxKyzmB#2",
+      "intent": "Liquidate an account",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk liquidates 201,554 base units of the collateral in bank CCKtUs6Cgwo4aaQUmBPmyoApH2gUDErxNZCAntD6LYGh of marginfi account EuGV4amQdJkaNJ5w11aeC5hU1dGdGNt6wsEWrqRtmemj, taking on its debt in bank 2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB with marginfi account AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd:w",
+        "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk:sw",
+        "CCKtUs6Cgwo4aaQUmBPmyoApH2gUDErxNZCAntD6LYGh:w",
+        "8UdJp3u8avKz7zTgRAHND9PG96maxseQ3zZFzcW4Un8f:w",
+        "DD3AeAssFvjqTvRTrRAtpfjkBF8FpVKnFuwnMLN9haXD",
+        "2eicbpitfJXDwqCuFAmPgDP7t2oUotnAzbGzRKLMgSLe:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "CCKtUs6Cgwo4aaQUmBPmyoApH2gUDErxNZCAntD6LYGh:w",
+        "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE",
+        "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB:w",
+        "6HAuqASbHEh4w4REJEUUUCginTLfj1kwCh215ZLtMkrT"
+      ],
+      "data": "24484a13d2d2c0c052130300000000000100",
+      "fields": [
+        [
+          "Amount",
+          "201,554 base units"
+        ],
+        [
+          "Withdraw All",
+          "false"
+        ],
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Marginfi Account",
+          "AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd"
+        ],
+        [
+          "Owner",
+          "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk"
+        ],
+        [
+          "Bank",
+          "CCKtUs6Cgwo4aaQUmBPmyoApH2gUDErxNZCAntD6LYGh"
+        ],
+        [
+          "To",
+          "8UdJp3u8avKz7zTgRAHND9PG96maxseQ3zZFzcW4Un8f"
+        ],
+        [
+          "Bank Liquidity Vault",
+          "2eicbpitfJXDwqCuFAmPgDP7t2oUotnAzbGzRKLMgSLe"
+        ]
+      ],
+      "from": "527ywitTHstDfyctn3GdqQuEXH5kYs1JMW6iaT49Zy9mjL7FJmqHzwB6dW7fhLwG1URtaA35F6fvBpuHTYxKyzmB#3",
+      "intent": "Withdraw from a bank",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk withdraws 201,554 base units, or the whole balance when Withdraw All is on, from bank CCKtUs6Cgwo4aaQUmBPmyoApH2gUDErxNZCAntD6LYGh of marginfi account AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd to 8UdJp3u8avKz7zTgRAHND9PG96maxseQ3zZFzcW4Un8f",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd:w",
+        "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk:sw",
+        "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB:w",
+        "43gWQoKKo1w1xbHDQ7ZFjqeLjS4upmz4wc9VXbNmJPNc:w",
+        "7jaiZR5Sk8hdYN9MxTpczTcwbWpb5WEoxSANuUwveuat:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "CCKtUs6Cgwo4aaQUmBPmyoApH2gUDErxNZCAntD6LYGh:w",
+        "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE"
+      ],
+      "data": "4fd1acb1de33ad97803f0000000000000101",
+      "fields": [
+        [
+          "Amount",
+          "16,256 base units"
+        ],
+        [
+          "Repay All",
+          "true"
+        ],
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Marginfi Account",
+          "AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd"
+        ],
+        [
+          "Owner",
+          "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk"
+        ],
+        [
+          "Bank",
+          "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB"
+        ],
+        [
+          "From",
+          "43gWQoKKo1w1xbHDQ7ZFjqeLjS4upmz4wc9VXbNmJPNc"
+        ],
+        [
+          "Bank Liquidity Vault",
+          "7jaiZR5Sk8hdYN9MxTpczTcwbWpb5WEoxSANuUwveuat"
+        ]
+      ],
+      "from": "527ywitTHstDfyctn3GdqQuEXH5kYs1JMW6iaT49Zy9mjL7FJmqHzwB6dW7fhLwG1URtaA35F6fvBpuHTYxKyzmB#6",
+      "intent": "Repay a loan",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk repays 16,256 base units, or the whole debt when Repay All is on, to bank 2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB for marginfi account AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd, from 43gWQoKKo1w1xbHDQ7ZFjqeLjS4upmz4wc9VXbNmJPNc",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd:w",
+        "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk:sw",
+        "CCKtUs6Cgwo4aaQUmBPmyoApH2gUDErxNZCAntD6LYGh:w"
+      ],
+      "data": "f5362904f3ca1f11",
+      "fields": [
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Marginfi Account",
+          "AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd"
+        ],
+        [
+          "Owner",
+          "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk"
+        ],
+        [
+          "Bank",
+          "CCKtUs6Cgwo4aaQUmBPmyoApH2gUDErxNZCAntD6LYGh"
+        ]
+      ],
+      "from": "527ywitTHstDfyctn3GdqQuEXH5kYs1JMW6iaT49Zy9mjL7FJmqHzwB6dW7fhLwG1URtaA35F6fvBpuHTYxKyzmB#7",
+      "intent": "Close a balance",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk closes the balance in bank CCKtUs6Cgwo4aaQUmBPmyoApH2gUDErxNZCAntD6LYGh of marginfi account AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd, which holds only dust",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd:w",
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk:sw"
+      ],
+      "data": "697cc96a9902089c",
+      "fields": [
+        [
+          "Marginfi Account",
+          "AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd"
+        ],
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Owner",
+          "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk"
+        ]
+      ],
+      "from": "527ywitTHstDfyctn3GdqQuEXH5kYs1JMW6iaT49Zy9mjL7FJmqHzwB6dW7fhLwG1URtaA35F6fvBpuHTYxKyzmB#8",
+      "intent": "End a flash loan",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "8pxQndVPPpZUZxgfo7SiRj7xVoqyA3LzJoGRy3sdkrk ends the flash loan on marginfi account AmCpgyU2Pd7UURKjqEkBnETYar8eibgYWdfuqpaJEEzd, which must be healthy again",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "93rXRLxa3nJ6WkEbsxHCPS6doffoVf4yXb8hxWaphPsw:w",
+        "3zdXwWm9GVGzSBmYEtWGBgP9E2A95TbUz7ccGavWMPL8:sw",
+        "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB:w",
+        "HYDz96iMcuTbGL8PF6bnD8Vav7diB54KdgbwwUMNGL2X:w",
+        "3uxNepDbmkDNq6JhRja5Z8QwbTrfmkKP8AKZV5chYDGG",
+        "7jaiZR5Sk8hdYN9MxTpczTcwbWpb5WEoxSANuUwveuat:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB:w",
+        "6HAuqASbHEh4w4REJEUUUCginTLfj1kwCh215ZLtMkrT"
+      ],
+      "data": "047e74353005d41f00321b0800000000",
+      "fields": [
+        [
+          "Amount",
+          "136,000,000 base units"
+        ],
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Marginfi Account",
+          "93rXRLxa3nJ6WkEbsxHCPS6doffoVf4yXb8hxWaphPsw"
+        ],
+        [
+          "Owner",
+          "3zdXwWm9GVGzSBmYEtWGBgP9E2A95TbUz7ccGavWMPL8"
+        ],
+        [
+          "Bank",
+          "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB"
+        ],
+        [
+          "To",
+          "HYDz96iMcuTbGL8PF6bnD8Vav7diB54KdgbwwUMNGL2X"
+        ],
+        [
+          "Bank Liquidity Vault",
+          "7jaiZR5Sk8hdYN9MxTpczTcwbWpb5WEoxSANuUwveuat"
+        ]
+      ],
+      "from": "aZgsAmzWs542cnQwUBAQnmk8dtDwJkLn5bSUJSo3bdMV4aXmR4i9VipMvjvHc5ZXTmSc8c1GrrG59TyAN6nAY86#5",
+      "intent": "Borrow from a bank",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "3zdXwWm9GVGzSBmYEtWGBgP9E2A95TbUz7ccGavWMPL8 borrows 136,000,000 base units from bank 2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB against marginfi account 93rXRLxa3nJ6WkEbsxHCPS6doffoVf4yXb8hxWaphPsw, to HYDz96iMcuTbGL8PF6bnD8Vav7diB54KdgbwwUMNGL2X",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "EwLiQoZdyJFVcxPnLmS6ow3LJVMD1yFLkD45c3PaPWRp:w",
+        "Fa7LNzj3SCV364hya9dx9evL29pC1awx24iHeCEwX6vU:sw",
+        "EmMhorGDR3N9ecNWVQjJi2QpFLkeHEvjZFdW6TuVgXjU:w",
+        "4QHfnfHF2i8oCHkvMrGGU5NKBZT3bezrB6C4MwV8RLfn:w",
+        "GxVb5A96uped5tqDCeKeZAmGi9Zo8pN5izxStJv2vqfG:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "ab5eeb675240d48c85196f000000000000",
+      "fields": [
+        [
+          "Amount",
+          "7,281,029 base units"
+        ],
+        [
+          "Deposit Only Up to the Bank's Limit",
+          "None"
+        ],
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Marginfi Account",
+          "EwLiQoZdyJFVcxPnLmS6ow3LJVMD1yFLkD45c3PaPWRp"
+        ],
+        [
+          "Owner",
+          "Fa7LNzj3SCV364hya9dx9evL29pC1awx24iHeCEwX6vU"
+        ],
+        [
+          "Bank",
+          "EmMhorGDR3N9ecNWVQjJi2QpFLkeHEvjZFdW6TuVgXjU"
+        ],
+        [
+          "From",
+          "4QHfnfHF2i8oCHkvMrGGU5NKBZT3bezrB6C4MwV8RLfn"
+        ],
+        [
+          "Bank Liquidity Vault",
+          "GxVb5A96uped5tqDCeKeZAmGi9Zo8pN5izxStJv2vqfG"
+        ]
+      ],
+      "from": "4S9ttfqdK6Bs6DmTpSS4ueeaYh9txPuM2sRaTQXXXuBacfQ9xh2GP25KQ9jJbSaWKBbFNefwFRagPT1s7Ncncfi6#3",
+      "intent": "Deposit into a bank",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "Fa7LNzj3SCV364hya9dx9evL29pC1awx24iHeCEwX6vU deposits 7,281,029 base units from 4QHfnfHF2i8oCHkvMrGGU5NKBZT3bezrB6C4MwV8RLfn into bank EmMhorGDR3N9ecNWVQjJi2QpFLkeHEvjZFdW6TuVgXjU for marginfi account EwLiQoZdyJFVcxPnLmS6ow3LJVMD1yFLkD45c3PaPWRp",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "5zzMSAtGVPwYVz9HLprG1J29g1ooy9HBf3fFF1Ycbq3d:w",
+        "6wzPsCkFjtFRN7mL7otU7WRwnLa1Gqnxo1bNuyCH2Mew:sw",
+        "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB:w",
+        "12ZeJevDF8at7Y9b5uUB855VAGQmUjVnMJDtXrpTBzVL:w",
+        "7jaiZR5Sk8hdYN9MxTpczTcwbWpb5WEoxSANuUwveuat:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "ab5eeb675240d48ca71505000000000000",
+      "fields": [
+        [
+          "Amount",
+          "333,223 base units"
+        ],
+        [
+          "Deposit Only Up to the Bank's Limit",
+          "None"
+        ],
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Marginfi Account",
+          "5zzMSAtGVPwYVz9HLprG1J29g1ooy9HBf3fFF1Ycbq3d"
+        ],
+        [
+          "Owner",
+          "6wzPsCkFjtFRN7mL7otU7WRwnLa1Gqnxo1bNuyCH2Mew"
+        ],
+        [
+          "Bank",
+          "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB"
+        ],
+        [
+          "From",
+          "12ZeJevDF8at7Y9b5uUB855VAGQmUjVnMJDtXrpTBzVL"
+        ],
+        [
+          "Bank Liquidity Vault",
+          "7jaiZR5Sk8hdYN9MxTpczTcwbWpb5WEoxSANuUwveuat"
+        ]
+      ],
+      "from": "t8ji9i9WJxroDVRWjsx9tSp5A1L93gNUVsXgvkQTeCsX2srWStWxLfEDmw6FECC3jpSqva3NWtiyk6Nz57XXdd4#1",
+      "intent": "Deposit into a bank",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "6wzPsCkFjtFRN7mL7otU7WRwnLa1Gqnxo1bNuyCH2Mew deposits 333,223 base units from 12ZeJevDF8at7Y9b5uUB855VAGQmUjVnMJDtXrpTBzVL into bank 2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB for marginfi account 5zzMSAtGVPwYVz9HLprG1J29g1ooy9HBf3fFF1Ycbq3d",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HQmz6fs39YcJkNRo4NjnFkaq3ANHyLagqLo9HjMszkwm:w",
+        "HH9JB2HewV44N2pcVgZXPMtVWxTMiRHm8xeCGFXVMek2:sw",
+        "HH9JB2HewV44N2pcVgZXPMtVWxTMiRHm8xeCGFXVMek2:sw",
+        "9uQFhvgo6wHJeZ5GPeon7k5vHuioP58AoXWwtsv4YqiR"
+      ],
+      "data": "badd5d223261c2f1",
+      "fields": [
+        [
+          "Marginfi Account",
+          "HQmz6fs39YcJkNRo4NjnFkaq3ANHyLagqLo9HjMszkwm"
+        ],
+        [
+          "Owner",
+          "HH9JB2HewV44N2pcVgZXPMtVWxTMiRHm8xeCGFXVMek2"
+        ],
+        [
+          "Rent To",
+          "HH9JB2HewV44N2pcVgZXPMtVWxTMiRHm8xeCGFXVMek2"
+        ],
+        [
+          "Rebalance Fee Pool",
+          "9uQFhvgo6wHJeZ5GPeon7k5vHuioP58AoXWwtsv4YqiR"
+        ]
+      ],
+      "from": "4RvoY9bbYJhmdDZfCUG1qThjgar2MyYFFaKsnZAuaCfDADcLkCNtcqZtPonYLUH417vseGonmPcWqWF6r9WULSre#33",
+      "intent": "Close a marginfi account",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "HH9JB2HewV44N2pcVgZXPMtVWxTMiRHm8xeCGFXVMek2 closes marginfi account HQmz6fs39YcJkNRo4NjnFkaq3ANHyLagqLo9HjMszkwm; its rent goes to HH9JB2HewV44N2pcVgZXPMtVWxTMiRHm8xeCGFXVMek2",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "3FWVrxXUAsu1MZs3DEzCzFrXmJs8L954UmeR1RJc3RKW:w",
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "DMoqjmsuoru986HgfjqrKEvPv8YBufvBGADHUonkadC5",
+        "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE",
+        "DqhH94PjkZsjAqEze2BEkWhFQJ6EyU6MdtMphMgnXqeK",
+        "BKsfDJCMbYep6gr9pq8PsmJbb5XGLHbAJzUV8vmorz7a",
+        "APgzQGGdv2qCgBkX6aHVkrGePtBVDDg68GiqaM7rmtf5",
+        "22DcjMZrMwC5Bpa5AGBsmjc5V9VuQrXG6N9ZtdUNyYGE",
+        "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE",
+        "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC"
+      ],
+      "data": "0cbdd7efe77adc9e",
+      "fields": [
+        [
+          "Marginfi Account",
+          "3FWVrxXUAsu1MZs3DEzCzFrXmJs8L954UmeR1RJc3RKW"
+        ],
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ]
+      ],
+      "from": "2itK5oAvVBX8pAbhhVkKzzwwdpacDZq3mvH6a5zpf4cRFTM2gSBAqM44pJPEtM7DVLgKSs1tBidRs1pTPLyyF3BC#1",
+      "intent": "Tag an unhealthy account",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "Tags marginfi account 3FWVrxXUAsu1MZs3DEzCzFrXmJs8L954UmeR1RJc3RKW as unhealthy, or clears the tag if it is healthy again",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GjojEcE62osgvLfg3jcNuZD32R36mNbEx4VPzQJEgPMD:w",
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "Guu5uBc8k1WK1U2ihGosNaCy57LSgCkpWAabtzQqrQf8",
+        "EitcZS5LtbR4EyNhCSy56vvUHPhsifSfWFG5gwSkjNpV",
+        "EdB7YADw4XUt6wErT8kHGCUok4mnTpWGzPUU9rWDebzb",
+        "AMjqm5S4QaAHWLv52jJiRpFNW1qo23F6ZM5ChCF5tYgc"
+      ],
+      "data": "ba347561224a27fd",
+      "fields": [
+        [
+          "Marginfi Account",
+          "GjojEcE62osgvLfg3jcNuZD32R36mNbEx4VPzQJEgPMD"
+        ],
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ]
+      ],
+      "from": "3Kb7ERrSYcaKLFw59rH8vFkng6YLfH9y1pvj9tFC5HXtF7mccKinwQSS1p1Yvsuj2tSHVw6hr8zhKsba77V2XYkk#1",
+      "intent": "Refresh account health",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "Refreshes the stored health of marginfi account GjojEcE62osgvLfg3jcNuZD32R36mNbEx4VPzQJEgPMD",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "3RvvgvUZ1ZEpkWUr5nQ4MPSpzsLkyLYWPR2SzTYFmZYV:sw",
+        "HHaiYM46qaDHugH7iHxnV8PKSZyqJvoBJbnH5jcmNEUQ:sw",
+        "HHaiYM46qaDHugH7iHxnV8PKSZyqJvoBJbnH5jcmNEUQ:sw",
+        "11111111111111111111111111111111"
+      ],
+      "data": "2b4e3dff9434f99a",
+      "fields": [
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "New Marginfi Account",
+          "3RvvgvUZ1ZEpkWUr5nQ4MPSpzsLkyLYWPR2SzTYFmZYV"
+        ],
+        [
+          "Owner",
+          "HHaiYM46qaDHugH7iHxnV8PKSZyqJvoBJbnH5jcmNEUQ"
+        ],
+        [
+          "Fee Payer",
+          "HHaiYM46qaDHugH7iHxnV8PKSZyqJvoBJbnH5jcmNEUQ"
+        ]
+      ],
+      "from": "2B3ZEuywV3J92RsDeU9SxYidw526XqQWk3FAnmhXLQitcpdddyG6913V3vV25rpXK51eyeFP2gexMbKJJVHYhSpf#39",
+      "intent": "Create a marginfi account",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "HHaiYM46qaDHugH7iHxnV8PKSZyqJvoBJbnH5jcmNEUQ creates marginfi account 3RvvgvUZ1ZEpkWUr5nQ4MPSpzsLkyLYWPR2SzTYFmZYV in group 4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "2911zfNsA5jw3Y7CSea2L624Vga6EQfTNGAx8UNgLtBL:w",
+        "8KtCSp4w7k2G5XmFqADLajVSew8HCm5De7TH6w8AHqDv:sw",
+        "VnVjbrytWcxTi6nCASMryKm4vHwpVZvwJetE2W1w5gB:w",
+        "6QupS3abo5stAihsDD8oTqKK1194RfJNyjqAPTToqfD2:w",
+        "9x6StiGodcKvKrQrrBGxfpku9XopC57XP17CGqeKNrjG:w",
+        "66kvQZbAswWz8yBXzPHtYHTeUqMZET9TXtCT3FZ6kpuD:w",
+        "74ZA1xw8A3gfUP56Jj76yZbgFt4Nj9TvbAReZBYmVbWC:w",
+        "CqAoLuqWtavaVE8deBjMKe8ZfSt9ghR6Vb8nfsyabyHA",
+        "9SLBVnPz8dRGvafST6zNBZYSSt3HtdU68XQLGR13t3uM",
+        "9GJ9GBRwCp4pHmWrQ43L5xpc9Vykg7jnfwcFGN8FoHYu:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v:w",
+        "H6JUwz8c61eQnYUx8avGXydKztKPyGvgWAUjmZUPS3BC:w",
+        "DKaVQFXD6Qz4USTkRWyPun3oU6r1RfYsWJ8YqLpnSnN5:w",
+        "CtgiQTkAQp8h1ayqdE21Cr56qekdqeQ19da3j1KLgSUn:w",
+        "B45JYN5DszxjmYXfmXSmu5VovtKU8FWQ9G4fJrS3WHQU:w",
+        "HqEqwkTmqCAVEQQaEBuSSGD2EAvcorFogqhZz46TYJyz:w",
+        "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
+        "FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Sysvar1nstructions1111111111111111111111111",
+        "VnVjbrytWcxTi6nCASMryKm4vHwpVZvwJetE2W1w5gB:w",
+        "6HAuqASbHEh4w4REJEUUUCginTLfj1kwCh215ZLtMkrT",
+        "9GJ9GBRwCp4pHmWrQ43L5xpc9Vykg7jnfwcFGN8FoHYu:w"
+      ],
+      "data": "c765292dd562e0c86c6a5700000000000101",
+      "fields": [
+        [
+          "Collateral Tokens",
+          "5.728876"
+        ],
+        [
+          "Flags (1 Withdraw All, 2 Refresh Reserve)",
+          "1"
+        ],
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Marginfi Account",
+          "2911zfNsA5jw3Y7CSea2L624Vga6EQfTNGAx8UNgLtBL"
+        ],
+        [
+          "Owner",
+          "8KtCSp4w7k2G5XmFqADLajVSew8HCm5De7TH6w8AHqDv"
+        ],
+        [
+          "Bank",
+          "VnVjbrytWcxTi6nCASMryKm4vHwpVZvwJetE2W1w5gB"
+        ],
+        [
+          "To",
+          "6QupS3abo5stAihsDD8oTqKK1194RfJNyjqAPTToqfD2"
+        ],
+        [
+          "Bank Liquidity Vault",
+          "66kvQZbAswWz8yBXzPHtYHTeUqMZET9TXtCT3FZ6kpuD"
+        ],
+        [
+          "Kamino Obligation",
+          "74ZA1xw8A3gfUP56Jj76yZbgFt4Nj9TvbAReZBYmVbWC"
+        ],
+        [
+          "Kamino Lending Market",
+          "CqAoLuqWtavaVE8deBjMKe8ZfSt9ghR6Vb8nfsyabyHA"
+        ],
+        [
+          "Kamino Reserve",
+          "9GJ9GBRwCp4pHmWrQ43L5xpc9Vykg7jnfwcFGN8FoHYu"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Kamino Reserve Liquidity Vault",
+          "H6JUwz8c61eQnYUx8avGXydKztKPyGvgWAUjmZUPS3BC"
+        ],
+        [
+          "Kamino Collateral Token",
+          "DKaVQFXD6Qz4USTkRWyPun3oU6r1RfYsWJ8YqLpnSnN5"
+        ],
+        [
+          "Kamino Reserve Collateral Vault",
+          "CtgiQTkAQp8h1ayqdE21Cr56qekdqeQ19da3j1KLgSUn"
+        ],
+        [
+          "Kamino Obligation Farm Account",
+          "B45JYN5DszxjmYXfmXSmu5VovtKU8FWQ9G4fJrS3WHQU"
+        ],
+        [
+          "Kamino Reserve Farm",
+          "HqEqwkTmqCAVEQQaEBuSSGD2EAvcorFogqhZz46TYJyz"
+        ]
+      ],
+      "from": "Xw8j39QGR2BwgkFv1gsdwQZqXhj1Ajp9w4SySCd4upGQe8T1X6ELR3drKkWaxP684SyorjY5XtPrnd8tYFoUNTK#6",
+      "intent": "Withdraw from Kamino",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "8KtCSp4w7k2G5XmFqADLajVSew8HCm5De7TH6w8AHqDv withdraws 5.728876 Kamino collateral tokens of reserve 9GJ9GBRwCp4pHmWrQ43L5xpc9Vykg7jnfwcFGN8FoHYu, or the whole balance when Flags includes 1, paid out in EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v, from bank VnVjbrytWcxTi6nCASMryKm4vHwpVZvwJetE2W1w5gB of marginfi account 2911zfNsA5jw3Y7CSea2L624Vga6EQfTNGAx8UNgLtBL to 6QupS3abo5stAihsDD8oTqKK1194RfJNyjqAPTToqfD2",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "5vpdcSw9f2eYAdbf2WPnxV2MghtkAkiqyk23eM4pnCr:w",
+        "8KjqqZgLvFSD5gDvdDmSLaAAesj3M6E21JRpo39NYKkQ:sw",
+        "VnVjbrytWcxTi6nCASMryKm4vHwpVZvwJetE2W1w5gB:w",
+        "BAeF3NF1vnazUTg8BniCRPjuotnN3TDB2C1TgdSmAgNy:w",
+        "9x6StiGodcKvKrQrrBGxfpku9XopC57XP17CGqeKNrjG:w",
+        "66kvQZbAswWz8yBXzPHtYHTeUqMZET9TXtCT3FZ6kpuD:w",
+        "74ZA1xw8A3gfUP56Jj76yZbgFt4Nj9TvbAReZBYmVbWC:w",
+        "CqAoLuqWtavaVE8deBjMKe8ZfSt9ghR6Vb8nfsyabyHA",
+        "9SLBVnPz8dRGvafST6zNBZYSSt3HtdU68XQLGR13t3uM",
+        "9GJ9GBRwCp4pHmWrQ43L5xpc9Vykg7jnfwcFGN8FoHYu:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "H6JUwz8c61eQnYUx8avGXydKztKPyGvgWAUjmZUPS3BC:w",
+        "DKaVQFXD6Qz4USTkRWyPun3oU6r1RfYsWJ8YqLpnSnN5:w",
+        "CtgiQTkAQp8h1ayqdE21Cr56qekdqeQ19da3j1KLgSUn:w",
+        "B45JYN5DszxjmYXfmXSmu5VovtKU8FWQ9G4fJrS3WHQU:w",
+        "HqEqwkTmqCAVEQQaEBuSSGD2EAvcorFogqhZz46TYJyz:w",
+        "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
+        "FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Sysvar1nstructions1111111111111111111111111"
+      ],
+      "data": "ed08bcbb73633155462705060000000000",
+      "fields": [
+        [
+          "Amount",
+          "101.00103"
+        ],
+        [
+          "Refresh Reserve First",
+          "None"
+        ],
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Marginfi Account",
+          "5vpdcSw9f2eYAdbf2WPnxV2MghtkAkiqyk23eM4pnCr"
+        ],
+        [
+          "Owner",
+          "8KjqqZgLvFSD5gDvdDmSLaAAesj3M6E21JRpo39NYKkQ"
+        ],
+        [
+          "Bank",
+          "VnVjbrytWcxTi6nCASMryKm4vHwpVZvwJetE2W1w5gB"
+        ],
+        [
+          "From",
+          "BAeF3NF1vnazUTg8BniCRPjuotnN3TDB2C1TgdSmAgNy"
+        ],
+        [
+          "Bank Liquidity Vault",
+          "66kvQZbAswWz8yBXzPHtYHTeUqMZET9TXtCT3FZ6kpuD"
+        ],
+        [
+          "Kamino Obligation",
+          "74ZA1xw8A3gfUP56Jj76yZbgFt4Nj9TvbAReZBYmVbWC"
+        ],
+        [
+          "Kamino Lending Market",
+          "CqAoLuqWtavaVE8deBjMKe8ZfSt9ghR6Vb8nfsyabyHA"
+        ],
+        [
+          "Kamino Reserve",
+          "9GJ9GBRwCp4pHmWrQ43L5xpc9Vykg7jnfwcFGN8FoHYu"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Kamino Reserve Liquidity Vault",
+          "H6JUwz8c61eQnYUx8avGXydKztKPyGvgWAUjmZUPS3BC"
+        ],
+        [
+          "Kamino Collateral Token",
+          "DKaVQFXD6Qz4USTkRWyPun3oU6r1RfYsWJ8YqLpnSnN5"
+        ],
+        [
+          "Kamino Reserve Collateral Vault",
+          "CtgiQTkAQp8h1ayqdE21Cr56qekdqeQ19da3j1KLgSUn"
+        ],
+        [
+          "Kamino Obligation Farm Account",
+          "B45JYN5DszxjmYXfmXSmu5VovtKU8FWQ9G4fJrS3WHQU"
+        ],
+        [
+          "Kamino Reserve Farm",
+          "HqEqwkTmqCAVEQQaEBuSSGD2EAvcorFogqhZz46TYJyz"
+        ]
+      ],
+      "from": "4fcET2jJi5jghcrMPGFrkCZAeNsXnkyZJQBBgP4nZwbK8jmLjrfbrzv5U1491YFZfX2q3pG7dQP4kcZSpLj6zWn9#5",
+      "intent": "Deposit into Kamino",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "8KjqqZgLvFSD5gDvdDmSLaAAesj3M6E21JRpo39NYKkQ deposits 101.00103 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from BAeF3NF1vnazUTg8BniCRPjuotnN3TDB2C1TgdSmAgNy into Kamino reserve 9GJ9GBRwCp4pHmWrQ43L5xpc9Vykg7jnfwcFGN8FoHYu, through bank VnVjbrytWcxTi6nCASMryKm4vHwpVZvwJetE2W1w5gB of marginfi account 5vpdcSw9f2eYAdbf2WPnxV2MghtkAkiqyk23eM4pnCr",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8:w",
+        "CHt1vdfPodE1aNhjbRavJ5C79xNkrQVEqRpcG4UNwAq5:w",
+        "87HqzoSQKRXKkv769Z7Erv7ByjkzNnNxh84HpENjaX71:sw",
+        "Be5LNsgq7Zs3LJkCnqW4j3bs7GsZksNNmqEiyEhbsugn:w",
+        "8ry4pKvfM2tovWUokhp9tYU2LsyP8yP89YsfjzcSkHss:w",
+        "27siXeFKSAXjMyD4QQicMPNYdj4qR3dHw8EyWRK4EzKJ:w",
+        "CjVf9j6Cwr3MFAvnGwCzZiUVXzgw56vUxZsgaWNZ7mQz:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ:w",
+        "9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D:w",
+        "FNjADLQQRs3tmLKTpaq5z4xN6RrTyyAG69Lor9JpgR4E:w",
+        "5nmGjA4s7ATzpBQXC5RNceRpaJ7pYw2wKsNBWyuSAZV6",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF:w",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "5xSPBiD3TibamAnwHDhZABdB4z4F9dcj5PnbteroBTTd",
+        "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111"
+      ],
+      "data": "720bda51b7a58fff00286bee00000000",
+      "fields": [
+        [
+          "Amount",
+          "4,000"
+        ],
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Marginfi Account",
+          "CHt1vdfPodE1aNhjbRavJ5C79xNkrQVEqRpcG4UNwAq5"
+        ],
+        [
+          "Owner",
+          "87HqzoSQKRXKkv769Z7Erv7ByjkzNnNxh84HpENjaX71"
+        ],
+        [
+          "Bank",
+          "Be5LNsgq7Zs3LJkCnqW4j3bs7GsZksNNmqEiyEhbsugn"
+        ],
+        [
+          "From",
+          "8ry4pKvfM2tovWUokhp9tYU2LsyP8yP89YsfjzcSkHss"
+        ],
+        [
+          "Bank Liquidity Vault",
+          "CjVf9j6Cwr3MFAvnGwCzZiUVXzgw56vUxZsgaWNZ7mQz"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "JupLend Lending Account",
+          "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ"
+        ],
+        [
+          "JupLend fToken",
+          "9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D"
+        ],
+        [
+          "Bank's fToken Vault",
+          "FNjADLQQRs3tmLKTpaq5z4xN6RrTyyAG69Lor9JpgR4E"
+        ],
+        [
+          "JupLend Lending Admin",
+          "5nmGjA4s7ATzpBQXC5RNceRpaJ7pYw2wKsNBWyuSAZV6"
+        ],
+        [
+          "JupLend Supply Reserves",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ],
+        [
+          "JupLend Supply Position",
+          "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF"
+        ],
+        [
+          "JupLend Rate Model",
+          "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688"
+        ],
+        [
+          "JupLend Vault",
+          "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB"
+        ],
+        [
+          "JupLend Liquidity",
+          "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z"
+        ],
+        [
+          "JupLend Rewards Rate Model",
+          "5xSPBiD3TibamAnwHDhZABdB4z4F9dcj5PnbteroBTTd"
+        ]
+      ],
+      "from": "4NpeQ624Q896x7LodmzWLqbJ13rbX3bicx4jKUkgVkRDvbR8m6sFLqFHxvKT1Ao2Q2bs6yZwvS2LyEj2SxgCVC4R#3",
+      "intent": "Deposit into Jupiter Lend",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "87HqzoSQKRXKkv769Z7Erv7ByjkzNnNxh84HpENjaX71 deposits 4,000 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from 8ry4pKvfM2tovWUokhp9tYU2LsyP8yP89YsfjzcSkHss into Jupiter Lend, through bank Be5LNsgq7Zs3LJkCnqW4j3bs7GsZksNNmqEiyEhbsugn of marginfi account CHt1vdfPodE1aNhjbRavJ5C79xNkrQVEqRpcG4UNwAq5",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "CHt1vdfPodE1aNhjbRavJ5C79xNkrQVEqRpcG4UNwAq5:w",
+        "87HqzoSQKRXKkv769Z7Erv7ByjkzNnNxh84HpENjaX71:sw",
+        "Be5LNsgq7Zs3LJkCnqW4j3bs7GsZksNNmqEiyEhbsugn:w",
+        "8ry4pKvfM2tovWUokhp9tYU2LsyP8yP89YsfjzcSkHss:w",
+        "27siXeFKSAXjMyD4QQicMPNYdj4qR3dHw8EyWRK4EzKJ:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ:w",
+        "9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D:w",
+        "FNjADLQQRs3tmLKTpaq5z4xN6RrTyyAG69Lor9JpgR4E:w",
+        "C5ozMurXztzMEvwSkSsM4hYb9MuZauh7N1Gp6DQssAqs:w",
+        "5nmGjA4s7ATzpBQXC5RNceRpaJ7pYw2wKsNBWyuSAZV6",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF:w",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "C5ozMurXztzMEvwSkSsM4hYb9MuZauh7N1Gp6DQssAqs:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "5xSPBiD3TibamAnwHDhZABdB4z4F9dcj5PnbteroBTTd",
+        "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "HmpMfL8942u22htC4EMiWgLX931g3sacXFR6KjuLgKLV",
+        "3XBYLaF9wisQLaCxTgchH6xeNJGchwDauGpot1GcRMZV",
+        "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB",
+        "6HAuqASbHEh4w4REJEUUUCginTLfj1kwCh215ZLtMkrT",
+        "Be5LNsgq7Zs3LJkCnqW4j3bs7GsZksNNmqEiyEhbsugn:w",
+        "6HAuqASbHEh4w4REJEUUUCginTLfj1kwCh215ZLtMkrT",
+        "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ:w"
+      ],
+      "data": "f5a4fdca354dfbddbd18e365010000000101",
+      "fields": [
+        [
+          "Amount",
+          "6,004.349117"
+        ],
+        [
+          "Withdraw All",
+          "true"
+        ],
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Marginfi Account",
+          "CHt1vdfPodE1aNhjbRavJ5C79xNkrQVEqRpcG4UNwAq5"
+        ],
+        [
+          "Owner",
+          "87HqzoSQKRXKkv769Z7Erv7ByjkzNnNxh84HpENjaX71"
+        ],
+        [
+          "Bank",
+          "Be5LNsgq7Zs3LJkCnqW4j3bs7GsZksNNmqEiyEhbsugn"
+        ],
+        [
+          "To",
+          "8ry4pKvfM2tovWUokhp9tYU2LsyP8yP89YsfjzcSkHss"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "JupLend Lending Account",
+          "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ"
+        ],
+        [
+          "JupLend fToken",
+          "9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D"
+        ],
+        [
+          "Bank's fToken Vault",
+          "FNjADLQQRs3tmLKTpaq5z4xN6RrTyyAG69Lor9JpgR4E"
+        ],
+        [
+          "Bank's Withdrawal Account",
+          "C5ozMurXztzMEvwSkSsM4hYb9MuZauh7N1Gp6DQssAqs"
+        ],
+        [
+          "JupLend Lending Admin",
+          "5nmGjA4s7ATzpBQXC5RNceRpaJ7pYw2wKsNBWyuSAZV6"
+        ],
+        [
+          "JupLend Supply Reserves",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ],
+        [
+          "JupLend Supply Position",
+          "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF"
+        ],
+        [
+          "JupLend Rate Model",
+          "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688"
+        ],
+        [
+          "JupLend Vault",
+          "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB"
+        ],
+        [
+          "JupLend Claim Account",
+          "C5ozMurXztzMEvwSkSsM4hYb9MuZauh7N1Gp6DQssAqs"
+        ],
+        [
+          "JupLend Liquidity",
+          "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z"
+        ],
+        [
+          "JupLend Rewards Rate Model",
+          "5xSPBiD3TibamAnwHDhZABdB4z4F9dcj5PnbteroBTTd"
+        ]
+      ],
+      "from": "5UUYEZxQ1uzBdMjLXgUq8t1rhhKfiwP5V2nFczLaSgWK6gvHoEqbW3DnQZvfHq5kVgbVRkE6nqVYZ1FjN8aENPgd#4",
+      "intent": "Withdraw from Jupiter Lend",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "87HqzoSQKRXKkv769Z7Erv7ByjkzNnNxh84HpENjaX71 withdraws 6,004.349117 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v, or the whole balance when Withdraw All is on, from Jupiter Lend through bank Be5LNsgq7Zs3LJkCnqW4j3bs7GsZksNNmqEiyEhbsugn of marginfi account CHt1vdfPodE1aNhjbRavJ5C79xNkrQVEqRpcG4UNwAq5, to 8ry4pKvfM2tovWUokhp9tYU2LsyP8yP89YsfjzcSkHss",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "CHt1vdfPodE1aNhjbRavJ5C79xNkrQVEqRpcG4UNwAq5:w",
+        "87HqzoSQKRXKkv769Z7Erv7ByjkzNnNxh84HpENjaX71:sw",
+        "Be5LNsgq7Zs3LJkCnqW4j3bs7GsZksNNmqEiyEhbsugn:w",
+        "8ry4pKvfM2tovWUokhp9tYU2LsyP8yP89YsfjzcSkHss:w",
+        "27siXeFKSAXjMyD4QQicMPNYdj4qR3dHw8EyWRK4EzKJ:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ:w",
+        "9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D:w",
+        "FNjADLQQRs3tmLKTpaq5z4xN6RrTyyAG69Lor9JpgR4E:w",
+        "C5ozMurXztzMEvwSkSsM4hYb9MuZauh7N1Gp6DQssAqs:w",
+        "5nmGjA4s7ATzpBQXC5RNceRpaJ7pYw2wKsNBWyuSAZV6",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF:w",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "C5ozMurXztzMEvwSkSsM4hYb9MuZauh7N1Gp6DQssAqs:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "5xSPBiD3TibamAnwHDhZABdB4z4F9dcj5PnbteroBTTd",
+        "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "HmpMfL8942u22htC4EMiWgLX931g3sacXFR6KjuLgKLV",
+        "3XBYLaF9wisQLaCxTgchH6xeNJGchwDauGpot1GcRMZV",
+        "Be5LNsgq7Zs3LJkCnqW4j3bs7GsZksNNmqEiyEhbsugn:w",
+        "6HAuqASbHEh4w4REJEUUUCginTLfj1kwCh215ZLtMkrT",
+        "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ:w",
+        "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB",
+        "6HAuqASbHEh4w4REJEUUUCginTLfj1kwCh215ZLtMkrT"
+      ],
+      "data": "f5a4fdca354dfbdd00f2052a010000000100",
+      "fields": [
+        [
+          "Amount",
+          "5,000"
+        ],
+        [
+          "Withdraw All",
+          "false"
+        ],
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Marginfi Account",
+          "CHt1vdfPodE1aNhjbRavJ5C79xNkrQVEqRpcG4UNwAq5"
+        ],
+        [
+          "Owner",
+          "87HqzoSQKRXKkv769Z7Erv7ByjkzNnNxh84HpENjaX71"
+        ],
+        [
+          "Bank",
+          "Be5LNsgq7Zs3LJkCnqW4j3bs7GsZksNNmqEiyEhbsugn"
+        ],
+        [
+          "To",
+          "8ry4pKvfM2tovWUokhp9tYU2LsyP8yP89YsfjzcSkHss"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "JupLend Lending Account",
+          "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ"
+        ],
+        [
+          "JupLend fToken",
+          "9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D"
+        ],
+        [
+          "Bank's fToken Vault",
+          "FNjADLQQRs3tmLKTpaq5z4xN6RrTyyAG69Lor9JpgR4E"
+        ],
+        [
+          "Bank's Withdrawal Account",
+          "C5ozMurXztzMEvwSkSsM4hYb9MuZauh7N1Gp6DQssAqs"
+        ],
+        [
+          "JupLend Lending Admin",
+          "5nmGjA4s7ATzpBQXC5RNceRpaJ7pYw2wKsNBWyuSAZV6"
+        ],
+        [
+          "JupLend Supply Reserves",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ],
+        [
+          "JupLend Supply Position",
+          "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF"
+        ],
+        [
+          "JupLend Rate Model",
+          "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688"
+        ],
+        [
+          "JupLend Vault",
+          "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB"
+        ],
+        [
+          "JupLend Claim Account",
+          "C5ozMurXztzMEvwSkSsM4hYb9MuZauh7N1Gp6DQssAqs"
+        ],
+        [
+          "JupLend Liquidity",
+          "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z"
+        ],
+        [
+          "JupLend Rewards Rate Model",
+          "5xSPBiD3TibamAnwHDhZABdB4z4F9dcj5PnbteroBTTd"
+        ]
+      ],
+      "from": "57FGPNifqdZyikmGPyiNhFP2PnBkwSAJuhhBBRj6cXjWwFBASZQV9ERCJDFPMcHDxgvCZ46HaUgpPffx2Qgtb3p1#4",
+      "intent": "Withdraw from Jupiter Lend",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "87HqzoSQKRXKkv769Z7Erv7ByjkzNnNxh84HpENjaX71 withdraws 5,000 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v, or the whole balance when Withdraw All is on, from Jupiter Lend through bank Be5LNsgq7Zs3LJkCnqW4j3bs7GsZksNNmqEiyEhbsugn of marginfi account CHt1vdfPodE1aNhjbRavJ5C79xNkrQVEqRpcG4UNwAq5, to 8ry4pKvfM2tovWUokhp9tYU2LsyP8yP89YsfjzcSkHss",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "BHpQTrxvsYbvcXRSLyegW3eaLqXjkuWwvxttNm8D1vwc:w",
+        "44RmTYCCHYnY8j7HobG2Mj1sxYeqU8m1jqJJ4NQ42nh3:w",
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "TraceR2t18nnwkXgHoB54iPD5N4x2EJZC1uS55ggsH8:sw",
+        "Sysvar1nstructions1111111111111111111111111",
+        "J5mxC3hLXqmsJB4Nauf9YrtbNMSTHGz7FWfAmy1v6Fzr:w",
+        "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE",
+        "6gTJfuPHEg6uRAijRkMqNc9kan4sVZejKMxmvx2grT1p",
+        "EYp4j7oHV2SfEGSE3GJ4MjsCL33CzmqLTdvTCdacQ9uG:w",
+        "2GhB6ADsPxhvSUZC1KJsTnwrMZ2ayrBrhy8m4WsGoTSC",
+        "E4td8i8PT2BZkMygzW4MGHCv2KPPs57dvz5W2ZXf9Twu:w",
+        "BTeWTCeCVxRXsHA6biwGvw6ynAovr3i7UDLsP9SzZTrA",
+        "DeyH7QxWvnbbaVB4zFrf4hoq7Q8z1ZT14co42BGwGtfM:w",
+        "3nMpgBXnjBSDYupQQEVR7DZM65zkJCdKy1Up7nkqp99w",
+        "CcVpzLenPRWGB8q3pB9kcNma1bp4SdPjJk9wmW5tMvPp:w",
+        "AMjqm5S4QaAHWLv52jJiRpFNW1qo23F6ZM5ChCF5tYgc",
+        "Bohoc1ikHLD7xKJuzTyiTyCwzaL5N7ggJQu75A8mKYM8:w",
+        "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE",
+        "Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb",
+        "BKsfDJCMbYep6gr9pq8PsmJbb5XGLHbAJzUV8vmorz7a:w",
+        "APgzQGGdv2qCgBkX6aHVkrGePtBVDDg68GiqaM7rmtf5",
+        "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB:w",
+        "6HAuqASbHEh4w4REJEUUUCginTLfj1kwCh215ZLtMkrT"
+      ],
+      "data": "f45d5ad6c0a6bf15",
+      "fields": [
+        [
+          "Marginfi Account",
+          "BHpQTrxvsYbvcXRSLyegW3eaLqXjkuWwvxttNm8D1vwc"
+        ],
+        [
+          "Liquidation Record",
+          "44RmTYCCHYnY8j7HobG2Mj1sxYeqU8m1jqJJ4NQ42nh3"
+        ],
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Liquidator",
+          "TraceR2t18nnwkXgHoB54iPD5N4x2EJZC1uS55ggsH8"
+        ]
+      ],
+      "from": "62qw8gtXQuhw96iYMmgcHNm5M62uAYBtnvZ2cV6K4fyMd6R8K7K7jzny1Nyojw5pmhhMbUiVU7GrpQqR4S97xZ4g#3",
+      "intent": "Start a liquidation",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "Puts unhealthy marginfi account BHpQTrxvsYbvcXRSLyegW3eaLqXjkuWwvxttNm8D1vwc in receivership for the rest of this transaction, which TraceR2t18nnwkXgHoB54iPD5N4x2EJZC1uS55ggsH8 must end",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "BHpQTrxvsYbvcXRSLyegW3eaLqXjkuWwvxttNm8D1vwc:w",
+        "44RmTYCCHYnY8j7HobG2Mj1sxYeqU8m1jqJJ4NQ42nh3:w",
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "TraceR2t18nnwkXgHoB54iPD5N4x2EJZC1uS55ggsH8:sw",
+        "HoMNdUF3RDZDPKAARYK1mxcPFfUnPjLmpKYibZzAijev",
+        "CYXEgwbPHu2f9cY3mcUkinzDoDcsSan7myh1uBvYRbEw:w",
+        "11111111111111111111111111111111",
+        "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA:w",
+        "J5mxC3hLXqmsJB4Nauf9YrtbNMSTHGz7FWfAmy1v6Fzr:w",
+        "EYp4j7oHV2SfEGSE3GJ4MjsCL33CzmqLTdvTCdacQ9uG:w",
+        "E4td8i8PT2BZkMygzW4MGHCv2KPPs57dvz5W2ZXf9Twu:w",
+        "DeyH7QxWvnbbaVB4zFrf4hoq7Q8z1ZT14co42BGwGtfM:w",
+        "CcVpzLenPRWGB8q3pB9kcNma1bp4SdPjJk9wmW5tMvPp:w",
+        "Bohoc1ikHLD7xKJuzTyiTyCwzaL5N7ggJQu75A8mKYM8:w",
+        "BKsfDJCMbYep6gr9pq8PsmJbb5XGLHbAJzUV8vmorz7a:w",
+        "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB:w"
+      ],
+      "data": "6e0bf436e5b516b8",
+      "fields": [
+        [
+          "Marginfi Account",
+          "BHpQTrxvsYbvcXRSLyegW3eaLqXjkuWwvxttNm8D1vwc"
+        ],
+        [
+          "Liquidation Record",
+          "44RmTYCCHYnY8j7HobG2Mj1sxYeqU8m1jqJJ4NQ42nh3"
+        ],
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Liquidator",
+          "TraceR2t18nnwkXgHoB54iPD5N4x2EJZC1uS55ggsH8"
+        ],
+        [
+          "Protocol Fee Wallet",
+          "CYXEgwbPHu2f9cY3mcUkinzDoDcsSan7myh1uBvYRbEw"
+        ]
+      ],
+      "from": "62qw8gtXQuhw96iYMmgcHNm5M62uAYBtnvZ2cV6K4fyMd6R8K7K7jzny1Nyojw5pmhhMbUiVU7GrpQqR4S97xZ4g#6",
+      "intent": "End a liquidation",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "TraceR2t18nnwkXgHoB54iPD5N4x2EJZC1uS55ggsH8 ends the liquidation of marginfi account BHpQTrxvsYbvcXRSLyegW3eaLqXjkuWwvxttNm8D1vwc; a flat liquidation fee goes to CYXEgwbPHu2f9cY3mcUkinzDoDcsSan7myh1uBvYRbEw",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GGNwcYzX5kdWZrJB6yz9gifbqQc1Kp3s1hMUiUxHihQ9:w",
+        "evaSkfCXN4W6uJP4Kvg3ycGx8uuX4hnzn2KRKzgoNdC:sw",
+        "84xTK3X6CdyTZZHSrmXFp96vPWBH1VWWrbRAV6r2frrj:w",
+        "11111111111111111111111111111111"
+      ],
+      "data": "ecd5ee7e93fba408",
+      "fields": [
+        [
+          "Marginfi Account",
+          "GGNwcYzX5kdWZrJB6yz9gifbqQc1Kp3s1hMUiUxHihQ9"
+        ],
+        [
+          "Fee Payer",
+          "evaSkfCXN4W6uJP4Kvg3ycGx8uuX4hnzn2KRKzgoNdC"
+        ],
+        [
+          "Liquidation Record",
+          "84xTK3X6CdyTZZHSrmXFp96vPWBH1VWWrbRAV6r2frrj"
+        ]
+      ],
+      "from": "2XS2tdBwPTiHTtxuj2jEdCFye5agLN5dphv8zTro7J6ty86b1gF5k4BrAEsbBGAF4vA1q6ZwhEZfPzmfF4d2Ppaw#3",
+      "intent": "Create a liquidation record",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "evaSkfCXN4W6uJP4Kvg3ycGx8uuX4hnzn2KRKzgoNdC creates liquidation record 84xTK3X6CdyTZZHSrmXFp96vPWBH1VWWrbRAV6r2frrj for marginfi account GGNwcYzX5kdWZrJB6yz9gifbqQc1Kp3s1hMUiUxHihQ9",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "8UEiPmgZHXXEDrqLS3oiTxQxTbeYTtPbeMBxAd2XGbpu:w",
+        "582VxpQGLfUJRsdPYU2Q8dVLn1uxx9BuPMvtgwseB662",
+        "HUmHLAXvcoUgWAtanAnCPNssBnAUzEfSRsb4MZYw7R73:w",
+        "4jE6g1pLG5NmW19z9DgzjCwYEDy3jYSqix1Lv5BN4yEc:w",
+        "AzVkUZFuvGwy3pD6U2eAJJNhHYMnzkzBFjjhn8CSVFRa:w",
+        "HoMNdUF3RDZDPKAARYK1mxcPFfUnPjLmpKYibZzAijev",
+        "FPg5uNfGmPCTqJzS71mBVucMw5CRiSgGsznHXGRFgdaB:w",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo"
+      ],
+      "data": "c905d774e65c4b96",
+      "fields": [
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Bank",
+          "8UEiPmgZHXXEDrqLS3oiTxQxTbeYTtPbeMBxAd2XGbpu"
+        ],
+        [
+          "Bank Liquidity Vault",
+          "HUmHLAXvcoUgWAtanAnCPNssBnAUzEfSRsb4MZYw7R73"
+        ],
+        [
+          "Insurance Vault",
+          "4jE6g1pLG5NmW19z9DgzjCwYEDy3jYSqix1Lv5BN4yEc"
+        ],
+        [
+          "Fee Vault",
+          "AzVkUZFuvGwy3pD6U2eAJJNhHYMnzkzBFjjhn8CSVFRa"
+        ],
+        [
+          "Protocol Fee Account",
+          "FPg5uNfGmPCTqJzS71mBVucMw5CRiSgGsznHXGRFgdaB"
+        ]
+      ],
+      "from": "4MKwaV2cVaDkNLYrwzR97rtLd8uGbYESwvuSHwsq3ohKCAyQPBF6e5emY9pfmuM46uY8Cx2fRQ5uQ2gEvGFacqN2#2",
+      "intent": "Collect bank fees",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "Moves the fees bank 8UEiPmgZHXXEDrqLS3oiTxQxTbeYTtPbeMBxAd2XGbpu has earned from its liquidity vault to its insurance and fee vaults and the protocol's account FPg5uNfGmPCTqJzS71mBVucMw5CRiSgGsznHXGRFgdaB",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8",
+        "8UEiPmgZHXXEDrqLS3oiTxQxTbeYTtPbeMBxAd2XGbpu:w",
+        "AzVkUZFuvGwy3pD6U2eAJJNhHYMnzkzBFjjhn8CSVFRa:w",
+        "EJhHaUdHpJjwzvc8atzZKRkdTFMnxofeQkKGa8zabFC5",
+        "CGUMYHuUpUqjvN8U8wPVmp2rE8tt1KLeABsDSAMHV2Zd:w",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo"
+      ],
+      "data": "39f501d082129171ffffffffffffffff",
+      "fields": [
+        [
+          "Amount",
+          "18,446,744,073,709,551,615 base units"
+        ],
+        [
+          "Group",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Bank",
+          "8UEiPmgZHXXEDrqLS3oiTxQxTbeYTtPbeMBxAd2XGbpu"
+        ],
+        [
+          "Fee Vault",
+          "AzVkUZFuvGwy3pD6U2eAJJNhHYMnzkzBFjjhn8CSVFRa"
+        ],
+        [
+          "To",
+          "CGUMYHuUpUqjvN8U8wPVmp2rE8tt1KLeABsDSAMHV2Zd"
+        ]
+      ],
+      "from": "4MKwaV2cVaDkNLYrwzR97rtLd8uGbYESwvuSHwsq3ohKCAyQPBF6e5emY9pfmuM46uY8Cx2fRQ5uQ2gEvGFacqN2#3",
+      "intent": "Send group fees",
+      "programId": "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+      "sentence": "Sends at most 18,446,744,073,709,551,615 base units of the group fees of bank 8UEiPmgZHXXEDrqLS3oiTxQxTbeYTtPbeMBxAd2XGbpu to its fee destination CGUMYHuUpUqjvN8U8wPVmp2rE8tt1KLeABsDSAMHV2Zd",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}

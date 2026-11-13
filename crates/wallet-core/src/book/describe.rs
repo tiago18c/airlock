@@ -607,6 +607,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi"),
         "Jupiter Lend Borrow Program",
     ),
+    (
+        Pubkey::from_str_const("MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA"),
+        "marginfi Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.
