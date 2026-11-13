@@ -324,7 +324,7 @@ pub(super) fn VectorFacts(
         }
         if !online && held_here {
             p { class: "note on-card",
-                "Initializing the account needs a fee payer and a recent blockhash, so it is done from an online device. Use Export key, add the key there under Add wallet, From another device, and initialize it from that row. This device then signs what that one prepares."
+                "Initializing the account needs a fee payer and a recent blockhash, so it is done from an online device. Use Export public key, add the key there under Add wallet, From another device, and initialize it from that row. This device then signs what that one prepares."
             }
         } else if !online {
             p { class: "muted", "Account state is available when the app is online." }
