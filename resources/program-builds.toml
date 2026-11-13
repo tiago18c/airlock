@@ -407,3 +407,23 @@ programHash = "9701b698bf970005ceb3f5358ff691bf8008cd9f9348440beb1c35fc47230f6a"
 authority = "GUYCUEpxSkm1ccDo3LSKMR4Xpe5bgMnEZaFygWUSEVH3"
 idlSha256 = "556d95f4f92b8b9fc1da443a41fc498db08bf8e06193ba97878f54e023113e73"
 reviewed = "2026-11-12"
+
+[[builds]]
+# subscriptions (pack). A Pinocchio program that logs no instruction names, so names could not be compared in the binary. The IDL's discriminators 0 to 17 are the ones the source of this verified build (364a419) dispatches on, and every discriminator sampled from mainnet transactions run on this build is one the IDL declares. Successful mainnet initSubscriptionAuthority, createRecurringDelegation, revokeDelegation, transferRecurring, createPlan, transferSubscription, subscribe, cancelSubscription and cancelSubscriptionNow transactions decode with the IDL and name all their accounts.
+programId = "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44"
+network = "mainnet"
+programHash = "056ca97cf3ee6586650275ce819d026f7369de0172dc54010fa6dc58180e0318"
+authority = "DXtFpbPjcn2hxPnw79x1Pfoj35vXh5AsWBkS37YnXMVv"
+idlSha256 = "b6c684394d80eccd478ab0a9a3966c976fae8583dd67bded8ba84716eb028f34"
+source = { repo = "https://github.com/solana-foundation/subscriptions", commit = "364a41976c33347d092902443bbec2def9227e75" }
+verified = "DXtFpbPjcn2hxPnw79x1Pfoj35vXh5AsWBkS37YnXMVv"
+reviewed = "2026-11-12"
+
+[[builds]]
+# subscriptions (pack). A Pinocchio program that logs no instruction names, so names could not be compared in the binary; OtterSec has no record for this hash. It contains the TransferContext seed the IDL's new account uses, which mainnet's binary lacks, and every discriminator sampled from devnet transactions run on this build is one the IDL declares. Successful devnet transactions of 14 of its 19 instructions decode with the IDL and name all their accounts; closeSubscriptionAuthority, deletePlan, revokeAbandonedDelegation, revokeAbandonedSubscription, cancelSubscriptionNow and reclaimExcessRent had none.
+programId = "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44"
+network = "devnet"
+programHash = "e705f5a309f84f849b402f20de4bea5f2cc1d1d4f691ba7caabcb07c8b46af51"
+authority = "4AVYqLW61CkqMPurJ3z4aaneVA2kZGyrJo7d3Ls5ZYGe"
+idlSha256 = "59e6bd28801686aa48587f5592460622b0b31a035dce8bab778bfa11b0da3c19"
+reviewed = "2026-11-12"
