@@ -727,6 +727,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q"),
         "Jito Restaking Program",
     ),
+    (
+        Pubkey::from_str_const("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"),
+        "Metaplex Token Metadata Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

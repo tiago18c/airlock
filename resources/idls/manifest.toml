@@ -1225,3 +1225,36 @@ one-byte tag). Checked against restaking_sdk and restaking_program at the same c
 every tag, account order and argument matches, so no instruction is changed. \
 optionalAccountStrategy removed, since no instruction has an optional account. Display \
 nodes added by hand."""
+
+# Metaplex Token Metadata: the name, symbol, link, creators, royalty,
+# collection and rules of nearly every token and NFT on Solana, and the
+# program that moves, delegates, locks and burns programmable NFTs. It
+# publishes no IDL on chain and is frozen; the file is the Shank IDL in
+# mpl-token-metadata at 17e99434, whose source the deployed binary matches,
+# with each versioned instruction split by its second byte as Metaplex's own
+# clients do.
+[[idls]]
+file = "mpl-token-metadata.json"
+programId = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+name = "tokenMetadata"
+networks = ["mainnet"]
+source = { kind = "repository", url = "https://github.com/metaplex-foundation/mpl-token-metadata/blob/17e99434af5ead3e989c08f32af33609821d0bc0/idls/token_metadata.json" }
+changes = """Converted from Shank to Codama (the file names its origin as Shank). Removed the \
+thirteen instructions the deployed program refuses: the ten it answers as removed (tags \
+0, 1, 2, 3, 5, 6, 8, 9, 16 and 48), createMasterEdition (10) and \
+mintNewEditionFromMasterEditionViaVaultProxy (13), which it also answers as removed, and \
+use (51), which no processor handles. Each unified instruction (burn, create, delegate, \
+lock, mint, print, revoke, transfer, unlock, update, verify and unverify) takes one enum \
+whose variant is the second byte; as Metaplex's client generator does \
+(configs/kinobi.cjs, createSubInstructionsFromEnumArgsVisitor), each variant is its own \
+instruction, named as Metaplex's clients name it (transferV1, delegateSaleV1, \
+updateAsUpdateAuthorityV2 and so on), told apart by a second one-byte discriminator, \
+with the variant's fields as its arguments; the bytes are unchanged. printV2 takes the \
+holder delegate record and the delegate the program reads after the listed accounts. As \
+in Metaplex's clients, the token account is required in the token-delegate approvals and \
+revocations and in the two programmable-config delegate updates, the collection mint in \
+verifyCollectionV1 and unverifyCollectionV1, and printV1's master holder signs. \
+utilize's accounts from the optional rent sysvar on, and the accounts collect reads \
+after the recipient, are remaining-accounts groups. The Token program's mint account is \
+added, so the amounts of transfers, mints, burns, token delegations and escrow transfers \
+read the decimals of the mint they name. Display nodes added by hand."""
