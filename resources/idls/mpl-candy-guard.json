@@ -1,0 +1,3276 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "candyGuard",
+    "publicKey": "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g",
+    "version": "3.0.0",
+    "origin": "anchor",
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "name": "freezeEscrow",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "e3ba289807ae83b8",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "candyGuard",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "candyMachine",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "frozenCount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "firstMintTime",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "i64",
+                  "endian": "le"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "freezePeriod",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "i64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "destination",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "authority",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "candyGuard",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "2ccfc7b8706722b5",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "base",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "authority",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "initialize",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyGuard",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Guard"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "base",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Base Key"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "afaf6d1f0d989bed",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "data",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "bytesTypeNode"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Guards (bytes)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a candy guard",
+          "interpolatedIntent": "${accounts.payer} creates candy guard ${accounts.candyGuard} with ${accounts.authority} as its authority; its guards (prices, dates, limits) show only as bytes"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "mint",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyGuard",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Guard"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyMachineProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyMachine",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Machine"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyMachineAuthorityPda",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "nftMetadata",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "nftMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "NFT Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "nftMintAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "NFT Mint Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "nftMasterEdition",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collectionAuthorityRecord",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collectionMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collection"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collectionMetadata",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collectionMasterEdition",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collectionUpdateAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collection Update Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenMetadataProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "recentSlothashes",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "instructionSysvarAccount",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "3339e12fb69289a6",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "mintArgs",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "bytesTypeNode"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Guard Arguments (bytes)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "label",
+            "type": {
+              "kind": "optionTypeNode",
+              "fixed": false,
+              "item": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Guard Group (none: default guards)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "guardAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts the active guards of the chosen group need, in the order the guard set lists its guards: the account that receives a SOL payment (solPayment), the payer's token account and the destination token account of a token payment (tokenPayment, token2022Payment, with its mint and program), the token account and mint of a token burn, the token account of a token gate, the gatekeeper token, the allow-list proof PDA, the mint counter PDA of a mint limit, the NFT accounts of an NFT gate, burn or payment (and the NFT payment's destination), the third-party signer, the allocation tracker, and the freeze escrow PDA and its token accounts of a freeze payment."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Guard Account"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Mint an NFT",
+          "interpolatedIntent": "${accounts.payer} mints NFT ${accounts.nftMint} of collection ${accounts.collectionMint} from candy machine ${accounts.candyMachine} through candy guard ${accounts.candyGuard}; what it costs is set by the candy guard's guards, not by this transaction"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "mintV2",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyGuard",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Guard"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyMachineProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyMachine",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Machine"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyMachineAuthorityPda",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "minter",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Minter (NFT owner)"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "nftMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "NFT Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "nftMintAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "NFT Mint Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "nftMetadata",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "nftMasterEdition",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "token",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "NFT Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenRecord",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collectionDelegateRecord",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collectionMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collection"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collectionMetadata",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collectionMasterEdition",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collectionUpdateAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collection Update Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenMetadataProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "splTokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "splAtaProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "sysvarInstructions",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "recentSlothashes",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authorizationRulesProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authorizationRules",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rule Set"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "78791792ad6ec7cd",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "mintArgs",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "bytesTypeNode"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Guard Arguments (bytes)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "label",
+            "type": {
+              "kind": "optionTypeNode",
+              "fixed": false,
+              "item": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Guard Group (none: default guards)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "guardAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts the active guards of the chosen group need, in the order the guard set lists its guards: the account that receives a SOL payment (solPayment), the payer's token account and the destination token account of a token payment (tokenPayment, token2022Payment, with its mint and program), the token account and mint of a token burn, the token account of a token gate, the gatekeeper token, the allow-list proof PDA, the mint counter PDA of a mint limit, the NFT accounts of an NFT gate, burn or payment (and the NFT payment's destination), the third-party signer, the allocation tracker, and the freeze escrow PDA and its token accounts of a freeze payment."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Guard Account"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Mint an NFT",
+          "interpolatedIntent": "${accounts.minter} mints NFT ${accounts.nftMint} of collection ${accounts.collectionMint} from candy machine ${accounts.candyMachine} through candy guard ${accounts.candyGuard}; what it costs is set by the candy guard's guards, not by this transaction"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "route",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyGuard",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Guard"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyMachine",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Machine"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "e517cb977ae3ad2a",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "args",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "routeArgs"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "label",
+            "type": {
+              "kind": "optionTypeNode",
+              "fixed": false,
+              "item": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Guard Group (none: default guards)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "guardAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts the routed guard's action needs: for the allow list, the proof PDA, the System program and optionally the minter; for a freeze payment, the freeze escrow PDA, the authority, the System program and, to thaw or unlock, the NFT's and escrow's token accounts; for the allocation guard, its tracker PDA, the authority and the System program."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Guard Account"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Run a guard action",
+          "interpolatedIntent": "${accounts.payer} runs the ${data.args.guard} guard's action of candy guard ${accounts.candyGuard} for candy machine ${accounts.candyMachine}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setAuthority",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyGuard",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Guard"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Authority"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "85fa25156ea31a79",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newAuthority",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New Authority (takes control)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set the candy guard authority",
+          "interpolatedIntent": "${accounts.authority} hands the authority of candy guard ${accounts.candyGuard} to ${data.newAuthority}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "unwrap",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyGuard",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Guard"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Guard Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyMachine",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Machine"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyMachineAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Machine Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyMachineProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "7eafc60ed445322c",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Unwrap a candy machine",
+          "interpolatedIntent": "${accounts.candyMachineAuthority} takes the mint authority of candy machine ${accounts.candyMachine} back from candy guard ${accounts.candyGuard}, so it mints without the guard"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "update",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyGuard",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Guard"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "dbc858b09e3ffd7f",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "data",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "bytesTypeNode"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "New Guards (bytes)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update a candy guard",
+          "interpolatedIntent": "${accounts.authority} replaces the guards of candy guard ${accounts.candyGuard}; the new guards (prices, dates, limits) show only as bytes"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdraw",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyGuard",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Guard"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Authority"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "b712469c946da122",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Close a candy guard",
+          "interpolatedIntent": "${accounts.authority} closes candy guard ${accounts.candyGuard} and takes its rent"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "wrap",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyGuard",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Guard"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Guard Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyMachine",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Machine"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyMachineProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "candyMachineAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Candy Machine Authority"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "b2280abde481ba8c",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Wrap a candy machine",
+          "interpolatedIntent": "${accounts.candyMachineAuthority} makes candy guard ${accounts.candyGuard} the mint authority of candy machine ${accounts.candyMachine}, so it mints only through the guard"
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "addressGate",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "address",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "allocation",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "id",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "limit",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "allocationTracker",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "count",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "allowList",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "merkleRoot",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 32
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "allowListProof",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "timestamp",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "i64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "botTax",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lamports",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lastInstruction",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "endDate",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "date",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "i64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "freezeSolPayment",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lamports",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "destination",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "freezeTokenPayment",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "destinationAta",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "gatekeeper",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "gatekeeperNetwork",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "expireOnUse",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "mintLimit",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "id",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "limit",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "mintCounter",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "count",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u16",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "nftBurn",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "requiredCollection",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "nftGate",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "requiredCollection",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "nftPayment",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "requiredCollection",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "destination",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "programGate",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "additional",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "count": {
+                  "kind": "prefixedCountNode",
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "redeemedAmount",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "maximum",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "solPayment",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lamports",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "destination",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "startDate",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "date",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "i64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "thirdPartySigner",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "signerKey",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "token2022Payment",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "destinationAta",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "tokenBurn",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "tokenGate",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "tokenPayment",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "destinationAta",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "routeArgs",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "guard",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "guardType"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Guard"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "data",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "bytesTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Guard Action Data (bytes)"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "candyGuardData",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "default",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "guardSet"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "groups",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "arrayTypeNode",
+                  "item": {
+                    "kind": "definedTypeLinkNode",
+                    "name": "group"
+                  },
+                  "count": {
+                    "kind": "prefixedCountNode",
+                    "prefix": {
+                      "kind": "numberTypeNode",
+                      "format": "u32",
+                      "endian": "le"
+                    }
+                  }
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "group",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "label",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "guards",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "guardSet"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "guardSet",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "botTax",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "botTax"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "solPayment",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "solPayment"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tokenPayment",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "tokenPayment"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "startDate",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "startDate"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "thirdPartySigner",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "thirdPartySigner"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tokenGate",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "tokenGate"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "gatekeeper",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "gatekeeper"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "endDate",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "endDate"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "allowList",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "allowList"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mintLimit",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "mintLimit"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "nftPayment",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "nftPayment"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "redeemedAmount",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "redeemedAmount"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "addressGate",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "addressGate"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "nftGate",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "nftGate"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "nftBurn",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "nftBurn"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tokenBurn",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "tokenBurn"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "freezeSolPayment",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "freezeSolPayment"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "freezeTokenPayment",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "freezeTokenPayment"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "programGate",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "programGate"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "allocation",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "allocation"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "token2022Payment",
+              "type": {
+                "kind": "optionTypeNode",
+                "fixed": false,
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "token2022Payment"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "freezeInstruction",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "initialize"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "thaw"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "unlockFunds"
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "guardType",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "botTax",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Bot Tax"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "solPayment",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "SOL Payment"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "tokenPayment",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Token Payment"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "startDate",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Start Date"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "thirdPartySigner",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Third-Party Signer"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "tokenGate",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Token Gate"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "gatekeeper",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Gatekeeper"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "endDate",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "End Date"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "allowList",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Allow List"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "mintLimit",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Mint Limit"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "nftPayment",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "NFT Payment"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "redeemedAmount",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Redeemed Amount"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "addressGate",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Address Gate"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "nftGate",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "NFT Gate"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "nftBurn",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "NFT Burn"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "tokenBurn",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Token Burn"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "freezeSolPayment",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Freeze SOL Payment"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "freezeTokenPayment",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Freeze Token Payment"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "programGate",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Program Gate"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "allocation",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Allocation"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "token2022Payment",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Token-2022 Payment"
+              }
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "invalidAccountSize",
+        "code": 6000,
+        "message": "Could not save guard to account",
+        "docs": [
+          "InvalidAccountSize: Could not save guard to account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "deserializationError",
+        "code": 6001,
+        "message": "Could not deserialize guard",
+        "docs": [
+          "DeserializationError: Could not deserialize guard"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "publicKeyMismatch",
+        "code": 6002,
+        "message": "Public key mismatch",
+        "docs": [
+          "PublicKeyMismatch: Public key mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "dataIncrementLimitExceeded",
+        "code": 6003,
+        "message": "Exceeded account increase limit",
+        "docs": [
+          "DataIncrementLimitExceeded: Exceeded account increase limit"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "incorrectOwner",
+        "code": 6004,
+        "message": "Account does not have correct owner",
+        "docs": [
+          "IncorrectOwner: Account does not have correct owner"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "uninitialized",
+        "code": 6005,
+        "message": "Account is not initialized",
+        "docs": [
+          "Uninitialized: Account is not initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "missingRemainingAccount",
+        "code": 6006,
+        "message": "Missing expected remaining account",
+        "docs": [
+          "MissingRemainingAccount: Missing expected remaining account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "numericalOverflowError",
+        "code": 6007,
+        "message": "Numerical overflow error",
+        "docs": [
+          "NumericalOverflowError: Numerical overflow error"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "requiredGroupLabelNotFound",
+        "code": 6008,
+        "message": "Missing required group label",
+        "docs": [
+          "RequiredGroupLabelNotFound: Missing required group label"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "groupNotFound",
+        "code": 6009,
+        "message": "Group not found",
+        "docs": [
+          "GroupNotFound: Group not found"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "exceededLength",
+        "code": 6010,
+        "message": "Value exceeded maximum length",
+        "docs": [
+          "ExceededLength: Value exceeded maximum length"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "candyMachineEmpty",
+        "code": 6011,
+        "message": "Candy machine is empty",
+        "docs": [
+          "CandyMachineEmpty: Candy machine is empty"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "instructionNotFound",
+        "code": 6012,
+        "message": "No instruction was found",
+        "docs": [
+          "InstructionNotFound: No instruction was found"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "collectionKeyMismatch",
+        "code": 6013,
+        "message": "Collection public key mismatch",
+        "docs": [
+          "CollectionKeyMismatch: Collection public key mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "missingCollectionAccounts",
+        "code": 6014,
+        "message": "Missing collection accounts",
+        "docs": [
+          "MissingCollectionAccounts: Missing collection accounts"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "collectionUpdateAuthorityKeyMismatch",
+        "code": 6015,
+        "message": "Collection update authority public key mismatch",
+        "docs": [
+          "CollectionUpdateAuthorityKeyMismatch: Collection update authority public key mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "mintNotLastTransaction",
+        "code": 6016,
+        "message": "Mint must be the last instructions of the transaction",
+        "docs": [
+          "MintNotLastTransaction: Mint must be the last instructions of the transaction"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "mintNotLive",
+        "code": 6017,
+        "message": "Mint is not live",
+        "docs": [
+          "MintNotLive: Mint is not live"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "notEnoughSol",
+        "code": 6018,
+        "message": "Not enough SOL to pay for the mint",
+        "docs": [
+          "NotEnoughSOL: Not enough SOL to pay for the mint"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "tokenBurnFailed",
+        "code": 6019,
+        "message": "Token burn failed",
+        "docs": [
+          "TokenBurnFailed: Token burn failed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "notEnoughTokens",
+        "code": 6020,
+        "message": "Not enough tokens on the account",
+        "docs": [
+          "NotEnoughTokens: Not enough tokens on the account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "tokenTransferFailed",
+        "code": 6021,
+        "message": "Token transfer failed",
+        "docs": [
+          "TokenTransferFailed: Token transfer failed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "missingRequiredSignature",
+        "code": 6022,
+        "message": "A signature was required but not found",
+        "docs": [
+          "MissingRequiredSignature: A signature was required but not found"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "gatewayTokenInvalid",
+        "code": 6023,
+        "message": "Gateway token is not valid",
+        "docs": [
+          "GatewayTokenInvalid: Gateway token is not valid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "afterEndDate",
+        "code": 6024,
+        "message": "Current time is after the set end date",
+        "docs": [
+          "AfterEndDate: Current time is after the set end date"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidMintTime",
+        "code": 6025,
+        "message": "Current time is not within the allowed mint time",
+        "docs": [
+          "InvalidMintTime: Current time is not within the allowed mint time"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "addressNotFoundInAllowedList",
+        "code": 6026,
+        "message": "Address not found on the allowed list",
+        "docs": [
+          "AddressNotFoundInAllowedList: Address not found on the allowed list"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "missingAllowedListProof",
+        "code": 6027,
+        "message": "Missing allowed list proof",
+        "docs": [
+          "MissingAllowedListProof: Missing allowed list proof"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "allowedListNotEnabled",
+        "code": 6028,
+        "message": "Allow list guard is not enabled",
+        "docs": [
+          "AllowedListNotEnabled: Allow list guard is not enabled"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "allowedMintLimitReached",
+        "code": 6029,
+        "message": "The maximum number of allowed mints was reached",
+        "docs": [
+          "AllowedMintLimitReached: The maximum number of allowed mints was reached"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidNftCollection",
+        "code": 6030,
+        "message": "Invalid NFT collection",
+        "docs": [
+          "InvalidNftCollection: Invalid NFT collection"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "missingNft",
+        "code": 6031,
+        "message": "Missing NFT on the account",
+        "docs": [
+          "MissingNft: Missing NFT on the account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "maximumRedeemedAmount",
+        "code": 6032,
+        "message": "Current redemeed items is at the set maximum amount",
+        "docs": [
+          "MaximumRedeemedAmount: Current redemeed items is at the set maximum amount"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "addressNotAuthorized",
+        "code": 6033,
+        "message": "Address not authorized",
+        "docs": [
+          "AddressNotAuthorized: Address not authorized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "missingFreezeInstruction",
+        "code": 6034,
+        "message": "Missing freeze instruction data",
+        "docs": [
+          "MissingFreezeInstruction: Missing freeze instruction data"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "freezeGuardNotEnabled",
+        "code": 6035,
+        "message": "Freeze guard must be enabled",
+        "docs": [
+          "FreezeGuardNotEnabled: Freeze guard must be enabled"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "freezeNotInitialized",
+        "code": 6036,
+        "message": "Freeze must be initialized",
+        "docs": [
+          "FreezeNotInitialized: Freeze must be initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "missingFreezePeriod",
+        "code": 6037,
+        "message": "Missing freeze period",
+        "docs": [
+          "MissingFreezePeriod: Missing freeze period"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "freezeEscrowAlreadyExists",
+        "code": 6038,
+        "message": "The freeze escrow account already exists",
+        "docs": [
+          "FreezeEscrowAlreadyExists: The freeze escrow account already exists"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "exceededMaximumFreezePeriod",
+        "code": 6039,
+        "message": "Maximum freeze period exceeded",
+        "docs": [
+          "ExceededMaximumFreezePeriod: Maximum freeze period exceeded"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "thawNotEnabled",
+        "code": 6040,
+        "message": "Thaw is not enabled",
+        "docs": [
+          "ThawNotEnabled: Thaw is not enabled"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unlockNotEnabled",
+        "code": 6041,
+        "message": "Unlock is not enabled (not all NFTs are thawed)",
+        "docs": [
+          "UnlockNotEnabled: Unlock is not enabled (not all NFTs are thawed)"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "duplicatedGroupLabel",
+        "code": 6042,
+        "message": "Duplicated group label",
+        "docs": [
+          "DuplicatedGroupLabel: Duplicated group label"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "duplicatedMintLimitId",
+        "code": 6043,
+        "message": "Duplicated mint limit id",
+        "docs": [
+          "DuplicatedMintLimitId: Duplicated mint limit id"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unauthorizedProgramFound",
+        "code": 6044,
+        "message": "An unauthorized program was found in the transaction",
+        "docs": [
+          "UnauthorizedProgramFound: An unauthorized program was found in the transaction"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "exceededProgramListSize",
+        "code": 6045,
+        "message": "Exceeded the maximum number of programs in the additional list",
+        "docs": [
+          "ExceededProgramListSize: Exceeded the maximum number of programs in the additional list"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "allocationNotInitialized",
+        "code": 6046,
+        "message": "Allocation PDA not initialized",
+        "docs": [
+          "AllocationNotInitialized: Allocation PDA not initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "allocationLimitReached",
+        "code": 6047,
+        "message": "Allocation limit was reached",
+        "docs": [
+          "AllocationLimitReached: Allocation limit was reached"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "allocationGuardNotEnabled",
+        "code": 6048,
+        "message": "Allocation guard must be enabled",
+        "docs": [
+          "AllocationGuardNotEnabled: Allocation guard must be enabled"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidMintAuthority",
+        "code": 6049,
+        "message": "Candy machine has an invalid mint authority",
+        "docs": [
+          "InvalidMintAuthority: Candy machine has an invalid mint authority"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "instructionBuilderFailed",
+        "code": 6050,
+        "message": "Instruction could not be created",
+        "docs": [
+          "InstructionBuilderFailed: Instruction could not be created"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidAccountVersion",
+        "code": 6051,
+        "message": "Invalid account version",
+        "docs": [
+          "InvalidAccountVersion: Invalid account version"
+        ]
+      }
+    ]
+  }
+}

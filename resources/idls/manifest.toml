@@ -1521,3 +1521,21 @@ its decimals. createFleet and addShipToFleet are sent three more bytes than the 
 arguments account for, in every transaction seen; nothing published says what they mean, \
 so they are declared as optional trailing bytes and shown as such. Display nodes added \
 by hand."""
+
+# Metaplex Candy Guard: the access control in front of a Candy Machine, and
+# what a person minting an NFT from a launch signs. What a mint costs is not
+# in the transaction: it is stored in the candy guard's guards, and the
+# accounts those guards need follow the listed ones. The IDL is the legacy
+# Anchor IDL the program publishes; devnet runs the same executable and holds
+# the same document.
+[[idls]]
+file = "mpl-candy-guard.json"
+programId = "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g"
+name = "candyGuard"
+networks = ["mainnet", "devnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "60b962f1051a85cfac20b4418f211ed38cf690476b256507e0a2dae13de2216f" }
+changes = """Converted from Anchor to Codama. The program's address is set, since the legacy IDL \
+carries none. mint, mintV2 and route take the accounts the active guards (or the routed \
+guard) need after the listed ones, as a remaining-accounts group that is shown, since it \
+holds where a payment goes. optionalAccountStrategy is programId on mintV2, as the \
+converter sets it. Display nodes added by hand."""
