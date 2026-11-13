@@ -531,3 +531,20 @@ optionalAccountStrategy to programId. Amounts in the underlying token are in the
 decimals of its mint and amounts in jlTokens in the decimals of the jlToken mint, both \
 read from chain; rebalanceWithAmounts' amount is in base units. Display nodes added by \
 hand."""
+
+# PancakeSwap v3 (amm_v3), PancakeSwap's concentrated-liquidity AMM, a fork of
+# the Raydium CLMM whose positions are NFTs. Mainnet has no program-metadata
+# account; the IDL is the one its Anchor IDL account holds. Its fixed admin
+# address is devnet's: mainnet's admin is another key.
+[[idls]]
+file = "pancakeswap-v3.json"
+programId = "HpNfyc2Saw7RKkQd8nEL4khUcuPhQ7WwY1B2qjx8jxFq"
+name = "ammV3"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "661eb632c441b2adb681ecd547fd8cea18e836be2305064e84b14bb90d7efb4c" }
+changes = """Converted from Anchor to Codama. The swap, liquidity and position instructions, \
+`createPool`, `setRewardParams` and `updateAmmConfig` declare the remaining accounts \
+they read (tick arrays, the bitmap extension, reward accounts, supported-mint records, a \
+swap route), which Anchor IDLs cannot. The Token program's mint account is added, so \
+liquidity limits, fee collections and a routed swap's input read their mint's decimals; \
+the other swap amounts are in base units. Display nodes added by hand."""

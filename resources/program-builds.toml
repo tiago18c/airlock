@@ -546,3 +546,12 @@ programHash = "ffb64b851fb00e49b0386f971a6a640fdcc1f2734dcf3b3c2324d7e6044a1299"
 authority = "4MsgBB5VPoTrUSp5XnfbViV386C1UnsTdifLBw33ZMSJ"
 idlSha256 = "ba83fa0ea573ebe4191066e48e2d358c3cfa1fa906491c1617ff95aa3035dad7"
 reviewed = "2026-11-12"
+
+[[builds]]
+# ammV3 (pack). The binary logs 27 instruction names, the same 27 the IDL has, and holds each instruction's discriminator. Mainnet transactions of 11 of them decode with no byte left over, and every account past those the IDL lists was identified on chain (tick arrays, the bitmap extension, reward vaults and mints, a supported-mint record).
+programId = "HpNfyc2Saw7RKkQd8nEL4khUcuPhQ7WwY1B2qjx8jxFq"
+network = "mainnet"
+programHash = "880aca643455fd2cf1963612591ba4ade512fb2c37aca922c4c49a12300fb1ae"
+authority = "Em3wKQYD83ph9LmSt6xBZeB9DpozT55AcGa61EYxHRVh"
+idlSha256 = "53527fd98e91180a0c55e16fbc6b5bf3072be967e60cb2739f8779d2997f257c"
+reviewed = "2026-11-12"
