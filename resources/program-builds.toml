@@ -826,3 +826,14 @@ programHash = "18d2499713f34dc79efcbedd72833c79472b273ee048b0d7b2c7ff027edb83ff"
 authority = "FytDrVzDybM1TwFQPGb8qaxZR7dBCzNeqT3vtQsceZQK"
 idlSha256 = "c484c23190a57fb16669df1bb8c897a34313352a043d61c6e9f828885efc1ce8"
 reviewed = "2026-11-12"
+
+[[builds]]
+# saveLending (pack). OtterSec reproduced this executable from solana-program-library at d04ce00, the commit the file is written from. The binary logs exactly the 25 `Instruction: ...` texts of that commit's processor, one per instruction of the file, and mainnet transactions of 9 instructions decode with every account named and exactly the data length the file describes.
+programId = "So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo"
+network = "mainnet"
+programHash = "ef621872c5b7c3fdef61fed1e042609f433cff1c408457b526ff665ef5df33f9"
+authority = "RY93CZYe5g6drtG7W9PmHRPzaBLZ1uwihTzayQTmJfh"
+idlSha256 = "2f7c7ddbcf7a8aa5a733d5b441c5b4d586f4ae0df0d7da539561889fdf9fa5dc"
+source = { repo = "https://github.com/solendprotocol/solana-program-library", commit = "d04ce00bbf4356c4fd32b3be38eb9760b696bb3e" }
+verified = "2Fwvr3MKhHhqakgjjEWcpWZZabbRCetHjukHi1zfKxjk"
+reviewed = "2026-11-12"
