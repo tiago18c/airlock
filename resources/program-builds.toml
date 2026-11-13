@@ -472,3 +472,12 @@ programHash = "e88dde79aa30c026a5f1b8de6477d3c3cdb55c996d7d453b8181d4f82cacfd3e"
 authority = "GPgADQrhzGoUgLqxsZMKvSpwcLaJFVTq6gEixKhmcwpm"
 idlSha256 = "307255c54e847d0fcd10613463a4080ae2310d96d46c695dba6d9d8eb799530c"
 reviewed = "2026-11-12"
+
+[[builds]]
+# swapOrchestrator (pack). Closed source; deployed at slot 467533307; OtterSec lists no verify record. Each of the 18 instructions the IDL lists is in this binary by its Anchor log name, and the binary logs no other. Successful mainnet transactions of swap, swap2, swapWithDestination, swap2WithDestination, swapWithDestinationNative, swap2WithDestinationNative, transferToSponsor, wrapSol and unwrapSol decode with every named account and exactly the bytes their arguments take.
+programId = "DF1ow4tspfHX9JwWJsAb9epbkA8hmpSEAtxXy1V27QBH"
+network = "mainnet"
+programHash = "40821b0aa4923e6073a404e0747fa7e62ba64f702172150818a6cec39aaaa56c"
+authority = "9uo2iJKJkmiYwy5MrkrbGQXbPqwHXqvQaUqxhCkowgsh"
+idlSha256 = "e1c69af0c0a5befd60e7c912d768d4d7546768b0c77a72755006dc6d22ba86a0"
+reviewed = "2026-11-12"
