@@ -1,0 +1,315 @@
+{
+  "accounts": {
+    "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E": {
+      "data": "AQAAAK1n66kMGdYbS8shklj+ApsTUCpTVtEx35i1Trt1Tkw115MpSuMTAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "HnnGv3HrSqjRpgdFmx7vQGjntNEoex1SU4e9Lxcxuihz": {
+      "data": "AQAAAEOBR/5Y+azb4uiMqEOmnSXqhgz1+OBN3poY8tMrJVSCZLHjhS8LAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    }
+  },
+  "instructions": [
+    {
+      "accounts": [
+        "oCMT8N8xcVdJ1wmhMjna8qBidFmCdAkoypNfPiPEtYz:w",
+        "2jk7miWrsTbt5hUSaCXPkEQPvuUMgbFLpgMzMQw3Z6ar:w",
+        "9cd2sAfbBvKs4SX9YKo4dcjwP3TgTVQ8dT5koshGcDND",
+        "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E:w",
+        "6xyTk2dEDdpfTVWDN85EY1a5jcei6QmEdKGTBERmdM18:w",
+        "3HT6dD6APJh89XJs9rkn3BmsvkXE9jPG9dWJmUjWu6TS",
+        "Hh8N3Fdauxgq1jjcKdzGBR3D8cdkpLZrFEVumL1tYQLp:w",
+        "25AbqqhtdZyCAWR53FBW2aUMvkDovTocqk5nF5Fx36Ja:w",
+        "5YrRAQag9BbJkauDtJkd1vsTquXT6N46oU8rJ66GDxHd",
+        "EqozKyMj7FVnLHc2cJj3VC25aBr4AhVh1cGM2WDajGe9:w",
+        "HnnGv3HrSqjRpgdFmx7vQGjntNEoex1SU4e9Lxcxuihz:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "8fjUWoZTb8ox8JFRJTb7WznL1V8oJT9o21kQKHJzbTS8",
+        "HysTabVUfmQBFcmzu1ctRd1Y1fxd66RBpboy1bmtDSQQ"
+      ],
+      "data": "35fe1af277ed4921577101000000000001302e020000000000fa0000000000000000fc",
+      "fields": [
+        [
+          "eHYUSD Burned",
+          "0.094551"
+        ],
+        [
+          "Slippage Check (expected out and tolerance, each Bits × 10^Exp)",
+          "Expected Token Out: Bits: 142896, Exp: -6, Slippage Tolerance: Bits: 0, Exp: -4"
+        ],
+        [
+          "User",
+          "oCMT8N8xcVdJ1wmhMjna8qBidFmCdAkoypNfPiPEtYz"
+        ],
+        [
+          "hyUSD Mint",
+          "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E"
+        ],
+        [
+          "Your hyUSD Account",
+          "6xyTk2dEDdpfTVWDN85EY1a5jcei6QmEdKGTBERmdM18"
+        ],
+        [
+          "hyUSD Fee Vault",
+          "Hh8N3Fdauxgq1jjcKdzGBR3D8cdkpLZrFEVumL1tYQLp"
+        ],
+        [
+          "Your eHYUSD Account",
+          "25AbqqhtdZyCAWR53FBW2aUMvkDovTocqk5nF5Fx36Ja"
+        ],
+        [
+          "Earn Pool hyUSD Account",
+          "EqozKyMj7FVnLHc2cJj3VC25aBr4AhVh1cGM2WDajGe9"
+        ],
+        [
+          "eHYUSD Mint",
+          "HnnGv3HrSqjRpgdFmx7vQGjntNEoex1SU4e9Lxcxuihz"
+        ]
+      ],
+      "from": "2rQ9DuFKAs38AjdegRhwGXrZG6s7H8nB1LV91wYkUzaCQUNMgU1rfUYymeChTSufA8uuP61zK8CiJp849iCUBTzU#1.1",
+      "intent": "Withdraw hyUSD from the Earn Pool",
+      "programId": "HysTabVUfmQBFcmzu1ctRd1Y1fxd66RBpboy1bmtDSQQ",
+      "sentence": "oCMT8N8xcVdJ1wmhMjna8qBidFmCdAkoypNfPiPEtYz burns 0.094551 eHYUSD from 25AbqqhtdZyCAWR53FBW2aUMvkDovTocqk5nF5Fx36Ja to withdraw their share of the Earn Pool's hyUSD, less the withdrawal fee, paid into 6xyTk2dEDdpfTVWDN85EY1a5jcei6QmEdKGTBERmdM18",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CcUrRBMqrCuMPVfd6sVTBJhyhBA1dE7qDoJkSy95bbcw:sw",
+        "2jk7miWrsTbt5hUSaCXPkEQPvuUMgbFLpgMzMQw3Z6ar:w",
+        "9cd2sAfbBvKs4SX9YKo4dcjwP3TgTVQ8dT5koshGcDND",
+        "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E",
+        "72uYSGeMZrmTykeJXXnde1eh1V8HgEqjmg1QmeejaVWk:w",
+        "3HT6dD6APJh89XJs9rkn3BmsvkXE9jPG9dWJmUjWu6TS",
+        "Hh8N3Fdauxgq1jjcKdzGBR3D8cdkpLZrFEVumL1tYQLp:w",
+        "AE8bGkeZjWjB4fmragDcENESip2U499b4Bvg2TU1U3V4:w",
+        "5YrRAQag9BbJkauDtJkd1vsTquXT6N46oU8rJ66GDxHd",
+        "EqozKyMj7FVnLHc2cJj3VC25aBr4AhVh1cGM2WDajGe9:w",
+        "HnnGv3HrSqjRpgdFmx7vQGjntNEoex1SU4e9Lxcxuihz:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "8fjUWoZTb8ox8JFRJTb7WznL1V8oJT9o21kQKHJzbTS8",
+        "HysTabVUfmQBFcmzu1ctRd1Y1fxd66RBpboy1bmtDSQQ"
+      ],
+      "data": "35fe1af277ed49210be3d40b0000000000",
+      "fields": [
+        [
+          "eHYUSD Burned",
+          "198.501131"
+        ],
+        [
+          "Slippage Check (expected out and tolerance, each Bits × 10^Exp)",
+          "None"
+        ],
+        [
+          "User",
+          "CcUrRBMqrCuMPVfd6sVTBJhyhBA1dE7qDoJkSy95bbcw"
+        ],
+        [
+          "hyUSD Mint",
+          "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E"
+        ],
+        [
+          "Your hyUSD Account",
+          "72uYSGeMZrmTykeJXXnde1eh1V8HgEqjmg1QmeejaVWk"
+        ],
+        [
+          "hyUSD Fee Vault",
+          "Hh8N3Fdauxgq1jjcKdzGBR3D8cdkpLZrFEVumL1tYQLp"
+        ],
+        [
+          "Your eHYUSD Account",
+          "AE8bGkeZjWjB4fmragDcENESip2U499b4Bvg2TU1U3V4"
+        ],
+        [
+          "Earn Pool hyUSD Account",
+          "EqozKyMj7FVnLHc2cJj3VC25aBr4AhVh1cGM2WDajGe9"
+        ],
+        [
+          "eHYUSD Mint",
+          "HnnGv3HrSqjRpgdFmx7vQGjntNEoex1SU4e9Lxcxuihz"
+        ]
+      ],
+      "from": "33ecsSvHk5yK2xeYULz1iAJUSpQ64WoZT8j3iLct46LM3ChLK5eJ9adD5NaqqaVHuGDWAUNcBoGQPFD4yp3X1yFP#2",
+      "intent": "Withdraw hyUSD from the Earn Pool",
+      "programId": "HysTabVUfmQBFcmzu1ctRd1Y1fxd66RBpboy1bmtDSQQ",
+      "sentence": "CcUrRBMqrCuMPVfd6sVTBJhyhBA1dE7qDoJkSy95bbcw burns 198.501131 eHYUSD from AE8bGkeZjWjB4fmragDcENESip2U499b4Bvg2TU1U3V4 to withdraw their share of the Earn Pool's hyUSD, less the withdrawal fee, paid into 72uYSGeMZrmTykeJXXnde1eh1V8HgEqjmg1QmeejaVWk",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GqAsrdRzbKnKzUKTJTRtom2eLFh527F9xtE99UthXMUk:sw",
+        "2jk7miWrsTbt5hUSaCXPkEQPvuUMgbFLpgMzMQw3Z6ar:w",
+        "9cd2sAfbBvKs4SX9YKo4dcjwP3TgTVQ8dT5koshGcDND",
+        "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E",
+        "FnB6TfsdGds3tfztULPQCacAU87mWQUmHL7iNtMnrQ3b:w",
+        "3HT6dD6APJh89XJs9rkn3BmsvkXE9jPG9dWJmUjWu6TS",
+        "Hh8N3Fdauxgq1jjcKdzGBR3D8cdkpLZrFEVumL1tYQLp:w",
+        "2PvuA1MXbrcp2N4Vhjkfku3vm8SdWHiYs9iKtamCDqp3:w",
+        "5YrRAQag9BbJkauDtJkd1vsTquXT6N46oU8rJ66GDxHd",
+        "EqozKyMj7FVnLHc2cJj3VC25aBr4AhVh1cGM2WDajGe9:w",
+        "HnnGv3HrSqjRpgdFmx7vQGjntNEoex1SU4e9Lxcxuihz:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "8fjUWoZTb8ox8JFRJTb7WznL1V8oJT9o21kQKHJzbTS8",
+        "HysTabVUfmQBFcmzu1ctRd1Y1fxd66RBpboy1bmtDSQQ"
+      ],
+      "data": "35fe1af277ed4921ea7463e60000000001db35315c01000000fa1e00000000000000fc",
+      "fields": [
+        [
+          "eHYUSD Burned",
+          "3,865.277674"
+        ],
+        [
+          "Slippage Check (expected out and tolerance, each Bits × 10^Exp)",
+          "Expected Token Out: Bits: 5841696219, Exp: -6, Slippage Tolerance: Bits: 30, Exp: -4"
+        ],
+        [
+          "User",
+          "GqAsrdRzbKnKzUKTJTRtom2eLFh527F9xtE99UthXMUk"
+        ],
+        [
+          "hyUSD Mint",
+          "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E"
+        ],
+        [
+          "Your hyUSD Account",
+          "FnB6TfsdGds3tfztULPQCacAU87mWQUmHL7iNtMnrQ3b"
+        ],
+        [
+          "hyUSD Fee Vault",
+          "Hh8N3Fdauxgq1jjcKdzGBR3D8cdkpLZrFEVumL1tYQLp"
+        ],
+        [
+          "Your eHYUSD Account",
+          "2PvuA1MXbrcp2N4Vhjkfku3vm8SdWHiYs9iKtamCDqp3"
+        ],
+        [
+          "Earn Pool hyUSD Account",
+          "EqozKyMj7FVnLHc2cJj3VC25aBr4AhVh1cGM2WDajGe9"
+        ],
+        [
+          "eHYUSD Mint",
+          "HnnGv3HrSqjRpgdFmx7vQGjntNEoex1SU4e9Lxcxuihz"
+        ]
+      ],
+      "from": "KbcUDdkq5djYLzd7fVFaf2G85AfAQ3tz7hMTYM2SSqWSCuHs6cHniHUN84VLScPh6EUE2wcdp4yDBithggJDhiH#4.1",
+      "intent": "Withdraw hyUSD from the Earn Pool",
+      "programId": "HysTabVUfmQBFcmzu1ctRd1Y1fxd66RBpboy1bmtDSQQ",
+      "sentence": "GqAsrdRzbKnKzUKTJTRtom2eLFh527F9xtE99UthXMUk burns 3,865.277674 eHYUSD from 2PvuA1MXbrcp2N4Vhjkfku3vm8SdWHiYs9iKtamCDqp3 to withdraw their share of the Earn Pool's hyUSD, less the withdrawal fee, paid into FnB6TfsdGds3tfztULPQCacAU87mWQUmHL7iNtMnrQ3b",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "oCMT8N8xcVdJ1wmhMjna8qBidFmCdAkoypNfPiPEtYz:w",
+        "2jk7miWrsTbt5hUSaCXPkEQPvuUMgbFLpgMzMQw3Z6ar",
+        "9cd2sAfbBvKs4SX9YKo4dcjwP3TgTVQ8dT5koshGcDND",
+        "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E",
+        "6xyTk2dEDdpfTVWDN85EY1a5jcei6QmEdKGTBERmdM18:w",
+        "25AbqqhtdZyCAWR53FBW2aUMvkDovTocqk5nF5Fx36Ja:w",
+        "5YrRAQag9BbJkauDtJkd1vsTquXT6N46oU8rJ66GDxHd",
+        "EqozKyMj7FVnLHc2cJj3VC25aBr4AhVh1cGM2WDajGe9:w",
+        "5YWerkcqAXTSCzKC1X52BXtfv2aoNCB6wzv7wEXuGWpq",
+        "HnnGv3HrSqjRpgdFmx7vQGjntNEoex1SU4e9Lxcxuihz:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "8fjUWoZTb8ox8JFRJTb7WznL1V8oJT9o21kQKHJzbTS8",
+        "HysTabVUfmQBFcmzu1ctRd1Y1fxd66RBpboy1bmtDSQQ"
+      ],
+      "data": "bac68ce981276299e8880500000000000196a8030000000000fa1900000000000000fc",
+      "fields": [
+        [
+          "hyUSD Deposited",
+          "0.362728"
+        ],
+        [
+          "Slippage Check (expected out and tolerance, each Bits × 10^Exp)",
+          "Expected Token Out: Bits: 239766, Exp: -6, Slippage Tolerance: Bits: 25, Exp: -4"
+        ],
+        [
+          "User",
+          "oCMT8N8xcVdJ1wmhMjna8qBidFmCdAkoypNfPiPEtYz"
+        ],
+        [
+          "hyUSD Mint",
+          "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E"
+        ],
+        [
+          "Your hyUSD Account",
+          "6xyTk2dEDdpfTVWDN85EY1a5jcei6QmEdKGTBERmdM18"
+        ],
+        [
+          "Your eHYUSD Account",
+          "25AbqqhtdZyCAWR53FBW2aUMvkDovTocqk5nF5Fx36Ja"
+        ],
+        [
+          "Earn Pool hyUSD Account",
+          "EqozKyMj7FVnLHc2cJj3VC25aBr4AhVh1cGM2WDajGe9"
+        ],
+        [
+          "eHYUSD Mint",
+          "HnnGv3HrSqjRpgdFmx7vQGjntNEoex1SU4e9Lxcxuihz"
+        ]
+      ],
+      "from": "3EqvMqBmQPf3yP62GnrcaXyLQKMND357gwdmnfK8ajN4zZDYxoDjbxoW9RTkhhBjN5Wt6wuUo5VEkQJkvkUakoM#1.10",
+      "intent": "Deposit hyUSD to the Earn Pool",
+      "programId": "HysTabVUfmQBFcmzu1ctRd1Y1fxd66RBpboy1bmtDSQQ",
+      "sentence": "oCMT8N8xcVdJ1wmhMjna8qBidFmCdAkoypNfPiPEtYz deposits 0.362728 hyUSD from 6xyTk2dEDdpfTVWDN85EY1a5jcei6QmEdKGTBERmdM18 into the Earn Pool for eHYUSD, paid into 25AbqqhtdZyCAWR53FBW2aUMvkDovTocqk5nF5Fx36Ja",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "oCMT8N8xcVdJ1wmhMjna8qBidFmCdAkoypNfPiPEtYz:w",
+        "2jk7miWrsTbt5hUSaCXPkEQPvuUMgbFLpgMzMQw3Z6ar",
+        "9cd2sAfbBvKs4SX9YKo4dcjwP3TgTVQ8dT5koshGcDND",
+        "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E",
+        "6xyTk2dEDdpfTVWDN85EY1a5jcei6QmEdKGTBERmdM18:w",
+        "25AbqqhtdZyCAWR53FBW2aUMvkDovTocqk5nF5Fx36Ja:w",
+        "5YrRAQag9BbJkauDtJkd1vsTquXT6N46oU8rJ66GDxHd",
+        "EqozKyMj7FVnLHc2cJj3VC25aBr4AhVh1cGM2WDajGe9:w",
+        "5YWerkcqAXTSCzKC1X52BXtfv2aoNCB6wzv7wEXuGWpq",
+        "HnnGv3HrSqjRpgdFmx7vQGjntNEoex1SU4e9Lxcxuihz:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "8fjUWoZTb8ox8JFRJTb7WznL1V8oJT9o21kQKHJzbTS8",
+        "HysTabVUfmQBFcmzu1ctRd1Y1fxd66RBpboy1bmtDSQQ"
+      ],
+      "data": "bac68ce98127629951abb017000000000128cca80f00000000fa1900000000000000fc",
+      "fields": [
+        [
+          "hyUSD Deposited",
+          "397.454161"
+        ],
+        [
+          "Slippage Check (expected out and tolerance, each Bits × 10^Exp)",
+          "Expected Token Out: Bits: 262720552, Exp: -6, Slippage Tolerance: Bits: 25, Exp: -4"
+        ],
+        [
+          "User",
+          "oCMT8N8xcVdJ1wmhMjna8qBidFmCdAkoypNfPiPEtYz"
+        ],
+        [
+          "hyUSD Mint",
+          "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E"
+        ],
+        [
+          "Your hyUSD Account",
+          "6xyTk2dEDdpfTVWDN85EY1a5jcei6QmEdKGTBERmdM18"
+        ],
+        [
+          "Your eHYUSD Account",
+          "25AbqqhtdZyCAWR53FBW2aUMvkDovTocqk5nF5Fx36Ja"
+        ],
+        [
+          "Earn Pool hyUSD Account",
+          "EqozKyMj7FVnLHc2cJj3VC25aBr4AhVh1cGM2WDajGe9"
+        ],
+        [
+          "eHYUSD Mint",
+          "HnnGv3HrSqjRpgdFmx7vQGjntNEoex1SU4e9Lxcxuihz"
+        ]
+      ],
+      "from": "jVAV5fcs2X8Etq8kUH7uvSBV81m3LBNzN5Gtskv7sqG6iyFm9N2j4JXs8Fqq3X2SG9HRnNAUBWWCjkpTSc44Uwz#1.10",
+      "intent": "Deposit hyUSD to the Earn Pool",
+      "programId": "HysTabVUfmQBFcmzu1ctRd1Y1fxd66RBpboy1bmtDSQQ",
+      "sentence": "oCMT8N8xcVdJ1wmhMjna8qBidFmCdAkoypNfPiPEtYz deposits 397.454161 hyUSD from 6xyTk2dEDdpfTVWDN85EY1a5jcei6QmEdKGTBERmdM18 into the Earn Pool for eHYUSD, paid into 25AbqqhtdZyCAWR53FBW2aUMvkDovTocqk5nF5Fx36Ja",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}
