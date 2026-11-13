@@ -696,7 +696,7 @@ programId = "HYEXCHtHkBagdStcJCp3xbbb9B7sdMdWXFNj6mdsG4hn"
 network = "mainnet"
 programHash = "c083df6d55d0b3b7586be546940776c79fda86942e8dd3a4b29ea2e3dbe5b94f"
 authority = "GzyhwK4y7EKPEevAMc2TEpgi1Y3znwj14FUzkHmCMiNP"
-idlSha256 = "c19c5d2610aef3eb8ab8509a51769de436d44488b6e8777f9aec5b0a12477a70"
+idlSha256 = "f3951db4f1cc8f0a1a2ddbae66a093ac1bdb9267b0fe1b7eab2a61d82af5be5a"
 reviewed = "2026-11-12"
 
 [[builds]]
@@ -714,7 +714,7 @@ programId = "HysTabVUfmQBFcmzu1ctRd1Y1fxd66RBpboy1bmtDSQQ"
 network = "mainnet"
 programHash = "94aade9f612b54bd33d4be5fd1a294cef52e9f8c20496f63bbf2d67b65bed03f"
 authority = "GzyhwK4y7EKPEevAMc2TEpgi1Y3znwj14FUzkHmCMiNP"
-idlSha256 = "cc8a6ac9ec459487e6e84bded2fb661a1b950a1f6f888824c6b2e057cbb7954d"
+idlSha256 = "a8b315dc857eed38a7b95febf593be9983d05b4fe019556d5414e07e9e5ea250"
 reviewed = "2026-11-12"
 
 [[builds]]
