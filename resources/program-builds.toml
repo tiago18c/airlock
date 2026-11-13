@@ -837,3 +837,12 @@ idlSha256 = "2f7c7ddbcf7a8aa5a733d5b441c5b4d586f4ae0df0d7da539561889fdf9fa5dc"
 source = { repo = "https://github.com/solendprotocol/solana-program-library", commit = "d04ce00bbf4356c4fd32b3be38eb9760b696bb3e" }
 verified = "2Fwvr3MKhHhqakgjjEWcpWZZabbRCetHjukHi1zfKxjk"
 reviewed = "2026-11-12"
+
+[[builds]]
+# Jito Vault Program (pack). The binary logs the 32 instruction names of vault_program/src/lib.rs on the v0.0.5 branch of jito-foundation/restaking, one per tag the IDL lists, and holds a log line that branch added on 2025-04-16, the day before this deploy. Every sampled instruction (tags 11, 12, 14 and 23 to 28) decodes with the IDL at its exact data length and names all of its accounts.
+programId = "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8"
+network = "mainnet"
+programHash = "407c44877d614be1ab40e6b061dad240b908efe0f38ff4c99db794983316edf5"
+authority = "5eosrve6LktMZgVNszYzebgmmC7BjLK8NoWyRQtcmGTF"
+idlSha256 = "186516b4a10973af76c2a1d90ca569db74319dfe8a3d9b2db4853ec1c574412b"
+reviewed = "2026-11-12"

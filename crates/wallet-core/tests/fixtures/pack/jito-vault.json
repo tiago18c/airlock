@@ -1,0 +1,556 @@
+{
+  "accounts": {
+    "ezSoL6fY1PVdJcJsUpe5CM3xkfmy3zoVCABybm5WtiC": {
+      "data": "AQAAALDv+xhwt2F5gEbO203dImVo/pg/J4vUDXP2g+ByV27a4Tn4wxgVAAAJAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "kyJtowDDACsJDm2jr3VZdpCA6pZcKAaNftQwrJ8KBQP": {
+      "data": "AQAAAIiCbtW841I92ZpHjGdcUbHsTgYHDCUQJtjNwv6POV4M3Wt7BdnRBQAJAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    }
+  },
+  "instructions": [
+    {
+      "accounts": [
+        "UwuSgAq4zByffCGCrWH87DsjfsewYjuqHfJEpzw1Jq3",
+        "CQpvXgoaaawDCLh8FwMZEwQqnPakRUZ5BnzhjnEBPJv:w",
+        "HWzLHqVdzV8cJaX5pChHie7maVqLECx1aMNVDL1wKVPA:w",
+        "99VPAAKjhnCcDEUn7LPpQacinVjaYaHvhAm3yKyAzAd:w",
+        "5zSfddgqQ5wT4aTYcXe2zGQXUY9qdSSL7cdYaiHp2uj6:sw",
+        "hGFXPr3UZxcFxK65yLjvk5xPTvjvTFvMu4rQGY1x8ep:w",
+        "BhYpKrgtZzwJe3nxekKPtMqHYvfVfbCpr1h6R9DS7npJ:sw",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8:w"
+      ],
+      "data": "0c836cc22002000000",
+      "fields": [
+        [
+          "Receipt Tokens",
+          "9,139,547,267 base units"
+        ],
+        [
+          "Vault",
+          "CQpvXgoaaawDCLh8FwMZEwQqnPakRUZ5BnzhjnEBPJv"
+        ],
+        [
+          "Withdrawal Ticket",
+          "HWzLHqVdzV8cJaX5pChHie7maVqLECx1aMNVDL1wKVPA"
+        ],
+        [
+          "Ticket Receipt Token Account",
+          "99VPAAKjhnCcDEUn7LPpQacinVjaYaHvhAm3yKyAzAd"
+        ],
+        [
+          "Staker",
+          "5zSfddgqQ5wT4aTYcXe2zGQXUY9qdSSL7cdYaiHp2uj6"
+        ],
+        [
+          "Staker Receipt Token Account",
+          "hGFXPr3UZxcFxK65yLjvk5xPTvjvTFvMu4rQGY1x8ep"
+        ],
+        [
+          "Ticket Seed Key",
+          "BhYpKrgtZzwJe3nxekKPtMqHYvfVfbCpr1h6R9DS7npJ"
+        ]
+      ],
+      "from": "3E7uvPrkza1kWn3J4macpXPa13wwUG3RbhHgGaeX2Yv4z6UGRDyQ3Tn5jiVzhkjo3q27CqJpjRvHnhSATRJXDHiX#4",
+      "intent": "Request a withdrawal",
+      "programId": "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8",
+      "sentence": "5zSfddgqQ5wT4aTYcXe2zGQXUY9qdSSL7cdYaiHp2uj6 asks to withdraw from vault CQpvXgoaaawDCLh8FwMZEwQqnPakRUZ5BnzhjnEBPJv, locking 9,139,547,267 base units of its receipt token from hGFXPr3UZxcFxK65yLjvk5xPTvjvTFvMu4rQGY1x8ep in withdrawal ticket HWzLHqVdzV8cJaX5pChHie7maVqLECx1aMNVDL1wKVPA, to be paid out later, after one full epoch has passed",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "UwuSgAq4zByffCGCrWH87DsjfsewYjuqHfJEpzw1Jq3",
+        "AKkqZwemKgFJG86FYQmmS8f8TVDqjfd56b2LYdSZLAPF:w",
+        "2QTqDJwcFecU3n3nxyqyxGJFEmatVX2XES31DoZLk1K3:w",
+        "5DVP5xyHVpbQgPKSr5wAMk1Yf9sovtU2WrtjFHkp3j5e:w",
+        "FHuCgH51Km639hZXy3F5cLyKJGGUbVe23TfKcFcPtLKK:sw",
+        "BerenWs2Yk6mwTqbYDBkjpSXqrSYFBZpKZRRKhFxhFAm:w",
+        "6k4B3j8xqo8ffod9YPU3hjRSkqsuKKuz1DzejtbtD3mt:s",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111"
+      ],
+      "data": "0c25802f7f00000000",
+      "fields": [
+        [
+          "Receipt Tokens",
+          "2,133,819,429 base units"
+        ],
+        [
+          "Vault",
+          "AKkqZwemKgFJG86FYQmmS8f8TVDqjfd56b2LYdSZLAPF"
+        ],
+        [
+          "Withdrawal Ticket",
+          "2QTqDJwcFecU3n3nxyqyxGJFEmatVX2XES31DoZLk1K3"
+        ],
+        [
+          "Ticket Receipt Token Account",
+          "5DVP5xyHVpbQgPKSr5wAMk1Yf9sovtU2WrtjFHkp3j5e"
+        ],
+        [
+          "Staker",
+          "FHuCgH51Km639hZXy3F5cLyKJGGUbVe23TfKcFcPtLKK"
+        ],
+        [
+          "Staker Receipt Token Account",
+          "BerenWs2Yk6mwTqbYDBkjpSXqrSYFBZpKZRRKhFxhFAm"
+        ],
+        [
+          "Ticket Seed Key",
+          "6k4B3j8xqo8ffod9YPU3hjRSkqsuKKuz1DzejtbtD3mt"
+        ]
+      ],
+      "from": "4ugJFui74gm9hf1AqgC4pm2oz2ozB6EUBETn2rJ1dfjaGe43HTvHSfusPJW2JuimZtF6MvRXthAjBLrRaetF589Z#2",
+      "intent": "Request a withdrawal",
+      "programId": "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8",
+      "sentence": "FHuCgH51Km639hZXy3F5cLyKJGGUbVe23TfKcFcPtLKK asks to withdraw from vault AKkqZwemKgFJG86FYQmmS8f8TVDqjfd56b2LYdSZLAPF, locking 2,133,819,429 base units of its receipt token from BerenWs2Yk6mwTqbYDBkjpSXqrSYFBZpKZRRKhFxhFAm in withdrawal ticket 2QTqDJwcFecU3n3nxyqyxGJFEmatVX2XES31DoZLk1K3, to be paid out later, after one full epoch has passed",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "UwuSgAq4zByffCGCrWH87DsjfsewYjuqHfJEpzw1Jq3",
+        "ABsoYTwRPBJEf55G7N8hVw7tQnDKBA6GkZCKBVrjTTcf:w",
+        "HzwDsHJBtuSTRx3VV6bz1R8yrLywxKgfGte7FASXU8Gd",
+        "kyJtowDDACsJDm2jr3VZdpCA6pZcKAaNftQwrJ8KBQP:w",
+        "Bpx88TZeCRUPWrHT1qyEbkHrtQXn2hwvr6hPvXU9JQZ7:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "19",
+      "fields": [
+        [
+          "Vault",
+          "ABsoYTwRPBJEf55G7N8hVw7tQnDKBA6GkZCKBVrjTTcf"
+        ],
+        [
+          "Vault Token Account",
+          "HzwDsHJBtuSTRx3VV6bz1R8yrLywxKgfGte7FASXU8Gd"
+        ],
+        [
+          "Receipt Token",
+          "kyJtowDDACsJDm2jr3VZdpCA6pZcKAaNftQwrJ8KBQP"
+        ],
+        [
+          "Vault Fee Account",
+          "Bpx88TZeCRUPWrHT1qyEbkHrtQXn2hwvr6hPvXU9JQZ7"
+        ]
+      ],
+      "from": "2CnGuCtcqLuWQYgm6sBsWFnrmea4N6m4APfcEeWUqY2gnGbmCSyFMTWPm2HEXJMP6gFLYB8sjwTxM3LHWu5cVVaA#5",
+      "intent": "Update a vault's balance",
+      "programId": "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8",
+      "sentence": "Updates the balance vault ABsoYTwRPBJEf55G7N8hVw7tQnDKBA6GkZCKBVrjTTcf records to what HzwDsHJBtuSTRx3VV6bz1R8yrLywxKgfGte7FASXU8Gd holds, minting the reward fee, if any, in receipt tokens to Bpx88TZeCRUPWrHT1qyEbkHrtQXn2hwvr6hPvXU9JQZ7",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "UwuSgAq4zByffCGCrWH87DsjfsewYjuqHfJEpzw1Jq3",
+        "ABsoYTwRPBJEf55G7N8hVw7tQnDKBA6GkZCKBVrjTTcf:w",
+        "kyJtowDDACsJDm2jr3VZdpCA6pZcKAaNftQwrJ8KBQP:w",
+        "FsVAxVU4R4UoiXr4Yd2SsYuncmgt5J1mNkEk4ywwcvbr:sw",
+        "3wm6x6N4Fhjw8FHxGQxejKg8cbbEV5PxsTvL14kXKJLd:w",
+        "HzwDsHJBtuSTRx3VV6bz1R8yrLywxKgfGte7FASXU8Gd:w",
+        "92hQ7HUH9fSAH8JXYQfPyW45KvAX99MEKp821xUbbWob:w",
+        "Bpx88TZeCRUPWrHT1qyEbkHrtQXn2hwvr6hPvXU9JQZ7:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8"
+      ],
+      "data": "0b0034e23004000000b70744ef03000000",
+      "fields": [
+        [
+          "Deposit Amount",
+          "18,000,000,000 base units"
+        ],
+        [
+          "Minimum Receipt Tokens",
+          "16.899114935"
+        ],
+        [
+          "Vault",
+          "ABsoYTwRPBJEf55G7N8hVw7tQnDKBA6GkZCKBVrjTTcf"
+        ],
+        [
+          "Receipt Token",
+          "kyJtowDDACsJDm2jr3VZdpCA6pZcKAaNftQwrJ8KBQP"
+        ],
+        [
+          "Depositor",
+          "FsVAxVU4R4UoiXr4Yd2SsYuncmgt5J1mNkEk4ywwcvbr"
+        ],
+        [
+          "Depositor Token Account",
+          "3wm6x6N4Fhjw8FHxGQxejKg8cbbEV5PxsTvL14kXKJLd"
+        ],
+        [
+          "Vault Token Account",
+          "HzwDsHJBtuSTRx3VV6bz1R8yrLywxKgfGte7FASXU8Gd"
+        ],
+        [
+          "Depositor Receipt Token Account",
+          "92hQ7HUH9fSAH8JXYQfPyW45KvAX99MEKp821xUbbWob"
+        ],
+        [
+          "Vault Fee Account",
+          "Bpx88TZeCRUPWrHT1qyEbkHrtQXn2hwvr6hPvXU9JQZ7"
+        ]
+      ],
+      "from": "4g6fLZsFduY8kXG3VG3RKNYu1GBwnnfweRe4kbso4B8Yx9E45oChV1GBKyseAwxhiQTWsPNDeiubYYuowrGppshB#5",
+      "intent": "Deposit into a vault",
+      "programId": "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8",
+      "sentence": "FsVAxVU4R4UoiXr4Yd2SsYuncmgt5J1mNkEk4ywwcvbr deposits 18,000,000,000 base units of vault ABsoYTwRPBJEf55G7N8hVw7tQnDKBA6GkZCKBVrjTTcf's supported token for at least 16.899114935 of kyJtowDDACsJDm2jr3VZdpCA6pZcKAaNftQwrJ8KBQP into 92hQ7HUH9fSAH8JXYQfPyW45KvAX99MEKp821xUbbWob; the vault's deposit fee is minted to Bpx88TZeCRUPWrHT1qyEbkHrtQXn2hwvr6hPvXU9JQZ7",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "UwuSgAq4zByffCGCrWH87DsjfsewYjuqHfJEpzw1Jq3",
+        "CugziSqZXcUStNPXbtRmq6atsrHqWY2fH2tAhsyApQrV:w",
+        "ezSoL6fY1PVdJcJsUpe5CM3xkfmy3zoVCABybm5WtiC:w",
+        "AZRhwjWJ6BUbRFpzq5NN5mzBJC7LTNX1H78ZuUP3BoKR:sw",
+        "9ZFgcka1pLFiXJW5eLXrJE9RSS3dBZ9L8KwRL8WYSDLW:w",
+        "9VBi7unB9Sz5eBNUdvQH2xzUENXvNsaiEkP9p2Cabvsy:w",
+        "EZCZ3zLye9gNe75V7W2JSLMyVuSWnCLPwK7Q9UYjMLaR:w",
+        "AYXeSX9PdqF1SQ2ngV9X3JhWLfPTDLA1thCbdquhangN:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "0b4635cbc60100000027efbcc101000000",
+      "fields": [
+        [
+          "Deposit Amount",
+          "7,630,173,510 base units"
+        ],
+        [
+          "Minimum Receipt Tokens",
+          "7.545351975"
+        ],
+        [
+          "Vault",
+          "CugziSqZXcUStNPXbtRmq6atsrHqWY2fH2tAhsyApQrV"
+        ],
+        [
+          "Receipt Token",
+          "ezSoL6fY1PVdJcJsUpe5CM3xkfmy3zoVCABybm5WtiC"
+        ],
+        [
+          "Depositor",
+          "AZRhwjWJ6BUbRFpzq5NN5mzBJC7LTNX1H78ZuUP3BoKR"
+        ],
+        [
+          "Depositor Token Account",
+          "9ZFgcka1pLFiXJW5eLXrJE9RSS3dBZ9L8KwRL8WYSDLW"
+        ],
+        [
+          "Vault Token Account",
+          "9VBi7unB9Sz5eBNUdvQH2xzUENXvNsaiEkP9p2Cabvsy"
+        ],
+        [
+          "Depositor Receipt Token Account",
+          "EZCZ3zLye9gNe75V7W2JSLMyVuSWnCLPwK7Q9UYjMLaR"
+        ],
+        [
+          "Vault Fee Account",
+          "AYXeSX9PdqF1SQ2ngV9X3JhWLfPTDLA1thCbdquhangN"
+        ]
+      ],
+      "from": "21R47vgyAziduWAxAprNxJCMJpU41op3ECeiM2jgtw2fWjQDAia9A2BmCtsKpzyJxGYrjhGQCG1CE3WKLEyxFBFU#3",
+      "intent": "Deposit into a vault",
+      "programId": "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8",
+      "sentence": "AZRhwjWJ6BUbRFpzq5NN5mzBJC7LTNX1H78ZuUP3BoKR deposits 7,630,173,510 base units of vault CugziSqZXcUStNPXbtRmq6atsrHqWY2fH2tAhsyApQrV's supported token for at least 7.545351975 of ezSoL6fY1PVdJcJsUpe5CM3xkfmy3zoVCABybm5WtiC into EZCZ3zLye9gNe75V7W2JSLMyVuSWnCLPwK7Q9UYjMLaR; the vault's deposit fee is minted to AYXeSX9PdqF1SQ2ngV9X3JhWLfPTDLA1thCbdquhangN",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "UwuSgAq4zByffCGCrWH87DsjfsewYjuqHfJEpzw1Jq3",
+        "CKfPKCBJqiq9KcQpVGvuNHf7F8iqdSD8rMG6rXXzYmH:w",
+        "46CCaeEf2TJ2S2ZiB1TCLxTCZKH9jeG8pgFxAJ7DTPzs:w",
+        "CRnkKQTxctQ7LHVN3yssdgJyEksBJeBrDdwZAxBtsJoZ:sw"
+      ],
+      "data": "1c3c04000000000000",
+      "fields": [
+        [
+          "Epoch",
+          "1,084"
+        ],
+        [
+          "Vault",
+          "CKfPKCBJqiq9KcQpVGvuNHf7F8iqdSD8rMG6rXXzYmH"
+        ],
+        [
+          "Update Tracker",
+          "46CCaeEf2TJ2S2ZiB1TCLxTCZKH9jeG8pgFxAJ7DTPzs"
+        ],
+        [
+          "Payer",
+          "CRnkKQTxctQ7LHVN3yssdgJyEksBJeBrDdwZAxBtsJoZ"
+        ]
+      ],
+      "from": "38w3QAuWjavfFAPGw5izV8Z7KkuqhMPYrSS6urMXF85GA9FuButvLAfbFTV724rc7v195FAzbBG1PtRXVnsgxK9j#2",
+      "intent": "Finish a vault's epoch update",
+      "programId": "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8",
+      "sentence": "CRnkKQTxctQ7LHVN3yssdgJyEksBJeBrDdwZAxBtsJoZ closes the update of vault CKfPKCBJqiq9KcQpVGvuNHf7F8iqdSD8rMG6rXXzYmH for epoch 1084, finishing the update if that is the current epoch, and takes back its rent",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "UwuSgAq4zByffCGCrWH87DsjfsewYjuqHfJEpzw1Jq3",
+        "7x21QvzkwA7m3Fk4v6QGPk5FrEdTx3Bcncet4XTuv2JN:w",
+        "A13tnvhPh5FgW8J7GKoDpm1ihE3FbjsULTBq48Bkaj58",
+        "8m5xoCf2uZPebE3jKchQ3KN4iLxmdupNzGXbum59paVJ:w",
+        "HmbXS5uoAucGPfkHNzPPaycEggRDJaKszhKcTaKXc4ZQ:w"
+      ],
+      "data": "1b",
+      "fields": [
+        [
+          "Vault",
+          "7x21QvzkwA7m3Fk4v6QGPk5FrEdTx3Bcncet4XTuv2JN"
+        ],
+        [
+          "Operator",
+          "A13tnvhPh5FgW8J7GKoDpm1ihE3FbjsULTBq48Bkaj58"
+        ],
+        [
+          "Operator Delegation",
+          "8m5xoCf2uZPebE3jKchQ3KN4iLxmdupNzGXbum59paVJ"
+        ],
+        [
+          "Update Tracker",
+          "HmbXS5uoAucGPfkHNzPPaycEggRDJaKszhKcTaKXc4ZQ"
+        ]
+      ],
+      "from": "48GbyjW72Q5ekMDJhpmvBL9xZGxUVrxhkFrf6DoacUAM476V5Mn2W1yaQSPELGY4bnTGnZKvuNEXekB88ruBV9fK#2",
+      "intent": "Update an operator delegation",
+      "programId": "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8",
+      "sentence": "Updates operator A13tnvhPh5FgW8J7GKoDpm1ihE3FbjsULTBq48Bkaj58's delegation in this epoch's update of vault 7x21QvzkwA7m3Fk4v6QGPk5FrEdTx3Bcncet4XTuv2JN",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "UwuSgAq4zByffCGCrWH87DsjfsewYjuqHfJEpzw1Jq3",
+        "AKkqZwemKgFJG86FYQmmS8f8TVDqjfd56b2LYdSZLAPF:w",
+        "2L2jZorGDFqsnMhHv9MNZdA1uxihbbDaJufaN8ABTc1E:w",
+        "CRnkKQTxctQ7LHVN3yssdgJyEksBJeBrDdwZAxBtsJoZ:sw",
+        "11111111111111111111111111111111"
+      ],
+      "data": "1a00",
+      "fields": [
+        [
+          "Withdrawal Allocation",
+          "Greedy"
+        ],
+        [
+          "Vault",
+          "AKkqZwemKgFJG86FYQmmS8f8TVDqjfd56b2LYdSZLAPF"
+        ],
+        [
+          "Update Tracker",
+          "2L2jZorGDFqsnMhHv9MNZdA1uxihbbDaJufaN8ABTc1E"
+        ],
+        [
+          "Payer",
+          "CRnkKQTxctQ7LHVN3yssdgJyEksBJeBrDdwZAxBtsJoZ"
+        ]
+      ],
+      "from": "2dhQNmh2rFnu2aPXHHX9EYwX2HTw2CbSEoUXBNhnX8U5WLsapJsr8eLG4TahEnt6UctJLrtx8YdeA1hdHduFJjYL#2",
+      "intent": "Start a vault's epoch update",
+      "programId": "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8",
+      "sentence": "CRnkKQTxctQ7LHVN3yssdgJyEksBJeBrDdwZAxBtsJoZ starts this epoch's update of vault AKkqZwemKgFJG86FYQmmS8f8TVDqjfd56b2LYdSZLAPF in 2L2jZorGDFqsnMhHv9MNZdA1uxihbbDaJufaN8ABTc1E",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "UwuSgAq4zByffCGCrWH87DsjfsewYjuqHfJEpzw1Jq3",
+        "AKkqZwemKgFJG86FYQmmS8f8TVDqjfd56b2LYdSZLAPF:w",
+        "3fJSKVEvVVet79Gi96LtYAjVewa1TNvT49YhhYvBW8Ep:w",
+        "bzSoL4Ehh4AsaPdVD2ndkeHy9nmKnP8YRwVt3TfaJQq:w",
+        "CPskaRNio36EzbxgMoBNqE2GzCJJxJtTbYaPJMifyozt:sw",
+        "9e3ikFKDir1pyQ35QEWLVyPT7QFTNHXv5mf9FyYE1zzd:w",
+        "8LFQ7qmyFhkNU6QbRtm9PLYMZx2AH6HddbN55bZM1B6i:w",
+        "EVdUDXhuWgaR3qE96ah9RywA979nh8Aky4NB1mrz6bBP:w",
+        "CXbyGJLK2qwHZYdewQ5HdnKHEJP9DADsHDqPYyrfHrjF:w",
+        "A32aFD3SeN6VDQX2qzBVdmK6NdCaf9eFFU1osuiJWwUa:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111"
+      ],
+      "data": "0e",
+      "fields": [
+        [
+          "Vault",
+          "AKkqZwemKgFJG86FYQmmS8f8TVDqjfd56b2LYdSZLAPF"
+        ],
+        [
+          "Vault Token Account",
+          "3fJSKVEvVVet79Gi96LtYAjVewa1TNvT49YhhYvBW8Ep"
+        ],
+        [
+          "Receipt Token",
+          "bzSoL4Ehh4AsaPdVD2ndkeHy9nmKnP8YRwVt3TfaJQq"
+        ],
+        [
+          "Staker",
+          "CPskaRNio36EzbxgMoBNqE2GzCJJxJtTbYaPJMifyozt"
+        ],
+        [
+          "Staker Token Account",
+          "9e3ikFKDir1pyQ35QEWLVyPT7QFTNHXv5mf9FyYE1zzd"
+        ],
+        [
+          "Withdrawal Ticket",
+          "8LFQ7qmyFhkNU6QbRtm9PLYMZx2AH6HddbN55bZM1B6i"
+        ],
+        [
+          "Ticket Receipt Token Account",
+          "EVdUDXhuWgaR3qE96ah9RywA979nh8Aky4NB1mrz6bBP"
+        ],
+        [
+          "Vault Fee Account",
+          "CXbyGJLK2qwHZYdewQ5HdnKHEJP9DADsHDqPYyrfHrjF"
+        ],
+        [
+          "Program Fee Account",
+          "A32aFD3SeN6VDQX2qzBVdmK6NdCaf9eFFU1osuiJWwUa"
+        ]
+      ],
+      "from": "5YN7ijQN3ULWfUasFKm9QhYhJ4mTd3ZxKBCW8K5iBCL8bDPz9dinTAqpk3iqa9GX5GGFP5bWbgEkg2hBNQHZxZMh#3",
+      "intent": "Complete a withdrawal",
+      "programId": "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8",
+      "sentence": "Pays out withdrawal ticket 8LFQ7qmyFhkNU6QbRtm9PLYMZx2AH6HddbN55bZM1B6i of vault AKkqZwemKgFJG86FYQmmS8f8TVDqjfd56b2LYdSZLAPF: its receipt tokens are burned and the vault's supported token goes to 9e3ikFKDir1pyQ35QEWLVyPT7QFTNHXv5mf9FyYE1zzd of CPskaRNio36EzbxgMoBNqE2GzCJJxJtTbYaPJMifyozt, less the vault's and the program's withdrawal fees",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "UwuSgAq4zByffCGCrWH87DsjfsewYjuqHfJEpzw1Jq3",
+        "CQpvXgoaaawDCLh8FwMZEwQqnPakRUZ5BnzhjnEBPJv:w",
+        "CRFtzwkekKorgdTRSdvsYeqL1vEuVvwGRvweuWCyaRt3:w",
+        "kySo1nETpsZE2NWe5vj2C64mPSciH1SppmHb4XieQ7B:w",
+        "5zSfddgqQ5wT4aTYcXe2zGQXUY9qdSSL7cdYaiHp2uj6:sw",
+        "5zrhGeCquPDwUNtoHe3LxDKxsMpVoKZ4Gnje1fBG8tLd:w",
+        "2irn39o7D64C7SoNx7Q6no3L5TnJeA7f8NwUbMWQH1C9:w",
+        "2psfSuTNvyhaHsexf7Lxreuo3YHoD2Z7n2EDGxQ7Aoac:w",
+        "EQM9GdsSwwrUpYwUm53a1dtsQTdB8XVPVsJB8U3SV4q6:w",
+        "AhhpmQtyoPxDkZupHoFRfEj5aYyfmsqqnhkoZkLpzryd:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8:w"
+      ],
+      "data": "0e",
+      "fields": [
+        [
+          "Vault",
+          "CQpvXgoaaawDCLh8FwMZEwQqnPakRUZ5BnzhjnEBPJv"
+        ],
+        [
+          "Vault Token Account",
+          "CRFtzwkekKorgdTRSdvsYeqL1vEuVvwGRvweuWCyaRt3"
+        ],
+        [
+          "Receipt Token",
+          "kySo1nETpsZE2NWe5vj2C64mPSciH1SppmHb4XieQ7B"
+        ],
+        [
+          "Staker",
+          "5zSfddgqQ5wT4aTYcXe2zGQXUY9qdSSL7cdYaiHp2uj6"
+        ],
+        [
+          "Staker Token Account",
+          "5zrhGeCquPDwUNtoHe3LxDKxsMpVoKZ4Gnje1fBG8tLd"
+        ],
+        [
+          "Withdrawal Ticket",
+          "2irn39o7D64C7SoNx7Q6no3L5TnJeA7f8NwUbMWQH1C9"
+        ],
+        [
+          "Ticket Receipt Token Account",
+          "2psfSuTNvyhaHsexf7Lxreuo3YHoD2Z7n2EDGxQ7Aoac"
+        ],
+        [
+          "Vault Fee Account",
+          "EQM9GdsSwwrUpYwUm53a1dtsQTdB8XVPVsJB8U3SV4q6"
+        ],
+        [
+          "Program Fee Account",
+          "AhhpmQtyoPxDkZupHoFRfEj5aYyfmsqqnhkoZkLpzryd"
+        ]
+      ],
+      "from": "2hFHbtN3X3KghbodcUpNbXYUTMZiQ8wE3vrQwfeTqJHeBFqUbcLY5Lx484FkWMFHL5aYK6K2uXox4xtrPMSqLds8#8",
+      "intent": "Complete a withdrawal",
+      "programId": "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8",
+      "sentence": "Pays out withdrawal ticket 2irn39o7D64C7SoNx7Q6no3L5TnJeA7f8NwUbMWQH1C9 of vault CQpvXgoaaawDCLh8FwMZEwQqnPakRUZ5BnzhjnEBPJv: its receipt tokens are burned and the vault's supported token goes to 5zrhGeCquPDwUNtoHe3LxDKxsMpVoKZ4Gnje1fBG8tLd of 5zSfddgqQ5wT4aTYcXe2zGQXUY9qdSSL7cdYaiHp2uj6, less the vault's and the program's withdrawal fees",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "UwuSgAq4zByffCGCrWH87DsjfsewYjuqHfJEpzw1Jq3",
+        "CQpvXgoaaawDCLh8FwMZEwQqnPakRUZ5BnzhjnEBPJv:w",
+        "GmWQyzNGzMGQySvNCADu9pynAQfUjQm6tJL9cuN5Y3D6",
+        "JEwLVZfUt3gPcQ7pUgiSH6VqoCvwS3iWibqE5Rixeuw:w",
+        "atoWsVhTZz2AqoJgt5oHrLK8h5EDe11NJnpCDM15erL:sw"
+      ],
+      "data": "17008028a546070000",
+      "fields": [
+        [
+          "Amount",
+          "8,000,000,000,000 base units"
+        ],
+        [
+          "Vault",
+          "CQpvXgoaaawDCLh8FwMZEwQqnPakRUZ5BnzhjnEBPJv"
+        ],
+        [
+          "Operator",
+          "GmWQyzNGzMGQySvNCADu9pynAQfUjQm6tJL9cuN5Y3D6"
+        ],
+        [
+          "Operator Delegation",
+          "JEwLVZfUt3gPcQ7pUgiSH6VqoCvwS3iWibqE5Rixeuw"
+        ],
+        [
+          "Delegation Admin",
+          "atoWsVhTZz2AqoJgt5oHrLK8h5EDe11NJnpCDM15erL"
+        ]
+      ],
+      "from": "2c4n6vwBWyCasVJB2Np9BVCZzGLKTKTDXdRAimojSq6GHZhQt4QozyQz6KHnbNJvojA2XJu3dUGoUEz7nZyhTvVp#1",
+      "intent": "Delegate to an operator",
+      "programId": "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8",
+      "sentence": "atoWsVhTZz2AqoJgt5oHrLK8h5EDe11NJnpCDM15erL delegates 8,000,000,000,000 base units of vault CQpvXgoaaawDCLh8FwMZEwQqnPakRUZ5BnzhjnEBPJv's supported token to operator GmWQyzNGzMGQySvNCADu9pynAQfUjQm6tJL9cuN5Y3D6",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "UwuSgAq4zByffCGCrWH87DsjfsewYjuqHfJEpzw1Jq3",
+        "CQpvXgoaaawDCLh8FwMZEwQqnPakRUZ5BnzhjnEBPJv:w",
+        "GZxp4e2Tm3Pw9GyAaxuF6odT3XkRM96jpZkp3nxhoK4Y",
+        "3gDuaUwjgo79woXugSvkmXWsdW1M3cXeFnQScU2Jea8g:w",
+        "atoWsVhTZz2AqoJgt5oHrLK8h5EDe11NJnpCDM15erL:sw"
+      ],
+      "data": "180070d41aeb140000",
+      "fields": [
+        [
+          "Amount",
+          "23,000,000,000,000 base units"
+        ],
+        [
+          "Vault",
+          "CQpvXgoaaawDCLh8FwMZEwQqnPakRUZ5BnzhjnEBPJv"
+        ],
+        [
+          "Operator",
+          "GZxp4e2Tm3Pw9GyAaxuF6odT3XkRM96jpZkp3nxhoK4Y"
+        ],
+        [
+          "Operator Delegation",
+          "3gDuaUwjgo79woXugSvkmXWsdW1M3cXeFnQScU2Jea8g"
+        ],
+        [
+          "Delegation Admin",
+          "atoWsVhTZz2AqoJgt5oHrLK8h5EDe11NJnpCDM15erL"
+        ]
+      ],
+      "from": "isoMwsCcKCGJjE3H73dd2RQ7D4Rgm4D5Hzc6TDDEqSPuAztbwC8qmQPCE1w88CUnkVdgwD21iTiFTa1aRPuf5PH#1",
+      "intent": "Undelegate from an operator",
+      "programId": "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8",
+      "sentence": "atoWsVhTZz2AqoJgt5oHrLK8h5EDe11NJnpCDM15erL starts cooling down 23,000,000,000,000 base units of vault CQpvXgoaaawDCLh8FwMZEwQqnPakRUZ5BnzhjnEBPJv's supported token delegated to operator GZxp4e2Tm3Pw9GyAaxuF6odT3XkRM96jpZkp3nxhoK4Y",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}

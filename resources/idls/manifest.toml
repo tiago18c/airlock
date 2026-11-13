@@ -1188,3 +1188,23 @@ where the collateral mint is an account of the instruction (redeemReserveCollate
 withdrawObligationCollateralAndRedeemReserveCollateral) and initReserve's first deposit \
 its liquidity mint's; every other token amount is in base units. Display nodes added by \
 hand."""
+
+# Jito's vault program, behind vault receipt tokens such as kySOL, ezSOL and
+# fragSOL: people deposit a vault's supported token and receive its receipt
+# token. It publishes no IDL on chain; the file is the Shank IDL in
+# jito-foundation/restaking on the v0.0.5 branch, the release mainnet runs.
+[[idls]]
+file = "jito-vault.json"
+programId = "Vau1t6sLNxnzB7ZDsef8TLbPLfyZMYXH8WTNqUdm9g8"
+name = "jitoVault"
+networks = ["mainnet"]
+source = { kind = "repository", url = "https://github.com/jito-foundation/restaking/blob/53ef96a751e2612cb48176b22da9e75d1c908920/idl/jito_vault.json" }
+changes = """Converted from Shank to Codama (the file names its origin, so each instruction keeps its \
+one-byte tag). Checked against vault_sdk and vault_program at the same commit: every \
+tag, account order and argument matches, so no instruction is changed. \
+optionalAccountStrategy is programId on mintTo, enqueueWithdrawal and \
+burnWithdrawalTicket, whose last account, the vault's mint-burn admin, clients either \
+leave out or pass as the program's address, and removed from the instructions without an \
+optional account. The Token program's mint account is added so a deposit's minimum \
+receipt tokens and a new vault's first deposit read in the token's own units. Display \
+nodes added by hand."""
