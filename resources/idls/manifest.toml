@@ -1361,3 +1361,33 @@ endRebalance declare the same group for their calculator's accounts. The INF min
 writable in addLiquidity and removeLiquidity, as the program mints and burns through it. \
 The Token program's mint account is added, so token amounts read their mint's decimals; \
 the protocol fee is shown in percent. Display nodes added by hand."""
+
+# Phoenix Eternal's beta deployment on mainnet, as Ellipsis Labs' own Rust SDK
+# (phoenix-rise) names it: a second exchange with its own authorities, markets
+# and collateral token, funded with a beta USDC mint rather than USDC. Its
+# program-metadata account publishes an older IDL (Eternal 0.2.0, 80
+# instructions) than the program it runs, which has the main deployment's
+# instruction set; instructions this IDL lacks read raw.
+[[idls]]
+file = "phoenix-eternal-beta.json"
+programId = "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf"
+name = "eternal"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "43d73e2b0aebd25b373cb517bb30aac34751dc46bbcfc71f1a90c4ae2c949a86" }
+changes = """Converted from Anchor to Codama. This IDL predates the program deployed at this address, \
+which runs the main deployment's instruction set, so: the four operator instructions it \
+describes otherwise than the program reads them (forceCancelRiskIncreasing, \
+forceCancelAfterHours, registerSpline, updateFundingParameters) are removed and read \
+raw; registerTrader's parameters take the deployed layout, a u32 position cap and u32 \
+preference bits where this IDL has one u64, and the oracle update's last byte, a bool \
+here, reads as a flags number, both as the main deployment's IDL gives them; the seven \
+order and trigger placement instructions take the optional trailing additionalFeeConfig \
+argument the main deployment's IDL documents, with its two types, so an additional fee a \
+front end adds to an order shows. The 65 event structs the Log instruction's MarketEvent \
+enum names are restored as defined types (the converter keeps types that back events \
+only as events). The deposit instruction declares the permission account it takes after \
+its named accounts when another program deposits for the trader, closeMatchedPositions \
+the optional ADL permission account, and updateTraderFees the arena accounts the IDL \
+says may follow. Collateral amounts are in base units of the deployment's collateral \
+token, whose mint is never an account of those instructions. Display nodes added by \
+hand, the same as the main deployment's file for the instructions both have."""

@@ -912,3 +912,12 @@ programHash = "25d3ade9efe70e40df16a1553c2cceac511a96e5a305046d273d884065e6e6e4"
 authority = "47SND7bGKvNXrqfP1bjsLCbwTgZhFBzAgmZ42QSkRScz"
 idlSha256 = "e1fb8b0653a469257fd6d597abe2372da6eb962d7bb9d5f9db96102b67dd7573"
 reviewed = "2026-11-12"
+
+[[builds]]
+# eternal (pack). No verified build. The program is native Rust and logs no Anchor instruction names, so the check was by discriminator: the binary's dispatch table holds 126 entries, the 80 this IDL declares, 45 more that only the main deployment's IDL declares, and one that no IDL names. Successful mainnet transactions decode with the file, every account named and every byte accounted for, for placeMarketOrder, placePositionConditionalOrder, cancelAllPlusConditional, executeConditionalOrders, depositFunds, transferCollateral, transferCollateralChildToParent, syncParentToChild, createPermission, setPermission, uncrossCrank, updateOraclePricesWithOrdering, updateSplinePrice, updateSplineParameters, log, logEventLengths.
+programId = "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf"
+network = "mainnet"
+programHash = "ac03e0e39cc7701cf8b95b52d32a6f4ceca99511e1efda3b80444ddb1a56ece3"
+authority = "GhcyhaiSvr6Sd9FDp5Bpe4LT4ny4WqZfwZEvnFxAgMgE"
+idlSha256 = "059ae179f56130e1f078fbbe63e12bc247b47b1da166d6cdc54e11d9f66fad0e"
+reviewed = "2026-11-12"

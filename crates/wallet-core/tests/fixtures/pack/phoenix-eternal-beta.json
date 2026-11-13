@@ -1,0 +1,741 @@
+{
+  "accounts": {},
+  "instructions": [
+    {
+      "accounts": [
+        "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab",
+        "3CkM38UaZW6nyTJku4ABE5jjS5AComQErrkd55LGTfxa",
+        "GQDCu5EuaZBp3gndE9XmGQJKbDrKGCFco2AC1LyL1tMQ:sw",
+        "T3hzKhgUYDbpU3Qx2jSCPCpbNAvUmwLwXhqMBgQktJK:w",
+        "7irxv1nFj31uL1uoZjFLdkQjk9641wzB3vBuxYyjD7Uy:w"
+      ],
+      "data": "a4000efa3ac619182aa964d1a101000006000000414e53454d00000000000000000000000155944d00000000000855944d0000000000084254430000000000000000000000000001cbd7a52a0000000004904ba92a00000000044e56444100000000000000000000000001e6fb18000000000004e6fb1800000000000450554d5000000000000000000000000001b4e23300000000000910e933000000000009534f4c0000000000000000000000000001326d0c000000000004816e0c0000000000045841550000000000000000000000000001b4d550020000000004b4d55002000000000400",
+      "fields": [
+        [
+          "Updated At",
+          "2026-11-12T20:13:17.482Z"
+        ],
+        [
+          "Prices",
+          "Perp Asset Id: Symbol Bytes: 65, 78, 83, 69, 77, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, New Exchange Perp Price: Value: 5084245, Expo: 8, New Exchange Spot Price: Value: 5084245, Expo: 8, Perp Asset Id: Symbol Bytes: 66, 84, 67, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, New Exchange Perp Price: Value: 715511755, Expo: 4, New Exchange Spot Price: Value: 715738000, Expo: 4, Perp Asset Id: Symbol Bytes: 78, 86, 68, 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, New Exchange Perp Price: Value: 1637350, Expo: 4, New Exchange Spot Price: Value: 1637350, Expo: 4, Perp Asset Id: Symbol Bytes: 80, 85, 77, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, New Exchange Perp Price: Value: 3400372, Expo: 9, New Exchange Spot Price: Value: 3402000, Expo: 9, Perp Asset Id: Symbol Bytes: 83, 79, 76, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, New Exchange Perp Price: Value: 814386, Expo: 4, New Exchange Spot Price: Value: 814721, Expo: 4, Perp Asset Id: Symbol Bytes: 88, 65, 85, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, New Exchange Perp Price: Value: 38852020, Expo: 4, New Exchange Spot Price: Value: 38852020, Expo: 4"
+        ],
+        [
+          "Update Flags",
+          "0"
+        ],
+        [
+          "Oracle Authority",
+          "GQDCu5EuaZBp3gndE9XmGQJKbDrKGCFco2AC1LyL1tMQ"
+        ],
+        [
+          "Permission Account",
+          "T3hzKhgUYDbpU3Qx2jSCPCpbNAvUmwLwXhqMBgQktJK"
+        ]
+      ],
+      "from": "2p5hbM29GCt1VJp6vZ8ivMwcF4sp6386s56vuxoNRY7LPhe4rgco4anygNrricmpCyXG3H4ZRzsCoPsWxX1aRRNF#1",
+      "intent": "Update oracle prices",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": null,
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab"
+      ],
+      "data": "f70786cbb547994700000000070000001100870087008700870087008700",
+      "fields": [],
+      "from": "2p5hbM29GCt1VJp6vZ8ivMwcF4sp6386s56vuxoNRY7LPhe4rgco4anygNrricmpCyXG3H4ZRzsCoPsWxX1aRRNF#1.1",
+      "intent": "Log event lengths",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": null,
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab"
+      ],
+      "data": "8de6d6f209d1cfaa000000000700000000dd1df66a00000000681bef1b000000001d01e4d17680355017cfe1b1b01ee1b24c8a4832b5985a4679c1b5d4c97e5f9645bb414e53454d00000000000000000000000100010000000001dc1300000000000001dc13000000000000010000000000000000dc13000000000000010000000000000000000100000000000000000000000000000000f841090100000000681bef1b000000001d01e4d17680355017cfe1b1b01ee1b24c8a4832b5985a4679c1b5d4c97e5f9645bb4254430000000000000000000000000008000000000000019517010000000000017f170100000000000100000000000000008a1701000000000001be9cffffffffffff00011a79feffffffffffffffffffffffffff1f1f660000000000681bef1b000000001d01e4d17680355017cfe1b1b01ee1b24c8a4832b5985a4679c1b5d4c97e5f9645bb4e5644410000000000000000000000000400030000000001f53f00000000000001f53f000000000000010000000000000000f53f00000000000001bd600000000000000001203e010000000000000000000000000024216d0100000000681bef1b000000001d01e4d17680355017cfe1b1b01ee1b24c8a4832b5985a4679c1b5d4c97e5f9645bb50554d500000000000000000000000000300020000000001e48400000000000001d08400000000000001d8ffffffffffffffc88400000000000001e869ffffffffffff0001907afcffffffffffffffffffffffffff2d49ca0100000000681bef1b000000001d01e4d17680355017cfe1b1b01ee1b24c8a4832b5985a4679c1b5d4c97e5f9645bb534f4c000000000000000000000000000000000000000001d31f00000000000001cf1f000000000000010000000000000000d21f0000000000000139390000000000000001e8d7fcffffffffffffffffffffffffff61d4b00300000000681bef1b000000001d01e4d17680355017cfe1b1b01ee1b24c8a4832b5985a4679c1b5d4c97e5f9645bb584155000000000000000000000000000200030000000001c49700000000000001c497000000000000010000000000000000c39700000000000001f396feffffffffff0001a49c000000000000000000000000000096a3db0100000000681bef1b00000000",
+      "fields": [],
+      "from": "2p5hbM29GCt1VJp6vZ8ivMwcF4sp6386s56vuxoNRY7LPhe4rgco4anygNrricmpCyXG3H4ZRzsCoPsWxX1aRRNF#1.2",
+      "intent": "Log market events",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": null,
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab",
+        "3CkM38UaZW6nyTJku4ABE5jjS5AComQErrkd55LGTfxa:w",
+        "D1nGnfmYadC6DwL4H9GjfcRfitzwhsKxbVaRr312QLCj:sw",
+        "2oVdN54uTKV2kHaRDTLciky7Kkp4B1ERaMuBsTU5V6rR:w",
+        "7irxv1nFj31uL1uoZjFLdkQjk9641wzB3vBuxYyjD7Uy:w",
+        "FM1vMCjYY2zRgqc7DMQFastpjQfaaJEDmoCEhYh8roZx:w",
+        "xtJ6kdUf6N9SqLztv3zdwgn4htaiiseiEJMseikotXF:w",
+        "6gkm9gfLf5EsAwdHyW4ZXqc4h85dk6h2dVVQSzSexTGS:w",
+        "3pUCzHujT79DfXERLG3kpG5vqqLjkw5Qj3riDwbw8mFx:w"
+      ],
+      "data": "5a76c0fcc06327910201019b3d0000000000000100000000000000000100000000000000010000000000000000002344b67e805bb0c56a351a96b8353880000000",
+      "fields": [
+        [
+          "Order",
+          "Immediate-or-cancel (Side: Sell, Price In Ticks: Inner: 15771, Num Base Lots: Inner: 1, Num Quote Lots: None, Min Base Lots To Fill: Inner: 1, Min Quote Lots To Fill: Inner: 1, Self Trade Behavior: Abort, Match Limit: None, Client Order Id: 35, 68, 182, 126, 128, 91, 176, 197, 106, 53, 26, 150, 184, 53, 56, 128, Last Valid Slot: None, Order Flags: Flags: 0, Cancel Existing: false)"
+        ],
+        [
+          "Additional Fee (Tenths of a Basis Point)",
+          "None"
+        ],
+        [
+          "Trader Wallet",
+          "D1nGnfmYadC6DwL4H9GjfcRfitzwhsKxbVaRr312QLCj"
+        ],
+        [
+          "Trader Account",
+          "2oVdN54uTKV2kHaRDTLciky7Kkp4B1ERaMuBsTU5V6rR"
+        ],
+        [
+          "Market",
+          "6gkm9gfLf5EsAwdHyW4ZXqc4h85dk6h2dVVQSzSexTGS"
+        ]
+      ],
+      "from": "5ee5gWfRZTVPxdFdpNmaeo4Hp9MJdiRBf1We78k1crxNzp67QfBoU72RoaCaHYtxdy1iAfPMaUR2r3nVHZ77zkNr#2",
+      "intent": "Place a market order",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": "D1nGnfmYadC6DwL4H9GjfcRfitzwhsKxbVaRr312QLCj places an order on market 6gkm9gfLf5EsAwdHyW4ZXqc4h85dk6h2dVVQSzSexTGS for trader account 2oVdN54uTKV2kHaRDTLciky7Kkp4B1ERaMuBsTU5V6rR: Immediate-or-cancel (Side: Sell, Price In Ticks: Inner: 15771, Num Base Lots: Inner: 1, Num Quote Lots: None, Min Base Lots To Fill: Inner: 1, Min Quote Lots To Fill: Inner: 1, Self Trade Behavior: Abort, Match Limit: None, Client Order Id: 35, 68, 182, 126, 128, 91, 176, 197, 106, 53, 26, 150, 184, 53, 56, 128, Last Valid Slot: None, Order Flags: Flags: 0, Cancel Existing: false)",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab",
+        "3CkM38UaZW6nyTJku4ABE5jjS5AComQErrkd55LGTfxa:w",
+        "8CyJRzSHqHxuW2AxyUgWVuUJnaFztG82HzTMapmDnKBq:sw",
+        "Eq6DYfLG4FKuPo1UwAXkbrWsPZPRqZtbyu49SfJMdkA7:w",
+        "7irxv1nFj31uL1uoZjFLdkQjk9641wzB3vBuxYyjD7Uy:w",
+        "FM1vMCjYY2zRgqc7DMQFastpjQfaaJEDmoCEhYh8roZx:w",
+        "xtJ6kdUf6N9SqLztv3zdwgn4htaiiseiEJMseikotXF:w",
+        "6gkm9gfLf5EsAwdHyW4ZXqc4h85dk6h2dVVQSzSexTGS:w",
+        "3pUCzHujT79DfXERLG3kpG5vqqLjkw5Qj3riDwbw8mFx:w"
+      ],
+      "data": "5a76c0fcc06327910201019b3d000000000000010000000000000000010000000000000001000000000000000000221b4d191ff6f4b42d54f4033eaf257b000000",
+      "fields": [
+        [
+          "Order",
+          "Immediate-or-cancel (Side: Sell, Price In Ticks: Inner: 15771, Num Base Lots: Inner: 1, Num Quote Lots: None, Min Base Lots To Fill: Inner: 1, Min Quote Lots To Fill: Inner: 1, Self Trade Behavior: Abort, Match Limit: None, Client Order Id: 34, 27, 77, 25, 31, 246, 244, 180, 45, 84, 244, 3, 62, 175, 37, 123, Last Valid Slot: None, Order Flags: Flags: 0, Cancel Existing: false)"
+        ],
+        [
+          "Additional Fee (Tenths of a Basis Point)",
+          "None"
+        ],
+        [
+          "Trader Wallet",
+          "8CyJRzSHqHxuW2AxyUgWVuUJnaFztG82HzTMapmDnKBq"
+        ],
+        [
+          "Trader Account",
+          "Eq6DYfLG4FKuPo1UwAXkbrWsPZPRqZtbyu49SfJMdkA7"
+        ],
+        [
+          "Market",
+          "6gkm9gfLf5EsAwdHyW4ZXqc4h85dk6h2dVVQSzSexTGS"
+        ]
+      ],
+      "from": "277PtpamCbVcXEQEfUrrFDAgWRx6e8vP6rFbKvNJcnZH1USvVsk38NsEoi4pWqHsnGi9doYGHKqtGKmdbh3ffAAj#2",
+      "intent": "Place a market order",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": "8CyJRzSHqHxuW2AxyUgWVuUJnaFztG82HzTMapmDnKBq places an order on market 6gkm9gfLf5EsAwdHyW4ZXqc4h85dk6h2dVVQSzSexTGS for trader account Eq6DYfLG4FKuPo1UwAXkbrWsPZPRqZtbyu49SfJMdkA7: Immediate-or-cancel (Side: Sell, Price In Ticks: Inner: 15771, Num Base Lots: Inner: 1, Num Quote Lots: None, Min Base Lots To Fill: Inner: 1, Min Quote Lots To Fill: Inner: 1, Self Trade Behavior: Abort, Match Limit: None, Client Order Id: 34, 27, 77, 25, 31, 246, 244, 180, 45, 84, 244, 3, 62, 175, 37, 123, Last Valid Slot: None, Order Flags: Flags: 0, Cancel Existing: false)",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab",
+        "4Ko7zJVEhLPCvaEQnsH4zAtB1n8ic4X53JbuiTGhSqdh:sw",
+        "AFkV5fahqyYmp2qccqufGph175NJb5qpCRxLWQct9R8e",
+        "3pUCzHujT79DfXERLG3kpG5vqqLjkw5Qj3riDwbw8mFx:w"
+      ],
+      "data": "f15b8baa1229cb160100000000000000000000009c000000000000007418000000000000401f00000000000000000000014a373cea19600600500000361100f0ffffffffffff97013000",
+      "fields": [
+        [
+          "Bid Regions",
+          "Start Offset: Inner: 0, End Offset: Inner: 156, Density: Inner: 6260, Lifespan: 8000"
+        ],
+        [
+          "Ask Regions",
+          ""
+        ],
+        [
+          "Refresh Regions",
+          "true"
+        ],
+        [
+          "Sequence Number",
+          "1,794,514,280,527,690"
+        ],
+        [
+          "Override Sequence Number",
+          "false"
+        ],
+        [
+          "Signer",
+          "4Ko7zJVEhLPCvaEQnsH4zAtB1n8ic4X53JbuiTGhSqdh"
+        ],
+        [
+          "Market Maker Trader Account",
+          "AFkV5fahqyYmp2qccqufGph175NJb5qpCRxLWQct9R8e"
+        ],
+        [
+          "Spline Collection",
+          "3pUCzHujT79DfXERLG3kpG5vqqLjkw5Qj3riDwbw8mFx"
+        ]
+      ],
+      "from": "4tMBbkWJedYNboHPWejkPKw3Z7bbtKKKS7X5y18urSWvsetH869dWgk2TqqSuYbziZWFn8st2exv8gCtQXevbQmH#2",
+      "intent": "Update a market maker's curve",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": null,
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab",
+        "Bsp1HMZQe1cunUC6q74wFLaVdprfk7AaktM5KdFcJ1LP:sw",
+        "5mPdhQ2xiaRi86wFpn8vJsen34S9uUXnnBq6q14eGHEG",
+        "EhwHp5e5VSxnfBq6f9stBRdzL6AXPBEwEYQaXCAkqpHK:w"
+      ],
+      "data": "2d9bc83425d6bb8ce01f000000000000000105f0170000000000707269636500000005f017000000000000",
+      "fields": [
+        [
+          "Mid Price (Ticks)",
+          "8,160"
+        ],
+        [
+          "Update Slot",
+          "None"
+        ],
+        [
+          "Refresh Regions",
+          "true"
+        ],
+        [
+          "Sequence Number",
+          "1,568,773"
+        ],
+        [
+          "Override Sequence Number",
+          "false"
+        ],
+        [
+          "Signer",
+          "Bsp1HMZQe1cunUC6q74wFLaVdprfk7AaktM5KdFcJ1LP"
+        ],
+        [
+          "Market Maker Trader Account",
+          "5mPdhQ2xiaRi86wFpn8vJsen34S9uUXnnBq6q14eGHEG"
+        ],
+        [
+          "Spline Collection",
+          "EhwHp5e5VSxnfBq6f9stBRdzL6AXPBEwEYQaXCAkqpHK"
+        ]
+      ],
+      "from": "3jBU7EHW66jj2TG525iKkZS5MexQp7GRomhSAUMDSyNpUhMUkQuYL3b5HjNqDNDD4xLqjmTMGZNA2kHE8dpbVR2A#1",
+      "intent": "Update a market maker's price",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": null,
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab",
+        "3CkM38UaZW6nyTJku4ABE5jjS5AComQErrkd55LGTfxa:w",
+        "7irxv1nFj31uL1uoZjFLdkQjk9641wzB3vBuxYyjD7Uy:w",
+        "FM1vMCjYY2zRgqc7DMQFastpjQfaaJEDmoCEhYh8roZx:w",
+        "xtJ6kdUf6N9SqLztv3zdwgn4htaiiseiEJMseikotXF:w",
+        "AXNeyaoGY4AVGXoT1Ag2PtA5NRoaqLU3vXMrinmYyPwS:w",
+        "CFmPgiN3mBcWtJyF8u4GDmfm5x7VZmzfY4ZSMxhQthmx:w"
+      ],
+      "data": "c4795efd8b2afc936400000000000000",
+      "fields": [
+        [
+          "Match Limit",
+          "100"
+        ],
+        [
+          "Market",
+          "AXNeyaoGY4AVGXoT1Ag2PtA5NRoaqLU3vXMrinmYyPwS"
+        ]
+      ],
+      "from": "3tQ7c4uZ26rwgmXxJSuahvJ9FceCqzrYkVWLW1MZ9oT8VjS7ChJi1uE6MrK6kQZjiwNUX1tPi7cJbhL4vNVtAE2i#1",
+      "intent": "Uncross a market",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": "Matches crossed orders on market AXNeyaoGY4AVGXoT1Ag2PtA5NRoaqLU3vXMrinmYyPwS",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab",
+        "3CkM38UaZW6nyTJku4ABE5jjS5AComQErrkd55LGTfxa:w",
+        "2EpqqpFYeyGzmrKCoP1K832ekaq9s6dnqm6HwPyjx6T8:sw",
+        "9zJ4QGrpyeuo8VZChWkfKF1faNGTn6pPVD1UfNrDJebF:w",
+        "Egq5Co23dFra6cxj8pfFLo58k2Lda7QunyGy5LK45f8U:w",
+        "2NxL3gohDuGJQp1K9eDAFsZ7cQNKvUTGF5Wmm8kEyuH6:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "FM1vMCjYY2zRgqc7DMQFastpjQfaaJEDmoCEhYh8roZx:w",
+        "xtJ6kdUf6N9SqLztv3zdwgn4htaiiseiEJMseikotXF:w"
+      ],
+      "data": "ca2734d33514fa5899da5a0d00000000",
+      "fields": [
+        [
+          "Amount",
+          "224,058,009 base units"
+        ],
+        [
+          "Trader Wallet",
+          "2EpqqpFYeyGzmrKCoP1K832ekaq9s6dnqm6HwPyjx6T8"
+        ],
+        [
+          "Token From",
+          "9zJ4QGrpyeuo8VZChWkfKF1faNGTn6pPVD1UfNrDJebF"
+        ],
+        [
+          "Trader Account",
+          "Egq5Co23dFra6cxj8pfFLo58k2Lda7QunyGy5LK45f8U"
+        ],
+        [
+          "Exchange Vault",
+          "2NxL3gohDuGJQp1K9eDAFsZ7cQNKvUTGF5Wmm8kEyuH6"
+        ]
+      ],
+      "from": "TXgGcUgmskCK8mg85qG2ka7SyTS4YmctAYRz2m9gyFj17a9H2GuhX8WgsWtVwwHVPSR3UCPnp7CV5pquLMtZwXp#5",
+      "intent": "Deposit collateral",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": "Deposits 224,058,009 base units from 9zJ4QGrpyeuo8VZChWkfKF1faNGTn6pPVD1UfNrDJebF into trader account Egq5Co23dFra6cxj8pfFLo58k2Lda7QunyGy5LK45f8U of 2EpqqpFYeyGzmrKCoP1K832ekaq9s6dnqm6HwPyjx6T8",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab",
+        "3CkM38UaZW6nyTJku4ABE5jjS5AComQErrkd55LGTfxa:w",
+        "GBb7nmSRC7QKJtrah2vJ11P35rYF8PY8PLAUD8HeSpRY",
+        "8PvsXArjmLTSXf5MiCSVgvKbJkY6nff1M7sATUw6ypxr:w",
+        "AEhVb1sgQ6wjaWhvDUc4U8LTPHTWSxqKodVnsPxG4hZR:w",
+        "2NxL3gohDuGJQp1K9eDAFsZ7cQNKvUTGF5Wmm8kEyuH6:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "FM1vMCjYY2zRgqc7DMQFastpjQfaaJEDmoCEhYh8roZx:w",
+        "xtJ6kdUf6N9SqLztv3zdwgn4htaiiseiEJMseikotXF:w",
+        "H1dQr7asCWxMjTgvA81rqhYXdTCyVdCiEtfZtqpv9VK2:w"
+      ],
+      "data": "ca2734d33514fa580010a5d4e8000000",
+      "fields": [
+        [
+          "Amount",
+          "1,000,000,000,000 base units"
+        ],
+        [
+          "Trader Wallet",
+          "GBb7nmSRC7QKJtrah2vJ11P35rYF8PY8PLAUD8HeSpRY"
+        ],
+        [
+          "Token From",
+          "8PvsXArjmLTSXf5MiCSVgvKbJkY6nff1M7sATUw6ypxr"
+        ],
+        [
+          "Trader Account",
+          "AEhVb1sgQ6wjaWhvDUc4U8LTPHTWSxqKodVnsPxG4hZR"
+        ],
+        [
+          "Exchange Vault",
+          "2NxL3gohDuGJQp1K9eDAFsZ7cQNKvUTGF5Wmm8kEyuH6"
+        ],
+        [
+          "Permission Account",
+          "H1dQr7asCWxMjTgvA81rqhYXdTCyVdCiEtfZtqpv9VK2"
+        ]
+      ],
+      "from": "5H7zqt3HHxGg8wDiTu6jMK8Am2EB1BFn4CfRGoeMZ442zy1zYFZ6Qfh1SjNwc9z3UG9WLo5T3AnFLc7A8yxx7cpu#7.9",
+      "intent": "Deposit collateral",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": "Deposits 1,000,000,000,000 base units from 8PvsXArjmLTSXf5MiCSVgvKbJkY6nff1M7sATUw6ypxr into trader account AEhVb1sgQ6wjaWhvDUc4U8LTPHTWSxqKodVnsPxG4hZR of GBb7nmSRC7QKJtrah2vJ11P35rYF8PY8PLAUD8HeSpRY",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab",
+        "8qDtnhRpWpqZoKgacAt4Z5qmrBR69MTXH4k57ACBP9D7:sw",
+        "5WuKQTCCokXuSxP5GgnCZZiv6njSoP8kvJe598kvy4GP:w",
+        "7BiBrTdbzGCYX9G8v9r3dsfyXXpyPtWbEXp93a3RN8y7:sw",
+        "CptDxBkDruGGvZ8op7jN77gePKZQoSm9zoiknk8sRa9S",
+        "11111111111111111111111111111111"
+      ],
+      "data": "beb61aa49cdd0800",
+      "fields": [
+        [
+          "Payer",
+          "8qDtnhRpWpqZoKgacAt4Z5qmrBR69MTXH4k57ACBP9D7"
+        ],
+        [
+          "Permission Account",
+          "5WuKQTCCokXuSxP5GgnCZZiv6njSoP8kvJe598kvy4GP"
+        ],
+        [
+          "Granting Authority",
+          "7BiBrTdbzGCYX9G8v9r3dsfyXXpyPtWbEXp93a3RN8y7"
+        ],
+        [
+          "User",
+          "CptDxBkDruGGvZ8op7jN77gePKZQoSm9zoiknk8sRa9S"
+        ]
+      ],
+      "from": "3ZtMoaV8ETR5ieH1iWaWHqvnPsuJNMgLHF9e52kb5Zk3sHNKyzwdsCbZDvSvJ8qtBWeaqEwVrPcmBHtDp2U9pMpZ#5",
+      "intent": "Create a permission account",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": "8qDtnhRpWpqZoKgacAt4Z5qmrBR69MTXH4k57ACBP9D7 creates permission account 5WuKQTCCokXuSxP5GgnCZZiv6njSoP8kvJe598kvy4GP through which 7BiBrTdbzGCYX9G8v9r3dsfyXXpyPtWbEXp93a3RN8y7 can grant rights to CptDxBkDruGGvZ8op7jN77gePKZQoSm9zoiknk8sRa9S",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab",
+        "5WuKQTCCokXuSxP5GgnCZZiv6njSoP8kvJe598kvy4GP:w",
+        "7BiBrTdbzGCYX9G8v9r3dsfyXXpyPtWbEXp93a3RN8y7:sw",
+        "CptDxBkDruGGvZ8op7jN77gePKZQoSm9zoiknk8sRa9S"
+      ],
+      "data": "467e29c2f5bd800800100000000000000000",
+      "fields": [
+        [
+          "Permission Flags",
+          "4,096"
+        ],
+        [
+          "Expires At",
+          "None"
+        ],
+        [
+          "Allowed Signer Actions",
+          "None"
+        ],
+        [
+          "Permission Account",
+          "5WuKQTCCokXuSxP5GgnCZZiv6njSoP8kvJe598kvy4GP"
+        ],
+        [
+          "Authority",
+          "7BiBrTdbzGCYX9G8v9r3dsfyXXpyPtWbEXp93a3RN8y7"
+        ],
+        [
+          "User",
+          "CptDxBkDruGGvZ8op7jN77gePKZQoSm9zoiknk8sRa9S"
+        ]
+      ],
+      "from": "3ZtMoaV8ETR5ieH1iWaWHqvnPsuJNMgLHF9e52kb5Zk3sHNKyzwdsCbZDvSvJ8qtBWeaqEwVrPcmBHtDp2U9pMpZ#6",
+      "intent": "Grant permissions",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": "7BiBrTdbzGCYX9G8v9r3dsfyXXpyPtWbEXp93a3RN8y7 sets permission flags 4096 for CptDxBkDruGGvZ8op7jN77gePKZQoSm9zoiknk8sRa9S in permission account 5WuKQTCCokXuSxP5GgnCZZiv6njSoP8kvJe598kvy4GP",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab",
+        "3CkM38UaZW6nyTJku4ABE5jjS5AComQErrkd55LGTfxa",
+        "Aye5eoZZA6Dw4xBRAcpCFS5EqtVCZC1qkHMyZyToDWFz:sw",
+        "G45dCXFxerd3gwDgx8eLybSxwdiYMquzyGknT4Uzchb",
+        "Gh1C1pYM21vJEYH9g73YKUhi7XfB6AA5EgB86KDvohnp:w",
+        "FM1vMCjYY2zRgqc7DMQFastpjQfaaJEDmoCEhYh8roZx:w"
+      ],
+      "data": "af89d90beb279613",
+      "fields": [
+        [
+          "Trader Wallet",
+          "Aye5eoZZA6Dw4xBRAcpCFS5EqtVCZC1qkHMyZyToDWFz"
+        ],
+        [
+          "Parent Trader Account",
+          "G45dCXFxerd3gwDgx8eLybSxwdiYMquzyGknT4Uzchb"
+        ],
+        [
+          "Isolated Trader Account",
+          "Gh1C1pYM21vJEYH9g73YKUhi7XfB6AA5EgB86KDvohnp"
+        ]
+      ],
+      "from": "nJDtywSxDNfHchRkFepC79Qyxka3WJzy8mzWAfPYcWBrYpDP3BNr43KKuWHpBVRuD8S6mUm2oxiZHnXeZi1D7hf#2",
+      "intent": "Sync an isolated account",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": "Copies the capabilities of trader account G45dCXFxerd3gwDgx8eLybSxwdiYMquzyGknT4Uzchb to its isolated account Gh1C1pYM21vJEYH9g73YKUhi7XfB6AA5EgB86KDvohnp",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab",
+        "3CkM38UaZW6nyTJku4ABE5jjS5AComQErrkd55LGTfxa:w",
+        "8CyJRzSHqHxuW2AxyUgWVuUJnaFztG82HzTMapmDnKBq:sw",
+        "EY1Sv6pdFoDujMinhLV43ksbvTrTXeRxuwdgTZfuseeA:w",
+        "Eq6DYfLG4FKuPo1UwAXkbrWsPZPRqZtbyu49SfJMdkA7:w",
+        "7irxv1nFj31uL1uoZjFLdkQjk9641wzB3vBuxYyjD7Uy:w",
+        "FM1vMCjYY2zRgqc7DMQFastpjQfaaJEDmoCEhYh8roZx:w",
+        "xtJ6kdUf6N9SqLztv3zdwgn4htaiiseiEJMseikotXF:w"
+      ],
+      "data": "3364b1738b87f78b",
+      "fields": [
+        [
+          "Trader Wallet",
+          "8CyJRzSHqHxuW2AxyUgWVuUJnaFztG82HzTMapmDnKBq"
+        ],
+        [
+          "Isolated Trader Account",
+          "EY1Sv6pdFoDujMinhLV43ksbvTrTXeRxuwdgTZfuseeA"
+        ],
+        [
+          "Parent Trader Account",
+          "Eq6DYfLG4FKuPo1UwAXkbrWsPZPRqZtbyu49SfJMdkA7"
+        ]
+      ],
+      "from": "eZ2Be5FX5hYnNB5dLuTLjCHPdX4KsquEhxeTsFPpuaaDw8WPnnTy4vuTxnZzTrRBC6b8DmZQXhprggiUJbo4qNu#4",
+      "intent": "Return isolated collateral",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": "Moves collateral from isolated trader account EY1Sv6pdFoDujMinhLV43ksbvTrTXeRxuwdgTZfuseeA to its parent account Eq6DYfLG4FKuPo1UwAXkbrWsPZPRqZtbyu49SfJMdkA7",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab",
+        "3CkM38UaZW6nyTJku4ABE5jjS5AComQErrkd55LGTfxa:w",
+        "Aye5eoZZA6Dw4xBRAcpCFS5EqtVCZC1qkHMyZyToDWFz:sw",
+        "Gh1C1pYM21vJEYH9g73YKUhi7XfB6AA5EgB86KDvohnp:w",
+        "7irxv1nFj31uL1uoZjFLdkQjk9641wzB3vBuxYyjD7Uy:w",
+        "FM1vMCjYY2zRgqc7DMQFastpjQfaaJEDmoCEhYh8roZx:w",
+        "xtJ6kdUf6N9SqLztv3zdwgn4htaiiseiEJMseikotXF:w",
+        "Ckb5pyTPg8u8jguDUZKLVAfeydogFExrDDxNYm3t762n:w",
+        "EhwHp5e5VSxnfBq6f9stBRdzL6AXPBEwEYQaXCAkqpHK:w",
+        "Aye5eoZZA6Dw4xBRAcpCFS5EqtVCZC1qkHMyZyToDWFz:sw",
+        "AZk3Gz8CLkxVM9vHAp7So1KJV8Q14nJcn7GYwGH5MtrP:w",
+        "11111111111111111111111111111111"
+      ],
+      "data": "416c53814cc15c8f06000200010001014820000000000000352000000000000001010101981f000000000000851f000000000000000164",
+      "fields": [
+        [
+          "Asset Id",
+          "131,078"
+        ],
+        [
+          "Trigger When Price Rises",
+          "Trigger Direction: greaterThan, Trade Side: ask, Order Kind: limit, Trigger Price: 8264, Execution Price: 8245"
+        ],
+        [
+          "Trigger When Price Falls",
+          "Trigger Direction: lessThan, Trade Side: ask, Order Kind: limit, Trigger Price: 8088, Execution Price: 8069"
+        ],
+        [
+          "Size (Base Lots)",
+          "None"
+        ],
+        [
+          "Size (Percent)",
+          "100"
+        ],
+        [
+          "Additional Fee (Tenths of a Basis Point)",
+          "None"
+        ],
+        [
+          "Payer",
+          "Aye5eoZZA6Dw4xBRAcpCFS5EqtVCZC1qkHMyZyToDWFz"
+        ],
+        [
+          "Trader Account",
+          "Gh1C1pYM21vJEYH9g73YKUhi7XfB6AA5EgB86KDvohnp"
+        ],
+        [
+          "Market",
+          "Ckb5pyTPg8u8jguDUZKLVAfeydogFExrDDxNYm3t762n"
+        ],
+        [
+          "Trader Wallet",
+          "Aye5eoZZA6Dw4xBRAcpCFS5EqtVCZC1qkHMyZyToDWFz"
+        ],
+        [
+          "Conditional Orders Account",
+          "AZk3Gz8CLkxVM9vHAp7So1KJV8Q14nJcn7GYwGH5MtrP"
+        ]
+      ],
+      "from": "2ZYVTJ6kzfULYMas5fNsXRFnWP3RYmSoGPm4GSj98y1U2pXqFq9nT8K2XmW4yhAkxSRdt9UTWkMSvuK2Kues1igr#3",
+      "intent": "Set position triggers",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": "Aye5eoZZA6Dw4xBRAcpCFS5EqtVCZC1qkHMyZyToDWFz sets take-profit or stop-loss triggers on the position of trader account Gh1C1pYM21vJEYH9g73YKUhi7XfB6AA5EgB86KDvohnp on market Ckb5pyTPg8u8jguDUZKLVAfeydogFExrDDxNYm3t762n",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab",
+        "3CkM38UaZW6nyTJku4ABE5jjS5AComQErrkd55LGTfxa:w",
+        "Aye5eoZZA6Dw4xBRAcpCFS5EqtVCZC1qkHMyZyToDWFz:sw",
+        "GVff4uo28ybq9GGPNNnVeQG59x9MoAukXdvaPxNHL6eg:w",
+        "7irxv1nFj31uL1uoZjFLdkQjk9641wzB3vBuxYyjD7Uy:w",
+        "FM1vMCjYY2zRgqc7DMQFastpjQfaaJEDmoCEhYh8roZx:w",
+        "xtJ6kdUf6N9SqLztv3zdwgn4htaiiseiEJMseikotXF:w",
+        "Ckb5pyTPg8u8jguDUZKLVAfeydogFExrDDxNYm3t762n:w",
+        "EhwHp5e5VSxnfBq6f9stBRdzL6AXPBEwEYQaXCAkqpHK:w",
+        "9w27NcJDwsDHUAmdK8VgFV9EyPBxUd7nU7p4B4sFSNFx:w"
+      ],
+      "data": "8eadee7e4f133567",
+      "fields": [
+        [
+          "Trader Wallet",
+          "Aye5eoZZA6Dw4xBRAcpCFS5EqtVCZC1qkHMyZyToDWFz"
+        ],
+        [
+          "Trader Account",
+          "GVff4uo28ybq9GGPNNnVeQG59x9MoAukXdvaPxNHL6eg"
+        ],
+        [
+          "Market",
+          "Ckb5pyTPg8u8jguDUZKLVAfeydogFExrDDxNYm3t762n"
+        ],
+        [
+          "Conditional Orders Account",
+          "9w27NcJDwsDHUAmdK8VgFV9EyPBxUd7nU7p4B4sFSNFx"
+        ]
+      ],
+      "from": "2nPvUPFqWTQgqYzW3z4kmWgqLHJQAHwBvAjBKD6i26qGxYaQwiZJKRbYeKVToNJWHQTMAudazcGM3NaRB1oNovs1#2",
+      "intent": "Cancel all orders and triggers",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": "Aye5eoZZA6Dw4xBRAcpCFS5EqtVCZC1qkHMyZyToDWFz cancels all orders of trader account GVff4uo28ybq9GGPNNnVeQG59x9MoAukXdvaPxNHL6eg on market Ckb5pyTPg8u8jguDUZKLVAfeydogFExrDDxNYm3t762n and the conditional orders tied to them",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab",
+        "3CkM38UaZW6nyTJku4ABE5jjS5AComQErrkd55LGTfxa:w",
+        "DvTDtviBxhWuL7UC356Ph3RYx4FLKkZNNBQHeHqqxR3N:sw",
+        "uqCWgrxQPXNwLTpDVh2c7d3MQikKPDRRhZWdfnGe1nk:w",
+        "63cpkRWoyD28wZbEvTUDxQ46J51qj4u319M8fxRhVeeE:w",
+        "7irxv1nFj31uL1uoZjFLdkQjk9641wzB3vBuxYyjD7Uy:w",
+        "FM1vMCjYY2zRgqc7DMQFastpjQfaaJEDmoCEhYh8roZx:w",
+        "xtJ6kdUf6N9SqLztv3zdwgn4htaiiseiEJMseikotXF:w"
+      ],
+      "data": "9da33f1bf248fb617a8e020000000000",
+      "fields": [
+        [
+          "Amount",
+          "167,546 base units"
+        ],
+        [
+          "Trader Wallet",
+          "DvTDtviBxhWuL7UC356Ph3RYx4FLKkZNNBQHeHqqxR3N"
+        ],
+        [
+          "From Trader Account",
+          "uqCWgrxQPXNwLTpDVh2c7d3MQikKPDRRhZWdfnGe1nk"
+        ],
+        [
+          "To Trader Account",
+          "63cpkRWoyD28wZbEvTUDxQ46J51qj4u319M8fxRhVeeE"
+        ]
+      ],
+      "from": "4hbg2C2qpeUB7zQARx4rwmNDFMJcQdTALZ9y1H7UoT5XtjX22dPfEj4NdTmegDXMMSx1853UBzvfq8k4ysJfdVzJ#3",
+      "intent": "Move collateral between accounts",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": "DvTDtviBxhWuL7UC356Ph3RYx4FLKkZNNBQHeHqqxR3N moves 167,546 base units of collateral from trader account uqCWgrxQPXNwLTpDVh2c7d3MQikKPDRRhZWdfnGe1nk to 63cpkRWoyD28wZbEvTUDxQ46J51qj4u319M8fxRhVeeE",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab",
+        "3CkM38UaZW6nyTJku4ABE5jjS5AComQErrkd55LGTfxa:w",
+        "D1nGnfmYadC6DwL4H9GjfcRfitzwhsKxbVaRr312QLCj:sw",
+        "2oVdN54uTKV2kHaRDTLciky7Kkp4B1ERaMuBsTU5V6rR:w",
+        "DRxiFPSKtvjaDYVq2wycyZMvCFnNnZ2NBQEi9spABPJq:w",
+        "7irxv1nFj31uL1uoZjFLdkQjk9641wzB3vBuxYyjD7Uy:w",
+        "FM1vMCjYY2zRgqc7DMQFastpjQfaaJEDmoCEhYh8roZx:w",
+        "xtJ6kdUf6N9SqLztv3zdwgn4htaiiseiEJMseikotXF:w"
+      ],
+      "data": "9da33f1bf248fb61d986020000000000",
+      "fields": [
+        [
+          "Amount",
+          "165,593 base units"
+        ],
+        [
+          "Trader Wallet",
+          "D1nGnfmYadC6DwL4H9GjfcRfitzwhsKxbVaRr312QLCj"
+        ],
+        [
+          "From Trader Account",
+          "2oVdN54uTKV2kHaRDTLciky7Kkp4B1ERaMuBsTU5V6rR"
+        ],
+        [
+          "To Trader Account",
+          "DRxiFPSKtvjaDYVq2wycyZMvCFnNnZ2NBQEi9spABPJq"
+        ]
+      ],
+      "from": "PmjThhRxCynijPjZoXq5jgAgeUrXS2jzbfb2FmhzEWp8xHzzqW97nXHKvq1vigVPxBRWeoPZavBgkejLTQDgsu8#3",
+      "intent": "Move collateral between accounts",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": "D1nGnfmYadC6DwL4H9GjfcRfitzwhsKxbVaRr312QLCj moves 165,593 base units of collateral from trader account 2oVdN54uTKV2kHaRDTLciky7Kkp4B1ERaMuBsTU5V6rR to DRxiFPSKtvjaDYVq2wycyZMvCFnNnZ2NBQEi9spABPJq",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+        "8Q1zeC7qAPUhJ2ncHAW8N1TGcpMVDsSxdSBPLaE8G2ab",
+        "3CkM38UaZW6nyTJku4ABE5jjS5AComQErrkd55LGTfxa:w",
+        "EW8akt6sM4x8KZhtki8RrAvtbKH66MmjfdABg4uPjQcC:sw",
+        "3v83xoTQNWbiwFkw2tE7T2icquK5hSDCXeEuQ434vXaB:w",
+        "7oMckwaMAzGaKnz8GWYsSVaigNDt8ZELUnnMRFoUjAzG:w",
+        "7irxv1nFj31uL1uoZjFLdkQjk9641wzB3vBuxYyjD7Uy:w",
+        "FM1vMCjYY2zRgqc7DMQFastpjQfaaJEDmoCEhYh8roZx:w",
+        "xtJ6kdUf6N9SqLztv3zdwgn4htaiiseiEJMseikotXF:w",
+        "Ckb5pyTPg8u8jguDUZKLVAfeydogFExrDDxNYm3t762n:w",
+        "EhwHp5e5VSxnfBq6f9stBRdzL6AXPBEwEYQaXCAkqpHK:w",
+        "AYa7fftuyfm3cQZrmq9piRtSqno14jsnCQ28Wgkxmeha:w"
+      ],
+      "data": "65d66e00bee2b1ec0701",
+      "fields": [
+        [
+          "Conditional Order Index",
+          "7"
+        ],
+        [
+          "Trigger Direction",
+          "Less Than"
+        ],
+        [
+          "Authority",
+          "EW8akt6sM4x8KZhtki8RrAvtbKH66MmjfdABg4uPjQcC"
+        ],
+        [
+          "Permission Account",
+          "3v83xoTQNWbiwFkw2tE7T2icquK5hSDCXeEuQ434vXaB"
+        ],
+        [
+          "Trader Account",
+          "7oMckwaMAzGaKnz8GWYsSVaigNDt8ZELUnnMRFoUjAzG"
+        ],
+        [
+          "Market",
+          "Ckb5pyTPg8u8jguDUZKLVAfeydogFExrDDxNYm3t762n"
+        ],
+        [
+          "Conditional Orders Account",
+          "AYa7fftuyfm3cQZrmq9piRtSqno14jsnCQ28Wgkxmeha"
+        ]
+      ],
+      "from": "GN5j6pHzHNWGPoVezn4qK9oCKHktWvZ2KRPNKWNSa1XpZV9QLTiGPXE9ZoK9NtpEH4HpDQmCdmwaBhKYAyHBYdv#1",
+      "intent": "Execute a conditional order",
+      "programId": "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf",
+      "sentence": "EW8akt6sM4x8KZhtki8RrAvtbKH66MmjfdABg4uPjQcC executes conditional order 7 of trader account 7oMckwaMAzGaKnz8GWYsSVaigNDt8ZELUnnMRFoUjAzG on market Ckb5pyTPg8u8jguDUZKLVAfeydogFExrDDxNYm3t762n",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}
