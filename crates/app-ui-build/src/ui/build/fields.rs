@@ -114,6 +114,7 @@ pub(in crate::ui) fn idl_argument_field(
     argument_input(
         argument_label(&argument),
         argument_placeholder(&argument),
+        input_mode(&argument.kind, &argument_places(&argument)),
         &argument.kind,
         idl.argument(&argument.name).to_string(),
         form.picker_reset,
@@ -129,6 +130,7 @@ pub(in crate::ui) fn idl_argument_field(
 pub(in crate::ui) fn argument_input(
     label: String,
     placeholder: String,
+    mode: Option<&'static str>,
     kind: &IdlArgKind,
     text: String,
     reset: Signal<u64>,
@@ -201,11 +203,35 @@ pub(in crate::ui) fn argument_input(
         label { "{label}"
             input {
                 r#type: "text",
+                inputmode: mode,
                 placeholder: "{placeholder}",
                 value: "{text}",
                 oninput: move |e| on_change.call(e.value()),
             }
         }
+    }
+}
+
+/// The keyboard a phone opens for a field of kind `kind` typed with
+/// `places`: digits for a whole number, digits and a decimal point for an
+/// amount with decimals. A signed or other field keeps the full keyboard,
+/// which has the minus sign, the letters and the brackets it may need.
+pub(in crate::ui) fn input_mode(kind: &IdlArgKind, places: &Places) -> Option<&'static str> {
+    let inner = match kind {
+        IdlArgKind::Option(inner) => inner.as_ref(),
+        kind => kind,
+    };
+    match inner {
+        IdlArgKind::Integer {
+            float: true,
+            signed: false,
+            ..
+        } => Some("decimal"),
+        IdlArgKind::Integer { signed: false, .. } => match places {
+            Places::BaseUnits | Places::Fixed(0) => Some("numeric"),
+            Places::Fixed(_) | Places::Like(_) => Some("decimal"),
+        },
+        _ => None,
     }
 }
 
@@ -223,6 +249,15 @@ pub(in crate::ui) fn with_unit(name: &str, unit: Option<&str>) -> String {
     }
 }
 
+/// How many decimal places an argument is typed with.
+pub(in crate::ui) fn argument_places(argument: &IdlArgField) -> Places {
+    match &argument.scale {
+        IdlArgScale::None => Places::BaseUnits,
+        IdlArgScale::Fixed { decimals, .. } => Places::Fixed(*decimals),
+        IdlArgScale::FromArgument { argument, .. } => Places::Like(argument.clone()),
+    }
+}
+
 /// How many decimal places a number is typed with.
 pub(in crate::ui) enum Places {
     /// In base units, as the program reads it.
@@ -235,11 +270,7 @@ pub(in crate::ui) enum Places {
 /// What a text field takes: an amount says how many decimal places, and a
 /// number the IDL gives no unit for is in base units.
 pub(in crate::ui) fn argument_placeholder(argument: &IdlArgField) -> String {
-    let places = match &argument.scale {
-        IdlArgScale::None => Places::BaseUnits,
-        IdlArgScale::Fixed { decimals, .. } => Places::Fixed(*decimals),
-        IdlArgScale::FromArgument { argument, .. } => Places::Like(argument.clone()),
-    };
+    let places = argument_places(argument);
     let blank = if argument.blank_uses_default {
         Some("blank for the default")
     } else if matches!(argument.kind, IdlArgKind::Option(_) | IdlArgKind::List(_)) {
@@ -350,5 +381,37 @@ pub(in crate::ui) fn enum_variants(kind: &IdlArgKind) -> Option<&[String]> {
         IdlArgKind::Enum { variants } => Some(variants),
         IdlArgKind::Option(inner) => enum_variants(inner),
         _ => None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn int(signed: bool) -> IdlArgKind {
+        IdlArgKind::Integer {
+            signed,
+            float: false,
+            bits: 64,
+        }
+    }
+
+    #[test]
+    fn a_phone_opens_digits_for_a_number_and_a_decimal_point_for_an_amount() {
+        assert_eq!(input_mode(&int(false), &Places::BaseUnits), Some("numeric"));
+        assert_eq!(input_mode(&int(false), &Places::Fixed(0)), Some("numeric"));
+        assert_eq!(input_mode(&int(false), &Places::Fixed(6)), Some("decimal"));
+        assert_eq!(
+            input_mode(&int(false), &Places::Like("$decimals".into())),
+            Some("decimal")
+        );
+        let optional = IdlArgKind::Option(Box::new(int(false)));
+        assert_eq!(input_mode(&optional, &Places::BaseUnits), Some("numeric"));
+        // The minus sign, text, addresses and JSON keep the full keyboard.
+        assert_eq!(input_mode(&int(true), &Places::BaseUnits), None);
+        assert_eq!(input_mode(&IdlArgKind::String, &Places::BaseUnits), None);
+        assert_eq!(input_mode(&IdlArgKind::Pubkey, &Places::BaseUnits), None);
+        let list = IdlArgKind::List(Box::new(int(false)));
+        assert_eq!(input_mode(&list, &Places::BaseUnits), None);
     }
 }
