@@ -510,3 +510,12 @@ programHash = "402d2bee1577517709657d8aa4b46efbc568f22b82241ab1abcc4b8afe466c54"
 authority = "CjoV5B96reuCfPh2rRK11G1QptG97jZdyZArTn3EN1Mj"
 idlSha256 = "8d067c8305137e9318c48e517fb59794f74bb48070897b3f59868fda2400421b"
 reviewed = "2026-11-12"
+
+[[builds]]
+# raydiumLaunchpad (pack). Closed source; deployed at slot 446221802; OtterSec lists no verify record. Each of the 28 instructions the IDL lists is in this binary by its Anchor log name and its discriminator, and the binary logs no other. 34 successful mainnet instructions of 13 of them (the four trades but sellExactOut, both live pool creations, the creator, platform and vesting claims, vesting creation, the CP swap migration and three admin instructions) decode with every account named and the bytes their arguments take.
+programId = "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
+network = "mainnet"
+programHash = "a44d24cf2976f69f7be510f7f058b00a681eda193c1991b5bc218bccdf725bb9"
+authority = "FytDrVzDybM1TwFQPGb8qaxZR7dBCzNeqT3vtQsceZQK"
+idlSha256 = "172fee9e4a85423ccb40e03487297df472598ed005ba38088824ed3358a33512"
+reviewed = "2026-11-12"
