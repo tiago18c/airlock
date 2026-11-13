@@ -170,3 +170,34 @@ fn a_phrase_wallet_without_secrets_keeps_its_key_number_and_not_its_words() {
     let back: WalletRecord = serde_json::from_str(&json).unwrap();
     assert_eq!(back, wallet);
 }
+
+#[test]
+fn a_durable_nonce_is_used_on_the_network_it_was_made_on() {
+    let nonce = Pubkey::new_from_array([7; 32]);
+    let mut wallet = WalletRecord::offline("Cold", Pubkey::new_from_array([3; 32]));
+
+    // A record from before networks were recorded reads, and its nonce is
+    // offered wherever the chain has it.
+    let mut old = serde_json::to_value(&wallet).unwrap();
+    old["kind"]["durable_nonce"] = serde_json::to_value(nonce).unwrap();
+    let read: WalletRecord = serde_json::from_value(old).unwrap();
+    assert_eq!(read.kind.nonce_network(), None);
+    assert_eq!(read.kind.durable_nonce_on("mainnet-beta"), Some(nonce));
+
+    // One made on devnet is used there only, and is stored with it.
+    wallet
+        .kind
+        .set_durable_nonce_on(Some(nonce), Some("devnet".into()));
+    assert_eq!(wallet.kind.durable_nonce_on("devnet"), Some(nonce));
+    assert_eq!(wallet.kind.durable_nonce_on("mainnet-beta"), None);
+    let saved = serde_json::to_value(&wallet).unwrap();
+    assert_eq!(saved["kind"]["nonce_network"], "devnet");
+    let loaded: WalletRecord = serde_json::from_value(saved).unwrap();
+    assert_eq!(loaded, wallet);
+
+    // Clearing it clears its network too.
+    wallet
+        .kind
+        .set_durable_nonce_on(None, Some("devnet".into()));
+    assert_eq!(wallet.kind.nonce_network(), None);
+}

@@ -172,9 +172,47 @@ impl WalletKind {
         }
     }
 
+    /// The network its durable nonce was made on, when the record says.
+    pub fn nonce_network(&self) -> Option<&str> {
+        match self {
+            Self::Offline { nonce_network, .. } | Self::Hardware { nonce_network, .. } => {
+                nonce_network.as_deref()
+            }
+            _ => None,
+        }
+    }
+
+    /// The durable nonce account to use on `network`: the one made there,
+    /// or one from before networks were recorded. One made on another
+    /// network is not.
+    pub fn durable_nonce_on(&self, network: &str) -> Option<Pubkey> {
+        match self.nonce_network() {
+            Some(made_on) if made_on != network => None,
+            _ => self.durable_nonce(),
+        }
+    }
+
     /// Set the durable nonce account. Does nothing for any other wallet.
     pub fn set_durable_nonce(&mut self, account: Option<Pubkey>) {
         if let Self::Offline { durable_nonce, .. } | Self::Hardware { durable_nonce, .. } = self {
+            *durable_nonce = account;
+        }
+    }
+
+    /// Set the durable nonce account and the network it is on.
+    pub fn set_durable_nonce_on(&mut self, account: Option<Pubkey>, network: Option<String>) {
+        if let Self::Offline {
+            durable_nonce,
+            nonce_network,
+            ..
+        }
+        | Self::Hardware {
+            durable_nonce,
+            nonce_network,
+            ..
+        } = self
+        {
+            *nonce_network = network.filter(|_| account.is_some());
             *durable_nonce = account;
         }
     }

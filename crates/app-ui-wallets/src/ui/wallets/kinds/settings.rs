@@ -74,7 +74,35 @@ pub(in crate::ui) fn WalletSettingsDialog(
     let authority = kind.as_ref().and_then(WalletKind::signer_authority);
     let executor_nonce = kind.as_ref().and_then(WalletKind::executor_nonce);
     let is_signer = authority.is_some();
-    let durable_nonce = wallet.durable_nonce;
+    // A durable nonce belongs to the network it was made on. One from
+    // before networks were recorded is checked on the chain, online.
+    let network = session.cluster().network_key();
+    let made_on = wallet.nonce_network.clone();
+    let durable_nonce = wallet
+        .durable_nonce
+        .filter(|_| made_on.as_ref().is_none_or(|made_on| *made_on == network));
+    let nonce_elsewhere = wallet
+        .durable_nonce
+        .and(made_on.clone())
+        .filter(|made_on| *made_on != network);
+    let mut unplaced_here = use_signal(|| None::<bool>);
+    let unplaced = wallet.durable_nonce.filter(|_| made_on.is_none());
+    let watched_network = network.clone();
+    use_effect(use_reactive!(|(unplaced, pubkey, watched_network)| {
+        let _ = &watched_network;
+        unplaced_here.set(None);
+        let (Some(account), Some(key), false) = (unplaced, pubkey, offline_app) else {
+            return;
+        };
+        spawn(async move {
+            unplaced_here.set(crate::actions::wallets::nonce_is_here(session, account, key).await);
+        });
+    }));
+    // Not on this network: as good as none, with Create offered.
+    let nonce_missing = unplaced_here() == Some(false);
+    let nonce_usable = durable_nonce.is_some() && !nonce_missing;
+    let network_words = wallet_core::Cluster::network_words(&network);
+    let mut note = use_signal(|| None::<String>);
     let device = wallet.on_device.zip(wallet.derivation_path.clone());
 
     // What is stored now.
@@ -164,13 +192,16 @@ pub(in crate::ui) fn WalletSettingsDialog(
             busy.set(true);
             spawn(async move {
                 let made = if is_contract {
-                    crate::actions::wallets::create_nonce(session, id).await
+                    crate::actions::wallets::create_nonce(session, id)
+                        .await
+                        .map(|()| None)
                 } else {
                     crate::actions::wallets::create_durable_nonce(session, id).await
                 };
                 busy.set(false);
                 match made {
-                    Ok(_) => on_close.call(()),
+                    Ok(None) => on_close.call(()),
+                    Ok(Some(said)) => note.set(Some(said)),
                     Err(err) => error.set(Some(err)),
                 }
             });
@@ -284,13 +315,13 @@ pub(in crate::ui) fn WalletSettingsDialog(
                             div { class: "setting-row",
                                 span { class: "setting-label", "Durable nonce" }
                                 div { class: "setting-value",
-                                    match durable_nonce {
+                                    match durable_nonce.filter(|_| !nonce_missing) {
                                         Some(account) => rsx! {
                                             Address { pubkey: account }
                                         },
                                         None => rsx! {
                                             button { class: "sm",
-                                                title: "Create a nonce account controlled by this key, paid by the fee payer saved for it. What this key signs for itself then lives on it.",
+                                                title: "Create a nonce account on {network_words}, controlled by this key and paid by the fee payer saved for it. What this key signs for itself there then lives on it.",
                                                 disabled: busy(),
                                                 onclick: create_nonce,
                                                 if busy() { "Preparing…" } else { "Create nonce account" }
@@ -314,7 +345,21 @@ pub(in crate::ui) fn WalletSettingsDialog(
                             }
                         }
                     }
-                    if !is_contract && durable_nonce.is_some() {
+                    if !is_contract {
+                        if let Some(made_on) = nonce_elsewhere.clone() {
+                            p { class: "warn",
+                                "Its durable nonce is on {wallet_core::Cluster::network_words(&made_on)}, not on {network_words}, so what this key signs here lives on a recent blockhash. Create nonce account makes one for {network_words}."
+                            }
+                        } else if nonce_missing {
+                            p { class: "warn",
+                                "Its durable nonce account is not on {network_words}: it was made on another network. Create nonce account makes one here."
+                            }
+                        }
+                    }
+                    if let Some(said) = note() {
+                        p { class: "note", role: "status", "{said}" }
+                    }
+                    if !is_contract && nonce_usable {
                         p { class: "hint",
                             "A transaction this key signs for itself lives on the durable nonce, so it stays valid however long the trip to the other device, or the confirmation on it, takes. One transaction at a time: the first to land voids any other made on the same nonce."
                         }
