@@ -79,6 +79,8 @@ pub(super) fn HistoryDetail(entry: HistoryEntry) -> Element {
                         button {
                             class: "ghost sm history-back",
                             r#type: "button",
+                            // What Android's Back presses (MainActivity).
+                            "data-back": "true",
                             onclick: move |_| selected.set(None),
                             Icon { glyph: Glyph::ChevronLeft }
                             "All transactions"

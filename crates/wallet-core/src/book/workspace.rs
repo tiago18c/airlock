@@ -44,6 +44,11 @@ pub struct Workspace {
     /// Sites the user chose to remember, and sites they blocked.
     #[serde(default, skip_serializing_if = "Connections::is_empty")]
     pub connections: Connections,
+    /// An app with no node has had its network settled: chosen in its
+    /// Settings, or moved off the default once. See
+    /// [`Workspace::settle_offline_network`].
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub offline_network_chosen: bool,
     pub book: AddressBook,
 }
 
@@ -65,6 +70,7 @@ impl Default for Workspace {
             close_to_tray: false,
             tokens_api_key: None,
             connections: Connections::default(),
+            offline_network_chosen: false,
             book: AddressBook::default(),
         }
     }
@@ -84,6 +90,31 @@ impl Workspace {
             self.book.clear_chain_state();
         }
         moved
+    }
+
+    /// An app with no node (Airlock Offline, the phone's offline mode) reads
+    /// transactions for the network of `cluster`, chosen in its Settings as
+    /// "Read transactions for". There is no node to ask, so all it decides is
+    /// which network's IDLs explain a transaction.
+    pub fn read_offline_for(&mut self, cluster: Cluster) {
+        self.use_cluster(cluster);
+        self.offline_network_chosen = true;
+    }
+
+    /// Until a network is chosen, an app with no node reads transactions for
+    /// mainnet. Before it offered the choice, its cluster was the default,
+    /// devnet, which nobody chose: that moves to mainnet, once. A cluster
+    /// that is not the default was chosen (in a folder copied from an online
+    /// app, say) and is kept. Answers whether the workspace changed.
+    pub fn settle_offline_network(&mut self) -> bool {
+        if self.offline_network_chosen {
+            return false;
+        }
+        self.offline_network_chosen = true;
+        if self.cluster == Cluster::Devnet {
+            self.use_cluster(Cluster::MainnetBeta);
+        }
+        true
     }
 
     /// The node answered with its genesis hash: the cluster is the one that
@@ -622,6 +653,38 @@ mod tests {
         data.use_cluster(Cluster::Devnet);
         assert_eq!(data.cluster, Cluster::Devnet);
         assert_eq!(data.custom_cluster, Some(mine));
+    }
+
+    #[test]
+    fn an_app_with_no_node_reads_mainnet_until_a_network_is_chosen() {
+        // A new vault, or one from before the choice: on the default, devnet.
+        let mut data = Workspace::default();
+        assert!(data.settle_offline_network());
+        assert_eq!(data.cluster, Cluster::MainnetBeta);
+        // Once settled, it is never moved again.
+        assert!(!data.settle_offline_network());
+
+        // Devnet chosen in Settings stays devnet, across a restart.
+        data.read_offline_for(Cluster::Devnet);
+        let json = serde_json::to_string(&data).unwrap();
+        let mut loaded: Workspace = serde_json::from_str(&json).unwrap();
+        assert!(!loaded.settle_offline_network());
+        assert_eq!(loaded.cluster, Cluster::Devnet);
+    }
+
+    #[test]
+    fn a_network_someone_chose_before_the_choice_was_offered_is_kept() {
+        for chosen in [Cluster::Testnet, custom("http://localhost:8899")] {
+            let mut data = Workspace {
+                cluster: chosen.clone(),
+                ..Workspace::default()
+            };
+            data.settle_offline_network();
+            assert_eq!(data.cluster, chosen);
+        }
+        // An online app's file says nothing of it.
+        let json = serde_json::to_string(&Workspace::default()).unwrap();
+        assert!(!json.contains("offlineNetworkChosen"));
     }
 
     #[test]

@@ -1409,7 +1409,7 @@
         ],
         [
           "Amount",
-          "18,446,744,073,709,551,615 base units"
+          "the maximum"
         ],
         [
           "Payer",
@@ -1443,7 +1443,7 @@
       "from": "5Yr5d6onDcGysWNqWijerRAwXNA3KVWZWP1M4whpV7J9zhzcQERuJ9HR7jtEdyX5gcn29awoud4xhjrCHrNzXCuJ#3",
       "intent": "Withdraw spot protocol fees",
       "programId": "vELoC1audYbSYVRXn1vPaV8Axoa9oU6BYmNGZZBDZ1P",
-      "sentence": "FEe457zYVRV7quouc5pk37UgkQeyxTEWqAoHnnsrQ3dr withdraws at most 18,446,744,073,709,551,615 base units of spot market 1's protocol fees to 78fX88eUcPsDPD3Nwnjydmp7DVRzy86sPskQ1Fk4TP43",
+      "sentence": "FEe457zYVRV7quouc5pk37UgkQeyxTEWqAoHnnsrQ3dr withdraws at most the maximum of spot market 1's protocol fees to 78fX88eUcPsDPD3Nwnjydmp7DVRzy86sPskQ1Fk4TP43",
       "unnamedAccounts": 0
     },
     {

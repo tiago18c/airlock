@@ -212,6 +212,7 @@ pub fn SignPanel() -> Element {
     let loaded = wire.is_some();
     let error = (form.error)();
     let source = (form.source)();
+    let offline = app_ui_kit::use_offline_build();
     // A site's request on screen: the head's button tells the site no.
     let request = match &source {
         Some(TxSource::Browser { id, .. }) => Some(id.clone()),
@@ -231,6 +232,9 @@ pub fn SignPanel() -> Element {
                         if loaded {
                             if let Some(source) = source {
                                 SourceLine { source }
+                            }
+                            if offline {
+                                NetworkLine {}
                             }
                         }
                     }
@@ -1205,6 +1209,21 @@ fn and_list(items: &[String]) -> String {
         [] => String::new(),
         [one] => one.clone(),
         [rest @ .., last] => format!("{} and {last}", rest.join(", ")),
+    }
+}
+
+/// In an app with no node, under the source line: the network whose programs
+/// explain the transaction, chosen in Settings. A transaction does not say
+/// which network it is for, and a program can be another version on each.
+#[component]
+fn NetworkLine() -> Element {
+    let session = use_context::<Session>();
+    let network = session.idl_network();
+    rsx! {
+        p { class: "page-source page-network",
+            title: "Explained with the programs of {network}. Settings, Read transactions for, changes it.",
+            "Read for {network}’s programs"
+        }
     }
 }
 

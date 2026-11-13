@@ -131,6 +131,9 @@ jobs:
           export ANDROID_NDK_HOME="$ANDROID_NDK_LATEST_HOME"
           export JAVA_HOME="$JAVA_HOME_17_X64"
           dx bundle -p airlock-mobile --release --android --target aarch64-linux-android --package-types apk
+          # dx gives the APK a placeholder icon. This puts Airlock's in and
+          # runs assembleRelease again, signed with the key above.
+          scripts/android-icon.sh release
       - name: Collect files
         run: |
           mkdir out

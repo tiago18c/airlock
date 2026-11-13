@@ -466,7 +466,8 @@
       "intent": "Buy tokens",
       "programId": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
       "sentence": "H9JuegeNVyidQEMPz3Y3iYsDkRMt8BL9k1DJnmP3gSoo buys 54,424.741738 of 5LPUWuxVTfkEhGob1kyWgijbFse4icqqH7VTgY79pump for at most 0.01938 of So11111111111111111111111111111111111111112 from pool 36W48etcwCzaJU1TLJf3TYQ86iz7JNhZoPzZz5mziJw8",
-      "unnamedAccounts": 0
+      "unnamedAccounts": 0,
+      "undescribedBytes": "01"
     },
     {
       "accounts": [

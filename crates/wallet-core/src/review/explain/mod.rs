@@ -38,7 +38,7 @@ pub use types::*;
 mod tests;
 
 /// One parsed client and its checksum per program, for the length of one explanation.
-type Clients = HashMap<Pubkey, Option<(Arc<ProgramClient>, [u8; 32])>>;
+type Clients = HashMap<Pubkey, Option<(Arc<ProgramClient>, [u8; 32], IdlOrigin)>>;
 
 /// How many levels of instructions inside instructions are opened.
 const MAX_DEPTH: usize = 4;
@@ -362,15 +362,15 @@ fn explain_one(
 ) -> Option<IdlExplanation> {
     let program_id = instruction.program_id;
     let slot = clients.entry(program_id).or_insert_with(|| {
-        let sha256 = store
+        let (sha256, origin) = store
             .records()
             .iter()
             .find(|record| record.program_id == program_id)
-            .map(|record| record.sha256)?;
+            .map(|record| (record.sha256, record.origin))?;
         let client = store.program_client(&program_id)?;
-        Some((client, sha256))
+        Some((client, sha256, origin))
     });
-    let (client, sha256) = slot.as_ref()?;
+    let (client, sha256, origin) = slot.as_ref()?;
     let parsed = client.parse_instruction(instruction).ok().flatten()?;
     let empty = HashMap::new();
     let supplied = if note_supplies_accounts(&program_id, Some(*sha256), note) {
@@ -418,9 +418,17 @@ fn explain_one(
             })
             .collect::<String>()
     });
+    let undescribed_bytes = instruction
+        .data
+        .len()
+        .checked_sub(parsed.unread)
+        .map(|read| instruction.data[read..].to_vec())
+        .unwrap_or_default();
     Some(IdlExplanation {
         unnamed_accounts,
+        undescribed_bytes,
         idl_sha256: *sha256,
+        origin: *origin,
         intent: display.intent,
         interpolated_intent,
         spans,

@@ -64,6 +64,20 @@ pub fn open_core_on(
     Core::open(ports)
 }
 
+/// For an app with no node, before its session opens: settle the network it
+/// reads transactions for, so the IDL catalog opens on it. A vault that never
+/// chose one reads mainnet (`Workspace::settle_offline_network`).
+pub fn settle_offline_network(core: &Core) {
+    if core.with_workspace(|ws| ws.offline_network_chosen) {
+        return;
+    }
+    if let Err(err) = core.workspace_checked("settle_offline_network", |ws| {
+        ws.settle_offline_network();
+    }) {
+        tracing::warn!(%err, "could not save the network transactions are read for");
+    }
+}
+
 /// The IDL catalog, on the network of the cluster in use, with the IDL pack
 /// in it: read while it opens on desktop, fetched once in a browser.
 /// A window under test opens its stores in a folder of its own. The real one holds

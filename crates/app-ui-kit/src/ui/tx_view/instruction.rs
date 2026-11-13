@@ -21,6 +21,8 @@ pub fn IdlInstruction(idl: IdlExplanation, data: Vec<u8>, inspect: bool) -> Elem
         .collect();
     let intent = idl.intent.clone();
     let unnamed = idl.unnamed_accounts;
+    let undescribed = idl.undescribed_bytes.len();
+    let undescribed_hex = hex::encode(&idl.undescribed_bytes);
     let has_sentence = spans.is_some();
 
     rsx! {
@@ -28,6 +30,11 @@ pub fn IdlInstruction(idl: IdlExplanation, data: Vec<u8>, inspect: bool) -> Elem
         if unnamed > 0 {
             p { class: "warn",
                 "This instruction carries {unnamed} more account(s) than its IDL describes. The program may read a different layout, so the account names shown here may be wrong. Check the addresses in Inspect."
+            }
+        }
+        if undescribed > 0 {
+            p { class: "warn",
+                "This instruction's data is {undescribed} byte(s) longer than its IDL describes: {undescribed_hex}. If the program reads them, they say something that is not shown here."
             }
         }
         if let Some(spans) = spans {

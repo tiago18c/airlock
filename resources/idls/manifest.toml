@@ -121,7 +121,8 @@ programId = "GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw"
 name = "splGovernance"
 # The program publishes no IDL on chain. The file is the Shank IDL of Mythic's
 # governance SDK, checked against spl-governance v3.1.3, which the binaries
-# running on both networks match up to instruction 28.
+# running on both networks (3.1.7 on mainnet since 2026-11-12, 3.1.2 on devnet)
+# match up to instruction 28.
 networks = ["mainnet", "devnet"]
 source = { kind = "repository", url = "https://github.com/Mythic-Project/governance-sdk/blob/dd3997ae0a32d95cd1207bab3af82b32594ee88e/src/idl/gov.json" }
 changes = """Converted from Shank to Codama. Dropped the instructions the program does \
@@ -877,9 +878,11 @@ source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "d5
 changes = """Converted from Anchor to Codama. harvestYield and updateLstPrices declare the accounts \
 of the LST registry lookup table they read after their own (the stake-pool and Sanctum \
 calculator accounts, then each LST's header, mint, vault and stake pool) as a \
-remaining-accounts group, hidden, which Anchor IDLs cannot. The Token program's mint \
-account is added, so mint, redeem, convert and swap amounts read the decimals of the \
-mint the instruction names. Hylo's fixed-point values (fees, thresholds, the slippage \
+remaining-accounts group, hidden, which Anchor IDLs cannot. The instructions a user \
+signs (mint, redeem, convert and swap) declare a shown, optional remaining-accounts \
+group, "Additional Account", for the accounts a router passes after the listed ones. \
+The Token program's mint account is added, so mint, redeem, convert and swap amounts \
+read the decimals of the mint the instruction names. Hylo's fixed-point values (fees, thresholds, the slippage \
 check's expected amount and tolerance) carry their own power of ten and show as bits and \
 exponent. Display nodes added by hand."""
 
@@ -915,7 +918,9 @@ programId = "HysTabVUfmQBFcmzu1ctRd1Y1fxd66RBpboy1bmtDSQQ"
 name = "hyloEarnPool"
 networks = ["mainnet"]
 source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "0406aafcc56cadbcc922be3475f17fc2668b13986b21bc623d93afacee773c47" }
-changes = """Converted from Anchor to Codama. The Token program's mint account is added, so deposit, \
+changes = """Converted from Anchor to Codama. userDeposit and userWithdraw declare a shown, \
+optional remaining-accounts group, "Additional Account", for the accounts a router \
+passes after the listed ones. The Token program's mint account is added, so deposit, \
 withdrawal and loss amounts read the decimals of the hyUSD and eHYUSD mints the \
 instructions name. Hylo's fixed-point values (limits, the withdrawal fee, the slippage \
 check's expected amount and tolerance) carry their own power of ten and show as bits and \

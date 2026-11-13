@@ -2308,6 +2308,8 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
   background: none;
   text-align: start;
   white-space: normal;
+  /* A problem can name a program by its address, one word wider than a phone. */
+  overflow-wrap: anywhere;
 }
 .template-row:hover:not(:disabled) { background: none; }
 .template-row:disabled { opacity: 1; background: none; }
@@ -2823,6 +2825,12 @@ textarea.editor-input:focus { box-shadow: none; }
 }
 .tip-end::after { left: auto; right: 0; transform: none; }
 .tip:hover::after, .tip:focus-visible::after { opacity: 1; transition-delay: 0.25s; }
+/* Hidden, a tip is not laid out at all: an invisible one past the screen's
+   edge would still widen the page, and on a phone push the tab bar off it. */
+.tip:not(:hover, :focus-visible)::after { display: none; }
+@starting-style {
+  .tip:hover::after, .tip:focus-visible::after { opacity: 0; }
+}
 
 /* ---------- Programs ---------- */
 
@@ -4598,7 +4606,15 @@ textarea.short { min-height: 64px; }
   text-align: left;
   white-space: normal;
 }
-.help.tip:focus::after { opacity: 1; }
+.help.tip:focus::after { display: block; opacity: 1; }
+@starting-style {
+  .help.tip:focus::after { opacity: 0; }
+}
+/* A phone has no room beside the question mark: its tip spans the heading's
+   width, under it, so it never runs off the screen. */
+.app.phone :has(> .help.tip) { position: relative; }
+.app.phone .help.tip { position: static; }
+.app.phone .help.tip::after { left: 0; right: 0; width: auto; max-width: none; }
 
 /* A dropdown over wallets: the address picker's look on a button. */
 .picker-button {
@@ -5636,8 +5652,20 @@ button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-
 .more-item.on { background: var(--brand-soft); color: var(--brand-text); font-weight: var(--weight-semibold); }
 .more-item .icon { width: 20px; height: 20px; color: var(--text-2); }
 
+/* Nothing on a phone scrolls the whole page sideways. Content wider than the
+   screen would widen the page, and the tab bar, fixed to the bottom of the
+   widened page, would then sit below the screen. */
+html:has(> body .app.phone), html:has(> body .app.phone) > body { overflow-x: clip; }
+
 /* The phone's tab bar is always along the bottom, whatever the width. */
 .app.phone { grid-template-columns: minmax(0, 1fr); }
+/* While the keyboard is up (MainActivity sets html.keyboard), the tab bar
+   stands aside: in the little room the keyboard leaves, it covered the
+   field being typed in, or the one the keyboard's Next moved to. */
+html.keyboard .app.phone .sidebar { display: none; }
+/* A picker's field scrolled to the top stops under the top bar, so its
+   suggestions have the room down to the keyboard. */
+.app.phone .picker > label { scroll-margin-top: calc(var(--top-h, 0px) + var(--space-2)); }
 .app.phone .sidebar {
   position: fixed;
   top: auto;

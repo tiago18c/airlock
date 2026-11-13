@@ -8,6 +8,10 @@
       "data": "AQAAAK1n66kMGdYbS8shklj+ApsTUCpTVtEx35i1Trt1Tkw1MZSScOgTAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
       "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
     },
+    "7ga6rtE9qSb3wdEiDCpTu2kHqoGVfT52jD8ign1rYTvx": {
+      "data": "AQAAAJlaaNXQaJXGvSX9lek6R3plqV6wWoNPGUgJb/kS1kZL/mP6j38AAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
     "A7bdiYdS5GjqGFtxf17ppRHtDKPkkRqbKtR27dxvQXaS": {
       "data": "AQAAAN22T4c56SXz3m1wLL1wawhxUxlvdxhZc9ZCpLvjIOG+zSn/3/wJAAAIAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
       "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
@@ -1392,6 +1396,351 @@
       "intent": "Swap one LST for another",
       "programId": "HYEXCHtHkBagdStcJCp3xbbb9B7sdMdWXFNj6mdsG4hn",
       "sentence": "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM swaps 8.67976465 of J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn for hy1oXYgrBW6PVcJ4s6s2FKavRdwgWTXdfE69AxT7kPT, paid into 9jQzk9KupPCSdSVYRany12MEMRWVFdzNmREPWao9gCuU",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM:w",
+        "9cd2sAfbBvKs4SX9YKo4dcjwP3TgTVQ8dT5koshGcDND",
+        "CMNPACEDebyvNJDgBxRc5fbScF8kmx52ZPBY4Cu4wuwS:w",
+        "CfuSViqf6wvUKEprLhtuCsSanvfAsMbDmkAW92FP95qe",
+        "FVVUPkXtkiwYz8epMSGMgNwZNVKcyyWfN9iQSJ9z5SX4",
+        "39ACqviD7R5XyGBcwwV1YVru4uvSmz5Pgt7S9RxPRPkL",
+        "3HT6dD6APJh89XJs9rkn3BmsvkXE9jPG9dWJmUjWu6TS",
+        "5ykRvDpEXwKEdoE6yfZ45zeuZ62CcRQRUoZoye4tTJd7:w",
+        "Bz6Xsr7vTo2oSFxjmJVpoC4bVNGVpP5egbdVk4Jeu1JZ:w",
+        "Hh8N3Fdauxgq1jjcKdzGBR3D8cdkpLZrFEVumL1tYQLp:w",
+        "31R5W3sxBwnSvKKQg7yS2c31WC1G9d1gr8jhssKWPYrL:w",
+        "3nnVbsCfN1mwUk2XSLCnjzY3bDDTdzpnKjvRmd8nESS2:w",
+        "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "6HAuqASbHEh4w4REJEUUUCginTLfj1kwCh215ZLtMkrT",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "4VzpNE51Be5vD5Yg8MC3z6TVHq5gGbLJptjv18QbD6WP",
+        "HYEXCHtHkBagdStcJCp3xbbb9B7sdMdWXFNj6mdsG4hn",
+        "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE",
+        "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E:w",
+        "4sWNB8zGWHkh6UnmwiEtzNxL4XrN7uK9tosbESbJFfVs"
+      ],
+      "data": "0e0ea31ae0b69f9bee06d3000000000000",
+      "fields": [
+        [
+          "USDC Deposited",
+          "13.82987"
+        ],
+        [
+          "Slippage Check (expected out and tolerance, each Bits × 10^Exp)",
+          "None"
+        ],
+        [
+          "User",
+          "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM"
+        ],
+        [
+          "USDC Vault",
+          "5ykRvDpEXwKEdoE6yfZ45zeuZ62CcRQRUoZoye4tTJd7"
+        ],
+        [
+          "USDC Fee Vault",
+          "Bz6Xsr7vTo2oSFxjmJVpoC4bVNGVpP5egbdVk4Jeu1JZ"
+        ],
+        [
+          "hyUSD Fee Vault",
+          "Hh8N3Fdauxgq1jjcKdzGBR3D8cdkpLZrFEVumL1tYQLp"
+        ],
+        [
+          "Your hyUSD Account",
+          "31R5W3sxBwnSvKKQg7yS2c31WC1G9d1gr8jhssKWPYrL"
+        ],
+        [
+          "Your USDC Account",
+          "3nnVbsCfN1mwUk2XSLCnjzY3bDDTdzpnKjvRmd8nESS2"
+        ],
+        [
+          "hyUSD Mint",
+          "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E"
+        ],
+        [
+          "USDC Mint",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "USDC/USD Price Feed",
+          "6HAuqASbHEh4w4REJEUUUCginTLfj1kwCh215ZLtMkrT"
+        ],
+        [
+          "Additional Account #1",
+          "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE"
+        ],
+        [
+          "Additional Account #2",
+          "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E"
+        ],
+        [
+          "Additional Account #3",
+          "4sWNB8zGWHkh6UnmwiEtzNxL4XrN7uK9tosbESbJFfVs"
+        ]
+      ],
+      "from": "3kcXisEtMZKdmPBygp4Q2nhxhwUM25fbWoY6MW2A9zVDyd3YoQDBV32LUw2fcA6yjfCmq8ixq2JGorx1G8UfVi2o#3.3",
+      "intent": "Mint hyUSD with USDC",
+      "programId": "HYEXCHtHkBagdStcJCp3xbbb9B7sdMdWXFNj6mdsG4hn",
+      "sentence": "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM deposits 13.82987 USDC to mint hyUSD into 31R5W3sxBwnSvKKQg7yS2c31WC1G9d1gr8jhssKWPYrL",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM:w",
+        "9cd2sAfbBvKs4SX9YKo4dcjwP3TgTVQ8dT5koshGcDND:w",
+        "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE",
+        "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E:w",
+        "CfuSViqf6wvUKEprLhtuCsSanvfAsMbDmkAW92FP95qe",
+        "3HT6dD6APJh89XJs9rkn3BmsvkXE9jPG9dWJmUjWu6TS",
+        "Hh8N3Fdauxgq1jjcKdzGBR3D8cdkpLZrFEVumL1tYQLp:w",
+        "31R5W3sxBwnSvKKQg7yS2c31WC1G9d1gr8jhssKWPYrL:w",
+        "4sWNB8zGWHkh6UnmwiEtzNxL4XrN7uK9tosbESbJFfVs:w",
+        "J8rGkrzsvqinX9kfwD8SkP3mRzXAk3uiDRUaiZKXM4as",
+        "2eadnrYHZ5t5txnpF9Vu6WSKvrFbubm3UKQeaTHKSPP9:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "4VzpNE51Be5vD5Yg8MC3z6TVHq5gGbLJptjv18QbD6WP",
+        "HYEXCHtHkBagdStcJCp3xbbb9B7sdMdWXFNj6mdsG4hn",
+        "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE",
+        "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E:w",
+        "4sWNB8zGWHkh6UnmwiEtzNxL4XrN7uK9tosbESbJFfVs:w"
+      ],
+      "data": "4699ec8d9866ee9ded4ce9000000000000",
+      "fields": [
+        [
+          "hyUSD Converted",
+          "15.289581"
+        ],
+        [
+          "Slippage Check (expected out and tolerance, each Bits × 10^Exp)",
+          "None"
+        ],
+        [
+          "User",
+          "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM"
+        ],
+        [
+          "SOL/USD Price Feed",
+          "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE"
+        ],
+        [
+          "hyUSD Mint",
+          "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E"
+        ],
+        [
+          "Fee Vault",
+          "Hh8N3Fdauxgq1jjcKdzGBR3D8cdkpLZrFEVumL1tYQLp"
+        ],
+        [
+          "Your hyUSD Account",
+          "31R5W3sxBwnSvKKQg7yS2c31WC1G9d1gr8jhssKWPYrL"
+        ],
+        [
+          "xSOL Mint",
+          "4sWNB8zGWHkh6UnmwiEtzNxL4XrN7uK9tosbESbJFfVs"
+        ],
+        [
+          "Your xSOL Account",
+          "2eadnrYHZ5t5txnpF9Vu6WSKvrFbubm3UKQeaTHKSPP9"
+        ],
+        [
+          "Additional Account #1",
+          "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE"
+        ],
+        [
+          "Additional Account #2",
+          "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E"
+        ],
+        [
+          "Additional Account #3",
+          "4sWNB8zGWHkh6UnmwiEtzNxL4XrN7uK9tosbESbJFfVs"
+        ]
+      ],
+      "from": "4j4Mdr1pdsH1rvv6qcpF2Nn2ShJuiaVzLQUnNw4aq8wdKhMD4m4M3wjBUzdu2iVQ1Rix8Q2DofNoVsgqxcPqkeqz#3.9",
+      "intent": "Convert hyUSD to xSOL",
+      "programId": "HYEXCHtHkBagdStcJCp3xbbb9B7sdMdWXFNj6mdsG4hn",
+      "sentence": "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM converts 15.289581 hyUSD into xSOL, paid into 2eadnrYHZ5t5txnpF9Vu6WSKvrFbubm3UKQeaTHKSPP9",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM:w",
+        "9cd2sAfbBvKs4SX9YKo4dcjwP3TgTVQ8dT5koshGcDND",
+        "42GzNWvZ1H1hwXaBZ8mbeVZaSEgh6zMm8BABdS3v1BEB:w",
+        "BKdLWcUDE1Kmga2BfSNaMR2wbXSL4YouTbNQ8mTdcqTp",
+        "CfuSViqf6wvUKEprLhtuCsSanvfAsMbDmkAW92FP95qe",
+        "GwxovvRAGWvhpmveKmFLZeojeyfzDG3FcBTgAeWnVW1Z",
+        "3HT6dD6APJh89XJs9rkn3BmsvkXE9jPG9dWJmUjWu6TS",
+        "FWPLy9vhx2VRto91bcqh7f8xSUd285Sz2N12H6JC29rr",
+        "Hh8N3Fdauxgq1jjcKdzGBR3D8cdkpLZrFEVumL1tYQLp:w",
+        "HqUV7fqfdAgTxaWm6sYqyZFcTCQT4gkQx4juCFX6bwjM:w",
+        "31R5W3sxBwnSvKKQg7yS2c31WC1G9d1gr8jhssKWPYrL:w",
+        "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E:w",
+        "7ga6rtE9qSb3wdEiDCpTu2kHqoGVfT52jD8ign1rYTvx:w",
+        "98sMhvDwXj1RQi5c5Mndm3vPe9cBqPrbLaufMXFNMh5g",
+        "9dAoWJ5ua81c43ntstN4xyg3Uo9Zt93x7BjCxSc27V6V",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "4VzpNE51Be5vD5Yg8MC3z6TVHq5gGbLJptjv18QbD6WP",
+        "HYEXCHtHkBagdStcJCp3xbbb9B7sdMdWXFNj6mdsG4hn",
+        "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE",
+        "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E:w",
+        "4sWNB8zGWHkh6UnmwiEtzNxL4XrN7uK9tosbESbJFfVs"
+      ],
+      "data": "df26fce20cfbc2d7a7be3c020000000000",
+      "fields": [
+        [
+          "hyUSD Converted",
+          "37.535399"
+        ],
+        [
+          "Slippage Check (expected out and tolerance, each Bits × 10^Exp)",
+          "None"
+        ],
+        [
+          "User",
+          "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM"
+        ],
+        [
+          "Collateral Pool",
+          "42GzNWvZ1H1hwXaBZ8mbeVZaSEgh6zMm8BABdS3v1BEB"
+        ],
+        [
+          "Collateral Vault",
+          "FWPLy9vhx2VRto91bcqh7f8xSUd285Sz2N12H6JC29rr"
+        ],
+        [
+          "Fee Vault",
+          "Hh8N3Fdauxgq1jjcKdzGBR3D8cdkpLZrFEVumL1tYQLp"
+        ],
+        [
+          "Your Leveraged Token Account",
+          "HqUV7fqfdAgTxaWm6sYqyZFcTCQT4gkQx4juCFX6bwjM"
+        ],
+        [
+          "Your hyUSD Account",
+          "31R5W3sxBwnSvKKQg7yS2c31WC1G9d1gr8jhssKWPYrL"
+        ],
+        [
+          "hyUSD Mint",
+          "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E"
+        ],
+        [
+          "Leveraged Token",
+          "7ga6rtE9qSb3wdEiDCpTu2kHqoGVfT52jD8ign1rYTvx"
+        ],
+        [
+          "Collateral Token",
+          "98sMhvDwXj1RQi5c5Mndm3vPe9cBqPrbLaufMXFNMh5g"
+        ],
+        [
+          "Collateral Price Feed",
+          "9dAoWJ5ua81c43ntstN4xyg3Uo9Zt93x7BjCxSc27V6V"
+        ],
+        [
+          "Additional Account #1",
+          "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE"
+        ],
+        [
+          "Additional Account #2",
+          "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E"
+        ],
+        [
+          "Additional Account #3",
+          "4sWNB8zGWHkh6UnmwiEtzNxL4XrN7uK9tosbESbJFfVs"
+        ]
+      ],
+      "from": "4KuvhGs79xY7Epbpn6oCiud4cxyLQ25YGCik3XaFVLCwtmn5fb6U8TETbT8UQhKhNFdUKh63p6bdk1DuJgDhG2ZE#3.8",
+      "intent": "Convert hyUSD to a leveraged token",
+      "programId": "HYEXCHtHkBagdStcJCp3xbbb9B7sdMdWXFNj6mdsG4hn",
+      "sentence": "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM converts 37.535399 hyUSD into 7ga6rtE9qSb3wdEiDCpTu2kHqoGVfT52jD8ign1rYTvx, paid into HqUV7fqfdAgTxaWm6sYqyZFcTCQT4gkQx4juCFX6bwjM",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM:w",
+        "9cd2sAfbBvKs4SX9YKo4dcjwP3TgTVQ8dT5koshGcDND",
+        "42GzNWvZ1H1hwXaBZ8mbeVZaSEgh6zMm8BABdS3v1BEB",
+        "GwxovvRAGWvhpmveKmFLZeojeyfzDG3FcBTgAeWnVW1Z",
+        "8Xrf6qAvuH3kXfVWJGT49aBLSEUGHyG8ETuvvnu5VRSr",
+        "FWPLy9vhx2VRto91bcqh7f8xSUd285Sz2N12H6JC29rr:w",
+        "DHZ2JuDXcmuTnkVfmx4fYKk6sStqdW9oBTjoPAhtKF37:w",
+        "HqUV7fqfdAgTxaWm6sYqyZFcTCQT4gkQx4juCFX6bwjM:w",
+        "CqXpTWtAWqMRpkaQghRLCG3zkVMUR9M7PvpX5kg6jX9e:w",
+        "98sMhvDwXj1RQi5c5Mndm3vPe9cBqPrbLaufMXFNMh5g",
+        "7ga6rtE9qSb3wdEiDCpTu2kHqoGVfT52jD8ign1rYTvx:w",
+        "9dAoWJ5ua81c43ntstN4xyg3Uo9Zt93x7BjCxSc27V6V",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "4VzpNE51Be5vD5Yg8MC3z6TVHq5gGbLJptjv18QbD6WP",
+        "HYEXCHtHkBagdStcJCp3xbbb9B7sdMdWXFNj6mdsG4hn",
+        "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE",
+        "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E",
+        "4sWNB8zGWHkh6UnmwiEtzNxL4XrN7uK9tosbESbJFfVs"
+      ],
+      "data": "3362dfca0d61b702a58707000000000000",
+      "fields": [
+        [
+          "Leveraged Token Redeemed",
+          "0.493477"
+        ],
+        [
+          "Slippage Check (expected out and tolerance, each Bits × 10^Exp)",
+          "None"
+        ],
+        [
+          "User",
+          "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM"
+        ],
+        [
+          "Collateral Pool",
+          "42GzNWvZ1H1hwXaBZ8mbeVZaSEgh6zMm8BABdS3v1BEB"
+        ],
+        [
+          "Collateral Vault",
+          "FWPLy9vhx2VRto91bcqh7f8xSUd285Sz2N12H6JC29rr"
+        ],
+        [
+          "Fee Vault",
+          "DHZ2JuDXcmuTnkVfmx4fYKk6sStqdW9oBTjoPAhtKF37"
+        ],
+        [
+          "Your Leveraged Token Account",
+          "HqUV7fqfdAgTxaWm6sYqyZFcTCQT4gkQx4juCFX6bwjM"
+        ],
+        [
+          "Your Collateral Account",
+          "CqXpTWtAWqMRpkaQghRLCG3zkVMUR9M7PvpX5kg6jX9e"
+        ],
+        [
+          "Collateral Token",
+          "98sMhvDwXj1RQi5c5Mndm3vPe9cBqPrbLaufMXFNMh5g"
+        ],
+        [
+          "Leveraged Token",
+          "7ga6rtE9qSb3wdEiDCpTu2kHqoGVfT52jD8ign1rYTvx"
+        ],
+        [
+          "Collateral Price Feed",
+          "9dAoWJ5ua81c43ntstN4xyg3Uo9Zt93x7BjCxSc27V6V"
+        ],
+        [
+          "Additional Account #1",
+          "7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE"
+        ],
+        [
+          "Additional Account #2",
+          "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E"
+        ],
+        [
+          "Additional Account #3",
+          "4sWNB8zGWHkh6UnmwiEtzNxL4XrN7uK9tosbESbJFfVs"
+        ]
+      ],
+      "from": "5jwLCG6qf21HvkXSh8beUTgQcGwEnkVhnatUZdwNHEzhbWzsw8PCNoEsBnUcF466Bs8WjSAifSgWFbB3b7v5Xgum#3.13",
+      "intent": "Redeem a leveraged token",
+      "programId": "HYEXCHtHkBagdStcJCp3xbbb9B7sdMdWXFNj6mdsG4hn",
+      "sentence": "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM redeems 0.493477 of 7ga6rtE9qSb3wdEiDCpTu2kHqoGVfT52jD8ign1rYTvx for 98sMhvDwXj1RQi5c5Mndm3vPe9cBqPrbLaufMXFNMh5g, paid into CqXpTWtAWqMRpkaQghRLCG3zkVMUR9M7PvpX5kg6jX9e",
       "unnamedAccounts": 0
     }
   ],
