@@ -1577,3 +1577,26 @@ variant's fields as its arguments; the bytes are unchanged. The accounts validat
 after the listed six, the accounts the rules check, are a remaining-accounts group. \
 optionalAccountStrategy is programId, as the converter sets it. Display nodes added by \
 hand."""
+
+# Metaplex Core, the single-account NFT standard: assets, collections, groups
+# and the plugins that grant control over them. It publishes no IDL on chain;
+# the file is the Shank IDL its clients are generated from, in Metaplex's
+# repository at the commit the upgrade authority's OtterSec record names,
+# checked tag by tag against the program source and the deployed binary.
+# Devnet runs the same executable.
+[[idls]]
+file = "mpl-core.json"
+programId = "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+name = "mplCoreProgram"
+networks = ["mainnet", "devnet"]
+source = { kind = "repository", url = "https://github.com/metaplex-foundation/mpl-core/blob/8c5cee35199a7d103e181de7b13f2e20b1e20103/idls/mpl_core.json" }
+changes = """Converted from Shank to Codama (the file names its origin). Checked against the program \
+source at 8c5cee35 (instruction.rs, the processors and every type): \
+CreateGroupV1Args.relationships, which Shank wrote as a vector of `crate`, now links to \
+RelationshipEntry. Optional accounts are read as absent when they hold the program's own \
+address. The program passes the whole account list to its plugin checks, so the \
+instructions that run them end with one shown remaining-accounts group (accounts an \
+oracle, a lifecycle hook or the Agent Identity registry reads); Execute's remaining \
+accounts are those of the instruction the asset signs, Collect's the assets it collects \
+from, and the group instructions' the collections, assets or groups they act on, each a \
+shown group. Display nodes added by hand."""
