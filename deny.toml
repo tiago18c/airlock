@@ -1,13 +1,14 @@
 # cargo-deny configuration. Run `cargo deny check` locally; CI runs the same.
 
 [graph]
-# The app ships for Windows desktop and for the browser. Linux and macOS are
-# built in CI so the code stays portable.
+# Every target a release is built for: Windows, Linux and macOS desktops,
+# Android phones, and the browser.
 targets = [
     "x86_64-pc-windows-msvc",
     "wasm32-unknown-unknown",
     "x86_64-unknown-linux-gnu",
     "aarch64-apple-darwin",
+    "aarch64-linux-android",
 ]
 all-features = false
 
@@ -62,7 +63,14 @@ allow = [
     "Zlib",
 ]
 # File-level copyleft: using the crate unchanged places no terms on this code.
-exceptions = [{ allow = ["MPL-2.0"], crate = "option-ext" }]
+exceptions = [
+    { allow = ["MPL-2.0"], crate = "option-ext" },
+    # Android only: the HTML and CSS parsing the webview crate does there.
+    { allow = ["MPL-2.0"], crate = "cssparser" },
+    { allow = ["MPL-2.0"], crate = "cssparser-macros" },
+    { allow = ["MPL-2.0"], crate = "dtoa-short" },
+    { allow = ["MPL-2.0"], crate = "selectors" },
+]
 
 [bans]
 # Duplicate versions are common in the Solana tree. Reported, not fatal.
