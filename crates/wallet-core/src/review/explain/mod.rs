@@ -371,6 +371,20 @@ fn explain_one(
         Some((client, sha256, origin))
     });
     let (client, sha256, origin) = slot.as_ref()?;
+    // The Associated Token program reads empty data as Create, which is
+    // how its first clients sent it and many still do; the IDL gives Create
+    // its one-byte tag, 0.
+    let tagged;
+    let instruction =
+        if program_id == crate::ids::ASSOCIATED_TOKEN_PROGRAM_ID && instruction.data.is_empty() {
+            tagged = Instruction {
+                data: vec![0],
+                ..instruction.clone()
+            };
+            &tagged
+        } else {
+            instruction
+        };
     let parsed = client.parse_instruction(instruction).ok().flatten()?;
     let empty = HashMap::new();
     let supplied = if note_supplies_accounts(&program_id, Some(*sha256), note) {
