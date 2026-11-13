@@ -1,0 +1,2627 @@
+{
+  "kind": "rootNode",
+  "program": {
+    "kind": "programNode",
+    "pdas": [],
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mintAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority used to mint new tokens. The mint authority may only",
+                "be provided during mint creation. If no mint authority is present",
+                "then the mint has a fixed supply and no further tokens may be minted."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "supply",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "docs": [
+                "Total supply of tokens."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "decimals",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "docs": [
+                "Number of base 10 digits to the right of the decimal place."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isInitialized",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "docs": [
+                "Is `true` if this structure has been initialized."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "freezeAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority to freeze token accounts."
+              ]
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "sizeDiscriminatorNode",
+            "size": 82
+          }
+        ],
+        "name": "mint",
+        "docs": [],
+        "size": 82
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "updateValidatorListBalance",
+        "docs": [
+          "Updates balances of validator and transient stake accounts in the pool",
+          "",
+          "While going through the pairs of validator and transient stake",
+          "accounts, if the transient stake is inactive, it is merged into the",
+          "reserve stake account. If the transient stake is active and has",
+          "matching credits observed, it is merged into the canonical",
+          "validator stake account. In all other states, nothing is done, and",
+          "the balance is simply added to the canonical stake account balance.",
+          "",
+          "0. `[]` Stake pool",
+          "1. `[]` Stake pool withdraw authority",
+          "2. `[w]` Validator stake list storage account",
+          "3. `[w]` Reserve stake account",
+          "4. `[]` Sysvar clock",
+          "5. `[]` Sysvar stake history",
+          "6. `[]` Stake program",
+          "7. `..7+2N` [] N pairs of validator and transient stake accounts"
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool withdraw authority"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "validatorList",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Validator stake list storage account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve stake account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "clock",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sysvar clock"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarC1ock11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeHistory",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sysvar stake history"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarStakeHistory1111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake program"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "Stake11111111111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 6
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "startIndex",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u32",
+              "endian": "le"
+            },
+            "docs": [
+              "Index to start updating on the validator list"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Start Index"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "noMerge",
+            "type": {
+              "kind": "booleanTypeNode",
+              "size": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "docs": [
+              "If true, don't try merging transient stake accounts into the reserve",
+              "or validator stake account.  Useful for testing or if a",
+              "particular stake account is in a bad state, but we still",
+              "want to update"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Skip Merging"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update validator balances",
+          "interpolatedIntent": "Updates the validator balances of stake pool ${accounts.stakePool} from list index ${data.startIndex}"
+        },
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "validatorAndTransientStakeAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "N pairs of validator and transient stake accounts of the pool, in the",
+              "order of the validator list from the start index."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateStakePoolBalance",
+        "docs": [
+          "Updates total pool balance based on balances in the reserve and",
+          "validator list",
+          "",
+          "0. `[w]` Stake pool",
+          "1. `[]` Stake pool withdraw authority",
+          "2. `[w]` Validator stake list storage account",
+          "3. `[]` Reserve stake account",
+          "4. `[w]` Account to receive pool fee tokens",
+          "5. `[w]` Pool mint account",
+          "6. `[]` Pool token program"
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool withdraw authority"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "validatorList",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Validator stake list storage account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveStake",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve stake account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "managerFeeAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Account to receive pool fee tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Manager Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "poolMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Pool mint account"
+            ],
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Pool token program"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 7
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update the pool balance",
+          "interpolatedIntent": "Updates the total balance of stake pool ${accounts.stakePool} and pays its epoch fee to ${accounts.managerFeeAccount}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "cleanupRemovedValidatorEntries",
+        "docs": [
+          "Cleans up validator stake account entries marked as `ReadyForRemoval`",
+          "",
+          "0. `[]` Stake pool",
+          "1. `[w]` Validator stake list storage account"
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "validatorList",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Validator stake list storage account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 8
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Clean up removed validators",
+          "interpolatedIntent": "Drops the validators marked for removal from the list of stake pool ${accounts.stakePool}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "depositStake",
+        "docs": [
+          "Deposit some stake into the pool. The output is a \"pool\" token",
+          "representing ownership into the pool. Inputs are converted to the",
+          "current ratio.",
+          "",
+          "0. `[w]` Stake pool",
+          "1. `[w]` Validator stake list storage account",
+          "2. `[s]/[]` Stake pool deposit authority",
+          "3. `[]` Stake pool withdraw authority",
+          "4. `[w]` Stake account to join the pool (withdraw authority for the",
+          "stake account should be first set to the stake pool deposit",
+          "authority)",
+          "5. `[w]` Validator stake account for the stake account to be merged",
+          "with",
+          "6. `[w]` Reserve stake account, to withdraw rent exempt reserve",
+          "7. `[w]` User account to receive pool tokens",
+          "8. `[w]` Account to receive pool fee tokens",
+          "9. `[w]` Account to receive a portion of pool fee tokens as referral",
+          "fees",
+          "10. `[w]` Pool token mint account",
+          "11. '[]' Sysvar clock account",
+          "12. '[]' Sysvar stake history account",
+          "13. `[]` Pool token program id,",
+          "14. `[]` Stake program id,"
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "validatorList",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Validator stake list storage account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeDepositAuthority",
+            "isWritable": false,
+            "isSigner": "either",
+            "isOptional": false,
+            "docs": [
+              "Stake pool deposit authority"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Deposit Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool withdraw authority"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "depositStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake account to join the pool (withdraw authority for the stake account should be first set to the stake pool deposit authority)"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Account Deposited"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "validatorStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Validator stake account for the stake account to be merged with"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Validator Stake Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve stake account, to withdraw rent exempt reserve"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "poolTokensTo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "User account to receive pool tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Tokens To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "managerFeeAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Account to receive pool fee tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Manager Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "referrerPoolTokens",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Account to receive a portion of pool fee tokens as referral fees"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Referrer Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "poolMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Pool token mint account"
+            ],
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "clock",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sysvar clock account"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarC1ock11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeHistory",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sysvar stake history account"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarStakeHistory1111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Pool token program id,"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake program id,"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "Stake11111111111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 9
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Deposit a stake account",
+          "interpolatedIntent": "Deposits stake account ${accounts.depositStake} into stake pool ${accounts.stakePool} for pool tokens of ${accounts.poolMint} to ${accounts.poolTokensTo}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawStake",
+        "docs": [
+          "Withdraw the token from the pool at the current ratio.",
+          "",
+          "Succeeds if the stake account has enough SOL to cover the desired",
+          "amount of pool tokens, and if the withdrawal keeps the total",
+          "staked amount above the minimum of rent-exempt amount plus `max(",
+          "crate::MINIMUM_ACTIVE_STAKE,",
+          "solana_program::stake::tools::get_minimum_delegation()",
+          ")`.",
+          "",
+          "When allowing withdrawals, the order of priority goes:",
+          "",
+          "* preferred withdraw validator stake account (if set)",
+          "* validator stake accounts",
+          "* transient stake accounts",
+          "* reserve stake account OR totally remove validator stake accounts",
+          "",
+          "A user can freely withdraw from a validator stake account, and if they",
+          "are all at the minimum, then they can withdraw from transient stake",
+          "accounts, and if they are all at minimum, then they can withdraw from",
+          "the reserve or remove any validator from the pool.",
+          "",
+          "0. `[w]` Stake pool",
+          "1. `[w]` Validator stake list storage account",
+          "2. `[]` Stake pool withdraw authority",
+          "3. `[w]` Validator or reserve stake account to split",
+          "4. `[w]` Uninitialized stake account to receive withdrawal",
+          "5. `[]` User account to set as a new withdraw authority",
+          "6. `[s]` User transfer authority, for pool token account",
+          "7. `[w]` User account with pool tokens to burn from",
+          "8. `[w]` Account to receive pool fee tokens",
+          "9. `[w]` Pool token mint account",
+          "10. `[]` Sysvar clock account (required)",
+          "11. `[]` Pool token program id",
+          "12. `[]` Stake program id,",
+          "",
+          "User data: amount of pool tokens to withdraw"
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "validatorList",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Validator stake list storage account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool withdraw authority"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeSplitFrom",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Validator or reserve stake account to split"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Split From (Validator or Reserve)"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeSplitTo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Uninitialized stake account to receive withdrawal"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Stake Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userStakeAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "User account to set as a new withdraw authority"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Stake Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userTransferAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "User transfer authority, for pool token account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "poolTokensFrom",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "User account with pool tokens to burn from"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Tokens From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "managerFeeAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Account to receive pool fee tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Manager Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "poolMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Pool token mint account"
+            ],
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "clock",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sysvar clock account (required)"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarC1ock11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Pool token program id"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake program id,"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "Stake11111111111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 10
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "poolTokensIn",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "poolDecimals"
+                }
+              }
+            },
+            "docs": [
+              "Amount of pool tokens to withdraw."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Pool Tokens Burned"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw a stake account",
+          "interpolatedIntent": "${accounts.userTransferAuthority} burns ${data.poolTokensIn} of ${accounts.poolMint} from ${accounts.poolTokensFrom} to withdraw stake from stake pool ${accounts.stakePool} into ${accounts.stakeSplitTo}, with ${accounts.userStakeAuthority} as its staker and withdrawer"
+        },
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "poolDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "poolMint",
+              "path": "decimals"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "name": "depositSol",
+        "docs": [
+          "Deposit SOL directly into the pool's reserve account. The output is a",
+          "\"pool\" token representing ownership into the pool. Inputs are",
+          "converted to the current ratio.",
+          "",
+          "0. `[w]` Stake pool",
+          "1. `[]` Stake pool withdraw authority",
+          "2. `[w]` Reserve stake account, to deposit SOL",
+          "3. `[s]` Account providing the lamports to be deposited into the pool",
+          "4. `[w]` User account to receive pool tokens",
+          "5. `[w]` Account to receive fee tokens",
+          "6. `[w]` Account to receive a portion of fee as referral fees",
+          "7. `[w]` Pool token mint account",
+          "8. `[]` System program account",
+          "9. `[]` Token program id",
+          "10. `[s]` (Optional) Stake pool sol deposit authority."
+        ],
+        "optionalAccountStrategy": "omitted",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool withdraw authority"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve stake account, to deposit SOL"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lamportsFrom",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Account providing the lamports to be deposited into the pool"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "poolTokensTo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "User account to receive pool tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Tokens To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "managerFeeAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Account to receive fee tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Manager Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "referrerPoolTokens",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Account to receive a portion of fee as referral fees"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Referrer Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "poolMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Pool token mint account"
+            ],
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "System program account"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "solDepositAuthority",
+            "isWritable": false,
+            "isSigner": "either",
+            "isOptional": true,
+            "docs": [
+              "(Optional) Stake pool sol deposit authority."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "SOL Deposit Authority (Ignored If the Pool Has None)"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 14
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "lamportsIn",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 9
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "SOL"
+                }
+              }
+            },
+            "docs": [
+              "Amount of lamports to deposit."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Deposit SOL",
+          "interpolatedIntent": "${accounts.lamportsFrom} deposits ${data.lamportsIn} into stake pool ${accounts.stakePool} for pool tokens of ${accounts.poolMint} to ${accounts.poolTokensTo}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawSol",
+        "docs": [
+          "Withdraw SOL directly from the pool's reserve account. Fails if the",
+          "reserve does not have enough SOL.",
+          "",
+          "0. `[w]` Stake pool",
+          "1. `[]` Stake pool withdraw authority",
+          "2. `[s]` User transfer authority, for pool token account",
+          "3. `[w]` User account to burn pool tokens",
+          "4. `[w]` Reserve stake account, to withdraw SOL",
+          "5. `[w]` Account receiving the lamports from the reserve, must be a",
+          "system account",
+          "6. `[w]` Account to receive pool fee tokens",
+          "7. `[w]` Pool token mint account",
+          "8. '[]' Clock sysvar",
+          "9. '[]' Stake history sysvar",
+          "10. `[]` Stake program account",
+          "11. `[]` Token program id",
+          "12. `[s]` (Optional) Stake pool sol withdraw authority"
+        ],
+        "optionalAccountStrategy": "omitted",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool withdraw authority"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userTransferAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "User transfer authority, for pool token account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "poolTokensFrom",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "User account to burn pool tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Tokens From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve stake account, to withdraw SOL"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lamportsTo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Account receiving the lamports from the reserve, must be a system account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "SOL To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "managerFeeAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Account to receive pool fee tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Manager Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "poolMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Pool token mint account"
+            ],
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Token Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "clock",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Clock sysvar"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarC1ock11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeHistory",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake history sysvar"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarStakeHistory1111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake program account"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "Stake11111111111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program id"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "solWithdrawAuthority",
+            "isWritable": false,
+            "isSigner": "either",
+            "isOptional": true,
+            "docs": [
+              "(Optional) Stake pool sol withdraw authority"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "SOL Withdraw Authority (Ignored If the Pool Has None)"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 16
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "poolTokensIn",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "poolDecimals"
+                }
+              }
+            },
+            "docs": [
+              "Amount of pool tokens to burn."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Pool Tokens Burned"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw SOL",
+          "interpolatedIntent": "${accounts.userTransferAuthority} burns ${data.poolTokensIn} of ${accounts.poolMint} from ${accounts.poolTokensFrom} to withdraw SOL from stake pool ${accounts.stakePool} to ${accounts.lamportsTo}"
+        },
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "poolDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "poolMint",
+              "path": "decimals"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "name": "increaseAdditionalValidatorStake",
+        "docs": [
+          "(Staker only) Increase stake on a validator again in an epoch.",
+          "",
+          "Works regardless if the transient stake account exists.",
+          "",
+          "Internally, this instruction splits reserve stake into an ephemeral",
+          "stake account, activates it, then merges or splits it into the",
+          "transient stake account delegated to the appropriate validator.",
+          "`UpdateValidatorListBalance` will do the work of merging once it's",
+          "ready.",
+          "",
+          "The minimum amount to move is rent-exemption plus",
+          "`max(crate::MINIMUM_ACTIVE_STAKE,",
+          "solana_program::stake::tools::get_minimum_delegation())`.",
+          "",
+          "0. `[]` Stake pool",
+          "1. `[s]` Stake pool staker",
+          "2. `[]` Stake pool withdraw authority",
+          "3. `[w]` Validator list",
+          "4. `[w]` Stake pool reserve stake",
+          "5. `[w]` Uninitialized ephemeral stake account to receive stake",
+          "6. `[w]` Transient stake account",
+          "7. `[]` Validator stake account",
+          "8. `[]` Validator vote account to delegate to",
+          "9. '[]' Clock sysvar",
+          "10. `[]` Stake History sysvar",
+          "11. `[]` Stake Config sysvar",
+          "12. `[]` System program",
+          "13. `[]` Stake program",
+          "",
+          "User data: amount of lamports to increase on the given validator.",
+          "",
+          "The actual amount split into the transient stake account is:",
+          "`lamports + stake_rent_exemption`.",
+          "",
+          "The rent-exemption of the stake account is withdrawn back to the",
+          "reserve after it is merged."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "staker",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Stake pool staker"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Staker"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool withdraw authority"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "validatorList",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Validator list"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool reserve stake"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ephemeralStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Uninitialized ephemeral stake account to receive stake"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Ephemeral Stake Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "transientStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Transient stake account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Transient Stake Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "validatorStake",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Validator stake account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Validator Stake Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "validatorVote",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Validator vote account to delegate to"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Validator Vote Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "clock",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Clock sysvar"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarC1ock11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeHistory",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake History sysvar"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarStakeHistory1111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake Config sysvar"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "StakeConfig11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "System program"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake program"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "Stake11111111111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 19
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "lamports",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 9
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "SOL"
+                }
+              }
+            },
+            "docs": [
+              "amount of lamports to increase on the given validator"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "transientStakeSeed",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "docs": [
+              "seed used to create transient stake account"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Transient Stake Seed"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "ephemeralStakeSeed",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "docs": [
+              "seed used to create ephemeral account."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Ephemeral Stake Seed"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Increase validator stake again",
+          "interpolatedIntent": "${accounts.staker} stakes ${data.lamports} more from the reserve of stake pool ${accounts.stakePool} with validator ${accounts.validatorVote}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "decreaseAdditionalValidatorStake",
+        "docs": [
+          "(Staker only) Decrease active stake again from a validator, eventually",
+          "moving it to the reserve",
+          "",
+          "Works regardless if the transient stake account already exists.",
+          "",
+          "Internally, this instruction:",
+          "* withdraws rent-exempt reserve lamports from the reserve into the",
+          "ephemeral stake",
+          "* splits a validator stake account into an ephemeral stake account",
+          "* deactivates the ephemeral account",
+          "* merges or splits the ephemeral account into the transient stake",
+          "account delegated to the appropriate validator",
+          "",
+          "The amount of lamports to move must be at least",
+          "`max(crate::MINIMUM_ACTIVE_STAKE,",
+          "solana_program::stake::tools::get_minimum_delegation())`.",
+          "",
+          "0. `[]` Stake pool",
+          "1. `[s]` Stake pool staker",
+          "2. `[]` Stake pool withdraw authority",
+          "3. `[w]` Validator list",
+          "4. `[w]` Reserve stake account, to fund rent exempt reserve",
+          "5. `[w]` Canonical stake account to split from",
+          "6. `[w]` Uninitialized ephemeral stake account to receive stake",
+          "7. `[w]` Transient stake account",
+          "8. `[]` Clock sysvar",
+          "9. '[]' Stake history sysvar",
+          "10. `[]` System program",
+          "11. `[]` Stake program"
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakePool",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "staker",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Stake pool staker"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Staker"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake pool withdraw authority"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "validatorList",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Validator list"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserveStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Reserve stake account, to fund rent exempt reserve"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "validatorStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Canonical stake account to split from"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Validator Stake Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ephemeralStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Uninitialized ephemeral stake account to receive stake"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Ephemeral Stake Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "transientStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Transient stake account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Transient Stake Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "clock",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Clock sysvar"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarC1ock11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeHistory",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake history sysvar"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "SysvarStakeHistory1111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "System program"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Stake program"
+            ],
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "Stake11111111111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 20
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "lamports",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 9
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "SOL"
+                }
+              }
+            },
+            "docs": [
+              "amount of lamports to split into the transient stake account"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "transientStakeSeed",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "docs": [
+              "seed used to create transient stake account"
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Transient Stake Seed"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "ephemeralStakeSeed",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "docs": [
+              "seed used to create ephemeral account."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Ephemeral Stake Seed"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Decrease validator stake again",
+          "interpolatedIntent": "${accounts.staker} starts deactivating ${data.lamports} more of the stake in ${accounts.validatorStake} of stake pool ${accounts.stakePool}"
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "fee",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "denominator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "docs": [
+                "Denominator of the fee ratio."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Denominator"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "numerator",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "docs": [
+                "Numerator of the fee ratio."
+              ],
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Numerator"
+              }
+            }
+          ]
+        },
+        "docs": [
+          "Fee rate as a ratio. Fee is minted on deposit."
+        ]
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "feeType",
+        "type": {
+          "kind": "enumTypeNode",
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          },
+          "variants": [
+            {
+              "kind": "enumTupleVariantTypeNode",
+              "name": "solReferral",
+              "tuple": {
+                "kind": "tupleTypeNode",
+                "items": [
+                  {
+                    "kind": "numberTypeNode",
+                    "format": "u8",
+                    "endian": "le"
+                  }
+                ]
+              },
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "SOL referral fee, in percent of the SOL deposit fee"
+              }
+            },
+            {
+              "kind": "enumTupleVariantTypeNode",
+              "name": "stakeReferral",
+              "tuple": {
+                "kind": "tupleTypeNode",
+                "items": [
+                  {
+                    "kind": "numberTypeNode",
+                    "format": "u8",
+                    "endian": "le"
+                  }
+                ]
+              },
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "stake referral fee, in percent of the stake deposit fee"
+              }
+            },
+            {
+              "kind": "enumTupleVariantTypeNode",
+              "name": "epoch",
+              "tuple": {
+                "kind": "tupleTypeNode",
+                "items": [
+                  {
+                    "kind": "definedTypeLinkNode",
+                    "name": "fee"
+                  }
+                ]
+              },
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "epoch fee on rewards"
+              }
+            },
+            {
+              "kind": "enumTupleVariantTypeNode",
+              "name": "stakeWithdrawal",
+              "tuple": {
+                "kind": "tupleTypeNode",
+                "items": [
+                  {
+                    "kind": "definedTypeLinkNode",
+                    "name": "fee"
+                  }
+                ]
+              },
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "stake withdrawal fee"
+              }
+            },
+            {
+              "kind": "enumTupleVariantTypeNode",
+              "name": "solDeposit",
+              "tuple": {
+                "kind": "tupleTypeNode",
+                "items": [
+                  {
+                    "kind": "definedTypeLinkNode",
+                    "name": "fee"
+                  }
+                ]
+              },
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "SOL deposit fee"
+              }
+            },
+            {
+              "kind": "enumTupleVariantTypeNode",
+              "name": "stakeDeposit",
+              "tuple": {
+                "kind": "tupleTypeNode",
+                "items": [
+                  {
+                    "kind": "definedTypeLinkNode",
+                    "name": "fee"
+                  }
+                ]
+              },
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "stake deposit fee"
+              }
+            },
+            {
+              "kind": "enumTupleVariantTypeNode",
+              "name": "solWithdrawal",
+              "tuple": {
+                "kind": "tupleTypeNode",
+                "items": [
+                  {
+                    "kind": "definedTypeLinkNode",
+                    "name": "fee"
+                  }
+                ]
+              },
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "SOL withdrawal fee"
+              }
+            }
+          ]
+        },
+        "docs": [
+          "The type of fees that can be set on the stake pool."
+        ]
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "fundingType",
+        "type": {
+          "kind": "enumTypeNode",
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          },
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "stakeDeposit",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "stake deposits"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "solDeposit",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "SOL deposits"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "solWithdraw",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "SOL withdrawals"
+              }
+            }
+          ]
+        },
+        "docs": [
+          "Defines which authority to update in the `SetFundingAuthority` instruction."
+        ]
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "preferredValidatorType",
+        "type": {
+          "kind": "enumTypeNode",
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          },
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "deposit",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "deposits"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "withdraw",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "withdrawals"
+              }
+            }
+          ]
+        },
+        "docs": [
+          "Defines which validator vote account is set during the",
+          "`SetPreferredValidator` instruction."
+        ]
+      }
+    ],
+    "errors": [],
+    "name": "sanctumSplMultiStakePool",
+    "prefix": "",
+    "publicKey": "SPMBzsVUuoHA4Jm6KunbsotaahvVikZs1JyTW6iJvbn",
+    "version": "2.0.3",
+    "docs": [
+      "Sanctum's multi-validator deployment of the SPL Stake Pool program. It",
+      "publishes no IDL: this one is the hand-written SPL Stake Pool file, limited",
+      "to the instructions this program was seen to execute with that layout."
+    ]
+  },
+  "additionalPrograms": [],
+  "standard": "codama",
+  "version": "1.0.0"
+}
