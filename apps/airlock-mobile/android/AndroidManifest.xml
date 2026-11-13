@@ -10,6 +10,11 @@
     phrase.
   - The Seed Vault SDK adds its permission and package queries when Gradle
     merges its manifest.
+  - The icon, @mipmap/ic_launcher, is dx's placeholder until
+    scripts/android-icon.sh puts Airlock's in its place. It names only what
+    dx writes, so a build without that script still assembles. No roundIcon:
+    every Android the app supports draws the adaptive icon, in the
+    launcher's own shape.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
