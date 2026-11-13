@@ -51,7 +51,7 @@ fn main() {
 
     #[cfg(feature = "desktop")]
     dioxus::LaunchBuilder::desktop()
-        .with_cfg(app_desktop::desktop_config(BRAND.name, ICON))
+        .with_cfg(app_desktop::airgap_desktop_config(BRAND.name, ICON))
         .launch(App);
 
     #[cfg(not(feature = "desktop"))]
