@@ -99,7 +99,7 @@ Storage is `app_core::storage`: files under the data directory on desktop, `loca
 - **Screen state** (drafts, tabs, the Sign view, filters) stays in plain Dioxus signals. It belongs to the window, and it survives hiding because the webview does.
 - **Optional capabilities.** A shared pane does its online parts through `use_network() -> Option<Network>`, a context the online app provides. `Network` carries a `dyn SolanaRpc` and the network status. Without it, which is how the airgap build works and how the online build behaves while offline: Sign has no Simulate, Submit, Refresh or Rebuild; Wallets has no balances or Vector account state; Build takes its lifetime from a durable nonce.
 - **The app builds the navigation.** Panes only one build has, and slots only the online build fills (a balances column, the network and sync chips), are passed in by the app. They are not branches inside shared panes.
-- **`ToastHost`**, mounted once beside the panes, shows the notices whose toast is still up. The notification center lists them all.
+- **`ToastHost`**, mounted once beside the panes, shows the notices whose toast is still up. The notification center lists them all. A toast that only informs leaves by itself (Confirmed after 10 seconds, Not sent after 20); a failure, and a transaction still on its way, stays until dismissed or settled. Three show at once, one in a window narrower than 760 pixels, with how many more; while a dialog is open they go under it.
 
 ## app-online
 
