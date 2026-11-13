@@ -615,6 +615,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr"),
         "Kamino Farms Program",
     ),
+    (
+        Pubkey::from_str_const("KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd"),
+        "Kamino Vault Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

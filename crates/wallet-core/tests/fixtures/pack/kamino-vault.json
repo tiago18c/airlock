@@ -1,0 +1,1174 @@
+{
+  "accounts": {
+    "2bnxGUrAevL2i9zYtJWwPnAE2RmiPpRxjYnwv886DGCC": {
+      "data": "AQAAADnkv9fiFzFfcEt5DbFaU0IpyGjE2iOKDK8HUlOuZUqcWtPxbREtAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "Aj2CERPvGQhb2f1gfnkoeUnL5wy8pJczWxDAAXN8paqt": {
+      "data": "AQAAAECwegb3aL7x5f7P1MEM2y0DWc4c4xFDS90axP8qmtIeuD/KEykBAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "EGqzVr1SDEn1WKC9uibQ1HSQiyf1bhVUsQ4Dqf8b47pY": {
+      "data": "AQAAABiV4G6EMAPve8xxo0qxSzDaK56ub/4b9yr6U1+OqS/TDJLpaNkGAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": {
+      "data": "AQAAAJj+huiNm+Lqi8HMpIeLKYjCQPUrhCS/tA7Rot3LXhmb40q9CGNxHwAGAQEAAABicKqKWcWUBbRShshncubNEm6bil06OFNtN/e0FOi2Zw==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "So11111111111111111111111111111111111111112": {
+      "data": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    }
+  },
+  "instructions": [
+    {
+      "accounts": [
+        "FU76ac2Hm2mo4hoyckhAKDrbKTFwxyDPHnrrERfMXusE:sw",
+        "C9aoZkGquxm4wqvT4UVDTKscE8xAf4xiSMpAoWGiq4oU:w",
+        "A1USdzqDHmw5oz97AkqAGLxEQZfFjASZFuy4T6Qdvnpo:w",
+        "H4GHPfd4vxCEmor13P3HBS1AKawE2Mhv6fyWLaswn8d5:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v:w",
+        "GhxheH2FYN9pDvjpAKYgwVmLRGGPsw79v2DSQLQu9o7T:w",
+        "CTAzq4mbGk4QtuGcgJwXVckynzTRfinJq6MPnaNRewwv:w",
+        "EfMKdLdPKooewofAcGSNTw9FNjc98oDMjbRMHXLJ6QqS:w",
+        "BVJ1FvFfYuLbGX4qDNezqU6z2N3p8M2XNeGzabm86BzE",
+        "2u9FunCYFdKFgUshkqvZoSi2mHftVxHswx92H4vZvq6y",
+        "8TFrBL2w7SRazVBeRqtR6DPLhySb8dAs3Gz2UkfKxFci:w",
+        "2AQxg62yNnabpmNQ9KPd9YxNuSFrBvN1HAuW76YJDrV9:w",
+        "HQpwSyfMUMFYvxmKqg2Vdn5YspitdWKxvKY6Fw3U1R3C",
+        "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Sysvar1nstructions1111111111111111111111111",
+        "D6q6wuQSrifJKZYpR1M8R4YawnLDtDsMmWM1NbBmgJ59:w",
+        "Ga4rZytCpq1unD4DbEJ5bkHeUz9g3oh9AAFEi6vSauXp:w",
+        "9FRZvAsjDJ6WM8BJ2S45h9PoDCLAq8DNY9zZDX7MyGzT:w",
+        "8trJaNUfkP9pNgrwzByfsuwVtZ5TmZpq568UkCpjFWbi:w",
+        "8Lvi1DFPoAGPQ25qpRKzzRaSAnWdeVZqt9XmEapm8uLt:w",
+        "Atj6UREVWa7WxbF2EMKNyfmYUY1U1txughe2gjhcPDCo:w",
+        "9GJ9GBRwCp4pHmWrQ43L5xpc9Vykg7jnfwcFGN8FoHYu:w",
+        "DD4RN8t37nmw7EANW37ejdDEuFz9Tmf3TZTN7jxKsE8i:w",
+        "4QKFoFDzNFnvfkzVazABbCEfMwd3y1pZqUVzmpnkCphj:w",
+        "AYL4LMc4ZCVyq3Z7XPJGWDM4H9PiWjqXAAuuHBEGVR2Z:w",
+        "EW9vT7g2VH2aTFfcbaXRUCbF7jEfaLwMiJpckwDZwUZd:w",
+        "EfMKdLdPKooewofAcGSNTw9FNjc98oDMjbRMHXLJ6QqS:w",
+        "7gHxajRCcU5sb9rQrpYDvkugSqgGsi9EG947pW7xJueT:w",
+        "7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF",
+        "DxXdAyU3kCjnyggvHmY5nAwg5cRbbmdyX3npfDMjjMek",
+        "GMqmFygF5iSm5nkckYU6tieggFcR42SyjkkhK5rswFRs",
+        "B7a2Dmdnfg8zfZX2814d6Xo6ctxs22jnTuCcjTq5KcPD",
+        "47tfyEG9SsdEnUm9cw5kY9BXngQGqu3LBoop9j5uTAv8",
+        "6WEGfej9B9wjxRs6t4BYpb9iCXd8CpTpJ8fVSNzHCC5y",
+        "CqAoLuqWtavaVE8deBjMKe8ZfSt9ghR6Vb8nfsyabyHA",
+        "FteaGMVCLDF4eonrTiQkRQ5kby5ohwCfaMD2mNiPkZL7",
+        "52FSGeeokLpgvgAMdqxyt5Hoc2TbUYj5b8yxrEdZ37Vf",
+        "47tfyEG9SsdEnUm9cw5kY9BXngQGqu3LBoop9j5uTAv8",
+        "GBJ3bzUiMfwC9ugaF3MM68EXMDyTUb5UryRRAcVjEowd",
+        "BVJ1FvFfYuLbGX4qDNezqU6z2N3p8M2XNeGzabm86BzE",
+        "4iRHKGsTq3e4uut6e4PfyV9AEbNuXaMu9JaSP378p9qy"
+      ],
+      "data": "875cb889454876077db7c9fb2b000000",
+      "fields": [
+        [
+          "Maximum Moved",
+          "188,907.894653"
+        ],
+        [
+          "Payer",
+          "FU76ac2Hm2mo4hoyckhAKDrbKTFwxyDPHnrrERfMXusE"
+        ],
+        [
+          "Payer Token Account",
+          "C9aoZkGquxm4wqvT4UVDTKscE8xAf4xiSMpAoWGiq4oU"
+        ],
+        [
+          "Vault",
+          "A1USdzqDHmw5oz97AkqAGLxEQZfFjASZFuy4T6Qdvnpo"
+        ],
+        [
+          "Vault Token Account",
+          "H4GHPfd4vxCEmor13P3HBS1AKawE2Mhv6fyWLaswn8d5"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Vault Collateral Account",
+          "CTAzq4mbGk4QtuGcgJwXVckynzTRfinJq6MPnaNRewwv"
+        ],
+        [
+          "Reserve",
+          "EfMKdLdPKooewofAcGSNTw9FNjc98oDMjbRMHXLJ6QqS"
+        ],
+        [
+          "Lending Market",
+          "BVJ1FvFfYuLbGX4qDNezqU6z2N3p8M2XNeGzabm86BzE"
+        ],
+        [
+          "Reserve Liquidity Vault",
+          "8TFrBL2w7SRazVBeRqtR6DPLhySb8dAs3Gz2UkfKxFci"
+        ],
+        [
+          "Collateral Token",
+          "2AQxg62yNnabpmNQ9KPd9YxNuSFrBvN1HAuW76YJDrV9"
+        ],
+        [
+          "Reserve Whitelist Entry",
+          "HQpwSyfMUMFYvxmKqg2Vdn5YspitdWKxvKY6Fw3U1R3C"
+        ]
+      ],
+      "from": "21adwZPdQHWx8e1PcX3h13oZq83gyz5KLZsp8qjFL376XmaqV9S3DVhYD4p4tqtkno3Ng2V9bMjCmp1ZcPZa7wo3#3",
+      "intent": "Rebalance a vault reserve",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "FU76ac2Hm2mo4hoyckhAKDrbKTFwxyDPHnrrERfMXusE moves at most 188,907.894653 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v between vault A1USdzqDHmw5oz97AkqAGLxEQZfFjASZFuy4T6Qdvnpo and reserve EfMKdLdPKooewofAcGSNTw9FNjc98oDMjbRMHXLJ6QqS, toward the vault's target allocation",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "FU76ac2Hm2mo4hoyckhAKDrbKTFwxyDPHnrrERfMXusE:sw",
+        "FvXQHa6F75h3vpBaXVEyAgG1LTLJPfc8PaV48kszWeFp:w",
+        "A1so1bPD3W1TfeFwboDh8yfAAVaVtcdAYBYCjhg2mJQ:w",
+        "HqMuhd4cKWNFbLHc7zMZrThnh1cP39JwqczdBueK1bxj:w",
+        "So11111111111111111111111111111111111111112:w",
+        "89icm3xw75kZV9Cu7UkbkXj1F1iZeJdQeF1cxtkfHYUr:w",
+        "E4ajZm5WVE6kU4z4YWhQvMQXZhB3r91ga5Hf88mNDAzU:w",
+        "DQ126djx5db6SMCbejHLNxoosonVes3qW5eVVUQuT93v:w",
+        "GVDUXFwS8uvBG35RjZv6Y8S1AkV5uASiMJ9qTUKqb5PL",
+        "Gi2fcYkNMP4Gv88oaZt7D27mkeMW6wv8E5GZnN1eSQgt",
+        "BSqBirnJMQnRFCq8EEhx4z2nJTMKHxgVLqchwyzSdESL:w",
+        "3EDSt29jGSz69ZQmxuWrsvHJqmztr8wyUjvn9x41uAca:w",
+        "DyP2zKye4AZ8gKeUexFqa3niHUNusUhh4TmKZJfd1YWh",
+        "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Sysvar1nstructions1111111111111111111111111",
+        "6gTJfuPHEg6uRAijRkMqNc9kan4sVZejKMxmvx2grT1p:w",
+        "d4A2prbA2whesmvHaL88BH6Ewn5N4bTSU2Ze8P6Bc4Q:w",
+        "4oigbthMAgjTMPyw8dBxhxU59YMtvNDHqhpR3W4HAzBM:w",
+        "HaVsdBb4mMoYQ3vnS7wCdvhixg5xFQALmFwyL9QJm3fn:w",
+        "DQ126djx5db6SMCbejHLNxoosonVes3qW5eVVUQuT93v:w",
+        "3Mf2mmocNbNAc7KS9QmANGEv9BcgwbT1tLRBuruGCdu5:w",
+        "H6rHXmXoCQvq8Ue81MqNh7ow5ysPa1dSozwW3PU1dDH6",
+        "7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF",
+        "C7h9YnjPrDvNhe2cWWDhCu4CZEB1XTTH4RzjmsHuengV",
+        "eNLm5e5KVDX2vEcCkt75PpZ2GMfXcZES3QrFshgpVzp",
+        "GVDUXFwS8uvBG35RjZv6Y8S1AkV5uASiMJ9qTUKqb5PL",
+        "F4Pn9mAvbUazDmWET5yYATTiyLHLaCRTWgGex4tiMXAs"
+      ],
+      "data": "875cb8894548760764c47d4504000000",
+      "fields": [
+        [
+          "Maximum Moved",
+          "18.345739364"
+        ],
+        [
+          "Payer",
+          "FU76ac2Hm2mo4hoyckhAKDrbKTFwxyDPHnrrERfMXusE"
+        ],
+        [
+          "Payer Token Account",
+          "FvXQHa6F75h3vpBaXVEyAgG1LTLJPfc8PaV48kszWeFp"
+        ],
+        [
+          "Vault",
+          "A1so1bPD3W1TfeFwboDh8yfAAVaVtcdAYBYCjhg2mJQ"
+        ],
+        [
+          "Vault Token Account",
+          "HqMuhd4cKWNFbLHc7zMZrThnh1cP39JwqczdBueK1bxj"
+        ],
+        [
+          "Token",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Vault Collateral Account",
+          "E4ajZm5WVE6kU4z4YWhQvMQXZhB3r91ga5Hf88mNDAzU"
+        ],
+        [
+          "Reserve",
+          "DQ126djx5db6SMCbejHLNxoosonVes3qW5eVVUQuT93v"
+        ],
+        [
+          "Lending Market",
+          "GVDUXFwS8uvBG35RjZv6Y8S1AkV5uASiMJ9qTUKqb5PL"
+        ],
+        [
+          "Reserve Liquidity Vault",
+          "BSqBirnJMQnRFCq8EEhx4z2nJTMKHxgVLqchwyzSdESL"
+        ],
+        [
+          "Collateral Token",
+          "3EDSt29jGSz69ZQmxuWrsvHJqmztr8wyUjvn9x41uAca"
+        ],
+        [
+          "Reserve Whitelist Entry",
+          "DyP2zKye4AZ8gKeUexFqa3niHUNusUhh4TmKZJfd1YWh"
+        ]
+      ],
+      "from": "2Mz1EMznZx5zGsQ8j88UTVM42CXGNieffMz4S9pgYaEd88c2t4TejdF2K28kJ7TzXvghJPsuwGG2t59GmgrKt55X#5",
+      "intent": "Rebalance a vault reserve",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "FU76ac2Hm2mo4hoyckhAKDrbKTFwxyDPHnrrERfMXusE moves at most 18.345739364 of So11111111111111111111111111111111111111112 between vault A1so1bPD3W1TfeFwboDh8yfAAVaVtcdAYBYCjhg2mJQ and reserve DQ126djx5db6SMCbejHLNxoosonVes3qW5eVVUQuT93v, toward the vault's target allocation",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HxafneZKXAmasUn9wosu5Q3PxSJL5L1LthxnkZtcor75:sw",
+        "3SMNuqK7m13KorY9gX8DzjQAVXGbhgRVni65Pk6LTBgC:w",
+        "AZdmwzZaJFrocTHcBda3Pmw1SmcZat75wMLPZpYRvQ58:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "5MXAqFr6SeQgXPH8PQmVK7TGbAmUFihcHqSSx6wehEn9",
+        "Aj2CERPvGQhb2f1gfnkoeUnL5wy8pJczWxDAAXN8paqt:w",
+        "9VmHmUnM8CmM3WmCi2bZcPhiCzx2FtaNMxPUuXaBtBZH:w",
+        "Gm3m7Ciy4YcoqquebeiUwPyckm6m5vTKAbBd8s3MExWo:w",
+        "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "24tHwQyJJ9akVXxnvkekGfAoeUJXXS7mE6kQNioNySsK",
+        "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+        "D6q6wuQSrifJKZYpR1M8R4YawnLDtDsMmWM1NbBmgJ59:w",
+        "7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF"
+      ],
+      "data": "f223c68952e1f2b6400d030000000000",
+      "fields": [
+        [
+          "Maximum Deposit",
+          "0.2"
+        ],
+        [
+          "Owner",
+          "HxafneZKXAmasUn9wosu5Q3PxSJL5L1LthxnkZtcor75"
+        ],
+        [
+          "Vault",
+          "3SMNuqK7m13KorY9gX8DzjQAVXGbhgRVni65Pk6LTBgC"
+        ],
+        [
+          "Vault Token Account",
+          "AZdmwzZaJFrocTHcBda3Pmw1SmcZat75wMLPZpYRvQ58"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Share Token",
+          "Aj2CERPvGQhb2f1gfnkoeUnL5wy8pJczWxDAAXN8paqt"
+        ],
+        [
+          "From",
+          "9VmHmUnM8CmM3WmCi2bZcPhiCzx2FtaNMxPUuXaBtBZH"
+        ],
+        [
+          "Shares To",
+          "Gm3m7Ciy4YcoqquebeiUwPyckm6m5vTKAbBd8s3MExWo"
+        ]
+      ],
+      "from": "4mEaZxPqpAa6waA3zu3tVsYaXXqr2vrW8Uh5LPEMSLBzGDYgHhsqTv2Py7edEcFY5TwTvp83CyChyjfWHQgbv7fA#2",
+      "intent": "Deposit into a vault",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "HxafneZKXAmasUn9wosu5Q3PxSJL5L1LthxnkZtcor75 deposits up to 0.2 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from 9VmHmUnM8CmM3WmCi2bZcPhiCzx2FtaNMxPUuXaBtBZH into vault 3SMNuqK7m13KorY9gX8DzjQAVXGbhgRVni65Pk6LTBgC and receives its shares in Gm3m7Ciy4YcoqquebeiUwPyckm6m5vTKAbBd8s3MExWo",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "APgp3jvhmJwuBPBLMsuAgMSjSjb2Y7qhNCgTqg73W632:sw",
+        "DWSXb18xZApz29vnQpgR2m6MynCT7PznaXt7Ut7M7KaP:w",
+        "6ea6GorjfT2SmUH8HSwg4LLae5RCqVVEYzcznBJEge9e:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "D6hDbSjooxfjXrfKo7xBKVFeoaJrtnXY75uAbxeFbPgU",
+        "DgHN3q3dSYAchNX7V3D4aYiTWMx8RHTgHbfPiwiqBkE9:w",
+        "DfBT6MUZXgnhLT8CyuZDmN6kL11btjQAgd4bSZXYNSTx:w",
+        "E76o7Fg9Hb9w8Qv9GncebP1hG53h5D71oDxV8aSHtRaC:w",
+        "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "24tHwQyJJ9akVXxnvkekGfAoeUJXXS7mE6kQNioNySsK",
+        "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+        "BjYjt425msuKSNtf6kMT9dvUWdieXnnYHANYLHKsW77D:w",
+        "4QKFoFDzNFnvfkzVazABbCEfMwd3y1pZqUVzmpnkCphj:w",
+        "AYL4LMc4ZCVyq3Z7XPJGWDM4H9PiWjqXAAuuHBEGVR2Z:w",
+        "9GJ9GBRwCp4pHmWrQ43L5xpc9Vykg7jnfwcFGN8FoHYu:w",
+        "8Lvi1DFPoAGPQ25qpRKzzRaSAnWdeVZqt9XmEapm8uLt:w",
+        "5rvXFUUZp1JsJ3bhJUYwWC2bEzo6WEnmAXZ9vnku9dDR:w",
+        "Au2Cg9CNNTX1KfzVhNnpi1ouHX74CwMMBvmSchmqS5ZW:w",
+        "FmSEWWt4ZhCvaHdoyziAk9G2WpmBRNs642n49KbttfxK:w",
+        "C7hQQEr2LAzZhptvDFK1Wzx6jvbwLFC3XcB7gWEAkwrS:w",
+        "JEHjKcf2JhU6sZTsGSAZ31XCMRcQqDkZ5rTB2cFYz7XZ",
+        "52FSGeeokLpgvgAMdqxyt5Hoc2TbUYj5b8yxrEdZ37Vf",
+        "47tfyEG9SsdEnUm9cw5kY9BXngQGqu3LBoop9j5uTAv8",
+        "CqAoLuqWtavaVE8deBjMKe8ZfSt9ghR6Vb8nfsyabyHA",
+        "47tfyEG9SsdEnUm9cw5kY9BXngQGqu3LBoop9j5uTAv8",
+        "Btu8835QDYgdTnMJJBSidbfQhrZzryZbMhCpty6h6Xdk",
+        "3hd61ZpG35tBwrmDvdmYVJoazC2mjJxHb6rEYEWs4QhH",
+        "JEHjKcf2JhU6sZTsGSAZ31XCMRcQqDkZ5rTB2cFYz7XZ",
+        "52FSGeeokLpgvgAMdqxyt5Hoc2TbUYj5b8yxrEdZ37Vf"
+      ],
+      "data": "f223c68952e1f2b634285fa012000000",
+      "fields": [
+        [
+          "Maximum Deposit",
+          "80,000.0021"
+        ],
+        [
+          "Owner",
+          "APgp3jvhmJwuBPBLMsuAgMSjSjb2Y7qhNCgTqg73W632"
+        ],
+        [
+          "Vault",
+          "DWSXb18xZApz29vnQpgR2m6MynCT7PznaXt7Ut7M7KaP"
+        ],
+        [
+          "Vault Token Account",
+          "6ea6GorjfT2SmUH8HSwg4LLae5RCqVVEYzcznBJEge9e"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Share Token",
+          "DgHN3q3dSYAchNX7V3D4aYiTWMx8RHTgHbfPiwiqBkE9"
+        ],
+        [
+          "From",
+          "DfBT6MUZXgnhLT8CyuZDmN6kL11btjQAgd4bSZXYNSTx"
+        ],
+        [
+          "Shares To",
+          "E76o7Fg9Hb9w8Qv9GncebP1hG53h5D71oDxV8aSHtRaC"
+        ]
+      ],
+      "from": "65KT7VpAqqN84LWQ6gHrKRTgBKaDH2qbXyr2xwmVhhFp1vitR4ACFUqToVRrGvKFLyPawN8ma9Uodb66RmLqdxNE#3",
+      "intent": "Deposit into a vault",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "APgp3jvhmJwuBPBLMsuAgMSjSjb2Y7qhNCgTqg73W632 deposits up to 80,000.0021 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from DfBT6MUZXgnhLT8CyuZDmN6kL11btjQAgd4bSZXYNSTx into vault DWSXb18xZApz29vnQpgR2m6MynCT7PznaXt7Ut7M7KaP and receives its shares in E76o7Fg9Hb9w8Qv9GncebP1hG53h5D71oDxV8aSHtRaC",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "QHYKt1B7bBJsohxS4TV9Tfs3sjXYYbYmipRA2QVJRJY:sw",
+        "A3hTCWdnfV6uiQLxRmnv17EpiEtmc93v1AGQnWy44Mup:w",
+        "3dtGhd1SPg6H9yvDHDUBbaqkThzTVzuZr525cZkk8sLp",
+        "DBieuGmP1xh36oZRwTtw722yJ8pzZ8wycYD9nY2BSxwn:w",
+        "AYL4LMc4ZCVyq3Z7XPJGWDM4H9PiWjqXAAuuHBEGVR2Z",
+        "6iCdFUyJ3STp9739ZCwJDwJ7M838L9aqeTdDMqQSmxos:w",
+        "D3TGAWEZzsjq4PyHEPFThoL4sw637Wg3Pp9qiVTCwskZ",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "SysvarRent111111111111111111111111111111111"
+      ],
+      "data": "0536d5704be87525561b00000000000080544ce16608f33b",
+      "fields": [
+        [
+          "Target Weight",
+          "6,998"
+        ],
+        [
+          "Token Cap (the highest value means no cap)",
+          "4,319,805,705,538,000,000 base units"
+        ],
+        [
+          "Signer",
+          "QHYKt1B7bBJsohxS4TV9Tfs3sjXYYbYmipRA2QVJRJY"
+        ],
+        [
+          "Vault",
+          "A3hTCWdnfV6uiQLxRmnv17EpiEtmc93v1AGQnWy44Mup"
+        ],
+        [
+          "Collateral Token",
+          "DBieuGmP1xh36oZRwTtw722yJ8pzZ8wycYD9nY2BSxwn"
+        ],
+        [
+          "Reserve",
+          "AYL4LMc4ZCVyq3Z7XPJGWDM4H9PiWjqXAAuuHBEGVR2Z"
+        ],
+        [
+          "Vault Collateral Account",
+          "6iCdFUyJ3STp9739ZCwJDwJ7M838L9aqeTdDMqQSmxos"
+        ],
+        [
+          "Reserve Whitelist Entry",
+          "D3TGAWEZzsjq4PyHEPFThoL4sw637Wg3Pp9qiVTCwskZ"
+        ]
+      ],
+      "from": "3MVeogN929UKuykrgmqVH1qXfhBtyCN2BbfwUE9bj5Xrcj8UY9Ee5B9v4FWzQCXnCDmtNLpKPa6XR6Jm3sRW5Bxt#1",
+      "intent": "Set a reserve allocation",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "QHYKt1B7bBJsohxS4TV9Tfs3sjXYYbYmipRA2QVJRJY sets the allocation of reserve AYL4LMc4ZCVyq3Z7XPJGWDM4H9PiWjqXAAuuHBEGVR2Z in vault A3hTCWdnfV6uiQLxRmnv17EpiEtmc93v1AGQnWy44Mup: target weight 6998",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "QHYKt1B7bBJsohxS4TV9Tfs3sjXYYbYmipRA2QVJRJY:sw",
+        "A3hTCWdnfV6uiQLxRmnv17EpiEtmc93v1AGQnWy44Mup:w",
+        "3dtGhd1SPg6H9yvDHDUBbaqkThzTVzuZr525cZkk8sLp",
+        "2AQxg62yNnabpmNQ9KPd9YxNuSFrBvN1HAuW76YJDrV9:w",
+        "EfMKdLdPKooewofAcGSNTw9FNjc98oDMjbRMHXLJ6QqS",
+        "Hxf8wxXqS21w7XBzsFQGGcvoT9h6feuGCEarQP1kVxtK:w",
+        "HQpwSyfMUMFYvxmKqg2Vdn5YspitdWKxvKY6Fw3U1R3C",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "SysvarRent111111111111111111111111111111111"
+      ],
+      "data": "0536d5704be87525ba0b00000000000080544ce16608f33b",
+      "fields": [
+        [
+          "Target Weight",
+          "3,002"
+        ],
+        [
+          "Token Cap (the highest value means no cap)",
+          "4,319,805,705,538,000,000 base units"
+        ],
+        [
+          "Signer",
+          "QHYKt1B7bBJsohxS4TV9Tfs3sjXYYbYmipRA2QVJRJY"
+        ],
+        [
+          "Vault",
+          "A3hTCWdnfV6uiQLxRmnv17EpiEtmc93v1AGQnWy44Mup"
+        ],
+        [
+          "Collateral Token",
+          "2AQxg62yNnabpmNQ9KPd9YxNuSFrBvN1HAuW76YJDrV9"
+        ],
+        [
+          "Reserve",
+          "EfMKdLdPKooewofAcGSNTw9FNjc98oDMjbRMHXLJ6QqS"
+        ],
+        [
+          "Vault Collateral Account",
+          "Hxf8wxXqS21w7XBzsFQGGcvoT9h6feuGCEarQP1kVxtK"
+        ],
+        [
+          "Reserve Whitelist Entry",
+          "HQpwSyfMUMFYvxmKqg2Vdn5YspitdWKxvKY6Fw3U1R3C"
+        ]
+      ],
+      "from": "3MVeogN929UKuykrgmqVH1qXfhBtyCN2BbfwUE9bj5Xrcj8UY9Ee5B9v4FWzQCXnCDmtNLpKPa6XR6Jm3sRW5Bxt#2",
+      "intent": "Set a reserve allocation",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "QHYKt1B7bBJsohxS4TV9Tfs3sjXYYbYmipRA2QVJRJY sets the allocation of reserve EfMKdLdPKooewofAcGSNTw9FNjc98oDMjbRMHXLJ6QqS in vault A3hTCWdnfV6uiQLxRmnv17EpiEtmc93v1AGQnWy44Mup: target weight 3002",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "QHYKt1B7bBJsohxS4TV9Tfs3sjXYYbYmipRA2QVJRJY:sw",
+        "A3hTCWdnfV6uiQLxRmnv17EpiEtmc93v1AGQnWy44Mup:w",
+        "3dtGhd1SPg6H9yvDHDUBbaqkThzTVzuZr525cZkk8sLp",
+        "9Q31s4yVMXXsSWJyzNNReLH76nZqzHpFmWJUTEFZxAoJ:w",
+        "4QKFoFDzNFnvfkzVazABbCEfMwd3y1pZqUVzmpnkCphj",
+        "2KuzNuMC5JmXj1WqQ2cL4kGbwRjqCH9Ubr6Qxg5cUgkS:w",
+        "47q5kiXpvGivz6NRs35QKguWPXgT9znJ9wf2jVc3aSCw",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "SysvarRent111111111111111111111111111111111"
+      ],
+      "data": "0536d5704be87525000000000000000080544ce16608f33b",
+      "fields": [
+        [
+          "Target Weight",
+          "0"
+        ],
+        [
+          "Token Cap (the highest value means no cap)",
+          "4,319,805,705,538,000,000 base units"
+        ],
+        [
+          "Signer",
+          "QHYKt1B7bBJsohxS4TV9Tfs3sjXYYbYmipRA2QVJRJY"
+        ],
+        [
+          "Vault",
+          "A3hTCWdnfV6uiQLxRmnv17EpiEtmc93v1AGQnWy44Mup"
+        ],
+        [
+          "Collateral Token",
+          "9Q31s4yVMXXsSWJyzNNReLH76nZqzHpFmWJUTEFZxAoJ"
+        ],
+        [
+          "Reserve",
+          "4QKFoFDzNFnvfkzVazABbCEfMwd3y1pZqUVzmpnkCphj"
+        ],
+        [
+          "Vault Collateral Account",
+          "2KuzNuMC5JmXj1WqQ2cL4kGbwRjqCH9Ubr6Qxg5cUgkS"
+        ],
+        [
+          "Reserve Whitelist Entry",
+          "47q5kiXpvGivz6NRs35QKguWPXgT9znJ9wf2jVc3aSCw"
+        ]
+      ],
+      "from": "3MVeogN929UKuykrgmqVH1qXfhBtyCN2BbfwUE9bj5Xrcj8UY9Ee5B9v4FWzQCXnCDmtNLpKPa6XR6Jm3sRW5Bxt#3",
+      "intent": "Set a reserve allocation",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "QHYKt1B7bBJsohxS4TV9Tfs3sjXYYbYmipRA2QVJRJY sets the allocation of reserve 4QKFoFDzNFnvfkzVazABbCEfMwd3y1pZqUVzmpnkCphj in vault A3hTCWdnfV6uiQLxRmnv17EpiEtmc93v1AGQnWy44Mup: target weight 0",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "QHYKt1B7bBJsohxS4TV9Tfs3sjXYYbYmipRA2QVJRJY:sw",
+        "HcFqGEzwMHTWxMiBVcpwV5ovhnqeprZ7XPc5dcZHjjXG:w",
+        "A3hTCWdnfV6uiQLxRmnv17EpiEtmc93v1AGQnWy44Mup:w",
+        "3FLnarNPzfESjRMvyMsAdtQ1AhG2Zg6FeTdNbW7FQ4Ax:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v:w",
+        "3dtGhd1SPg6H9yvDHDUBbaqkThzTVzuZr525cZkk8sLp:w",
+        "Hxf8wxXqS21w7XBzsFQGGcvoT9h6feuGCEarQP1kVxtK:w",
+        "EfMKdLdPKooewofAcGSNTw9FNjc98oDMjbRMHXLJ6QqS:w",
+        "BVJ1FvFfYuLbGX4qDNezqU6z2N3p8M2XNeGzabm86BzE",
+        "2u9FunCYFdKFgUshkqvZoSi2mHftVxHswx92H4vZvq6y",
+        "8TFrBL2w7SRazVBeRqtR6DPLhySb8dAs3Gz2UkfKxFci:w",
+        "2AQxg62yNnabpmNQ9KPd9YxNuSFrBvN1HAuW76YJDrV9:w",
+        "HQpwSyfMUMFYvxmKqg2Vdn5YspitdWKxvKY6Fw3U1R3C",
+        "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Sysvar1nstructions1111111111111111111111111",
+        "C2Wp6bpsVevig3AZ1KSCkgHZhsWfN2tw9eQ4kG9z7U7J:w",
+        "D6q6wuQSrifJKZYpR1M8R4YawnLDtDsMmWM1NbBmgJ59:w",
+        "DD4RN8t37nmw7EANW37ejdDEuFz9Tmf3TZTN7jxKsE8i:w",
+        "9GJ9GBRwCp4pHmWrQ43L5xpc9Vykg7jnfwcFGN8FoHYu:w",
+        "8trJaNUfkP9pNgrwzByfsuwVtZ5TmZpq568UkCpjFWbi:w",
+        "AYL4LMc4ZCVyq3Z7XPJGWDM4H9PiWjqXAAuuHBEGVR2Z:w",
+        "9dAj2Aq3e8K1GKP1a61smvSkMQs8haehzeLjHyvf1D3T:w",
+        "EfMKdLdPKooewofAcGSNTw9FNjc98oDMjbRMHXLJ6QqS:w",
+        "97zoywd8mPZsGTg8q1wdD2Wgkdrs2tqusp1Qqcxbyj7E:w",
+        "4QKFoFDzNFnvfkzVazABbCEfMwd3y1pZqUVzmpnkCphj:w",
+        "Dwg1aeZFYtsyMEkoyJn2ak8pPqaXMWd1uui6FBkM1872",
+        "7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF",
+        "FteaGMVCLDF4eonrTiQkRQ5kby5ohwCfaMD2mNiPkZL7",
+        "CqAoLuqWtavaVE8deBjMKe8ZfSt9ghR6Vb8nfsyabyHA",
+        "B7a2Dmdnfg8zfZX2814d6Xo6ctxs22jnTuCcjTq5KcPD",
+        "47tfyEG9SsdEnUm9cw5kY9BXngQGqu3LBoop9j5uTAv8",
+        "HMNm3ZrAvG4zKVv5zpMDA6DKduc612156RUsdAAZf4TC",
+        "BVJ1FvFfYuLbGX4qDNezqU6z2N3p8M2XNeGzabm86BzE",
+        "5wJeMrUYECGq41fxRESKALVcHnNX26TAWy4W98yULsua",
+        "52FSGeeokLpgvgAMdqxyt5Hoc2TbUYj5b8yxrEdZ37Vf"
+      ],
+      "data": "0df5b467feb67904",
+      "fields": [
+        [
+          "Payer",
+          "QHYKt1B7bBJsohxS4TV9Tfs3sjXYYbYmipRA2QVJRJY"
+        ],
+        [
+          "Payer Token Account",
+          "HcFqGEzwMHTWxMiBVcpwV5ovhnqeprZ7XPc5dcZHjjXG"
+        ],
+        [
+          "Vault",
+          "A3hTCWdnfV6uiQLxRmnv17EpiEtmc93v1AGQnWy44Mup"
+        ],
+        [
+          "Vault Token Account",
+          "3FLnarNPzfESjRMvyMsAdtQ1AhG2Zg6FeTdNbW7FQ4Ax"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Vault Collateral Account",
+          "Hxf8wxXqS21w7XBzsFQGGcvoT9h6feuGCEarQP1kVxtK"
+        ],
+        [
+          "Reserve",
+          "EfMKdLdPKooewofAcGSNTw9FNjc98oDMjbRMHXLJ6QqS"
+        ],
+        [
+          "Lending Market",
+          "BVJ1FvFfYuLbGX4qDNezqU6z2N3p8M2XNeGzabm86BzE"
+        ],
+        [
+          "Reserve Liquidity Vault",
+          "8TFrBL2w7SRazVBeRqtR6DPLhySb8dAs3Gz2UkfKxFci"
+        ],
+        [
+          "Collateral Token",
+          "2AQxg62yNnabpmNQ9KPd9YxNuSFrBvN1HAuW76YJDrV9"
+        ],
+        [
+          "Reserve Whitelist Entry",
+          "HQpwSyfMUMFYvxmKqg2Vdn5YspitdWKxvKY6Fw3U1R3C"
+        ]
+      ],
+      "from": "bvJ8MiYC2MmYWgcWmEoVPppB2dgHSyoDcRmxyJv2PyjBdM3rH7pvGy4FSMZ4D93CKjRMF47Aij5pZafpB6miZYy#1",
+      "intent": "Rebalance a vault reserve",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "QHYKt1B7bBJsohxS4TV9Tfs3sjXYYbYmipRA2QVJRJY moves EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v between vault A3hTCWdnfV6uiQLxRmnv17EpiEtmc93v1AGQnWy44Mup and reserve EfMKdLdPKooewofAcGSNTw9FNjc98oDMjbRMHXLJ6QqS, toward the vault's target allocation",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "BoWEXPNQhrfstLXbjVb5u5ze7UA7DCV5BRhdw7BjqeFo:sw",
+        "3SMNuqK7m13KorY9gX8DzjQAVXGbhgRVni65Pk6LTBgC:w",
+        "BKyTcUe6daNG8HbgBix2ugdRHbykG2dK9hPBBqhUyoEX",
+        "AZdmwzZaJFrocTHcBda3Pmw1SmcZat75wMLPZpYRvQ58:w",
+        "5MXAqFr6SeQgXPH8PQmVK7TGbAmUFihcHqSSx6wehEn9",
+        "6dDnZAjTejbK91weBVMGhvta27uK7Nf2MuSnMfc58haR:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v:w",
+        "EtcdwLCohuHp7oK9uENMqVLwKkuxGSehfGkaNkEsPTXQ:w",
+        "Aj2CERPvGQhb2f1gfnkoeUnL5wy8pJczWxDAAXN8paqt:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
+        "24tHwQyJJ9akVXxnvkekGfAoeUJXXS7mE6kQNioNySsK",
+        "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+        "D6q6wuQSrifJKZYpR1M8R4YawnLDtDsMmWM1NbBmgJ59:w",
+        "7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF"
+      ],
+      "data": "1383709baadc2239472b780100000000",
+      "fields": [
+        [
+          "Shares (the highest value withdraws all your shares)",
+          "24.652615"
+        ],
+        [
+          "Owner",
+          "BoWEXPNQhrfstLXbjVb5u5ze7UA7DCV5BRhdw7BjqeFo"
+        ],
+        [
+          "Vault",
+          "3SMNuqK7m13KorY9gX8DzjQAVXGbhgRVni65Pk6LTBgC"
+        ],
+        [
+          "Vault Token Account",
+          "AZdmwzZaJFrocTHcBda3Pmw1SmcZat75wMLPZpYRvQ58"
+        ],
+        [
+          "To",
+          "6dDnZAjTejbK91weBVMGhvta27uK7Nf2MuSnMfc58haR"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Shares From",
+          "EtcdwLCohuHp7oK9uENMqVLwKkuxGSehfGkaNkEsPTXQ"
+        ],
+        [
+          "Share Token",
+          "Aj2CERPvGQhb2f1gfnkoeUnL5wy8pJczWxDAAXN8paqt"
+        ]
+      ],
+      "from": "4XmTpZEcY4Wn9PYz3GJ86b6yC6CqFYMqGdcKqL9LgYW76Ny3oJUSQhxALpcQWMy3WoJMiTjuA7MYjQv6QmLmirCe#5",
+      "intent": "Withdraw from a vault",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "BoWEXPNQhrfstLXbjVb5u5ze7UA7DCV5BRhdw7BjqeFo withdraws EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from vault 3SMNuqK7m13KorY9gX8DzjQAVXGbhgRVni65Pk6LTBgC into 6dDnZAjTejbK91weBVMGhvta27uK7Nf2MuSnMfc58haR by burning up to 24.652615 shares from EtcdwLCohuHp7oK9uENMqVLwKkuxGSehfGkaNkEsPTXQ, paid from the vault's available tokens only",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "BV8QRnXC9wjQEfnwUDTwrKJwAujAhYawiGEYCXXoNVaH:sw",
+        "3SMNuqK7m13KorY9gX8DzjQAVXGbhgRVni65Pk6LTBgC:w",
+        "BKyTcUe6daNG8HbgBix2ugdRHbykG2dK9hPBBqhUyoEX",
+        "AZdmwzZaJFrocTHcBda3Pmw1SmcZat75wMLPZpYRvQ58:w",
+        "5MXAqFr6SeQgXPH8PQmVK7TGbAmUFihcHqSSx6wehEn9",
+        "FTfVMa78TeGL6rDLVVzUiUaQjoV66bFNqUnpMMZGnVKK:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v:w",
+        "Ex526sAzQSx26nduU88Fers5oqGNvTKgBKRZnfAYDgqP:w",
+        "Aj2CERPvGQhb2f1gfnkoeUnL5wy8pJczWxDAAXN8paqt:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
+        "24tHwQyJJ9akVXxnvkekGfAoeUJXXS7mE6kQNioNySsK",
+        "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+        "D6q6wuQSrifJKZYpR1M8R4YawnLDtDsMmWM1NbBmgJ59:w",
+        "7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF"
+      ],
+      "data": "1383709baadc2239ffffffffffffffff",
+      "fields": [
+        [
+          "Shares (the highest value withdraws all your shares)",
+          "18,446,744,073,709.551615"
+        ],
+        [
+          "Owner",
+          "BV8QRnXC9wjQEfnwUDTwrKJwAujAhYawiGEYCXXoNVaH"
+        ],
+        [
+          "Vault",
+          "3SMNuqK7m13KorY9gX8DzjQAVXGbhgRVni65Pk6LTBgC"
+        ],
+        [
+          "Vault Token Account",
+          "AZdmwzZaJFrocTHcBda3Pmw1SmcZat75wMLPZpYRvQ58"
+        ],
+        [
+          "To",
+          "FTfVMa78TeGL6rDLVVzUiUaQjoV66bFNqUnpMMZGnVKK"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Shares From",
+          "Ex526sAzQSx26nduU88Fers5oqGNvTKgBKRZnfAYDgqP"
+        ],
+        [
+          "Share Token",
+          "Aj2CERPvGQhb2f1gfnkoeUnL5wy8pJczWxDAAXN8paqt"
+        ]
+      ],
+      "from": "Zyqsbg3DLMAVyJkmDcpwZQaLP8QV1X22qXUwUskPNijJYpDwEHLg1TPUsBuQmrfJU7MksrfmtpyHSaLAXvE6axw#5",
+      "intent": "Withdraw from a vault",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "BV8QRnXC9wjQEfnwUDTwrKJwAujAhYawiGEYCXXoNVaH withdraws EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from vault 3SMNuqK7m13KorY9gX8DzjQAVXGbhgRVni65Pk6LTBgC into FTfVMa78TeGL6rDLVVzUiUaQjoV66bFNqUnpMMZGnVKK by burning up to 18,446,744,073,709.551615 shares from Ex526sAzQSx26nduU88Fers5oqGNvTKgBKRZnfAYDgqP, paid from the vault's available tokens only",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4Fa7xCiNpaDTP156o99BASfC57Ya9pMrxCZLpw7Cx3D5:sw",
+        "B5pjfZAiKjyUEuqB2694NHrsjcaM67uuJaWqjzTVtzR6:w",
+        "BKyTcUe6daNG8HbgBix2ugdRHbykG2dK9hPBBqhUyoEX",
+        "FxcJaS9ePgXfyeMonNJrBJs43M72gwbEZrZFMBme7yMM:w",
+        "4tzYfNpDG2Yawua7Ly7wSGH8So9ky6bWt5kbGiNfW1bZ",
+        "4QKCuQKnvU4yXLFVTFCWxMDnj9KCjsVb6sWfxN1gawSa:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v:w",
+        "zR75fAGYrujVH5mEdtr7rkNCN1R7Ez5XNJDnFZYMLMk:w",
+        "2bnxGUrAevL2i9zYtJWwPnAE2RmiPpRxjYnwv886DGCC:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
+        "24tHwQyJJ9akVXxnvkekGfAoeUJXXS7mE6kQNioNySsK",
+        "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+        "B5pjfZAiKjyUEuqB2694NHrsjcaM67uuJaWqjzTVtzR6:w",
+        "C2Wp6bpsVevig3AZ1KSCkgHZhsWfN2tw9eQ4kG9z7U7J:w",
+        "4VEpHPHvCXJTYZb32pnGSqjnzk12967xgx3UrsSh1Jyr:w",
+        "Dwg1aeZFYtsyMEkoyJn2ak8pPqaXMWd1uui6FBkM1872",
+        "4fkLXx4nAG8V2HkFfAVW9cHMToAy3SJKNu7Hi7vk9YeP",
+        "7KcyBoZNQr4L5kRHxtkfmAuyJ1UhYonWBDxFGcBTSGi6:w",
+        "3YeoBZyGjKoxQViUzoCvpAfnRdb3ghg5Vn5xZdrsNitJ:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Sysvar1nstructions1111111111111111111111111",
+        "24tHwQyJJ9akVXxnvkekGfAoeUJXXS7mE6kQNioNySsK",
+        "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+        "C2Wp6bpsVevig3AZ1KSCkgHZhsWfN2tw9eQ4kG9z7U7J:w",
+        "Dwg1aeZFYtsyMEkoyJn2ak8pPqaXMWd1uui6FBkM1872"
+      ],
+      "data": "b712469c946da122ffffffffffffffff",
+      "fields": [
+        [
+          "Shares (the highest value withdraws all your shares)",
+          "18,446,744,073,709.551615"
+        ],
+        [
+          "Owner",
+          "4Fa7xCiNpaDTP156o99BASfC57Ya9pMrxCZLpw7Cx3D5"
+        ],
+        [
+          "Vault",
+          "B5pjfZAiKjyUEuqB2694NHrsjcaM67uuJaWqjzTVtzR6"
+        ],
+        [
+          "Vault Token Account",
+          "FxcJaS9ePgXfyeMonNJrBJs43M72gwbEZrZFMBme7yMM"
+        ],
+        [
+          "To",
+          "4QKCuQKnvU4yXLFVTFCWxMDnj9KCjsVb6sWfxN1gawSa"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Shares From",
+          "zR75fAGYrujVH5mEdtr7rkNCN1R7Ez5XNJDnFZYMLMk"
+        ],
+        [
+          "Share Token",
+          "2bnxGUrAevL2i9zYtJWwPnAE2RmiPpRxjYnwv886DGCC"
+        ],
+        [
+          "Reserve",
+          "C2Wp6bpsVevig3AZ1KSCkgHZhsWfN2tw9eQ4kG9z7U7J"
+        ],
+        [
+          "Vault Collateral Account",
+          "4VEpHPHvCXJTYZb32pnGSqjnzk12967xgx3UrsSh1Jyr"
+        ],
+        [
+          "Lending Market",
+          "Dwg1aeZFYtsyMEkoyJn2ak8pPqaXMWd1uui6FBkM1872"
+        ],
+        [
+          "Reserve Liquidity Vault",
+          "7KcyBoZNQr4L5kRHxtkfmAuyJ1UhYonWBDxFGcBTSGi6"
+        ],
+        [
+          "Collateral Token",
+          "3YeoBZyGjKoxQViUzoCvpAfnRdb3ghg5Vn5xZdrsNitJ"
+        ]
+      ],
+      "from": "4hrED8LWEFgYUrEm9BnWgiLa3BsfygbzJRfme4jtnVQcKUtRSi33TVGWSTYDUvtLpy1Q1knzfJcjEQJpZ9y842EG#5",
+      "intent": "Withdraw from a vault",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "4Fa7xCiNpaDTP156o99BASfC57Ya9pMrxCZLpw7Cx3D5 withdraws EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from vault B5pjfZAiKjyUEuqB2694NHrsjcaM67uuJaWqjzTVtzR6 into 4QKCuQKnvU4yXLFVTFCWxMDnj9KCjsVb6sWfxN1gawSa by burning up to 18,446,744,073,709.551615 shares from zR75fAGYrujVH5mEdtr7rkNCN1R7Ez5XNJDnFZYMLMk, paid from the vault's available tokens and then from reserve C2Wp6bpsVevig3AZ1KSCkgHZhsWfN2tw9eQ4kG9z7U7J",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "X1KQK32ExyfGySSnSnvgRZ4jfL6tebvMXdUxTvtQPE8:sw",
+        "B5pjfZAiKjyUEuqB2694NHrsjcaM67uuJaWqjzTVtzR6:w",
+        "BKyTcUe6daNG8HbgBix2ugdRHbykG2dK9hPBBqhUyoEX",
+        "FxcJaS9ePgXfyeMonNJrBJs43M72gwbEZrZFMBme7yMM:w",
+        "4tzYfNpDG2Yawua7Ly7wSGH8So9ky6bWt5kbGiNfW1bZ",
+        "2p9PCV5vKnTZv2tHL97uWKqeb3ytoQPM6RZTh1mXGNUs:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v:w",
+        "ATYy356xVTjuzp7KfyHA4PmQo3E1tBHQk5ae6ysChLdc:w",
+        "2bnxGUrAevL2i9zYtJWwPnAE2RmiPpRxjYnwv886DGCC:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
+        "24tHwQyJJ9akVXxnvkekGfAoeUJXXS7mE6kQNioNySsK",
+        "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+        "B5pjfZAiKjyUEuqB2694NHrsjcaM67uuJaWqjzTVtzR6:w",
+        "C2Wp6bpsVevig3AZ1KSCkgHZhsWfN2tw9eQ4kG9z7U7J:w",
+        "4VEpHPHvCXJTYZb32pnGSqjnzk12967xgx3UrsSh1Jyr:w",
+        "Dwg1aeZFYtsyMEkoyJn2ak8pPqaXMWd1uui6FBkM1872",
+        "4fkLXx4nAG8V2HkFfAVW9cHMToAy3SJKNu7Hi7vk9YeP",
+        "7KcyBoZNQr4L5kRHxtkfmAuyJ1UhYonWBDxFGcBTSGi6:w",
+        "3YeoBZyGjKoxQViUzoCvpAfnRdb3ghg5Vn5xZdrsNitJ:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Sysvar1nstructions1111111111111111111111111",
+        "24tHwQyJJ9akVXxnvkekGfAoeUJXXS7mE6kQNioNySsK",
+        "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+        "C2Wp6bpsVevig3AZ1KSCkgHZhsWfN2tw9eQ4kG9z7U7J:w",
+        "Dwg1aeZFYtsyMEkoyJn2ak8pPqaXMWd1uui6FBkM1872"
+      ],
+      "data": "b712469c946da12280ce341d00000000",
+      "fields": [
+        [
+          "Shares (the highest value withdraws all your shares)",
+          "490"
+        ],
+        [
+          "Owner",
+          "X1KQK32ExyfGySSnSnvgRZ4jfL6tebvMXdUxTvtQPE8"
+        ],
+        [
+          "Vault",
+          "B5pjfZAiKjyUEuqB2694NHrsjcaM67uuJaWqjzTVtzR6"
+        ],
+        [
+          "Vault Token Account",
+          "FxcJaS9ePgXfyeMonNJrBJs43M72gwbEZrZFMBme7yMM"
+        ],
+        [
+          "To",
+          "2p9PCV5vKnTZv2tHL97uWKqeb3ytoQPM6RZTh1mXGNUs"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Shares From",
+          "ATYy356xVTjuzp7KfyHA4PmQo3E1tBHQk5ae6ysChLdc"
+        ],
+        [
+          "Share Token",
+          "2bnxGUrAevL2i9zYtJWwPnAE2RmiPpRxjYnwv886DGCC"
+        ],
+        [
+          "Reserve",
+          "C2Wp6bpsVevig3AZ1KSCkgHZhsWfN2tw9eQ4kG9z7U7J"
+        ],
+        [
+          "Vault Collateral Account",
+          "4VEpHPHvCXJTYZb32pnGSqjnzk12967xgx3UrsSh1Jyr"
+        ],
+        [
+          "Lending Market",
+          "Dwg1aeZFYtsyMEkoyJn2ak8pPqaXMWd1uui6FBkM1872"
+        ],
+        [
+          "Reserve Liquidity Vault",
+          "7KcyBoZNQr4L5kRHxtkfmAuyJ1UhYonWBDxFGcBTSGi6"
+        ],
+        [
+          "Collateral Token",
+          "3YeoBZyGjKoxQViUzoCvpAfnRdb3ghg5Vn5xZdrsNitJ"
+        ]
+      ],
+      "from": "dwXvduXaiMwfDWZCtAAbRyAGKd5PyAxrGojRZm9sX2qvQMufRbH2nG7aJJu6DqtnZNr8ZqaukbLpFxmg435eMS8#5",
+      "intent": "Withdraw from a vault",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "X1KQK32ExyfGySSnSnvgRZ4jfL6tebvMXdUxTvtQPE8 withdraws EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from vault B5pjfZAiKjyUEuqB2694NHrsjcaM67uuJaWqjzTVtzR6 into 2p9PCV5vKnTZv2tHL97uWKqeb3ytoQPM6RZTh1mXGNUs by burning up to 490 shares from ATYy356xVTjuzp7KfyHA4PmQo3E1tBHQk5ae6ysChLdc, paid from the vault's available tokens and then from reserve C2Wp6bpsVevig3AZ1KSCkgHZhsWfN2tw9eQ4kG9z7U7J",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4GvE6QukisVdvrNDT9CUd8uatmiyUxkkxH2gWyjvyksG:w",
+        "CwptesNGAXj8S3aRsFHtUomb5zqAA1tMJBYkQVLJjXmd:w",
+        "A43dYbhg2LfH3MxmGQX5cGXo6CEaqBoiJ3XH8teVp2Qw",
+        "EGqzVr1SDEn1WKC9uibQ1HSQiyf1bhVUsQ4Dqf8b47pY:w",
+        "4QCYXVf8TJMs1G8WWMdQzY8jxZHKAZPM6RDCQcaRPXJa",
+        "AfZeqdvfyjHi6cx2KjMJ4PkBCWbYePUGmWsR1wbWWz5Q:w",
+        "9QNggpESP2ypnztjshi5eHLf46ntP7esS6VMgkHK5v75",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "SysvarRent111111111111111111111111111111111"
+      ],
+      "data": "c388014f0a7b79640100000000000000ffffffffffffffff72f4e168d9060000",
+      "fields": [
+        [
+          "Target Weight",
+          "1"
+        ],
+        [
+          "Token Cap (the highest value means no cap)",
+          "18,446,744,073,709,551,615 base units"
+        ],
+        [
+          "Collateral Token Cap (the highest value means no cap)",
+          "7,530,837.30853"
+        ],
+        [
+          "Signer",
+          "4GvE6QukisVdvrNDT9CUd8uatmiyUxkkxH2gWyjvyksG"
+        ],
+        [
+          "Vault",
+          "CwptesNGAXj8S3aRsFHtUomb5zqAA1tMJBYkQVLJjXmd"
+        ],
+        [
+          "Collateral Token",
+          "EGqzVr1SDEn1WKC9uibQ1HSQiyf1bhVUsQ4Dqf8b47pY"
+        ],
+        [
+          "Reserve",
+          "4QCYXVf8TJMs1G8WWMdQzY8jxZHKAZPM6RDCQcaRPXJa"
+        ],
+        [
+          "Vault Collateral Account",
+          "AfZeqdvfyjHi6cx2KjMJ4PkBCWbYePUGmWsR1wbWWz5Q"
+        ],
+        [
+          "Reserve Whitelist Entry",
+          "9QNggpESP2ypnztjshi5eHLf46ntP7esS6VMgkHK5v75"
+        ]
+      ],
+      "from": "49oDgv4cZzwqLjGXXy5qUj9JJ5UBMR1cd8w5A4g74GP3zXJCEhHdQbgNPXt4fZJGm4YdXYV5QvXDyMYZcx1GJio7#4.1",
+      "intent": "Set a reserve allocation",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "4GvE6QukisVdvrNDT9CUd8uatmiyUxkkxH2gWyjvyksG sets the allocation of reserve 4QCYXVf8TJMs1G8WWMdQzY8jxZHKAZPM6RDCQcaRPXJa in vault CwptesNGAXj8S3aRsFHtUomb5zqAA1tMJBYkQVLJjXmd: target weight 1",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "5WodE5oHa6Uy16zg4eTep9t6DqJKx7jFN6bomAm7bVQv:w",
+        "DWSXb18xZApz29vnQpgR2m6MynCT7PznaXt7Ut7M7KaP:w",
+        "AYL4LMc4ZCVyq3Z7XPJGWDM4H9PiWjqXAAuuHBEGVR2Z:w",
+        "6ea6GorjfT2SmUH8HSwg4LLae5RCqVVEYzcznBJEge9e:w",
+        "4cjKhMGtDhQgtZqjojkwE1899h1q4X1Arx8fT6gEQGDg:w",
+        "D6hDbSjooxfjXrfKo7xBKVFeoaJrtnXY75uAbxeFbPgU:w",
+        "AywYVeAVKXbe9JYbNNFCjcCvBU5LnhRNUL43E5DXyn45:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v:w",
+        "47tfyEG9SsdEnUm9cw5kY9BXngQGqu3LBoop9j5uTAv8",
+        "FsvTiXTUFDc4aLbrov4PrvDTjXCWCniL1dxTUkZ1T2ss",
+        "8BkQTZsT8ssKMU643De4iiV5Wf3pENdUFTsdtHPueKjB:w",
+        "DBieuGmP1xh36oZRwTtw722yJ8pzZ8wycYD9nY2BSxwn:w",
+        "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Sysvar1nstructions1111111111111111111111111",
+        "6XdN3zXeoYKgfSeZb8h1LpiEkUXRJ3CbimE5FJ35XFBP:w",
+        "4QKFoFDzNFnvfkzVazABbCEfMwd3y1pZqUVzmpnkCphj:w",
+        "AYL4LMc4ZCVyq3Z7XPJGWDM4H9PiWjqXAAuuHBEGVR2Z:w",
+        "9GJ9GBRwCp4pHmWrQ43L5xpc9Vykg7jnfwcFGN8FoHYu:w",
+        "8Lvi1DFPoAGPQ25qpRKzzRaSAnWdeVZqt9XmEapm8uLt:w",
+        "5rvXFUUZp1JsJ3bhJUYwWC2bEzo6WEnmAXZ9vnku9dDR:w",
+        "Au2Cg9CNNTX1KfzVhNnpi1ouHX74CwMMBvmSchmqS5ZW:w",
+        "9Y7uwXgQ68mGqRtZfuFaP4hc4fxeJ7cE9zTtqTxVhfGU",
+        "52FSGeeokLpgvgAMdqxyt5Hoc2TbUYj5b8yxrEdZ37Vf",
+        "47tfyEG9SsdEnUm9cw5kY9BXngQGqu3LBoop9j5uTAv8",
+        "CqAoLuqWtavaVE8deBjMKe8ZfSt9ghR6Vb8nfsyabyHA",
+        "47tfyEG9SsdEnUm9cw5kY9BXngQGqu3LBoop9j5uTAv8",
+        "Btu8835QDYgdTnMJJBSidbfQhrZzryZbMhCpty6h6Xdk",
+        "3hd61ZpG35tBwrmDvdmYVJoazC2mjJxHb6rEYEWs4QhH"
+      ],
+      "data": "83c2c88caff4d9b7",
+      "fields": [
+        [
+          "Vault Admin",
+          "5WodE5oHa6Uy16zg4eTep9t6DqJKx7jFN6bomAm7bVQv"
+        ],
+        [
+          "Vault",
+          "DWSXb18xZApz29vnQpgR2m6MynCT7PznaXt7Ut7M7KaP"
+        ],
+        [
+          "Reserve",
+          "AYL4LMc4ZCVyq3Z7XPJGWDM4H9PiWjqXAAuuHBEGVR2Z"
+        ],
+        [
+          "Vault Token Account",
+          "6ea6GorjfT2SmUH8HSwg4LLae5RCqVVEYzcznBJEge9e"
+        ],
+        [
+          "Vault Collateral Account",
+          "4cjKhMGtDhQgtZqjojkwE1899h1q4X1Arx8fT6gEQGDg"
+        ],
+        [
+          "Fees To",
+          "AywYVeAVKXbe9JYbNNFCjcCvBU5LnhRNUL43E5DXyn45"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Lending Market",
+          "47tfyEG9SsdEnUm9cw5kY9BXngQGqu3LBoop9j5uTAv8"
+        ],
+        [
+          "Reserve Liquidity Vault",
+          "8BkQTZsT8ssKMU643De4iiV5Wf3pENdUFTsdtHPueKjB"
+        ],
+        [
+          "Collateral Token",
+          "DBieuGmP1xh36oZRwTtw722yJ8pzZ8wycYD9nY2BSxwn"
+        ]
+      ],
+      "from": "5pyz7LLPEJdwoG6Zox3ZeTuY8XMoN9yAJLQEC34yq98NNtihS3jAScQ44wqmnQYcdz2JZNqU76jT2dGuRwtwwxYS#4.2",
+      "intent": "Collect vault fees",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "5WodE5oHa6Uy16zg4eTep9t6DqJKx7jFN6bomAm7bVQv withdraws the pending fees of vault DWSXb18xZApz29vnQpgR2m6MynCT7PznaXt7Ut7M7KaP in EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v into AywYVeAVKXbe9JYbNNFCjcCvBU5LnhRNUL43E5DXyn45, from the vault's available tokens and reserve AYL4LMc4ZCVyq3Z7XPJGWDM4H9PiWjqXAAuuHBEGVR2Z",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "5WodE5oHa6Uy16zg4eTep9t6DqJKx7jFN6bomAm7bVQv:w",
+        "BKyTcUe6daNG8HbgBix2ugdRHbykG2dK9hPBBqhUyoEX",
+        "BYcYyxpxWmcfQn3QjZi1yyZKzLfDt5N8cCn1r25r8XyV:w",
+        "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
+        "FpBj2PbPYQSf8D7Pheto23ajzbsURceQG5z3hrqUX1Bd:w",
+        "2jhQAxCiHhP4kdG5YzgF6m8ZvrXVofTyMaLjzW6MH5WW"
+      ],
+      "data": "7a0315de9effee9d0b20000000a80afa798169646a9b5696001e9f329a705501f72a98ef8a65ec94637572ce6e",
+      "fields": [
+        [
+          "Setting",
+          "Allocation Admin"
+        ],
+        [
+          "New Value (Bytes)",
+          "a80afa798169646a9b5696001e9f329a705501f72a98ef8a65ec94637572ce6e"
+        ],
+        [
+          "Signer",
+          "5WodE5oHa6Uy16zg4eTep9t6DqJKx7jFN6bomAm7bVQv"
+        ],
+        [
+          "Vault",
+          "BYcYyxpxWmcfQn3QjZi1yyZKzLfDt5N8cCn1r25r8XyV"
+        ]
+      ],
+      "from": "Ss8HmteQzRCyS3s4QydGBzkuWTnJmDAEUmHLdvKhS92s3QBSnpFmK7PVvnYDnf7qxCwKhox8dCK7XMzmoAP8ksD#4.1",
+      "intent": "Update vault settings",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "5WodE5oHa6Uy16zg4eTep9t6DqJKx7jFN6bomAm7bVQv changes the Allocation Admin of vault BYcYyxpxWmcfQn3QjZi1yyZKzLfDt5N8cCn1r25r8XyV",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "5WodE5oHa6Uy16zg4eTep9t6DqJKx7jFN6bomAm7bVQv:w",
+        "DWSXb18xZApz29vnQpgR2m6MynCT7PznaXt7Ut7M7KaP:w",
+        "6kmkjcVrp7RfyRBrfCoKbe6Wss3urVaaB1Lez5kSNHd1"
+      ],
+      "data": "20dcd38dd1e7494c",
+      "fields": [
+        [
+          "Vault Admin",
+          "5WodE5oHa6Uy16zg4eTep9t6DqJKx7jFN6bomAm7bVQv"
+        ],
+        [
+          "Vault",
+          "DWSXb18xZApz29vnQpgR2m6MynCT7PznaXt7Ut7M7KaP"
+        ],
+        [
+          "Reserve",
+          "6kmkjcVrp7RfyRBrfCoKbe6Wss3urVaaB1Lez5kSNHd1"
+        ]
+      ],
+      "from": "5XQhQv6nagXg7Vf55Xx38PuLdQRQ1PGPa2wDAcHtEH7wMptKhMXEtBorwPqxiCYiPfVtgxebqiS3qiKHtw642FCL#4.2",
+      "intent": "Remove a reserve allocation",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "5WodE5oHa6Uy16zg4eTep9t6DqJKx7jFN6bomAm7bVQv removes reserve 6kmkjcVrp7RfyRBrfCoKbe6Wss3urVaaB1Lez5kSNHd1 from the allocations of vault DWSXb18xZApz29vnQpgR2m6MynCT7PznaXt7Ut7M7KaP",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4GvE6QukisVdvrNDT9CUd8uatmiyUxkkxH2gWyjvyksG:w",
+        "B5pjfZAiKjyUEuqB2694NHrsjcaM67uuJaWqjzTVtzR6",
+        "4tzYfNpDG2Yawua7Ly7wSGH8So9ky6bWt5kbGiNfW1bZ",
+        "Hg3vQaYzWnQFZbLFkRph5427dzvLDe68s4Aah1ruEV1g:w",
+        "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+      ],
+      "data": "9b227aa5f589936b200000004b616d696e6f20496e737420436f6d6d6f64697479205969656c642055534443070000006b6963555344435e00000068747470733a2f2f6170692e6b616d696e6f2e66696e616e63652f6b7661756c742d746f6b656e732f32626e784755724165764c3269397a59744a5777506e414532526d69507052786a596e7776383836444743432f6d65746164617461",
+      "fields": [
+        [
+          "Name",
+          "Kamino Inst Commodity Yield USDC"
+        ],
+        [
+          "Symbol",
+          "kicUSDC"
+        ],
+        [
+          "URI",
+          "https://api.kamino.finance/kvault-tokens/2bnxGUrAevL2i9zYtJWwPnAE2RmiPpRxjYnwv886DGCC/metadata"
+        ],
+        [
+          "Vault Admin",
+          "4GvE6QukisVdvrNDT9CUd8uatmiyUxkkxH2gWyjvyksG"
+        ],
+        [
+          "Vault",
+          "B5pjfZAiKjyUEuqB2694NHrsjcaM67uuJaWqjzTVtzR6"
+        ],
+        [
+          "Share Token Metadata",
+          "Hg3vQaYzWnQFZbLFkRph5427dzvLDe68s4Aah1ruEV1g"
+        ]
+      ],
+      "from": "36GgaHgWbTUVRiwnRSj3bgkbd21cVx9LMes4LCbtf2qnUBiZkBdfphXZjE4m5UAmqpMMpmPSuEbhEy3VhZskaUhQ#4.1",
+      "intent": "Update share token metadata",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "4GvE6QukisVdvrNDT9CUd8uatmiyUxkkxH2gWyjvyksG renames the share token of vault B5pjfZAiKjyUEuqB2694NHrsjcaM67uuJaWqjzTVtzR6 to Kamino Inst Commodity Yield USDC (kicUSDC)",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4GvE6QukisVdvrNDT9CUd8uatmiyUxkkxH2gWyjvyksG:w",
+        "FaACXdMcKuLijkUHiVxEjDVr9sUxwzFZF1Wzf1JrbZer:w"
+      ],
+      "data": "a1b028d53cb8b3e4",
+      "fields": [
+        [
+          "New Admin",
+          "4GvE6QukisVdvrNDT9CUd8uatmiyUxkkxH2gWyjvyksG"
+        ],
+        [
+          "Vault",
+          "FaACXdMcKuLijkUHiVxEjDVr9sUxwzFZF1Wzf1JrbZer"
+        ]
+      ],
+      "from": "4SSQ12CkWv5HhyYGSF5RSdsarehjPAVEfDiGzsprzpjaGtVifo3sS4wtwnA1yzEUJLVr577xXSzGx1i7Jxy1N3As#3.1",
+      "intent": "Accept the vault admin role",
+      "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
+      "sentence": "4GvE6QukisVdvrNDT9CUd8uatmiyUxkkxH2gWyjvyksG becomes the admin of vault FaACXdMcKuLijkUHiVxEjDVr9sUxwzFZF1Wzf1JrbZer",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}

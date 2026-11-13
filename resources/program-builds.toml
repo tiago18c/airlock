@@ -584,3 +584,14 @@ idlSha256 = "e11b36817d4123f6bc2fb4bd8eb3e580c015891ca18c11547e9e54fec2ba5da9"
 source = { repo = "https://github.com/Kamino-Finance/kfarms", commit = "bfa186034ba8ecd36e7faf27cae6b38ee24d0bc4" }
 verified = "CivjSDKgTpmkRNL4zYcmv9D9QqPJg6yTxBVxMGcXvMuY"
 reviewed = "2026-11-12"
+
+[[builds]]
+# kaminoVault (pack). The binary logs 26 instruction names, all in the IDL; the four other instructions of the IDL are not in it and were removed. The accounts and arguments of those 26 match the OtterSec-verified source (2.3.4), and successful mainnet transactions decode with the IDL, every account named, for deposit, withdraw, withdrawFromAvailable, invest, investWithMaxAmount, updateReserveAllocation, updateReserveAllocationV2, removeAllocation, updateVaultConfig, withdrawPendingFees, updateAdmin, updateSharesMetadata.
+programId = "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd"
+network = "mainnet"
+programHash = "d2b974a802e58445812699098b49ad5694a67f9dec6cf6a5238619da8d92b953"
+authority = "GzFgdRJXmawPhGeBsyRCDLx4jAKPsvbUqoqitzppkzkW"
+idlSha256 = "90d97c3a345d589e030605ff4b260dbfbe01e65c1a440fcc64415538c2ad9814"
+source = { repo = "https://github.com/Kamino-Finance/kvault", commit = "3b53fa0b9bd2f8ce52b9b7eeaa3025155edc7b1c" }
+verified = "GzFgdRJXmawPhGeBsyRCDLx4jAKPsvbUqoqitzppkzkW"
+reviewed = "2026-11-12"
