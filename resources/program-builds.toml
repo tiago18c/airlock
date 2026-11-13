@@ -984,3 +984,12 @@ programHash = "dbba2f01304c4e6068e3024340cfdb40446946ae62741f2ca820a409eb1b460b"
 authority = "BVJESvrDeXZcSX5UVdK2Tt57Lur9gyakgCfdX45pVQ1V"
 idlSha256 = "df5513c1e338d7d939717f0d3801447da524fcd902dafe53c5d6c6b50495fb89"
 reviewed = "2026-11-12"
+
+[[builds]]
+# sage (pack). Deployed at slot 448117202; OtterSec lists no verify record. The binary logs the IDL's 106 instruction names and one more, LoadingBayToRespawn, which reads raw; 115 mainnet instructions of 43 kinds decode with every account named, and all but create_fleet and add_ship_to_fleet, which carry 3 bytes the IDL does not describe, with no data left over.
+programId = "SAGE2HAwep459SNq61LHvjxPk4pLPEJLoMETef7f7EE"
+network = "mainnet"
+programHash = "ebcf05f6fed90147daa9a57440a36988ef0e9614a3a24792d1596387d85695b3"
+authority = "BVJESvrDeXZcSX5UVdK2Tt57Lur9gyakgCfdX45pVQ1V"
+idlSha256 = "f48549c465a65b8bca2b509be191ef7c4c933991a5671134c80652535f68396f"
+reviewed = "2026-11-12"
