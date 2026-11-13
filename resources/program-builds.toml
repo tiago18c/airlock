@@ -698,3 +698,12 @@ programHash = "c083df6d55d0b3b7586be546940776c79fda86942e8dd3a4b29ea2e3dbe5b94f"
 authority = "GzyhwK4y7EKPEevAMc2TEpgi1Y3znwj14FUzkHmCMiNP"
 idlSha256 = "c19c5d2610aef3eb8ab8509a51769de436d44488b6e8777f9aec5b0a12477a70"
 reviewed = "2026-11-12"
+
+[[builds]]
+# hyloRouter (pack). Deployed at slot 462249563; OtterSec lists no verify record. Each of the file's 4 instructions is in this binary by its Anchor log name and by its discriminator, and the binary logs no other apart from Anchor's IDL instructions. Mainnet transactions of route, route_v2, initialize_exo_registry and register_exo_entry decode with no data left over and every account named.
+programId = "hyRouTRDAgn65xyyJ3L5c4k5SFmSdr3NxDV8Euzjy3f"
+network = "mainnet"
+programHash = "3d6835946963032b53e45ec5b263b15268fdfa1451ec50ebc2db01a47f86b6b6"
+authority = "GzyhwK4y7EKPEevAMc2TEpgi1Y3znwj14FUzkHmCMiNP"
+idlSha256 = "cc55ab22f3f4070fb6cb12a77740f3c471135840b2b58e1e20d017e7922aba4a"
+reviewed = "2026-11-12"

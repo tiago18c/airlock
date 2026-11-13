@@ -880,3 +880,23 @@ account is added, so mint, redeem, convert and swap amounts read the decimals of
 mint the instruction names. Hylo's fixed-point values (fees, thresholds, the slippage \
 check's expected amount and tolerance) carry their own power of ten and show as bits and \
 exponent. Display nodes added by hand."""
+
+# Hylo's router (hylo_router 2.0.5): Hylo's app and SDK send every mint,
+# redeem, convert and swap of hyUSD, xSOL and the xASSETs, and every Earn Pool
+# deposit and withdrawal, through it; it picks the exchange or Earn Pool
+# instruction from the pair of tokens and passes its accounts on. The file is
+# the IDL in Hylo's public SDK: the Anchor IDL account on mainnet holds an
+# older document that lists only route, while the deployed program also runs
+# route_v2, which the SDK now builds.
+[[idls]]
+file = "hylo-router.json"
+programId = "hyRouTRDAgn65xyyJ3L5c4k5SFmSdr3NxDV8Euzjy3f"
+name = "hyloRouter"
+networks = ["mainnet"]
+source = { kind = "repository", url = "https://github.com/hylo-so/sdk/blob/c4a75b1af11a6a35aa1ae2402fc076af6ccd8263/hylo-idl/idls/hylo_router.json" }
+changes = """Converted from Anchor to Codama. route and route_v2 declare the accounts they pass on to \
+the exchange or Earn Pool instruction the token pair selects as two remaining-accounts \
+groups, which Anchor IDLs cannot: the signer, shown as the user, then the rest, shown as \
+Forwarded Account because their order depends on the pair. The amount stays in base \
+units, since the input mint is an argument, not an account. Hylo's fixed-point slippage \
+check shows as bits and exponent. Display nodes added by hand."""

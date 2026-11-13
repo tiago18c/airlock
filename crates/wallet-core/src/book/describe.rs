@@ -659,6 +659,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("HYEXCHtHkBagdStcJCp3xbbb9B7sdMdWXFNj6mdsG4hn"),
         "Hylo Exchange Program",
     ),
+    (
+        Pubkey::from_str_const("hyRouTRDAgn65xyyJ3L5c4k5SFmSdr3NxDV8Euzjy3f"),
+        "Hylo Router Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

@@ -1,0 +1,1849 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "hyloRouter",
+    "publicKey": "hyRouTRDAgn65xyyJ3L5c4k5SFmSdr3NxDV8Euzjy3f",
+    "version": "2.0.5",
+    "origin": "anchor",
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "name": "exoPair",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "fbf448b52877e830",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "collateralMint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "levercoinMintBump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "levercoinAuthBump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vaultAuthBump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "feeAuthBump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "oracle",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "oracleFeedId",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 32
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "oracleIntervalSecs",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "oracleConfTolerance",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "stablecoinMintThreshold",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "virtualStablecoin",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "virtualStablecoin"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "borrowRateCurveConfig",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "borrowRateCurveConfig"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "borrowRateHarvestCache",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "harvestCache"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "levercoinFees",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "levercoinFees"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "sellCurveConfig",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "rebalanceCurveConfig"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "buyCurveConfig",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "rebalanceCurveConfig"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "borrowRateFee",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "paused",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "levercoinMarketCapLimit",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "poolDrawdown",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "poolDrawdown"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "virtualStablecoinSupplyFloor",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "reserved",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 91
+                }
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "exoRegistry",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "3a549dfb113457d2",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "currentSize",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pad",
+              "docs": [
+                "Pads the header to eight bytes."
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 6
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "entries",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "exoEntry"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 64
+                }
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "hylo",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "72a1a9d2ccaf95ae",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "admin",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "treasury",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lstRegistry",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "stablecoinMint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "levercoinMint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pauseAuthority",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "stablecoinMintBump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "stablecoinAuthBump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "levercoinMintBump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "levercoinAuthBump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "registryAuthBump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "totalSolCacheBump",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "oracleIntervalSecs",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "stablecoinFees",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "stablecoinFees"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "levercoinFees",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "levercoinFees"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "totalSolCache",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "totalSolCache"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "yieldHarvestCache",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "harvestCache"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "yieldHarvestConfig",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "yieldHarvestConfig"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "stablecoinMintThreshold",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "unused1",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "oracleConfTolerance",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "solUsdOracle",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lstSwapFee",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "virtualStablecoin",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "virtualStablecoin"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lstBuyCurveConfig",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "rebalanceCurveConfig"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lstSellCurveConfig",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "rebalanceCurveConfig"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "protocolPaused",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lstPairPaused",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "unused2",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "poolDrawdown",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "poolDrawdown"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "reserved",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 13
+                }
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "initializeExoRegistry",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "hylo",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "hylo",
+                "programId": "HYEXCHtHkBagdStcJCp3xbbb9B7sdMdWXFNj6mdsG4hn",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "3ftVq8",
+                      "encoding": "base58"
+                    }
+                  }
+                ]
+              }
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "exoRegistry",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "exoRegistry",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "2v4WF34K1syZ58A9E",
+                      "encoding": "base58"
+                    }
+                  }
+                ]
+              }
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "publicKeyValueNode",
+              "publicKey": "11111111111111111111111111111111"
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "ce01a7f19b349a20",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create the router's pool registry",
+          "interpolatedIntent": "${accounts.admin} creates the router's registry of collateral pools"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "registerExoEntry",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "hylo",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "hylo",
+                "programId": "HYEXCHtHkBagdStcJCp3xbbb9B7sdMdWXFNj6mdsG4hn",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "3ftVq8",
+                      "encoding": "base58"
+                    }
+                  }
+                ]
+              }
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "exoPair",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "exoPair",
+                "programId": "HYEXCHtHkBagdStcJCp3xbbb9B7sdMdWXFNj6mdsG4hn",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "HyPeXg5fAtH",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "collateralMint",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "collateralMint",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "collateralMint"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collateral Pool"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "exoRegistry",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "exoRegistry",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "2v4WF34K1syZ58A9E",
+                      "encoding": "base58"
+                    }
+                  }
+                ]
+              }
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collateralMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collateral Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "levercoinMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "levercoinMint",
+                "programId": "HYEXCHtHkBagdStcJCp3xbbb9B7sdMdWXFNj6mdsG4hn",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "9TCU4x1BcKjT4yJVzD",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "collateralMint",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "collateralMint",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "collateralMint"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Leveraged Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "eventAuthority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "eventAuthority",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "tyvCZETMWX6hYsUwTchxRWG",
+                      "encoding": "base58"
+                    }
+                  }
+                ]
+              }
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "program",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "b548d9c07cae5b4c",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Add a pool to the router",
+          "interpolatedIntent": "${accounts.admin} adds the ${accounts.collateralMint} pool and its leveraged token ${accounts.levercoinMint} to the pools the router routes to"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "route",
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "e517cb977ae3ad2a",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "tokenA",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Token In"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "tokenB",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Token Out"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount In"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "slippageConfig",
+            "type": {
+              "kind": "optionTypeNode",
+              "item": {
+                "kind": "definedTypeLinkNode",
+                "name": "slippageConfig"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Slippage Check (expected out and tolerance, each Bits × 10^Exp)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "user"
+            },
+            "isOptional": true,
+            "isSigner": true,
+            "isWritable": true,
+            "docs": [
+              "The user who signs, the first of the accounts the selected Hylo instruction takes."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "User"
+            }
+          },
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "forwardedAccounts"
+            },
+            "isOptional": true,
+            "isSigner": "either",
+            "isWritable": true,
+            "docs": [
+              "The other accounts of the Hylo exchange or Earn Pool instruction the token pair selects, in that instruction's order, ending with the program it calls. They include the user's token accounts the tokens leave and arrive in."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Forwarded Account"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Exchange tokens through Hylo",
+          "interpolatedIntent": "Exchanges ${data.amount} of ${data.tokenA} for ${data.tokenB} through Hylo, at the price the program sets"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "routeV2",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "exoRegistry",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "exoRegistry",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "2v4WF34K1syZ58A9E",
+                      "encoding": "base58"
+                    }
+                  }
+                ]
+              }
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "bb64facc31c4af14",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "tokenA",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Token In"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "tokenB",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Token Out"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount In"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "slippageConfig",
+            "type": {
+              "kind": "optionTypeNode",
+              "item": {
+                "kind": "definedTypeLinkNode",
+                "name": "slippageConfig"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Slippage Check (expected out and tolerance, each Bits × 10^Exp)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "user"
+            },
+            "isOptional": true,
+            "isSigner": true,
+            "isWritable": true,
+            "docs": [
+              "The user who signs, the first of the accounts the selected Hylo instruction takes."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "User"
+            }
+          },
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "forwardedAccounts"
+            },
+            "isOptional": true,
+            "isSigner": "either",
+            "isWritable": true,
+            "docs": [
+              "The other accounts of the Hylo exchange or Earn Pool instruction the token pair selects, in that instruction's order, ending with the program it calls. They include the user's token accounts the tokens leave and arrive in."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Forwarded Account"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Exchange tokens through Hylo",
+          "interpolatedIntent": "Exchanges ${data.amount} of ${data.tokenA} for ${data.tokenB} through Hylo, at the price the program sets"
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "borrowRateCurveConfig",
+        "docs": [
+          "Per-epoch borrow rate for exogenous collateral without native yield."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "floorRate",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "ceilRate",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "exoEntry",
+        "docs": [
+          "Collateral mint paired with its levercoin mint."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "collateralMint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "levercoinMint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "feePair",
+        "docs": [
+          "Represents the spread of fees between mint and redeem for protocol tokens.",
+          "All fees must be in basis points to represent a fractional percentage",
+          "directly applicable to a token amount e.g. `0.XXXX` or `bips x 10^-4`."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mint",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "redeem",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "harvestCache",
+        "docs": [
+          "Records epoch harvest information for offchain consumers."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "epoch",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "stabilityPoolCap",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "stablecoinToPool",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "levercoinFees",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "normal",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "feePair"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "sellZone1",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "feePair"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "sellZone2",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "feePair"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "poolDrawdown",
+        "docs": [
+          "Outstanding hyUSD debt owed to the earn pool after a Depeg absorption."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "ledger",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "virtualStablecoin"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "rebalanceCurveConfig",
+        "docs": [
+          "Floor/ceil deviation percentages for rebalance price curve construction."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "floorPct",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "ceilPct",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "slippageConfig",
+        "docs": [
+          "Client specified slippage tolerance paired with expected token amount."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "expectedTokenOut",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Expected Out (Bits × 10^Exp)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "slippageTolerance",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Slippage Tolerance (fraction, Bits × 10^Exp)"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "stablecoinFees",
+        "docs": [
+          "**Deprecated** — retained only for `Hylo` account deserialization."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "normal",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "feePair"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mode1",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "feePair"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "totalSolCache",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "currentUpdateEpoch",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "totalSol",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "ufixValue64",
+        "docs": [
+          "A value-space `Fix` where base is always 10 and bits are a concrete type.",
+          "Intended for serialized storage in Solana accounts where generics won't work."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bits",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Bits"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "exp",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "i8",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Exponent (power of ten)"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "virtualStablecoin",
+        "docs": [
+          "Simple counter representing the supply of a \"virtual\" stablecoin."
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "supply",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "yieldHarvestConfig",
+        "docs": [
+          "Captures yield harvest configuration as two basis point values:"
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "ceilMult",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "fee",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "ufixValue64"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "events": [
+      {
+        "kind": "eventNode",
+        "name": "registerExoEntryEvent",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "collateralMint",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "levercoinMint",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "1b18b77f28901e00",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "1b18b77f28901e00",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "unsupportedPair",
+        "code": 6000,
+        "message": "No valid route for given tokens.",
+        "docs": [
+          "UnsupportedPair: No valid route for given tokens."
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidRouteAccounts",
+        "code": 6001,
+        "message": "Invalid accounts for route.",
+        "docs": [
+          "InvalidRouteAccounts: Invalid accounts for route."
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "exoRegistryFull",
+        "code": 6002,
+        "message": "EXO registry is full.",
+        "docs": [
+          "ExoRegistryFull: EXO registry is full."
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "exoAlreadyRegistered",
+        "code": 6003,
+        "message": "EXO pair is already registered.",
+        "docs": [
+          "ExoAlreadyRegistered: EXO pair is already registered."
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "adminNoop",
+        "code": 6004,
+        "message": "Admin instruction would have no effect.",
+        "docs": [
+          "AdminNoop: Admin instruction would have no effect."
+        ]
+      }
+    ],
+    "constants": [
+      {
+        "kind": "constantNode",
+        "name": "exoRegistry",
+        "type": {
+          "kind": "arrayTypeNode",
+          "item": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          },
+          "count": {
+            "kind": "fixedCountNode",
+            "value": 12
+          }
+        },
+        "value": {
+          "kind": "stringValueNode",
+          "string": "[101, 120, 111, 95, 114, 101, 103, 105, 115, 116, 114, 121]"
+        }
+      }
+    ]
+  }
+}
