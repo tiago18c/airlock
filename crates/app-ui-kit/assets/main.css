@@ -1036,6 +1036,16 @@ p.warn { background: var(--warn-soft); border-color: var(--warn-line); color: va
   font-weight: var(--weight-medium);
   box-shadow: var(--shadow-xs);
 }
+.toast-more.narrow { display: none; }
+/* A narrow window shows only the newest notice, and how many more there are,
+   all of them under the bell. */
+@media (max-width: 760px) {
+  .toast-host > .toast ~ .toast { display: none; }
+  .toast-more.wide { display: none; }
+  .toast-more.narrow { display: block; }
+}
+/* An open dialog stays clear: notices go under it until it closes. */
+.app:has(.modal-backdrop) .toast-host { z-index: calc(var(--z-modal) - 1); }
 .toast-spin {
   width: 10px;
   height: 10px;
