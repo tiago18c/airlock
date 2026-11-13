@@ -431,7 +431,7 @@
       "fields": [
         [
           "Amount (the highest value stakes the whole balance)",
-          "18,446,744,073,709.551615"
+          "the maximum"
         ],
         [
           "Owner",
@@ -461,7 +461,7 @@
       "from": "D7fde2t6KWYJFgK7rfUL1dUD9bbqzRi4mVgQ3QkNmAWvkafxpA1v6ek5PkzSQkWUVNzKXRwE4TPuAbmrheLwWSH#3",
       "intent": "Stake tokens",
       "programId": "FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr",
-      "sentence": "73TzMrFCrFQ5XLQjHbUHLwB73TbLMUd3sne5omoYmRTX stakes 18,446,744,073,709.551615 of Aj2CERPvGQhb2f1gfnkoeUnL5wy8pJczWxDAAXN8paqt from 9u45XarK6mWBF66chfoXrNxt1264s4smh2rNiZJDKUvM in farm GXMTWzXiPnpt1TAR7R7dXAkFjH53HMmZkD8A8EeuXkbt",
+      "sentence": "73TzMrFCrFQ5XLQjHbUHLwB73TbLMUd3sne5omoYmRTX stakes the maximum of Aj2CERPvGQhb2f1gfnkoeUnL5wy8pJczWxDAAXN8paqt from 9u45XarK6mWBF66chfoXrNxt1264s4smh2rNiZJDKUvM in farm GXMTWzXiPnpt1TAR7R7dXAkFjH53HMmZkD8A8EeuXkbt",
       "unnamedAccounts": 0
     },
     {
@@ -479,7 +479,7 @@
       "fields": [
         [
           "Amount (the highest value stakes the whole balance)",
-          "18,446,744,073,709.551615"
+          "the maximum"
         ],
         [
           "Owner",
@@ -509,7 +509,7 @@
       "from": "3p7KaX1853G1uhuEZbKeeSGp9wnEzUYA4EB9AUGLCp8g92L1t46hmTzdXXFrbRhbSFr4JCPdeEQ5C5n15wXifyLS#3",
       "intent": "Stake tokens",
       "programId": "FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr",
-      "sentence": "BoWEXPNQhrfstLXbjVb5u5ze7UA7DCV5BRhdw7BjqeFo stakes 18,446,744,073,709.551615 of Aj2CERPvGQhb2f1gfnkoeUnL5wy8pJczWxDAAXN8paqt from EtcdwLCohuHp7oK9uENMqVLwKkuxGSehfGkaNkEsPTXQ in farm GXMTWzXiPnpt1TAR7R7dXAkFjH53HMmZkD8A8EeuXkbt",
+      "sentence": "BoWEXPNQhrfstLXbjVb5u5ze7UA7DCV5BRhdw7BjqeFo stakes the maximum of Aj2CERPvGQhb2f1gfnkoeUnL5wy8pJczWxDAAXN8paqt from EtcdwLCohuHp7oK9uENMqVLwKkuxGSehfGkaNkEsPTXQ in farm GXMTWzXiPnpt1TAR7R7dXAkFjH53HMmZkD8A8EeuXkbt",
       "unnamedAccounts": 0
     },
     {

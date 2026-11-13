@@ -258,6 +258,7 @@ mod tests {
                 accounts: Vec::new(),
                 accounts_needed: Vec::new(),
                 unnamed_accounts: 0,
+                undescribed_bytes: Vec::new(),
             });
             explained
         };

@@ -12,7 +12,8 @@
 // DRIVE_PORT picks the debugging port (9555).
 //
 // For before and after screenshots, build `main`, run this into one folder,
-// then build the branch and run it into another.
+// then build the branch and run it into another. With DRIVE_REVIEW=1 each
+// request is also opened on Review and Sign and shot as `<scenario>-review.png`.
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -109,6 +110,12 @@ const legacy = (accounts, readonly, instructions, hash = blockhash) => {
 /** A SOL transfer the app reads in words with the IDLs it ships. */
 const transfer = (lamports) =>
   legacy([recipient, systemProgram], 1, [[2, [0, 1], transferData(lamports)]]);
+
+/** A transfer whose data runs two bytes past what the System IDL describes. */
+const longer = (lamports) =>
+  legacy([recipient, systemProgram], 1, [
+    [2, [0, 1], Buffer.concat([transferData(lamports), Buffer.from([0, 7])])],
+  ]);
 
 /** A transfer and an instruction of a program with no IDL on the device. */
 const unread = (lamports) =>
@@ -247,6 +254,8 @@ const scenarios = {
   transfer: () => [transfer(5)],
   unread: () => [unread(9)],
   batch: () => [transfer(5), unread(9)],
+  longer: () => [longer(5)],
+  maximum: () => [transfer(18446744073709551615n)],
   realms: () => [realmsInsert()],
   metadata: () => [metadata()],
   cpPool: () => [cpPool()],
@@ -438,6 +447,12 @@ const shotModal = async (path) => {
   writeFileSync(path, Buffer.from(res.result.data, "base64"));
 };
 
+/** Screenshot the window as it is. */
+const shotPage = async (path) => {
+  const res = await send("Page.captureScreenshot", { format: "png" });
+  writeFileSync(path, Buffer.from(res.result.data, "base64"));
+};
+
 await shotModal(join(out, "connect.png"));
 await run(`button('Approve')?.click(); await w(800); return 1;`);
 if (!(await replyTo("connect-1", 5000))?.result?.accounts?.length) {
@@ -497,6 +512,11 @@ for (const name of chosen.length ? chosen : Object.keys(scenarios)) {
   `);
   console.log(`${name}: ${state}`);
   if (state !== "no modal") await shotModal(join(out, `${name}.png`));
+  if (state !== "no modal" && process.env.DRIVE_REVIEW) {
+    // The same request on Review and Sign, whose own Reject answers the site.
+    await run(`button('Review', document.querySelector('.modal.request'))?.click(); await until(() => !document.querySelector('.modal.request')); await w(2500); return 1;`);
+    await shotPage(join(out, `${name}-review.png`));
+  }
   await run(`button('Reject')?.click(); await w(800); return 1;`);
   const reply = await replyTo(id, 5000);
   if (reply?.error?.code !== "rejected") console.log(`${name}: reply ${JSON.stringify(reply)}`);

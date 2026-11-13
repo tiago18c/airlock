@@ -16,6 +16,7 @@ pub fn AddressPicker(
     reset: Signal<u64>,
 ) -> Element {
     let session = use_context::<Session>();
+    let phone = super::use_phone_layout();
     let mut query = use_signal(String::new);
     let mut open = use_signal(|| false);
     let mut focused = use_signal(|| false);
@@ -115,6 +116,13 @@ pub fn AddressPicker(
                             focused.set(true);
                             open.set(true);
                             active.set(0);
+                            // On a phone the suggestions open under the field,
+                            // and the keyboard takes the lower half of the
+                            // screen: the field goes to the top of the pane,
+                            // and again once the keyboard is up.
+                            if phone {
+                                let _ = crate::platform::eval(PICKER_TO_TOP);
+                            }
                             if let Some(pk) = selected {
                                 query.set(pk.to_string());
                             } else if Pubkey::from_str(query.read().trim()).is_ok() {
@@ -279,3 +287,7 @@ fn scroll_active_item(index: usize) {
         }});"#
     ));
 }
+
+/// Scrolls the focused picker's field to the top of the pane, under the top
+/// bar (`scroll-margin-top` on `.app.phone .picker > label`).
+const PICKER_TO_TOP: &str = "(() => { const field = document.activeElement?.closest('.picker > label'); if (!field) return; const up = () => field.scrollIntoView({ block: 'start' }); up(); setTimeout(up, 350); })();";

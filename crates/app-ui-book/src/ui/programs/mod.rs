@@ -65,6 +65,8 @@ pub fn ProgramsPanel() -> Element {
                         button {
                             class: "ghost program-back",
                             r#type: "button",
+                            // What Android's Back presses (MainActivity).
+                            "data-back": "true",
                             // The program starts at its top, wherever the
                             // list was scrolled to.
                             onmounted: move |_| {

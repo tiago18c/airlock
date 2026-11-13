@@ -69,6 +69,12 @@ fn App() -> Element {
     });
     let core = use_hook(move || CopyValue::new(core));
     app_mobile::use_lifecycle(core);
+    // The page's title, what TalkBack and the system read for the window.
+    // `document::Title` names a desktop window; a phone has none, and the
+    // page would keep the template's "Dioxus app".
+    use_hook(|| {
+        let _ = app_ui::platform::eval(format!("document.title = {:?};", BRAND.name));
+    });
     // Fingerprint unlock, where the phone has a strong biometric.
     let guard = use_hook(app_mobile::key_guard::key_guard);
     if let Some(guard) = guard {
@@ -149,6 +155,8 @@ fn Online(core: CopyValue<app_core::Core>) -> Element {
 
 #[component]
 fn Offline(core: CopyValue<app_core::Core>) -> Element {
+    // Before the session opens the IDL catalog on it.
+    use_hook(|| app_ui::settle_offline_network(&core.peek()));
     // Provides the session context AppShell reads; the value is unused here.
     let _session = app_ui::use_session(core, OnlineHooks::none(), SubmitHandle::none());
     // No Network: every pane shows its offline form, and nothing probes a node.

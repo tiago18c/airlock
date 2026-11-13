@@ -2080,7 +2080,7 @@
         "display": {
           "kind": "instructionDisplayNode",
           "intent": "Swap tokens",
-          "interpolatedIntent": "${accounts.userTokenAuthority} swaps tokens through DFlow for a quoted ${data.params.quotedOutAmount} of ${accounts.destinationMint}, accepting up to ${data.params.slippageBps} less, paid to ${accounts.destinationTokenAccount}"
+          "interpolatedIntent": "${accounts.userTokenAuthority} swaps tokens through DFlow for the quoted output, accepting up to ${data.params.slippageBps} less, paid to ${accounts.destinationTokenAccount}"
         },
         "optionalAccountStrategy": "programId",
         "remainingAccounts": [
@@ -2518,7 +2518,7 @@
         "display": {
           "kind": "instructionDisplayNode",
           "intent": "Swap tokens",
-          "interpolatedIntent": "${accounts.userTokenAuthority} swaps tokens through DFlow for a quoted ${data.params.quotedOutAmount} of ${accounts.destinationMint}, accepting up to ${data.params.slippageBps} less, paid to ${accounts.destinationTokenAccount}"
+          "interpolatedIntent": "${accounts.userTokenAuthority} swaps tokens through DFlow for the quoted output, accepting up to ${data.params.slippageBps} less, paid to ${accounts.destinationTokenAccount}"
         },
         "optionalAccountStrategy": "programId",
         "remainingAccounts": [

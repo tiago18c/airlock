@@ -418,8 +418,15 @@ fn explain_one(
             })
             .collect::<String>()
     });
+    let undescribed_bytes = instruction
+        .data
+        .len()
+        .checked_sub(parsed.unread)
+        .map(|read| instruction.data[read..].to_vec())
+        .unwrap_or_default();
     Some(IdlExplanation {
         unnamed_accounts,
+        undescribed_bytes,
         idl_sha256: *sha256,
         origin: *origin,
         intent: display.intent,

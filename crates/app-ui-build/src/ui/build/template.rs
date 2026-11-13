@@ -438,9 +438,11 @@ fn template_input(
                 kind.clone()
             };
             let blank = input.optional.then_some("blank for none");
+            let mode = input_mode(&kind, &places);
             argument_input(
                 format!("{}{optional}", with_unit(&input.label, unit)),
                 kind_placeholder(&kind, places, blank),
+                mode,
                 &kind,
                 text,
                 session.forms.build.picker_reset,
