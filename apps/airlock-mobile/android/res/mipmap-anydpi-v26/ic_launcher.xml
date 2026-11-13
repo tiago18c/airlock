@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by scripts/make-android-icons.py; copied over dx's own by scripts/android-icon.sh. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/airlock_icon_background" />
+    <foreground android:drawable="@mipmap/ic_airlock_foreground" />
+    <monochrome android:drawable="@mipmap/ic_airlock_monochrome" />
+</adaptive-icon>
