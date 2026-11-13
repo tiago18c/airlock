@@ -143,6 +143,10 @@ pub struct IdlAccountLine {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct IdlExplanation {
     pub idl_sha256: [u8; 32],
+    /// Where the IDL that words this instruction came from: shipped with the
+    /// app, a file the person imported, or the chain, where whoever controls
+    /// the program wrote it.
+    pub origin: IdlOrigin,
     pub intent: String,
     pub interpolated_intent: Option<String>,
     pub spans: Option<Vec<IntentSpan>>,

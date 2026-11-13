@@ -1,14 +1,22 @@
 //! Programs a Codama IDL carries in `additionalPrograms`, such as the
 //! associated-token program inside the Token IDL. Each one gets a record of
 //! its own, read from that file, unless a file of its own is stored.
+//!
+//! Only a file that ships with the app, or one the person imported, can
+//! carry another program. An IDL read from the chain is written by whoever
+//! controls its own program and nobody else's, so what it says of other
+//! programs is not taken: it would put its author's words on instructions of
+//! a program they do not control.
 
 use super::*;
 use std::cmp::Reverse;
 
-/// Lower is better: fuller first, then the host's place among the embedded
-/// IDLs (the core in the order of [`BUILTIN_IDLS`], then the IDL pack's),
-/// then its address so the choice never depends on load order.
-type Rank = (Reverse<usize>, usize, Pubkey);
+/// Lower is better: a file that ships with the app before one the person
+/// imported, however full either is, then fuller first, then the host's
+/// place among the embedded IDLs (the core in the order of [`BUILTIN_IDLS`],
+/// then the IDL pack's), then its address so the choice never depends on
+/// load order.
+type Rank = (bool, Reverse<usize>, usize, Pubkey);
 
 /// One entry of a stored file's `additionalPrograms`.
 #[derive(Clone, Debug)]
@@ -21,14 +29,19 @@ pub(super) struct Companion {
 
 impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
     /// Work out the companion records again from the files now stored. A
-    /// program with a file of its own keeps that file. When several files
-    /// carry the same program, the most complete entry wins, and on a tie the
-    /// file of the program embedded first.
+    /// program with a file of its own keeps that file. A file read from the
+    /// chain carries nothing. When several files carry the same program, one
+    /// that ships with the app wins over an imported one; among those the
+    /// most complete entry wins, and on a tie the file of the program
+    /// embedded first.
     pub(super) fn refresh_companions(&mut self) {
         let before: Vec<Pubkey> = self.companion_ids().collect();
         self.records.retain(|record| record.host.is_none());
         let mut chosen: BTreeMap<Pubkey, (Rank, IdlRecord)> = BTreeMap::new();
         for host in &self.records {
+            if host.origin.is_read_from_chain() {
+                continue;
+            }
             let Some(body) = self.loaded.get(&host.program_id) else {
                 continue;
             };
@@ -51,6 +64,7 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
                     continue;
                 }
                 let rank = (
+                    host.origin != IdlOrigin::Builtin,
                     Reverse(companion.completeness),
                     host_rank(&self.embedded, &host.program_id),
                     host.program_id,
