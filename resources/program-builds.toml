@@ -445,3 +445,21 @@ programHash = "3ffd5e3b5a31ccc86b434405e8a1876926da1e8685f891dc964b7f919c172ee1"
 authority = "GUYCUEpxSkm1ccDo3LSKMR4Xpe5bgMnEZaFygWUSEVH3"
 idlSha256 = "0827dc62931fc1b646332ee47abba020221058cd97d6c4d97082742e3e633cea"
 reviewed = "2026-11-12"
+
+[[builds]]
+# pump (pack). No verify record. Every instruction the IDL lists is in this binary by its Anchor log name, the binary logs none beyond them, and all 110 error names of the IDL are in it. Successful mainnet transactions decode exactly with the IDL, with every account named, for the legacy, v2 and v3 buys and sells, multiHopCurveSwap, createV2, sweepCreatorFee, the creator fee collections and distributions, distributeFeeToHolders, claimCashbackV2, the volume accumulators, extendAccount, migrate, migrateV2 and migrateBondingCurveCreator.
+programId = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+network = "mainnet"
+programHash = "756c04ab1ac76122dcdcf2eeb0073bb139087b23d58d3f0d6c895510ab59d582"
+authority = "7gZufwwAo17y5kg8FMyJy2phgpvv9RSdzWtdXiWHjFr8"
+idlSha256 = "9ee71d80caf2e2a3b5f9ae7f9cf1cc5bc342a3636dfda0a93c48860a5cf8e8d2"
+reviewed = "2026-11-12"
+
+[[builds]]
+# pump (pack). Another build than mainnet's, with another upgrade authority, and no verify record. It logs exactly the instruction names the IDL lists and holds all 110 of its error names. Successful devnet transactions decode exactly with the IDL, with every account named, for create, createV2, the legacy, v2 and v3 buys and sells, sweepCreatorFee, collectCreatorFee, both creator fee distributions, claimCashback, closeUserVolumeAccumulator, extendAccount, migrateV2 and migrateBondingCurveCreator.
+programId = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+network = "devnet"
+programHash = "e202096978d8f20935153a4271938fd9f0a421d64c1749986b4c5c20ca2a52be"
+authority = "GUYCUEpxSkm1ccDo3LSKMR4Xpe5bgMnEZaFygWUSEVH3"
+idlSha256 = "9ee71d80caf2e2a3b5f9ae7f9cf1cc5bc342a3636dfda0a93c48860a5cf8e8d2"
+reviewed = "2026-11-12"
