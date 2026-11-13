@@ -180,6 +180,19 @@ fn SendModal(open: SendOpen) -> Element {
         None => "Send".to_string(),
     };
     let sol_balance = owner.and_then(|owner| (session.book)().get(&owner).and_then(|e| e.lamports));
+    // A durable nonce made on another network is not used here.
+    let network = session.cluster().network_key();
+    let nonce_elsewhere = sender
+        .as_ref()
+        .and_then(|wallet| wallet.durable_nonce.and(wallet.nonce_network.clone()))
+        .filter(|made_on| *made_on != network)
+        .map(|made_on| {
+            format!(
+                "Its durable nonce is on {}, not on {}, so this goes out on a recent blockhash: the other device has about a minute to sign it. Its Settings can create a nonce account here.",
+                wallet_core::Cluster::network_words(&made_on),
+                wallet_core::Cluster::network_words(&network)
+            )
+        });
     let asset_value = |asset: SendAsset| match asset {
         SendAsset::Sol => "sol".to_string(),
         SendAsset::Token(mint) => mint.to_string(),
@@ -275,6 +288,9 @@ fn SendModal(open: SendOpen) -> Element {
                         p { class: "hint",
                             "Holds {shown_amount(holding.total, holding.decimals)} {holding.symbol} across several accounts. One transfer moves at most {shown_amount(holding.largest, holding.decimals)}."
                         }
+                    }
+                    if let Some(said) = nonce_elsewhere {
+                        p { class: "hint", "{said}" }
                     }
                     if let Some(err) = error() {
                         p { class: "error", role: "alert", "{err}" }

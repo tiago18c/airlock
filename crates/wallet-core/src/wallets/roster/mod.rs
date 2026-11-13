@@ -32,6 +32,8 @@ pub struct WalletSummary {
     pub derivation_path: Option<String>,
     /// An offline wallet's durable nonce account.
     pub durable_nonce: Option<Pubkey>,
+    /// The network `durable_nonce` was made on, when the record says.
+    pub nonce_network: Option<String>,
     /// Which path an offline wallet takes when it is chosen.
     pub default_path: Option<OfflinePath>,
     /// A hardware wallet's vendor. Its path is in `derivation_path`.
@@ -149,6 +151,7 @@ impl VaultData {
                     _ => None,
                 },
                 durable_nonce: wallet.kind.durable_nonce(),
+                nonce_network: wallet.kind.nonce_network().map(str::to_string),
                 default_path: wallet.kind.default_path(),
                 on_device: wallet.kind.hardware_vendor(),
                 device: wallet.kind.hardware_device().map(str::to_string),

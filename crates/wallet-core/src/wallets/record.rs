@@ -33,6 +33,12 @@ pub enum WalletKind {
         /// programmatic signer or Vector is on mainnet.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         durable_nonce: Option<Pubkey>,
+        /// The network `durable_nonce` was made on, as
+        /// [`Cluster::network_key`](crate::Cluster::network_key) names it. It
+        /// is used there only. Missing in records from before, whose nonce
+        /// is used wherever the chain has it.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        nonce_network: Option<String>,
         /// Which path acts when this key is chosen. `None` is the key
         /// itself, on whatever lifetime it has.
         #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -78,6 +84,9 @@ pub enum WalletKind {
         /// devices one after another.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         durable_nonce: Option<Pubkey>,
+        /// As for an offline wallet: the network its nonce was made on.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        nonce_network: Option<String>,
         /// As for an offline wallet: which path acts when this key is chosen.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         default_path: Option<OfflinePath>,
@@ -293,6 +302,7 @@ impl WalletRecord {
                 pubkey,
                 fee_payer: None,
                 durable_nonce: None,
+                nonce_network: None,
                 default_path: None,
             },
         }
@@ -318,6 +328,7 @@ impl WalletRecord {
                 seen: DeviceSeen::default(),
                 fee_payer: None,
                 durable_nonce: None,
+                nonce_network: None,
                 default_path: None,
             },
         }

@@ -584,6 +584,7 @@ impl Session {
         if outside.next().is_some() {
             return None;
         }
+        let network = self.network_key();
         self.core().with_wallets(|data| {
             let nonce = data?
                 .wallets
@@ -599,20 +600,26 @@ impl Session {
                     ) && wallet.address() == Some(key)
                 })?
                 .kind
-                .durable_nonce()?;
+                .durable_nonce_on(&network)?;
             Some((key, nonce))
         })
     }
 
     /// Whether `account` is the durable nonce of an offline wallet here.
     fn is_offline_nonce(&self, account: Pubkey) -> bool {
+        let network = self.network_key();
         self.core().with_wallets(|data| {
             data.is_some_and(|data| {
                 data.wallets
                     .iter()
-                    .any(|wallet| wallet.kind.durable_nonce() == Some(account))
+                    .any(|wallet| wallet.kind.durable_nonce_on(&network) == Some(account))
             })
         })
+    }
+
+    /// The network in use, as a wallet's durable nonce records it.
+    pub fn network_key(&self) -> String {
+        self.network.peek().cluster.network_key()
     }
 
     /// How `id` signs and who pays for it.
@@ -620,7 +627,17 @@ impl Session {
         self.track_wallets();
         self.core().with_wallets(|data| {
             let data = data.ok_or(RouteError::UnknownWallet)?;
-            wallet_core::signing_route(&data.wallets, id)
+            let mut route = wallet_core::signing_route(&data.wallets, id)?;
+            // A durable nonce made on another network is not there.
+            if route.durable_nonce.is_some() {
+                let network = self.network_key();
+                route.durable_nonce = data
+                    .wallets
+                    .iter()
+                    .find(|wallet| wallet.id == id)
+                    .and_then(|wallet| wallet.kind.durable_nonce_on(&network));
+            }
+            Ok(route)
         })
     }
 
