@@ -1723,3 +1723,24 @@ listed accounts. Instructions with optional accounts take the program's address 
 absent one. The Token program's mint account is added, so deposit, withdrawal and \
 tranche amounts read the decimals of the asset and share mints the instructions name. \
 Display nodes added by hand."""
+
+# Velocity, the perpetuals and spot exchange formerly called Drift: a fork of
+# Drift protocol v2 deployed in July 2026 at a new address (the address Drift
+# ran at, dRiftyHA…, no longer runs the exchange). The IDL is the one its
+# upgrade authority wrote to the program-metadata account; 14 PDA seeds in it
+# name an argument by the wrong name and are corrected before conversion.
+[[idls]]
+file = "velocity.json"
+programId = "vELoC1audYbSYVRXn1vPaV8Axoa9oU6BYmNGZZBDZ1P"
+name = "velocity"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "1a746c36f818be772c8adfccc2393e197ab879c23093dcfab929c564608a62b2" }
+changes = """Fourteen PDA seeds name an instruction argument by the name the Rust accounts struct \
+gives it in #[instruction(...)] rather than the handler's name for the same first \
+argument (spotMarketIndex for quoteSpotMarketIndex or marketIndex, marketIndex for \
+spotMarketIndex, subAccountId for _subAccountId); prep.py renames those seed paths so \
+the converter accepts the file. Converted from Anchor to Codama. Instructions whose \
+handlers read accounts after their named ones (oracles, spot markets and perp markets, \
+then for some the token mint and transfer-hook accounts, maker subaccounts, the referrer \
+or revenue-share escrows) declare them as one labelled remaining-accounts group. Display \
+nodes added by hand."""
