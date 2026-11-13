@@ -481,3 +481,12 @@ programHash = "40821b0aa4923e6073a404e0747fa7e62ba64f702172150818a6cec39aaaa56c"
 authority = "9uo2iJKJkmiYwy5MrkrbGQXbPqwHXqvQaUqxhCkowgsh"
 idlSha256 = "e1c69af0c0a5befd60e7c912d768d4d7546768b0c77a72755006dc6d22ba86a0"
 reviewed = "2026-11-12"
+
+[[builds]]
+# perpetuals (pack). Deployed at slot 465131236; closed source, OtterSec lists no verify record. 58 of the IDL's 59 instructions are in this binary by their Anchor log name; setMaxGlobalSizes is not and is removed, and the binary logs one the IDL lacks, DepositExternalReward. Mainnet transactions of 23 instructions (instant trades, requests, limit and take-profit or stop-loss orders, swaps, buying JLP, borrowing against JLP, keeper execution and liquidation) decode with every account named and with the data length the IDL describes.
+programId = "PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu"
+network = "mainnet"
+programHash = "0cc349e31e35912b861c98dfa79cb006740b71ad77d7e1c3ec2dd4d709796466"
+authority = "5myNNmEmPm3UAnJ2ggLEpnTFb9t9Gk8369wKw6n3uAKx"
+idlSha256 = "4d58263940409c40636cce9969b2cbff52d34d9f4317f1c5ecf88f7adb5c88ee"
+reviewed = "2026-11-12"
