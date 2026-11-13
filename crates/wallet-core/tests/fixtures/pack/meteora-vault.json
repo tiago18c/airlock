@@ -1,0 +1,633 @@
+{
+  "accounts": {
+    "4KBr9Az1XPd5otygNCue6XR91bUZtT3uMn1eH95rwUoQ": {
+      "data": "AQAAAGsarSSMKD79SngWzWFqlJHMVIVqqLbVStD8JI+RtB89K1AZPAEAAAAJAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "7J8bqBvJCjNp696bo3iuSoo2Vo8TuKkBxnvrD5ybeBjV": {
+      "data": "AQAAAONu7B4WauL0l0Cg8x8zp+lRuDI+sQyFy2B/Vq8xLsaTVMecMiIAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "8PsME14xNAeZA5SVQtgZsw6pt6ZEN93dFKW7RrcWpLGe": {
+      "data": "AQAAAPgNTPCoF6B8anH3jU0Pty+Atjp1WDpJhU5RlduFX74/0e6wLYEAAAAJAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "FZN7QZ8ZUUAxMPfxYEYkH3cXUASzH8EqA6B4tyCL8f1j": {
+      "data": "AQAAANN0IXa4nF4UyWt0iZhCHzgQHgnlxZMxsWi2Jc0nFbsmo+/1MMDFAAAJAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    }
+  },
+  "instructions": [
+    {
+      "accounts": [
+        "FERjPVNEa7Udq8CEv68h6tPL46Tq7ieE49HrE2wea3XT:w",
+        "HZeLxbZ9uHtSpwZC3LBr4Nubd14iHwz7bRSghRZf5VCG:w",
+        "FZN7QZ8ZUUAxMPfxYEYkH3cXUASzH8EqA6B4tyCL8f1j:w",
+        "EW9diL91VgHY5i9qYScz53W3PihQPSnPoMtAKCo1Bs7J:w",
+        "Aov1xbGqhrftnTHaEdhZFi7b6tGdw6Z1Lmu2Fcr91t3R:w",
+        "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "f223c68952e1f2b6a0512800000000000000000000000000",
+      "fields": [
+        [
+          "Amount",
+          "2,642,336 base units"
+        ],
+        [
+          "Minimum LP Tokens",
+          "0"
+        ],
+        [
+          "Vault",
+          "FERjPVNEa7Udq8CEv68h6tPL46Tq7ieE49HrE2wea3XT"
+        ],
+        [
+          "Vault Token Account",
+          "HZeLxbZ9uHtSpwZC3LBr4Nubd14iHwz7bRSghRZf5VCG"
+        ],
+        [
+          "Vault LP Mint",
+          "FZN7QZ8ZUUAxMPfxYEYkH3cXUASzH8EqA6B4tyCL8f1j"
+        ],
+        [
+          "From",
+          "EW9diL91VgHY5i9qYScz53W3PihQPSnPoMtAKCo1Bs7J"
+        ],
+        [
+          "LP Tokens To",
+          "Aov1xbGqhrftnTHaEdhZFi7b6tGdw6Z1Lmu2Fcr91t3R"
+        ],
+        [
+          "Owner",
+          "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM"
+        ]
+      ],
+      "from": "4ZihqRn9g84b1MSeFkr7cHt1a88BxWHNmrHVe6cs5TB3oA78vm9F2RuNi3CSaB9JZCU475iSsX5PgQVBC6cgXY9N#3.13",
+      "intent": "Deposit into a vault",
+      "programId": "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi",
+      "sentence": "D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM deposits 2,642,336 base units from EW9diL91VgHY5i9qYScz53W3PihQPSnPoMtAKCo1Bs7J into vault FERjPVNEa7Udq8CEv68h6tPL46Tq7ieE49HrE2wea3XT for at least 0 of LP token FZN7QZ8ZUUAxMPfxYEYkH3cXUASzH8EqA6B4tyCL8f1j, to Aov1xbGqhrftnTHaEdhZFi7b6tGdw6Z1Lmu2Fcr91t3R",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HhHsaoKJm4b2VpyULoSJRQCV1J7SNW7sXWXW6JiGtdgJ:w",
+        "CGtyBSioc3ZNdzVHq5tSLFuVTtAwadHvLgpsPir5evZm:w",
+        "8PsME14xNAeZA5SVQtgZsw6pt6ZEN93dFKW7RrcWpLGe:w",
+        "CP3YwaJorth9iPp7s9PWur51bPxj4ufMuLdtLZVVaApP:w",
+        "52NuvzJqC2gqkZP3pYizmAt9pRgwrrhD4sc5dv6SZzMg:w",
+        "FUBVxWEmxHbm3H9TbLgEQQ6d8bvsdw4sgkNJysFeSLRG:sw",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "f223c68952e1f2b648d62205000000000000000000000000",
+      "fields": [
+        [
+          "Amount",
+          "86,169,160 base units"
+        ],
+        [
+          "Minimum LP Tokens",
+          "0"
+        ],
+        [
+          "Vault",
+          "HhHsaoKJm4b2VpyULoSJRQCV1J7SNW7sXWXW6JiGtdgJ"
+        ],
+        [
+          "Vault Token Account",
+          "CGtyBSioc3ZNdzVHq5tSLFuVTtAwadHvLgpsPir5evZm"
+        ],
+        [
+          "Vault LP Mint",
+          "8PsME14xNAeZA5SVQtgZsw6pt6ZEN93dFKW7RrcWpLGe"
+        ],
+        [
+          "From",
+          "CP3YwaJorth9iPp7s9PWur51bPxj4ufMuLdtLZVVaApP"
+        ],
+        [
+          "LP Tokens To",
+          "52NuvzJqC2gqkZP3pYizmAt9pRgwrrhD4sc5dv6SZzMg"
+        ],
+        [
+          "Owner",
+          "FUBVxWEmxHbm3H9TbLgEQQ6d8bvsdw4sgkNJysFeSLRG"
+        ]
+      ],
+      "from": "2wb7mV3qH3MZeND4HH6xWwVDckhh41bNfuqGesxv8VxV24CJvS7XVg9itN1pRP315d4NLzS5E8rKvwpRmBdFvPbK#1.10",
+      "intent": "Deposit into a vault",
+      "programId": "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi",
+      "sentence": "FUBVxWEmxHbm3H9TbLgEQQ6d8bvsdw4sgkNJysFeSLRG deposits 86,169,160 base units from CP3YwaJorth9iPp7s9PWur51bPxj4ufMuLdtLZVVaApP into vault HhHsaoKJm4b2VpyULoSJRQCV1J7SNW7sXWXW6JiGtdgJ for at least 0 of LP token 8PsME14xNAeZA5SVQtgZsw6pt6ZEN93dFKW7RrcWpLGe, to 52NuvzJqC2gqkZP3pYizmAt9pRgwrrhD4sc5dv6SZzMg",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "8D6DYoSxPm2tFPPx7HSYj2ZqF2eSRtzznx9kSQhNXhdv:w",
+        "BySHeovBE8JxETrHPo9RjhJYVPvD1LKsbjwmnpnJ5PQC:w",
+        "4KBr9Az1XPd5otygNCue6XR91bUZtT3uMn1eH95rwUoQ:w",
+        "6dtu7FPpZ3BmWGDaDickJMyAkuhQTAHTgGswvhvx7hu1:w",
+        "CvDWQg4KFwNAKQDbRfEvYRnaWFyveL8iRh3H7u4jE6Cs:w",
+        "Aov1xbGqhrftnTHaEdhZFi7b6tGdw6Z1Lmu2Fcr91t3R:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "b712469c946da122ac672300000000000000000000000000",
+      "fields": [
+        [
+          "LP Tokens Burned",
+          "0.0023203"
+        ],
+        [
+          "Minimum Out",
+          "0 base units"
+        ],
+        [
+          "Vault",
+          "8D6DYoSxPm2tFPPx7HSYj2ZqF2eSRtzznx9kSQhNXhdv"
+        ],
+        [
+          "Vault Token Account",
+          "BySHeovBE8JxETrHPo9RjhJYVPvD1LKsbjwmnpnJ5PQC"
+        ],
+        [
+          "Vault LP Mint",
+          "4KBr9Az1XPd5otygNCue6XR91bUZtT3uMn1eH95rwUoQ"
+        ],
+        [
+          "To",
+          "6dtu7FPpZ3BmWGDaDickJMyAkuhQTAHTgGswvhvx7hu1"
+        ],
+        [
+          "LP Tokens From",
+          "CvDWQg4KFwNAKQDbRfEvYRnaWFyveL8iRh3H7u4jE6Cs"
+        ],
+        [
+          "Owner",
+          "Aov1xbGqhrftnTHaEdhZFi7b6tGdw6Z1Lmu2Fcr91t3R"
+        ]
+      ],
+      "from": "4ZihqRn9g84b1MSeFkr7cHt1a88BxWHNmrHVe6cs5TB3oA78vm9F2RuNi3CSaB9JZCU475iSsX5PgQVBC6cgXY9N#3.16",
+      "intent": "Withdraw from a vault",
+      "programId": "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi",
+      "sentence": "Aov1xbGqhrftnTHaEdhZFi7b6tGdw6Z1Lmu2Fcr91t3R burns 0.0023203 of LP token 4KBr9Az1XPd5otygNCue6XR91bUZtT3uMn1eH95rwUoQ from CvDWQg4KFwNAKQDbRfEvYRnaWFyveL8iRh3H7u4jE6Cs to withdraw at least 0 base units from vault 8D6DYoSxPm2tFPPx7HSYj2ZqF2eSRtzznx9kSQhNXhdv into 6dtu7FPpZ3BmWGDaDickJMyAkuhQTAHTgGswvhvx7hu1",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GJoeZkV6e2yCRxsrCFWQ2xn1oJ4zVmd4dbdMLniKfZjY:w",
+        "8e2mBVKnUF1fNm6ZyyAD4NpW5mcc29xGU4XCNoS9sZYj:w",
+        "7J8bqBvJCjNp696bo3iuSoo2Vo8TuKkBxnvrD5ybeBjV:w",
+        "3rgQ9byCx6UqKQkPyMqJDb6qiZyrGw3Xr3eFv1vgfQtZ:w",
+        "BmeTUm9vccYDXJKuvGRrLbDYveUVEQEifLERNiMNuS9y:w",
+        "BmeTUm9vccYDXJKuvGRrLbDYveUVEQEifLERNiMNuS9y:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "b712469c946da122ff920e00000000000000000000000000",
+      "fields": [
+        [
+          "LP Tokens Burned",
+          "0.955135"
+        ],
+        [
+          "Minimum Out",
+          "0 base units"
+        ],
+        [
+          "Vault",
+          "GJoeZkV6e2yCRxsrCFWQ2xn1oJ4zVmd4dbdMLniKfZjY"
+        ],
+        [
+          "Vault Token Account",
+          "8e2mBVKnUF1fNm6ZyyAD4NpW5mcc29xGU4XCNoS9sZYj"
+        ],
+        [
+          "Vault LP Mint",
+          "7J8bqBvJCjNp696bo3iuSoo2Vo8TuKkBxnvrD5ybeBjV"
+        ],
+        [
+          "To",
+          "3rgQ9byCx6UqKQkPyMqJDb6qiZyrGw3Xr3eFv1vgfQtZ"
+        ],
+        [
+          "LP Tokens From",
+          "BmeTUm9vccYDXJKuvGRrLbDYveUVEQEifLERNiMNuS9y"
+        ],
+        [
+          "Owner",
+          "BmeTUm9vccYDXJKuvGRrLbDYveUVEQEifLERNiMNuS9y"
+        ]
+      ],
+      "from": "2wb7mV3qH3MZeND4HH6xWwVDckhh41bNfuqGesxv8VxV24CJvS7XVg9itN1pRP315d4NLzS5E8rKvwpRmBdFvPbK#1.13",
+      "intent": "Withdraw from a vault",
+      "programId": "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi",
+      "sentence": "BmeTUm9vccYDXJKuvGRrLbDYveUVEQEifLERNiMNuS9y burns 0.955135 of LP token 7J8bqBvJCjNp696bo3iuSoo2Vo8TuKkBxnvrD5ybeBjV from BmeTUm9vccYDXJKuvGRrLbDYveUVEQEifLERNiMNuS9y to withdraw at least 0 base units from vault GJoeZkV6e2yCRxsrCFWQ2xn1oJ4zVmd4dbdMLniKfZjY into 3rgQ9byCx6UqKQkPyMqJDb6qiZyrGw3Xr3eFv1vgfQtZ",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "FERjPVNEa7Udq8CEv68h6tPL46Tq7ieE49HrE2wea3XT:w",
+        "uVKHtBi36zXbcKKpSDKMVP3Vqbah8pshYqCqyoaV8ui:w",
+        "HZeLxbZ9uHtSpwZC3LBr4Nubd14iHwz7bRSghRZf5VCG:w",
+        "97VoVwTLDxfJMntfEVS74rs6fDVptCbCx23aRurcCRMd:w",
+        "FZN7QZ8ZUUAxMPfxYEYkH3cXUASzH8EqA6B4tyCL8f1j:w",
+        "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9",
+        "G6XuV8CLGvCR9RFgx6ba4N9Pvv3YYkozBsBQq4zoMUrd:w",
+        "BeAqbxfrcXmzEYT2Ra62oW2MqkuFDHaCtps47Mzg6Zj3:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "2nGpQ5VarkUBPidNgcvMc7JH5ctkRFX4bbtByFjntJQd:sw",
+        "So11111111111111111111111111111111111111112",
+        "5nmGjA4s7ATzpBQXC5RNceRpaJ7pYw2wKsNBWyuSAZV6",
+        "2uQsyo1fXXQkDtcpXnLofWy88PxcvnfH2L8FPSE62FVU:w",
+        "4Y66HtUEqbbbpZdENGtFdVhUMS3tnagffn3M4do59Nfy:w",
+        "4SkEYxmiRgQ4VYyvh9VB4k39M49BpqazyzDUFDzJhXQm:w",
+        "Acvyi9HBGmqh3Exe1N4PjBVyY8fokq2AdC6fSLqV6KSo:w",
+        "5JP5zgYCb9W37QQLgAHRHuinFLrKt87akDY1CgZoTPzr:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC:w",
+        "CkeQGDRsgMZcCaU8cZEdC2aFAohia4jLzL36RaLcUDsR",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "DSEN7yiMZfKGLPhhPsa64xvwbE1YuHeWtciQm71whe2G:w",
+        "8TiyPYFqYEUEYwfTtyVdNuqqnzqmZYYUhqkPj6ve1dCx:w",
+        "6AQGR8zK4KTVZfZ9UZaRzyEL5ynvwVaF5ywVdmtJT24N:w"
+      ],
+      "data": "1f2da205c1d986bcf7a831a16f040000",
+      "fields": [
+        [
+          "Amount",
+          "4,877,492,267,255 base units"
+        ],
+        [
+          "Vault",
+          "FERjPVNEa7Udq8CEv68h6tPL46Tq7ieE49HrE2wea3XT"
+        ],
+        [
+          "Strategy",
+          "uVKHtBi36zXbcKKpSDKMVP3Vqbah8pshYqCqyoaV8ui"
+        ],
+        [
+          "Vault Token Account",
+          "HZeLxbZ9uHtSpwZC3LBr4Nubd14iHwz7bRSghRZf5VCG"
+        ],
+        [
+          "Performance Fee Account",
+          "97VoVwTLDxfJMntfEVS74rs6fDVptCbCx23aRurcCRMd"
+        ],
+        [
+          "Vault LP Mint",
+          "FZN7QZ8ZUUAxMPfxYEYkH3cXUASzH8EqA6B4tyCL8f1j"
+        ],
+        [
+          "Lending Program",
+          "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9"
+        ],
+        [
+          "Strategy Collateral Account",
+          "G6XuV8CLGvCR9RFgx6ba4N9Pvv3YYkozBsBQq4zoMUrd"
+        ],
+        [
+          "Lending Reserve",
+          "BeAqbxfrcXmzEYT2Ra62oW2MqkuFDHaCtps47Mzg6Zj3"
+        ],
+        [
+          "Operator",
+          "2nGpQ5VarkUBPidNgcvMc7JH5ctkRFX4bbtByFjntJQd"
+        ],
+        [
+          "Lending Protocol Account #1",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Lending Protocol Account #2",
+          "5nmGjA4s7ATzpBQXC5RNceRpaJ7pYw2wKsNBWyuSAZV6"
+        ],
+        [
+          "Lending Protocol Account #3",
+          "2uQsyo1fXXQkDtcpXnLofWy88PxcvnfH2L8FPSE62FVU"
+        ],
+        [
+          "Lending Protocol Account #4",
+          "4Y66HtUEqbbbpZdENGtFdVhUMS3tnagffn3M4do59Nfy"
+        ],
+        [
+          "Lending Protocol Account #5",
+          "4SkEYxmiRgQ4VYyvh9VB4k39M49BpqazyzDUFDzJhXQm"
+        ],
+        [
+          "Lending Protocol Account #6",
+          "Acvyi9HBGmqh3Exe1N4PjBVyY8fokq2AdC6fSLqV6KSo"
+        ],
+        [
+          "Lending Protocol Account #7",
+          "5JP5zgYCb9W37QQLgAHRHuinFLrKt87akDY1CgZoTPzr"
+        ],
+        [
+          "Lending Protocol Account #8",
+          "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z"
+        ],
+        [
+          "Lending Protocol Account #9",
+          "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC"
+        ],
+        [
+          "Lending Protocol Account #10",
+          "CkeQGDRsgMZcCaU8cZEdC2aFAohia4jLzL36RaLcUDsR"
+        ],
+        [
+          "Lending Protocol Account #11",
+          "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        ],
+        [
+          "Lending Protocol Account #12",
+          "11111111111111111111111111111111"
+        ],
+        [
+          "Lending Protocol Account #13",
+          "DSEN7yiMZfKGLPhhPsa64xvwbE1YuHeWtciQm71whe2G"
+        ],
+        [
+          "Lending Protocol Account #14",
+          "8TiyPYFqYEUEYwfTtyVdNuqqnzqmZYYUhqkPj6ve1dCx"
+        ],
+        [
+          "Lending Protocol Account #15",
+          "6AQGR8zK4KTVZfZ9UZaRzyEL5ynvwVaF5ywVdmtJT24N"
+        ]
+      ],
+      "from": "3ZpKqzeFN6VAWMU2whPgN8DjvaKFC7xSu3iP3SpnvESo1agwJo7Sg45U94KgWsAcZRi3xkTdJFy3yvywFPUPeXhu#1",
+      "intent": "Withdraw from a strategy",
+      "programId": "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi",
+      "sentence": "2nGpQ5VarkUBPidNgcvMc7JH5ctkRFX4bbtByFjntJQd moves 4,877,492,267,255 base units out of strategy uVKHtBi36zXbcKKpSDKMVP3Vqbah8pshYqCqyoaV8ui back into vault FERjPVNEa7Udq8CEv68h6tPL46Tq7ieE49HrE2wea3XT",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "3ESUFCnRNgZ7Mn2mPPUMmXYaKU8jpnV9VtA17M7t2mHQ:w",
+        "3MTLAqftgkfxEhPCVBKfT5PwLsEprYpQv7JX6MkpPQ1g:w",
+        "C2QoQ111jGHEy5918XkNXQro7gGwC9PKLXd1LqBiYNwA:w",
+        "34exyZxTmwFMcZGzt467HBKEwwsy2yfAsZ8njJPTupdb:w",
+        "3RpEekjLE5cdcG15YcXJUpxSepemvq2FpmMcgo342BwC:w",
+        "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9",
+        "2AbB4NWAoykS7TuSkfdLrnZoesnzfrYpbUcNw6MGiqEp:w",
+        "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "2nGpQ5VarkUBPidNgcvMc7JH5ctkRFX4bbtByFjntJQd:sw",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "5nmGjA4s7ATzpBQXC5RNceRpaJ7pYw2wKsNBWyuSAZV6",
+        "9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D:w",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF:w",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688:w",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC:w",
+        "5xSPBiD3TibamAnwHDhZABdB4z4F9dcj5PnbteroBTTd",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "3ZttEERtCkrRX6qakGihqxfs3Pt4VphtvYT7UWMSE8Rp:w",
+        "AcanThHjvvR6HQKk8tKzyR2af5psGqxKtFsH6dbybiXw:w",
+        "HN1r4VfkDn53xQQfeGDYrNuDKFdemAhZsHYRwBrFhsW:w"
+      ],
+      "data": "1f2da205c1d986bc1f38610000000000",
+      "fields": [
+        [
+          "Amount",
+          "6,371,359 base units"
+        ],
+        [
+          "Vault",
+          "3ESUFCnRNgZ7Mn2mPPUMmXYaKU8jpnV9VtA17M7t2mHQ"
+        ],
+        [
+          "Strategy",
+          "3MTLAqftgkfxEhPCVBKfT5PwLsEprYpQv7JX6MkpPQ1g"
+        ],
+        [
+          "Vault Token Account",
+          "C2QoQ111jGHEy5918XkNXQro7gGwC9PKLXd1LqBiYNwA"
+        ],
+        [
+          "Performance Fee Account",
+          "34exyZxTmwFMcZGzt467HBKEwwsy2yfAsZ8njJPTupdb"
+        ],
+        [
+          "Vault LP Mint",
+          "3RpEekjLE5cdcG15YcXJUpxSepemvq2FpmMcgo342BwC"
+        ],
+        [
+          "Lending Program",
+          "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9"
+        ],
+        [
+          "Strategy Collateral Account",
+          "2AbB4NWAoykS7TuSkfdLrnZoesnzfrYpbUcNw6MGiqEp"
+        ],
+        [
+          "Lending Reserve",
+          "2vVYHYM8VYnvZqQWpTJSj8o8DBf1wM8pVs3bsTgYZiqJ"
+        ],
+        [
+          "Operator",
+          "2nGpQ5VarkUBPidNgcvMc7JH5ctkRFX4bbtByFjntJQd"
+        ],
+        [
+          "Lending Protocol Account #1",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Lending Protocol Account #2",
+          "5nmGjA4s7ATzpBQXC5RNceRpaJ7pYw2wKsNBWyuSAZV6"
+        ],
+        [
+          "Lending Protocol Account #3",
+          "9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D"
+        ],
+        [
+          "Lending Protocol Account #4",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ],
+        [
+          "Lending Protocol Account #5",
+          "Hf9gtkM4dpVBahVSzEXSVCAPpKzBsBcns3s8As3z77oF"
+        ],
+        [
+          "Lending Protocol Account #6",
+          "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688"
+        ],
+        [
+          "Lending Protocol Account #7",
+          "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB"
+        ],
+        [
+          "Lending Protocol Account #8",
+          "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z"
+        ],
+        [
+          "Lending Protocol Account #9",
+          "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC"
+        ],
+        [
+          "Lending Protocol Account #10",
+          "5xSPBiD3TibamAnwHDhZABdB4z4F9dcj5PnbteroBTTd"
+        ],
+        [
+          "Lending Protocol Account #11",
+          "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        ],
+        [
+          "Lending Protocol Account #12",
+          "11111111111111111111111111111111"
+        ],
+        [
+          "Lending Protocol Account #13",
+          "3ZttEERtCkrRX6qakGihqxfs3Pt4VphtvYT7UWMSE8Rp"
+        ],
+        [
+          "Lending Protocol Account #14",
+          "AcanThHjvvR6HQKk8tKzyR2af5psGqxKtFsH6dbybiXw"
+        ],
+        [
+          "Lending Protocol Account #15",
+          "HN1r4VfkDn53xQQfeGDYrNuDKFdemAhZsHYRwBrFhsW"
+        ]
+      ],
+      "from": "4gHWXB2vjzbB8XDVYEcQ8Y2AxkVAEGkMmxxSh3WnLDDHrv3Fdk5EMC6nRtPqtLhP2fieJ77GNhUT9wV1hX53C6sn#1",
+      "intent": "Withdraw from a strategy",
+      "programId": "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi",
+      "sentence": "2nGpQ5VarkUBPidNgcvMc7JH5ctkRFX4bbtByFjntJQd moves 6,371,359 base units out of strategy 3MTLAqftgkfxEhPCVBKfT5PwLsEprYpQv7JX6MkpPQ1g back into vault 3ESUFCnRNgZ7Mn2mPPUMmXYaKU8jpnV9VtA17M7t2mHQ",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "FERjPVNEa7Udq8CEv68h6tPL46Tq7ieE49HrE2wea3XT:w",
+        "uVKHtBi36zXbcKKpSDKMVP3Vqbah8pshYqCqyoaV8ui:w",
+        "HZeLxbZ9uHtSpwZC3LBr4Nubd14iHwz7bRSghRZf5VCG:w",
+        "97VoVwTLDxfJMntfEVS74rs6fDVptCbCx23aRurcCRMd:w",
+        "FZN7QZ8ZUUAxMPfxYEYkH3cXUASzH8EqA6B4tyCL8f1j:w",
+        "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9",
+        "G6XuV8CLGvCR9RFgx6ba4N9Pvv3YYkozBsBQq4zoMUrd:w",
+        "BeAqbxfrcXmzEYT2Ra62oW2MqkuFDHaCtps47Mzg6Zj3:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "2nGpQ5VarkUBPidNgcvMc7JH5ctkRFX4bbtByFjntJQd:sw",
+        "So11111111111111111111111111111111111111112",
+        "5nmGjA4s7ATzpBQXC5RNceRpaJ7pYw2wKsNBWyuSAZV6",
+        "2uQsyo1fXXQkDtcpXnLofWy88PxcvnfH2L8FPSE62FVU:w",
+        "4Y66HtUEqbbbpZdENGtFdVhUMS3tnagffn3M4do59Nfy:w",
+        "4SkEYxmiRgQ4VYyvh9VB4k39M49BpqazyzDUFDzJhXQm:w",
+        "Acvyi9HBGmqh3Exe1N4PjBVyY8fokq2AdC6fSLqV6KSo:w",
+        "5JP5zgYCb9W37QQLgAHRHuinFLrKt87akDY1CgZoTPzr:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z:w",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC:w",
+        "CkeQGDRsgMZcCaU8cZEdC2aFAohia4jLzL36RaLcUDsR",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "8TiyPYFqYEUEYwfTtyVdNuqqnzqmZYYUhqkPj6ve1dCx:w",
+        "DSEN7yiMZfKGLPhhPsa64xvwbE1YuHeWtciQm71whe2G:w"
+      ],
+      "data": "f65239e283defdf90000000000000000",
+      "fields": [
+        [
+          "Amount",
+          "0 base units"
+        ],
+        [
+          "Vault",
+          "FERjPVNEa7Udq8CEv68h6tPL46Tq7ieE49HrE2wea3XT"
+        ],
+        [
+          "Strategy",
+          "uVKHtBi36zXbcKKpSDKMVP3Vqbah8pshYqCqyoaV8ui"
+        ],
+        [
+          "Vault Token Account",
+          "HZeLxbZ9uHtSpwZC3LBr4Nubd14iHwz7bRSghRZf5VCG"
+        ],
+        [
+          "Performance Fee Account",
+          "97VoVwTLDxfJMntfEVS74rs6fDVptCbCx23aRurcCRMd"
+        ],
+        [
+          "Vault LP Mint",
+          "FZN7QZ8ZUUAxMPfxYEYkH3cXUASzH8EqA6B4tyCL8f1j"
+        ],
+        [
+          "Lending Program",
+          "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9"
+        ],
+        [
+          "Strategy Collateral Account",
+          "G6XuV8CLGvCR9RFgx6ba4N9Pvv3YYkozBsBQq4zoMUrd"
+        ],
+        [
+          "Lending Reserve",
+          "BeAqbxfrcXmzEYT2Ra62oW2MqkuFDHaCtps47Mzg6Zj3"
+        ],
+        [
+          "Operator",
+          "2nGpQ5VarkUBPidNgcvMc7JH5ctkRFX4bbtByFjntJQd"
+        ],
+        [
+          "Lending Protocol Account #1",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Lending Protocol Account #2",
+          "5nmGjA4s7ATzpBQXC5RNceRpaJ7pYw2wKsNBWyuSAZV6"
+        ],
+        [
+          "Lending Protocol Account #3",
+          "2uQsyo1fXXQkDtcpXnLofWy88PxcvnfH2L8FPSE62FVU"
+        ],
+        [
+          "Lending Protocol Account #4",
+          "4Y66HtUEqbbbpZdENGtFdVhUMS3tnagffn3M4do59Nfy"
+        ],
+        [
+          "Lending Protocol Account #5",
+          "4SkEYxmiRgQ4VYyvh9VB4k39M49BpqazyzDUFDzJhXQm"
+        ],
+        [
+          "Lending Protocol Account #6",
+          "Acvyi9HBGmqh3Exe1N4PjBVyY8fokq2AdC6fSLqV6KSo"
+        ],
+        [
+          "Lending Protocol Account #7",
+          "5JP5zgYCb9W37QQLgAHRHuinFLrKt87akDY1CgZoTPzr"
+        ],
+        [
+          "Lending Protocol Account #8",
+          "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z"
+        ],
+        [
+          "Lending Protocol Account #9",
+          "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC"
+        ],
+        [
+          "Lending Protocol Account #10",
+          "CkeQGDRsgMZcCaU8cZEdC2aFAohia4jLzL36RaLcUDsR"
+        ],
+        [
+          "Lending Protocol Account #11",
+          "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        ],
+        [
+          "Lending Protocol Account #12",
+          "11111111111111111111111111111111"
+        ],
+        [
+          "Lending Protocol Account #13",
+          "8TiyPYFqYEUEYwfTtyVdNuqqnzqmZYYUhqkPj6ve1dCx"
+        ],
+        [
+          "Lending Protocol Account #14",
+          "DSEN7yiMZfKGLPhhPsa64xvwbE1YuHeWtciQm71whe2G"
+        ]
+      ],
+      "from": "AEVSnpPtRg6yDWKLhoXq4sdhd9BHE2dhTRraJeB5LQjT3uf6oxymp9EbMcSmFgzaBdsPZ9LiEBEctw8z51n57Ax#1",
+      "intent": "Deposit into a strategy",
+      "programId": "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi",
+      "sentence": "2nGpQ5VarkUBPidNgcvMc7JH5ctkRFX4bbtByFjntJQd moves 0 base units of the tokens of vault FERjPVNEa7Udq8CEv68h6tPL46Tq7ieE49HrE2wea3XT into strategy uVKHtBi36zXbcKKpSDKMVP3Vqbah8pshYqCqyoaV8ui",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}

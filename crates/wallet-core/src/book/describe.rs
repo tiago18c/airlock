@@ -667,6 +667,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("HysTabVUfmQBFcmzu1ctRd1Y1fxd66RBpboy1bmtDSQQ"),
         "Hylo Earn Pool Program",
     ),
+    (
+        Pubkey::from_str_const("24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi"),
+        "Meteora Dynamic Vault Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

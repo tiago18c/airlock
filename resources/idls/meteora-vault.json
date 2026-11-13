@@ -1,0 +1,3262 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "vault",
+    "publicKey": "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi",
+    "version": "0.7.2",
+    "origin": "anchor",
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "name": "vault",
+        "docs": [
+          "Vault struct"
+        ],
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "d308e82b02987577",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "enabled",
+              "docs": [
+                "The flag, if admin set enable = false, then the user can only withdraw and cannot deposit in the vault."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bumps",
+              "docs": [
+                "Vault nonce, to create vault seeds"
+              ],
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "vaultBumps"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "totalAmount",
+              "docs": [
+                "The total liquidity of the vault, including remaining tokens in token_vault and the liquidity in all strategies."
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tokenVault",
+              "docs": [
+                "Token account, hold liquidity in vault reserve"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "feeVault",
+              "docs": [
+                "Hold lp token of vault, each time rebalance crank is called, vault calculate performance fee and mint corresponding lp token amount to fee_vault. fee_vault is owned by treasury address"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tokenMint",
+              "docs": [
+                "Token mint that vault supports"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lpMint",
+              "docs": [
+                "Lp mint of vault"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "strategies",
+              "docs": [
+                "The list of strategy addresses that vault supports, vault can support up to MAX_STRATEGY strategies at the same time."
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 30
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "base",
+              "docs": [
+                "The base address to create vault seeds"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "admin",
+              "docs": [
+                "Admin of vault"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "operator",
+              "docs": [
+                "Person who can send the crank. Operator can only send liquidity to strategies that admin defined, and claim reward to account of treasury address"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lockedProfitTracker",
+              "docs": [
+                "Stores information for locked profit."
+              ],
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "lockedProfitTracker"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "strategy",
+        "docs": [
+          "Strategy struct"
+        ],
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "ae6e2777526aa966",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "reserve",
+              "docs": [
+                "Lending pool address, that the strategy will deposit/withdraw balance"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "collateralVault",
+              "docs": [
+                "The token account, that holds the collateral token"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "strategyType",
+              "docs": [
+                "Specify type of strategy"
+              ],
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "strategyType"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "currentLiquidity",
+              "docs": [
+                "The liquidity in strategy at the time vault deposit/withdraw from a lending protocol"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bumps",
+              "docs": [
+                "Hold some bumps, in case the strategy needs to use other seeds to sign a CPI call."
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 10
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vault",
+              "docs": [
+                "Vault address, that the strategy belongs"
+              ],
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isDisable",
+              "docs": [
+                "If we remove strategy by remove_strategy2 endpoint, this account will be never added again"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mintAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority used to mint new tokens. The mint authority may only",
+                "be provided during mint creation. If no mint authority is present",
+                "then the mint has a fixed supply and no further tokens may be minted."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "supply",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "docs": [
+                "Total supply of tokens."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "decimals",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "docs": [
+                "Number of base 10 digits to the right of the decimal place."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isInitialized",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "docs": [
+                "Is `true` if this structure has been initialized."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "freezeAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority to freeze token accounts."
+              ]
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "sizeDiscriminatorNode",
+            "size": 82
+          }
+        ],
+        "name": "mint",
+        "docs": [],
+        "size": 82
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "initialize",
+        "docs": [
+          "initialize new vault"
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lpMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault LP Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rent",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "afaf6d1f0d989bed",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a vault",
+          "interpolatedIntent": "${accounts.payer} creates vault ${accounts.vault} for ${accounts.tokenMint}, with LP mint ${accounts.lpMint}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "enableVault",
+        "docs": [
+          "enable vault"
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "9152f19c1a9ae9d3",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "enabled",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Enabled (0 No, 1 Yes)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Enable or disable a vault",
+          "interpolatedIntent": "${accounts.admin} sets vault ${accounts.vault} to ${data.enabled} (0 disabled, 1 enabled)"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setOperator",
+        "docs": [
+          "set new operator"
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "operator",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Operator"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "ee9965a9f3832401",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set a vault's operator",
+          "interpolatedIntent": "${accounts.admin} makes ${accounts.operator} the operator of vault ${accounts.vault}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initializeStrategy",
+        "docs": [
+          "Initialize a strategy and add strategy to vault.strategies index"
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "strategyProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Program"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "strategy",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Strategy"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collateralVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Strategy Collateral Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collateralMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Collateral Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rent",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "d0779091b23969fc",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "bumps",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "strategyBumps"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "strategyType",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "strategyType"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Strategy Type"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a lending strategy",
+          "interpolatedIntent": "${accounts.admin} creates strategy ${accounts.strategy} of vault ${accounts.vault}, of type ${data.strategyType}, lending to reserve ${accounts.reserve}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "removeStrategy",
+        "docs": [
+          "remove a strategy"
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "strategy",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Strategy"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "strategyProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Program"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collateralVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Strategy Collateral Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Performance Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lpMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault LP Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "b9ee215b86d2611a",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Remove a strategy",
+          "interpolatedIntent": "${accounts.admin} removes strategy ${accounts.strategy} from vault ${accounts.vault}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "removeStrategy2",
+        "docs": [
+          "remove a strategy by advance payment"
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "strategy",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Strategy"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "strategyProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Program"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collateralVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Strategy Collateral Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenAdminAdvancePayment",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin Payment From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVaultAdvancePayment",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Advance Payment Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Performance Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lpMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault LP Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "8a68d0947e23c30e",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "maxAdminPayAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Admin Pays at Most"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Remove a strategy",
+          "interpolatedIntent": "${accounts.admin} removes strategy ${accounts.strategy} from vault ${accounts.vault}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "addStrategy",
+        "docs": [
+          "add a strategy"
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "strategy",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Strategy"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "407b7fe3c0eac614",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Add a strategy",
+          "interpolatedIntent": "${accounts.admin} adds strategy ${accounts.strategy} to vault ${accounts.vault}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "depositStrategy",
+        "docs": [
+          "deposit liquidity to a strategy"
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "strategy",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Strategy"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Performance Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lpMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault LP Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "strategyProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Program"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collateralVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Strategy Collateral Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "operator",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Operator"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "f65239e283defdf9",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Deposit into a strategy",
+          "interpolatedIntent": "${accounts.operator} moves ${data.amount} of the tokens of vault ${accounts.vault} into strategy ${accounts.strategy}"
+        },
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "lendingAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts the strategy's lending protocol needs for the deposit or withdrawal, in the order that protocol takes them; they differ from one lending protocol to another."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Protocol Account"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawStrategy",
+        "docs": [
+          "withdraw liquidity from a strategy"
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "strategy",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Strategy"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Performance Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lpMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault LP Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "strategyProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Program"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collateralVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Strategy Collateral Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "operator",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Operator"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "1f2da205c1d986bc",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw from a strategy",
+          "interpolatedIntent": "${accounts.operator} moves ${data.amount} out of strategy ${accounts.strategy} back into vault ${accounts.vault}"
+        },
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "lendingAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts the strategy's lending protocol needs for the deposit or withdrawal, in the order that protocol takes them; they differ from one lending protocol to another."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Protocol Account"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "name": "deposit",
+        "docs": [
+          "user deposit liquidity to vault"
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lpMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault LP Mint"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userToken",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userLp",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "LP Tokens To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "user",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "f223c68952e1f2b6",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "tokenAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "minimumLpTokenAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "lpDecimals"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Minimum LP Tokens"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Deposit into a vault",
+          "interpolatedIntent": "${accounts.user} deposits ${data.tokenAmount} from ${accounts.userToken} into vault ${accounts.vault} for at least ${data.minimumLpTokenAmount} of LP token ${accounts.lpMint}, to ${accounts.userLp}"
+        },
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "lpDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "lpMint",
+              "path": "decimals"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdraw",
+        "docs": [
+          "user withdraw liquidity from vault"
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lpMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault LP Mint"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userToken",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userLp",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "LP Tokens From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "user",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "b712469c946da122",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "unmintAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "lpDecimals"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "LP Tokens Burned"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "minOutAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Minimum Out"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw from a vault",
+          "interpolatedIntent": "${accounts.user} burns ${data.unmintAmount} of LP token ${accounts.lpMint} from ${accounts.userLp} to withdraw at least ${data.minOutAmount} from vault ${accounts.vault} into ${accounts.userToken}"
+        },
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "lpDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "lpMint",
+              "path": "decimals"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawDirectlyFromStrategy",
+        "docs": [
+          "user withdraw liquidity from vault, if vault reserve doesn't have enough liquidity, it will withdraw from the strategy firstly"
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "strategy",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Strategy"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "reserve",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Reserve"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "strategyProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Program"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "collateralVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Strategy Collateral Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "lpMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Vault LP Mint"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeVault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Performance Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userToken",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "userLp",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "LP Tokens From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "user",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "c98d922ead74c616",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "unmintAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "lpDecimals"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "LP Tokens Burned"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "minOutAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "base units"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Minimum Out"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw from a vault's strategy",
+          "interpolatedIntent": "${accounts.user} burns ${data.unmintAmount} of LP token ${accounts.lpMint} from ${accounts.userLp} to withdraw at least ${data.minOutAmount} from strategy ${accounts.strategy} of vault ${accounts.vault} into ${accounts.userToken}"
+        },
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "lpDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "lpMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "lendingAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts the strategy's lending protocol needs for the deposit or withdrawal, in the order that protocol takes them; they differ from one lending protocol to another."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Lending Protocol Account"
+            }
+          }
+        ]
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "vaultBumps",
+        "docs": [
+          "Vault bumps struct"
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vaultBump",
+              "docs": [
+                "vault_bump"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tokenVaultBump",
+              "docs": [
+                "token_vault_bump"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "strategyBumps",
+        "docs": [
+          "Strategy bumps struct"
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "strategyIndex",
+              "docs": [
+                "strategy_index"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Strategy Index"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "otherBumps",
+              "docs": [
+                "Bumps of PDAs for the integrated protocol."
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 10
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "lockedProfitTracker",
+        "docs": [
+          "LockedProfitTracker struct"
+        ],
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lastUpdatedLockedProfit",
+              "docs": [
+                "The total locked profit from the last report"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lastReport",
+              "docs": [
+                "The last timestamp (in seconds) rebalancing"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lockedProfitDegradation",
+              "docs": [
+                "Rate per second of degradation"
+              ],
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "strategyType",
+        "docs": [
+          "StrategyType struct"
+        ],
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "portFinanceWithoutLm",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Port Finance"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "portFinanceWithLm",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Port Finance with Liquidity Mining"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "solendWithoutLm",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Solend"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "mango",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Mango"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "solendWithLm",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Solend with Liquidity Mining"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "apricotWithoutLm",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Apricot"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "francium",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Francium"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "tulip",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Tulip"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "vault",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Vault"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "drift",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Drift"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "frakt",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Frakt"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "marginfi",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Marginfi"
+              }
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      }
+    ],
+    "events": [
+      {
+        "kind": "eventNode",
+        "name": "addLiquidity",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "lpMintAmount",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "tokenAmount",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "1f5e7d5ae3343dba",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "1f5e7d5ae3343dba",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "removeLiquidity",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "lpUnmintAmount",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "tokenAmount",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "74f461e8671f983a",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "74f461e8671f983a",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "strategyDeposit",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "strategyType",
+                "type": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "strategyType"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "tokenAmount",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "cd355bef2288492f",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "cd355bef2288492f",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "strategyWithdraw",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "strategyType",
+                "type": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "strategyType"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "collateralAmount",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "estimatedTokenAmount",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "784cd05fddd2e5bd",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "784cd05fddd2e5bd",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "claimReward",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "strategyType",
+                "type": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "strategyType"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "tokenAmount",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "mintAccount",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "947486cc16ab555f",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "947486cc16ab555f",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "performanceFee",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "lpMintMore",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "1c46e7df516defa7",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "1c46e7df516defa7",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "reportLoss",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "strategy",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "loss",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "9a249ec420a37b7e",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "9a249ec420a37b7e",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "totalAmount",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "totalAmount",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "5cc87a91d3cb31cd",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "5cc87a91d3cb31cd",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "vaultIsDisabled",
+        "code": 6000,
+        "message": "Vault is disabled",
+        "docs": [
+          "VaultIsDisabled: Vault is disabled"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "exceededSlippage",
+        "code": 6001,
+        "message": "Exceeded slippage tolerance",
+        "docs": [
+          "ExceededSlippage: Exceeded slippage tolerance"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "strategyIsNotExisted",
+        "code": 6002,
+        "message": "Strategy is not existed",
+        "docs": [
+          "StrategyIsNotExisted: Strategy is not existed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unAuthorized",
+        "code": 6003,
+        "message": "UnAuthorized",
+        "docs": [
+          "UnAuthorized: UnAuthorized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "mathOverflow",
+        "code": 6004,
+        "message": "Math operation overflow",
+        "docs": [
+          "MathOverflow: Math operation overflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "protocolIsNotSupported",
+        "code": 6005,
+        "message": "Protocol is not supported",
+        "docs": [
+          "ProtocolIsNotSupported: Protocol is not supported"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unMatchReserve",
+        "code": 6006,
+        "message": "Reserve does not support token mint",
+        "docs": [
+          "UnMatchReserve: Reserve does not support token mint"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidLockedProfitDegradation",
+        "code": 6007,
+        "message": "lockedProfitDegradation is invalid",
+        "docs": [
+          "InvalidLockedProfitDegradation: lockedProfitDegradation is invalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "maxStrategyReached",
+        "code": 6008,
+        "message": "Maximum number of strategies have been reached",
+        "docs": [
+          "MaxStrategyReached: Maximum number of strategies have been reached"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "strategyExisted",
+        "code": 6009,
+        "message": "Strategy existed",
+        "docs": [
+          "StrategyExisted: Strategy existed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidUnmintAmount",
+        "code": 6010,
+        "message": "Invalid unmint amount",
+        "docs": [
+          "InvalidUnmintAmount: Invalid unmint amount"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidAccountsForStrategy",
+        "code": 6011,
+        "message": "Invalid accounts for strategy",
+        "docs": [
+          "InvalidAccountsForStrategy: Invalid accounts for strategy"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidBump",
+        "code": 6012,
+        "message": "Invalid bump",
+        "docs": [
+          "InvalidBump: Invalid bump"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "amountMustGreaterThanZero",
+        "code": 6013,
+        "message": "Amount must be greater than 0",
+        "docs": [
+          "AmountMustGreaterThanZero: Amount must be greater than 0"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "mangoIsNotSupportedAnymore",
+        "code": 6014,
+        "message": "Mango is not supported anymore",
+        "docs": [
+          "MangoIsNotSupportedAnymore: Mango is not supported anymore"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "strategyIsNotSupported",
+        "code": 6015,
+        "message": "Strategy is not supported",
+        "docs": [
+          "StrategyIsNotSupported: Strategy is not supported"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "payAmountIsExeeced",
+        "code": 6016,
+        "message": "Pay amount is exceeded",
+        "docs": [
+          "PayAmountIsExeeced: Pay amount is exceeded"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "feeVaultIsNotSet",
+        "code": 6017,
+        "message": "Fee vault is not set",
+        "docs": [
+          "FeeVaultIsNotSet: Fee vault is not set"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "lendingAssertionViolation",
+        "code": 6018,
+        "message": "deposit amount in lending is not matched",
+        "docs": [
+          "LendingAssertionViolation: deposit amount in lending is not matched"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "haveMoneyInLending",
+        "code": 6019,
+        "message": "Cannot remove strategy becase we have some in lending",
+        "docs": [
+          "HaveMoneyInLending: Cannot remove strategy becase we have some in lending"
+        ]
+      }
+    ]
+  }
+}

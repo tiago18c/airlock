@@ -716,3 +716,12 @@ programHash = "94aade9f612b54bd33d4be5fd1a294cef52e9f8c20496f63bbf2d67b65bed03f"
 authority = "GzyhwK4y7EKPEevAMc2TEpgi1Y3znwj14FUzkHmCMiNP"
 idlSha256 = "cc8a6ac9ec459487e6e84bded2fb661a1b950a1f6f888824c6b2e057cbb7954d"
 reviewed = "2026-11-12"
+
+[[builds]]
+# vault (pack). The binary logs 19 instruction names: 12 of the IDL's 14 are among them, and `collectDust` and `withdraw2`, which are not, are left out of the file. The binary also has `initializeIdleVault`, `updateLockedProfitDegradation`, `getUnlockedAmount`, `transferAdmin`, `transferFeeVault`, `claimRewards` and `migrateVault`, which the IDL lacks and which read raw. Mainnet transactions of four instructions decode with no byte left over, and their extra accounts are the strategy's lending protocol accounts.
+programId = "24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi"
+network = "mainnet"
+programHash = "0020344ea475275fa64f9ff51ee69c11dfc338c8741224cb1296892eed712ea2"
+authority = "JADaUV8kvDpDbJr55wxXJHVaBS3VCj8thZZHjfeuCVLd"
+idlSha256 = "996b64b42231f366e9d7623b07619edeb087d57b4d882d5df75deb688bac95a4"
+reviewed = "2026-11-12"
