@@ -463,3 +463,12 @@ programHash = "e202096978d8f20935153a4271938fd9f0a421d64c1749986b4c5c20ca2a52be"
 authority = "GUYCUEpxSkm1ccDo3LSKMR4Xpe5bgMnEZaFygWUSEVH3"
 idlSha256 = "9ee71d80caf2e2a3b5f9ae7f9cf1cc5bc342a3636dfda0a93c48860a5cf8e8d2"
 reviewed = "2026-11-12"
+
+[[builds]]
+# eternal (pack). No verified build. The program is native Rust and logs no Anchor instruction names, so the check was by discriminator: the binary's dispatch table holds exactly the 125 discriminators the IDL declares, no more and no fewer. Successful mainnet transactions decode with the IDL, every account named and every byte accounted for, for placeMarketOrder, placeLimitOrder, placeMultiLimitOrder, cancelOrdersById, cancelAll, placeStopLoss, cancelStopLoss, executeStopLoss, depositFunds, withdrawFunds, withdrawFundsWithFee, transferCollateral, transferCollateralChildToParent, registerTrader, reallocTrader, createPermission, setPermission, setPermissionDelegated, setTraderCapabilitiesDelegated, updateTraderFees, syncParentToChild, withdrawNativeSol, transferNativeSolFromChildToParent, liquidateNativeSol, updateTraderState, clearExpiredOrders, updateOraclePricesWithOrdering, updateSplinePrice, updateSplinePriceWithMetadata, updateSplineParameters, log and logEventLengths.
+programId = "EtrnLzgbS7nMMy5fbD42kXiUzGg8XQzJ972Xtk1cjWih"
+network = "mainnet"
+programHash = "e88dde79aa30c026a5f1b8de6477d3c3cdb55c996d7d453b8181d4f82cacfd3e"
+authority = "GPgADQrhzGoUgLqxsZMKvSpwcLaJFVTq6gEixKhmcwpm"
+idlSha256 = "307255c54e847d0fcd10613463a4080ae2310d96d46c695dba6d9d8eb799530c"
+reviewed = "2026-11-12"

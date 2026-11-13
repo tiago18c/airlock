@@ -334,3 +334,29 @@ groups, which Anchor IDLs cannot. distributeFeeToHolders, the one instruction wi
 optional account, sets optionalAccountStrategy to programId. The Token program's mint \
 account is added, so the trades' token amounts read their mint's decimals; SOL amounts \
 are in SOL and fees in percent. Display nodes added by hand."""
+
+# Phoenix Eternal, Ellipsis Labs' perpetual futures exchange. The file is the
+# IDL its program-metadata account publishes on mainnet (Eternal 0.2.0, Anchor
+# format, though the program is native Rust and logs no Anchor instruction
+# names); it has no Anchor IDL account. The program is not deployed on devnet,
+# so the file is mainnet only.
+[[idls]]
+file = "phoenix-eternal.json"
+programId = "EtrnLzgbS7nMMy5fbD42kXiUzGg8XQzJ972Xtk1cjWih"
+name = "eternal"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "53a87b12518946906ce1a76cdb30e075659a24904ed4aa68a4867150a73ee31c" }
+changes = """Converted from Anchor to Codama. The 74 event structs the Log instruction's MarketEvent \
+enum names are restored as defined types (the converter keeps types that back events \
+only as events, which left those links pointing at nothing and Log reading raw). The \
+nine order and trigger placement instructions the source IDL marks \
+optionalTrailingAdditionalFeeConfig take that suffix as a trailing optional \
+additionalFeeConfig argument, so an additional fee a front end adds to an order shows. \
+The deposit instruction declares the permission account it takes after its named \
+accounts when another program deposits for the trader; the swap and liquidation \
+instructions declare the external venue accounts (and checked trader accounts) the IDL \
+says follow; three instructions declare the arena accounts the IDL says may follow. The \
+Token program's mint account is added, so spot collateral amounts read their mint's \
+decimals. Collateral amounts are in base units of the collateral token, whose mint is \
+never an account of those instructions; native SOL amounts are in SOL. Display nodes \
+added by hand."""
