@@ -11,6 +11,7 @@
 //! Saying yes to what the transaction does not hold is on the list too: see
 //! [`super::blind`].
 
+use crate::idl::catalog::IdlOrigin;
 use crate::ids::{STAKE_PROGRAM_ID, SYSTEM_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID};
 use crate::review::blind::{blind_in, blind_in_carried, CHECKED_APPROVAL};
 use crate::review::checked::checked_in;
@@ -19,6 +20,8 @@ use solana_pubkey::Pubkey;
 
 const UPGRADEABLE_LOADER_ID: Pubkey =
     Pubkey::from_str_const("BPFLoaderUpgradeab1e11111111111111111111111");
+const VOTE_PROGRAM_ID: Pubkey =
+    Pubkey::from_str_const("Vote111111111111111111111111111111111111111");
 
 const TOKEN_APPROVAL: &str =
     "Lets another address spend tokens from an account of yours, until you revoke it.";
@@ -28,6 +31,8 @@ const SYSTEM_ASSIGN: &str =
 const NONCE_AUTHORITY: &str = "Hands over who can use a durable nonce.";
 const STAKE_AUTHORITY: &str = "Hands over the authority of a stake account.";
 const STAKE_LOCKUP: &str = "Changes the lockup of a stake account, and who can change it.";
+const VOTE_AUTHORITY: &str =
+    "Hands over who can vote with a vote account, or who can withdraw from it.";
 const PROGRAM_CONTROL: &str = "Changes a program, or who can upgrade it.";
 
 /// What is risky about one instruction, if anything.
@@ -56,9 +61,18 @@ fn risk_of(program: &Pubkey, data: &[u8]) -> Option<&'static str> {
             _ => None,
         };
     }
-    if *program == UPGRADEABLE_LOADER_ID {
+    if *program == VOTE_PROGRAM_ID {
+        // Authorize, and its checked and seeded forms.
         return match tag()? {
-            3 | 4 | 5 | 7 => Some(PROGRAM_CONTROL),
+            1 | 7 | 10 | 11 => Some(VOTE_AUTHORITY),
+            _ => None,
+        };
+    }
+    if *program == UPGRADEABLE_LOADER_ID {
+        // Upgrade, set authority, close, set authority checked, and the
+        // move to loader v4.
+        return match tag()? {
+            3 | 4 | 5 | 7 | 8 => Some(PROGRAM_CONTROL),
             _ => None,
         };
     }
@@ -99,27 +113,42 @@ pub fn risks_in_carried(instructions: &[ExplainedIx]) -> Vec<&'static str> {
     found
 }
 
-/// What still counts in [`risks_in`] but is never told as a strip of its own,
-/// because the rows the shipped IDLs decode say the same: a program upgrade,
-/// or a change of who can upgrade it, reads as a sentence, and so does a
-/// checked vote, with what the proposal holds opened under its check.
-const UNTOLD: [&str; 2] = [PROGRAM_CONTROL, CHECKED_APPROVAL];
-
 /// What of [`risks_in`] a screen tells as a warning. What counts, for the
 /// request modal's Sign, is [`risks_in`]: this only leaves out what the
-/// instruction rows already say.
+/// instruction rows already say. A checked vote is never a strip of its own:
+/// what the proposal holds is opened under its check. A program upgrade, or
+/// a change of who can upgrade it, is not one either while the loader's
+/// shipped IDL says it in a sentence; read raw, or worded by another file,
+/// it is told like any other.
 pub fn risks_told(explained: &ExplainedTx) -> Vec<&'static str> {
-    told(risks_in(explained))
+    told(risks_in(explained), &explained.instructions)
 }
 
 /// [`risks_told`] for instructions carried for another transaction.
 pub fn risks_told_carried(instructions: &[ExplainedIx]) -> Vec<&'static str> {
-    told(risks_in_carried(instructions))
+    told(risks_in_carried(instructions), instructions)
 }
 
-fn told(mut risks: Vec<&'static str>) -> Vec<&'static str> {
-    risks.retain(|risk| !UNTOLD.contains(risk));
+fn told(mut risks: Vec<&'static str>, instructions: &[ExplainedIx]) -> Vec<&'static str> {
+    let said = program_control_is_said(instructions);
+    risks.retain(|risk| *risk != CHECKED_APPROVAL && (*risk != PROGRAM_CONTROL || !said));
     risks
+}
+
+/// Whether every instruction that changes a program, at any depth, is worded
+/// by the IDL that ships with the app.
+fn program_control_is_said(instructions: &[ExplainedIx]) -> bool {
+    instructions.iter().all(|instruction| {
+        let said = risk_of(&instruction.program_id, &instruction.data) != Some(PROGRAM_CONTROL)
+            || instruction
+                .idl
+                .as_ref()
+                .is_some_and(|idl| idl.origin == IdlOrigin::Builtin);
+        said && instruction
+            .inner
+            .as_ref()
+            .is_none_or(|inner| program_control_is_said(&inner.instructions))
+    })
 }
 
 fn told_once(found: &mut Vec<&'static str>, more: impl Iterator<Item = &'static str>) {
@@ -197,10 +226,59 @@ mod tests {
         for harmless in [2, 4, 5] {
             assert!(of(STAKE_PROGRAM_ID, harmless).is_empty());
         }
-        for tag in [3, 4, 5, 7] {
+        for tag in [3, 4, 5, 7, 8] {
             assert_eq!(of(UPGRADEABLE_LOADER_ID, tag), [PROGRAM_CONTROL]);
         }
         assert!(of(UPGRADEABLE_LOADER_ID, 1).is_empty());
+        // Authorize, authorize checked, and both with a seed.
+        for tag in [1, 7, 10, 11] {
+            assert_eq!(of(VOTE_PROGRAM_ID, tag), [VOTE_AUTHORITY]);
+        }
+        // Vote, withdraw, a new commission and a tower sync.
+        for harmless in [2, 3, 5, 14] {
+            assert!(of(VOTE_PROGRAM_ID, harmless).is_empty());
+        }
+    }
+
+    /// The loader's shipped IDL says an upgrade in a sentence, so it gets no
+    /// strip of its own. Read raw, or worded by a file that did not ship,
+    /// nothing trustworthy says it, and the strip is told.
+    #[test]
+    fn a_program_change_is_told_unless_the_shipped_idl_words_it() {
+        use crate::review::explain::IdlExplanation;
+        let worded_by = |origin: Option<IdlOrigin>| {
+            let mut explained = one(UPGRADEABLE_LOADER_ID, tagged(3));
+            explained.instructions[0].idl = origin.map(|origin| IdlExplanation {
+                idl_sha256: [0; 32],
+                origin,
+                intent: "Upgrade".into(),
+                interpolated_intent: None,
+                spans: None,
+                fields: Vec::new(),
+                accounts: Vec::new(),
+                accounts_needed: Vec::new(),
+                unnamed_accounts: 0,
+            });
+            explained
+        };
+        let shipped = worded_by(Some(IdlOrigin::Builtin));
+        assert_eq!(risks_in(&shipped), [PROGRAM_CONTROL]);
+        assert!(risks_told(&shipped).is_empty());
+        assert!(risks_told_carried(&shipped.instructions).is_empty());
+        for other in [
+            None,
+            Some(IdlOrigin::File),
+            Some(IdlOrigin::ProgramMetadata),
+            Some(IdlOrigin::Anchor),
+        ] {
+            let explained = worded_by(other);
+            assert_eq!(risks_told(&explained), [PROGRAM_CONTROL], "{other:?}");
+            assert_eq!(
+                risks_told_carried(&explained.instructions),
+                [PROGRAM_CONTROL],
+                "{other:?}"
+            );
+        }
     }
 
     #[test]
@@ -278,7 +356,8 @@ mod tests {
             instructions: vec![transfer(vault, pk(8), 5), upgrade],
         };
         let pair = vec![check.instruction(&[]), squad.approve(4, &pk(1))];
-        let catalog = IdlStore::open(MemoryStore::new(), MemoryBodies::new());
+        // With the IDLs that ship, the loader's among them.
+        let catalog = crate::fixtures::shipped_catalog(crate::IdlNetwork::Devnet);
         let tx = decode_v1_transaction(&compile(pk(1), pair.clone()).wire).unwrap();
         assert_eq!(
             risks_in(&explain_transaction(&catalog, &tx)),
@@ -295,17 +374,28 @@ mod tests {
         assert!(risks_told(&explain_transaction(&catalog, &tx)).is_empty());
         assert_eq!(risks_told_carried(&carried).len(), 1);
         assert!(!risks_told_carried(&carried).contains(&PROGRAM_CONTROL));
+
+        // Without the loader's IDL the upgrade reads raw, no row says it, and
+        // the strip does.
+        let bare = IdlStore::open(MemoryStore::new(), MemoryBodies::new());
+        assert_eq!(
+            risks_told(&explain_transaction(&bare, &tx)),
+            [PROGRAM_CONTROL]
+        );
+        assert!(risks_told_carried(&explain_instructions(&bare, &pair)).contains(&PROGRAM_CONTROL));
     }
 
     #[test]
-    fn what_is_counted_but_not_told_is_only_those_two() {
+    fn every_strip_is_told_for_an_instruction_read_raw() {
         let of = |program, tag| one(program, tagged(tag));
-        for tag in [3, 4, 5, 7] {
+        // A program change too: only the shipped IDL's sentence stands in
+        // for its strip.
+        for tag in [3, 4, 5, 7, 8] {
             let explained = of(UPGRADEABLE_LOADER_ID, tag);
             assert_eq!(risks_in(&explained), [PROGRAM_CONTROL]);
-            assert!(risks_told(&explained).is_empty());
+            assert_eq!(risks_told(&explained), [PROGRAM_CONTROL]);
         }
-        // Every other strip is still told.
+        assert_eq!(risks_told(&of(VOTE_PROGRAM_ID, 1)), [VOTE_AUTHORITY]);
         for (program, data, risk) in [
             (TOKEN_PROGRAM_ID, vec![4, 1], TOKEN_APPROVAL),
             (TOKEN_PROGRAM_ID, vec![6, 1], TOKEN_AUTHORITY),
