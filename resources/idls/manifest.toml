@@ -1697,3 +1697,29 @@ source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "7e
 changes = """Converted from legacy Anchor to Codama, with the program's address set (a legacy IDL has \
 none). The nested account groups are flattened without prefixes; no instruction has two \
 accounts of one name. Display nodes added by hand."""
+
+# Perena's vault program (bankineco): people deposit USDC into a vault for its
+# share token (USD*, priced by the vault's net asset value) or into its senior
+# (USD*P) or junior (USD*J) tranche, redeem shares now, or queue a junior
+# withdrawal paid out after a lockup; Perena's curator, managers and oracle
+# signers run the vault. The file is the Anchor IDL its IDL account publishes
+# on mainnet, which is older than the program deployed: the 48 instructions
+# the deployed program no longer has or has changed are removed, and the
+# instructions added since read raw.
+[[idls]]
+file = "perena.json"
+programId = "save8RQVPMWNTzU18t3GBvBkN9hT7jsGjiCQ28FpD9H"
+name = "bankineco"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "ea91e453f61c5c5f1a94373392378a8b346db29a100957d4461760cd3716aa15" }
+changes = """Converted from Anchor to Codama. Removed the 40 instructions the deployed program no \
+longer has (the legacy bank, gen-vault and junior-staking instructions) and 8 whose \
+accounts or argument types it has changed (`crankPerformanceFees`, `createVault`, \
+`fulfillJuniorTrancheWithdraw` and its fee-exempt variant, `managerWithdrawAsset`, \
+`setVaultConfig`, `vaultCreateTrancheState`, `vaultUpdateTrancheConfig`), so they read \
+raw rather than wrong. Withdrawals from external liquidity, Jupiter swaps and protocol \
+interactions declare the accounts of the external program they call, read after their \
+listed accounts. Instructions with optional accounts take the program's address for an \
+absent one. The Token program's mint account is added, so deposit, withdrawal and \
+tranche amounts read the decimals of the asset and share mints the instructions name. \
+Display nodes added by hand."""

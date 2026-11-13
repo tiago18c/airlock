@@ -815,6 +815,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB"),
         "Quarry Mine Program",
     ),
+    (
+        Pubkey::from_str_const("save8RQVPMWNTzU18t3GBvBkN9hT7jsGjiCQ28FpD9H"),
+        "Perena Vault Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.
