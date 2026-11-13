@@ -1,6 +1,6 @@
 //! Expanding templates into blocks.
 
-use super::tests::{catalog, EXAMPLE};
+use super::tests::{catalog, on_network, EXAMPLE};
 use super::*;
 use crate::fixtures::pk;
 use crate::idl::catalog::IdlCatalog;
@@ -648,6 +648,7 @@ fn every_builtin_template_expands_and_builds_with_everything_on() {
                 "repository" | "commit" | "version" => "x".to_string(),
                 "build_args" => r#"["--library-name", "x"]"#.to_string(),
                 "deploy_slot" => "123".to_string(),
+                "supply_a" | "supply_b" | "deposit_a" | "deposit_b" => "1".to_string(),
                 _ => continue,
             };
             answers = answers.answer(&input.name, &text);
@@ -657,13 +658,18 @@ fn every_builtin_template_expands_and_builds_with_everything_on() {
             token_programs: [(mint, TOKEN_PROGRAM_ID)].into(),
             ..Facts::default()
         };
-        let first = expand(&template, &answers, &env(), &facts, &idls).unwrap();
+        let mut env = env();
+        for (i, name) in template.keypair_values().into_iter().enumerate() {
+            env.keypairs
+                .insert(name.to_string(), pk(3 + u8::try_from(i).unwrap()));
+        }
+        let first = expand(&template, &answers, &env, &facts, &idls).unwrap();
         for fact in &first.needs {
             if let Fact::Rent(bytes) = fact {
                 facts.rent.insert(*bytes, 1_000_000);
             }
         }
-        let mut expansion = expand(&template, &answers, &env(), &facts, &idls).unwrap();
+        let mut expansion = expand(&template, &answers, &env, &facts, &idls).unwrap();
         assert!(
             expansion.is_complete(),
             "{}: {expansion:#?}",
@@ -866,4 +872,119 @@ fn upgrading_a_program_derives_its_program_data_and_idl_account_and_needs_no_fac
     let built = build_all(&mut expansion);
     // setData: encoding utf8, zlib, json, direct, and no data.
     assert_eq!(built[1].data, [3, 1, 2, 1, 0]);
+}
+
+/// Token B's address sorts first, so the pool's token 0 is B and its deposit
+/// is B's, even though the form asks for A first.
+#[test]
+fn a_raydium_pool_orders_the_mints_and_deposits_each_tokens_own_units() {
+    // The program ships for devnet at this address.
+    let _devnet = on_network(crate::IdlNetwork::Devnet);
+    let template = builtin("create-raydium-pool");
+    let program = crate::fixtures::RAYDIUM_CP_SWAP_PROGRAM_ID;
+    let (config, _) = Pubkey::find_program_address(&[b"amm_config", &0u16.to_be_bytes()], &program);
+    assert_eq!(
+        template
+            .input("config")
+            .unwrap()
+            .default
+            .as_ref()
+            .map(Term::text),
+        Some(config.to_string())
+    );
+
+    let mint_a = pk(9);
+    let mint_b = pk(4);
+    assert!(mint_b < mint_a);
+    let mut env = env();
+    env.keypairs.insert("mint_a".into(), mint_a);
+    env.keypairs.insert("mint_b".into(), mint_b);
+    let answers = Answers::for_template(&template)
+        .answer("decimals_a", "6")
+        .answer("decimals_b", "9")
+        .answer("supply_a", "10")
+        .answer("supply_b", "2")
+        .answer("deposit_a", "1.5")
+        .answer("deposit_b", "2");
+    let mut expansion = run(&template, &answers, &env, &rent(82, 1_000_000));
+    assert!(expansion.is_complete(), "{expansion:#?}");
+    let built = build_all(&mut expansion);
+
+    let amount_of = |data: &[u8]| u64::from_le_bytes(data[1..9].try_into().unwrap());
+    assert_eq!(amount_of(&built[3].data), 10_000_000, "supply of A");
+    assert_eq!(amount_of(&built[7].data), 2_000_000_000, "supply of B");
+    let wallet = pk(1);
+    assert_eq!(
+        built[3].accounts[1].pubkey,
+        associated_token_address(&wallet, &mint_a, &TOKEN_PROGRAM_ID)
+    );
+    assert_eq!(
+        built[7].accounts[1].pubkey,
+        associated_token_address(&wallet, &mint_b, &TOKEN_PROGRAM_ID)
+    );
+
+    let token0 = mint_b;
+    let token1 = mint_a;
+    let (pool, _) = Pubkey::find_program_address(
+        &[b"pool", config.as_ref(), token0.as_ref(), token1.as_ref()],
+        &program,
+    );
+    let (authority, _) = Pubkey::find_program_address(&[b"vault_and_lp_mint_auth_seed"], &program);
+    let (lp_mint, _) = Pubkey::find_program_address(&[b"pool_lp_mint", pool.as_ref()], &program);
+    let (vault0, _) =
+        Pubkey::find_program_address(&[b"pool_vault", pool.as_ref(), token0.as_ref()], &program);
+    let (vault1, _) =
+        Pubkey::find_program_address(&[b"pool_vault", pool.as_ref(), token1.as_ref()], &program);
+    let (observation, _) = Pubkey::find_program_address(&[b"observation", pool.as_ref()], &program);
+    let from0 = associated_token_address(&wallet, &token0, &TOKEN_PROGRAM_ID);
+    let from1 = associated_token_address(&wallet, &token1, &TOKEN_PROGRAM_ID);
+    let lp_account = associated_token_address(&wallet, &lp_mint, &TOKEN_PROGRAM_ID);
+    let fee = Pubkey::from_str_const("3oE58BKVt8KuYkGxx8zBojugnymWmBiyafWgMrnb6eYy");
+    let rent = Pubkey::from_str_const("SysvarRent111111111111111111111111111111111");
+
+    let pool_ix = &built[8];
+    assert_eq!(pool_ix.program_id, program);
+    assert_eq!(
+        &pool_ix.data[..8],
+        &[0xaf, 0xaf, 0x6d, 0x1f, 0x0d, 0x98, 0x9b, 0xed]
+    );
+    let le = |at: usize| u64::from_le_bytes(pool_ix.data[at..at + 8].try_into().unwrap());
+    assert_eq!(le(8), 2_000_000_000, "token 0 is B");
+    assert_eq!(le(16), 1_500_000, "token 1 is A");
+    assert_eq!(le(24), 0);
+    let got: Vec<_> = pool_ix.accounts.iter().map(|meta| meta.pubkey).collect();
+    assert_eq!(
+        got,
+        vec![
+            wallet,
+            config,
+            authority,
+            pool,
+            token0,
+            token1,
+            lp_mint,
+            from0,
+            from1,
+            lp_account,
+            vault0,
+            vault1,
+            fee,
+            observation,
+            TOKEN_PROGRAM_ID,
+            TOKEN_PROGRAM_ID,
+            TOKEN_PROGRAM_ID,
+            crate::ids::ASSOCIATED_TOKEN_PROGRAM_ID,
+            crate::ids::SYSTEM_PROGRAM_ID,
+            rent,
+        ]
+    );
+    assert!(pool_ix.accounts[0].is_signer);
+    assert!(built[0]
+        .accounts
+        .iter()
+        .any(|meta| meta.pubkey == mint_a && meta.is_signer));
+    assert!(built[4]
+        .accounts
+        .iter()
+        .any(|meta| meta.pubkey == mint_b && meta.is_signer));
 }

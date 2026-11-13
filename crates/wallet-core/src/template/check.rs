@@ -105,6 +105,11 @@ pub enum InputScale {
         value: String,
         unit: Option<String>,
     },
+    /// With as many decimal places as the input `input` holds.
+    FromInput {
+        input: String,
+        unit: Option<String>,
+    },
 }
 
 /// The IDL a block is built with, for one program it can run on.
@@ -640,6 +645,10 @@ fn kind_from_parameters(template: &Template, input: &str) -> InputKind {
                     unit: None,
                 },
                 Err(_) => InputScale::None,
+            },
+            Term::Ref(name) if template.input(&name).is_some() => InputScale::FromInput {
+                input: name,
+                unit: None,
             },
             Term::Ref(value) => InputScale::FromValue { value, unit: None },
         };

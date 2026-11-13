@@ -149,6 +149,13 @@ pub enum Function {
     /// `<shape> <canopy>`: the bytes a merkle tree account of that shape
     /// and canopy depth takes on MPL Account Compression.
     MerkleTreeSpace,
+    /// `<a> <b>`: whichever address sorts first, byte for byte.
+    LesserAddress,
+    /// `<a> <b>`: whichever address sorts last, byte for byte.
+    GreaterAddress,
+    /// `<a> <b> <when a is first> <when b is first>`: one of the two numbers,
+    /// chosen by which address sorts first.
+    WhenLesser,
 }
 
 /// What a value or an argument is.
@@ -169,7 +176,7 @@ pub(crate) enum ValueType {
 }
 
 impl Function {
-    pub const ALL: [Function; 19] = [
+    pub const ALL: [Function; 22] = [
         Self::NewKeypair,
         Self::AssociatedTokenAccount,
         Self::Token2022MintSpace,
@@ -189,6 +196,9 @@ impl Function {
         Self::TreeDepth,
         Self::TreeBuffer,
         Self::MerkleTreeSpace,
+        Self::LesserAddress,
+        Self::GreaterAddress,
+        Self::WhenLesser,
     ];
 
     /// The name a file writes it by.
@@ -213,6 +223,9 @@ impl Function {
             Self::TreeDepth => "tree-depth",
             Self::TreeBuffer => "tree-buffer",
             Self::MerkleTreeSpace => "merkle-tree-space",
+            Self::LesserAddress => "lesser-address",
+            Self::GreaterAddress => "greater-address",
+            Self::WhenLesser => "when-lesser",
         }
     }
 
@@ -244,6 +257,8 @@ impl Function {
             Self::BaseUnits => &[Amount, Integer],
             Self::TreeDepth | Self::TreeBuffer => &[Shape],
             Self::MerkleTreeSpace => &[Shape, Integer],
+            Self::LesserAddress | Self::GreaterAddress => &[Address, Address],
+            Self::WhenLesser => &[Address, Address, Integer, Integer],
         }
     }
 
@@ -264,6 +279,8 @@ impl Function {
             Self::TreeConfigOf => "a merkle tree",
             Self::TreeDepth | Self::TreeBuffer => "a tree shape",
             Self::MerkleTreeSpace => "a tree shape and a canopy depth",
+            Self::LesserAddress | Self::GreaterAddress => "two addresses",
+            Self::WhenLesser => "two addresses and the two numbers to choose between",
         }
     }
 
@@ -276,7 +293,9 @@ impl Function {
             | Self::MetadataOf
             | Self::MasterEditionOf
             | Self::StreamEscrowOf
-            | Self::TreeConfigOf => ValueType::Address,
+            | Self::TreeConfigOf
+            | Self::LesserAddress
+            | Self::GreaterAddress => ValueType::Address,
             Self::Token2022MintSpace
             | Self::Token2022MintFundedSpace
             | Self::RentFor
@@ -284,7 +303,8 @@ impl Function {
             | Self::BaseUnits
             | Self::TreeDepth
             | Self::TreeBuffer
-            | Self::MerkleTreeSpace => ValueType::Integer,
+            | Self::MerkleTreeSpace
+            | Self::WhenLesser => ValueType::Integer,
             Self::TokenProgramOf => ValueType::Program,
             Self::SoleCreator | Self::UnverifiedCollection => ValueType::Json,
         }

@@ -21,7 +21,7 @@ impl BuiltinTemplate {
 }
 
 /// In the order the picker lists them.
-pub static BUILTIN_TEMPLATES: [BuiltinTemplate; 15] = [
+pub static BUILTIN_TEMPLATES: [BuiltinTemplate; 16] = [
     BuiltinTemplate {
         id: "create-token",
         toml: include_str!("../../templates/create-token.toml"),
@@ -77,6 +77,10 @@ pub static BUILTIN_TEMPLATES: [BuiltinTemplate; 15] = [
     BuiltinTemplate {
         id: "claim-marinade-ticket",
         toml: include_str!("../../templates/claim-marinade-ticket.toml"),
+    },
+    BuiltinTemplate {
+        id: "create-raydium-pool",
+        toml: include_str!("../../templates/create-raydium-pool.toml"),
     },
     BuiltinTemplate {
         id: "upgrade-program",

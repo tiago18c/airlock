@@ -102,6 +102,12 @@ export const PROGRAMS = [
     sha256: "10d275edf5a3181eb4ac187c07d37efd0279c7a6fe0cb222b1ac97804bc14b8b",
   },
   {
+    // Raydium's constant-product pools, the devnet deployment.
+    file: "raydium_cp_swap.so",
+    address: "DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb",
+    sha256: "30a9273dda17d7b3513889af1dab1185d9facc4756a6edf36c42f30ba228d8d1",
+  },
+  {
     // Metaplex Token Metadata, frozen since its deploy of 2025-11-17. Devnet
     // runs another build.
     file: "mpl_token_metadata.so",

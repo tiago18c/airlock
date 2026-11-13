@@ -139,13 +139,16 @@ The whole list. A function is pure, or names the chain fact it needs.
 | `idl-metadata-of <program>` | The program's canonical IDL account on program-metadata (seed `idl`) | nothing |
 | `metadata-of <mint>` | The mint's metadata account on Metaplex Token Metadata (`metadata`, the program, the mint) | nothing |
 | `master-edition-of <mint>` | The mint's master edition account on Metaplex Token Metadata (as above, then `edition`) | nothing |
-| `base-units <amount> <decimals>` | An amount typed in a token's units, in base units. The input is typed with `<decimals>` places: fixed when it is a literal, once known when it is a value such as `decimals-of` (`InputScale::FromValue`) | nothing |
+| `base-units <amount> <decimals>` | An amount typed in a token's units, in base units. The input is typed with `<decimals>` places: fixed when it is a literal, once known when it is a value such as `decimals-of` (`InputScale::FromValue`), and as many as another question holds when it is an input (`InputScale::FromInput`). 1.5 with 6 decimals is 1500000; more decimal places than `<decimals>` works out to nothing | nothing |
 | `sole-creator <address>` | The JSON of a Metaplex creator list naming `<address>` alone, verified, with the whole share. It is verified only if that address signs | nothing |
 | `unverified-collection <address>` | The JSON of a Metaplex collection naming `<address>`, not verified | nothing |
 | `stream-escrow-of <stream>` | The token account a Streamflow stream holds its tokens in (`strm`, the stream) | nothing |
 | `tree-config-of <tree>` | The config account Metaplex Bubblegum keeps for a merkle tree (the tree) | nothing |
 | `tree-depth <shape>`, `tree-buffer <shape>` | The depth and buffer size of a merkle tree shape | nothing |
 | `merkle-tree-space <shape> <canopy>` | The bytes of a merkle tree account of that shape and canopy depth on MPL Account Compression | nothing |
+| `lesser-address <a> <b>` | Whichever address sorts first, byte for byte, the order Solana uses | nothing |
+| `greater-address <a> <b>` | Whichever address sorts last | nothing |
+| `when-lesser <a> <b> <when a is first> <when b is first>` | The third argument when `<a>` sorts before `<b>`, otherwise the fourth. The two numbers are integers. Equal addresses work out to nothing | nothing |
 
 An input given to a function and bound to no field takes the parameter's type: a whole number, an amount in a token's units (`base-units`), or for a tree shape a choice of the 34 depth and buffer pairs the account compression programs take, each named with what it holds ("16,384 NFTs (depth 14, buffer 64)"); any other pair fails on chain. A function that cannot take an answer says so on that input (`Missing::Invalid`): `merkle-tree-space` refuses a canopy as deep as the tree, or one that leaves proofs longer than the 17 nodes Bubblegum takes, and names the range.
 
@@ -319,6 +322,7 @@ A debug build started with `AIRLOCK_DEBUG_FILE_DIR` set skips the file dialogs: 
 | Create a compressed NFT tree, Mint a compressed NFT | System, Bubblegum (`createTreeV2`, `mintV2`), MPL Account Compression, MPL Noop | mainnet, devnet | `compressed_templates.rs` |
 | Create a vesting or payment stream | Streamflow (`create`) | mainnet | `stream_template.rs` |
 | Stake SOL with Marinade, Unstake mSOL now, Unstake mSOL in a few days, Claim a Marinade unstake ticket | Marinade (`deposit`, `liquidUnstake`, `orderUnstake`, `claim`) | mainnet | `marinade_templates.rs` |
+| Create a Raydium pool | System, Token, associated token, Raydium's constant-product pools (`initialize`) | devnet | `raydium_pool_template.rs` |
 | Upgrade a program | upgradeable loader; program-metadata and OtterSec's verify program for the options | every network; the options on mainnet and devnet | `upgrade_template.rs` |
 
 Token Metadata, Streamflow and Marinade run other builds on devnet than the ones their IDLs describe, which is why their IDLs, and so these templates, are mainnet only. Their fixed addresses come from each program's source or SDK and every executed sample in the IDL's reports: Streamflow's treasury, automatic-withdrawal service and fee oracle are the constants of its SDK (`packages/stream/solana/constants.ts`), and Marinade's accounts are its one state's PDAs and the accounts that state records. Nothing a template writes is read from the chain but rent, a mint's decimals and its token program.

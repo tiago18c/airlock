@@ -248,6 +248,9 @@ fn kind_words(kind: &IdlArgKind, scale: &InputScale) -> Option<String> {
             InputScale::FromValue { value, .. } => {
                 format!("a number with as many decimal places as ${value}")
             }
+            InputScale::FromInput { input, .. } => {
+                format!("a number with as many decimal places as ${input}")
+            }
         },
         IdlArgKind::Raw { .. } => return None,
     })

@@ -374,7 +374,8 @@ async fn the_filter_reads_names_and_summaries() {
             "Add a name and symbol to a token",
             "Create an NFT",
             "Create a compressed NFT tree",
-            "Mint a compressed NFT"
+            "Mint a compressed NFT",
+            "Create a Raydium pool",
         ]
     );
     // "extensions" is only in a summary.

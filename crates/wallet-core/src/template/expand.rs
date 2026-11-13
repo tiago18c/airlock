@@ -221,6 +221,9 @@ impl Expansion {
                 .parse()
                 .ok(),
             InputScale::FromValue { value, .. } => self.values.get(value)?.parse().ok(),
+            // The decimals live on another question. The form reads that
+            // question; expansion already applied them in `base-units`.
+            InputScale::FromInput { .. } => None,
         }
     }
 }
@@ -610,6 +613,27 @@ impl<'a> Run<'a> {
                 self.rest_on(Fact::TokenProgram(mint));
                 let program = self.facts.token_programs.get(&mint)?;
                 Some(Val::Address(*program))
+            }
+            Function::LesserAddress => {
+                let (left, right) = (address(0)?, address(1)?);
+                Some(Val::Address(std::cmp::min(left, right)))
+            }
+            Function::GreaterAddress => {
+                let (left, right) = (address(0)?, address(1)?);
+                Some(Val::Address(std::cmp::max(left, right)))
+            }
+            Function::WhenLesser => {
+                let (left, right) = (address(0)?, address(1)?);
+                let when_left = args.get(2)?.as_ref()?.integer()?;
+                let when_right = args.get(3)?.as_ref()?.integer()?;
+                let picked = if left < right {
+                    when_left
+                } else if right < left {
+                    when_right
+                } else {
+                    return None;
+                };
+                Some(Val::Integer(picked))
             }
             Function::MetadataOf => {
                 let mint = address(0)?;

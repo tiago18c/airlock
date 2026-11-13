@@ -82,8 +82,8 @@ programId = "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
 network = "mainnet"
 programHash = "7e691824f591590ed44f5716ffc5e1040914e3aaa9ee4effdc47f50951a4f83e"
 authority = "FytDrVzDybM1TwFQPGb8qaxZR7dBCzNeqT3vtQsceZQK"
-idlSha256 = "d25cdb91210e54eff80954934af6d6e171dd7e371a0f35a942a3a8bc9ca2f3c6"
-reviewed = "2026-11-09"
+idlSha256 = "d5c1084bf697b10241c8b8abb73055b7bf2bfca44e036d8c434abbc38cd9a07a"
+reviewed = "2026-11-13"
 
 [[builds]]
 # jupiter (pack). Closed source. Every instruction the IDL lists is in this binary by its Anchor log name, as are all 211 Swap variants. Successful mainnet transactions decode with the IDL for route, routeV2, sharedAccountsRoute, sharedAccountsRouteV2, sharedAccountsExactOutRoute, routeWithTokenLedger, setTokenLedger and createIdempotentAssociatedTokenAccount. The IDL is the one the program publishes.
@@ -251,8 +251,8 @@ programId = "DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb"
 network = "devnet"
 programHash = "0e8f94d000f116968de2a0147aee5b3294c8fa3c9e2bcd64ae99d307ad8b33e8"
 authority = "DRayw6sn9fCvbhx5ZLtAVGAgAk6qAAX7UT7urzkXTeM5"
-idlSha256 = "81b3d5635e0b05a58e9b47dd80e537746325b4d04a32ff4e044a9ffa99b55efc"
-reviewed = "2026-11-09"
+idlSha256 = "5a8a90b29bd3fcf7da5b07c3d9045b7a3346627fcd0bbf010e1099d9fb4a2cb9"
+reviewed = "2026-11-13"
 
 [[builds]]
 # raydiumRouter (pack). Written by hand from transactions this program executed.

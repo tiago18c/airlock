@@ -542,6 +542,26 @@ fn words_of(template: &Template, term: &Term, facts: Option<FactsFrom>) -> Strin
             arg(0),
             arg(1)
         ),
+        Function::LesserAddress => {
+            format!(
+                "whichever of {} and {} has the smaller address",
+                arg(0),
+                arg(1)
+            )
+        }
+        Function::GreaterAddress => {
+            format!(
+                "whichever of {} and {} has the larger address",
+                arg(0),
+                arg(1)
+            )
+        }
+        Function::WhenLesser => format!(
+            "{} when {} has the smaller address, otherwise {}",
+            arg(2),
+            arg(0),
+            arg(3)
+        ),
     }
 }
 

@@ -4035,6 +4035,73 @@
               "",
               "Or random account: must be signed by cli"
             ],
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "poolState",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "3sh3Vm",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "ammConfig",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "token0Mint",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "token1Mint",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "ammConfig",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "ammConfig"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "token0Mint",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "token0Mint"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "token1Mint",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "token1Mint"
+                  }
+                }
+              ]
+            },
             "display": {
               "kind": "instructionAccountDisplayNode",
               "label": "Pool"
@@ -4701,6 +4768,73 @@
               "",
               "Or random account: must be signed by cli"
             ],
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "poolState",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "3sh3Vm",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "ammConfig",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "token0Mint",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "token1Mint",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "ammConfig",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "ammConfig"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "token0Mint",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "token0Mint"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "token1Mint",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "token1Mint"
+                  }
+                }
+              ]
+            },
             "display": {
               "kind": "instructionAccountDisplayNode",
               "label": "Pool"
@@ -5376,6 +5510,73 @@
               "",
               "Or random account: must be signed by cli"
             ],
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "poolState",
+                "seeds": [
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "3sh3Vm",
+                      "encoding": "base58"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "ammConfig",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "token0Mint",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "token1Mint",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "ammConfig",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "ammConfig"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "token0Mint",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "token0Mint"
+                  }
+                },
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "token1Mint",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "token1Mint"
+                  }
+                }
+              ]
+            },
             "display": {
               "kind": "instructionAccountDisplayNode",
               "label": "Pool"

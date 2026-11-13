@@ -417,6 +417,19 @@ fn template_input(
                         None => Places::Like(format!("${value}")),
                     },
                 ),
+                InputScale::FromInput {
+                    input: decimals,
+                    unit,
+                } => {
+                    let places = open
+                        .input_text(decimals, env)
+                        .trim()
+                        .parse::<u8>()
+                        .ok()
+                        .map(Places::Fixed)
+                        .unwrap_or_else(|| Places::Like(decimals.clone()));
+                    (unit.as_deref(), places)
+                }
             };
             // An optional input can be left blank, as an optional field can.
             let kind = if input.optional {
