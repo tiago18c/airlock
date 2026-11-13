@@ -1555,3 +1555,25 @@ changes = """Converted from Anchor to Codama. The program's address is set, sinc
 carries none. optionalAccountStrategy is programId on initializeV2, mintV2, \
 setCollectionV2 and setTokenStandard, as the converter sets it. The royalty reads as a \
 percent. Display nodes added by hand."""
+
+# Metaplex Token Auth Rules: the rule sets programmable NFTs point at, which
+# decide who may transfer or delegate them; Token Metadata calls its validate
+# inside a transfer. It publishes no IDL on chain; the file is the Shank IDL
+# in mpl-token-auth-rules at 5b8b8973, whose four instructions the deployed
+# binary has, with each versioned instruction split by its second byte as
+# Metaplex's own clients do.
+[[idls]]
+file = "mpl-token-auth-rules.json"
+programId = "auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg"
+name = "mplTokenAuthRules"
+networks = ["mainnet"]
+source = { kind = "repository", url = "https://github.com/metaplex-foundation/mpl-token-auth-rules/blob/5b8b8973543a1e1e139912d0c210d902af77a6b5/idls/mpl_token_auth_rules.json" }
+changes = """Converted from Shank to Codama (the file names its origin and address). Each instruction \
+takes one enum whose variant is the second byte; as Metaplex's client generator does \
+(configs/kinobi.cjs, CreateSubInstructionsFromEnumArgsVisitor), each variant is its own \
+instruction, named as Metaplex's clients name it (createOrUpdateV1, validateV1, \
+writeToBufferV1, puffRuleSetV1), told apart by a second one-byte discriminator, with the \
+variant's fields as its arguments; the bytes are unchanged. The accounts validate reads \
+after the listed six, the accounts the rules check, are a remaining-accounts group. \
+optionalAccountStrategy is programId, as the converter sets it. Display nodes added by \
+hand."""

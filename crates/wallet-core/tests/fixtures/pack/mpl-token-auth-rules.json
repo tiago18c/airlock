@@ -1,0 +1,110 @@
+{
+  "accounts": {},
+  "instructions": [
+    {
+      "accounts": [
+        "eBJLFYPxJmMGKuFwpDWkzxZeUrad92kZRC5BJLpzyT9",
+        "4v8Qwe3T6kg4u1KDThKH4bXk7mey8ZcHez6kb5DnN3S9",
+        "11111111111111111111111111111111",
+        "auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg",
+        "auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg",
+        "auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg",
+        "oKbrJkBqdRnbdHMSdingEAau8aWzRrjCQ2bCTLNLB7v:s"
+      ],
+      "data": "01001000000044656c65676174653a5374616b696e670200000006000000416d6f756e740301000000000000000800000044656c6567617465000bddbfd0e53c22ca7fa7539f0c0b6c991f7ac44d6c7dac4732c1ae8a649789210000",
+      "fields": [
+        [
+          "Operation",
+          "Delegate:Staking"
+        ],
+        [
+          "Payload (what the rules check)",
+          "Amount: Number, Delegate: Pubkey"
+        ],
+        [
+          "Update Rule State",
+          "false"
+        ],
+        [
+          "Rule Set Revision (none: latest)",
+          "None"
+        ],
+        [
+          "Rule Set",
+          "eBJLFYPxJmMGKuFwpDWkzxZeUrad92kZRC5BJLpzyT9"
+        ],
+        [
+          "Mint",
+          "4v8Qwe3T6kg4u1KDThKH4bXk7mey8ZcHez6kb5DnN3S9"
+        ],
+        [
+          "Rule Account",
+          "oKbrJkBqdRnbdHMSdingEAau8aWzRrjCQ2bCTLNLB7v"
+        ]
+      ],
+      "from": "4kkKcUc2pQ3kruNQ1paSE1ZNT6mE7X6QQvTh5Xj8eFgnUE1JgLzNCj2uPLGs1BJCQXDGW5SjCwoo1CXDjDFYCPst#6.1",
+      "intent": "Check a rule set",
+      "programId": "auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg",
+      "sentence": "Checks whether rule set eBJLFYPxJmMGKuFwpDWkzxZeUrad92kZRC5BJLpzyT9 allows Delegate:Staking of 4v8Qwe3T6kg4u1KDThKH4bXk7mey8ZcHez6kb5DnN3S9",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "eBJLFYPxJmMGKuFwpDWkzxZeUrad92kZRC5BJLpzyT9",
+        "8ixb95QAA9bfhGFmND77DJhCtLTBrG7H1ZJkRVCnAAEm",
+        "11111111111111111111111111111111",
+        "auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg",
+        "auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg",
+        "auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg",
+        "2mADfNRCavAysNMatyb4jyqTG3jLYxkMYHrxcEMGqT7f:sw",
+        "1BWutmTvYPwDtmw9abTkS4Ssr8no61spGAvW1X6NDix",
+        "2mADfNRCavAysNMatyb4jyqTG3jLYxkMYHrxcEMGqT7f:sw"
+      ],
+      "data": "01000e0000005472616e736665723a4f776e65720500000006000000416d6f756e7403010000000000000009000000417574686f72697479001a2baa6ae2067a84c15ec35130cc8b652aee1a7b3191cbb023014cc8d6053cda0b00000044657374696e6174696f6e00000be3e1eba17a473f89b0f7e8e24940f20aeb8ebca71a88fde95d4b83b71a091000000044657374696e6174696f6e53656564730102000000020000006d32060000007369676e657206000000536f75726365001a2baa6ae2067a84c15ec35130cc8b652aee1a7b3191cbb023014cc8d6053cda0000",
+      "fields": [
+        [
+          "Operation",
+          "Transfer:Owner"
+        ],
+        [
+          "Payload (what the rules check)",
+          "Amount: Number, Authority: Pubkey, Destination: Pubkey, DestinationSeeds: Seeds, Source: Pubkey"
+        ],
+        [
+          "Update Rule State",
+          "false"
+        ],
+        [
+          "Rule Set Revision (none: latest)",
+          "None"
+        ],
+        [
+          "Rule Set",
+          "eBJLFYPxJmMGKuFwpDWkzxZeUrad92kZRC5BJLpzyT9"
+        ],
+        [
+          "Mint",
+          "8ixb95QAA9bfhGFmND77DJhCtLTBrG7H1ZJkRVCnAAEm"
+        ],
+        [
+          "Rule Account #1",
+          "2mADfNRCavAysNMatyb4jyqTG3jLYxkMYHrxcEMGqT7f"
+        ],
+        [
+          "Rule Account #2",
+          "1BWutmTvYPwDtmw9abTkS4Ssr8no61spGAvW1X6NDix"
+        ],
+        [
+          "Rule Account #3",
+          "2mADfNRCavAysNMatyb4jyqTG3jLYxkMYHrxcEMGqT7f"
+        ]
+      ],
+      "from": "3QS1kqaDUEJgwbEQepycvr6Vjk3sfuLi6yN5sG9PkNV1jBMG1dUhp6yo1cteRNxWQg4BtqV7ouFCKVwPxwjfM4NL#3.9",
+      "intent": "Check a rule set",
+      "programId": "auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg",
+      "sentence": "Checks whether rule set eBJLFYPxJmMGKuFwpDWkzxZeUrad92kZRC5BJLpzyT9 allows Transfer:Owner of 8ixb95QAA9bfhGFmND77DJhCtLTBrG7H1ZJkRVCnAAEm",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}

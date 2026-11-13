@@ -1,0 +1,1296 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "mplTokenAuthRules",
+    "publicKey": "auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg",
+    "version": "1.5.1",
+    "origin": "shank",
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "name": "frequencyAccount",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "key",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "key"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lastUpdate",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "i64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "period",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "i64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "createOrUpdateV1",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ruleSetPda",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rule Set"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "bufferPda",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rule Set Buffer (none: rules in the data)"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 0.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "createOrUpdateV1Discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "serializedRuleSet",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "bytesTypeNode"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Rules (bytes)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          },
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "createOrUpdateV1Discriminator",
+            "offset": 1
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Publish a rule set",
+          "interpolatedIntent": "${accounts.payer} creates or updates its rule set ${accounts.ruleSetPda}; the rules, and the rule set's name, show only as bytes"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "validateV1",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "ruleSetPda",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rule Set"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer (rule state)"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ruleAuthority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rule Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ruleSetStatePda",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": true,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rule Set State"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 1.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "validateV1Discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "operation",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Operation"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "payload",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "payload"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "updateRuleState",
+            "type": {
+              "kind": "booleanTypeNode",
+              "size": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Update Rule State"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "ruleSetRevision",
+            "type": {
+              "kind": "optionTypeNode",
+              "fixed": false,
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Rule Set Revision (none: latest)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          },
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "validateV1Discriminator",
+            "offset": 1
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "additionalRuleAccounts"
+            },
+            "isOptional": true,
+            "isWritable": false,
+            "docs": [
+              "The accounts the rules check, as the payload names them: for a transfer, the source and destination owners or token accounts and the authority; for a delegation, the delegate; and any program or PDA a rule matches against."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rule Account"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Check a rule set",
+          "interpolatedIntent": "Checks whether rule set ${accounts.ruleSetPda} allows ${data.operation} of ${accounts.mint}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "writeToBufferV1",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "bufferPda",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rule Set Buffer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 2.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "writeToBufferV1Discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "serializedRuleSet",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "bytesTypeNode"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Rules Part (bytes)"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "overwrite",
+            "type": {
+              "kind": "booleanTypeNode",
+              "size": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Overwrite (start again)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          },
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "writeToBufferV1Discriminator",
+            "offset": 1
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Write a rule set buffer",
+          "interpolatedIntent": "${accounts.payer} writes part of a rule set to its buffer ${accounts.bufferPda}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "puffRuleSetV1",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "ruleSetPda",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rule Set"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 3.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "puffRuleSetV1Discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "ruleSetName",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Rule Set Name"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          },
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "puffRuleSetV1Discriminator",
+            "offset": 1
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Enlarge a rule set",
+          "interpolatedIntent": "${accounts.payer} adds space to its rule set ${accounts.ruleSetPda} named ${data.ruleSetName}"
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "seedsVec",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "seeds",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "sizePrefixTypeNode",
+                  "type": {
+                    "kind": "bytesTypeNode"
+                  },
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                },
+                "count": {
+                  "kind": "prefixedCountNode",
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Seeds"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "proofInfo",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "proof",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "arrayTypeNode",
+                  "item": {
+                    "kind": "numberTypeNode",
+                    "format": "u8",
+                    "endian": "le"
+                  },
+                  "count": {
+                    "kind": "fixedCountNode",
+                    "value": 32
+                  }
+                },
+                "count": {
+                  "kind": "prefixedCountNode",
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Proof"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "payload",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "map",
+              "type": {
+                "kind": "mapTypeNode",
+                "key": {
+                  "kind": "sizePrefixTypeNode",
+                  "type": {
+                    "kind": "stringTypeNode",
+                    "encoding": "utf8"
+                  },
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                },
+                "value": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "payloadType"
+                },
+                "count": {
+                  "kind": "prefixedCountNode",
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Payload (what the rules check)"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "ruleSetHeader",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "key",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "key"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "revMapVersionLocation",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "ruleSetRevisionMapV1",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "ruleSetRevisions",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "prefixedCountNode",
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "payloadType",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumTupleVariantTypeNode",
+              "name": "pubkey",
+              "tuple": {
+                "kind": "tupleTypeNode",
+                "items": [
+                  {
+                    "kind": "publicKeyTypeNode"
+                  }
+                ]
+              },
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Address"
+              }
+            },
+            {
+              "kind": "enumTupleVariantTypeNode",
+              "name": "seeds",
+              "tuple": {
+                "kind": "tupleTypeNode",
+                "items": [
+                  {
+                    "kind": "definedTypeLinkNode",
+                    "name": "seedsVec"
+                  }
+                ]
+              },
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Seeds"
+              }
+            },
+            {
+              "kind": "enumTupleVariantTypeNode",
+              "name": "merkleProof",
+              "tuple": {
+                "kind": "tupleTypeNode",
+                "items": [
+                  {
+                    "kind": "definedTypeLinkNode",
+                    "name": "proofInfo"
+                  }
+                ]
+              },
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Merkle Proof"
+              }
+            },
+            {
+              "kind": "enumTupleVariantTypeNode",
+              "name": "number",
+              "tuple": {
+                "kind": "tupleTypeNode",
+                "items": [
+                  {
+                    "kind": "numberTypeNode",
+                    "format": "u64",
+                    "endian": "le"
+                  }
+                ]
+              },
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Number"
+              }
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "key",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "uninitialized"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "ruleSet"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "frequency"
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "numericalOverflow",
+        "code": 0,
+        "message": "Numerical Overflow",
+        "docs": [
+          "NumericalOverflow: Numerical Overflow"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "dataTypeMismatch",
+        "code": 1,
+        "message": "Data type mismatch",
+        "docs": [
+          "DataTypeMismatch: Data type mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "dataSliceUnexpectedIndexError",
+        "code": 2,
+        "message": "Data slice unexpected index error",
+        "docs": [
+          "DataSliceUnexpectedIndexError: Data slice unexpected index error"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "incorrectOwner",
+        "code": 3,
+        "message": "Incorrect account owner",
+        "docs": [
+          "IncorrectOwner: Incorrect account owner"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "payloadVecIndexError",
+        "code": 4,
+        "message": "Could not index into PayloadVec",
+        "docs": [
+          "PayloadVecIndexError: Could not index into PayloadVec"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "derivedKeyInvalid",
+        "code": 5,
+        "message": "Derived key invalid",
+        "docs": [
+          "DerivedKeyInvalid: Derived key invalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "payerIsNotSigner",
+        "code": 6,
+        "message": "Payer is not a signer",
+        "docs": [
+          "PayerIsNotSigner: Payer is not a signer"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "notImplemented",
+        "code": 7,
+        "message": "Not implemented",
+        "docs": [
+          "NotImplemented: Not implemented"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "borshSerializationError",
+        "code": 8,
+        "message": "Borsh serialization error",
+        "docs": [
+          "BorshSerializationError: Borsh serialization error"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "borshDeserializationError",
+        "code": 9,
+        "message": "Borsh deserialization error",
+        "docs": [
+          "BorshDeserializationError: Borsh deserialization error"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "valueOccupied",
+        "code": 10,
+        "message": "Value in Payload or RuleSet is occupied",
+        "docs": [
+          "ValueOccupied: Value in Payload or RuleSet is occupied"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "dataIsEmpty",
+        "code": 11,
+        "message": "Account data is empty",
+        "docs": [
+          "DataIsEmpty: Account data is empty"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "messagePackSerializationError",
+        "code": 12,
+        "message": "MessagePack serialization error",
+        "docs": [
+          "MessagePackSerializationError: MessagePack serialization error"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "messagePackDeserializationError",
+        "code": 13,
+        "message": "MessagePack deserialization error",
+        "docs": [
+          "MessagePackDeserializationError: MessagePack deserialization error"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "missingAccount",
+        "code": 14,
+        "message": "Missing account",
+        "docs": [
+          "MissingAccount: Missing account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "missingPayloadValue",
+        "code": 15,
+        "message": "Missing Payload value",
+        "docs": [
+          "MissingPayloadValue: Missing Payload value"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "ruleSetOwnerMismatch",
+        "code": 16,
+        "message": "RuleSet owner must be payer",
+        "docs": [
+          "RuleSetOwnerMismatch: RuleSet owner must be payer"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "nameTooLong",
+        "code": 17,
+        "message": "Name too long",
+        "docs": [
+          "NameTooLong: Name too long"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "operationNotFound",
+        "code": 18,
+        "message": "The operation retrieved is not in the selected RuleSet",
+        "docs": [
+          "OperationNotFound: The operation retrieved is not in the selected RuleSet"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "ruleAuthorityIsNotSigner",
+        "code": 19,
+        "message": "Rule authority is not signer",
+        "docs": [
+          "RuleAuthorityIsNotSigner: Rule authority is not signer"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unsupportedRuleSetRevMapVersion",
+        "code": 20,
+        "message": "Unsupported RuleSet revision map version",
+        "docs": [
+          "UnsupportedRuleSetRevMapVersion: Unsupported RuleSet revision map version"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unsupportedRuleSetVersion",
+        "code": 21,
+        "message": "Unsupported RuleSet version",
+        "docs": [
+          "UnsupportedRuleSetVersion: Unsupported RuleSet version"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unexpectedRuleSetFailure",
+        "code": 22,
+        "message": "Unexpected RuleSet failure",
+        "docs": [
+          "UnexpectedRuleSetFailure: Unexpected RuleSet failure"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "ruleSetRevisionNotAvailable",
+        "code": 23,
+        "message": "RuleSet revision not available",
+        "docs": [
+          "RuleSetRevisionNotAvailable: RuleSet revision not available"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "additionalSignerCheckFailed",
+        "code": 24,
+        "message": "Additional Signer check failed",
+        "docs": [
+          "AdditionalSignerCheckFailed: Additional Signer check failed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "pubkeyMatchCheckFailed",
+        "code": 25,
+        "message": "Pubkey Match check failed",
+        "docs": [
+          "PubkeyMatchCheckFailed: Pubkey Match check failed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "pubkeyListMatchCheckFailed",
+        "code": 26,
+        "message": "Pubkey List Match check failed",
+        "docs": [
+          "PubkeyListMatchCheckFailed: Pubkey List Match check failed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "pubkeyTreeMatchCheckFailed",
+        "code": 27,
+        "message": "Pubkey Tree Match check failed",
+        "docs": [
+          "PubkeyTreeMatchCheckFailed: Pubkey Tree Match check failed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "pdamatchCheckFailed",
+        "code": 28,
+        "message": "PDA Match check failed",
+        "docs": [
+          "PDAMatchCheckFailed: PDA Match check failed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "programOwnedCheckFailed",
+        "code": 29,
+        "message": "Program Owned check failed",
+        "docs": [
+          "ProgramOwnedCheckFailed: Program Owned check failed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "programOwnedListCheckFailed",
+        "code": 30,
+        "message": "Program Owned List check failed",
+        "docs": [
+          "ProgramOwnedListCheckFailed: Program Owned List check failed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "programOwnedTreeCheckFailed",
+        "code": 31,
+        "message": "Program Owned Tree check failed",
+        "docs": [
+          "ProgramOwnedTreeCheckFailed: Program Owned Tree check failed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "amountCheckFailed",
+        "code": 32,
+        "message": "Amount checked failed",
+        "docs": [
+          "AmountCheckFailed: Amount checked failed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "frequencyCheckFailed",
+        "code": 33,
+        "message": "Frequency check failed",
+        "docs": [
+          "FrequencyCheckFailed: Frequency check failed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "isWalletCheckFailed",
+        "code": 34,
+        "message": "IsWallet check failed",
+        "docs": [
+          "IsWalletCheckFailed: IsWallet check failed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "programOwnedSetCheckFailed",
+        "code": 35,
+        "message": "Program Owned Set check failed",
+        "docs": [
+          "ProgramOwnedSetCheckFailed: Program Owned Set check failed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidCompareOp",
+        "code": 36,
+        "message": "Invalid compare operator",
+        "docs": [
+          "InvalidCompareOp: Invalid compare operator"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidConstraintType",
+        "code": 37,
+        "message": "Invalid constraint type value",
+        "docs": [
+          "InvalidConstraintType: Invalid constraint type value"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "ruleSetReadFailed",
+        "code": 38,
+        "message": "Failed to read the rule set",
+        "docs": [
+          "RuleSetReadFailed: Failed to read the rule set"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "duplicatedOperationName",
+        "code": 39,
+        "message": "Duplicated operation name",
+        "docs": [
+          "DuplicatedOperationName: Duplicated operation name"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "alignmentError",
+        "code": 40,
+        "message": "Could not determine alignemnt",
+        "docs": [
+          "AlignmentError: Could not determine alignemnt"
+        ]
+      }
+    ]
+  }
+}
