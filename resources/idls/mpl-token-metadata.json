@@ -4868,7 +4868,7 @@
         "display": {
           "kind": "instructionDisplayNode",
           "intent": "Create a token's metadata",
-          "interpolatedIntent": "${accounts.authority} creates ${accounts.mint} (${data.assetData.tokenStandard}) named ${data.assetData.name}, symbol ${data.assetData.symbol}, link ${data.assetData.uri}, royalty ${data.assetData.sellerFeeBasisPoints}, with ${accounts.updateAuthority} as update authority"
+          "interpolatedIntent": "${accounts.authority} creates ${accounts.mint} (${data.assetData.tokenStandard}) named ${data.assetData.name}, symbol ${data.assetData.symbol}, link ${data.assetData.uri}, royalty ${data.assetData.sellerFeeBasisPoints}[[, claiming the collection ${data.assetData.collection.key}]], with ${accounts.updateAuthority} as update authority"
         }
       },
       {
@@ -5089,18 +5089,11 @@
             "type": {
               "kind": "numberTypeNode",
               "format": "u64",
-              "endian": "le",
-              "display": {
-                "kind": "amountNumberDisplayNode",
-                "decimals": {
-                  "kind": "injectedValueNode",
-                  "key": "mintDecimals"
-                }
-              }
+              "endian": "le"
             },
             "display": {
               "kind": "structFieldDisplayNode",
-              "label": "Amount"
+              "label": "Amount, in base units"
             }
           },
           {
@@ -5140,19 +5133,8 @@
         "display": {
           "kind": "instructionDisplayNode",
           "intent": "Mint tokens",
-          "interpolatedIntent": "${accounts.authority} mints ${data.amount} of ${accounts.mint} to token account ${accounts.token}"
-        },
-        "provides": [
-          {
-            "kind": "providedNode",
-            "name": "mintDecimals",
-            "node": {
-              "kind": "accountFieldValueNode",
-              "account": "mint",
-              "path": "decimals"
-            }
-          }
-        ]
+          "interpolatedIntent": "${accounts.authority} mints ${data.amount} of ${accounts.mint}, counted in base units, to token account ${accounts.token}"
+        }
       },
       {
         "kind": "instructionNode",

@@ -46,6 +46,17 @@ impl IdlNetwork {
         }
     }
 
+    /// Its name in a sentence: "Mainnet", "Devnet", "Testnet", "a local
+    /// network".
+    pub fn words(self) -> &'static str {
+        match self {
+            Self::Mainnet => "Mainnet",
+            Self::Devnet => "Devnet",
+            Self::Testnet => "Testnet",
+            Self::Localnet => "a local network",
+        }
+    }
+
     pub fn from_key(key: &str) -> Option<Self> {
         Self::ALL.into_iter().find(|network| network.key() == key)
     }

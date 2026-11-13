@@ -65,7 +65,7 @@ pub fn template_view(
     let checked = check(&template, &*idls);
     let problems = match &checked {
         Ok(_) => Vec::new(),
-        Err(problems) => problems.iter().map(super::sentence).collect(),
+        Err(problems) => super::template::problems_in_words(problems, &idls),
     };
     let questions = reader_questions(&template, checked.as_ref().ok());
     let blocks = reader_blocks(&*idls, &template, FactsFrom::of(session));

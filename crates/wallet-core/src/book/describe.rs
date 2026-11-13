@@ -844,7 +844,7 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
 ];
 
 /// The display name of a program whose IDL ships with the app.
-fn program_display_name(pubkey: &Pubkey) -> Option<&'static str> {
+pub fn program_display_name(pubkey: &Pubkey) -> Option<&'static str> {
     PROGRAM_DISPLAY_NAMES
         .iter()
         .find(|(known, _)| known == pubkey)

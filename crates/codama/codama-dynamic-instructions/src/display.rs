@@ -608,7 +608,48 @@ fn signer_matches(expected: Option<IsSigner>, is_signer: bool) -> bool {
     }
 }
 
+/// Fill `template`. A part written between `[[` and `]]` is optional: it is
+/// left out when a value in it cannot be filled, such as a field of an
+/// option the instruction leaves empty, and the rest of the sentence stands.
 fn interpolate(
+    template: &str,
+    args: &HashMap<String, Shown>,
+    ctx: &Ctx<'_>,
+) -> Option<(String, Vec<IntentSpan>)> {
+    if !template.contains("[[") {
+        return interpolate_part(template, args, ctx);
+    }
+    let mut out = String::new();
+    let mut spans = Vec::new();
+    let mut rest = template;
+    loop {
+        let (required, optional, after) = match rest.find("[[") {
+            Some(start) => {
+                let end = rest[start..].find("]]")? + start;
+                (
+                    &rest[..start],
+                    Some(&rest[start + 2..end]),
+                    &rest[end + 2..],
+                )
+            }
+            None => (rest, None, ""),
+        };
+        let (text, parts) = interpolate_part(required, args, ctx)?;
+        out.push_str(&text);
+        spans.extend(parts);
+        if let Some((text, parts)) = optional.and_then(|part| interpolate_part(part, args, ctx)) {
+            out.push_str(&text);
+            spans.extend(parts);
+        }
+        if optional.is_none() {
+            break;
+        }
+        rest = after;
+    }
+    Some((out, spans))
+}
+
+fn interpolate_part(
     template: &str,
     args: &HashMap<String, Shown>,
     ctx: &Ctx<'_>,
@@ -1942,5 +1983,40 @@ mod tests {
                 get_instruction_display(&root, &parsed, &HashMap::new(), &HashMap::new()).unwrap();
             assert!(shown.interpolated_intent.is_none(), "{template}");
         }
+    }
+
+    #[test]
+    fn an_optional_part_is_left_out_when_it_cannot_be_filled() {
+        for (template, said) in [
+            (
+                "Send ${data.args.amount}[[, tagged ${data.args.missing}]]",
+                "Send 1.5",
+            ),
+            (
+                "Send ${data.args.amount}[[ with ${data.args.decimals} decimals]].",
+                "Send 1.5 with 6 decimals.",
+            ),
+            (
+                "[[Gone ${data.nothing.x}, ]]Send ${data.args.amount}",
+                "Send 1.5",
+            ),
+        ] {
+            let (root, instruction) = nested_args_instruction(template);
+            let parsed = parsed(&root, instruction, nested_args_data(), vec![]);
+            let shown =
+                get_instruction_display(&root, &parsed, &HashMap::new(), &HashMap::new()).unwrap();
+            assert_eq!(
+                shown.interpolated_intent.as_deref(),
+                Some(said),
+                "{template}"
+            );
+            assert_eq!(join_spans(shown.spans.as_ref().unwrap()), said);
+        }
+        // What is outside the brackets is still required.
+        let (root, instruction) = nested_args_instruction("Send ${data.args.missing}[[ ok]]");
+        let parsed = parsed(&root, instruction, nested_args_data(), vec![]);
+        let shown =
+            get_instruction_display(&root, &parsed, &HashMap::new(), &HashMap::new()).unwrap();
+        assert!(shown.interpolated_intent.is_none());
     }
 }
