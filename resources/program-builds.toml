@@ -501,3 +501,12 @@ idlSha256 = "c3d85eb60030373c4eb64e8ae9e8063345b08a2385f0942f533fb133826d0b9d"
 source = { repo = "https://github.com/Kamino-Finance/klend", commit = "77e81854909ab7ffea3a2e898b2554d96e07daac" }
 verified = "GzFgdRJXmawPhGeBsyRCDLx4jAKPsvbUqoqitzppkzkW"
 reviewed = "2026-11-12"
+
+[[builds]]
+# okxDexRouter (pack). Closed source (its file paths name the crate dex-solana-v3); deployed at slot 467648565; OtterSec lists no verify record. Each of the 25 instructions the IDL lists is in this binary by its Anchor log name, and the binary logs no other; every venue the IDL's Dex and DynamicCandidate enums name is in it. Successful mainnet transactions of 12 instructions, the six swap variants among them, decode with every named account and exactly the bytes their arguments take.
+programId = "proVF4pMXVaYqmy4NjniPh4pqKNfMmsihgd4wdkCX3u"
+network = "mainnet"
+programHash = "402d2bee1577517709657d8aa4b46efbc568f22b82241ab1abcc4b8afe466c54"
+authority = "CjoV5B96reuCfPh2rRK11G1QptG97jZdyZArTn3EN1Mj"
+idlSha256 = "8d067c8305137e9318c48e517fb59794f74bb48070897b3f59868fda2400421b"
+reviewed = "2026-11-12"

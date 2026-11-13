@@ -433,3 +433,23 @@ token amounts read their mint's decimals where the mint is an account of the \
 instruction; collateral amounts of depositObligationCollateral and \
 withdrawObligationCollateral, and socialized losses, are in base units. Fees, rates and \
 execution bonuses are in percent, terms are durations. Display nodes added by hand."""
+
+# OKX's DEX router, the swap aggregator OKX Wallet and OKX DEX have their
+# users sign: swaps along a route of venues with an integrator's commission, a
+# platform fee and a trim of output above the quote, plus helpers that create
+# token accounts. The Anchor IDL names the program "OKX: DEX Router", which
+# the conversion turns into okxDexRouter. Devnet runs another executable and
+# publishes no IDL.
+[[idls]]
+file = "okx-dex-router.json"
+programId = "proVF4pMXVaYqmy4NjniPh4pqKNfMmsihgd4wdkCX3u"
+name = "okxDexRouter"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "2984309d31f11ed1ce0c3cb563c824ab196c9e68cb3a3ab540fd12b1bd94ec13" }
+changes = """Converted from Anchor to Codama. The swaps declare the accounts their route reads, with \
+any trim and charge accounts after them, as one remaining-accounts group. Instructions \
+with optional accounts set optionalAccountStrategy to programId. The Token program's \
+mint account is added, so a swap's amount in and quoted output read the decimals of the \
+input and output mints the instruction names. Slippage and the platform's share of the \
+commission are in percent; the packed commission and the trim and charge rates are plain \
+numbers. Display nodes added by hand."""
