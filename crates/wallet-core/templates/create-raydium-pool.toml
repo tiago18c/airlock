@@ -55,7 +55,7 @@ hint = "Added to the pool from this wallet, in token B's own units. It cannot be
 [[input]]
 name = "config"
 label = "AMM config"
-hint = "The fee tier. Devnet's config 0 is filled in until you change it."
+hint = "The fee tier. Devnet's config 0 is filled in until you change it. Raydium takes the tier's pool creation fee from this wallet: 0.15 SOL for config 0."
 default = "5MxLgy9oPdTC3YgkiePHqr3EoCRD9uLVYRQS2ANAs7wy"
 
 [[input]]

@@ -322,6 +322,7 @@ A debug build started with `AIRLOCK_DEBUG_FILE_DIR` set skips the file dialogs: 
 | Create a compressed NFT tree, Mint a compressed NFT | System, Bubblegum (`createTreeV2`, `mintV2`), MPL Account Compression, MPL Noop | mainnet, devnet | `compressed_templates.rs` |
 | Create a vesting or payment stream | Streamflow (`create`) | mainnet | `stream_template.rs` |
 | Stake SOL with Marinade, Unstake mSOL now, Unstake mSOL in a few days, Claim a Marinade unstake ticket | Marinade (`deposit`, `liquidUnstake`, `orderUnstake`, `claim`) | mainnet | `marinade_templates.rs` |
+| Create a Raydium pool | System, Token, associated token, Raydium's constant-product pools (`initialize`) | devnet | `raydium_pool_template.rs` |
 | Upgrade a program | upgradeable loader; program-metadata and OtterSec's verify program for the options | every network; the options on mainnet and devnet | `upgrade_template.rs` |
 
 Token Metadata, Streamflow and Marinade run other builds on devnet than the ones their IDLs describe, which is why their IDLs, and so these templates, are mainnet only. Their fixed addresses come from each program's source or SDK and every executed sample in the IDL's reports: Streamflow's treasury, automatic-withdrawal service and fee oracle are the constants of its SDK (`packages/stream/solana/constants.ts`), and Marinade's accounts are its one state's PDAs and the accounts that state records. Nothing a template writes is read from the chain but rent, a mint's decimals and its token program.

@@ -12,6 +12,7 @@ mod offline_nonce;
 mod programmatic_squads;
 mod proposal_fit;
 mod proposals;
+mod raydium_pool_template;
 mod sign_panel;
 mod site_request;
 mod squads_checks;
