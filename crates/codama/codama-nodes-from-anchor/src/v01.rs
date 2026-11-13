@@ -17,15 +17,141 @@ use codama_nodes::{
     U8,
 };
 use serde_json::Value;
+use std::cell::Cell;
 use std::collections::HashMap;
+use std::rc::Rc;
+
+/// How deep a converted type may nest, generic templates expanded. A file is
+/// held to about this depth by the reader's own limit on its text; a generic
+/// template expands in place, so without this a few lines could nest without
+/// end.
+const MAX_TYPE_DEPTH: usize = 32;
+
+/// How many times generic templates may be expanded in one IDL. A template
+/// that uses another twice doubles the tree at each level.
+const MAX_GENERIC_EXPANSIONS: usize = 4096;
+
+/// How many JSON values the arguments of generic types may hold in one IDL,
+/// once the generics of the scope they are written in are filled in. An
+/// argument that repeats its own parameter doubles at each level.
+const MAX_GENERIC_ARGUMENT_NODES: usize = 1 << 18;
+
+/// What one conversion has spent of the limits above, shared by every scope.
+#[derive(Default)]
+struct Spent {
+    depth: Cell<usize>,
+    expansions: Cell<usize>,
+    argument_nodes: Cell<usize>,
+}
+
+/// One level of type nesting, given back when the level is left.
+struct Level<'s>(&'s Cell<usize>);
+
+impl Drop for Level<'_> {
+    fn drop(&mut self) {
+        self.0.set(self.0.get() - 1);
+    }
+}
 
 /// Generic-type resolution context: the generic typedefs available in the IDL
 /// plus any `const`/`type` arguments bound at the current use site.
+///
+/// A bound type argument holds no generic of its own: the generics of the
+/// scope it was written in are filled in when it is bound, so it means the
+/// same wherever the template uses it. Left as written, `Price<T>` inside
+/// `Prices<T>` would bind `T` to "the type `T`" and never resolve.
 #[derive(Clone, Default)]
 pub struct Generics<'a> {
-    pub const_args: HashMap<String, &'a Value>,
-    pub type_args: HashMap<String, &'a Value>,
-    pub types: HashMap<String, &'a Value>,
+    const_args: HashMap<String, u64>,
+    type_args: HashMap<String, Value>,
+    types: Rc<HashMap<String, &'a Value>>,
+    spent: Rc<Spent>,
+}
+
+impl<'a> Generics<'a> {
+    fn with_templates(types: HashMap<String, &'a Value>) -> Self {
+        Self {
+            types: Rc::new(types),
+            ..Self::default()
+        }
+    }
+
+    /// The scope of a template being expanded: its own arguments only.
+    fn inside_a_template(&self, name: &str) -> Result<Self> {
+        let expansions = self.spent.expansions.get() + 1;
+        if expansions > MAX_GENERIC_EXPANSIONS {
+            return Err(AnchorIdlError::GenericExpansionLimit(name.to_string()));
+        }
+        self.spent.expansions.set(expansions);
+        Ok(self.without_arguments())
+    }
+
+    /// This scope with nothing bound, for a value that holds no generic.
+    fn without_arguments(&self) -> Self {
+        Self {
+            const_args: HashMap::new(),
+            type_args: HashMap::new(),
+            types: self.types.clone(),
+            spent: self.spent.clone(),
+        }
+    }
+
+    /// One level deeper into a type, or an error past the limit.
+    fn descend(&self) -> Result<Level<'_>> {
+        let depth = self.spent.depth.get() + 1;
+        if depth > MAX_TYPE_DEPTH {
+            return Err(AnchorIdlError::TypeTooDeep(MAX_TYPE_DEPTH));
+        }
+        self.spent.depth.set(depth);
+        Ok(Level(&self.spent.depth))
+    }
+
+    /// `value`, a type as a template or a use site writes it, with every
+    /// generic this scope binds filled in. `name` is the template it is an
+    /// argument of, for the error.
+    fn filled_in(&self, value: &Value, name: &str) -> Result<Value> {
+        let nodes = self.spent.argument_nodes.get() + 1;
+        if nodes > MAX_GENERIC_ARGUMENT_NODES {
+            return Err(AnchorIdlError::GenericExpansionLimit(name.to_string()));
+        }
+        self.spent.argument_nodes.set(nodes);
+        Ok(match value {
+            Value::Object(map) => {
+                if let (1, Some(generic)) = (map.len(), map.get("generic").and_then(Value::as_str))
+                {
+                    if let Some(bound) = self.type_args.get(generic) {
+                        return Ok(bound.clone());
+                    }
+                    // A const generic, as the length of an array.
+                    if let Some(bound) = self.const_args.get(generic) {
+                        return Ok(Value::from(*bound));
+                    }
+                }
+                let mut filled = serde_json::Map::with_capacity(map.len());
+                for (key, inner) in map {
+                    filled.insert(key.clone(), self.filled_in(inner, name)?);
+                }
+                // A const argument that passes on a const generic of this scope.
+                if filled.get("kind").and_then(Value::as_str) == Some("const") {
+                    let passed_on = filled
+                        .get("value")
+                        .and_then(Value::as_str)
+                        .and_then(|value| self.const_args.get(value));
+                    if let Some(bound) = passed_on {
+                        filled.insert("value".into(), Value::from(bound.to_string()));
+                    }
+                }
+                Value::Object(filled)
+            }
+            Value::Array(items) => Value::Array(
+                items
+                    .iter()
+                    .map(|item| self.filled_in(item, name))
+                    .collect::<Result<_>>()?,
+            ),
+            leaf => leaf.clone(),
+        })
+    }
 }
 
 pub fn program_node_from_anchor(idl: &Value) -> Result<ProgramNode> {
@@ -38,7 +164,7 @@ pub fn program_node_from_anchor(idl: &Value) -> Result<ProgramNode> {
 
     // Split typedefs into concrete types and generic templates (monomorphized
     // at each use site rather than emitted as defined types).
-    let mut generics = Generics::default();
+    let mut templates = HashMap::new();
     let mut concrete_types: Vec<&Value> = Vec::new();
     for t in arr(idl, "types") {
         let type_name = req_str(t, "name")?;
@@ -46,11 +172,12 @@ pub fn program_node_from_anchor(idl: &Value) -> Result<ProgramNode> {
             .map(|g| !g.as_array().map(Vec::is_empty).unwrap_or(true))
             == Some(true)
         {
-            generics.types.insert(type_name.to_string(), t);
+            templates.insert(type_name.to_string(), t);
         } else {
             concrete_types.push(t);
         }
     }
+    let generics = Generics::with_templates(templates);
 
     // Types that back accounts or events become account/event data, not
     // standalone defined types.
@@ -554,6 +681,7 @@ fn number_format(name: &str) -> Result<NumberFormat> {
 }
 
 fn object_type_node(idl_type: &Value, generics: &Generics) -> Result<TypeNode> {
+    let _level = generics.descend()?;
     if let Some(array) = idl_type.get("array").and_then(Value::as_array) {
         if array.len() == 2 {
             let item = type_node_from_anchor(&array[0], generics)?;
@@ -578,8 +706,8 @@ fn object_type_node(idl_type: &Value, generics: &Generics) -> Result<TypeNode> {
             .type_args
             .get(generic)
             .ok_or_else(|| AnchorIdlError::GenericTypeMissing(generic.to_string()))?;
-        let inner = bound.get("type").unwrap_or(bound);
-        return type_node_from_anchor(inner, generics);
+        // It holds no generic, so no argument of this scope is its to read.
+        return type_node_from_anchor(bound, &generics.without_arguments());
     }
     if let Some(item) = idl_type.get("option") {
         return Ok(OptionTypeNode::new(type_node_from_anchor(item, generics)?).into());
@@ -606,13 +734,24 @@ fn object_type_node(idl_type: &Value, generics: &Generics) -> Result<TypeNode> {
 fn resolve_const_generic(len: &Value, generics: &Generics) -> Result<u64> {
     let name =
         opt_str(len, "generic").ok_or_else(|| AnchorIdlError::UnrecognizedType(len.to_string()))?;
-    let bound = generics
+    generics
         .const_args
         .get(name)
-        .ok_or_else(|| AnchorIdlError::GenericTypeMissing(name.to_string()))?;
-    opt_str(bound, "value")
-        .and_then(|v| v.parse().ok())
+        .copied()
         .ok_or_else(|| AnchorIdlError::GenericTypeMissing(name.to_string()))
+}
+
+/// The value of a const argument at a use site: a number, or a const generic
+/// of the scope the use site is written in, passed on.
+fn const_argument(arg: &Value, generics: &Generics) -> Option<u64> {
+    let written = opt_str(arg, "value").or_else(|| {
+        arg.get("type")
+            .and_then(|passed_on| opt_str(passed_on, "generic"))
+    })?;
+    written
+        .parse()
+        .ok()
+        .or_else(|| generics.const_args.get(written).copied())
 }
 
 /// `{"defined": {"name": ..., "generics": [...]?}}` — a link node for plain
@@ -634,13 +773,19 @@ fn defined_type_link(defined: &Value, generics: &Generics) -> Result<TypeNode> {
         .copied()
         .ok_or_else(|| AnchorIdlError::GenericTypeMissing(name.to_string()))?;
     let declarations = arr(template, "generics");
-    let mut bound = generics.clone();
+    let mut bound = generics.inside_a_template(name)?;
     for (declaration, arg) in declarations.iter().zip(args) {
         let generic_name = req_str(declaration, "name")?.to_string();
         if opt_str(declaration, "kind") == Some("const") {
-            bound.const_args.insert(generic_name, arg);
+            let value = const_argument(arg, generics)
+                .ok_or_else(|| AnchorIdlError::GenericTypeMissing(generic_name.clone()))?;
+            bound.const_args.insert(generic_name, value);
         } else {
-            bound.type_args.insert(generic_name, arg);
+            // Read in the scope the use site is written in, not the template's.
+            let written = arg.get("type").unwrap_or(arg);
+            bound
+                .type_args
+                .insert(generic_name, generics.filled_in(written, name)?);
         }
     }
     type_node_from_anchor(

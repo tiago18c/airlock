@@ -163,6 +163,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 ### Security
 - Restoring a Vector XMSS wallet from its recovery phrase a second time now signs the same rotation with the same signature. Before, each restore made a new signature with the key's last leaf, and two of those could give the key away.
 - An account state that claims more leaves than a key has is refused. Before, scanning one made the key unable to sign on that device.
+- **An Anchor IDL whose generic type hands its own parameter to another is now read**, as GMX's does with its prices. Before, reading one closed the app, and since a program's IDL is read from the chain as soon as a transaction names the program, a transaction of such a program could not be reviewed at all. An IDL whose generic types hold themselves, or expand into more than a type may hold, is refused, and its instructions read raw.
 
 ### Fixed
 - **An instruction with an optional signer left out could not be signed.** Build put the program's own address in its place as a signer, which nobody can sign for; it is now read only and signs nothing.
