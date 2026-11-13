@@ -9,7 +9,7 @@ pub fn TxFacts(tx: DecodedTx) -> Element {
     let size = format!(
         "{} / {} bytes",
         number(tx.wire.len() as u64),
-        number(MAX_TRANSACTION_SIZE as u64)
+        number(tx.size_limit() as u64)
     );
     let limit = match tx.budget.compute_unit_limit {
         Some(limit) => format!("{} units", number(limit.into())),

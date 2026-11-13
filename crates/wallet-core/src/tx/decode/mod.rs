@@ -10,6 +10,9 @@ use crate::tx::builder::{
 use solana_hash::Hash;
 use solana_instruction::{AccountMeta, Instruction};
 use solana_message::v1::{TransactionConfig, V1_PREFIX};
+
+/// The most bytes of a legacy or v0 transaction: one network packet.
+pub const PACKET_DATA_SIZE: usize = 1232;
 use solana_message::{MessageHeader, VersionedMessage};
 use solana_pubkey::Pubkey;
 use solana_signature::{Signature, SIGNATURE_BYTES};
@@ -220,6 +223,46 @@ impl DecodedTx {
             let count = u32::try_from(self.instructions.len().max(1)).unwrap_or(u32::MAX);
             DEFAULT_CU_PER_INSTRUCTION.saturating_mul(count)
         })
+    }
+
+    /// The most bytes a transaction of this format may take on the wire,
+    /// signatures included: a v1 transaction holds 4,096, a legacy or v0 one
+    /// what fits one network packet, 1,232.
+    pub fn size_limit(&self) -> usize {
+        match self.format {
+            TxFormat::V1 => solana_message::v1::MAX_TRANSACTION_SIZE,
+            TxFormat::Legacy | TxFormat::V0 => PACKET_DATA_SIZE,
+        }
+    }
+
+    /// It is larger than its format allows, so no node will take it.
+    pub fn too_large(&self) -> bool {
+        self.wire.len() > self.size_limit()
+    }
+
+    /// What to say of a transaction too large to be sent, and what can be
+    /// done about it. `None` when it fits.
+    pub fn too_large_note(&self, from_site: bool) -> Option<String> {
+        if !self.too_large() {
+            return None;
+        }
+        let size = crate::group_thousands(&self.wire.len().to_string());
+        let limit = crate::group_thousands(&self.size_limit().to_string());
+        let format = match self.format {
+            TxFormat::Legacy => "a legacy transaction",
+            TxFormat::V0 => "a v0 transaction",
+            TxFormat::V1 => "a transaction",
+        };
+        let fits_v1 = self.format != TxFormat::V1
+            && self.wire.len() <= solana_message::v1::MAX_TRANSACTION_SIZE;
+        let way = match (from_site, fits_v1) {
+            (true, _) => "Ask the site for smaller transactions: no node will take this one.",
+            (false, true) => "Edit on Build makes it a v1 transaction, which holds up to 4,096 bytes, or split its instructions over several transactions.",
+            (false, false) => "Split its instructions over several transactions: Edit on Build, remove some, and send those in another.",
+        };
+        Some(format!(
+            "Too large to be sent: {size} bytes, and {format} holds at most {limit}. {way}"
+        ))
     }
 
     /// Every required signature is present and valid.

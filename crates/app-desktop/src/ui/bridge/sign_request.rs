@@ -171,13 +171,16 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
 /// What the node said it would do.
 #[component]
 fn ModalSimulation(simulation: Signal<SimState>) -> Element {
+    let session = use_context::<Session>();
     match simulation() {
         SimState::Running => rsx! {
             p { class: "muted", role: "status", "Simulating…" }
         },
         SimState::Done(done) => match done.error {
             Some(error) => {
-                let why = error.message.trim_end_matches('.');
+                let worded =
+                    wallet_core::simulate::word_simulation_error(&error, &*session.idls.read());
+                let why = worded.trim_end_matches('.');
                 rsx! {
                     p { class: "warn", role: "alert",
                         "In simulation this fails: {why}. If it were sent, it would still cost the fee."
@@ -378,6 +381,9 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
             p { class: "error", role: "alert", "{problem}" }
         },
         Prepared::Ready { .. } => rsx! {
+            if let Some(note) = prep.shown.as_ref().and_then(|tx| tx.too_large_note(true)) {
+                p { class: "error", role: "alert", "{note}" }
+            }
             if !prep.signs_with.is_empty() {
                 div { class: "chip-row",
                     span { class: "muted", "signs with" }

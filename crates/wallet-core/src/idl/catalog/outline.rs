@@ -106,6 +106,22 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
     }
 }
 
+/// The name and message the IDL of `program_id` gives its error `code`.
+pub fn program_error_words(
+    catalog: &(impl IdlCatalog + ?Sized),
+    program_id: &Pubkey,
+    code: u32,
+) -> Option<(String, String)> {
+    let client = catalog.program_client(program_id)?;
+    let error = client
+        .root()
+        .program
+        .errors
+        .iter()
+        .find(|error| error.code == code)?;
+    Some((error.name.to_string(), error.message.clone()))
+}
+
 fn outline_client(client: &ProgramClient) -> Result<IdlOutline, IdlError> {
     let value =
         serde_json::to_value(client.root()).map_err(|err| IdlError::Invalid(err.to_string()))?;
