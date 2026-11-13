@@ -537,3 +537,12 @@ programHash = "4c1433047f0260817fa6b3376e166b2e3503a7b54718caf54a92941da5404613"
 authority = "JADaUV8kvDpDbJr55wxXJHVaBS3VCj8thZZHjfeuCVLd"
 idlSha256 = "b402e2e48af151e73ed0ad41628345b81db652b7361af0dcb6a16d36a69ab581"
 reviewed = "2026-11-12"
+
+[[builds]]
+# lending (pack). Deployed at slot 453954884; OtterSec lists no verify record. Each of the 17 instructions the file lists is in this binary by its Anchor log name and by its discriminator, and the binary logs no other apart from Anchor's IDL instructions. Mainnet transactions of deposit, depositWithMinAmountOut, withdraw, redeem and updateRate decode with every account named.
+programId = "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9"
+network = "mainnet"
+programHash = "ffb64b851fb00e49b0386f971a6a640fdcc1f2734dcf3b3c2324d7e6044a1299"
+authority = "4MsgBB5VPoTrUSp5XnfbViV386C1UnsTdifLBw33ZMSJ"
+idlSha256 = "ba83fa0ea573ebe4191066e48e2d358c3cfa1fa906491c1617ff95aa3035dad7"
+reviewed = "2026-11-12"
