@@ -159,6 +159,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - **One filled button at a time in Review and Sign and Proposals.** **Rebuild the transaction** and **Rebuild on a fresh blockhash** are amber when nothing else can move the transaction on, and plain buttons otherwise; a proposal's buttons are small.
 - **Every unlock card has a line under its title** saying what unlocking is for, the lock screen's too, and Airlock Offline adds that it never connects to every one. The lock screen also says what **Skip** does: it opens the app with the vault locked, in the words the Wallets pane and Portfolio use while locked. The lock screen and the unlock prompt end the same way: both buttons at the right on a desktop, two halves on a phone. While the vault is locked, Portfolio says what the Wallets pane says, on a desktop and a phone.
 - A History row names a wallet with no name by its address chip, as its title does, rather than a bare short address. Send's **Max** is a small button with a border at the end of the amount field, on a phone too.
+- **Unstake mSOL in a few days** and **Stake SOL with Marinade** no longer say a delayed unstake is free. Marinade keeps a delayed-unstake fee from the ticket (0.2 % today; Marinade sets it), and the templates now say so.
 
 ### Security
 - Restoring a Vector XMSS wallet from its recovery phrase a second time now signs the same rotation with the same signature. Before, each restore made a new signature with the key's last leaf, and two of those could give the key away.

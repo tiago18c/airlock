@@ -1,6 +1,6 @@
 format = 1
 name = "Unstake mSOL in a few days"
-summary = "Burns mSOL for a Marinade ticket worth its SOL with no fee, claimable once Marinade has unstaked it: from the next epoch, two to three days at most."
+summary = "Burns mSOL for a Marinade ticket worth its SOL less Marinade's delayed-unstake fee (0.2 % when this was written; Marinade sets it), claimable once Marinade has unstaked it: from the next epoch, two to three days at most."
 
 [programs]
 marinade = "MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"
