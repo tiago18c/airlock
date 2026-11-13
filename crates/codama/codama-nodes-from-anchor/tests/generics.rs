@@ -274,6 +274,58 @@ fn arguments_that_double_at_each_level_are_refused() {
     assert!(is_a_limit(&err), "{err}");
 }
 
+/// A template of `fields` plain fields, used `uses` times as an instruction's
+/// arguments: few expansions, each of them wide.
+fn wide(fields: usize, uses: usize) -> String {
+    let fields: Vec<(String, String)> = (0..fields)
+        .map(|at| (format!("f{at}"), r#""u8""#.to_string()))
+        .collect();
+    let fields: Vec<(&str, String)> = fields
+        .iter()
+        .map(|(name, ty)| (name.as_str(), ty.clone()))
+        .collect();
+    let arguments: Vec<String> = (0..uses)
+        .map(|at| {
+            format!(
+                r#"{{"name":"a{at}","type":{}}}"#,
+                used("Wide", &[r#""u8""#])
+            )
+        })
+        .collect();
+    format!(
+        r#"{{"address":"4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+          "metadata":{{"name":"generics","version":"0.1.0","spec":"0.1.0"}},
+          "instructions":[{{"name":"run","discriminator":[1,2,3,4,5,6,7,8],"accounts":[],
+            "args":[{}]}}],
+          "types":[{}]}}"#,
+        arguments.join(","),
+        template("Wide", &["T"], &fields)
+    )
+}
+
+/// The expansions are few enough, but what they make together is not: a
+/// file of 100 KiB that would hold a million fields is refused, and one that
+/// holds a tenth of the limit converts.
+#[test]
+fn templates_that_expand_to_too_many_fields_are_refused() {
+    let fits = root_node_from_anchor(&wide(100, 100)).unwrap();
+    let root = serde_json::to_value(fits).unwrap();
+    assert_eq!(
+        root["program"]["instructions"][0]["arguments"]
+            .as_array()
+            .unwrap()
+            .len(),
+        // The discriminator, then the hundred arguments.
+        101
+    );
+
+    let err = refused(&wide(1_000, 1_000));
+    assert!(
+        matches!(err, AnchorIdlError::GenericExpansionLimit(_)),
+        "{err}"
+    );
+}
+
 /// A chain of templates, each holding the next, converts up to the depth a
 /// type may nest and is refused past it.
 #[test]
