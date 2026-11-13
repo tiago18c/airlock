@@ -132,6 +132,16 @@ impl Screen {
         self.act(|| (Signal::new(None), Signal::new(None)))
     }
 
+    fn idl_records_of_file(&self) -> usize {
+        self.act(|| {
+            self.session
+                .idl_records()
+                .into_iter()
+                .filter(|record| record.origin == wallet_core::IdlOrigin::File)
+                .count()
+        })
+    }
+
     fn dialog_open(&self) -> bool {
         self.act(|| *self.session.forms.program.file_dialog.peek())
     }
@@ -142,6 +152,24 @@ impl Screen {
 
     fn selected(&self) -> Option<Pubkey> {
         self.act(|| *self.session.forms.program.selected.peek())
+    }
+
+    /// What an import that replaces a shipped IDL waits on, by name.
+    fn pending(&self) -> Option<Vec<String>> {
+        self.act(|| {
+            self.session
+                .forms
+                .program
+                .pending_import
+                .peek()
+                .as_ref()
+                .map(|held| held.replaces.clone())
+        })
+    }
+
+    /// Say yes to the import waiting on the user.
+    fn replace(&self, note: Signal<Option<String>>, error: Signal<Option<String>>) {
+        self.act(|| confirm_import(&self.session, true, note, error));
     }
 
     fn memo_id(&self) -> Pubkey {
@@ -157,6 +185,8 @@ impl Screen {
         })
     }
 }
+
+const REPLACED: &str = "Imported memo. It replaces the IDL that ships with Airlock for ";
 
 const MEMO: &[u8] = include_bytes!("../../../../../resources/idls/memo.json");
 
@@ -203,7 +233,19 @@ async fn a_file_is_imported_after_the_click_that_asked_for_it_returns() {
 
     answer.send(Ok(MEMO.to_vec())).unwrap();
     screen.returned().await;
-    assert_eq!(screen.said(note).as_deref(), Some("Imported memo."));
+    // Memo's IDL ships with the app: the import waits for the user's yes,
+    // naming it.
+    assert_eq!(screen.said(note), None);
+    let waiting = screen
+        .pending()
+        .expect("asks before replacing a shipped IDL");
+    assert_eq!(waiting.len(), 1, "{waiting:?}");
+    assert_eq!(screen.idl_records_of_file(), 0, "nothing imported yet");
+    screen.replace(note, error);
+    let said = screen.said(note).unwrap();
+    assert!(said.starts_with(REPLACED), "{said}");
+    assert!(said.ends_with(&format!("{}.", waiting[0])), "{said}");
+    assert_eq!(screen.pending(), None);
     assert_eq!(screen.said(error), None);
     assert_eq!(screen.selected(), Some(screen.memo_id()));
     assert!(!screen.dialog_open(), "let go once it returns");
@@ -213,7 +255,8 @@ async fn a_file_is_imported_after_the_click_that_asked_for_it_returns() {
     screen.act(|| import_one_from(screen.session, note, error, picked));
     drop(answer);
     screen.returned().await;
-    assert_eq!(screen.said(note).as_deref(), Some("Imported memo."));
+    assert!(screen.said(note).unwrap().starts_with(REPLACED));
+    assert_eq!(screen.pending(), None);
     assert!(!screen.dialog_open());
 
     // One that cannot be read says why, in place of the note.
@@ -274,8 +317,12 @@ async fn an_import_finishes_when_the_pane_is_left_while_its_dialog_is_open() {
 
     answer.send(Ok(MEMO.to_vec())).unwrap();
     screen.returned().await;
-    assert_eq!(screen.selected(), Some(screen.memo_id()));
     assert!(!screen.dialog_open());
+    // The question waits for the pane, and is answered with its new note.
+    assert!(screen.pending().is_some());
+    let (note, error) = screen.pane();
+    screen.replace(note, error);
+    assert_eq!(screen.selected(), Some(screen.memo_id()));
 
     // So does one that fails, and an export.
     let (answer, picked) = dialog::<IdlFiles>();
