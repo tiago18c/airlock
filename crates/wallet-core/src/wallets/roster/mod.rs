@@ -398,7 +398,12 @@ pub fn shareable_accounts(
         }
     }
     for row in book.rows_in(LOCAL_GROUP_ID, "", Some(AddressKind::Account)) {
-        if row.entry.wallet_id.is_none() {
+        let Some(wallet_id) = row.entry.wallet_id else {
+            continue;
+        };
+        // An entry left tied to a wallet that is no longer listed names a
+        // key this device does not hold.
+        if vault.is_some_and(|data| !data.wallets.iter().any(|wallet| wallet.id == wallet_id)) {
             continue;
         }
         if !out.iter().any(|known| known.pubkey == row.entry.pubkey) {

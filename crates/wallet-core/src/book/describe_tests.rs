@@ -325,3 +325,19 @@ fn every_shipped_program_has_one_display_name() {
         );
     }
 }
+
+#[test]
+fn an_entry_tied_to_a_wallet_that_is_gone_is_a_plain_address() {
+    let hot = WalletRecord::from_keypair_seed("Main", [7; 32]);
+    let (here, gone) = (hot.id, WalletRecord::from_keypair_seed("Old", [8; 32]).id);
+    let mut book = AddressBook::new();
+    // A key of a wallet that is listed, at another address: still a wallet.
+    book.insert_account(pk(5), "Its other key", Origin::Imported, Some(here));
+    book.insert_account(pk(6), "Removed", Origin::Imported, Some(gone));
+    let found = directory(vec![hot], book, Holdings::default());
+    assert_eq!(
+        found.describe(&pk(5)).category,
+        Category::Wallet(WalletSort::Hot)
+    );
+    assert_eq!(found.describe(&pk(6)).category, Category::Contact);
+}
