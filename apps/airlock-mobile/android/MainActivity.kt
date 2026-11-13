@@ -36,6 +36,7 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 import android.view.View
 import android.webkit.WebView
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.Keep
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -92,6 +93,57 @@ class MainActivity : WryActivity() {
         SeedVaultBridge.activity = this
         super.onCreate(savedInstanceState)
         fitSystemBars()
+        // Back, the key or the gesture. Without this, wry's activity finishes,
+        // which ends the app: a half-filled form is lost, and the next start
+        // is cold, on the lock screen.
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() = back()
+        })
+    }
+
+    /// Back closes what is open on the page first, then goes back to the list
+    /// a pane came from, and only then leaves: to the background, as Home
+    /// does, so the app keeps its state and auto-lock counts the time away.
+    private fun back() {
+        val view = webView
+        if (view == null) {
+            moveTaskToBack(true)
+            return
+        }
+        view.evaluateJavascript(BACK_SCRIPT) { handled ->
+            if (handled != "true") moveTaskToBack(true)
+        }
+    }
+
+    private companion object {
+        /// What Back does on the page, answering whether it did anything:
+        /// 1. The topmost dialog, sheet or menu: its own control marked
+        ///    `data-back` (the template browser's list, the inspector's
+        ///    Back), else what a tap outside it does. A dialog that a tap
+        ///    outside does not close (a signature underway) stays.
+        /// 2. An open list of address suggestions closes, as Escape does.
+        /// 3. A pane's control marked `data-back`, to the list it came from.
+        const val BACK_SCRIPT = """(function () {
+  var shown = function (e) { return !!e && e.getClientRects().length > 0; };
+  var all = function (root, sel) { return Array.prototype.filter.call(root.querySelectorAll(sel), shown); };
+  var layers = all(document, '.modal-backdrop, .phone-scrim');
+  if (layers.length) {
+    var z = function (e) { return parseInt(getComputedStyle(e).zIndex, 10) || 0; };
+    var top = layers.reduce(function (a, b) { return z(b) >= z(a) ? b : a; });
+    var layer = top.classList.contains('modal-backdrop') ? top : top.nextElementSibling;
+    var own = layer ? all(layer, '[data-back]').pop() : null;
+    (own || top).click();
+    return true;
+  }
+  var picker = document.querySelector('.picker.open input');
+  if (picker) {
+    picker.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    return true;
+  }
+  var pane = all(document, '.content [data-back]').pop();
+  if (pane) { pane.click(); return true; }
+  return false;
+})()"""
     }
 
     /// The manifest takes every configuration change in place (configChanges),

@@ -19,6 +19,8 @@ It is a third app over the same crates, not a branch inside them. The rules in [
 - **The WebView.** The page policy is the desktop one (`app_ui_kit::platform::page_policy`), and nothing navigates away from the app. wry asks for the camera permission the first time the scanner starts, and grants the page its camera.
 - **Links** open in the phone's browser through an `ACTION_VIEW` intent, `https` and `http` only.
 - **Auto-lock** counts the time the app spends in the background, as it counts a hidden window on desktop.
+- **Back**, the key or the gesture, is `MainActivity`'s (wry's activity would finish, which ends the app). It closes the topmost dialog, sheet or menu (the control in it marked `data-back`, else what a tap outside it does, so a dialog that cannot be dismissed stays), then an open list of address suggestions, then presses a pane's own control marked `data-back` (Programs, History, back to their list). With nothing left it moves the app to the background, as Home does: the vault and a half-filled form stay, and auto-lock counts the time away.
+- **Configuration changes** (rotation, dark mode, font size, display size, language, a keyboard) are all taken in place (`configChanges` in the manifest): wry starts Rust once per process, so the activity cannot be made again. The WebView's text zoom follows the font size.
 
 ## The Seed Vault (Saga, Seeker)
 
