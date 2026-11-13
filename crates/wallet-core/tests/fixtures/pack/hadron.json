@@ -1,0 +1,994 @@
+{
+  "accounts": {},
+  "instructions": [
+    {
+      "accounts": [
+        "6i7oZ2aGhqGbCK6BALaxwhvRJGVLeCURH6Pwj1cB9UvP:sw",
+        "HzQwaCP6XaQUkU42oTuTyAKiRGWYwVW5nV88MuXX37pd:w",
+        "FF5HZpL6YerjfxuuUCFcETqrgW5cQ3EeTEfX86oeGA4Z:w"
+      ],
+      "data": "040000000200000000000000000000000000010000000000000000ffffffffffffffff00000000010000000000000000e31aef1b00000000",
+      "fields": [
+        [
+          "Curve Slot",
+          "0"
+        ],
+        [
+          "Side (0 = bid, 1 = ask)",
+          "0"
+        ],
+        [
+          "Default Interpolation (0 step, 1 linear, 2 marginal, 3 hyperbolic, 4 quad, 5 cubic)",
+          "0"
+        ],
+        [
+          "Points",
+          "2"
+        ],
+        [
+          "X Axis Mode (0 = native, 1 = alternate)",
+          "0"
+        ],
+        [
+          "Curve Points (raw, 21 bytes each, then an 8-byte sequence if sent)",
+          "000000000000000000000000010000000000000000ffffffffffffffff00000000010000000000000000e31aef1b00000000"
+        ],
+        [
+          "Quoting Authority",
+          "6i7oZ2aGhqGbCK6BALaxwhvRJGVLeCURH6Pwj1cB9UvP"
+        ],
+        [
+          "Curve Meta",
+          "HzQwaCP6XaQUkU42oTuTyAKiRGWYwVW5nV88MuXX37pd"
+        ],
+        [
+          "Curve Prefabs",
+          "FF5HZpL6YerjfxuuUCFcETqrgW5cQ3EeTEfX86oeGA4Z"
+        ]
+      ],
+      "from": "32kScgBz9XzGu4j3ep4nEszgacZ9s3Xtq75SRtt6t1UMbEa5hPdExjtgbvN4paG78AR2xmcRceueu3J6XQCUqU7E#1",
+      "intent": "Set a price curve",
+      "programId": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+      "sentence": "6i7oZ2aGhqGbCK6BALaxwhvRJGVLeCURH6Pwj1cB9UvP writes a price curve of 2 points to slot 0 of FF5HZpL6YerjfxuuUCFcETqrgW5cQ3EeTEfX86oeGA4Z",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "6i7oZ2aGhqGbCK6BALaxwhvRJGVLeCURH6Pwj1cB9UvP:sw",
+        "HzQwaCP6XaQUkU42oTuTyAKiRGWYwVW5nV88MuXX37pd:w",
+        "FF5HZpL6YerjfxuuUCFcETqrgW5cQ3EeTEfX86oeGA4Z:w"
+      ],
+      "data": "080001000801018bb3140400000000c7ec93f40000000000000000005d6c759d00000000d68392f4000000000000000000bba07e100100000092ac8ff4000000000000000000352b898301000000fc4f8ff400000000000000000089c8ec1c0200000027d783f40000000000000000002b000d03030000004a5370f400000000000000000063a6b68204000000ff6761f40000000000000000000faccb2a0500000000000000000000000000000000e31aef1b00000000",
+      "fields": [
+        [
+          "Curve Slot",
+          "0"
+        ],
+        [
+          "Side (0 = bid, 1 = ask)",
+          "1"
+        ],
+        [
+          "Default Interpolation (0 step, 1 linear, 2 marginal, 3 hyperbolic, 4 quad, 5 cubic)",
+          "0"
+        ],
+        [
+          "Points",
+          "8"
+        ],
+        [
+          "X Axis Mode (0 = native, 1 = alternate)",
+          "1"
+        ],
+        [
+          "Risk Mode (0 = virtual, 1 = integrated)",
+          "1"
+        ],
+        [
+          "Curve Points (raw, 21 bytes each, then an 8-byte sequence if sent)",
+          "8bb3140400000000c7ec93f40000000000000000005d6c759d00000000d68392f4000000000000000000bba07e100100000092ac8ff4000000000000000000352b898301000000fc4f8ff400000000000000000089c8ec1c0200000027d783f40000000000000000002b000d03030000004a5370f400000000000000000063a6b68204000000ff6761f40000000000000000000faccb2a0500000000000000000000000000000000e31aef1b00000000"
+        ],
+        [
+          "Quoting Authority",
+          "6i7oZ2aGhqGbCK6BALaxwhvRJGVLeCURH6Pwj1cB9UvP"
+        ],
+        [
+          "Curve Meta",
+          "HzQwaCP6XaQUkU42oTuTyAKiRGWYwVW5nV88MuXX37pd"
+        ],
+        [
+          "Curve Prefabs",
+          "FF5HZpL6YerjfxuuUCFcETqrgW5cQ3EeTEfX86oeGA4Z"
+        ]
+      ],
+      "from": "32kScgBz9XzGu4j3ep4nEszgacZ9s3Xtq75SRtt6t1UMbEa5hPdExjtgbvN4paG78AR2xmcRceueu3J6XQCUqU7E#4",
+      "intent": "Set a risk curve",
+      "programId": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+      "sentence": "6i7oZ2aGhqGbCK6BALaxwhvRJGVLeCURH6Pwj1cB9UvP writes a risk curve of 8 points to slot 0 of FF5HZpL6YerjfxuuUCFcETqrgW5cQ3EeTEfX86oeGA4Z",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "6i7oZ2aGhqGbCK6BALaxwhvRJGVLeCURH6Pwj1cB9UvP:sw",
+        "5EqpfxXAYqBD5Jd1mt5mqqHaZbhNmrJC2e9hwaUcdsWe:w",
+        "SysvarC1ock11111111111111111111111111111111"
+      ],
+      "data": "0ae31aef1b000000000b27712c140000000000000001000000",
+      "fields": [
+        [
+          "Sequence",
+          "468,654,819"
+        ],
+        [
+          "New Midprice (Q32.32)",
+          "86,644,958,987"
+        ],
+        [
+          "New Spread Factor (Q32.32)",
+          "4,294,967,296"
+        ],
+        [
+          "Quoting Authority",
+          "6i7oZ2aGhqGbCK6BALaxwhvRJGVLeCURH6Pwj1cB9UvP"
+        ],
+        [
+          "Midprice Oracle",
+          "5EqpfxXAYqBD5Jd1mt5mqqHaZbhNmrJC2e9hwaUcdsWe"
+        ]
+      ],
+      "from": "32kScgBz9XzGu4j3ep4nEszgacZ9s3Xtq75SRtt6t1UMbEa5hPdExjtgbvN4paG78AR2xmcRceueu3J6XQCUqU7E#5",
+      "intent": "Update midprice and spread",
+      "programId": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+      "sentence": "6i7oZ2aGhqGbCK6BALaxwhvRJGVLeCURH6Pwj1cB9UvP updates the midprice and spread factor in 5EqpfxXAYqBD5Jd1mt5mqqHaZbhNmrJC2e9hwaUcdsWe",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Ar5dVjJqHyUSFboqiT44tK5UR72rUTeSvPjLeVkpEmiD:sw",
+        "5YvMHL4dGJPWbmLVQkQ8zEM3Emp19mSAakDuW68v8h5n:w",
+        "SysvarC1ock11111111111111111111111111111111"
+      ],
+      "data": "051b2d0000000000001cfcab0900000000",
+      "fields": [
+        [
+          "Sequence",
+          "11,547"
+        ],
+        [
+          "New Midprice (Q32.32)",
+          "162,266,140"
+        ],
+        [
+          "Quoting Authority",
+          "Ar5dVjJqHyUSFboqiT44tK5UR72rUTeSvPjLeVkpEmiD"
+        ],
+        [
+          "Midprice Oracle",
+          "5YvMHL4dGJPWbmLVQkQ8zEM3Emp19mSAakDuW68v8h5n"
+        ]
+      ],
+      "from": "4cDTonrTaAyCgsD9zpw2rq3YXmuusuV6dVKREDgC7cSPQDyAMNLCQwxSESvD8j8FGyP5DabwUicEgQQNqUzkW35y#1",
+      "intent": "Update the midprice",
+      "programId": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+      "sentence": "Ar5dVjJqHyUSFboqiT44tK5UR72rUTeSvPjLeVkpEmiD updates the midprice in 5YvMHL4dGJPWbmLVQkQ8zEM3Emp19mSAakDuW68v8h5n",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Ar5dVjJqHyUSFboqiT44tK5UR72rUTeSvPjLeVkpEmiD:sw",
+        "2f5kn4EG8dN8BfbT19HuGBYhKsU6PvBaxYhs8GbanPpC:w"
+      ],
+      "data": "0bd63b0000000000000001",
+      "fields": [
+        [
+          "Sequence",
+          "15,318"
+        ],
+        [
+          "Side (0 = bid, 1 = ask)",
+          "0"
+        ],
+        [
+          "Curve Slot",
+          "1"
+        ],
+        [
+          "Quoting Authority",
+          "Ar5dVjJqHyUSFboqiT44tK5UR72rUTeSvPjLeVkpEmiD"
+        ],
+        [
+          "Curve Meta",
+          "2f5kn4EG8dN8BfbT19HuGBYhKsU6PvBaxYhs8GbanPpC"
+        ]
+      ],
+      "from": "25vXfYEPt2GSnArjBnbFHU1MEjQqhD7rL4J3TPi4o4riHA6imptNcxEk5NxCN72VhqrpoM8oHKa7YmLUUGYDW6wp#2",
+      "intent": "Switch the price curve",
+      "programId": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+      "sentence": "Ar5dVjJqHyUSFboqiT44tK5UR72rUTeSvPjLeVkpEmiD switches a side of 2f5kn4EG8dN8BfbT19HuGBYhKsU6PvBaxYhs8GbanPpC to the price curve in slot 1",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "2XCjTY3uQL7hejwe7mvH3i4uhi3aEzrxEmaz7iZGzKE1:w",
+        "2HEfge2YMhWDREmhrK4JfY8JodFqqh2U1LcoxSyyKnv4",
+        "3xz1UU3p6EdEmQdKBXi7HQ9qP6uz6fB6rdftqt3VM6a9",
+        "BKyQR26utZE5cYEJVcQbt1vJv32wkzxn2XpZWp4gXBi4:w",
+        "6i7oZ2aGhqGbCK6BALaxwhvRJGVLeCURH6Pwj1cB9UvP",
+        "297YyGytdAq2sDHh5gkpmeapbHEgbEBMfXUeAiUNGktV:sw",
+        "HEDCDAfPFVXmQsPLsw4QdbdUNf9V2Smwq9g3Uj8gMk9D:w",
+        "3fWFTncnU3dKF7HQGSo5DtKv6GUkrkGemYGD9Ft6Jnhu:w",
+        "ncHcdtmrVcnwKD85HiFAMS4ukaksxmc5zpFiwCCweGV:w",
+        "9xGiE2rUXvtE5XAi5D7RodLj4w5U9iaCyyoyWnkGdKUL:w",
+        "63sGvdACSA2Kvf4yr7n7SFEJ9V1yAVVyyduPU3br8Lyt",
+        "BxSRmfx8TRXEvszMvmzhet3sD7sCiYZ5TN6UP6GbQzVF:w",
+        "SysvarC1ock11111111111111111111111111111111",
+        "32vZXjwPf9dNVDPS1uT2FYfEXVz335uF89aqM36g9RcU:w",
+        "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
+        "D7VjdfhMnQVzX9LgMnADbaE8uevWhwUmF1Zq6VZRDhvQ",
+        "Sysvar1nstructions1111111111111111111111111"
+      ],
+      "data": "0301f2ee0405000000000000000000000000ffffffffffffff7f",
+      "fields": [
+        [
+          "Input Is Token X",
+          "true"
+        ],
+        [
+          "Amount In",
+          "84,209,394 base units"
+        ],
+        [
+          "Minimum Out",
+          "0 base units"
+        ],
+        [
+          "Expires",
+          "9,223,372,036,854,775,807"
+        ],
+        [
+          "Pool",
+          "2XCjTY3uQL7hejwe7mvH3i4uhi3aEzrxEmaz7iZGzKE1"
+        ],
+        [
+          "Midprice Oracle",
+          "2HEfge2YMhWDREmhrK4JfY8JodFqqh2U1LcoxSyyKnv4"
+        ],
+        [
+          "Curve Meta",
+          "3xz1UU3p6EdEmQdKBXi7HQ9qP6uz6fB6rdftqt3VM6a9"
+        ],
+        [
+          "Curve Prefabs",
+          "BKyQR26utZE5cYEJVcQbt1vJv32wkzxn2XpZWp4gXBi4"
+        ],
+        [
+          "Unused Slot (Pool Authority)",
+          "6i7oZ2aGhqGbCK6BALaxwhvRJGVLeCURH6Pwj1cB9UvP"
+        ],
+        [
+          "User",
+          "297YyGytdAq2sDHh5gkpmeapbHEgbEBMfXUeAiUNGktV"
+        ],
+        [
+          "Source Token Account",
+          "HEDCDAfPFVXmQsPLsw4QdbdUNf9V2Smwq9g3Uj8gMk9D"
+        ],
+        [
+          "Pool Vault Paid In",
+          "3fWFTncnU3dKF7HQGSo5DtKv6GUkrkGemYGD9Ft6Jnhu"
+        ],
+        [
+          "Pool Vault Paid Out",
+          "ncHcdtmrVcnwKD85HiFAMS4ukaksxmc5zpFiwCCweGV"
+        ],
+        [
+          "Destination Token Account",
+          "9xGiE2rUXvtE5XAi5D7RodLj4w5U9iaCyyoyWnkGdKUL"
+        ],
+        [
+          "Fee Config",
+          "63sGvdACSA2Kvf4yr7n7SFEJ9V1yAVVyyduPU3br8Lyt"
+        ],
+        [
+          "Fee Recipient Token Account",
+          "BxSRmfx8TRXEvszMvmzhet3sD7sCiYZ5TN6UP6GbQzVF"
+        ],
+        [
+          "Curve Updates Queue",
+          "32vZXjwPf9dNVDPS1uT2FYfEXVz335uF89aqM36g9RcU"
+        ],
+        [
+          "Additional Account #1",
+          "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh"
+        ],
+        [
+          "Additional Account #2",
+          "D7VjdfhMnQVzX9LgMnADbaE8uevWhwUmF1Zq6VZRDhvQ"
+        ],
+        [
+          "Additional Account #3",
+          "Sysvar1nstructions1111111111111111111111111"
+        ]
+      ],
+      "from": "RuWgyKWNzvCGPj6tKThyCHYQM3QoP5RxpeFtkAUNaLDKez975BZPhHX2pc1uoU87K1AMmefs8sME3ejFjhz3Czw#3.1",
+      "intent": "Swap tokens",
+      "programId": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+      "sentence": "297YyGytdAq2sDHh5gkpmeapbHEgbEBMfXUeAiUNGktV swaps 84,209,394 base units from HEDCDAfPFVXmQsPLsw4QdbdUNf9V2Smwq9g3Uj8gMk9D for at least 0 base units into 9xGiE2rUXvtE5XAi5D7RodLj4w5U9iaCyyoyWnkGdKUL in pool 2XCjTY3uQL7hejwe7mvH3i4uhi3aEzrxEmaz7iZGzKE1",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "H58JvSjh5gqELkfGLXa7rRp42HsyXvsjCCVpAmdJBmbC:w",
+        "19DJkys17SuG3iaR6oJVH4ZXFpmbhwiQBDyJfGrdj78",
+        "DGhNZcY6GhQPPRohwMTZkVDhBq5i9QNQ4qeqUTot1Aaf",
+        "GFDeN4LuG9Mf4FbAqHJxw7xPozjsnUfzdf8PJqoqsBgV:w",
+        "H58JvSjh5gqELkfGLXa7rRp42HsyXvsjCCVpAmdJBmbC:w",
+        "cAiB1icqhYkN3KtDfv77JrHJifQFb2h2p1cwhD7KTDf:sw",
+        "B8VzUu7YjyHwTu7h5Ssb2y4C5Vt6QRQNDXezywa2j2rV:w",
+        "DAsFQ7uc5vAM6iYV3sYKhHVqm7rwemMt9SqgY97zW7Na:w",
+        "3qjGXqsbZNpH8wji6kXLoQN5o1P7WLSj1VixHgJLN7ev:w",
+        "HC4rjCgc2xX2VexmP42TL8vfneusWyXhutRgNQNuGCEm:w",
+        "63sGvdACSA2Kvf4yr7n7SFEJ9V1yAVVyyduPU3br8Lyt",
+        "6GWH4fmgN6uf7793sLPZMVM5CMM1hdwrfxZXw6MvJQEc:w",
+        "SysvarC1ock11111111111111111111111111111111",
+        "F1bxVNk8UoUSetJw8x3PWVbnWJbNth1MuWJ6VNK71djz:w"
+      ],
+      "data": "0300686aaf01000000000000000000000000ffffffffffffff7f",
+      "fields": [
+        [
+          "Input Is Token X",
+          "false"
+        ],
+        [
+          "Amount In",
+          "28,273,256 base units"
+        ],
+        [
+          "Minimum Out",
+          "0 base units"
+        ],
+        [
+          "Expires",
+          "9,223,372,036,854,775,807"
+        ],
+        [
+          "Pool",
+          "H58JvSjh5gqELkfGLXa7rRp42HsyXvsjCCVpAmdJBmbC"
+        ],
+        [
+          "Midprice Oracle",
+          "19DJkys17SuG3iaR6oJVH4ZXFpmbhwiQBDyJfGrdj78"
+        ],
+        [
+          "Curve Meta",
+          "DGhNZcY6GhQPPRohwMTZkVDhBq5i9QNQ4qeqUTot1Aaf"
+        ],
+        [
+          "Curve Prefabs",
+          "GFDeN4LuG9Mf4FbAqHJxw7xPozjsnUfzdf8PJqoqsBgV"
+        ],
+        [
+          "Unused Slot (Pool Authority)",
+          "H58JvSjh5gqELkfGLXa7rRp42HsyXvsjCCVpAmdJBmbC"
+        ],
+        [
+          "User",
+          "cAiB1icqhYkN3KtDfv77JrHJifQFb2h2p1cwhD7KTDf"
+        ],
+        [
+          "Source Token Account",
+          "B8VzUu7YjyHwTu7h5Ssb2y4C5Vt6QRQNDXezywa2j2rV"
+        ],
+        [
+          "Pool Vault Paid In",
+          "DAsFQ7uc5vAM6iYV3sYKhHVqm7rwemMt9SqgY97zW7Na"
+        ],
+        [
+          "Pool Vault Paid Out",
+          "3qjGXqsbZNpH8wji6kXLoQN5o1P7WLSj1VixHgJLN7ev"
+        ],
+        [
+          "Destination Token Account",
+          "HC4rjCgc2xX2VexmP42TL8vfneusWyXhutRgNQNuGCEm"
+        ],
+        [
+          "Fee Config",
+          "63sGvdACSA2Kvf4yr7n7SFEJ9V1yAVVyyduPU3br8Lyt"
+        ],
+        [
+          "Fee Recipient Token Account",
+          "6GWH4fmgN6uf7793sLPZMVM5CMM1hdwrfxZXw6MvJQEc"
+        ],
+        [
+          "Curve Updates Queue",
+          "F1bxVNk8UoUSetJw8x3PWVbnWJbNth1MuWJ6VNK71djz"
+        ]
+      ],
+      "from": "4c58QXDbLw8s1qjYEczS6RF5VqZHdBj6KTdZyuSXEyRi9HMuK43SZb195cmSHLZkMjhdrBfbkcEJt5DGQEUM3suG#3.7",
+      "intent": "Swap tokens",
+      "programId": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+      "sentence": "cAiB1icqhYkN3KtDfv77JrHJifQFb2h2p1cwhD7KTDf swaps 28,273,256 base units from B8VzUu7YjyHwTu7h5Ssb2y4C5Vt6QRQNDXezywa2j2rV for at least 0 base units into HC4rjCgc2xX2VexmP42TL8vfneusWyXhutRgNQNuGCEm in pool H58JvSjh5gqELkfGLXa7rRp42HsyXvsjCCVpAmdJBmbC",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "5DVPDYmSKWxUrACKV7gfFpT31Rab4BeycfzYikVXz9TT:w",
+        "HGn6oojp35mJgCtbuR3NesHHpAVnjKXaf6RVNqPbHK7N",
+        "AaDZkjz2kiPLcZMsDvj3khW33kqDUj3VSgjuLTk7HKgw",
+        "CDfXid1LLuXZCfdeKKf9UWz3vxsNF5Vd5fsGHkPLCqbu:w",
+        "5DVPDYmSKWxUrACKV7gfFpT31Rab4BeycfzYikVXz9TT:w",
+        "ARu4n5mFdZogZAravu7CcizaojWnS6oqka37gdLT5SZn:w",
+        "8XrtGP8RG33AnrN2yJ6H3gnXPNQ3dYXKqM72bpzhcsd6:w",
+        "AZUPaxruDUZiZN5gm4Wok2i2KDh3JZEZem7t7hwNqapz:w",
+        "5q7epNBryAdh4kLFWMiDFWJgSkqEeHpRy2xmCmCkkEsT:w",
+        "F3ciCMMT966AycDwtu3MB42YYYL9GpPpnsDCXb7UZXzZ:w",
+        "63sGvdACSA2Kvf4yr7n7SFEJ9V1yAVVyyduPU3br8Lyt",
+        "6GWH4fmgN6uf7793sLPZMVM5CMM1hdwrfxZXw6MvJQEc:w",
+        "SysvarC1ock11111111111111111111111111111111",
+        "9doZm1ipytzjKohWLtUMyJb2Y8nJSPCVMzKU4f4CwqjB:w",
+        "AMD8XwJXgQ9WV45Wyj9yFLejxzf2J6VM1PJY8bJEjeES",
+        "2SeRQXH9bNWGhpDJ52UQmJDQYCvidJVPNVrG31hLFwwW",
+        "Sysvar1nstructions1111111111111111111111111"
+      ],
+      "data": "030028985200000000000100000000000000ffffffffffffff7f",
+      "fields": [
+        [
+          "Input Is Token X",
+          "false"
+        ],
+        [
+          "Amount In",
+          "5,412,904 base units"
+        ],
+        [
+          "Minimum Out",
+          "1 base units"
+        ],
+        [
+          "Expires",
+          "9,223,372,036,854,775,807"
+        ],
+        [
+          "Pool",
+          "5DVPDYmSKWxUrACKV7gfFpT31Rab4BeycfzYikVXz9TT"
+        ],
+        [
+          "Midprice Oracle",
+          "HGn6oojp35mJgCtbuR3NesHHpAVnjKXaf6RVNqPbHK7N"
+        ],
+        [
+          "Curve Meta",
+          "AaDZkjz2kiPLcZMsDvj3khW33kqDUj3VSgjuLTk7HKgw"
+        ],
+        [
+          "Curve Prefabs",
+          "CDfXid1LLuXZCfdeKKf9UWz3vxsNF5Vd5fsGHkPLCqbu"
+        ],
+        [
+          "Unused Slot (Pool Authority)",
+          "5DVPDYmSKWxUrACKV7gfFpT31Rab4BeycfzYikVXz9TT"
+        ],
+        [
+          "User",
+          "ARu4n5mFdZogZAravu7CcizaojWnS6oqka37gdLT5SZn"
+        ],
+        [
+          "Source Token Account",
+          "8XrtGP8RG33AnrN2yJ6H3gnXPNQ3dYXKqM72bpzhcsd6"
+        ],
+        [
+          "Pool Vault Paid In",
+          "AZUPaxruDUZiZN5gm4Wok2i2KDh3JZEZem7t7hwNqapz"
+        ],
+        [
+          "Pool Vault Paid Out",
+          "5q7epNBryAdh4kLFWMiDFWJgSkqEeHpRy2xmCmCkkEsT"
+        ],
+        [
+          "Destination Token Account",
+          "F3ciCMMT966AycDwtu3MB42YYYL9GpPpnsDCXb7UZXzZ"
+        ],
+        [
+          "Fee Config",
+          "63sGvdACSA2Kvf4yr7n7SFEJ9V1yAVVyyduPU3br8Lyt"
+        ],
+        [
+          "Fee Recipient Token Account",
+          "6GWH4fmgN6uf7793sLPZMVM5CMM1hdwrfxZXw6MvJQEc"
+        ],
+        [
+          "Curve Updates Queue",
+          "9doZm1ipytzjKohWLtUMyJb2Y8nJSPCVMzKU4f4CwqjB"
+        ],
+        [
+          "Additional Account #1",
+          "AMD8XwJXgQ9WV45Wyj9yFLejxzf2J6VM1PJY8bJEjeES"
+        ],
+        [
+          "Additional Account #2",
+          "2SeRQXH9bNWGhpDJ52UQmJDQYCvidJVPNVrG31hLFwwW"
+        ],
+        [
+          "Additional Account #3",
+          "Sysvar1nstructions1111111111111111111111111"
+        ]
+      ],
+      "from": "5kqTkX21opHQk2wCPLdHRB6Y6mMffv3K5UhTeV9qiApUhofBik1QH43yidEzSBrBLyU8NW7YheiDWBeLZuSHb1U2#4.13",
+      "intent": "Swap tokens",
+      "programId": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+      "sentence": "ARu4n5mFdZogZAravu7CcizaojWnS6oqka37gdLT5SZn swaps 5,412,904 base units from 8XrtGP8RG33AnrN2yJ6H3gnXPNQ3dYXKqM72bpzhcsd6 for at least 1 base units into F3ciCMMT966AycDwtu3MB42YYYL9GpPpnsDCXb7UZXzZ in pool 5DVPDYmSKWxUrACKV7gfFpT31Rab4BeycfzYikVXz9TT",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "3wRwjuq4rncofwE227Ahi7esi5xiYVL5JvoKo4muwxi4",
+        "3qjGXqsbZNpH8wji6kXLoQN5o1P7WLSj1VixHgJLN7ev:w",
+        "DAsFQ7uc5vAM6iYV3sYKhHVqm7rwemMt9SqgY97zW7Na:w",
+        "9Fi4Ahdj6GBHz9XAiNbTLPSNccHXfrDvwoyXnLcLReha:w",
+        "CpNfKoL8yTfV82tVuvZ4uYyo2NB7ajGK6MHxRnjytHhx:w",
+        "H58JvSjh5gqELkfGLXa7rRp42HsyXvsjCCVpAmdJBmbC:w",
+        "19DJkys17SuG3iaR6oJVH4ZXFpmbhwiQBDyJfGrdj78",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "0200000000000000006363af0100000000ffffffffffffff7f",
+      "fields": [
+        [
+          "Token X Amount",
+          "0 base units"
+        ],
+        [
+          "Token Y Amount",
+          "28,271,459 base units"
+        ],
+        [
+          "Expires",
+          "9,223,372,036,854,775,807"
+        ],
+        [
+          "Withdrawer",
+          "3wRwjuq4rncofwE227Ahi7esi5xiYVL5JvoKo4muwxi4"
+        ],
+        [
+          "Pool Token X Vault",
+          "3qjGXqsbZNpH8wji6kXLoQN5o1P7WLSj1VixHgJLN7ev"
+        ],
+        [
+          "Pool Token Y Vault",
+          "DAsFQ7uc5vAM6iYV3sYKhHVqm7rwemMt9SqgY97zW7Na"
+        ],
+        [
+          "Withdrawer Token X Account",
+          "9Fi4Ahdj6GBHz9XAiNbTLPSNccHXfrDvwoyXnLcLReha"
+        ],
+        [
+          "Withdrawer Token Y Account",
+          "CpNfKoL8yTfV82tVuvZ4uYyo2NB7ajGK6MHxRnjytHhx"
+        ],
+        [
+          "Pool",
+          "H58JvSjh5gqELkfGLXa7rRp42HsyXvsjCCVpAmdJBmbC"
+        ],
+        [
+          "Midprice Oracle",
+          "19DJkys17SuG3iaR6oJVH4ZXFpmbhwiQBDyJfGrdj78"
+        ]
+      ],
+      "from": "4c58QXDbLw8s1qjYEczS6RF5VqZHdBj6KTdZyuSXEyRi9HMuK43SZb195cmSHLZkMjhdrBfbkcEJt5DGQEUM3suG#4.2",
+      "intent": "Withdraw from a pool",
+      "programId": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+      "sentence": "3wRwjuq4rncofwE227Ahi7esi5xiYVL5JvoKo4muwxi4 withdraws 0 base units of token X to 9Fi4Ahdj6GBHz9XAiNbTLPSNccHXfrDvwoyXnLcLReha and 28,271,459 base units of token Y to CpNfKoL8yTfV82tVuvZ4uYyo2NB7ajGK6MHxRnjytHhx from pool H58JvSjh5gqELkfGLXa7rRp42HsyXvsjCCVpAmdJBmbC",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "cTMvXtUaYfCTc9UJnRVmfZVuwrG8MkuqZaFfGo1qoEk:sw",
+        "FyE8Xsv68ikiECrW2neVPPeLmDYyS7tjV4nJgkpNtxUz:w",
+        "DAvCnr6RNqzCfEi768SZnmgxo1BsETGr5ptSHkSvanvk:w",
+        "Au1UhH64fzfmLVn36VgQJ91PVWu32VydThuvMU8cihGV:w",
+        "AGSK6hU7jKi5i2B2R36XP5Q9sprsZSm5ryH8CtkQjTvV:w",
+        "AxsKWzZfCdN9oPyN8A8Co1fSunmNWsvNEfggEDxu82gR:w",
+        "F8aN1SttwC9L6zk96uzQiP3USYCf2N8PRYzUAe9vqpis",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "0200000000000000007297230000000000ffffffffffffff7f",
+      "fields": [
+        [
+          "Token X Amount",
+          "0 base units"
+        ],
+        [
+          "Token Y Amount",
+          "2,332,530 base units"
+        ],
+        [
+          "Expires",
+          "9,223,372,036,854,775,807"
+        ],
+        [
+          "Withdrawer",
+          "cTMvXtUaYfCTc9UJnRVmfZVuwrG8MkuqZaFfGo1qoEk"
+        ],
+        [
+          "Pool Token X Vault",
+          "FyE8Xsv68ikiECrW2neVPPeLmDYyS7tjV4nJgkpNtxUz"
+        ],
+        [
+          "Pool Token Y Vault",
+          "DAvCnr6RNqzCfEi768SZnmgxo1BsETGr5ptSHkSvanvk"
+        ],
+        [
+          "Withdrawer Token X Account",
+          "Au1UhH64fzfmLVn36VgQJ91PVWu32VydThuvMU8cihGV"
+        ],
+        [
+          "Withdrawer Token Y Account",
+          "AGSK6hU7jKi5i2B2R36XP5Q9sprsZSm5ryH8CtkQjTvV"
+        ],
+        [
+          "Pool",
+          "AxsKWzZfCdN9oPyN8A8Co1fSunmNWsvNEfggEDxu82gR"
+        ],
+        [
+          "Midprice Oracle",
+          "F8aN1SttwC9L6zk96uzQiP3USYCf2N8PRYzUAe9vqpis"
+        ]
+      ],
+      "from": "62bVirHs8LZxz69wL9sCsb2y7cMLjSpkCYR5EpQucDLY5NCThpcwCC18NNHptznk8D4xE135kCCKB3EKC9CH1VyG#5",
+      "intent": "Withdraw from a pool",
+      "programId": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+      "sentence": "cTMvXtUaYfCTc9UJnRVmfZVuwrG8MkuqZaFfGo1qoEk withdraws 0 base units of token X to Au1UhH64fzfmLVn36VgQJ91PVWu32VydThuvMU8cihGV and 2,332,530 base units of token Y to AGSK6hU7jKi5i2B2R36XP5Q9sprsZSm5ryH8CtkQjTvV from pool AxsKWzZfCdN9oPyN8A8Co1fSunmNWsvNEfggEDxu82gR",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4:sw",
+        "7EaG3ZQQUbuEzGRKfAi549sqgpJFbZexMV96JarauasR",
+        "858yZfssHjB1myPH2mErkjzFvmv2MR1fd5yEsMn2qVz6:w"
+      ],
+      "data": "1d01b8a7356ca7dc1996cebd755204fff9ac1b8b0a4f009226606f40643545c6979cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "fields": [
+        [
+          "Triggers",
+          "1"
+        ],
+        [
+          "Triggers Removed",
+          "Account: DRou1AWNDaM3No2CoAzXoWwM1JJGrJEuuPXfWiPHtTLo, Program Id: JEKNVnkbo3jma5nREBBJCDoXFVeKkD56V3xKrvRmWxFG"
+        ],
+        [
+          "Spread Admin",
+          "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4"
+        ],
+        [
+          "Pool",
+          "7EaG3ZQQUbuEzGRKfAi549sqgpJFbZexMV96JarauasR"
+        ],
+        [
+          "Spread Config",
+          "858yZfssHjB1myPH2mErkjzFvmv2MR1fd5yEsMn2qVz6"
+        ]
+      ],
+      "from": "4gyjyaKM31EzGzGsL228R5smF3GQYCBtnvEfH7oSSWGt5Qk7ncYa9p2rWbAKkYnbKkiJ5P7e2uq64n3YZbMCNFh2#3",
+      "intent": "Remove spread triggers",
+      "programId": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+      "sentence": "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4 removes 1 spread triggers from 858yZfssHjB1myPH2mErkjzFvmv2MR1fd5yEsMn2qVz6 of pool 7EaG3ZQQUbuEzGRKfAi549sqgpJFbZexMV96JarauasR",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4:sw",
+        "7EaG3ZQQUbuEzGRKfAi549sqgpJFbZexMV96JarauasR",
+        "858yZfssHjB1myPH2mErkjzFvmv2MR1fd5yEsMn2qVz6:w"
+      ],
+      "data": "0e013e8d3e639eaca489e3597f08c54da17c4a1cc5a08152ac78e8418ea030e3f549ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1d00",
+      "fields": [
+        [
+          "Triggers",
+          "1"
+        ],
+        [
+          "Spread Triggers",
+          "Account: 5DBCFKbc4Z6ALBXTfXSzWcym9Va74nKMSWx8VdkRX1hi, Program Id: JEKNVnkbo3jma5nREBBJCDoXFVeKkD56V3xKrvRmWxFG, Spread Bps: 29"
+        ],
+        [
+          "Spread Admin",
+          "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4"
+        ],
+        [
+          "Pool",
+          "7EaG3ZQQUbuEzGRKfAi549sqgpJFbZexMV96JarauasR"
+        ],
+        [
+          "Spread Config",
+          "858yZfssHjB1myPH2mErkjzFvmv2MR1fd5yEsMn2qVz6"
+        ]
+      ],
+      "from": "4gyjyaKM31EzGzGsL228R5smF3GQYCBtnvEfH7oSSWGt5Qk7ncYa9p2rWbAKkYnbKkiJ5P7e2uq64n3YZbMCNFh2#4",
+      "intent": "Set spread triggers",
+      "programId": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+      "sentence": "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4 sets 1 spread triggers in 858yZfssHjB1myPH2mErkjzFvmv2MR1fd5yEsMn2qVz6 of pool 7EaG3ZQQUbuEzGRKfAi549sqgpJFbZexMV96JarauasR",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4:sw",
+        "DbQYhsmBypcxb23ruDmcWb1k43YjnaNR22yonCVeP7Ke:w",
+        "D6izv2evcqaErVsr5qjAET5vtp7ozABmJLwpMjt1iJKj"
+      ],
+      "data": "1503",
+      "fields": [
+        [
+          "New State (1 = live, 2 = paused, 3 = rejects swaps)",
+          "3"
+        ],
+        [
+          "Authority",
+          "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4"
+        ],
+        [
+          "Pool",
+          "DbQYhsmBypcxb23ruDmcWb1k43YjnaNR22yonCVeP7Ke"
+        ],
+        [
+          "Curve Meta",
+          "D6izv2evcqaErVsr5qjAET5vtp7ozABmJLwpMjt1iJKj"
+        ]
+      ],
+      "from": "49zdMSUkSYzv8XpVXFg84Ei2zh7azM5Ljqkda5cGcnm7gPn2uEzKzQG67YN6bMTRPNu8LbkNX4NYvWf6BaC2tGDF#3",
+      "intent": "Set the pool state",
+      "programId": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+      "sentence": "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4 changes the state of pool DbQYhsmBypcxb23ruDmcWb1k43YjnaNR22yonCVeP7Ke",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4:sw",
+        "298moyiiffkmp2GEmufQ12vH9yciqg8mDY22HYpVep8Y:w",
+        "6QN6KKiN66vn7uJgt5PqX6ZqpqrQ9KBBM4FNcR6G2Q5f:w",
+        "7BUxWPd7p88ST7QhKmKPixBFHs5qZBMvaWY6ESeVwSqR:w",
+        "9H9pjtmS8zrENxbbVrbq7Fv5wXifF5Exy4Af4sVZm3ir:w",
+        "7EaG3ZQQUbuEzGRKfAi549sqgpJFbZexMV96JarauasR:w",
+        "GLbYNuAgSHoC9Pz7t66uXHRoYaJJCeosWqcXUri76U9b",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu"
+      ],
+      "data": "01000000000000000000ca9a3b00000000ed98ee6a00000000",
+      "fields": [
+        [
+          "Token X Amount",
+          "0 base units"
+        ],
+        [
+          "Token Y Amount",
+          "1,000,000,000 base units"
+        ],
+        [
+          "Expires",
+          "2026-11-07T03:20:13.000Z"
+        ],
+        [
+          "Depositor",
+          "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4"
+        ],
+        [
+          "Pool Token X Vault",
+          "298moyiiffkmp2GEmufQ12vH9yciqg8mDY22HYpVep8Y"
+        ],
+        [
+          "Pool Token Y Vault",
+          "6QN6KKiN66vn7uJgt5PqX6ZqpqrQ9KBBM4FNcR6G2Q5f"
+        ],
+        [
+          "Depositor Token X Account",
+          "7BUxWPd7p88ST7QhKmKPixBFHs5qZBMvaWY6ESeVwSqR"
+        ],
+        [
+          "Depositor Token Y Account",
+          "9H9pjtmS8zrENxbbVrbq7Fv5wXifF5Exy4Af4sVZm3ir"
+        ],
+        [
+          "Pool",
+          "7EaG3ZQQUbuEzGRKfAi549sqgpJFbZexMV96JarauasR"
+        ],
+        [
+          "Midprice Oracle",
+          "GLbYNuAgSHoC9Pz7t66uXHRoYaJJCeosWqcXUri76U9b"
+        ],
+        [
+          "Token Mint",
+          "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu"
+        ]
+      ],
+      "from": "656kxE1VWkJK6fWRQe8Q1P5qgJi7w1GEZw9CQJWd8mGqiMNeLsimpGvefZ6rQKwiTQxzvs2KxpiZ2Jii1Q1os1MB#5",
+      "intent": "Deposit into a pool",
+      "programId": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+      "sentence": "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4 deposits 0 base units of token X from 7BUxWPd7p88ST7QhKmKPixBFHs5qZBMvaWY6ESeVwSqR and 1,000,000,000 base units of token Y from 9H9pjtmS8zrENxbbVrbq7Fv5wXifF5Exy4Af4sVZm3ir into pool 7EaG3ZQQUbuEzGRKfAi549sqgpJFbZexMV96JarauasR",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4:sw",
+        "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4:sw",
+        "7EaG3ZQQUbuEzGRKfAi549sqgpJFbZexMV96JarauasR:w",
+        "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "298moyiiffkmp2GEmufQ12vH9yciqg8mDY22HYpVep8Y:w",
+        "6QN6KKiN66vn7uJgt5PqX6ZqpqrQ9KBBM4FNcR6G2Q5f:w",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "GLbYNuAgSHoC9Pz7t66uXHRoYaJJCeosWqcXUri76U9b:w",
+        "3cbu8uCrBdbbMpWte4PEbm7QPguzNweyHKgiwXNLBwHL:w",
+        "BM8yDusmTGSerezUgux6TeYfoA5iBdtYuApd6yRwvbg7:w",
+        "14o9ePfmgvxHvhMVqfgjjbmohRWbhbhgfoqDXLBUm7id:w"
+      ],
+      "data": "0097bfc02a76bb466b07e8165f5254913f109f2b10b236e7ae371582873b72e926f5320cfe6126a992c6fa7af3bedbad3a3d65f36aabc97431b1bbe4c2d2f6e0e47ca60203452f5d6158c5278e7ac8c83f2518050995c9e1c31debbb13f4e4b5213c4dafec4ac58f0ba301bcbd010000000001280000000001000000",
+      "fields": [
+        [
+          "Pool Seed",
+          "7,730,071,926,625,845,143"
+        ],
+        [
+          "Token X Mint",
+          "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu"
+        ],
+        [
+          "Token Y Mint",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Pool Authority",
+          "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4"
+        ],
+        [
+          "Initial Midprice (Q32.32)",
+          "7,478,182,307"
+        ],
+        [
+          "LP Self Rotate",
+          "false"
+        ],
+        [
+          "Max Curve Slots",
+          "1"
+        ],
+        [
+          "Max Curve Points",
+          "40"
+        ],
+        [
+          "Combined Factor Max (Q32.32)",
+          "4,294,967,296"
+        ],
+        [
+          "Payer",
+          "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4"
+        ],
+        [
+          "Creator",
+          "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4"
+        ],
+        [
+          "Pool",
+          "7EaG3ZQQUbuEzGRKfAi549sqgpJFbZexMV96JarauasR"
+        ],
+        [
+          "Token X Mint",
+          "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu"
+        ],
+        [
+          "Token Y Mint",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Pool Token X Vault",
+          "298moyiiffkmp2GEmufQ12vH9yciqg8mDY22HYpVep8Y"
+        ],
+        [
+          "Pool Token Y Vault",
+          "6QN6KKiN66vn7uJgt5PqX6ZqpqrQ9KBBM4FNcR6G2Q5f"
+        ],
+        [
+          "Midprice Oracle",
+          "GLbYNuAgSHoC9Pz7t66uXHRoYaJJCeosWqcXUri76U9b"
+        ],
+        [
+          "Curve Meta",
+          "3cbu8uCrBdbbMpWte4PEbm7QPguzNweyHKgiwXNLBwHL"
+        ],
+        [
+          "Curve Prefabs",
+          "BM8yDusmTGSerezUgux6TeYfoA5iBdtYuApd6yRwvbg7"
+        ],
+        [
+          "Curve Updates Queue",
+          "14o9ePfmgvxHvhMVqfgjjbmohRWbhbhgfoqDXLBUm7id"
+        ]
+      ],
+      "from": "5GzPhWhMUoEHta7tKeKY6nwsAUH4fswAmcuRcnLNBabDNzXQE4m5iw39UxiMMs7WnnyG3UWaqpSVJEuxWr9hxDeZ#1",
+      "intent": "Create a pool",
+      "programId": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+      "sentence": "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4 creates pool 7EaG3ZQQUbuEzGRKfAi549sqgpJFbZexMV96JarauasR for Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu and EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v, with 6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4 as its authority",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4:sw",
+        "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4:sw",
+        "7EaG3ZQQUbuEzGRKfAi549sqgpJFbZexMV96JarauasR:w",
+        "858yZfssHjB1myPH2mErkjzFvmv2MR1fd5yEsMn2qVz6:w",
+        "11111111111111111111111111111111"
+      ],
+      "data": "0d58c5278e7ac8c83f2518050995c9e1c31debbb13f4e4b5213c4dafec4ac58f0b",
+      "fields": [
+        [
+          "Spread Admin",
+          "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4"
+        ],
+        [
+          "Payer",
+          "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4"
+        ],
+        [
+          "Pool Authority",
+          "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4"
+        ],
+        [
+          "Pool",
+          "7EaG3ZQQUbuEzGRKfAi549sqgpJFbZexMV96JarauasR"
+        ],
+        [
+          "Spread Config",
+          "858yZfssHjB1myPH2mErkjzFvmv2MR1fd5yEsMn2qVz6"
+        ]
+      ],
+      "from": "5Nsev9TVkPq683DFXNzKakjB82o2r3A8dhojY4zeZzYx6ZLHwcffYRWVRFMcdbWoyUykDC8b5htcCTZ8TRwMKpxb#3",
+      "intent": "Create a spread config",
+      "programId": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+      "sentence": "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4 creates spread config 858yZfssHjB1myPH2mErkjzFvmv2MR1fd5yEsMn2qVz6 for pool 7EaG3ZQQUbuEzGRKfAi549sqgpJFbZexMV96JarauasR, with 6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4 as its spread admin",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4:sw",
+        "DbQYhsmBypcxb23ruDmcWb1k43YjnaNR22yonCVeP7Ke:w",
+        "D6izv2evcqaErVsr5qjAET5vtp7ozABmJLwpMjt1iJKj"
+      ],
+      "data": "0f78",
+      "fields": [
+        [
+          "Staleness Limit in Slots (none: no limit)",
+          "120"
+        ],
+        [
+          "Quoting Authority",
+          "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4"
+        ],
+        [
+          "Pool",
+          "DbQYhsmBypcxb23ruDmcWb1k43YjnaNR22yonCVeP7Ke"
+        ],
+        [
+          "Curve Meta",
+          "D6izv2evcqaErVsr5qjAET5vtp7ozABmJLwpMjt1iJKj"
+        ]
+      ],
+      "from": "xaarnQAYrBB9yjCKniAnMNbuga7Mn7zz5jqp6BLpLRTq9bLzyJaXcfQ6bN5K1bG5ZR5oqS6RS4jjPZotgY88UAC#3",
+      "intent": "Set the staleness limit",
+      "programId": "HADRoNbLovyqhCsocfYQYB7QdfCAAinN9HTePvBCVDQ8",
+      "sentence": "6yXF2cQ4rXavXm8mpUGaobdvAmR2jAsGLDZSDiQtGpB4 sets the oracle staleness limit of pool DbQYhsmBypcxb23ruDmcWb1k43YjnaNR22yonCVeP7Ke",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}
