@@ -635,3 +635,12 @@ programHash = "8df58bc9f9428c02bf34fa845ae2961274156e7ff07a8dc1be0018dd765baeff"
 authority = "dPpFfahSWhm5M2RB3nVaHsXfnh9ooz5bWtR3WeUguDH"
 idlSha256 = "f4050d693768bf24797eff1d1214c9fcfc511e1de8e872536b07b5a0dcc5dd01"
 reviewed = "2026-11-12"
+
+[[builds]]
+# sanctumSplStakePool (pack). Deployed in October 2025 (slot 371704212), the same executable as SPMBzsVU…; OtterSec has no verify record, and its source is not Sanctum's public fork. The binary logs all 27 SPL Stake Pool instruction names; the IDL keeps 9, and mainnet transactions of each decode with every account named and exactly the data length the IDL describes.
+programId = "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY"
+network = "mainnet"
+programHash = "3a9383372a36d55816d6f47a5707ec8abc8c099dea9f9dd7636b96a9eeaf5169"
+authority = "47SND7bGKvNXrqfP1bjsLCbwTgZhFBzAgmZ42QSkRScz"
+idlSha256 = "328b7b86059307ffd28664d7ed7482a4848870af66e82b537b3dc7bafed9d380"
+reviewed = "2026-11-12"
