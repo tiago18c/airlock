@@ -573,3 +573,14 @@ programHash = "9a497328283c266534ae14136692f06c2367777d1389be8e0f056dce0ef908a9"
 authority = "J3oBkTkDXU3TcAggJEa3YeBZE5om5yNAdTtLVNXFD47"
 idlSha256 = "0fc2669aaf1da3b2161d1e446207a2045da3e6eb4349a45e06922015fc21c135"
 reviewed = "2026-11-12"
+
+[[builds]]
+# farms (pack). Every instruction the IDL lists is in this binary by its Anchor log name, and the binary has none the IDL lacks. Successful mainnet transactions decode with the IDL, every account named, for stake, unstake, withdrawUnstakedDeposits, harvestReward, setStakeDelegated, initializeUser, closeEmptyUserState, initializeFarm, initializeReward, updateFarmConfig and updateFarmAdmin. The build is OtterSec-verified at the 1.7.0 release, the IDL's version.
+programId = "FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr"
+network = "mainnet"
+programHash = "924abe7472a839c37ffffc1fb6663f54c6d5828afa3e31552a57497768a84a87"
+authority = "CivjSDKgTpmkRNL4zYcmv9D9QqPJg6yTxBVxMGcXvMuY"
+idlSha256 = "e11b36817d4123f6bc2fb4bd8eb3e580c015891ca18c11547e9e54fec2ba5da9"
+source = { repo = "https://github.com/Kamino-Finance/kfarms", commit = "bfa186034ba8ecd36e7faf27cae6b38ee24d0bc4" }
+verified = "CivjSDKgTpmkRNL4zYcmv9D9QqPJg6yTxBVxMGcXvMuY"
+reviewed = "2026-11-12"

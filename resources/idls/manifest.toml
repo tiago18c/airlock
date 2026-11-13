@@ -602,3 +602,22 @@ collateral token); amounts of the core deposit, repay, withdraw, borrow and liqu
 instructions, which name no mint, are in base units. Flat protocol fees and rebalance \
 tips are in SOL, durations are durations, basis points are percent; I80F48 fixed-point \
 values show their bytes. Display nodes added by hand."""
+
+# Kamino Farms (farms), Kamino Finance's staking and rewards program, which
+# Kamino Lend and Kamino's vaults stake depositors' positions into. The file
+# is the legacy Anchor IDL its Anchor IDL account publishes on mainnet
+# (1.7.0); it has no program-metadata account. Devnet runs another executable
+# with an older IDL (1.6.5), so the file is mainnet only.
+[[idls]]
+file = "kamino-farms.json"
+programId = "FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr"
+name = "farms"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "a48b04de374b53c9ab02732ffb6b91ab32efe14cb64940b5d4de3681fa0cb779" }
+changes = """Converted from Anchor to Codama. The program's address is set, which a legacy Anchor IDL \
+does not carry. The Token program's mint account is added, so the staked amount reads \
+the farm token's decimals, and reward top-ups, reward withdrawals and treasury \
+withdrawals read the reward token's; the stake a delegating program sets, one-time \
+rewards, and farm vault deposits and withdrawals, whose mint is not an account of the \
+instruction, are in base units. Unstaked amounts are stake shares, scaled by 10^18. \
+Display nodes added by hand."""
