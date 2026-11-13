@@ -1311,3 +1311,27 @@ liquidity provided or withdrawn read in the token's units; the rate limits stay 
 units, since the mint is not one of their accounts, and the amount a release carries is \
 a 32-byte number in the source chain's decimals, shown as its bytes. Display nodes added \
 by hand."""
+
+# LayerZero V2 endpoint (endpoint 0.1.0), the program every LayerZero
+# application on Solana, such as an OFT token bridge, sends and receives
+# cross-chain messages through. The file is the legacy Anchor IDL its Anchor
+# IDL account publishes on mainnet, which carries no program address. Devnet
+# runs another build and publishes a slightly different document, so the file
+# is mainnet only.
+[[idls]]
+file = "layerzero-endpoint.json"
+programId = "76y77prsiCMvXMjuoZ5VRrhG5qYBrUMYTE5WgHqgjEn6"
+name = "endpoint"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "25e3cc5ba5d977b5b87b50f5560bd6c54d6a41aeca3aba9cf98092f87aa9cd09" }
+changes = """Converted from Anchor to Codama; the program address is set, since a legacy Anchor IDL \
+carries none. The 32-byte senders, receivers, GUIDs and payload hashes of other chains, \
+`[u8; 32]` arrays in the source, are typed as 32-byte fixed-size bytes so they read as \
+hex; the bytes are the same. setSendLibrary and setReceiveLibrary take an absent library \
+registration as the program's address. send declares the accounts it passes to the send \
+library after its named ones as two remaining-accounts groups, shown: the signer among \
+them, which the ULN library charges the native fee, then the rest (the library's \
+settings and configs, the treasury, and four accounts for the executor and for each DVN, \
+whose number varies). initConfig declares its payer and the message library's accounts \
+the same way, setConfig the message library's accounts, and quote the send library's \
+accounts, hidden. Display nodes added by hand."""
