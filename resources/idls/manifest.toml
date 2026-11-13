@@ -1024,3 +1024,22 @@ extension, Pyth price accounts, reward accounts, supported-mint records, a confi
 owner), which Anchor IDLs cannot. The Token program's mint account is added, so \
 liquidity limits, fee collections and off-chain reward deposits, claims and withdrawals \
 read their mint's decimals; swap amounts are in base units. Display nodes added by hand."""
+
+# Jupiter Lend's liquidity layer: it holds the tokens, and the Earn, Borrow,
+# DEX and flashloan programs call its operate instruction to supply, withdraw,
+# borrow and repay on behalf of their markets, vaults and pools. People do not
+# sign it at the top level; its instructions appear inside Jupiter Lend
+# transactions. The program publishes no IDL on chain; the file is the Anchor
+# IDL in Jupiter's jup-ag/jupiter-lend repository.
+# jup6QF1sNDGpkkcu6F4qaFHcRBmnSS1VgyB4uFbBvNS, which publishes an IDL also
+# named liquidity, is a different deployment and not this program.
+[[idls]]
+file = "jupiter-lend-liquidity.json"
+programId = "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC"
+name = "liquidity"
+networks = ["mainnet"]
+source = { kind = "repository", url = "https://github.com/jup-ag/jupiter-lend/blob/7960a14a5a760abc41db3ed1395dc5cb56a1f8db/target/idl/liquidity.json" }
+changes = """Converted from Anchor to Codama. operate and preOperate set optionalAccountStrategy to \
+programId. operate's supply and borrow changes are in the decimals of its mint, read \
+from chain; rate curve points, fees, utilization limits and limit expansions are shown \
+as percent and expansion times as durations. Display nodes added by hand."""
