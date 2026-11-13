@@ -302,6 +302,13 @@ fn program_line(store: &dyn IdlCatalog, program_id: Pubkey, note: &DisplayNote) 
             name: Some(record.name.clone()),
             sha256: Some(record.sha256),
             origin: Some(record.origin),
+            carried_by: record.host.map(|host| {
+                store
+                    .records()
+                    .iter()
+                    .find(|other| other.program_id == host)
+                    .map_or_else(|| host.to_string(), |other| other.name.clone())
+            }),
             status: IdlPinStatus::of(record.check.as_ref()),
             context_pin: context_pin(program_id, Some(record.sha256), note),
         },
@@ -310,6 +317,7 @@ fn program_line(store: &dyn IdlCatalog, program_id: Pubkey, note: &DisplayNote) 
             name: None,
             sha256: None,
             origin: None,
+            carried_by: None,
             status: IdlPinStatus::NoIdl,
             context_pin: context_pin(program_id, None, note),
         },

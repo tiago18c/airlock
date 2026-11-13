@@ -24,9 +24,20 @@ pub fn IdlInstruction(idl: IdlExplanation, data: Vec<u8>, inspect: bool) -> Elem
     let undescribed = idl.undescribed_bytes.len();
     let undescribed_hex = hex::encode(&idl.undescribed_bytes);
     let has_sentence = spans.is_some();
+    let from_chain = idl.origin.is_read_from_chain();
 
     rsx! {
-        p { class: "ix-title", "{intent}" }
+        p { class: "ix-title",
+            "{intent}"
+            // Words its program's controller wrote: the note above the
+            // instructions says so once.
+            if from_chain {
+                span { class: "chip warn ix-origin",
+                    title: "Put in words by an IDL read from the chain, which whoever controls the program wrote",
+                    "IDL from the chain"
+                }
+            }
+        }
         if unnamed > 0 {
             p { class: "warn",
                 "This instruction carries {unnamed} more account(s) than its IDL describes. The program may read a different layout, so the account names shown here may be wrong. Check the addresses in Inspect."
