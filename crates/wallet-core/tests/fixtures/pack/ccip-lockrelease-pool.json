@@ -1,0 +1,847 @@
+{
+  "accounts": {
+    "SLXdx4BUt2v9uJQNzWqSfzTJ9UKLUDsvxHFMEEdrfgq": {
+      "data": "AAAAAA4tasI5z+6TzvTlauPaxE5D6+2i/6lj8VxAm7Ofa07S/PyGhn6NAwAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "dawn7ZUF7h7anFuEsDdAU1Y3HYwikwqNMAENZsQJdNL": {
+      "data": "AQAAAJEC4dSE+nue3MGY19NeB892y3qm4qlzuaG9iqYZJOewzzj4XfkvAAAGAQEAAAA0TG6QtOn4fWGfWl2iaVF5Zn6+JzSd4EUvVXt0GTjgzQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARIAQAA0TG6QtOn4fWGfWl2iaVF5Zn6+JzSd4EUvVXt0GTjgzQlfSky2z9t5RW4Pbev7oUH0Jzsl/ZAbzQkWCm71NtO9DgBAADRMbpC06fh9YZ9aXaJpUXlmfr4nNJ3gRS9Ve3QZOODNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaACEANExukLTp+H1hn1pdomlReWZ+vic0neBFL1V7dBk44M0AEwDWADRMbpC06fh9YZ9aXaJpUXlmfr4nNJ3gRS9Ve3QZOODNCV9KTLbP23lFbg9t6/uhQfQnOyX9kBvNCRYKbvU2070JAAAAVVNELmluZnJhCQAAAFVTRC5pbmZyYXQAAABodHRwczovL2dyZWVuLW9iZWRpZW50LWFsYmF0cm9zcy0xNTUubXlwaW5hdGEuY2xvdWQvaXBmcy9iYWZrcmVpYmp5NjNxcnN3dnczZzNyb2I1M2FmNXZzdG1rNGt6Y2U0NDY1NnF3c201M3Q0dTVjN3R6eQAAAAA=",
+      "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+    }
+  },
+  "instructions": [
+    {
+      "accounts": [
+        "DPyeT76APQQVQD7EJRVw8Y6gLYjGkC5CdbdHQTQkpoN2",
+        "5sw763ZzSQKviYg7Q15qHHBYWdDfpmZfwtiyXnDmdh7t:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "SLXdx4BUt2v9uJQNzWqSfzTJ9UKLUDsvxHFMEEdrfgq:w",
+        "2aMmW44Afe1zwUmkufSdJAYgTQGdtdgoWARnKdjJHFcw",
+        "CV4AJ2cjCtZvhRdRE9RDeRJk8vrDtFWCi9a8mjKrzQrY:w",
+        "RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7",
+        "CpbeEvmTR4UE8CgDDL5b1nqjSz7JCD4wNJhxPLZRkSL1",
+        "GbQFCDTPbhwPjeUvhu7hXEM3Wm2S6t3FCxoCmQtKxetw",
+        "DmTZoqVqgFvvboKpy8qseJrxjVZ84Tckg8JbD5cceRGk:w"
+      ],
+      "data": "72a15e1d9319e8bf20000000000000000000000000000000be9306ddf2c0ddd69227adb2c7e7ef4d0b5697d5cf3b258e6d57709df108af1cd9794858404be67737907e1b8b4eb442de7b525a80d164f92891e0a554046bb200000000067d99d20d4142f6ad2f50a30d5ab47b28659a8812aa3459c5aecbad5c4c02a67300000000000000",
+      "fields": [
+        [
+          "Receiver on Destination Chain (hex)",
+          "000000000000000000000000be9306ddf2c0ddd69227adb2c7e7ef4d0b5697d5"
+        ],
+        [
+          "Destination Chain Selector",
+          "11,344,663,589,394,136,015"
+        ],
+        [
+          "Sender",
+          "HDtwFZmHMqY16KhqmZ8GXyHUsxBTnmXzy7UcZcioBCZA"
+        ],
+        [
+          "Amount Locked",
+          "2,993.357908"
+        ],
+        [
+          "Message Nonce (sender and destination)",
+          "115"
+        ],
+        [
+          "Pool",
+          "5sw763ZzSQKviYg7Q15qHHBYWdDfpmZfwtiyXnDmdh7t"
+        ],
+        [
+          "Token",
+          "SLXdx4BUt2v9uJQNzWqSfzTJ9UKLUDsvxHFMEEdrfgq"
+        ],
+        [
+          "Pool Token Account",
+          "CV4AJ2cjCtZvhRdRE9RDeRJk8vrDtFWCi9a8mjKrzQrY"
+        ]
+      ],
+      "from": "2tDkMgAEH4rqtuF2Ytqoy9GRGqigmuZzZbmCegDMCr9pE2HsWUP5MQsgJC5w5WrsYw4xskR3pQF9RgjrZ5h5KCo4#4.6",
+      "intent": "Lock tokens for a cross-chain send",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "Locks 2,993.357908 of SLXdx4BUt2v9uJQNzWqSfzTJ9UKLUDsvxHFMEEdrfgq in the CCIP pool for a send by HDtwFZmHMqY16KhqmZ8GXyHUsxBTnmXzy7UcZcioBCZA to receiver 000000000000000000000000be9306ddf2c0ddd69227adb2c7e7ef4d0b5697d5 on destination chain selector 11344663589394136015",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "DPyeT76APQQVQD7EJRVw8Y6gLYjGkC5CdbdHQTQkpoN2",
+        "3dRbTX9t2egJLuAV72e3Jj4CmfcgVD8XjRsyZ9CSnGM5:w",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "dawn7ZUF7h7anFuEsDdAU1Y3HYwikwqNMAENZsQJdNL:w",
+        "5X25bGwiMhGbiqFhLzErkqYFW2iH4inBD9SWmgeK2qKR",
+        "7A2WpgVv6bdxheQS48PZxoMEJCFRHSvuTg4dDncJ1vH1:w",
+        "RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7",
+        "CpbeEvmTR4UE8CgDDL5b1nqjSz7JCD4wNJhxPLZRkSL1",
+        "GbQFCDTPbhwPjeUvhu7hXEM3Wm2S6t3FCxoCmQtKxetw",
+        "ABbxCHws76K3JjiYrqsQm59LJgkpYwR2A43rQmcWvwRG:w"
+      ],
+      "data": "72a15e1d9319e8bf20000000000000000000000000000000d12e667cef093c3cd326b30fedd6fcf6db54f7a782ff4ae4cf41a6dd39c4c8aa0c251b46ddf4a77f854f8ecd5b24750ecd3bd07ee65a5523a84ad789a086010000000000095f4a4cb6cfdb79456e0f6debfba141f4273b25fd901bcd09160a6ef536d3bd1900000000000000",
+      "fields": [
+        [
+          "Receiver on Destination Chain (hex)",
+          "000000000000000000000000d12e667cef093c3cd326b30fedd6fcf6db54f7a7"
+        ],
+        [
+          "Destination Chain Selector",
+          "15,971,525,489,660,198,786"
+        ],
+        [
+          "Sender",
+          "4tWGyTHFnwv6WJ8WLKkprk21HxCofV5qYo738rGK8w84"
+        ],
+        [
+          "Amount Locked",
+          "0.1"
+        ],
+        [
+          "Message Nonce (sender and destination)",
+          "25"
+        ],
+        [
+          "Pool",
+          "3dRbTX9t2egJLuAV72e3Jj4CmfcgVD8XjRsyZ9CSnGM5"
+        ],
+        [
+          "Token",
+          "dawn7ZUF7h7anFuEsDdAU1Y3HYwikwqNMAENZsQJdNL"
+        ],
+        [
+          "Pool Token Account",
+          "7A2WpgVv6bdxheQS48PZxoMEJCFRHSvuTg4dDncJ1vH1"
+        ]
+      ],
+      "from": "54cEoLs26R2keKnCrmCvybeWbnDK9qVuh3qVkqsAVgTqVAMCGGKaBmfHWr7BLQ5wgDNskt1KpJ3ad4VtkhyZoFiT#2.8",
+      "intent": "Lock tokens for a cross-chain send",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "Locks 0.1 of dawn7ZUF7h7anFuEsDdAU1Y3HYwikwqNMAENZsQJdNL in the CCIP pool for a send by 4tWGyTHFnwv6WJ8WLKkprk21HxCofV5qYo738rGK8w84 to receiver 000000000000000000000000d12e667cef093c3cd326b30fedd6fcf6db54f7a7 on destination chain selector 15971525489660198786",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "22YPGTJtXfLj8EwQC18A1BfnD8Jssp4t6KpUJfSVhYYq",
+        "offqSMQWgQud6WJz694LRzkeN5kMYpCHTpXQr3Rkcjm",
+        "B86FTLtt1w8mHrzR5w8dL8X8NwKNNL3FHKQdsnZMRhhP",
+        "3dRbTX9t2egJLuAV72e3Jj4CmfcgVD8XjRsyZ9CSnGM5:w",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "dawn7ZUF7h7anFuEsDdAU1Y3HYwikwqNMAENZsQJdNL:w",
+        "5X25bGwiMhGbiqFhLzErkqYFW2iH4inBD9SWmgeK2qKR",
+        "7A2WpgVv6bdxheQS48PZxoMEJCFRHSvuTg4dDncJ1vH1:w",
+        "ABbxCHws76K3JjiYrqsQm59LJgkpYwR2A43rQmcWvwRG:w",
+        "RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7",
+        "CpbeEvmTR4UE8CgDDL5b1nqjSz7JCD4wNJhxPLZRkSL1",
+        "GbQFCDTPbhwPjeUvhu7hXEM3Wm2S6t3FCxoCmQtKxetw",
+        "aXY5wFA3bM49vYGLMXJtck6DS8fQnzXA7TyKQ38vRku:w"
+      ],
+      "data": "5c6496c6fc3fa4e414000000be296092623c12b0aec57964ac3799f43c817ad882ff4ae4cf41a6dd39c4c8aa0c251b46ddf4a77f854f8ecd5b24750ecd3bd07ee65a5523a84ad789400d030000000000000000000000000000000000000000000000000000000000095f4a4cb6cfdb79456e0f6debfba141f4273b25fd901bcd09160a6ef536d3bd140000003ee290685eb112d2b152d5fcb2b6d663b3524f3120000000000000000000000000000000000000000000000000000000000000000000000600000000",
+      "fields": [
+        [
+          "Source Chain Sender Address (hex)",
+          "be296092623c12b0aec57964ac3799f43c817ad8"
+        ],
+        [
+          "Source Chain Selector",
+          "15,971,525,489,660,198,786"
+        ],
+        [
+          "Receiver",
+          "4tWGyTHFnwv6WJ8WLKkprk21HxCofV5qYo738rGK8w84"
+        ],
+        [
+          "Amount Sent (32-byte little-endian number, in the source token's decimals)",
+          "64, 13, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0"
+        ],
+        [
+          "Source Pool Address (hex)",
+          "3ee290685eb112d2b152d5fcb2b6d663b3524f31"
+        ],
+        [
+          "Source Pool Data (hex)",
+          "0000000000000000000000000000000000000000000000000000000000000006"
+        ],
+        [
+          "Offchain Token Data (hex)",
+          ""
+        ],
+        [
+          "CCIP Offramp Program",
+          "offqSMQWgQud6WJz694LRzkeN5kMYpCHTpXQr3Rkcjm"
+        ],
+        [
+          "Pool",
+          "3dRbTX9t2egJLuAV72e3Jj4CmfcgVD8XjRsyZ9CSnGM5"
+        ],
+        [
+          "Token",
+          "dawn7ZUF7h7anFuEsDdAU1Y3HYwikwqNMAENZsQJdNL"
+        ],
+        [
+          "Pool Token Account",
+          "7A2WpgVv6bdxheQS48PZxoMEJCFRHSvuTg4dDncJ1vH1"
+        ],
+        [
+          "Receiver's Token Account",
+          "aXY5wFA3bM49vYGLMXJtck6DS8fQnzXA7TyKQ38vRku"
+        ]
+      ],
+      "from": "3zzXM1n4obUgMhBFZLCfJKpzfo6i7cxoVYzN2Jv8TVi2oVrMTfW921HaFvkaSWYFCerwsg5p1VWqfzg8iks2PEvt#2.2",
+      "intent": "Release tokens from a cross-chain send",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "Releases dawn7ZUF7h7anFuEsDdAU1Y3HYwikwqNMAENZsQJdNL tokens from the CCIP pool to 4tWGyTHFnwv6WJ8WLKkprk21HxCofV5qYo738rGK8w84, for a message from source chain selector 15971525489660198786 sent by be296092623c12b0aec57964ac3799f43c817ad8",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "22YPGTJtXfLj8EwQC18A1BfnD8Jssp4t6KpUJfSVhYYq",
+        "offqSMQWgQud6WJz694LRzkeN5kMYpCHTpXQr3Rkcjm",
+        "6o2rBkoQCsyYMZTbzEGC8nywyzkVPfYGFZMyTaRMiJCT",
+        "H3J5vWM3d5YRkSaf9LS9KJtiMiKtzTnW9zN2rJMyWnk5:w",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "Dx68jydZnXJkp6Xngku8FbjFFovp9tZmXT66jrLXpump:w",
+        "FKDAtA37CNvgg7t8oE37iC7j7A5i8AfdVc1qt88RE32y",
+        "Gjh2QDQbeVRwPyjYmpTC61n3qWHue7QhxYSgg6Zasacq:w",
+        "2t93XdDZJi1cRnuVxze4vEDn9YGMdRZeSA4WpDdpt4Sb:w",
+        "RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7",
+        "CpbeEvmTR4UE8CgDDL5b1nqjSz7JCD4wNJhxPLZRkSL1",
+        "GbQFCDTPbhwPjeUvhu7hXEM3Wm2S6t3FCxoCmQtKxetw",
+        "ET7shLrC1rNfTfBMchHhtRHp8U3eE2aiX7opCY1p2hDo:w"
+      ],
+      "data": "5c6496c6fc3fa4e41400000063b2d3b0a26c1938bb0ae9779b96073946d4e4af29b3c0e82772c6557ea74cf580c42d3539ebd2e8959fc29522bc0a96f96e311793ad3e45ad6f551b59a05e0a04000000000000000000000000000000000000000000000000000000c068fdf683fac8344a8fb1059cdab12b9225a8e21a5f04a2ac53ecf066b08fcf14000000c08ea80f118a90c924e0606b176ffa4f4a68296320000000000000000000000000000000000000000000000000000000000000000000000600000000",
+      "fields": [
+        [
+          "Source Chain Sender Address (hex)",
+          "63b2d3b0a26c1938bb0ae9779b96073946d4e4af"
+        ],
+        [
+          "Source Chain Selector",
+          "6,180,753,054,346,818,345"
+        ],
+        [
+          "Receiver",
+          "9XQLDx1MV5Ssv48DfFfBwFErh8ds6jfXfHZBJKj1FqXY"
+        ],
+        [
+          "Amount Sent (32-byte little-endian number, in the source token's decimals)",
+          "89, 160, 94, 10, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0"
+        ],
+        [
+          "Source Pool Address (hex)",
+          "c08ea80f118a90c924e0606b176ffa4f4a682963"
+        ],
+        [
+          "Source Pool Data (hex)",
+          "0000000000000000000000000000000000000000000000000000000000000006"
+        ],
+        [
+          "Offchain Token Data (hex)",
+          ""
+        ],
+        [
+          "CCIP Offramp Program",
+          "offqSMQWgQud6WJz694LRzkeN5kMYpCHTpXQr3Rkcjm"
+        ],
+        [
+          "Pool",
+          "H3J5vWM3d5YRkSaf9LS9KJtiMiKtzTnW9zN2rJMyWnk5"
+        ],
+        [
+          "Token",
+          "Dx68jydZnXJkp6Xngku8FbjFFovp9tZmXT66jrLXpump"
+        ],
+        [
+          "Pool Token Account",
+          "Gjh2QDQbeVRwPyjYmpTC61n3qWHue7QhxYSgg6Zasacq"
+        ],
+        [
+          "Receiver's Token Account",
+          "ET7shLrC1rNfTfBMchHhtRHp8U3eE2aiX7opCY1p2hDo"
+        ]
+      ],
+      "from": "4he5VgHZ3CtVuGR6Mnt7gwe1Fnuk1Ndts6D77Ema67Af4xxQ7ic7pjXwVcmbA4Lteha7TKPeYLxbmeRCj5hikwd7#2.2",
+      "intent": "Release tokens from a cross-chain send",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "Releases Dx68jydZnXJkp6Xngku8FbjFFovp9tZmXT66jrLXpump tokens from the CCIP pool to 9XQLDx1MV5Ssv48DfFfBwFErh8ds6jfXfHZBJKj1FqXY, for a message from source chain selector 6180753054346818345 sent by 63b2d3b0a26c1938bb0ae9779b96073946d4e4af",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "AKssuW5rpfFNn1kzc1ejTTdRL7YLmRFgWCvZD3B8CX4Y:w",
+        "3F48CMewXmhAr8nWnhTrb9EPBv7UhAW2rWs5AM5D4o1o",
+        "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf"
+      ],
+      "data": "41b1d749352d632f40aeb792acd76595203d5f8827003a4e667d86db84c6d11667ab7a8d6a39fc83",
+      "fields": [
+        [
+          "Proposed Owner",
+          "5MVcaExzWJXyKfRW1uJVEYwS6ySbZowY2tKY7xDnMjwp"
+        ],
+        [
+          "Pool",
+          "AKssuW5rpfFNn1kzc1ejTTdRL7YLmRFgWCvZD3B8CX4Y"
+        ],
+        [
+          "Token",
+          "3F48CMewXmhAr8nWnhTrb9EPBv7UhAW2rWs5AM5D4o1o"
+        ],
+        [
+          "Pool Owner",
+          "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf"
+        ]
+      ],
+      "from": "419EuFJ1RnBhBNvqK2X3DkK9eiwABi2biBB8qwUrTDqXyB7gBwFo7zKhdxiXEiFkXd13rwYAxDVTeXWdMhtWECto#1.1",
+      "intent": "Transfer pool ownership",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf, the pool owner, proposes 5MVcaExzWJXyKfRW1uJVEYwS6ySbZowY2tKY7xDnMjwp as the new owner of the CCIP pool for 3F48CMewXmhAr8nWnhTrb9EPBv7UhAW2rWs5AM5D4o1o, who must accept it",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9",
+        "FnDEpdCXzgUhSpSKsP5uyvVgJCeVeWTiX11KGdQejhyL:w",
+        "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps:sw",
+        "11111111111111111111111111111111"
+      ],
+      "data": "9570ba4874d99faf29b3c0e82772c6550748e8da1d87da5387b372f0ee00b7e115333371a5d79e230ef733700c5a3edf01000000140000008dab620ce519d34a688d9478779a537e9a0021bc200000000000000000000000000000007807f2e5077b1f3df585f3594b2f8fc71595777709",
+      "fields": [
+        [
+          "Remote Chain Selector",
+          "6,180,753,054,346,818,345"
+        ],
+        [
+          "Token",
+          "VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump"
+        ],
+        [
+          "Remote Pool Addresses (hex)",
+          "Address: 8dab620ce519d34a688d9478779a537e9a0021bc"
+        ],
+        [
+          "Remote Token Address (hex)",
+          "0000000000000000000000007807f2e5077b1f3df585f3594b2f8fc715957777"
+        ],
+        [
+          "Token Decimals on Remote Chain",
+          "9"
+        ],
+        [
+          "Pool",
+          "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9"
+        ],
+        [
+          "Remote Chain Settings",
+          "FnDEpdCXzgUhSpSKsP5uyvVgJCeVeWTiX11KGdQejhyL"
+        ],
+        [
+          "Pool Owner",
+          "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps"
+        ]
+      ],
+      "from": "53rfCtiac15NSMLjqFqE4p8VkN3aJWyUU2BsUdJ2WQ8CfXfkEpgRK84uDVmCqbKt3THimeCiAL7vUuhKtbw5T7KE#3",
+      "intent": "Edit a remote chain",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps, the pool owner, sets the token of remote chain selector 6180753054346818345 in the CCIP pool for VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump to 0000000000000000000000007807f2e5077b1f3df585f3594b2f8fc715957777 with 9 decimals, and replaces its remote pools",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9:w",
+        "VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump",
+        "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv:sw",
+        "11111111111111111111111111111111"
+      ],
+      "data": "12b466bbd10082bf01000000574ab9085df283df8ec4fe5c3b1bf9a4d3d10808617da09910325b275d7cdc1001",
+      "fields": [
+        [
+          "Senders Added",
+          "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps"
+        ],
+        [
+          "Allow List On",
+          "true"
+        ],
+        [
+          "Pool",
+          "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9"
+        ],
+        [
+          "Token",
+          "VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump"
+        ],
+        [
+          "Pool Owner",
+          "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv"
+        ]
+      ],
+      "from": "RRpWKN2jqLkoJX1h7NByaK5i8Ts5mPvncr7qXoLgR55XvPrENjKqjkpA4EeTKXUmKEodsGfYtQvbEdTv8YA6M6W#2",
+      "intent": "Add to the sender allow list",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv, the pool owner, adds senders to the allow list of the CCIP pool for VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump and sets the list on: true",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "BKwU7vH6EBJFVmHMiEoUz5Yv5GafhofzVKJeAcxD4x6j",
+        "8W2245YMHHEKeJUypMQjZGcX2gPsSocf44Ydo3QArgPW:w",
+        "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf:w",
+        "11111111111111111111111111111111"
+      ],
+      "data": "ac39533746701ac5157b9cfc949984453db012feaceb9de59e2cc3fbbb7a23b6f2ae778ae9a4fbc63f44e38f01f7e9e00100000014000000fd34e1866092f2d422ae77acd242a88bacb123a8",
+      "fields": [
+        [
+          "Remote Chain Selector",
+          "5,009,297,550,715,157,269"
+        ],
+        [
+          "Token",
+          "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw"
+        ],
+        [
+          "Remote Pools Added (hex)",
+          "Address: fd34e1866092f2d422ae77acd242a88bacb123a8"
+        ],
+        [
+          "Pool",
+          "BKwU7vH6EBJFVmHMiEoUz5Yv5GafhofzVKJeAcxD4x6j"
+        ],
+        [
+          "Remote Chain Settings",
+          "8W2245YMHHEKeJUypMQjZGcX2gPsSocf44Ydo3QArgPW"
+        ],
+        [
+          "Pool Owner",
+          "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf"
+        ]
+      ],
+      "from": "4gnCyPt7QnomNQiEY1KfVRDz3cp9VR7UDgWn9x9Lyxfy8A2USg26RXX8CDQ9vAZ88KoseQYxe4y2syLnxmUn4Qd4#1.1",
+      "intent": "Add remote pools",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf, the pool owner, adds remote pools for remote chain selector 5009297550715157269 to the CCIP pool for 59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9",
+        "FnDEpdCXzgUhSpSKsP5uyvVgJCeVeWTiX11KGdQejhyL:w",
+        "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps:sw",
+        "11111111111111111111111111111111"
+      ],
+      "data": "159685240274c78129b3c0e82772c6550748e8da1d87da5387b372f0ee00b7e115333371a5d79e230ef733700c5a3edf0000000020000000000000000000000000000000797649d0367ca511f3cc419746df09cec3ec777709",
+      "fields": [
+        [
+          "Remote Chain Selector",
+          "6,180,753,054,346,818,345"
+        ],
+        [
+          "Token",
+          "VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump"
+        ],
+        [
+          "Remote Pool Addresses (hex)",
+          ""
+        ],
+        [
+          "Remote Token Address (hex)",
+          "000000000000000000000000797649d0367ca511f3cc419746df09cec3ec7777"
+        ],
+        [
+          "Token Decimals on Remote Chain",
+          "9"
+        ],
+        [
+          "Pool",
+          "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9"
+        ],
+        [
+          "Remote Chain Settings",
+          "FnDEpdCXzgUhSpSKsP5uyvVgJCeVeWTiX11KGdQejhyL"
+        ],
+        [
+          "Pool Owner",
+          "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps"
+        ]
+      ],
+      "from": "3SDDPWpEL9zXno8LiXiL5wuydH7Jx7qghHKB3uHUQzSka8bc5Ydd6ZTbsfttXfFzNmtw58yQuu7vw4upZ64cuozr#3",
+      "intent": "Add a remote chain",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps, the pool owner, adds remote chain selector 6180753054346818345 to the CCIP pool for VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump, where its token is 000000000000000000000000797649d0367ca511f3cc419746df09cec3ec7777 with 9 decimals",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9",
+        "AgPeUTMwEbYXTE1JnBZh3eEJZ8w6iYWj2xNuMQCdevwB:w",
+        "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv:sw",
+        "11111111111111111111111111111111"
+      ],
+      "data": "159685240274c781cf3b258e6d57709d0748e8da1d87da5387b372f0ee00b7e115333371a5d79e230ef733700c5a3edf0000000020000000000000000000000000000000797649d0367ca511f3cc419746df09cec3ec777709",
+      "fields": [
+        [
+          "Remote Chain Selector",
+          "11,344,663,589,394,136,015"
+        ],
+        [
+          "Token",
+          "VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump"
+        ],
+        [
+          "Remote Pool Addresses (hex)",
+          ""
+        ],
+        [
+          "Remote Token Address (hex)",
+          "000000000000000000000000797649d0367ca511f3cc419746df09cec3ec7777"
+        ],
+        [
+          "Token Decimals on Remote Chain",
+          "9"
+        ],
+        [
+          "Pool",
+          "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9"
+        ],
+        [
+          "Remote Chain Settings",
+          "AgPeUTMwEbYXTE1JnBZh3eEJZ8w6iYWj2xNuMQCdevwB"
+        ],
+        [
+          "Pool Owner",
+          "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv"
+        ]
+      ],
+      "from": "2JxCGpFjAfbxYNjbGGyGKEKnAHEjqVzxmm7HivbpAbSW5TSVUJ3Hob3Fg2ygJfp331oEDC7YJtVpYrxbLyBb4iXZ#2",
+      "intent": "Add a remote chain",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv, the pool owner, adds remote chain selector 11344663589394136015 to the CCIP pool for VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump, where its token is 000000000000000000000000797649d0367ca511f3cc419746df09cec3ec7777 with 9 decimals",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9",
+        "FnDEpdCXzgUhSpSKsP5uyvVgJCeVeWTiX11KGdQejhyL:w",
+        "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps:sw"
+      ],
+      "data": "bcbca12564f97baa29b3c0e82772c6550748e8da1d87da5387b372f0ee00b7e115333371a5d79e230ef733700c5a3edf00000000000000000000000000000000000000000000000000000000000000000000",
+      "fields": [
+        [
+          "Remote Chain Selector",
+          "6,180,753,054,346,818,345"
+        ],
+        [
+          "Token",
+          "VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump"
+        ],
+        [
+          "Inbound Limit On",
+          "false"
+        ],
+        [
+          "Inbound Capacity",
+          "0 base units"
+        ],
+        [
+          "Inbound Refill per Second",
+          "0 base units"
+        ],
+        [
+          "Outbound Limit On",
+          "false"
+        ],
+        [
+          "Outbound Capacity",
+          "0 base units"
+        ],
+        [
+          "Outbound Refill per Second",
+          "0 base units"
+        ],
+        [
+          "Pool",
+          "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9"
+        ],
+        [
+          "Remote Chain Settings",
+          "FnDEpdCXzgUhSpSKsP5uyvVgJCeVeWTiX11KGdQejhyL"
+        ],
+        [
+          "Pool Owner or Rate Limit Administrator",
+          "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps"
+        ]
+      ],
+      "from": "3SDDPWpEL9zXno8LiXiL5wuydH7Jx7qghHKB3uHUQzSka8bc5Ydd6ZTbsfttXfFzNmtw58yQuu7vw4upZ64cuozr#5",
+      "intent": "Set remote chain rate limits",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps sets the inbound and outbound rate limits between the CCIP pool for VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump and remote chain selector 6180753054346818345",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9",
+        "FnDEpdCXzgUhSpSKsP5uyvVgJCeVeWTiX11KGdQejhyL:w",
+        "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps:sw"
+      ],
+      "data": "bcbca12564f97baa29b3c0e82772c6550748e8da1d87da5387b372f0ee00b7e115333371a5d79e230ef733700c5a3edf0100008a5d784563012f7ddb7a0d010000010000c9ed85be3f01aaf02b88f2000000",
+      "fields": [
+        [
+          "Remote Chain Selector",
+          "6,180,753,054,346,818,345"
+        ],
+        [
+          "Token",
+          "VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump"
+        ],
+        [
+          "Inbound Limit On",
+          "true"
+        ],
+        [
+          "Inbound Capacity",
+          "100,000,000,000,000,000 base units"
+        ],
+        [
+          "Inbound Refill per Second",
+          "1,157,407,407,407 base units"
+        ],
+        [
+          "Outbound Limit On",
+          "true"
+        ],
+        [
+          "Outbound Capacity",
+          "90,000,000,000,000,000 base units"
+        ],
+        [
+          "Outbound Refill per Second",
+          "1,041,666,666,666 base units"
+        ],
+        [
+          "Pool",
+          "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9"
+        ],
+        [
+          "Remote Chain Settings",
+          "FnDEpdCXzgUhSpSKsP5uyvVgJCeVeWTiX11KGdQejhyL"
+        ],
+        [
+          "Pool Owner or Rate Limit Administrator",
+          "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps"
+        ]
+      ],
+      "from": "3SDDPWpEL9zXno8LiXiL5wuydH7Jx7qghHKB3uHUQzSka8bc5Ydd6ZTbsfttXfFzNmtw58yQuu7vw4upZ64cuozr#6",
+      "intent": "Set remote chain rate limits",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps sets the inbound and outbound rate limits between the CCIP pool for VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump and remote chain selector 6180753054346818345",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9",
+        "AgPeUTMwEbYXTE1JnBZh3eEJZ8w6iYWj2xNuMQCdevwB:w",
+        "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv:sw"
+      ],
+      "data": "bcbca12564f97baacf3b258e6d57709d0748e8da1d87da5387b372f0ee00b7e115333371a5d79e230ef733700c5a3edf00000000000000000000000000000000000000000000000000000000000000000000",
+      "fields": [
+        [
+          "Remote Chain Selector",
+          "11,344,663,589,394,136,015"
+        ],
+        [
+          "Token",
+          "VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump"
+        ],
+        [
+          "Inbound Limit On",
+          "false"
+        ],
+        [
+          "Inbound Capacity",
+          "0 base units"
+        ],
+        [
+          "Inbound Refill per Second",
+          "0 base units"
+        ],
+        [
+          "Outbound Limit On",
+          "false"
+        ],
+        [
+          "Outbound Capacity",
+          "0 base units"
+        ],
+        [
+          "Outbound Refill per Second",
+          "0 base units"
+        ],
+        [
+          "Pool",
+          "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9"
+        ],
+        [
+          "Remote Chain Settings",
+          "AgPeUTMwEbYXTE1JnBZh3eEJZ8w6iYWj2xNuMQCdevwB"
+        ],
+        [
+          "Pool Owner or Rate Limit Administrator",
+          "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv"
+        ]
+      ],
+      "from": "2JxCGpFjAfbxYNjbGGyGKEKnAHEjqVzxmm7HivbpAbSW5TSVUJ3Hob3Fg2ygJfp331oEDC7YJtVpYrxbLyBb4iXZ#4",
+      "intent": "Set remote chain rate limits",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv sets the inbound and outbound rate limits between the CCIP pool for VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump and remote chain selector 11344663589394136015",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9:w",
+        "VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump",
+        "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps:sw"
+      ],
+      "data": "ac172b0deed55596",
+      "fields": [
+        [
+          "Pool",
+          "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9"
+        ],
+        [
+          "Token",
+          "VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump"
+        ],
+        [
+          "New Owner",
+          "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps"
+        ]
+      ],
+      "from": "3Nu4cW2tYsE2cqH9hfigaxazn85f4s9af7CVHTGtnFG7ep7JZijc2zCLHaEuD5ae3vkU4vrV1x6x5RHXQwqtQth3#4",
+      "intent": "Accept pool ownership",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps becomes the owner of the CCIP pool for VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9:w",
+        "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv:sw"
+      ],
+      "data": "15b67e801ff125220748e8da1d87da5387b372f0ee00b7e115333371a5d79e230ef733700c5a3edf574ab9085df283df8ec4fe5c3b1bf9a4d3d10808617da09910325b275d7cdc10",
+      "fields": [
+        [
+          "Token",
+          "VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump"
+        ],
+        [
+          "Rate Limit Administrator",
+          "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps"
+        ],
+        [
+          "Pool",
+          "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9"
+        ],
+        [
+          "Pool Owner",
+          "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv"
+        ]
+      ],
+      "from": "4m3Ppa9j8ffNbXWdYEjoVw2uDNxBgMJtpJxavoYbDZ9R7bhPCRZxuuVHNpjGhTSXRHPeNCtzK7XQ6yMckZbTd3N2#2",
+      "intent": "Set the rate limit administrator",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv, the pool owner, sets 6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps as the rate limit administrator of the CCIP pool for VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9:w",
+        "VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump",
+        "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv:sw"
+      ],
+      "data": "1ca1a8fad704909a574ab9085df283df8ec4fe5c3b1bf9a4d3d10808617da09910325b275d7cdc10",
+      "fields": [
+        [
+          "Rebalancer (the default key 1111…1111 means none)",
+          "6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps"
+        ],
+        [
+          "Pool",
+          "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9"
+        ],
+        [
+          "Token",
+          "VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump"
+        ],
+        [
+          "Pool Owner",
+          "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv"
+        ]
+      ],
+      "from": "4YyUynLu762VxzB2fJs64tUaVQcvqaMRujL2eP52a6umUzdis3YTEL9fqA3Dftobv1zezSTTnETqA8hmf1qx6AVx#2",
+      "intent": "Set the pool rebalancer",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv, the pool owner, sets 6skZBjQV1vQ8LxQSTdMYyWTjLGCvkLP2YvECNC6W9bps as the rebalancer of the CCIP pool for VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump, who may provide and withdraw its liquidity",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9:w",
+        "VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump",
+        "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv:sw",
+        "11111111111111111111111111111111",
+        "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+        "AeMEQshfd7w72oGt5cMn8196zod6gQPWskbf5BY83W1B",
+        "6Nh9CWRGW69VJ7mnD9ELjm6BMkbvoGvVse2HuNuaHPqm"
+      ],
+      "data": "afaf6d1f0d989bed",
+      "fields": [
+        [
+          "Pool",
+          "GpZ6fk2iiYf12BVcx8z8ZdQrELjVbhAaYwbgQPBQTsc9"
+        ],
+        [
+          "Token",
+          "VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump"
+        ],
+        [
+          "Owner (upgrade or mint authority)",
+          "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv"
+        ]
+      ],
+      "from": "4PJnapEiLC27gjFDrcHZygZuQCKv5bxX8onisxVm3DrSf7oYmzndeWzmpfwFSkEgEaVgY1KTNCdEZX62KKJ8hVri#2",
+      "intent": "Create a token pool",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "E9tX5zKFXML4dkQ6YJ44NebB2g5QstrradC1PfR3Jzgv creates the CCIP lock-release pool for VSLTa8EgJ61vNPEPKSGYKmjDkNm6bWZUUfXa5LCpump and becomes its owner",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "3dRbTX9t2egJLuAV72e3Jj4CmfcgVD8XjRsyZ9CSnGM5:w",
+        "dawn7ZUF7h7anFuEsDdAU1Y3HYwikwqNMAENZsQJdNL",
+        "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf:w",
+        "11111111111111111111111111111111",
+        "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+        "AeMEQshfd7w72oGt5cMn8196zod6gQPWskbf5BY83W1B",
+        "6Nh9CWRGW69VJ7mnD9ELjm6BMkbvoGvVse2HuNuaHPqm"
+      ],
+      "data": "afaf6d1f0d989bed",
+      "fields": [
+        [
+          "Pool",
+          "3dRbTX9t2egJLuAV72e3Jj4CmfcgVD8XjRsyZ9CSnGM5"
+        ],
+        [
+          "Token",
+          "dawn7ZUF7h7anFuEsDdAU1Y3HYwikwqNMAENZsQJdNL"
+        ],
+        [
+          "Owner (upgrade or mint authority)",
+          "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf"
+        ]
+      ],
+      "from": "3JT77gHeaU1hx7XqWj76v98t11pNH6vJeZJfgHmJ3yvHtj1x1k5rvu1TCipMpRFKSGWvBJaTdzzHfc7BSy9WdotL#1.1",
+      "intent": "Create a token pool",
+      "programId": "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC",
+      "sentence": "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf creates the CCIP lock-release pool for dawn7ZUF7h7anFuEsDdAU1Y3HYwikwqNMAENZsQJdNL and becomes its owner",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}

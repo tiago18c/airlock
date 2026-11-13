@@ -883,3 +883,14 @@ idlSha256 = "1f5c3a903d52e2dcb2448854b85298ba3932120a90359bb4ba0a812c9fea4d5d"
 source = { repo = "https://github.com/gmsol-labs/gmx-solana", commit = "8af1e70c0c0b6ff9d6b41ba4997910588fbcec28" }
 verified = "6qp7veALWas5rxXJRQXUEbffRtDyhB8koxenBpS51SrA"
 reviewed = "2026-11-12"
+
+[[builds]]
+# lockreleaseTokenPool (pack). The binary logs the 25 instruction names the IDL lists and no others besides Anchor's IDL instructions; the OtterSec-verified source (lockrelease-token-pool 1.6.2 with base-token-pool) has the same 25 entrypoints and the added types' fields. Successful mainnet transactions decode with the IDL, every account named and every byte read, for the lock and release the router and offramp call, and for initialize, the remote chain, rate limit, allow list, rebalancer and ownership instructions.
+programId = "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC"
+network = "mainnet"
+programHash = "5e982c9f7d5ab41053017ebb58a0f88be26abe7836b3b49df06ab7bbeff1d465"
+authority = "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf"
+idlSha256 = "7888007dd0c78680703408b4110a0166259dccef9cb711b19db3b2d34a89042a"
+source = { repo = "https://github.com/smartcontractkit/chainlink-ccip", commit = "9546a59bd0a3cee4ddc8ae4042da533e62225b78" }
+verified = "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf"
+reviewed = "2026-11-12"

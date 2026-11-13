@@ -735,6 +735,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("Gmso1uvJnLbawvw7yezdfCDcPydwW2s2iqG3w6MDucLo"),
         "GMX Solana Store Program",
     ),
+    (
+        Pubkey::from_str_const("8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC"),
+        "Chainlink CCIP Lock-Release Pool Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

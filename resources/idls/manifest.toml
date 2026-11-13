@@ -1286,3 +1286,28 @@ order collateral amounts, GT amounts and market transfers are in base units; pos
 sizes and USD values have 20 decimals, the program's fixed point; builder fees, \
 discounts and deviation factors are in percent; trigger and acceptable prices are left \
 raw with their scale in the label. Display nodes added by hand."""
+
+# Chainlink CCIP lock-release token pool (lockrelease_token_pool), which holds
+# a token locked on Solana while it is sent to another chain through CCIP and
+# releases it when it comes back. The file is the Anchor IDL its Anchor IDL
+# account publishes on mainnet (1.6.2), which leaves out the eight types it
+# shares with Chainlink's other pools; they are added from the base_token_pool
+# IDL in Chainlink's repository at the verified commit. Devnet runs a newer
+# build (2.0.0) at the same address, so the file is mainnet only.
+[[idls]]
+file = "ccip-lockrelease-pool.json"
+programId = "8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC"
+name = "lockreleaseTokenPool"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "4bc3038617a722fecf818220b72e4af50d19e002cb9516b8da88cd1e3b38da3e" }
+changes = """Converted from Anchor to Codama. The chain's IDL links to eight types it does not define \
+(the lock and release arguments, the remote chain settings, remote addresses, the rate \
+limit settings and the pool's state), because they come from the base_token_pool crate; \
+they are added unchanged from Codama's conversion of base_token_pool.json in \
+smartcontractkit/chainlink-ccip at 9546a59b, the commit OtterSec verified for this \
+program, so the lock, the release and the remote chain and rate limit instructions \
+decode. The Token program's mint account is added, so the amount locked and the \
+liquidity provided or withdrawn read in the token's units; the rate limits stay in base \
+units, since the mint is not one of their accounts, and the amount a release carries is \
+a 32-byte number in the source chain's decimals, shown as its bytes. Display nodes added \
+by hand."""
