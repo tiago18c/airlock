@@ -1,0 +1,1758 @@
+{
+  "accounts": {
+    "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo": {
+      "data": "AQAAAJPkMU4Y+uEbsZMeeiiX9ljfNXCarVZ7fbwaCVSmePpUi1k/U8qbAgAGAQEAAAAXhTJh72q4Uypn8FOGWq0xKT/PB88SCrW5oVcGVI3AKwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQMAIAAXhTJh72q4Uypn8FOGWq0xKT/PB88SCrW5oVcGVI3AKwwAIAAXhTJh72q4Uypn8FOGWq0xKT/PB88SCrW5oVcGVI3AKwEAbAAXhTJh72q4Uypn8FOGWq0xKT/PB88SCrW5oVcGVI3AKxeFMmHvarhTKmfwU4ZarTEpP88HzxIKtbmhVwZUjcArAAAAAAAAAABdAgAAAAAAAAAAAAAAAAAAAABdAgAAAAAAAAAAAAAAAAAAAAAEAEEAF4UyYe9quFMqZ/BThlqtMSk/zwfPEgq1uaFXBlSNwCsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAIEAF4UyYe9quFMqZ/BThlqtMSk/zwfPEgq1uaFXBlSNwCscN+ZDO3ME3YJzeuQNm4vzxJ9bDmxJqNUzKLPlBpAcVwEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgBAABeFMmHvarhTKmfwU4ZarTEpP88HzxIKtbmhVwZUjcArAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASAEAAF4UyYe9quFMqZ/BThlqtMSk/zwfPEgq1uaFXBlSNwCsXkkg7bIoqh7dHHYFPlZH5OVyECpzj2fTVun06S4p0nhMArgAXhTJh72q4Uypn8FOGWq0xKT/PB88SCrW5oVcGVI3AKxeSSDtsiiqHt0cdgU+Vkfk5XIQKnOPZ9NW6fTpLinSeCgAAAFBheVBhbCBVU0QFAAAAUFlVU0RPAAAAaHR0cHM6Ly90b2tlbi1tZXRhZGF0YS5wYXhvcy5jb20vcHl1c2RfbWV0YWRhdGEvcHJvZC9zb2xhbmEvcHl1c2RfbWV0YWRhdGEuanNvbgAAAAA=",
+      "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+    },
+    "3Fb5DMRWoBLWD36Lp4BtG41LaFjVeEJNCH9YLNPYdVqj": {
+      "data": "AQAAAOShvVS1FEZNQDHSQFvRtrDWp7Dz/jX4CBQ0x/JgZPNy7KssNBsAAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "9ckR7pPPvyPadACDTzLwK2ZAEeUJ3qGSnzPs8bVaHrSy": {
+      "data": "AQAAAIAF6gXfqtKMKhTRY3/WBhuwxVUd6JRz80ZBZJ3jqIDWQRrFbBkIAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARIAQACABeoF36rSjCoU0WN/1gYbsMVVHeiUc/NGQWSd46iA1oAF6gXfqtKMKhTRY3/WBhuwxVUd6JRz80ZBZJ3jqIDWEwCdAIAF6gXfqtKMKhTRY3/WBhuwxVUd6JRz80ZBZJ3jqIDWgAXqBd+q0owqFNFjf9YGG7DFVR3olHPzRkFkneOogNYEAAAAVVNEdQQAAABVU0R1RQAAAGh0dHBzOi8vZ2F0ZXdheS5pcnlzLnh5ei9GSGlObzlvOU5IOXpjVlByR2lIYUhMTkdIbzJGUlhVUXNqWTM3TnZUcmNqYgAAAAA=",
+      "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+    },
+    "DzvXsw9Htt6EfrbT9Kp9eRxjhyKt8sr1TfTjFmJeVyCT": {
+      "data": "AQAAAO2XqJcGpvQAwoyxQLYKucmTXmOxbO/6iqTNc78EJQ+zpJ7tRhESAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": {
+      "data": "AQAAAJj+huiNm+Lqi8HMpIeLKYjCQPUrhCS/tA7Rot3LXhmbwD9a4d1wHwAGAQEAAABicKqKWcWUBbRShshncubNEm6bil06OFNtN/e0FOi2Zw==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "So11111111111111111111111111111111111111112": {
+      "data": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    }
+  },
+  "instructions": [
+    {
+      "accounts": [
+        "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq:sw",
+        "CVCsJFoYjN4gxABhuw71buKhGALRbBm5KvVJQcaodVpt:w",
+        "GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB",
+        "3DPqnRogx3AqxvVsXLYgFov9oXBeJFQwxeMwfXgGQz4e:w",
+        "4Y6iZKkq7rMuthnT8sNcwsydXE4qeKVT42Yod24XppWc:w",
+        "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+        "So11111111111111111111111111111111111111112",
+        "779UeNqMZfJx1e78GK1qKk5TRdq3hcqVfs2yRhY2vdKA:w",
+        "C8Gr6AUuq9hEdSYJzoEpNcdjpojPZwqG5MtQbeouNNwg:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "D9z8mcuaxTat8mcjRq6HPFKsjo7ZSc1mSo2vfvziX6Ks:w",
+        "779UeNqMZfJx1e78GK1qKk5TRdq3hcqVfs2yRhY2vdKA:w",
+        "H9ypnyTn6QzpXtvKMvR761WMU8Zir2AyeZK9vCj155pw:w",
+        "37XRwFkmrvrh57MuyHJ651qwXikmsUbcH29Uj5USWq1E:w",
+        "5rJ5PvB5MyxsyV9VSid2esNLJUykRiq9xcGxnMmoDJhh:w",
+        "8QiWPTLzJzpM1unb7yHEHRyCZ6cjiPdxPU7ppd91e8pZ:w",
+        "BoRcBXQbBXY5XV7tPKeq2gKtt2tNQBiKKMRbj4MhtLTA:w",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3v6ootgJJZbSWEDfZMA1scfh7wcsVVfeocExRxPqCyWH",
+        "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo",
+        "Sysvar1nstructions1111111111111111111111111",
+        "D1ZN9Wj1fRSUQfCjhvnu1hqDMT7hzjzBBpi12nVniYD6"
+      ],
+      "data": "0df5b467feb6790490000000",
+      "fields": [
+        [
+          "Reference Price Tick",
+          "144"
+        ],
+        [
+          "Actions Authority",
+          "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq"
+        ],
+        [
+          "Strategy",
+          "CVCsJFoYjN4gxABhuw71buKhGALRbBm5KvVJQcaodVpt"
+        ],
+        [
+          "Strategy Vault A",
+          "3DPqnRogx3AqxvVsXLYgFov9oXBeJFQwxeMwfXgGQz4e"
+        ],
+        [
+          "Strategy Vault B",
+          "4Y6iZKkq7rMuthnT8sNcwsydXE4qeKVT42Yod24XppWc"
+        ],
+        [
+          "Token A",
+          "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
+        ],
+        [
+          "Token B",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Pool",
+          "C8Gr6AUuq9hEdSYJzoEpNcdjpojPZwqG5MtQbeouNNwg"
+        ],
+        [
+          "Position",
+          "D9z8mcuaxTat8mcjRq6HPFKsjo7ZSc1mSo2vfvziX6Ks"
+        ],
+        [
+          "Position NFT Account",
+          "H9ypnyTn6QzpXtvKMvR761WMU8Zir2AyeZK9vCj155pw"
+        ],
+        [
+          "Pool Vault A",
+          "37XRwFkmrvrh57MuyHJ651qwXikmsUbcH29Uj5USWq1E"
+        ],
+        [
+          "Pool Vault B",
+          "5rJ5PvB5MyxsyV9VSid2esNLJUykRiq9xcGxnMmoDJhh"
+        ],
+        [
+          "Lower Tick Array",
+          "8QiWPTLzJzpM1unb7yHEHRyCZ6cjiPdxPU7ppd91e8pZ"
+        ],
+        [
+          "Upper Tick Array",
+          "BoRcBXQbBXY5XV7tPKeq2gKtt2tNQBiKKMRbj4MhtLTA"
+        ],
+        [
+          "Pool Program",
+          "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+        ]
+      ],
+      "from": "2xqNnajQ4fMyMrHMeo9uBUxwcpvsug3EkxAhGPNPpNZ4HgYfzLVrhUCc4fXwvXXDt4HUpgPurAtHCJPD1ZKdayx6#3",
+      "intent": "Invest strategy tokens",
+      "programId": "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+      "sentence": "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq invests the tokens in the vaults of strategy CVCsJFoYjN4gxABhuw71buKhGALRbBm5KvVJQcaodVpt into its position D9z8mcuaxTat8mcjRq6HPFKsjo7ZSc1mSo2vfvziX6Ks",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq:sw",
+        "5QgwaBQzzMAHdxpaVUgb4KrpXELgNTaEYXycUvNvRxr6:w",
+        "GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB",
+        "7X8BWpCWzWdMR4SoRPyHZjLKrcEtRBLC6Kx9LMtrg7h7:w",
+        "GDAZkHigYMUPytuXo7yvKvz1VhNtrhTXGpbNdaLiVBzz:w",
+        "So11111111111111111111111111111111111111112",
+        "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn",
+        "4dwqs7JWzWvfJPpaTPnuiNHwF6NYU4pDQjvQg7BgLAfq:w",
+        "2uoKbPEidR7KAMYtY4x7xdkHXWqYib5k4CutJauSL3Mc:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "4AhbzFeAfz3hs9HUn6kPanKn1BrxXcHcTff3EwCjBFuP:w",
+        "7s7Ham3DWpaK7RgHPNdAVRsGJEnsk41hibSBU7AjXHc7:w",
+        "D3nUbMquMub1ui1SdGb8U7S7VaWqi6roRixC9K4o2G6z:w",
+        "AFz1RoY6NfapWZUZ4VhjaKpaE54RYH3f2gRyeF4NP5Cj:w",
+        "6HrrQEWJ6atWo1dYV7zvSock7amZ1HC8M64RW1nB55XY:w",
+        "GqXtzp4QviCJALYWXndedGASLs1ugdJswDyKgACgmMAk:w",
+        "A2RqBKNH8Kiz5ZAfTgPcK2N6TLQgckYADYotpwA4CQ1g:w",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3v6ootgJJZbSWEDfZMA1scfh7wcsVVfeocExRxPqCyWH",
+        "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK",
+        "Sysvar1nstructions1111111111111111111111111",
+        "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+        "5Pbw3mJz74orAQpxsgDtwGZSpr67V1DVs9Rk4oWaCQKk:w"
+      ],
+      "data": "0df5b467feb6790475f5ffff",
+      "fields": [
+        [
+          "Reference Price Tick",
+          "-2,699"
+        ],
+        [
+          "Actions Authority",
+          "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq"
+        ],
+        [
+          "Strategy",
+          "5QgwaBQzzMAHdxpaVUgb4KrpXELgNTaEYXycUvNvRxr6"
+        ],
+        [
+          "Strategy Vault A",
+          "7X8BWpCWzWdMR4SoRPyHZjLKrcEtRBLC6Kx9LMtrg7h7"
+        ],
+        [
+          "Strategy Vault B",
+          "GDAZkHigYMUPytuXo7yvKvz1VhNtrhTXGpbNdaLiVBzz"
+        ],
+        [
+          "Token A",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Token B",
+          "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn"
+        ],
+        [
+          "Pool",
+          "2uoKbPEidR7KAMYtY4x7xdkHXWqYib5k4CutJauSL3Mc"
+        ],
+        [
+          "Position",
+          "4AhbzFeAfz3hs9HUn6kPanKn1BrxXcHcTff3EwCjBFuP"
+        ],
+        [
+          "Position NFT Account",
+          "D3nUbMquMub1ui1SdGb8U7S7VaWqi6roRixC9K4o2G6z"
+        ],
+        [
+          "Pool Vault A",
+          "AFz1RoY6NfapWZUZ4VhjaKpaE54RYH3f2gRyeF4NP5Cj"
+        ],
+        [
+          "Pool Vault B",
+          "6HrrQEWJ6atWo1dYV7zvSock7amZ1HC8M64RW1nB55XY"
+        ],
+        [
+          "Lower Tick Array",
+          "GqXtzp4QviCJALYWXndedGASLs1ugdJswDyKgACgmMAk"
+        ],
+        [
+          "Upper Tick Array",
+          "A2RqBKNH8Kiz5ZAfTgPcK2N6TLQgckYADYotpwA4CQ1g"
+        ],
+        [
+          "Pool Program",
+          "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK"
+        ]
+      ],
+      "from": "PW5HyBJ9rTxc2WuASi3VzbBAPDTd5WHohGzUjyHTiwp7Si4mFFLYdCkWibuAy94raysQ2AdJxDQfhmFv4N6HLKP#3",
+      "intent": "Invest strategy tokens",
+      "programId": "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+      "sentence": "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq invests the tokens in the vaults of strategy 5QgwaBQzzMAHdxpaVUgb4KrpXELgNTaEYXycUvNvRxr6 into its position 4AhbzFeAfz3hs9HUn6kPanKn1BrxXcHcTff3EwCjBFuP",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq:sw",
+        "5EfeGn1h7m6Rx9mGEmamDoxMtdhRmUh2N9fYRiDQqteS:w",
+        "GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB",
+        "225LMBPU8sWhjcGHeLRv6TLRsq6PQdDMN36TRwoqhLoK:w",
+        "FpCMFDFGYotvufJ7HrFHsWEiiQCGbkLCtwHiDnh7o28Q:w",
+        "3QpCRGKgaEHcuBgn3gnsbTmTy9zgCfZSoHUZ9HVKTggC:w",
+        "7xAnupSqSPee8R7DqssfwJj9mDDfpZHehX9erx8evoXa:w",
+        "Hco5dkaAymjmus3NGujf7oNaq1PxnJX8hPvGUXuG6Yz:w",
+        "225LMBPU8sWhjcGHeLRv6TLRsq6PQdDMN36TRwoqhLoK:w",
+        "ETTPARuX1f9YHzZ62W58oNueNngs7qB7cYMWb9VRifP1",
+        "2Rb9sTPc2BVmH2pSdwRU1cKGSMedXay3JwAvrGftJF3B:w",
+        "6mQ8xEaHdTikyMvvMxUctYch6dUjnKgfoeib2msyMMi1:w",
+        "D1JCxWdFPVjEMisugHvwHDQjQ5mHHGFTW4f4KLPaxehY:w",
+        "AQ36QRk3HAe6PHqBCtKTQnYKpt2kAagq9YoeTqUPMGHx:w",
+        "VoRCGSds2zx7wphohDtESr9ica8hWwgptuf3vBWmcg5:w",
+        "7TKAjdUL8uUNTCY1BpsKV6Ec3de8uKwBCzmtdmcX47Vp:w",
+        "73a2yN8Qd4dN8g9RJBeHCUywMdXaKoh7LRuF7Gj9dL8Z",
+        "8DFuZ8jyhHedokdWCz2JmbK4KtakFTnx57GLhvDLSrTU:w",
+        "225LMBPU8sWhjcGHeLRv6TLRsq6PQdDMN36TRwoqhLoK:w",
+        "225LMBPU8sWhjcGHeLRv6TLRsq6PQdDMN36TRwoqhLoK:w",
+        "6mdL93Gug1JMwCs6zQuB3iBd5p5tTWybmhm3ZhF7v5tq:w",
+        "225LMBPU8sWhjcGHeLRv6TLRsq6PQdDMN36TRwoqhLoK:w",
+        "225LMBPU8sWhjcGHeLRv6TLRsq6PQdDMN36TRwoqhLoK:w",
+        "So11111111111111111111111111111111111111112",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc",
+        "Sysvar1nstructions1111111111111111111111111",
+        "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+        "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "71124b08b61f69ba",
+      "fields": [
+        [
+          "Signer",
+          "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq"
+        ],
+        [
+          "Strategy",
+          "5EfeGn1h7m6Rx9mGEmamDoxMtdhRmUh2N9fYRiDQqteS"
+        ],
+        [
+          "Pool",
+          "FpCMFDFGYotvufJ7HrFHsWEiiQCGbkLCtwHiDnh7o28Q"
+        ],
+        [
+          "Lower Tick Array",
+          "3QpCRGKgaEHcuBgn3gnsbTmTy9zgCfZSoHUZ9HVKTggC"
+        ],
+        [
+          "Upper Tick Array",
+          "7xAnupSqSPee8R7DqssfwJj9mDDfpZHehX9erx8evoXa"
+        ],
+        [
+          "Position",
+          "Hco5dkaAymjmus3NGujf7oNaq1PxnJX8hPvGUXuG6Yz"
+        ],
+        [
+          "Position NFT Account",
+          "ETTPARuX1f9YHzZ62W58oNueNngs7qB7cYMWb9VRifP1"
+        ],
+        [
+          "Strategy Vault A",
+          "2Rb9sTPc2BVmH2pSdwRU1cKGSMedXay3JwAvrGftJF3B"
+        ],
+        [
+          "Pool Vault A",
+          "6mQ8xEaHdTikyMvvMxUctYch6dUjnKgfoeib2msyMMi1"
+        ],
+        [
+          "Strategy Vault B",
+          "D1JCxWdFPVjEMisugHvwHDQjQ5mHHGFTW4f4KLPaxehY"
+        ],
+        [
+          "Pool Vault B",
+          "AQ36QRk3HAe6PHqBCtKTQnYKpt2kAagq9YoeTqUPMGHx"
+        ],
+        [
+          "Treasury Fee Vault A",
+          "VoRCGSds2zx7wphohDtESr9ica8hWwgptuf3vBWmcg5"
+        ],
+        [
+          "Treasury Fee Vault B",
+          "7TKAjdUL8uUNTCY1BpsKV6Ec3de8uKwBCzmtdmcX47Vp"
+        ],
+        [
+          "Strategy Reward Vault 0",
+          "8DFuZ8jyhHedokdWCz2JmbK4KtakFTnx57GLhvDLSrTU"
+        ],
+        [
+          "Strategy Reward Vault 1",
+          "225LMBPU8sWhjcGHeLRv6TLRsq6PQdDMN36TRwoqhLoK"
+        ],
+        [
+          "Strategy Reward Vault 2",
+          "225LMBPU8sWhjcGHeLRv6TLRsq6PQdDMN36TRwoqhLoK"
+        ],
+        [
+          "Pool Reward Vault 0",
+          "6mdL93Gug1JMwCs6zQuB3iBd5p5tTWybmhm3ZhF7v5tq"
+        ],
+        [
+          "Pool Reward Vault 1",
+          "225LMBPU8sWhjcGHeLRv6TLRsq6PQdDMN36TRwoqhLoK"
+        ],
+        [
+          "Pool Reward Vault 2",
+          "225LMBPU8sWhjcGHeLRv6TLRsq6PQdDMN36TRwoqhLoK"
+        ],
+        [
+          "Token A",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Token B",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Pool Program",
+          "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc"
+        ]
+      ],
+      "from": "3jxE16Kv4smo7KbWC7e1QbYdncHz9JVwcFgxtJbjacJxb5HCspGUdZStJsN6B5WV5w7EsAfpYcrPjMUPnKY75cbA#3",
+      "intent": "Collect fees and rewards",
+      "programId": "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+      "sentence": "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq collects the trading fees and pool rewards of strategy 5EfeGn1h7m6Rx9mGEmamDoxMtdhRmUh2N9fYRiDQqteS's position Hco5dkaAymjmus3NGujf7oNaq1PxnJX8hPvGUXuG6Yz into the strategy's vaults",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq:sw",
+        "2dczcMRpxWHZTcsiEjPT4YBcSseTaUmWFzw24HxYMFod:w",
+        "GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB",
+        "DdD5wfK6DcMHHWzNMrZHfHEJcCGroPFS8vCzP9XQo9UB:w",
+        "8EzbUfvcRT1Q6RL462ekGkgqbxsPmwC5FMLQZhSPMjJ3:w",
+        "AnALNYMAhH7CZUUtEYEVXbahcKtZpXbQqsXSWrhzarAg:w",
+        "2DN2ADJgXranH8ETEjR1Jh5AWeJsr2LzZLktgdHGbxUC:w",
+        "9EXMMbW5UxZEBMYiyRWkGzvtMHQRZT7qnjrfFkAKNYTh:w",
+        "DEQpg2Jiirt48gor5K7pcVouxg4qkMkkc6VSrXqcqzJy:w",
+        "HEgNmsyTebZ694hJDX2PeSLdpx3GY9MT7oKEfzBfLoyx:w",
+        "Et7Cw48WKoybgPpQ6W74KvgNRJgbVzvmSw6u2JZqtrad:w",
+        "9Hst4fTfQJXp1fxyVx1Lk1TubjNegFwXCedZkMRPaYAK:w",
+        "2vUbyPL88m3Wz5dpPmYRAuipzHSXS2gFUTeEjhWqA5wE:w",
+        "E9Yi56MiTCwRdRXvjNcmq4Ba33p83vv6HvfirnbVcdq5:w",
+        "VoRCGSds2zx7wphohDtESr9ica8hWwgptuf3vBWmcg5:w",
+        "3KewgqrD3Z4KWLJVcExaWC4bZVvZRxJ86zjJWFLYsPKG:w",
+        "73a2yN8Qd4dN8g9RJBeHCUywMdXaKoh7LRuF7Gj9dL8Z",
+        "FraNimoCzXBMA7bqQxJtmHBwF7HpFURMwTPYeW29wCZx:w",
+        "DfvHA1eTaE2M2KSfcyhqKrB5xKCSL38wssn5kuxV46WB:w",
+        "DdD5wfK6DcMHHWzNMrZHfHEJcCGroPFS8vCzP9XQo9UB:w",
+        "CQt8gwzxw4UQykse26qterQ3nSJt2AoQjgik1ZwWG64R:w",
+        "6hGSocrkcLotQNw64m86oWEACmFwYSuMQUh8ZBqUZ61G:w",
+        "DdD5wfK6DcMHHWzNMrZHfHEJcCGroPFS8vCzP9XQo9UB:w",
+        "So11111111111111111111111111111111111111112",
+        "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK",
+        "Sysvar1nstructions1111111111111111111111111",
+        "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+        "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "6L6bPMCd9YK4Thseym9hosLVdGD1GdSXLpif2YbNyw9a:w"
+      ],
+      "data": "71124b08b61f69ba",
+      "fields": [
+        [
+          "Signer",
+          "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq"
+        ],
+        [
+          "Strategy",
+          "2dczcMRpxWHZTcsiEjPT4YBcSseTaUmWFzw24HxYMFod"
+        ],
+        [
+          "Pool",
+          "8EzbUfvcRT1Q6RL462ekGkgqbxsPmwC5FMLQZhSPMjJ3"
+        ],
+        [
+          "Lower Tick Array",
+          "AnALNYMAhH7CZUUtEYEVXbahcKtZpXbQqsXSWrhzarAg"
+        ],
+        [
+          "Upper Tick Array",
+          "2DN2ADJgXranH8ETEjR1Jh5AWeJsr2LzZLktgdHGbxUC"
+        ],
+        [
+          "Position",
+          "9EXMMbW5UxZEBMYiyRWkGzvtMHQRZT7qnjrfFkAKNYTh"
+        ],
+        [
+          "Position NFT Account",
+          "HEgNmsyTebZ694hJDX2PeSLdpx3GY9MT7oKEfzBfLoyx"
+        ],
+        [
+          "Strategy Vault A",
+          "Et7Cw48WKoybgPpQ6W74KvgNRJgbVzvmSw6u2JZqtrad"
+        ],
+        [
+          "Pool Vault A",
+          "9Hst4fTfQJXp1fxyVx1Lk1TubjNegFwXCedZkMRPaYAK"
+        ],
+        [
+          "Strategy Vault B",
+          "2vUbyPL88m3Wz5dpPmYRAuipzHSXS2gFUTeEjhWqA5wE"
+        ],
+        [
+          "Pool Vault B",
+          "E9Yi56MiTCwRdRXvjNcmq4Ba33p83vv6HvfirnbVcdq5"
+        ],
+        [
+          "Treasury Fee Vault A",
+          "VoRCGSds2zx7wphohDtESr9ica8hWwgptuf3vBWmcg5"
+        ],
+        [
+          "Treasury Fee Vault B",
+          "3KewgqrD3Z4KWLJVcExaWC4bZVvZRxJ86zjJWFLYsPKG"
+        ],
+        [
+          "Strategy Reward Vault 0",
+          "FraNimoCzXBMA7bqQxJtmHBwF7HpFURMwTPYeW29wCZx"
+        ],
+        [
+          "Strategy Reward Vault 1",
+          "DfvHA1eTaE2M2KSfcyhqKrB5xKCSL38wssn5kuxV46WB"
+        ],
+        [
+          "Strategy Reward Vault 2",
+          "DdD5wfK6DcMHHWzNMrZHfHEJcCGroPFS8vCzP9XQo9UB"
+        ],
+        [
+          "Pool Reward Vault 0",
+          "CQt8gwzxw4UQykse26qterQ3nSJt2AoQjgik1ZwWG64R"
+        ],
+        [
+          "Pool Reward Vault 1",
+          "6hGSocrkcLotQNw64m86oWEACmFwYSuMQUh8ZBqUZ61G"
+        ],
+        [
+          "Pool Reward Vault 2",
+          "DdD5wfK6DcMHHWzNMrZHfHEJcCGroPFS8vCzP9XQo9UB"
+        ],
+        [
+          "Token A",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Token B",
+          "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So"
+        ],
+        [
+          "Pool Program",
+          "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK"
+        ]
+      ],
+      "from": "5uVVuutzSadPZM3jpCNNzSwr6gSbBLCj4ErtLxsPXKdLZu89Yach244sjEtnrixxkvNSqYQrEviiRgdzFzaxbKDp#3",
+      "intent": "Collect fees and rewards",
+      "programId": "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+      "sentence": "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq collects the trading fees and pool rewards of strategy 2dczcMRpxWHZTcsiEjPT4YBcSseTaUmWFzw24HxYMFod's position 9EXMMbW5UxZEBMYiyRWkGzvtMHQRZT7qnjrfFkAKNYTh into the strategy's vaults",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4w4SJ12qZ3drj3y7o83UtwG2nbkKZTbY2nQbRBpdf23m:sw",
+        "B7HWWTicHt1dCA7vbfeEQsc1JwcH7Qk3qAHc7zWMVP2r:w",
+        "GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB",
+        "8X5tAh7EcafARDGhmLHxkiG5CousuB1yLtYsbuM9tD1T:w",
+        "Avch8BekjAqsj4asKqHGKUkwMcbwmxgWGcTj7Pd4Xz2r:w",
+        "EyCCMCcPcfgY4kstFgAmWUhfVQHuEyBK66tNk33nvABG:w",
+        "EyCCMCcPcfgY4kstFgAmWUhfVQHuEyBK66tNk33nvABG:w",
+        "Bw5CsVB6czHXL2fkLdExEA5U5xDceMKQBMAowGEW88zx:w",
+        "3bVa8hNgt7MuvJg9wfN1Z5XrXgvE191oKsMTqHJsbfDR:w",
+        "7g5m3oX55ZojJ8kAbLqYGotgN1HPxBghtcCdYhERt9vy",
+        "8R893tQ6PqT5ze43osxYgsRqAPFL6PDtuBwyj4SoVjAb:w",
+        "ynZj2Nqv6LwVGuaWqqeyXrxodFCjTxVbLUmxAYGhEdo:w",
+        "CKM1hqBC4xqKZLZW47hg4YaGasPpcDxGYDfcZh9EobhT:w",
+        "73FcFY3oyvZc5uSLiVkEL6UNTFocwT2ep2s6VU1Bka69:w",
+        "So11111111111111111111111111111111111111112",
+        "sSo14endRuUbvQaJS3dq36Q829a3A6BEfoeeRGJywEh",
+        "8XNtifveVdHswKZNxnwSdVdg2R4BUbdgHbNnv9z4ud6m:w",
+        "DzvXsw9Htt6EfrbT9Kp9eRxjhyKt8sr1TfTjFmJeVyCT:w",
+        "VoRCGSds2zx7wphohDtESr9ica8hWwgptuf3vBWmcg5:w",
+        "CRQc9UymtmZmrofyoDu5V96szhcanoGBFTuy3qPbXmJd:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+        "4mSBNjCFBfUw8HcVQrpj5263iDKbscDYHpwMeNng2Y1B:w",
+        "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc",
+        "Sysvar1nstructions1111111111111111111111111",
+        "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc"
+      ],
+      "data": "b712469c946da12262c23bcb06000000",
+      "fields": [
+        [
+          "Shares",
+          "29,179.49501"
+        ],
+        [
+          "Withdrawer",
+          "4w4SJ12qZ3drj3y7o83UtwG2nbkKZTbY2nQbRBpdf23m"
+        ],
+        [
+          "Strategy",
+          "B7HWWTicHt1dCA7vbfeEQsc1JwcH7Qk3qAHc7zWMVP2r"
+        ],
+        [
+          "Pool",
+          "8X5tAh7EcafARDGhmLHxkiG5CousuB1yLtYsbuM9tD1T"
+        ],
+        [
+          "Position",
+          "Avch8BekjAqsj4asKqHGKUkwMcbwmxgWGcTj7Pd4Xz2r"
+        ],
+        [
+          "Lower Tick Array",
+          "EyCCMCcPcfgY4kstFgAmWUhfVQHuEyBK66tNk33nvABG"
+        ],
+        [
+          "Upper Tick Array",
+          "EyCCMCcPcfgY4kstFgAmWUhfVQHuEyBK66tNk33nvABG"
+        ],
+        [
+          "Strategy Vault A",
+          "Bw5CsVB6czHXL2fkLdExEA5U5xDceMKQBMAowGEW88zx"
+        ],
+        [
+          "Strategy Vault B",
+          "3bVa8hNgt7MuvJg9wfN1Z5XrXgvE191oKsMTqHJsbfDR"
+        ],
+        [
+          "Pool Vault A",
+          "8R893tQ6PqT5ze43osxYgsRqAPFL6PDtuBwyj4SoVjAb"
+        ],
+        [
+          "Pool Vault B",
+          "ynZj2Nqv6LwVGuaWqqeyXrxodFCjTxVbLUmxAYGhEdo"
+        ],
+        [
+          "Token A To",
+          "CKM1hqBC4xqKZLZW47hg4YaGasPpcDxGYDfcZh9EobhT"
+        ],
+        [
+          "Token B To",
+          "73FcFY3oyvZc5uSLiVkEL6UNTFocwT2ep2s6VU1Bka69"
+        ],
+        [
+          "Token A",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Token B",
+          "sSo14endRuUbvQaJS3dq36Q829a3A6BEfoeeRGJywEh"
+        ],
+        [
+          "Shares From",
+          "8XNtifveVdHswKZNxnwSdVdg2R4BUbdgHbNnv9z4ud6m"
+        ],
+        [
+          "Shares Token",
+          "DzvXsw9Htt6EfrbT9Kp9eRxjhyKt8sr1TfTjFmJeVyCT"
+        ],
+        [
+          "Treasury Fee Vault A",
+          "VoRCGSds2zx7wphohDtESr9ica8hWwgptuf3vBWmcg5"
+        ],
+        [
+          "Treasury Fee Vault B",
+          "CRQc9UymtmZmrofyoDu5V96szhcanoGBFTuy3qPbXmJd"
+        ],
+        [
+          "Position NFT Account",
+          "4mSBNjCFBfUw8HcVQrpj5263iDKbscDYHpwMeNng2Y1B"
+        ],
+        [
+          "Pool Program",
+          "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc"
+        ]
+      ],
+      "from": "bJ1JZ1V3A3iATKgk35wLAJsGos2hWNejGAqwm4M2wWmVJFiAuSAzRTq5Sk2nGHnTadadSMFFt8EeBUKg8ig71fg#7",
+      "intent": "Withdraw from a strategy",
+      "programId": "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+      "sentence": "4w4SJ12qZ3drj3y7o83UtwG2nbkKZTbY2nQbRBpdf23m burns 29,179.49501 shares of strategy B7HWWTicHt1dCA7vbfeEQsc1JwcH7Qk3qAHc7zWMVP2r from 8XNtifveVdHswKZNxnwSdVdg2R4BUbdgHbNnv9z4ud6m and receives So11111111111111111111111111111111111111112 into CKM1hqBC4xqKZLZW47hg4YaGasPpcDxGYDfcZh9EobhT and sSo14endRuUbvQaJS3dq36Q829a3A6BEfoeeRGJywEh into 73FcFY3oyvZc5uSLiVkEL6UNTFocwT2ep2s6VU1Bka69",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4Sd9hQrj6Hg7xVRzA2b4USoZ8jW7MSRZ6U5fJURwS2yk:sw",
+        "2dczcMRpxWHZTcsiEjPT4YBcSseTaUmWFzw24HxYMFod:w",
+        "GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB",
+        "8EzbUfvcRT1Q6RL462ekGkgqbxsPmwC5FMLQZhSPMjJ3:w",
+        "Ho2yr94PScD6d4kvFo5nDAoxSYCgK49eoikRtyacniTG:w",
+        "2DN2ADJgXranH8ETEjR1Jh5AWeJsr2LzZLktgdHGbxUC:w",
+        "2DN2ADJgXranH8ETEjR1Jh5AWeJsr2LzZLktgdHGbxUC:w",
+        "Et7Cw48WKoybgPpQ6W74KvgNRJgbVzvmSw6u2JZqtrad:w",
+        "2vUbyPL88m3Wz5dpPmYRAuipzHSXS2gFUTeEjhWqA5wE:w",
+        "DdD5wfK6DcMHHWzNMrZHfHEJcCGroPFS8vCzP9XQo9UB:w",
+        "9Hst4fTfQJXp1fxyVx1Lk1TubjNegFwXCedZkMRPaYAK:w",
+        "E9Yi56MiTCwRdRXvjNcmq4Ba33p83vv6HvfirnbVcdq5:w",
+        "ZPcDQNKEznCZKEpkHpSW8MzGT1T75ZWsTpZmLxWab4a:w",
+        "hFd84wKzkzSMR5awkdymiULN2cjXzaF212cbmxP6LY5:w",
+        "So11111111111111111111111111111111111111112",
+        "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So",
+        "FkBy8KcHat1ixeSbAJgba7Fm4Mvvrzhyb4wv9xRLDtFy:w",
+        "3Fb5DMRWoBLWD36Lp4BtG41LaFjVeEJNCH9YLNPYdVqj:w",
+        "VoRCGSds2zx7wphohDtESr9ica8hWwgptuf3vBWmcg5:w",
+        "3KewgqrD3Z4KWLJVcExaWC4bZVvZRxJ86zjJWFLYsPKG:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+        "33roHxbotEo6gs2X2dcrdWQK6yLYn9WTtb93ZArz9o2k:w",
+        "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK",
+        "Sysvar1nstructions1111111111111111111111111",
+        "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+        "FMNkEZ6PhANhZd2UA3ZMhRLQASYjTaemQSuPwGiMNZuy:w",
+        "CQt8gwzxw4UQykse26qterQ3nSJt2AoQjgik1ZwWG64R:w",
+        "FraNimoCzXBMA7bqQxJtmHBwF7HpFURMwTPYeW29wCZx:w",
+        "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R:w",
+        "6hGSocrkcLotQNw64m86oWEACmFwYSuMQUh8ZBqUZ61G:w",
+        "DfvHA1eTaE2M2KSfcyhqKrB5xKCSL38wssn5kuxV46WB:w",
+        "MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey:w",
+        "6L6bPMCd9YK4Thseym9hosLVdGD1GdSXLpif2YbNyw9a:w"
+      ],
+      "data": "b712469c946da12275b59b0000000000",
+      "fields": [
+        [
+          "Shares",
+          "10.204533"
+        ],
+        [
+          "Withdrawer",
+          "4Sd9hQrj6Hg7xVRzA2b4USoZ8jW7MSRZ6U5fJURwS2yk"
+        ],
+        [
+          "Strategy",
+          "2dczcMRpxWHZTcsiEjPT4YBcSseTaUmWFzw24HxYMFod"
+        ],
+        [
+          "Pool",
+          "8EzbUfvcRT1Q6RL462ekGkgqbxsPmwC5FMLQZhSPMjJ3"
+        ],
+        [
+          "Position",
+          "Ho2yr94PScD6d4kvFo5nDAoxSYCgK49eoikRtyacniTG"
+        ],
+        [
+          "Lower Tick Array",
+          "2DN2ADJgXranH8ETEjR1Jh5AWeJsr2LzZLktgdHGbxUC"
+        ],
+        [
+          "Upper Tick Array",
+          "2DN2ADJgXranH8ETEjR1Jh5AWeJsr2LzZLktgdHGbxUC"
+        ],
+        [
+          "Strategy Vault A",
+          "Et7Cw48WKoybgPpQ6W74KvgNRJgbVzvmSw6u2JZqtrad"
+        ],
+        [
+          "Strategy Vault B",
+          "2vUbyPL88m3Wz5dpPmYRAuipzHSXS2gFUTeEjhWqA5wE"
+        ],
+        [
+          "Pool Vault A",
+          "9Hst4fTfQJXp1fxyVx1Lk1TubjNegFwXCedZkMRPaYAK"
+        ],
+        [
+          "Pool Vault B",
+          "E9Yi56MiTCwRdRXvjNcmq4Ba33p83vv6HvfirnbVcdq5"
+        ],
+        [
+          "Token A To",
+          "ZPcDQNKEznCZKEpkHpSW8MzGT1T75ZWsTpZmLxWab4a"
+        ],
+        [
+          "Token B To",
+          "hFd84wKzkzSMR5awkdymiULN2cjXzaF212cbmxP6LY5"
+        ],
+        [
+          "Token A",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Token B",
+          "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So"
+        ],
+        [
+          "Shares From",
+          "FkBy8KcHat1ixeSbAJgba7Fm4Mvvrzhyb4wv9xRLDtFy"
+        ],
+        [
+          "Shares Token",
+          "3Fb5DMRWoBLWD36Lp4BtG41LaFjVeEJNCH9YLNPYdVqj"
+        ],
+        [
+          "Treasury Fee Vault A",
+          "VoRCGSds2zx7wphohDtESr9ica8hWwgptuf3vBWmcg5"
+        ],
+        [
+          "Treasury Fee Vault B",
+          "3KewgqrD3Z4KWLJVcExaWC4bZVvZRxJ86zjJWFLYsPKG"
+        ],
+        [
+          "Position NFT Account",
+          "33roHxbotEo6gs2X2dcrdWQK6yLYn9WTtb93ZArz9o2k"
+        ],
+        [
+          "Pool Program",
+          "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK"
+        ]
+      ],
+      "from": "4S8RhkjaemPVgUbnkPQDBkZFsmWJ1hyDLJKa3L3gba6xH8weAfPBty13Cd9gTi49EsAySbvW6ZxL3d3zCBnQDibf#4",
+      "intent": "Withdraw from a strategy",
+      "programId": "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+      "sentence": "4Sd9hQrj6Hg7xVRzA2b4USoZ8jW7MSRZ6U5fJURwS2yk burns 10.204533 shares of strategy 2dczcMRpxWHZTcsiEjPT4YBcSseTaUmWFzw24HxYMFod from FkBy8KcHat1ixeSbAJgba7Fm4Mvvrzhyb4wv9xRLDtFy and receives So11111111111111111111111111111111111111112 into ZPcDQNKEznCZKEpkHpSW8MzGT1T75ZWsTpZmLxWab4a and mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So into hFd84wKzkzSMR5awkdymiULN2cjXzaF212cbmxP6LY5",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq:sw",
+        "CVCsJFoYjN4gxABhuw71buKhGALRbBm5KvVJQcaodVpt:w",
+        "GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB",
+        "3DPqnRogx3AqxvVsXLYgFov9oXBeJFQwxeMwfXgGQz4e:w",
+        "4Y6iZKkq7rMuthnT8sNcwsydXE4qeKVT42Yod24XppWc:w",
+        "ALSwDDMBuJTpb7DUPwvbvnxG39PL8cqx3tugGzHbaniF:w",
+        "46gUHWCuimSMgue7Q5prNQXYSqfb8uDe5jznDyokWVr3:w",
+        "779UeNqMZfJx1e78GK1qKk5TRdq3hcqVfs2yRhY2vdKA:w",
+        "C8Gr6AUuq9hEdSYJzoEpNcdjpojPZwqG5MtQbeouNNwg:w",
+        "D9z8mcuaxTat8mcjRq6HPFKsjo7ZSc1mSo2vfvziX6Ks:w",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3v6ootgJJZbSWEDfZMA1scfh7wcsVVfeocExRxPqCyWH",
+        "8QiWPTLzJzpM1unb7yHEHRyCZ6cjiPdxPU7ppd91e8pZ",
+        "BoRcBXQbBXY5XV7tPKeq2gKtt2tNQBiKKMRbj4MhtLTA",
+        "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+        "So11111111111111111111111111111111111111112",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Sysvar1nstructions1111111111111111111111111",
+        "9GJmEHGom9eWo4np4L5vC6b6ri1Df2xN8KFoWixvD1Bs"
+      ],
+      "data": "816fae0c0a3c95c1c3a5301a0000000000",
+      "fields": [
+        [
+          "Amount Out of the Vault",
+          "439,395,779 base units"
+        ],
+        [
+          "Vault Gives Token A for Token B",
+          "false"
+        ],
+        [
+          "Swapper",
+          "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq"
+        ],
+        [
+          "Strategy",
+          "CVCsJFoYjN4gxABhuw71buKhGALRbBm5KvVJQcaodVpt"
+        ],
+        [
+          "Strategy Vault A",
+          "3DPqnRogx3AqxvVsXLYgFov9oXBeJFQwxeMwfXgGQz4e"
+        ],
+        [
+          "Strategy Vault B",
+          "4Y6iZKkq7rMuthnT8sNcwsydXE4qeKVT42Yod24XppWc"
+        ],
+        [
+          "Swapper Token A Account",
+          "ALSwDDMBuJTpb7DUPwvbvnxG39PL8cqx3tugGzHbaniF"
+        ],
+        [
+          "Swapper Token B Account",
+          "46gUHWCuimSMgue7Q5prNQXYSqfb8uDe5jznDyokWVr3"
+        ],
+        [
+          "Pool",
+          "C8Gr6AUuq9hEdSYJzoEpNcdjpojPZwqG5MtQbeouNNwg"
+        ],
+        [
+          "Position",
+          "D9z8mcuaxTat8mcjRq6HPFKsjo7ZSc1mSo2vfvziX6Ks"
+        ],
+        [
+          "Lower Tick Array",
+          "8QiWPTLzJzpM1unb7yHEHRyCZ6cjiPdxPU7ppd91e8pZ"
+        ],
+        [
+          "Upper Tick Array",
+          "BoRcBXQbBXY5XV7tPKeq2gKtt2tNQBiKKMRbj4MhtLTA"
+        ],
+        [
+          "Token A",
+          "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
+        ],
+        [
+          "Token B",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Consensus Account",
+          "9GJmEHGom9eWo4np4L5vC6b6ri1Df2xN8KFoWixvD1Bs"
+        ]
+      ],
+      "from": "64yRD2x43vmUeYxF8yTWf7iatAk9hY35ajR1X2rBkfiBAwaUGvh7KVNzRfPKwtGCisbTxbCoCWd1sEmd1Hoy1taT#3",
+      "intent": "Start a vault swap",
+      "programId": "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+      "sentence": "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq takes 439,395,779 base units out of the vaults of strategy CVCsJFoYjN4gxABhuw71buKhGALRbBm5KvVJQcaodVpt to swap it, to be repaid in the same transaction",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq:sw",
+        "CVCsJFoYjN4gxABhuw71buKhGALRbBm5KvVJQcaodVpt:w",
+        "GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB",
+        "3DPqnRogx3AqxvVsXLYgFov9oXBeJFQwxeMwfXgGQz4e:w",
+        "4Y6iZKkq7rMuthnT8sNcwsydXE4qeKVT42Yod24XppWc:w",
+        "ALSwDDMBuJTpb7DUPwvbvnxG39PL8cqx3tugGzHbaniF:w",
+        "46gUHWCuimSMgue7Q5prNQXYSqfb8uDe5jznDyokWVr3:w",
+        "779UeNqMZfJx1e78GK1qKk5TRdq3hcqVfs2yRhY2vdKA:w",
+        "C8Gr6AUuq9hEdSYJzoEpNcdjpojPZwqG5MtQbeouNNwg:w",
+        "D9z8mcuaxTat8mcjRq6HPFKsjo7ZSc1mSo2vfvziX6Ks:w",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3v6ootgJJZbSWEDfZMA1scfh7wcsVVfeocExRxPqCyWH",
+        "8QiWPTLzJzpM1unb7yHEHRyCZ6cjiPdxPU7ppd91e8pZ",
+        "BoRcBXQbBXY5XV7tPKeq2gKtt2tNQBiKKMRbj4MhtLTA",
+        "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+        "So11111111111111111111111111111111111111112",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Sysvar1nstructions1111111111111111111111111",
+        "9GJmEHGom9eWo4np4L5vC6b6ri1Df2xN8KFoWixvD1Bs"
+      ],
+      "data": "e202be65ca849c14e5e77f0800000000d44506000000000000",
+      "fields": [
+        [
+          "Minimum Repaid",
+          "142,600,165 base units"
+        ],
+        [
+          "Kept by the Swapper",
+          "411,092 base units"
+        ],
+        [
+          "Vault Gives Token A for Token B",
+          "false"
+        ],
+        [
+          "Swapper",
+          "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq"
+        ],
+        [
+          "Strategy",
+          "CVCsJFoYjN4gxABhuw71buKhGALRbBm5KvVJQcaodVpt"
+        ],
+        [
+          "Strategy Vault A",
+          "3DPqnRogx3AqxvVsXLYgFov9oXBeJFQwxeMwfXgGQz4e"
+        ],
+        [
+          "Strategy Vault B",
+          "4Y6iZKkq7rMuthnT8sNcwsydXE4qeKVT42Yod24XppWc"
+        ],
+        [
+          "Swapper Token A Account",
+          "ALSwDDMBuJTpb7DUPwvbvnxG39PL8cqx3tugGzHbaniF"
+        ],
+        [
+          "Swapper Token B Account",
+          "46gUHWCuimSMgue7Q5prNQXYSqfb8uDe5jznDyokWVr3"
+        ],
+        [
+          "Pool",
+          "C8Gr6AUuq9hEdSYJzoEpNcdjpojPZwqG5MtQbeouNNwg"
+        ],
+        [
+          "Position",
+          "D9z8mcuaxTat8mcjRq6HPFKsjo7ZSc1mSo2vfvziX6Ks"
+        ],
+        [
+          "Lower Tick Array",
+          "8QiWPTLzJzpM1unb7yHEHRyCZ6cjiPdxPU7ppd91e8pZ"
+        ],
+        [
+          "Upper Tick Array",
+          "BoRcBXQbBXY5XV7tPKeq2gKtt2tNQBiKKMRbj4MhtLTA"
+        ],
+        [
+          "Token A",
+          "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
+        ],
+        [
+          "Token B",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Consensus Account",
+          "9GJmEHGom9eWo4np4L5vC6b6ri1Df2xN8KFoWixvD1Bs"
+        ]
+      ],
+      "from": "64yRD2x43vmUeYxF8yTWf7iatAk9hY35ajR1X2rBkfiBAwaUGvh7KVNzRfPKwtGCisbTxbCoCWd1sEmd1Hoy1taT#5",
+      "intent": "Finish a vault swap",
+      "programId": "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+      "sentence": "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq repays at least 142,600,165 base units into the vaults of strategy CVCsJFoYjN4gxABhuw71buKhGALRbBm5KvVJQcaodVpt, keeping 411,092 base units in their own token account",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq:sw",
+        "CVCsJFoYjN4gxABhuw71buKhGALRbBm5KvVJQcaodVpt:w",
+        "GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB",
+        "Sysvar1nstructions1111111111111111111111111"
+      ],
+      "data": "12de8f66d351f6988d000000",
+      "fields": [
+        [
+          "Reference Price Tick",
+          "141"
+        ],
+        [
+          "Actions Authority",
+          "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq"
+        ],
+        [
+          "Strategy",
+          "CVCsJFoYjN4gxABhuw71buKhGALRbBm5KvVJQcaodVpt"
+        ]
+      ],
+      "from": "2J6fUyLUuTYG9j9ySjsSL8SR5mrNtnaL1pPKVgCPkyGPSsvDRSoW8NjcQUS7xc2dEZeMVopZCgBARJUJFX2ji7cW#3",
+      "intent": "Set the reference price",
+      "programId": "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+      "sentence": "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq sets the reference price of strategy CVCsJFoYjN4gxABhuw71buKhGALRbBm5KvVJQcaodVpt to tick 141",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Bq7uG61c2ayBj9uAPFJ2tHfQYi5TG8UGTJi9CLA6PreU:sw",
+        "EkdgFj4BwZQ1unzktXJxjnsmgBU1ECfTXCDrZeK5gnJ4:w",
+        "ARCsbZvjX8NdeZ4ZTQQMDscz8CAaN34PDjypvE9jAVgJ:w"
+      ],
+      "data": "4b97bb7d32040b47000961f4000000000000000000000000",
+      "fields": [
+        [
+          "Expected Token A Balance",
+          "4,100,000,000 base units"
+        ],
+        [
+          "Expected Token B Balance",
+          "0 base units"
+        ],
+        [
+          "Signer",
+          "Bq7uG61c2ayBj9uAPFJ2tHfQYi5TG8UGTJi9CLA6PreU"
+        ],
+        [
+          "Token A Account",
+          "EkdgFj4BwZQ1unzktXJxjnsmgBU1ECfTXCDrZeK5gnJ4"
+        ],
+        [
+          "Token B Account",
+          "ARCsbZvjX8NdeZ4ZTQQMDscz8CAaN34PDjypvE9jAVgJ"
+        ]
+      ],
+      "from": "RLyYh7DCQqZ3497G3WqymnhkA966CxiWeyXEbzj1Ayeht7hC8jvZBumoT9si8rfA6TXYmw5PLvj6NiiXDo2UbrT#5",
+      "intent": "Check token balances",
+      "programId": "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+      "sentence": "Bq7uG61c2ayBj9uAPFJ2tHfQYi5TG8UGTJi9CLA6PreU checks that EkdgFj4BwZQ1unzktXJxjnsmgBU1ECfTXCDrZeK5gnJ4 holds exactly 4,100,000,000 base units and ARCsbZvjX8NdeZ4ZTQQMDscz8CAaN34PDjypvE9jAVgJ exactly 0 base units",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Bq7uG61c2ayBj9uAPFJ2tHfQYi5TG8UGTJi9CLA6PreU:sw",
+        "5EfeGn1h7m6Rx9mGEmamDoxMtdhRmUh2N9fYRiDQqteS:w",
+        "GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB",
+        "FpCMFDFGYotvufJ7HrFHsWEiiQCGbkLCtwHiDnh7o28Q",
+        "Hco5dkaAymjmus3NGujf7oNaq1PxnJX8hPvGUXuG6Yz",
+        "3QpCRGKgaEHcuBgn3gnsbTmTy9zgCfZSoHUZ9HVKTggC",
+        "7xAnupSqSPee8R7DqssfwJj9mDDfpZHehX9erx8evoXa",
+        "2Rb9sTPc2BVmH2pSdwRU1cKGSMedXay3JwAvrGftJF3B:w",
+        "D1JCxWdFPVjEMisugHvwHDQjQ5mHHGFTW4f4KLPaxehY:w",
+        "225LMBPU8sWhjcGHeLRv6TLRsq6PQdDMN36TRwoqhLoK",
+        "EkdgFj4BwZQ1unzktXJxjnsmgBU1ECfTXCDrZeK5gnJ4:w",
+        "ARCsbZvjX8NdeZ4ZTQQMDscz8CAaN34PDjypvE9jAVgJ:w",
+        "So11111111111111111111111111111111111111112",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "HxszE8ifpvJFTo8ZdPSEKRCo43cEhKcqZKVdW9EyUGJ7:w",
+        "8aRT9m1wJ63mnFxeZ3qyBCrwbNMuPKPCEYxpXB41WzYd:w",
+        "8sUJJX5u8ZkNwTbf7GvLP9kb6git5mtd4Pkrzrocgbof",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3v6ootgJJZbSWEDfZMA1scfh7wcsVVfeocExRxPqCyWH",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Sysvar1nstructions1111111111111111111111111",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C"
+      ],
+      "data": "fa8e66a0480c538b00000000000000000000000000000000",
+      "fields": [
+        [
+          "Token A Kept at Least",
+          "0"
+        ],
+        [
+          "Token B Kept at Least",
+          "0"
+        ],
+        [
+          "Depositor",
+          "Bq7uG61c2ayBj9uAPFJ2tHfQYi5TG8UGTJi9CLA6PreU"
+        ],
+        [
+          "Strategy",
+          "5EfeGn1h7m6Rx9mGEmamDoxMtdhRmUh2N9fYRiDQqteS"
+        ],
+        [
+          "Pool",
+          "FpCMFDFGYotvufJ7HrFHsWEiiQCGbkLCtwHiDnh7o28Q"
+        ],
+        [
+          "Position",
+          "Hco5dkaAymjmus3NGujf7oNaq1PxnJX8hPvGUXuG6Yz"
+        ],
+        [
+          "Lower Tick Array",
+          "3QpCRGKgaEHcuBgn3gnsbTmTy9zgCfZSoHUZ9HVKTggC"
+        ],
+        [
+          "Upper Tick Array",
+          "7xAnupSqSPee8R7DqssfwJj9mDDfpZHehX9erx8evoXa"
+        ],
+        [
+          "Strategy Vault A",
+          "2Rb9sTPc2BVmH2pSdwRU1cKGSMedXay3JwAvrGftJF3B"
+        ],
+        [
+          "Strategy Vault B",
+          "D1JCxWdFPVjEMisugHvwHDQjQ5mHHGFTW4f4KLPaxehY"
+        ],
+        [
+          "Token A From",
+          "EkdgFj4BwZQ1unzktXJxjnsmgBU1ECfTXCDrZeK5gnJ4"
+        ],
+        [
+          "Token B From",
+          "ARCsbZvjX8NdeZ4ZTQQMDscz8CAaN34PDjypvE9jAVgJ"
+        ],
+        [
+          "Token A",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Token B",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Shares To",
+          "HxszE8ifpvJFTo8ZdPSEKRCo43cEhKcqZKVdW9EyUGJ7"
+        ],
+        [
+          "Shares Token",
+          "8aRT9m1wJ63mnFxeZ3qyBCrwbNMuPKPCEYxpXB41WzYd"
+        ]
+      ],
+      "from": "RLyYh7DCQqZ3497G3WqymnhkA966CxiWeyXEbzj1Ayeht7hC8jvZBumoT9si8rfA6TXYmw5PLvj6NiiXDo2UbrT#8",
+      "intent": "Deposit tokens after a swap",
+      "programId": "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+      "sentence": "Bq7uG61c2ayBj9uAPFJ2tHfQYi5TG8UGTJi9CLA6PreU deposits up to the So11111111111111111111111111111111111111112 in EkdgFj4BwZQ1unzktXJxjnsmgBU1ECfTXCDrZeK5gnJ4 beyond 0 and the EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v in ARCsbZvjX8NdeZ4ZTQQMDscz8CAaN34PDjypvE9jAVgJ beyond 0 into strategy 5EfeGn1h7m6Rx9mGEmamDoxMtdhRmUh2N9fYRiDQqteS, and receives its shares in HxszE8ifpvJFTo8ZdPSEKRCo43cEhKcqZKVdW9EyUGJ7",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "GsAhdPV9wZbdLxjFRJKcWnGhEMcfH9DuTMrZJvB1xVhx:sw",
+        "Hmj82e48X9LNW8LeMLk186iE4UKPoUwWuLwoiqMpUiGm:w",
+        "GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB",
+        "9tXiuRRw7kbejLhZXtxDxYs2REe43uH2e7k1kocgdM9B",
+        "BzQ8gcpXorH3MxMVLkVB4qJ2q1xy9h3UQ29LNEZUFKiv",
+        "8hXTpuvJQRar4Pf6BZiEWquFgtAtSf2RFDM6EL2FCcf1",
+        "B1jXbjDzenSy8kPNaGw3GSKAVQis5K5tRLeXuaskZTpS",
+        "CJJdsVKXsPDcfKsYafBMYb6ZhtgnnjUk5JgBAehXjdzi:w",
+        "7ZVPknXkeDJYwJmrSy9Ei4KMbfo59EpyarGtPTu1ppJv:w",
+        "7L2CTsgivHdz6gjq9aHYnAwJPA2ymEP64cs1Gh85E3dK",
+        "3jkjpJr3H1oBJbGTimZLsKHvBziwUTmDcaQHP4pd2ceP:w",
+        "ECeWVdDfWCeszYn6toG7u7isGvfdmuQ8UpDFsBB18aQi:w",
+        "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "8bgZg5yrjt74HN9bWmF6teYdqqxtohx8r1RUbom9U1tt:w",
+        "38wQFRuj6FezzGYegzHdqrRK7hkEkBx7wSqxDBYXpKpy:w",
+        "ASpNM9AyzccT4By8QZJkNQYKhv61u7aCjVoJHDKZauDS",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3v6ootgJJZbSWEDfZMA1scfh7wcsVVfeocExRxPqCyWH",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Sysvar1nstructions1111111111111111111111111",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C"
+      ],
+      "data": "fa8e66a0480c538b00000000000000000100000000000000",
+      "fields": [
+        [
+          "Token A Kept at Least",
+          "0"
+        ],
+        [
+          "Token B Kept at Least",
+          "0.000001"
+        ],
+        [
+          "Depositor",
+          "GsAhdPV9wZbdLxjFRJKcWnGhEMcfH9DuTMrZJvB1xVhx"
+        ],
+        [
+          "Strategy",
+          "Hmj82e48X9LNW8LeMLk186iE4UKPoUwWuLwoiqMpUiGm"
+        ],
+        [
+          "Pool",
+          "9tXiuRRw7kbejLhZXtxDxYs2REe43uH2e7k1kocgdM9B"
+        ],
+        [
+          "Position",
+          "BzQ8gcpXorH3MxMVLkVB4qJ2q1xy9h3UQ29LNEZUFKiv"
+        ],
+        [
+          "Lower Tick Array",
+          "8hXTpuvJQRar4Pf6BZiEWquFgtAtSf2RFDM6EL2FCcf1"
+        ],
+        [
+          "Upper Tick Array",
+          "B1jXbjDzenSy8kPNaGw3GSKAVQis5K5tRLeXuaskZTpS"
+        ],
+        [
+          "Strategy Vault A",
+          "CJJdsVKXsPDcfKsYafBMYb6ZhtgnnjUk5JgBAehXjdzi"
+        ],
+        [
+          "Strategy Vault B",
+          "7ZVPknXkeDJYwJmrSy9Ei4KMbfo59EpyarGtPTu1ppJv"
+        ],
+        [
+          "Token A From",
+          "3jkjpJr3H1oBJbGTimZLsKHvBziwUTmDcaQHP4pd2ceP"
+        ],
+        [
+          "Token B From",
+          "ECeWVdDfWCeszYn6toG7u7isGvfdmuQ8UpDFsBB18aQi"
+        ],
+        [
+          "Token A",
+          "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo"
+        ],
+        [
+          "Token B",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Shares To",
+          "8bgZg5yrjt74HN9bWmF6teYdqqxtohx8r1RUbom9U1tt"
+        ],
+        [
+          "Shares Token",
+          "38wQFRuj6FezzGYegzHdqrRK7hkEkBx7wSqxDBYXpKpy"
+        ]
+      ],
+      "from": "2SkzWFsxHyJVgHWNJSQND8VxDbxpVWp1DmHzJ6db4JwvtHfrPSvf37TyJX5HikYfWYDAjrnpu1Wzt1njSSLgtTwa#3",
+      "intent": "Deposit tokens after a swap",
+      "programId": "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+      "sentence": "GsAhdPV9wZbdLxjFRJKcWnGhEMcfH9DuTMrZJvB1xVhx deposits up to the 2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo in 3jkjpJr3H1oBJbGTimZLsKHvBziwUTmDcaQHP4pd2ceP beyond 0 and the EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v in ECeWVdDfWCeszYn6toG7u7isGvfdmuQ8UpDFsBB18aQi beyond 0.000001 into strategy Hmj82e48X9LNW8LeMLk186iE4UKPoUwWuLwoiqMpUiGm, and receives its shares in 8bgZg5yrjt74HN9bWmF6teYdqqxtohx8r1RUbom9U1tt",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq:sw",
+        "2dczcMRpxWHZTcsiEjPT4YBcSseTaUmWFzw24HxYMFod:w",
+        "GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB",
+        "8EzbUfvcRT1Q6RL462ekGkgqbxsPmwC5FMLQZhSPMjJ3:w",
+        "AnALNYMAhH7CZUUtEYEVXbahcKtZpXbQqsXSWrhzarAg:w",
+        "2DN2ADJgXranH8ETEjR1Jh5AWeJsr2LzZLktgdHGbxUC:w",
+        "DdD5wfK6DcMHHWzNMrZHfHEJcCGroPFS8vCzP9XQo9UB:w",
+        "BZtu4HyRvKNs2AoJFc7egTP8hhN94eXc2R6oRLDXdsxv:w",
+        "6j45zixsbgwfjvpuoL2DgDPQZXafqrLGuUUKo5NvKf6t:sw",
+        "4asK5idhQSvFpTcJQ4xQ6wRUbLu9B33GZfdoCpZcF16T:w",
+        "C64uV5L6zEwKMj412f1zjVoSAR9sAvZmwYE2rNJS9KdE:w",
+        "SysvarRent111111111111111111111111111111111",
+        "11111111111111111111111111111111",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK",
+        "AnALNYMAhH7CZUUtEYEVXbahcKtZpXbQqsXSWrhzarAg:w",
+        "2DN2ADJgXranH8ETEjR1Jh5AWeJsr2LzZLktgdHGbxUC:w",
+        "ARSsFdmKtFaYFeqiHm6oa9RwJFmmoFzs2uZ4yFPYuijm:w",
+        "2oVhESJPzCmj6DsiJmvCHSa4VbCtESaugSRbs9ePa3RW:w",
+        "6mrEiw5W2Fnu4XAjBhpAVT52CphBNgPeVagxYXmJztA3:w",
+        "Et7Cw48WKoybgPpQ6W74KvgNRJgbVzvmSw6u2JZqtrad:w",
+        "2vUbyPL88m3Wz5dpPmYRAuipzHSXS2gFUTeEjhWqA5wE:w",
+        "So11111111111111111111111111111111111111112",
+        "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So",
+        "9Hst4fTfQJXp1fxyVx1Lk1TubjNegFwXCedZkMRPaYAK:w",
+        "E9Yi56MiTCwRdRXvjNcmq4Ba33p83vv6HvfirnbVcdq5:w",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3v6ootgJJZbSWEDfZMA1scfh7wcsVVfeocExRxPqCyWH",
+        "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+        "9GJmEHGom9eWo4np4L5vC6b6ri1Df2xN8KFoWixvD1Bs",
+        "7NgPdcU2sE4oWtgzRrgGVbtuCkSHHNYG2Ez49fAUf38m:w",
+        "Fyzuf9D4YdyMHPEFQVsh8xjqHfFtU3TmsPb5aAFVcNPC:w",
+        "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s",
+        "6L6bPMCd9YK4Thseym9hosLVdGD1GdSXLpif2YbNyw9a:w",
+        "CQt8gwzxw4UQykse26qterQ3nSJt2AoQjgik1ZwWG64R:w",
+        "FraNimoCzXBMA7bqQxJtmHBwF7HpFURMwTPYeW29wCZx:w",
+        "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R:w",
+        "6hGSocrkcLotQNw64m86oWEACmFwYSuMQUh8ZBqUZ61G:w",
+        "DfvHA1eTaE2M2KSfcyhqKrB5xKCSL38wssn5kuxV46WB:w",
+        "MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey:w"
+      ],
+      "data": "cceaccdb065b60f161f2ffffffffffff77f2fffffffffffffd",
+      "fields": [
+        [
+          "Lower Tick",
+          "-3,487"
+        ],
+        [
+          "Upper Tick",
+          "-3,465"
+        ],
+        [
+          "Authority",
+          "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq"
+        ],
+        [
+          "Strategy",
+          "2dczcMRpxWHZTcsiEjPT4YBcSseTaUmWFzw24HxYMFod"
+        ],
+        [
+          "Pool",
+          "8EzbUfvcRT1Q6RL462ekGkgqbxsPmwC5FMLQZhSPMjJ3"
+        ],
+        [
+          "Lower Tick Array",
+          "AnALNYMAhH7CZUUtEYEVXbahcKtZpXbQqsXSWrhzarAg"
+        ],
+        [
+          "Upper Tick Array",
+          "2DN2ADJgXranH8ETEjR1Jh5AWeJsr2LzZLktgdHGbxUC"
+        ],
+        [
+          "Position",
+          "BZtu4HyRvKNs2AoJFc7egTP8hhN94eXc2R6oRLDXdsxv"
+        ],
+        [
+          "Position NFT Mint",
+          "6j45zixsbgwfjvpuoL2DgDPQZXafqrLGuUUKo5NvKf6t"
+        ],
+        [
+          "Position NFT Metadata",
+          "4asK5idhQSvFpTcJQ4xQ6wRUbLu9B33GZfdoCpZcF16T"
+        ],
+        [
+          "Position NFT Account",
+          "C64uV5L6zEwKMj412f1zjVoSAR9sAvZmwYE2rNJS9KdE"
+        ],
+        [
+          "Pool Program",
+          "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK"
+        ],
+        [
+          "Old Lower Tick Array (If Rebalancing)",
+          "AnALNYMAhH7CZUUtEYEVXbahcKtZpXbQqsXSWrhzarAg"
+        ],
+        [
+          "Old Upper Tick Array (If Rebalancing)",
+          "2DN2ADJgXranH8ETEjR1Jh5AWeJsr2LzZLktgdHGbxUC"
+        ],
+        [
+          "Old Position (If Rebalancing)",
+          "ARSsFdmKtFaYFeqiHm6oa9RwJFmmoFzs2uZ4yFPYuijm"
+        ],
+        [
+          "Old Position NFT Mint (If Rebalancing)",
+          "2oVhESJPzCmj6DsiJmvCHSa4VbCtESaugSRbs9ePa3RW"
+        ],
+        [
+          "Old Position NFT Account (If Rebalancing)",
+          "6mrEiw5W2Fnu4XAjBhpAVT52CphBNgPeVagxYXmJztA3"
+        ],
+        [
+          "Strategy Vault A",
+          "Et7Cw48WKoybgPpQ6W74KvgNRJgbVzvmSw6u2JZqtrad"
+        ],
+        [
+          "Strategy Vault B",
+          "2vUbyPL88m3Wz5dpPmYRAuipzHSXS2gFUTeEjhWqA5wE"
+        ],
+        [
+          "Token A",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Token B",
+          "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So"
+        ],
+        [
+          "Pool Vault A",
+          "9Hst4fTfQJXp1fxyVx1Lk1TubjNegFwXCedZkMRPaYAK"
+        ],
+        [
+          "Pool Vault B",
+          "E9Yi56MiTCwRdRXvjNcmq4Ba33p83vv6HvfirnbVcdq5"
+        ],
+        [
+          "Consensus Account",
+          "9GJmEHGom9eWo4np4L5vC6b6ri1Df2xN8KFoWixvD1Bs"
+        ]
+      ],
+      "from": "2SRZfz7YYhfrG49EV3SBefv3MNrkBKoLfdVDqhmYA2A57aymNxVtC5rEJZa7hRpbq1Z7bivtLMx2vf2PMVeJZpAv#4",
+      "intent": "Open a strategy position",
+      "programId": "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+      "sentence": "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq opens position BZtu4HyRvKNs2AoJFc7egTP8hhN94eXc2R6oRLDXdsxv for strategy 2dczcMRpxWHZTcsiEjPT4YBcSseTaUmWFzw24HxYMFod in pool 8EzbUfvcRT1Q6RL462ekGkgqbxsPmwC5FMLQZhSPMjJ3, from tick -3487 to -3465",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq:sw",
+        "6C3HjTy5WgaufkFyACkWUfgeRsMrXuH3KB8F6AdyHCG2:w",
+        "GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB",
+        "FCdB84kbytrT8JHsWLrWxPoquetmtcF1NZw7LYcgrQJE:w",
+        "2oxzaJ2AVPCJr6QAy76hnkPjwMiBAkoEjrvZrWSmaq5K:w",
+        "Bkibc5Fspv3QyA8jjSHLZKvBDBCPwB4QbPw8NhbMzGRd:w",
+        "GyphtqMSD2gXZaTu7LezBM22WSjgPZzdRiAtT2mKA4Cx:w",
+        "mQcRnyT4nefn4BSWCkoT24XGuXjnQ8SBujaG8zUEFnW:w",
+        "GMqkzzyFq7xzwMG7r1Hm9YdoXTFA8emrEbzJ1iTNsQXu:sw",
+        "F67Je5urm8Nif7PC7zveKM6CDQRRCLLPxSBT1KfsC7kM:w",
+        "626nJMp57xQE21jKm77faP7Xhf1ze12EFZ1dfKs6nGME:w",
+        "SysvarRent111111111111111111111111111111111",
+        "11111111111111111111111111111111",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc",
+        "2oxzaJ2AVPCJr6QAy76hnkPjwMiBAkoEjrvZrWSmaq5K:w",
+        "Bkibc5Fspv3QyA8jjSHLZKvBDBCPwB4QbPw8NhbMzGRd:w",
+        "LBrY4mXRmbF9LQnTUPswkTG1C8yJHSewb2iUN47y4LW:w",
+        "FyvpVLx6MsyDq7u56w3dWhpiiuJg9wbaZ7mdeebJRDdf:w",
+        "2mu9ceCGBk9VwuGoTVHFbD3n2nuLwR2TKW5iJoVjnMyt:w",
+        "A7UzEod2ZkUD2xmCn1WMXe57egqBQ6rgqjDrmJWFAzKf:w",
+        "ECvCmp7BuVZpoasMSzPJ842erZ5s1igJWaGLH7rWFsuy:w",
+        "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "AUNmcF5bAkfFTmqQMBn2suzrJLh8u9f2JasUfzTszqmS:w",
+        "2qQzFTeEys7mRs4iis1vvhbdk5q2Qbhw5bZM9p6b4UdP:w",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3v6ootgJJZbSWEDfZMA1scfh7wcsVVfeocExRxPqCyWH",
+        "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+        "9GJmEHGom9eWo4np4L5vC6b6ri1Df2xN8KFoWixvD1Bs"
+      ],
+      "data": "cceaccdb065b60f158040000000000009d05000000000000ff",
+      "fields": [
+        [
+          "Lower Tick",
+          "1,112"
+        ],
+        [
+          "Upper Tick",
+          "1,437"
+        ],
+        [
+          "Authority",
+          "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq"
+        ],
+        [
+          "Strategy",
+          "6C3HjTy5WgaufkFyACkWUfgeRsMrXuH3KB8F6AdyHCG2"
+        ],
+        [
+          "Pool",
+          "FCdB84kbytrT8JHsWLrWxPoquetmtcF1NZw7LYcgrQJE"
+        ],
+        [
+          "Lower Tick Array",
+          "2oxzaJ2AVPCJr6QAy76hnkPjwMiBAkoEjrvZrWSmaq5K"
+        ],
+        [
+          "Upper Tick Array",
+          "Bkibc5Fspv3QyA8jjSHLZKvBDBCPwB4QbPw8NhbMzGRd"
+        ],
+        [
+          "Position",
+          "mQcRnyT4nefn4BSWCkoT24XGuXjnQ8SBujaG8zUEFnW"
+        ],
+        [
+          "Position NFT Mint",
+          "GMqkzzyFq7xzwMG7r1Hm9YdoXTFA8emrEbzJ1iTNsQXu"
+        ],
+        [
+          "Position NFT Metadata",
+          "F67Je5urm8Nif7PC7zveKM6CDQRRCLLPxSBT1KfsC7kM"
+        ],
+        [
+          "Position NFT Account",
+          "626nJMp57xQE21jKm77faP7Xhf1ze12EFZ1dfKs6nGME"
+        ],
+        [
+          "Pool Program",
+          "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc"
+        ],
+        [
+          "Old Lower Tick Array (If Rebalancing)",
+          "2oxzaJ2AVPCJr6QAy76hnkPjwMiBAkoEjrvZrWSmaq5K"
+        ],
+        [
+          "Old Upper Tick Array (If Rebalancing)",
+          "Bkibc5Fspv3QyA8jjSHLZKvBDBCPwB4QbPw8NhbMzGRd"
+        ],
+        [
+          "Old Position (If Rebalancing)",
+          "LBrY4mXRmbF9LQnTUPswkTG1C8yJHSewb2iUN47y4LW"
+        ],
+        [
+          "Old Position NFT Mint (If Rebalancing)",
+          "FyvpVLx6MsyDq7u56w3dWhpiiuJg9wbaZ7mdeebJRDdf"
+        ],
+        [
+          "Old Position NFT Account (If Rebalancing)",
+          "2mu9ceCGBk9VwuGoTVHFbD3n2nuLwR2TKW5iJoVjnMyt"
+        ],
+        [
+          "Strategy Vault A",
+          "A7UzEod2ZkUD2xmCn1WMXe57egqBQ6rgqjDrmJWFAzKf"
+        ],
+        [
+          "Strategy Vault B",
+          "ECvCmp7BuVZpoasMSzPJ842erZ5s1igJWaGLH7rWFsuy"
+        ],
+        [
+          "Token A",
+          "59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw"
+        ],
+        [
+          "Token B",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Pool Vault A",
+          "AUNmcF5bAkfFTmqQMBn2suzrJLh8u9f2JasUfzTszqmS"
+        ],
+        [
+          "Pool Vault B",
+          "2qQzFTeEys7mRs4iis1vvhbdk5q2Qbhw5bZM9p6b4UdP"
+        ],
+        [
+          "Consensus Account",
+          "9GJmEHGom9eWo4np4L5vC6b6ri1Df2xN8KFoWixvD1Bs"
+        ]
+      ],
+      "from": "kvKhjujVtzSHWrrdAF9czM66s1ys6jjgexnt324vjBL7kVvLS5C39WsyppdxXNr1rcPmkc2z6K82uWQxUreDJ7q#3",
+      "intent": "Open a strategy position",
+      "programId": "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+      "sentence": "2bhkQ6uVn32ddiG4Fe3DVbLsrExdb3ubaY6i1G4szEmq opens position mQcRnyT4nefn4BSWCkoT24XGuXjnQ8SBujaG8zUEFnW for strategy 6C3HjTy5WgaufkFyACkWUfgeRsMrXuH3KB8F6AdyHCG2 in pool FCdB84kbytrT8JHsWLrWxPoquetmtcF1NZw7LYcgrQJE, from tick 1112 to 1437",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4r2Lp5kcwP4aHM4hyrwZhmK1LMpbSEmh32rqThBba67N:sw",
+        "DzGJLoq3FnSN4VJyTbbNUWsN8syRQzxvDZX3iTmnw5FG:w",
+        "GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB",
+        "94BpFoyri4uTT55NFSHKYNFyUMtoWXEisMA4LK7nTKPU",
+        "BzbDaCVU3To1HLobpy5YjYa15wbWUYQjysBfaUVEvvon",
+        "2ZDqZF7SYEhSQy2zB1druQcPLN1kMSTiMTSFUVjwKW7e",
+        "FYjkoaHPJ8oLJZaptz5S1FbjNZ3jcMtWJn8Ub6DTqeqK",
+        "CKtY6cHsEriZTBrhwQ3fyoAm9kcQrMCV4mAGTqypo3mi:w",
+        "Hi36hUaiq1rtrHoa26rJusCmR6PG6pzoJYRc4buKuRJW:w",
+        "ANf8Mr9GZcPx4itLkb89sNrJnfotFyg9rTpKWk31FSxP",
+        "DFT5aa5FwdaiQUUbsNgAt741bVaewv6yLEEmV6Bpvpdn:w",
+        "4yobReRDVFWTNcF9pU4ui4oNTYSzMigo5hFRc9XHfPw:w",
+        "9ckR7pPPvyPadACDTzLwK2ZAEeUJ3qGSnzPs8bVaHrSy",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "r89Fi1bCNNYFi5SUvoRqR2DtQhNJ4Y4nQVM7bDm3zaP:w",
+        "GyWBi7ExXpfPRWppHna3t8eogcW5Q8Vu8Devfz4GHKAR:w",
+        "A2DZtrvSR37zLsFPJgazQ6mLRfn8zMKrtgDewHj81zVx",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3v6ootgJJZbSWEDfZMA1scfh7wcsVVfeocExRxPqCyWH",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Sysvar1nstructions1111111111111111111111111",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C"
+      ],
+      "data": "f223c68952e1f2b69138520000000000bdbf2c0000000000",
+      "fields": [
+        [
+          "Maximum Token A",
+          "5.388433"
+        ],
+        [
+          "Maximum Token B",
+          "2.932669"
+        ],
+        [
+          "Depositor",
+          "4r2Lp5kcwP4aHM4hyrwZhmK1LMpbSEmh32rqThBba67N"
+        ],
+        [
+          "Strategy",
+          "DzGJLoq3FnSN4VJyTbbNUWsN8syRQzxvDZX3iTmnw5FG"
+        ],
+        [
+          "Pool",
+          "94BpFoyri4uTT55NFSHKYNFyUMtoWXEisMA4LK7nTKPU"
+        ],
+        [
+          "Position",
+          "BzbDaCVU3To1HLobpy5YjYa15wbWUYQjysBfaUVEvvon"
+        ],
+        [
+          "Lower Tick Array",
+          "2ZDqZF7SYEhSQy2zB1druQcPLN1kMSTiMTSFUVjwKW7e"
+        ],
+        [
+          "Upper Tick Array",
+          "FYjkoaHPJ8oLJZaptz5S1FbjNZ3jcMtWJn8Ub6DTqeqK"
+        ],
+        [
+          "Strategy Vault A",
+          "CKtY6cHsEriZTBrhwQ3fyoAm9kcQrMCV4mAGTqypo3mi"
+        ],
+        [
+          "Strategy Vault B",
+          "Hi36hUaiq1rtrHoa26rJusCmR6PG6pzoJYRc4buKuRJW"
+        ],
+        [
+          "Token A From",
+          "DFT5aa5FwdaiQUUbsNgAt741bVaewv6yLEEmV6Bpvpdn"
+        ],
+        [
+          "Token B From",
+          "4yobReRDVFWTNcF9pU4ui4oNTYSzMigo5hFRc9XHfPw"
+        ],
+        [
+          "Token A",
+          "9ckR7pPPvyPadACDTzLwK2ZAEeUJ3qGSnzPs8bVaHrSy"
+        ],
+        [
+          "Token B",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Shares To",
+          "r89Fi1bCNNYFi5SUvoRqR2DtQhNJ4Y4nQVM7bDm3zaP"
+        ],
+        [
+          "Shares Token",
+          "GyWBi7ExXpfPRWppHna3t8eogcW5Q8Vu8Devfz4GHKAR"
+        ]
+      ],
+      "from": "6sTkCipwoWzbZcdtLUqkn6vuAE8cy889sAKi9aAttmZ3pGxxzPEU9Mk8GRMAKHDgJeEusekzrsyeg7AdYaNbSiy#4",
+      "intent": "Deposit into a strategy",
+      "programId": "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+      "sentence": "4r2Lp5kcwP4aHM4hyrwZhmK1LMpbSEmh32rqThBba67N deposits up to 5.388433 of 9ckR7pPPvyPadACDTzLwK2ZAEeUJ3qGSnzPs8bVaHrSy from DFT5aa5FwdaiQUUbsNgAt741bVaewv6yLEEmV6Bpvpdn and up to 2.932669 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from 4yobReRDVFWTNcF9pU4ui4oNTYSzMigo5hFRc9XHfPw into strategy DzGJLoq3FnSN4VJyTbbNUWsN8syRQzxvDZX3iTmnw5FG, and receives its shares in r89Fi1bCNNYFi5SUvoRqR2DtQhNJ4Y4nQVM7bDm3zaP",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "AnQERdkPi7gn2Kss5gqjxdBNnWLLQ6asABZHmTAwYcJm:sw",
+        "Hmj82e48X9LNW8LeMLk186iE4UKPoUwWuLwoiqMpUiGm:w",
+        "GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB",
+        "9tXiuRRw7kbejLhZXtxDxYs2REe43uH2e7k1kocgdM9B",
+        "BzQ8gcpXorH3MxMVLkVB4qJ2q1xy9h3UQ29LNEZUFKiv",
+        "8hXTpuvJQRar4Pf6BZiEWquFgtAtSf2RFDM6EL2FCcf1",
+        "B1jXbjDzenSy8kPNaGw3GSKAVQis5K5tRLeXuaskZTpS",
+        "CJJdsVKXsPDcfKsYafBMYb6ZhtgnnjUk5JgBAehXjdzi:w",
+        "7ZVPknXkeDJYwJmrSy9Ei4KMbfo59EpyarGtPTu1ppJv:w",
+        "7L2CTsgivHdz6gjq9aHYnAwJPA2ymEP64cs1Gh85E3dK",
+        "3AwAzWhk7F2gM2UEHF2LSvVSQNqefpugHMMbFgxTwUq6:w",
+        "39GUvtVpsaWm86eWxytKb8PuCxXpe4WR2sNhfRp5fh5z:w",
+        "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "B3y2xsC6ZDL5fdTTjvwSnpA3Tci2rkCuYoKWZHwVWvgn:w",
+        "38wQFRuj6FezzGYegzHdqrRK7hkEkBx7wSqxDBYXpKpy:w",
+        "ASpNM9AyzccT4By8QZJkNQYKhv61u7aCjVoJHDKZauDS",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3v6ootgJJZbSWEDfZMA1scfh7wcsVVfeocExRxPqCyWH",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "Sysvar1nstructions1111111111111111111111111",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C",
+        "3NJYftD5sjVfxSnUdZ1wVML8f3aC6mp1CXCL6L7TnU8C"
+      ],
+      "data": "f223c68952e1f2b6804b4d180000000067748a1800000000",
+      "fields": [
+        [
+          "Maximum Token A",
+          "407.718784"
+        ],
+        [
+          "Maximum Token B",
+          "411.726951"
+        ],
+        [
+          "Depositor",
+          "AnQERdkPi7gn2Kss5gqjxdBNnWLLQ6asABZHmTAwYcJm"
+        ],
+        [
+          "Strategy",
+          "Hmj82e48X9LNW8LeMLk186iE4UKPoUwWuLwoiqMpUiGm"
+        ],
+        [
+          "Pool",
+          "9tXiuRRw7kbejLhZXtxDxYs2REe43uH2e7k1kocgdM9B"
+        ],
+        [
+          "Position",
+          "BzQ8gcpXorH3MxMVLkVB4qJ2q1xy9h3UQ29LNEZUFKiv"
+        ],
+        [
+          "Lower Tick Array",
+          "8hXTpuvJQRar4Pf6BZiEWquFgtAtSf2RFDM6EL2FCcf1"
+        ],
+        [
+          "Upper Tick Array",
+          "B1jXbjDzenSy8kPNaGw3GSKAVQis5K5tRLeXuaskZTpS"
+        ],
+        [
+          "Strategy Vault A",
+          "CJJdsVKXsPDcfKsYafBMYb6ZhtgnnjUk5JgBAehXjdzi"
+        ],
+        [
+          "Strategy Vault B",
+          "7ZVPknXkeDJYwJmrSy9Ei4KMbfo59EpyarGtPTu1ppJv"
+        ],
+        [
+          "Token A From",
+          "3AwAzWhk7F2gM2UEHF2LSvVSQNqefpugHMMbFgxTwUq6"
+        ],
+        [
+          "Token B From",
+          "39GUvtVpsaWm86eWxytKb8PuCxXpe4WR2sNhfRp5fh5z"
+        ],
+        [
+          "Token A",
+          "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo"
+        ],
+        [
+          "Token B",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Shares To",
+          "B3y2xsC6ZDL5fdTTjvwSnpA3Tci2rkCuYoKWZHwVWvgn"
+        ],
+        [
+          "Shares Token",
+          "38wQFRuj6FezzGYegzHdqrRK7hkEkBx7wSqxDBYXpKpy"
+        ]
+      ],
+      "from": "4pnAYvLgnF44FS11pyBH29aPJd4AU7AdaiZ46baZrfn4crFTh5jhpNgv6iohJTBBANV7aMZEFseTws1XfrQuJnhb#4",
+      "intent": "Deposit into a strategy",
+      "programId": "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+      "sentence": "AnQERdkPi7gn2Kss5gqjxdBNnWLLQ6asABZHmTAwYcJm deposits up to 407.718784 of 2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo from 3AwAzWhk7F2gM2UEHF2LSvVSQNqefpugHMMbFgxTwUq6 and up to 411.726951 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from 39GUvtVpsaWm86eWxytKb8PuCxXpe4WR2sNhfRp5fh5z into strategy Hmj82e48X9LNW8LeMLk186iE4UKPoUwWuLwoiqMpUiGm, and receives its shares in B3y2xsC6ZDL5fdTTjvwSnpA3Tci2rkCuYoKWZHwVWvgn",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "5dcEb1jGeBZuXbVKmNkq3unPcrveG46B2PMJKAGcSh67:w",
+        "GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB:w",
+        "11111111111111111111111111111111",
+        "4VtJ1yCCyU2YGgPTZGHZRwzwaZ3hmzgqMtRQo8RqMa57"
+      ],
+      "data": "a45482bd6f3afac81e00000033f95230b610d7af27ffa5a3724b3063c4cbc5b79931f6fadad970aae0d5b972",
+      "fields": [
+        [
+          "Setting (GlobalConfigOption Number)",
+          "30"
+        ],
+        [
+          "Index",
+          "0"
+        ],
+        [
+          "New Value (Bytes)",
+          "51, 249, 82, 48, 182, 16, 215, 175, 39, 255, 165, 163, 114, 75, 48, 99, 196, 203, 197, 183, 153, 49, 246, 250, 218, 217, 112, 170, 224, 213, 185, 114"
+        ],
+        [
+          "Global Admin",
+          "5dcEb1jGeBZuXbVKmNkq3unPcrveG46B2PMJKAGcSh67"
+        ],
+        [
+          "Global Config",
+          "GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB"
+        ],
+        [
+          "New Address",
+          "4VtJ1yCCyU2YGgPTZGHZRwzwaZ3hmzgqMtRQo8RqMa57"
+        ]
+      ],
+      "from": "598VVxL5M1Utcoh5XfyspRFvGNq5yqJCd61y37BhXmKCb7Sj3Szw4Rf7LKyVzxRUV2SXztCj3zc6SiC2N5NWqLZf#4.1",
+      "intent": "Update a global setting",
+      "programId": "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc",
+      "sentence": "5dcEb1jGeBZuXbVKmNkq3unPcrveG46B2PMJKAGcSh67 changes setting 30 of global config GKnHiWh3RRrE1zsNzWxRkomymHc374TvJPSTv2wPeYdB",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}

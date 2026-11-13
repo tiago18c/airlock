@@ -647,3 +647,29 @@ permissioned vault requires as the last signer. The Token program's mint account
 added, so deposit, invest and reward amounts read the vault token's decimals and share \
 amounts the share token's, where that mint is an account of the instruction; the token \
 cap of an allocation and fees given up are in base units. Display nodes added by hand."""
+
+# Kamino Liquidity (yvaults), Kamino Finance's automated liquidity strategies
+# over Orca, Raydium and Meteora concentrated-liquidity pools. The file is the
+# legacy Anchor IDL its Anchor IDL account publishes on mainnet (0.1.0); it
+# has no program-metadata account. The program is not deployed on devnet, so
+# the file is mainnet only.
+[[idls]]
+file = "kamino-liquidity.json"
+programId = "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc"
+name = "yvaults"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "9820f0ab4f5ee1f2e15f2151150280bbae731fc9571f9a9b4de144d1d964be14" }
+changes = """Converted from Anchor to Codama. The program's address is set, which a legacy Anchor IDL \
+does not carry. Instructions that read accounts after their named ones declare them as \
+remaining accounts, which Anchor IDLs cannot, as Kamino's TypeScript SDK passes them and \
+executed transactions confirm: the Scope price accounts of a strategy's rewards for \
+deposit and singleTokenDepositWithMin; the Raydium protocol position, reward vaults and \
+mints and tick array bitmap extension that a strategy on a Raydium pool adds to \
+withdraw, invest and openLiquidityPosition; the reward mints and their token programs of \
+collectFeesAndRewards; the Raydium reward vaults of executiveWithdraw; the reward \
+accounts of closeStrategy; and the new address an updateGlobalConfig sets. The Token \
+program's mint account is added, so token A, token B, share, reward and treasury amounts \
+read their mint's decimals where the mint is an account of the instruction; the vault \
+swap, balance check, reward swap minimum and Orca swap amounts are in base units, and \
+the top-up withdrawal is in SOL. Fees and limits in basis points are in percent, ages \
+are durations. Display nodes added by hand."""

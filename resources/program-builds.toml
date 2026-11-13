@@ -595,3 +595,12 @@ idlSha256 = "90d97c3a345d589e030605ff4b260dbfbe01e65c1a440fcc64415538c2ad9814"
 source = { repo = "https://github.com/Kamino-Finance/kvault", commit = "3b53fa0b9bd2f8ce52b9b7eeaa3025155edc7b1c" }
 verified = "GzFgdRJXmawPhGeBsyRCDLx4jAKPsvbUqoqitzppkzkW"
 reviewed = "2026-11-12"
+
+[[builds]]
+# yvaults (pack). Every instruction the IDL lists is in this binary by its Anchor log name, and the binary has none the IDL lacks. Successful mainnet transactions decode with the IDL, every account named and their data exactly as long as the IDL's arguments, for deposit, singleTokenDepositWithMin, checkExpectedVaultsBalances, withdraw, invest, collectFeesAndRewards, flashSwapUnevenVaultsStart, flashSwapUnevenVaultsEnd, setRefTickIndexPrice, openLiquidityPosition, updateGlobalConfig. The source is not public and OtterSec has no verified build.
+programId = "6LtLpnUFNByNXLyCoK9wA2MykKAmQNZKBdY8s47dehDc"
+network = "mainnet"
+programHash = "699a7d4ac09781f556062a844b756f0be187253ed6d16bd5f16f2f4fb7984cfd"
+authority = "3pAxu6C9ykZvyyzdknZvmz6CbWGZPTjRevjk4PRF5ib7"
+idlSha256 = "dadeca63cac0031670c34c6f1784ca38d58eb936be5bdc8c7948b1a658b6c04f"
+reviewed = "2026-11-12"
