@@ -371,3 +371,12 @@ authority = "9VWiUUhgNoRwTH5NVehYJEDwcotwYX3VgW4MChiHPAqU"
 idlSha256 = "d099c7024ea389e87836400f24f3e0b8be2a8da6b4f4d1d187a3f067dd804bff"
 source = { repo = "https://github.com/otter-sec/otter-verify", commit = "a630c42962872ae9adac924151948bb17d87174d" }
 reviewed = "2026-11-12"
+
+[[builds]]
+# lbClmm (pack). No verified build. Every instruction the IDL lists is in this binary by its Anchor log name and by its discriminator; the binary also has ClaimProtocolFee2 and PatchBinArrayBitmapExtension, which the IDL mainnet publishes lacks, so they read raw. Successful mainnet transactions decode with the IDL, every account named, for swap, swap2, addLiquidity2, addLiquidityByStrategy2, removeLiquidityByRange2, rebalanceLiquidity, claimFee2, initializePosition, increasePositionLength, closePosition2, closePositionIfEmpty, placeLimitOrder, cancelLimitOrder, closeLimitOrderIfEmpty, initializeLbPair, initializeLbPair2, initializeBinArray, goToABin and withdrawProtocolFee. The IDL is the one the program publishes on mainnet, less forIdlTypeGenerationDoNotCall, which this binary does not have.
+programId = "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+network = "mainnet"
+programHash = "cc25380fd0736b57d051f28cada432b35b01d9e24dc1d3e1b5d81773279eb772"
+authority = "JADaUV8kvDpDbJr55wxXJHVaBS3VCj8thZZHjfeuCVLd"
+idlSha256 = "452ecdd5f32753d00f6e31c7bd3c1f53a4418b2eace26aa1dd88c21f7f4bb953"
+reviewed = "2026-11-12"

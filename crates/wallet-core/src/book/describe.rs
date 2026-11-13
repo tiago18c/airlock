@@ -539,6 +539,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("ProgM6JCCvbYkfKqJYHePx4xxSUSqJp7rh8Lyv7nk7S"),
         "Program Metadata Program",
     ),
+    (
+        Pubkey::from_str_const("LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"),
+        "Meteora DLMM Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.
