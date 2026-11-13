@@ -139,6 +139,8 @@ fn InspectBody(pubkey: Pubkey, back: Option<Pubkey>) -> Element {
             div { class: "btn-row",
                 if let Some(back) = back {
                     button { class: "ghost",
+                        // What Android's Back presses (MainActivity).
+                        "data-back": "true",
                         onclick: move |_| inspect.set(Some(back)),
                         Icon { glyph: Glyph::ChevronLeft }
                         "Back"

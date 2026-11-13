@@ -369,6 +369,10 @@ pub fn KeyImportForm(on_done: EventHandler<()>) -> Element {
                 textarea {
                     value: "{pasted}",
                     placeholder: "Paste here…",
+                    autocomplete: "off",
+                    autocapitalize: "off",
+                    autocorrect: "off",
+                    spellcheck: "false",
                     oninput: move |evt| pasted.set(evt.value()),
                 }
             }

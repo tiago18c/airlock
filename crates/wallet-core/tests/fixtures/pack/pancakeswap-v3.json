@@ -888,7 +888,8 @@
       "intent": "Add liquidity",
       "programId": "HpNfyc2Saw7RKkQd8nEL4khUcuPhQ7WwY1B2qjx8jxFq",
       "sentence": "61p6PwFaVsYzu96WZAKK2DhZU2FuXUu7LmzViT1TJtxR adds liquidity to position FVCjr7bnGhz42UcMvzWGeHPZrs8JWdBW2PQFzGYMwwNc, paying at most 0.005108544 of So11111111111111111111111111111111111111112 and 0.118273 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-      "unnamedAccounts": 0
+      "unnamedAccounts": 0,
+      "undescribedBytes": "00"
     },
     {
       "accounts": [
@@ -983,7 +984,8 @@
       "intent": "Add liquidity",
       "programId": "HpNfyc2Saw7RKkQd8nEL4khUcuPhQ7WwY1B2qjx8jxFq",
       "sentence": "FzCs78r4NTUjJqjkkmfY6gwaJhYGhYVbv5xny2JKaFYF adds liquidity to position CU3edK9oDq3kE6sCuhknq5FFjed8S8qodjydhKUGpYYS, paying at most 34.17 of So11111111111111111111111111111111111111112 and 0 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-      "unnamedAccounts": 0
+      "unnamedAccounts": 0,
+      "undescribedBytes": "00"
     },
     {
       "accounts": [

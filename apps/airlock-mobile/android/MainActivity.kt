@@ -35,6 +35,8 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 import android.view.View
+import android.webkit.WebView
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.Keep
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -73,21 +75,87 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 import org.json.JSONArray
 import org.json.JSONObject
+import kotlin.math.roundToInt
 
 typealias BuildConfig = dev.airlock.mobile.BuildConfig
 
 class MainActivity : WryActivity() {
+    /// The page's WebView, once wry has made it.
+    private var webView: WebView? = null
+    /// Whether the keyboard is up, as the page was last told.
+    private var keyboardShown = false
+
+    override fun onWebViewCreate(webView: WebView) {
+        this.webView = webView
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // Before super: wry starts the app's Rust from it, which may ask the
         // bridges for the activity at once.
         SeedVaultBridge.activity = this
         super.onCreate(savedInstanceState)
         fitSystemBars()
+        // Back, the key or the gesture. Without this, wry's activity finishes,
+        // which ends the app: a half-filled form is lost, and the next start
+        // is cold, on the lock screen.
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() = back()
+        })
     }
 
+    /// Back closes what is open on the page first, then goes back to the list
+    /// a pane came from, and only then leaves: to the background, as Home
+    /// does, so the app keeps its state and auto-lock counts the time away.
+    private fun back() {
+        val view = webView
+        if (view == null) {
+            moveTaskToBack(true)
+            return
+        }
+        view.evaluateJavascript(BACK_SCRIPT) { handled ->
+            if (handled != "true") moveTaskToBack(true)
+        }
+    }
+
+    private companion object {
+        /// What Back does on the page, answering whether it did anything:
+        /// 1. The topmost dialog, sheet or menu: its own control marked
+        ///    `data-back` (the template browser's list, the inspector's
+        ///    Back), else what a tap outside it does. A dialog that a tap
+        ///    outside does not close (a signature underway) stays.
+        /// 2. An open list of address suggestions closes, as Escape does.
+        /// 3. A pane's control marked `data-back`, to the list it came from.
+        const val BACK_SCRIPT = """(function () {
+  var shown = function (e) { return !!e && e.getClientRects().length > 0; };
+  var all = function (root, sel) { return Array.prototype.filter.call(root.querySelectorAll(sel), shown); };
+  var layers = all(document, '.modal-backdrop, .phone-scrim');
+  if (layers.length) {
+    var z = function (e) { return parseInt(getComputedStyle(e).zIndex, 10) || 0; };
+    var top = layers.reduce(function (a, b) { return z(b) >= z(a) ? b : a; });
+    var layer = top.classList.contains('modal-backdrop') ? top : top.nextElementSibling;
+    var own = layer ? all(layer, '[data-back]').pop() : null;
+    (own || top).click();
+    return true;
+  }
+  var picker = document.querySelector('.picker.open input');
+  if (picker) {
+    picker.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    return true;
+  }
+  var pane = all(document, '.content [data-back]').pop();
+  if (pane) { pane.click(); return true; }
+  return false;
+})()"""
+    }
+
+    /// The manifest takes every configuration change in place (configChanges),
+    /// since the activity cannot be made again. The page lays itself out for
+    /// a new size or density by itself; its text follows the font size here,
+    /// as the WebView set it from the font size when it was made.
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         followTheme()
+        webView?.settings?.textZoom = (newConfig.fontScale * 100).roundToInt()
     }
 
     /// From Android 15 the app is drawn under the system bars, and the
@@ -106,6 +174,15 @@ class MainActivity : WryActivity() {
                 WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.ime()
             ).bottom
             view.setPadding(0, top, 0, bottom)
+            // The page cannot tell the keyboard is up (the WebView only
+            // shrinks), so it is told: its tab bar stands aside meanwhile.
+            val keyboard = insets.isVisible(WindowInsetsCompat.Type.ime())
+            if (keyboard != keyboardShown) {
+                keyboardShown = keyboard
+                webView?.evaluateJavascript(
+                    "document.documentElement.classList.toggle('keyboard', $keyboard)", null
+                )
+            }
             WindowInsetsCompat.CONSUMED
         }
         followTheme()

@@ -823,6 +823,18 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("vELoC1audYbSYVRXn1vPaV8Axoa9oU6BYmNGZZBDZ1P"),
         "Velocity Program",
     ),
+    (
+        Pubkey::from_str_const("JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"),
+        "Jupiter Aggregator v6 Program",
+    ),
+    (
+        Pubkey::from_str_const("BPFLoaderUpgradeab1e11111111111111111111111"),
+        "Upgradeable BPF Loader Program",
+    ),
+    (
+        Pubkey::from_str_const("verifycLy8mB96wd9wqq3WDXQwM4oU6r42Th37Db9fC"),
+        "OtterSec Verify Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.

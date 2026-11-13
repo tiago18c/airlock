@@ -16,6 +16,48 @@ const AUTO_LOCK_CHOICES: &[(u64, &str)] = &[
     (60 * 60, "1 hour"),
 ];
 
+/// An app with no node asks no node which network it is on, so the person
+/// says which network the transactions it signs are for. It picks the IDLs
+/// that explain them and nothing else (`Workspace::read_offline_for`).
+#[component]
+fn OfflineNetworkCard(cluster: Cluster) -> Element {
+    let session = use_context::<Session>();
+    let selected = if cluster.is_custom() {
+        "custom"
+    } else {
+        cluster.name()
+    }
+    .to_string();
+    rsx! {
+        div { class: "card",
+            h3 { "Network" }
+            label { "Read transactions for"
+                select {
+                    value: "{selected}",
+                    onchange: move |e| {
+                        let cluster = match e.value().as_str() {
+                            "mainnet-beta" => Cluster::MainnetBeta,
+                            "testnet" => Cluster::Testnet,
+                            "devnet" => Cluster::Devnet,
+                            _ => return,
+                        };
+                        crate::actions::network::read_offline_for(session, cluster);
+                    },
+                    option { value: "mainnet-beta", selected: selected == "mainnet-beta", "Mainnet" }
+                    option { value: "devnet", selected: selected == "devnet", "Devnet" }
+                    option { value: "testnet", selected: selected == "testnet", "Testnet" }
+                    if cluster.is_custom() {
+                        option { value: "custom", selected: true, "{cluster.name()}" }
+                    }
+                }
+            }
+            p { class: "hint",
+                "A program can sit at another address, or run another version, on each network. Review and Sign explains a transaction with the programs of the network chosen here, and says which."
+            }
+        }
+    }
+}
+
 #[component]
 pub fn SettingsPanel(extra: Option<Element>) -> Element {
     let session = use_context::<Session>();
@@ -154,6 +196,8 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                         "At launch and on a cluster change the app asks the node for its genesis hash, and may correct the cluster from the reply. A custom RPC is never corrected: it is used as typed, whatever network it reports."
                     }
                 }
+            } else {
+                OfflineNetworkCard { cluster: cluster.clone() }
             }
 
             div { class: "card",
