@@ -164,7 +164,11 @@ async fn problems_on_this_network_are_warnings_that_do_not_stop_a_save() {
     assert_eq!(read.replaces(), None);
     let view = read.view().unwrap();
     assert_eq!(view.problems.len(), 1, "{:?}", view.problems);
-    assert!(view.problems[0].contains("No IDL"), "{:?}", view.problems);
+    assert!(
+        view.problems[0].contains("Airlock has no description of"),
+        "{:?}",
+        view.problems
+    );
     // Its blocks still read, so what it writes is in sight.
     assert_eq!(view.blocks[0].instruction, "transferSol");
 

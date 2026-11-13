@@ -30,6 +30,8 @@ pub struct Problem {
     /// The account or argument of that instruction.
     pub field: Option<String>,
     pub message: String,
+    /// The program this network has no IDL for, when that is the problem.
+    pub missing_program: Option<Pubkey>,
 }
 
 impl std::fmt::Display for Problem {
@@ -239,6 +241,7 @@ impl Pass<'_> {
             instruction: Some(instruction.to_string()),
             field: field.map(str::to_string),
             message,
+            missing_program: None,
         };
         if !self.problems.contains(&problem) {
             self.problems.push(problem);
@@ -478,10 +481,12 @@ pub(crate) fn analyze(template: &Template, idls: &dyn IdlCatalog) -> Result<Chec
         let mut idl_forms = Vec::new();
         for program_id in candidates(template, block) {
             let Some((program_name, client)) = lookup(idls, &program_id) else {
-                let message = format!(
-                    "No IDL for `${}` ({program_id}) on this network.",
-                    block.program
-                );
+                let named = match crate::book::program_display_name(&program_id) {
+                    Some(name) => format!("the {name}"),
+                    None => format!("the program `${}`", block.program),
+                };
+                let message =
+                    format!("Airlock has no IDL for {named} ({program_id}) on this network.");
                 // An option whose block this network cannot build is not
                 // offered here; the rest of the template is.
                 if let Some(option) = &block.when {
@@ -495,6 +500,7 @@ pub(crate) fn analyze(template: &Template, idls: &dyn IdlCatalog) -> Result<Chec
                     instruction: Some(block.instruction.clone()),
                     field: None,
                     message,
+                    missing_program: Some(program_id),
                 });
                 continue;
             };
@@ -543,6 +549,7 @@ pub(crate) fn analyze(template: &Template, idls: &dyn IdlCatalog) -> Result<Chec
                             "`${}` is bound to fields that take different things: {} and {}.",
                             input.name, first.place, other.place
                         ),
+                        missing_program: None,
                     });
                 }
                 first.kind.clone()
@@ -610,6 +617,7 @@ fn parameter_problem(template: &Template, input: &str, kind: &InputKind) -> Opti
                         call.function.name(),
                         call.function.usage()
                     ),
+                    missing_program: None,
                 });
             }
         }

@@ -1261,8 +1261,11 @@ revocations and in the two programmable-config delegate updates, the collection 
 verifyCollectionV1 and unverifyCollectionV1, and printV1's master holder signs. \
 utilize's accounts from the optional rent sysvar on, and the accounts collect reads \
 after the recipient, are remaining-accounts groups. The Token program's mint account is \
-added, so the amounts of transfers, mints, burns, token delegations and escrow transfers \
-read the decimals of the mint they name. Display nodes added by hand."""
+added, so the amounts of transfers, burns, token delegations and escrow transfers read \
+the decimals of the mint they name. mintV1's amount is shown in base units instead: \
+Metaplex's own clients create the mint in the same transaction, so it cannot be read \
+before signing. Display nodes added by hand; createV1's names the collection it claims \
+when one is given."""
 
 # GMX Solana (GMTrade): the store program of the perpetual and spot exchange
 # GMX runs on Solana. Most of what people sign are requests (orders, deposits,

@@ -16,6 +16,6 @@ pub use address_book::{
 pub use connections::{
     connect_choice, current_first, reconnect_accounts, ConnectChoice, Connections, SiteGrant,
 };
-pub use describe::{Category, Described, Directory, Fact, Group, WalletSort};
+pub use describe::{program_display_name, Category, Described, Directory, Fact, Group, WalletSort};
 pub use holdings::{HoldingSummary, Holdings, HoldingsStore, TokenFlag, TokenHolding};
 pub use workspace::{Workspace, WorkspaceStore, DEFAULT_AUTO_LOCK_SECS};

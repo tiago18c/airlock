@@ -870,7 +870,7 @@ reviewed = "2026-11-12"
 programId = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
 network = "mainnet"
 programHash = "8fdb14984e4756f3157881754fdc9444646b15cad27a5c78fa249dc5f507e3a7"
-idlSha256 = "aac0ce1c20ff67eaa2380aeafb20b5788d95168a258371ef868a3c8abc918a30"
+idlSha256 = "3a15b2eb5eae14b2e4d5e9c409e9bac50841c9a9ad19ff163e0dd30a5114e3ca"
 reviewed = "2026-11-12"
 
 [[builds]]
