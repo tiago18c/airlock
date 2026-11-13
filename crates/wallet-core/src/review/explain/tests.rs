@@ -2672,3 +2672,166 @@ fn a_clear_signed_vote_by_cpi_reads_as_the_same_check() {
     assert_eq!(idl.unnamed_accounts, 0);
     assert_eq!(field(&idl, "Lookup Table"), pk(9).to_string());
 }
+
+/// One file of `tests/fixtures/pack`: instructions a cluster executed, with
+/// what Review and Sign says about each.
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct RecordedFile {
+    /// The network the instructions ran on, whose IDLs read them.
+    network: String,
+    /// What a node answers for the accounts the sentences read (a mint, for
+    /// its decimals), by address.
+    #[serde(default)]
+    accounts: std::collections::BTreeMap<String, RecordedAccount>,
+    instructions: Vec<RecordedIx>,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RecordedAccount {
+    owner: String,
+    /// The account's data, in base64.
+    data: String,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct RecordedIx {
+    /// The transaction's signature, then `#` and the instruction's place in
+    /// it, from 1: `#3` is its third instruction, `#3.2` the second call the
+    /// third made into another program.
+    from: String,
+    program_id: String,
+    /// Each account's address, then `:s` for a signer, `:w` for writable or
+    /// `:sw` for both.
+    accounts: Vec<String>,
+    /// The instruction's data, in hex.
+    data: String,
+    intent: String,
+    /// `None` for an instruction whose IDL gives it no sentence.
+    sentence: Option<String>,
+    /// Every field under the sentence, as `[label, value]`, in order.
+    fields: Vec<(String, String)>,
+    #[serde(default)]
+    unnamed_accounts: usize,
+}
+
+impl RecordedIx {
+    fn instruction(&self) -> Instruction {
+        Instruction {
+            program_id: Pubkey::from_str_const(&self.program_id),
+            accounts: self
+                .accounts
+                .iter()
+                .map(|account| {
+                    let (address, flags) = account.split_once(':').unwrap_or((account, ""));
+                    AccountMeta {
+                        pubkey: Pubkey::from_str_const(address),
+                        is_signer: flags.contains('s'),
+                        is_writable: flags.contains('w'),
+                    }
+                })
+                .collect(),
+            data: hex::decode(&self.data).expect("hex data"),
+        }
+    }
+}
+
+/// How the app reads `ix` on its own in a transaction, once the node has
+/// answered for the accounts its sentence reads with what `chain` holds.
+fn recorded_explanation(
+    store: &IdlStore<MemoryStore, MemoryBodies>,
+    ix: Instruction,
+    chain: &HashMap<Pubkey, crate::chain::RawAccount>,
+) -> Option<IdlExplanation> {
+    let payer = ix
+        .accounts
+        .iter()
+        .find(|account| account.is_signer)
+        .map_or(pk(1), |account| account.pubkey);
+    let tx = decode_v1_transaction(&compile(payer, vec![ix]).wire).unwrap();
+    let needed = explain_transaction(store, &tx).accounts_needed();
+    let fetched: Vec<_> = needed
+        .iter()
+        .map(|(address, _)| chain.get(address).cloned())
+        .collect();
+    let note = DisplayNote {
+        accounts: display_accounts(&needed, &fetched),
+        ..DisplayNote::default()
+    };
+    explain_with_note(store, &tx, &note).instructions[0]
+        .idl
+        .clone()
+}
+
+/// Every instruction recorded in `tests/fixtures/pack` reads as recorded: its
+/// title, its sentence, each field under it, and no account left without a
+/// name. A file there is named after the IDL it exercises, and holds
+/// instructions as a cluster executed them, so an IDL of the pack is checked
+/// against what its program accepted and not against bytes built from the IDL
+/// itself.
+#[test]
+fn every_recorded_instruction_of_the_pack_reads_as_recorded() {
+    use base64::Engine;
+
+    let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/pack");
+    let mut files: Vec<_> = std::fs::read_dir(&folder)
+        .expect("tests/fixtures/pack")
+        .map(|entry| entry.unwrap().path())
+        .filter(|path| path.extension().is_some_and(|ext| ext == "json"))
+        .collect();
+    files.sort();
+    assert!(!files.is_empty());
+
+    let mut failures = Vec::new();
+    for path in files {
+        let name = path.file_name().unwrap().to_string_lossy().into_owned();
+        let file: RecordedFile = serde_json::from_slice(&std::fs::read(&path).unwrap())
+            .unwrap_or_else(|err| panic!("{name}: {err}"));
+        let network = crate::IdlNetwork::ALL
+            .into_iter()
+            .find(|network| network.to_string() == file.network)
+            .unwrap_or_else(|| panic!("{name}: no network {}", file.network));
+        let store = crate::fixtures::shipped_catalog(network);
+        let chain: HashMap<Pubkey, crate::chain::RawAccount> = file
+            .accounts
+            .iter()
+            .map(|(address, account)| {
+                let data = base64::engine::general_purpose::STANDARD
+                    .decode(&account.data)
+                    .unwrap_or_else(|err| panic!("{name}: {address}: {err}"));
+                (
+                    Pubkey::from_str_const(address),
+                    raw_account(Pubkey::from_str_const(&account.owner), &data),
+                )
+            })
+            .collect();
+        assert!(!file.instructions.is_empty(), "{name} records nothing");
+        for recorded in &file.instructions {
+            let at = format!("{name}: {}", recorded.from);
+            let Some(idl) = recorded_explanation(&store, recorded.instruction(), &chain) else {
+                failures.push(format!("{at}: no IDL reads it"));
+                continue;
+            };
+            let fields: Vec<(String, String)> = idl
+                .fields
+                .iter()
+                .map(|field| (field.label.clone(), field.value.clone()))
+                .collect();
+            if idl.intent != recorded.intent {
+                failures.push(format!("{at}: intent {:?}", idl.intent));
+            }
+            if idl.interpolated_intent != recorded.sentence {
+                failures.push(format!("{at}: sentence {:?}", idl.interpolated_intent));
+            }
+            if fields != recorded.fields {
+                failures.push(format!("{at}: fields {fields:?}"));
+            }
+            if idl.unnamed_accounts != recorded.unnamed_accounts {
+                failures.push(format!("{at}: {} unnamed accounts", idl.unnamed_accounts));
+            }
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
