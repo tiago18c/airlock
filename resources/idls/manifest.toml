@@ -549,7 +549,12 @@ changes = """Converted from Anchor to Codama. The swap, liquidity and position i
 they read (tick arrays, the bitmap extension, reward accounts, supported-mint records, a \
 swap route), which Anchor IDLs cannot. The Token program's mint account is added, so \
 liquidity limits, fee collections and a routed swap's input read their mint's decimals; \
-the other swap amounts are in base units. Display nodes added by hand."""
+the other swap amounts are in base units. increaseLiquidityV2, openPositionV2 and \
+openPositionWithToken22Nft end with a hidden optional byte, unusedBaseFlagValue: clients \
+that lay out the base flag as a fixed tag and value (Raydium's SDK, raydium-sdk-V2 \
+src/raydium/clmm/instrument.ts) write the value byte even when the flag is not set, and \
+the program, an Anchor build whose own IDL ends at baseFlag, reads the option and stops. \
+Display nodes added by hand."""
 
 # Jupiter Lend's Borrow program (vaults): positions held as NFTs, each with
 # collateral in one token and debt in another, changed by one operate

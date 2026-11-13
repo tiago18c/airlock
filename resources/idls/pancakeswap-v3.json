@@ -4957,6 +4957,29 @@
               "kind": "structFieldDisplayNode",
               "label": "Base On Token 0"
             }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "unusedBaseFlagValue",
+            "docs": [
+              "Not read by the program. Clients that lay out the base flag as a fixed tag byte and value byte (Raydium's SDK does) write the value byte even when the flag is not set; the program reads only the option above and stops."
+            ],
+            "type": {
+              "kind": "remainderOptionTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "defaultValueStrategy": "omitted",
+            "defaultValue": {
+              "kind": "noneValueNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
           }
         ],
         "discriminators": [
@@ -6830,6 +6853,29 @@
               "kind": "structFieldDisplayNode",
               "label": "Base On Token 0"
             }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "unusedBaseFlagValue",
+            "docs": [
+              "Not read by the program. Clients that lay out the base flag as a fixed tag byte and value byte (Raydium's SDK does) write the value byte even when the flag is not set; the program reads only the option above and stops."
+            ],
+            "type": {
+              "kind": "remainderOptionTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "defaultValueStrategy": "omitted",
+            "defaultValue": {
+              "kind": "noneValueNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
           }
         ],
         "discriminators": [
@@ -7582,6 +7628,29 @@
             "display": {
               "kind": "structFieldDisplayNode",
               "label": "Base On Token 0"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "unusedBaseFlagValue",
+            "docs": [
+              "Not read by the program. Clients that lay out the base flag as a fixed tag byte and value byte (Raydium's SDK does) write the value byte even when the flag is not set; the program reads only the option above and stops."
+            ],
+            "type": {
+              "kind": "remainderOptionTypeNode",
+              "item": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "defaultValueStrategy": "omitted",
+            "defaultValue": {
+              "kind": "noneValueNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
             }
           }
         ],

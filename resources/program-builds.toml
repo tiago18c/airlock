@@ -548,13 +548,13 @@ idlSha256 = "ba83fa0ea573ebe4191066e48e2d358c3cfa1fa906491c1617ff95aa3035dad7"
 reviewed = "2026-11-12"
 
 [[builds]]
-# ammV3 (pack). The binary logs 27 instruction names, the same 27 the IDL has, and holds each instruction's discriminator. Mainnet transactions of 11 of them decode with no byte left over, and every account past those the IDL lists was identified on chain (tick arrays, the bitmap extension, reward vaults and mints, a supported-mint record).
+# ammV3 (pack). The binary logs 27 instruction names, the same 27 the IDL has, and holds each instruction's discriminator. Mainnet transactions of 11 of them decode with no byte left over, and every account past those the IDL lists was identified on chain (tick arrays, the bitmap extension, reward vaults and mints, a supported-mint record). Since 2026-11-13 the file declares the unused base flag byte some clients send after baseFlag, which Anchor's handler leaves unread.
 programId = "HpNfyc2Saw7RKkQd8nEL4khUcuPhQ7WwY1B2qjx8jxFq"
 network = "mainnet"
 programHash = "880aca643455fd2cf1963612591ba4ade512fb2c37aca922c4c49a12300fb1ae"
 authority = "Em3wKQYD83ph9LmSt6xBZeB9DpozT55AcGa61EYxHRVh"
-idlSha256 = "53527fd98e91180a0c55e16fbc6b5bf3072be967e60cb2739f8779d2997f257c"
-reviewed = "2026-11-12"
+idlSha256 = "d66941d9a411d48449f9fdfc64cc3cc052edfdcd274c08739f82303ebefdca69"
+reviewed = "2026-11-13"
 
 [[builds]]
 # vaults (pack). Deployed at slot 449989995; OtterSec lists no verify record. Each of the 34 instructions the file lists is in this binary by its Anchor log name and by its discriminator, and the binary logs no other apart from Anchor's IDL instructions. Mainnet transactions of operate, initPosition, liquidate, operatePerfectDex, rebalance, the tick set-up instructions and four admin instructions decode with every account named.
