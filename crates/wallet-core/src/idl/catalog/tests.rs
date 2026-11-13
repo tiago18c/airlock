@@ -449,6 +449,107 @@ fn the_fullest_entry_wins_when_several_files_carry_a_program() {
     );
 }
 
+/// Whoever controls a program writes its on-chain IDL, and controls no other
+/// program: what that file says of another one is not taken, so its author
+/// cannot word the Vote program's instructions.
+#[test]
+fn an_idl_read_from_the_chain_carries_no_other_program() {
+    for origin in [IdlOrigin::ProgramMetadata, IdlOrigin::Anchor] {
+        let mut store = open();
+        let bytes = with_additional(pk(1), &[(pk(2), "extra", 3)]);
+        store.import_with_origin(&bytes, None, origin).unwrap();
+        assert!(record(&store, pk(1)).is_some());
+        assert_eq!(record(&store, pk(2)), None, "{origin:?}");
+        assert!(store.program_client(&pk(2)).is_none());
+        assert!(store.body(&pk(2)).is_none());
+
+        // Opened again from what was stored, it still carries nothing.
+        let store = IdlStore::open(store.index_store, store.bodies);
+        assert_eq!(record(&store, pk(2)), None, "{origin:?}");
+
+        // The same file, imported by the person, does.
+        let mut store = open();
+        store.import(&bytes, None).unwrap();
+        assert_eq!(record(&store, pk(2)).unwrap().host, Some(pk(1)));
+    }
+}
+
+/// The associated-token program is read from the Token IDL that ships, and
+/// no other file takes it by saying more: not one read from the chain, and
+/// not one the person imported for another program.
+#[test]
+fn a_program_a_shipped_file_carries_is_not_taken_by_a_fuller_file() {
+    let ata = crate::ids::ASSOCIATED_TOKEN_PROGRAM_ID;
+    let fuller = with_additional(pk(1), &[(ata, "associatedToken", 5_000)]);
+    for origin in [
+        IdlOrigin::ProgramMetadata,
+        IdlOrigin::Anchor,
+        IdlOrigin::File,
+    ] {
+        let mut store = open().with_builtins();
+        let shipped = record(&store, ata).unwrap();
+        assert_eq!(shipped.host, Some(crate::ids::TOKEN_PROGRAM_ID));
+        store.import_with_origin(&fuller, None, origin).unwrap();
+        assert_eq!(record(&store, ata), Some(shipped), "{origin:?}");
+        assert_ne!(
+            store
+                .program_client(&ata)
+                .unwrap()
+                .instruction_names()
+                .len(),
+            5_000
+        );
+    }
+
+    // Its own file, imported, is still its own.
+    let mut store = open().with_builtins();
+    let own = store.import(&codama(ata, "9.9.9"), None).unwrap();
+    assert_eq!(record(&store, ata), Some(own));
+}
+
+/// Someone met a program before the app shipped an IDL for it, so its
+/// on-chain IDL is cached. The version that ships one reads the shipped file
+/// from then on, and the cached copy is gone from what is stored. A file the
+/// person imported is theirs and stays.
+#[test]
+fn a_shipped_idl_takes_its_slot_from_a_copy_cached_from_the_chain() {
+    let program = crate::fixtures::REALMS_GOVERNANCE_PROGRAM_ID;
+    let shipped = crate::idl::pack::shipped_idls;
+    for origin in [IdlOrigin::ProgramMetadata, IdlOrigin::Anchor] {
+        // Before the pack held it: read from the chain and stored.
+        let mut store = open().with_builtins();
+        store
+            .import_with_origin(&codama(program, "0.0.1"), None, origin)
+            .unwrap();
+        assert_eq!(record(&store, program).unwrap().origin, origin);
+
+        // The app is updated: the same stored files, and a pack that has it.
+        let mut store = IdlStore::open(store.index_store, store.bodies).with_builtins();
+        assert_eq!(record(&store, program).unwrap().origin, origin);
+        assert!(store.add_embedded(shipped()).is_empty());
+        let now = record(&store, program).unwrap();
+        assert_eq!(now.origin, IdlOrigin::Builtin, "{origin:?}");
+        assert!(!store
+            .program_client(&program)
+            .unwrap()
+            .instruction_names()
+            .is_empty());
+
+        // And it stays so when the app is opened again: nothing is stored
+        // for the program any more.
+        let mut store = IdlStore::open(store.index_store, store.bodies).with_builtins();
+        assert_eq!(record(&store, program), None);
+        store.add_embedded(shipped());
+        assert_eq!(record(&store, program), Some(now));
+    }
+
+    // An imported file is the person's choice, and keeps the slot.
+    let mut store = open().with_builtins();
+    let own = store.import(&codama(program, "0.0.1"), None).unwrap();
+    store.add_embedded(shipped());
+    assert_eq!(record(&store, program), Some(own));
+}
+
 #[test]
 fn checking_an_additional_program_checks_its_host() {
     let mut store = open();

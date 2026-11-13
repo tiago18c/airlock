@@ -364,6 +364,11 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
     }
 
     /// Put the embedded IDL in a program's slot when nothing imported holds it.
+    ///
+    /// A copy read from the chain does not hold it. It was a cache for want
+    /// of a file, and a version of the app that ships one for the program
+    /// reads that from then on: left in place, the cached copy would keep
+    /// the program reading without the sentences the shipped file has.
     fn restore_builtin(&mut self, program_id: &Pubkey) {
         let Some(builtin) = self
             .embedded
@@ -372,13 +377,16 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
         else {
             return;
         };
-        if self
+        let held = self
             .records
             .iter()
-            .any(|row| row.program_id == *program_id && row.host.is_none())
-        {
-            return;
-        }
+            .find(|row| row.program_id == *program_id && row.host.is_none())
+            .map(|row| row.origin);
+        let cached = match held {
+            Some(origin) if origin.is_read_from_chain() => true,
+            Some(_) => return,
+            None => false,
+        };
         let body = builtin.json.clone();
         let record = IdlRecord {
             program_id: builtin.program_id,
@@ -396,6 +404,12 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
         self.records.sort_by_key(|a| a.program_id);
         self.loaded.insert(*program_id, body);
         self.forget_client(program_id);
+        if cached {
+            // The cached copy goes from what is stored as well. Should that
+            // fail, it is replaced again the next time the catalog opens.
+            let _ = self.bodies.remove(self.network, program_id);
+            let _ = self.save_index();
+        }
     }
 
     /// Every network's records that live in the index.
