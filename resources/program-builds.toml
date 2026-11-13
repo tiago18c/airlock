@@ -797,3 +797,12 @@ programHash = "c760754bc0e8b3f6cd391ddbb6792f54f84f768fdbb59d36e2f35f2eca6ff659"
 authority = "5u7o2WGgHckh18opTfPsqKb8E3nhDKcReBrbzUeXg2n7"
 idlSha256 = "62a29e9dcb34c843e7baf7dbe6af2cb282c2e7fffcdd5c0e0476f8e7ee7790d7"
 reviewed = "2026-11-12"
+
+[[builds]]
+# mmm (pack). The binary logs `Instruction: <Name>` for all 29 instructions of the IDL and for no other besides Anchor's own IDL-account instructions. Executed instructions of 13 of them decode with the IDL, their data lengths match its arguments, and every account is named.
+programId = "mmm3XBJg5gk8XJxEKBvdgptZz6SgK4tXvn36sodowMc"
+network = "mainnet"
+programHash = "d5096f0484bdd6979976074d39b9a11c3560d1f0dc4943abacb0dda9b538ef85"
+authority = "9GWPeu3cBfkGSEit6HMaAFKswoirxqgMqykMh7RVH2Bb"
+idlSha256 = "4ae24a8b0345b552de329947a4b69d06431743cffdc2800c3c1275e8ddc846b7"
+reviewed = "2026-11-12"
