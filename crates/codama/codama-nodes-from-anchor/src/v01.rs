@@ -36,12 +36,19 @@ const MAX_GENERIC_EXPANSIONS: usize = 4096;
 /// argument that repeats its own parameter doubles at each level.
 const MAX_GENERIC_ARGUMENT_NODES: usize = 1 << 18;
 
+/// How many types generic templates may expand to in one IDL, every field
+/// and item counted. The number of expansions is bounded, but not what one
+/// makes: a template of a thousand plain fields, used four thousand times,
+/// is a file of a few hundred kilobytes that asks for more than a gigabyte.
+const MAX_GENERIC_EXPANDED_NODES: usize = 1 << 17;
+
 /// What one conversion has spent of the limits above, shared by every scope.
 #[derive(Default)]
 struct Spent {
     depth: Cell<usize>,
     expansions: Cell<usize>,
     argument_nodes: Cell<usize>,
+    expanded_nodes: Cell<usize>,
 }
 
 /// One level of type nesting, given back when the level is left.
@@ -66,6 +73,9 @@ pub struct Generics<'a> {
     type_args: HashMap<String, Value>,
     types: Rc<HashMap<String, &'a Value>>,
     spent: Rc<Spent>,
+    /// The template this scope expands, when it expands one: what is built
+    /// in it is counted against [`MAX_GENERIC_EXPANDED_NODES`].
+    template: Option<Rc<str>>,
 }
 
 impl<'a> Generics<'a> {
@@ -83,7 +93,24 @@ impl<'a> Generics<'a> {
             return Err(AnchorIdlError::GenericExpansionLimit(name.to_string()));
         }
         self.spent.expansions.set(expansions);
-        Ok(self.without_arguments())
+        Ok(Self {
+            template: Some(name.into()),
+            ..self.without_arguments()
+        })
+    }
+
+    /// One more type built. Inside a template it counts against what the
+    /// templates of one IDL may expand to.
+    fn built(&self) -> Result<()> {
+        let Some(template) = &self.template else {
+            return Ok(());
+        };
+        let nodes = self.spent.expanded_nodes.get() + 1;
+        if nodes > MAX_GENERIC_EXPANDED_NODES {
+            return Err(AnchorIdlError::GenericExpansionLimit(template.to_string()));
+        }
+        self.spent.expanded_nodes.set(nodes);
+        Ok(())
     }
 
     /// This scope with nothing bound, for a value that holds no generic.
@@ -93,6 +120,7 @@ impl<'a> Generics<'a> {
             type_args: HashMap::new(),
             types: self.types.clone(),
             spent: self.spent.clone(),
+            template: self.template.clone(),
         }
     }
 
@@ -644,6 +672,7 @@ fn parse_constant_value(declared: TypeNode, raw: &str) -> (TypeNode, ValueNode) 
 // ---------------------------------------------------------------------------
 
 pub fn type_node_from_anchor(idl_type: &Value, generics: &Generics) -> Result<TypeNode> {
+    generics.built()?;
     match idl_type {
         Value::String(leaf) => leaf_type_node(leaf),
         Value::Object(_) => object_type_node(idl_type, generics),
