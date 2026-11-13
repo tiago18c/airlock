@@ -4,6 +4,8 @@ A Solana wallet that keeps preparing a transaction apart from signing it. An onl
 
 **Not ready for production, and not formally audited.** This is a prototype that handles private keys and signs transactions. Do not use it to hold or move real funds. Read the [disclaimer](#disclaimer) first.
 
+**Download:** [the latest release](https://github.com/tiago18c/airlock/releases/latest). Its page says which file is for which computer or phone, and how to install each.
+
 ## Scope
 
 - **Solana transactions:** browser requests and Sign-screen paste accept legacy, v0 and v1. A hot-only request can be signed as is; anything else is converted to v1 (wire prefix `0x81`, SIMD-0385). The QR handoff (QRS1) stays v1 only; scanning a non-v1 QR is refused.
