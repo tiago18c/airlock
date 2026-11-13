@@ -1,0 +1,6266 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "ccipRouter",
+    "publicKey": "Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C",
+    "version": "1.6.2",
+    "origin": "anchor",
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "name": "allowedOfframp",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "f761b310cf24ec84",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "config",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "9b0caae01efacc82",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "version",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "defaultCodeVersion",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "codeVersion"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "svmChainSelector",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "owner",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "proposedOwner",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "feeQuoter",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "rmnRemote",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "linkTokenMint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "feeAggregator",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "destChain",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "4d12f184d436da10",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "version",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "chainSelector",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "state",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "destChainState"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "config",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "destChainConfig"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "name": "nonce",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "8fc5935f6aa5322b",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "version",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "orderedNonce",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "totalNonce",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mintAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority used to mint new tokens. The mint authority may only",
+                "be provided during mint creation. If no mint authority is present",
+                "then the mint has a fixed supply and no further tokens may be minted."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "supply",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "docs": [
+                "Total supply of tokens."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "decimals",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "docs": [
+                "Number of base 10 digits to the right of the decimal place."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isInitialized",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "docs": [
+                "Is `true` if this structure has been initialized."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "freezeAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority to freeze token accounts."
+              ]
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "sizeDiscriminatorNode",
+            "size": 82
+          }
+        ],
+        "name": "mint",
+        "docs": [],
+        "size": 82
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "initialize",
+        "docs": [
+          "Initialization Flow //",
+          "Initializes the CCIP Router.",
+          "",
+          "The initialization of the Router is responsibility of Admin, nothing more than calling this method should be done first.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for initialization.",
+          "* `svm_chain_selector` - The chain selector for SVM.",
+          "* `fee_aggregator` - The public key of the fee aggregator.",
+          "* `fee_quoter` - The public key of the fee quoter.",
+          "* `link_token_mint` - The public key of the LINK token mint.",
+          "* `rmn_remote` - The public key of the RMN remote."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Upgrade Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "program",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "programData",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Program Data"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "afaf6d1f0d989bed",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "svmChainSelector",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Solana Chain Selector"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "feeAggregator",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Fee Aggregator"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "feeQuoter",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Fee Quoter Program"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "linkTokenMint",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "LINK Token"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "rmnRemote",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "RMN Remote Program"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Initialize the router",
+          "interpolatedIntent": "${accounts.authority} initializes the CCIP router"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "typeVersion",
+        "docs": [
+          "Returns the program type (name) and version.",
+          "Used by offchain code to easily determine which program & version is being interacted with.",
+          "",
+          "# Arguments",
+          "* `ctx` - The context"
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "clock",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "81fb08f37ae5fca4",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Read the router version",
+          "interpolatedIntent": "Reads the name and version of the CCIP router"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "transferOwnership",
+        "docs": [
+          "Transfers the ownership of the router to a new proposed owner.",
+          "",
+          "Shared func signature with other programs",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for the transfer.",
+          "* `proposed_owner` - The public key of the new proposed owner."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Owner"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "41b1d749352d632f",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "proposedOwner",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Proposed Owner"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Transfer router ownership",
+          "interpolatedIntent": "${accounts.authority} proposes ${data.proposedOwner} as the new owner of the CCIP router, who must accept it"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "acceptOwnership",
+        "docs": [
+          "Accepts the ownership of the router by the proposed owner.",
+          "",
+          "Shared func signature with other programs",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for accepting ownership.",
+          "The new owner must be a signer of the transaction."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Owner"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "ac172b0deed55596",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Accept router ownership",
+          "interpolatedIntent": "${accounts.authority} becomes the owner of the CCIP router"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setDefaultCodeVersion",
+        "docs": [
+          "Config //",
+          "Sets the default code version to be used. This is then used by the slim routing layer to determine",
+          "which version of the versioned business logic module (`instructions`) to use. Only the admin may set this.",
+          "",
+          "Shared func signature with other programs",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for updating the configuration.",
+          "* `code_version` - The new code version to be set as default."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "2f97e9fe7952ce98",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "codeVersion",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "codeVersion"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Code Version"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set the default code version",
+          "interpolatedIntent": "${accounts.authority} sets the default code version of the CCIP router to ${data.codeVersion}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setLinkTokenMint",
+        "docs": [
+          "Sets the address of the LINK token mint.",
+          "The Admin is the only one able to set it.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for updating the configuration.",
+          "* `link_token_mint` - The new address of the LINK token mint."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "bed831fec8510c11",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "linkTokenMint",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "LINK Token"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set the LINK token",
+          "interpolatedIntent": "${accounts.authority} sets the LINK token of the CCIP router to ${data.linkTokenMint}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateFeeAggregator",
+        "docs": [
+          "Updates the fee aggregator in the router configuration.",
+          "The Admin is the only one able to update the fee aggregator.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for updating the configuration.",
+          "* `fee_aggregator` - The new fee aggregator address (ATAs will be derived for it for each token)."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "5570733c165fe638",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "feeAggregator",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Fee Aggregator"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set the fee aggregator",
+          "interpolatedIntent": "${accounts.authority} sets the fee aggregator of the CCIP router, whose token accounts receive withdrawn fees, to ${data.feeAggregator}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateRmnRemote",
+        "docs": [
+          "Updates the RMN remote program in the router configuration.",
+          "The Admin is the only one able to update the RMN remote program.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for updating the configuration.",
+          "* `rmn_remote,` - The new RMN remote address."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "420cd7930eb037d6",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "rmnRemote",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "RMN Remote Program"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set the RMN Remote program",
+          "interpolatedIntent": "${accounts.authority} sets the RMN Remote program of the CCIP router to ${data.rmnRemote}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "addChainSelector",
+        "docs": [
+          "Adds a new chain selector to the router.",
+          "",
+          "The Admin needs to add any new chain supported (this means both OnRamp and OffRamp).",
+          "When adding a new chain, the Admin needs to specify if it's enabled or not.",
+          "They may enable only source, or only destination, or neither, or both.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for adding the chain selector.",
+          "* `new_chain_selector` - The new chain selector to be added.",
+          "* `source_chain_config` - The configuration for the chain as source.",
+          "* `dest_chain_config` - The configuration for the chain as destination."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "destChainState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Destination Chain"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "1c3cab00c3713807",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newChainSelector",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Destination Chain Selector"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "destChainConfig",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "destChainConfig"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Add a destination chain",
+          "interpolatedIntent": "${accounts.authority} adds destination chain selector ${data.newChainSelector} to the CCIP router"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateDestChainConfig",
+        "docs": [
+          "Updates the configuration of the destination chain selector.",
+          "",
+          "The Admin is the only one able to update the destination chain config.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for updating the chain selector.",
+          "* `dest_chain_selector` - The destination chain selector to be updated.",
+          "* `dest_chain_config` - The new configuration for the destination chain."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "destChainState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Destination Chain"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "d77a5116be3adb0d",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "destChainSelector",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Destination Chain Selector"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "destChainConfig",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "destChainConfig"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Update a destination chain",
+          "interpolatedIntent": "${accounts.authority} updates the settings of destination chain selector ${data.destChainSelector} in the CCIP router"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "addOfframp",
+        "docs": [
+          "Add an offramp address to the list of offramps allowed by the router, for a",
+          "particular source chain. External users will check this list before accepting",
+          "a `ccip_receive` CPI.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for this operation.",
+          "* `source_chain_selector` - The source chain for the offramp's lane.",
+          "* `offramp` - The offramp's address."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "allowedOfframp",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Allowed Offramp Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "a4ff9a60ccef1802",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "sourceChainSelector",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Source Chain Selector"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "offramp",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Offramp Program"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Allow an offramp",
+          "interpolatedIntent": "${accounts.authority} allows offramp ${data.offramp} for messages from source chain selector ${data.sourceChainSelector}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "removeOfframp",
+        "docs": [
+          "Remove an offramp address from the list of offramps allowed by the router, for a",
+          "particular source chain. External users will check this list before accepting",
+          "a `ccip_receive` CPI.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for this operation.",
+          "* `source_chain_selector` - The source chain for the offramp's lane.",
+          "* `offramp` - The offramp's address."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "allowedOfframp",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Allowed Offramp Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "fc9833aaf10dc708",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "sourceChainSelector",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Source Chain Selector"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "offramp",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Offramp Program"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Remove an offramp",
+          "interpolatedIntent": "${accounts.authority} removes offramp ${data.offramp} from those allowed for messages from source chain selector ${data.sourceChainSelector}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "updateSvmChainSelector",
+        "docs": [
+          "Updates the SVM chain selector in the router configuration.",
+          "",
+          "This method should only be used if there was an error with the initial configuration or if the solana chain selector changes.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for updating the configuration.",
+          "* `new_chain_selector` - The new chain selector for SVM."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "a4d44765a6711a5d",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newChainSelector",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Solana Chain Selector"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set Solana's chain selector",
+          "interpolatedIntent": "${accounts.authority} sets Solana's own chain selector in the CCIP router to ${data.newChainSelector}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "bumpCcipVersionForDestChain",
+        "docs": [
+          "Bumps the CCIP version for a destination chain.",
+          "This effectively just resets the sequence number of the destination chain state.",
+          "If there had been a previous rollback, on re-upgrade the sequence number will resume from where it was",
+          "prior to the rollback.",
+          "",
+          "# Arguments",
+          "* `ctx` - The context containing the accounts required for the bump.",
+          "* `dest_chain_selector` - The destination chain selector to bump version for."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "destChainState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Destination Chain"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Owner"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "781906c92ae0ebbb",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "destChainSelector",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Destination Chain Selector"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Bump a lane's CCIP version",
+          "interpolatedIntent": "${accounts.authority} bumps the CCIP version of destination chain selector ${data.destChainSelector}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "rollbackCcipVersionForDestChain",
+        "docs": [
+          "Rolls back the CCIP version for a destination chain.",
+          "This effectively just restores the old version's sequence number of the destination chain state.",
+          "We only support 1 consecutive rollback. If a rollback has occurred for that lane, the version can't",
+          "be rolled back again without bumping the version first.",
+          "",
+          "# Arguments",
+          "* `ctx` - The context containing the accounts required for the rollback.",
+          "* `dest_chain_selector` - The destination chain selector to rollback the version for."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "destChainState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Destination Chain"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Owner"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "5f6b218a1a399a6e",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "destChainSelector",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Destination Chain Selector"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Roll back a lane's CCIP version",
+          "interpolatedIntent": "${accounts.authority} rolls back the CCIP version of destination chain selector ${data.destChainSelector}, restoring its previous sequence number"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "ccipAdminProposeAdministrator",
+        "docs": [
+          "Token Admin Registry //",
+          "Registers the Token Admin Registry via the CCIP Admin",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for registration.",
+          "* `token_admin_registry_admin` - The public key of the token admin registry admin to propose."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenAdminRegistry",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Admin Registry Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "da258b6b8ee433db",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "tokenAdminRegistryAdmin",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Proposed Token Administrator"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Register a token with CCIP",
+          "interpolatedIntent": "${accounts.authority}, the router owner, registers ${accounts.mint} with CCIP and proposes ${data.tokenAdminRegistryAdmin} as its token administrator"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "ccipAdminOverridePendingAdministrator",
+        "docs": [
+          "Overrides the pending admin of the Token Admin Registry",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for registration.",
+          "* `token_admin_registry_admin` - The public key of the token admin registry admin to propose."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenAdminRegistry",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Admin Registry Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "a3cea4c7f85c242e",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "tokenAdminRegistryAdmin",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Proposed Token Administrator"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Replace the proposed token administrator",
+          "interpolatedIntent": "${accounts.authority}, the router owner, proposes ${data.tokenAdminRegistryAdmin} as the CCIP token administrator of ${accounts.mint} in place of the one proposed before"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "ownerProposeAdministrator",
+        "docs": [
+          "Registers the Token Admin Registry by the token owner.",
+          "",
+          "The Authority of the Mint Token can claim the registry of the token.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for registration.",
+          "* `token_admin_registry_admin` - The public key of the token admin registry admin to propose."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenAdminRegistry",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Admin Registry Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Mint Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "af51a0f6ce841216",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "tokenAdminRegistryAdmin",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Proposed Token Administrator"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Register a token with CCIP",
+          "interpolatedIntent": "${accounts.authority}, the mint authority of ${accounts.mint}, registers it with CCIP and proposes ${data.tokenAdminRegistryAdmin} as its token administrator"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "ownerOverridePendingAdministrator",
+        "docs": [
+          "Overrides the pending admin of the Token Admin Registry by the token owner",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for registration.",
+          "* `token_admin_registry_admin` - The public key of the token admin registry admin to propose."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenAdminRegistry",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Admin Registry Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Mint Authority"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "e66f8695cba876c9",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "tokenAdminRegistryAdmin",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Proposed Token Administrator"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Replace the proposed token administrator",
+          "interpolatedIntent": "${accounts.authority}, the mint authority of ${accounts.mint}, proposes ${data.tokenAdminRegistryAdmin} as its CCIP token administrator in place of the one proposed before"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "acceptAdminRoleTokenAdminRegistry",
+        "docs": [
+          "Accepts the admin role of the token admin registry.",
+          "",
+          "The Pending Admin must call this function to accept the admin role of the Token Admin Registry.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for accepting the admin role.",
+          "* `mint` - The public key of the token mint."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenAdminRegistry",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Admin Registry Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "New Token Administrator"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "6af010ad89d5a3f6",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Accept the token administrator role",
+          "interpolatedIntent": "${accounts.authority} becomes the CCIP token administrator of ${accounts.mint}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "transferAdminRoleTokenAdminRegistry",
+        "docs": [
+          "Transfers the admin role of the token admin registry to a new admin.",
+          "",
+          "Only the Admin can transfer the Admin Role of the Token Admin Registry, this setups the Pending Admin and then it's their responsibility to accept the role.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for the transfer.",
+          "* `mint` - The public key of the token mint.",
+          "* `new_admin` - The public key of the new admin."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenAdminRegistry",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Admin Registry Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Administrator"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "b262cbb5cb6b6a0e",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "newAdmin",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Proposed Token Administrator"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Transfer the token administrator role",
+          "interpolatedIntent": "${accounts.authority} proposes ${data.newAdmin} as the next CCIP token administrator of ${accounts.mint}, who must accept it"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setPoolSupportsAutoDerivation",
+        "docs": [
+          "Edits the pool config flags for a given token mint.",
+          "",
+          "The administrator of the token admin registry is the only one allowed to invoke this.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for setting the pool.",
+          "* `mint` - The mint of the pool to be edited.",
+          "* `supports_auto_derivation` - A boolean flag indicating whether the pool supports auto-derivation of accounts."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenAdminRegistry",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Admin Registry Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Administrator"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "c5e343994b14ea8b",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "mint",
+            "type": {
+              "kind": "publicKeyTypeNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Token"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "supportsAutoDerivation",
+            "type": {
+              "kind": "booleanTypeNode",
+              "size": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Pool Derives Its Accounts"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set pool account derivation",
+          "interpolatedIntent": "${accounts.authority} sets whether the CCIP pool of ${data.mint} derives its own accounts: ${data.supportsAutoDerivation}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "upgradeTokenAdminRegistryFromV1",
+        "docs": [
+          "Upgrades the Token Admin Registry from version 1 to the current version.",
+          "",
+          "Anyone may invoke this method, as the upgrade has safe defaults for any new value,",
+          "and those can then be changed by the Token Admin Registry Admin via separate instructions.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for the upgrade."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenAdminRegistry",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "types Anchor would attempt to deserialize the data _before_ realloc'ing it, which would fail.",
+              "The code will load it and realloc it to the new size manually, and migrate its data."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Admin Registry Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "7c1a4f2cbe96d531",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Upgrade a token registry entry",
+          "interpolatedIntent": "${accounts.authority} upgrades the CCIP token admin registry entry of ${accounts.mint} to its current version"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "setPool",
+        "docs": [
+          "Sets the pool lookup table for a given token mint.",
+          "",
+          "The administrator of the token admin registry can set the pool lookup table for a given token mint.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for setting the pool.",
+          "* `writable_indexes` - a bit map of the indexes of the accounts in lookup table that are writable"
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenAdminRegistry",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Admin Registry Entry"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "poolLookuptable",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Pool Lookup Table (the default key 1111…1111 delists the token)"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Administrator"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "771e0eb473e1a7ee",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "writableIndexes",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "bytesTypeNode"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Writable Lookup Table Indexes (hex)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "additionalAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "Accounts after the named ones, which set_pool does not read. A set_pool the router owner's timelock executed on mainnet passes the pool lookup table again here."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Additional Account (not read by the router)"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Set a token's pool",
+          "interpolatedIntent": "${accounts.authority} sets the CCIP pool of ${accounts.mint} to the one in lookup table ${accounts.poolLookuptable}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawBilledFunds",
+        "docs": [
+          "Billing //",
+          "Transfers the accumulated billed fees in a particular token to an arbitrary token account.",
+          "Only the CCIP Admin can withdraw billed funds.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for the transfer of billed fees.",
+          "* `transfer_all` - A flag indicating whether to transfer all the accumulated fees in that token or not.",
+          "* `desired_amount` - The amount to transfer. If `transfer_all` is true, this value must be 0."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeTokenMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Fee Token"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeTokenAccum",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Billed Fees Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "recipient",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Fee Aggregator Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeBillingSigner",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Owner"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "107449264de8061c",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "transferAll",
+            "type": {
+              "kind": "booleanTypeNode",
+              "size": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Withdraw All"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "desiredAmount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "feeDecimals"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount (0 when withdrawing all)"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "feeDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "feeTokenMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw billed fees",
+          "interpolatedIntent": "${accounts.authority}, the router owner, withdraws billed CCIP fees in ${accounts.feeTokenMint} from ${accounts.feeTokenAccum} to the fee aggregator's account ${accounts.recipient}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "ccipSend",
+        "docs": [
+          "On Ramp Flow //",
+          "Sends a message to the destination chain.",
+          "",
+          "Request a message to be sent to the destination chain.",
+          "The method name needs to be ccip_send with Anchor encoding.",
+          "This function is called by the CCIP Sender Contract (or final user) to send a message to the CCIP Router.",
+          "The message will be sent to the receiver on the destination chain selector.",
+          "This message emits the event CCIPMessageSent with all the necessary data to be retrieved by the OffChain Code",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for sending the message.",
+          "* `dest_chain_selector` - The chain selector for the destination chain.",
+          "* `message` - The message to be sent. The size limit of data is 256 bytes.",
+          "* `token_indexes` - Indices into the remaining accounts vector where the subslice for a token begins."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destChainState",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Destination Chain"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "nonce",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "CHECK this represents the PDA where the message counters are stored. As it may be initialized or not,",
+              "and it may be in it's v1 or v2 form, it is an UncheckedAccount and the code handles all cases manually."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Sender"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeTokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeTokenMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Fee Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeTokenUserAssociatedAccount",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "If paying with native SOL, this must be the zero address."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Your Fee Token Account (not used when paying in SOL)"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeTokenReceiver",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Fee Paid To (router's billing account)"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeBillingSigner",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeQuoter",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeQuoterConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeQuoterDestChain",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeQuoterBillingTokenConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeQuoterLinkTokenConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rmnRemote",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rmnRemoteCurses",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "rmnRemoteConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "6cd886bff9ea2154",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "destChainSelector",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Destination Chain Selector"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "message",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "svm2AnyMessage"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "tokenIndexes",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "bytesTypeNode"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "tokenTransferAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "For each token sent, in the order of message.token_amounts and starting at its index in token_indexes: the sender's token account, the token's per-chain billing config (Fee Quoter), the pool's chain config, the token's pool lookup table, its token admin registry entry, the pool program, the pool config, the pool's token account, the pool signer, the token program, the mint, the token's billing config (Fee Quoter), the router's signer for that pool program, then any further accounts the pool asks for. The number per token depends on its pool, so they cannot be named by position."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Token Transfer Account (per token: yours, then pool accounts)"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Send through CCIP",
+          "interpolatedIntent": "${accounts.authority} sends a CCIP message to receiver ${data.message.receiver} on destination chain selector ${data.destChainSelector}, paying the fee in ${accounts.feeTokenMint}. Tokens sent, in base units: [${data.message.tokenAmounts}]"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "getFee",
+        "docs": [
+          "Queries the onramp for the fee required to send a message.",
+          "",
+          "This call is permissionless. Note it does not verify whether there's a curse active",
+          "in order to avoid the RMN CPI overhead.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx` - The context containing the accounts required for obtaining the message fee.",
+          "* `dest_chain_selector` - The chain selector for the destination chain.",
+          "* `message` - The message to be sent. The size limit of data is 256 bytes."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destChainState",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Destination Chain"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeQuoter",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeQuoterConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeQuoterDestChain",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeQuoterBillingTokenConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeQuoterLinkTokenConfig",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "73c3eba119db3c1d",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "destChainSelector",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Destination Chain Selector"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "message",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "svm2AnyMessage"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "tokenBillingConfigs"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "For each token in the message, the Fee Quoter's billing config of that token, then, for each, its per-chain billing config."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Quote a cross-chain fee",
+          "interpolatedIntent": "Quotes the CCIP fee to send a message to destination chain selector ${data.destChainSelector}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "deriveAccountsCcipSend",
+        "docs": [
+          "Automatically derives all accounts required to call `ccip_send`.",
+          "",
+          "This method receives the bare minimum amount of information needed to construct",
+          "the entire account list to send a transaction, and builds it iteratively",
+          "over the course of multiple calls.",
+          "",
+          "The return type contains:",
+          "",
+          "* `accounts_to_save`: The caller must append these accounts to a list they maintain.",
+          "When complete, this list will contain all accounts needed to call `ccip_send`.",
+          "* `ask_again_with`: When `next_stage` is not empty, the caller must call `derive_accounts_ccip_send`",
+          "again, including exactly these accounts as the `remaining_accounts`.",
+          "* `lookup_tables_to_save`: The caller must save those LUTs. They can be used for `ccip_send`.",
+          "* `current_stage`: A string describing the current stage of the derivation process. When the stage",
+          "is \"TokenTransferStaticAccounts/<N>/0\", it means the `accounts_to_save` block in this response contains",
+          "all accounts relating to the Nth token being transferred. Use this information to construct",
+          "the `token_indexes` vector that `ccip_send` requires.",
+          "* `next_stage`: If nonempty, this means the instruction must get called again with this value",
+          "as the `stage` argument.",
+          "",
+          "Therefore, and starting with an empty `remaining_accounts` list, the caller must repeatedly",
+          "call `derive_accounts_ccip_send` until `next_stage` is returned empty.",
+          "",
+          "# Arguments",
+          "",
+          "* `ctx`: Context containing only the config.",
+          "* `stage`: Requested derivation stage. Pass \"Start\" the first time, then for each subsequent",
+          "call, pass the value returned in `response.next_stage` until empty.",
+          "* `params`:",
+          "* `ccip_send_caller`: Public key of the account that will sign the call to `ccip_send`.",
+          "* `dest_chain_selector`: CCIP chain selector for the dest chain.",
+          "* `fee_token_mint`: The mint address for the token used for fees. Pubkey::default() if native SOL.",
+          "* `mints_of_transferred_token`: List of all token mints for tokens being transferred."
+        ],
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "config",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "fbb0321ac1e79cf2",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "params",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "deriveAccountsCcipSendParams"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "stage",
+            "type": {
+              "kind": "sizePrefixTypeNode",
+              "type": {
+                "kind": "stringTypeNode",
+                "encoding": "utf8"
+              },
+              "prefix": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Stage"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "askAgainWith"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts the previous stage's response asked to be passed (ask_again_with)."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Derive accounts for a send",
+          "interpolatedIntent": "Lists the accounts ${data.params.ccipSendCaller} needs to send a CCIP message to destination chain selector ${data.params.destChainSelector} (stage ${data.stage})"
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "rampMessageHeader",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "messageId",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 32
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "sourceChainSelector",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "destChainSelector",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "sequenceNumber",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "nonce",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "svm2AnyRampMessage",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "header",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "rampMessageHeader"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "sender",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "data",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "bytesTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "receiver",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "bytesTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "extraArgs",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "bytesTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "feeToken",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tokenAmounts",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "svm2AnyTokenTransfer"
+                },
+                "count": {
+                  "kind": "prefixedCountNode",
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "feeTokenAmount",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "crossChainAmount"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "feeValueJuels",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "crossChainAmount"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "svm2AnyTokenTransfer",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "sourcePoolAddress",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "destTokenAddress",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "bytesTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "extraData",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "bytesTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amount",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "crossChainAmount"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "destExecData",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "bytesTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "svm2AnyMessage",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "receiver",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "bytesTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Receiver on Destination Chain (hex)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "data",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "bytesTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Message Data (hex)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "tokenAmounts",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "svmtokenAmount"
+                },
+                "count": {
+                  "kind": "prefixedCountNode",
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Tokens Sent (amounts in base units)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "feeToken",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Fee Token (the default key 1111…1111 means native SOL)"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "extraArgs",
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "bytesTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Extra Arguments (hex)"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "svmtokenAmount",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "token",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Token"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "unit": {
+                    "kind": "stringValueNode",
+                    "string": "base units"
+                  }
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Amount"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "crossChainAmount",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "leBytes",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                },
+                "count": {
+                  "kind": "fixedCountNode",
+                  "value": 32
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "getFeeResult",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "juels",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u128",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "token",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "destChainState",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "sequenceNumber",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "sequenceNumberToRestore",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "restoreOnAction",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "restoreOnAction"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "destChainConfig",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "laneCodeVersion",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "codeVersion"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Lane Code Version"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "allowedSenders",
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "count": {
+                  "kind": "prefixedCountNode",
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Allowed Senders"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "allowListEnabled",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Sender Allow List On"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "deriveAccountsResponse",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "askAgainWith",
+              "docs": [
+                "If this vector is not empty, you must call the `derive_` method again including",
+                "exactly these accounts as the `remaining_accounts` field."
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "ccipAccountMeta"
+                },
+                "count": {
+                  "kind": "prefixedCountNode",
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "accountsToSave",
+              "docs": [
+                "You must append these accounts at the end of a separate list. When `next_stage`",
+                "is finally empty, this separate list will contain all the accounts to use for the",
+                "instruction of interest."
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "ccipAccountMeta"
+                },
+                "count": {
+                  "kind": "prefixedCountNode",
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "lookUpTablesToSave",
+              "docs": [
+                "Append these look up tables at the end of a list. It will contain all LUTs",
+                "that the instruction of interest can use."
+              ],
+              "type": {
+                "kind": "arrayTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "count": {
+                  "kind": "prefixedCountNode",
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "currentStage",
+              "docs": [
+                "Identifies the derivation stage."
+              ],
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "nextStage",
+              "docs": [
+                "Identifies the next derivation stage. If empty, the derivation is complete."
+              ],
+              "type": {
+                "kind": "sizePrefixTypeNode",
+                "type": {
+                  "kind": "stringTypeNode",
+                  "encoding": "utf8"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "ccipAccountMeta",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "pubkey",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isSigner",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isWritable",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "deriveAccountsCcipSendParams",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "destChainSelector",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Destination Chain Selector"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "ccipSendCaller",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Sender"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "message",
+              "type": {
+                "kind": "definedTypeLinkNode",
+                "name": "svm2AnyMessage"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "flatten": true
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "deriveAccountsCcipSendStage",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "start"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "finishMainAccountList"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "retrieveTokenLuts"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "retrievePoolPrograms"
+            },
+            {
+              "kind": "enumStructVariantTypeNode",
+              "name": "tokenTransferStaticAccounts",
+              "struct": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "token",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u32",
+                      "endian": "le"
+                    }
+                  },
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "page",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u32",
+                      "endian": "le"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "enumStructVariantTypeNode",
+              "name": "nestedTokenDerive",
+              "struct": {
+                "kind": "structTypeNode",
+                "fields": [
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "token",
+                    "type": {
+                      "kind": "numberTypeNode",
+                      "format": "u32",
+                      "endian": "le"
+                    }
+                  },
+                  {
+                    "kind": "structFieldTypeNode",
+                    "name": "tokenSubstage",
+                    "type": {
+                      "kind": "sizePrefixTypeNode",
+                      "type": {
+                        "kind": "stringTypeNode",
+                        "encoding": "utf8"
+                      },
+                      "prefix": {
+                        "kind": "numberTypeNode",
+                        "format": "u32",
+                        "endian": "le"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "codeVersion",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "default",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "Default (the router's default)"
+              }
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "v1",
+              "display": {
+                "kind": "enumVariantDisplayNode",
+                "label": "V1"
+              }
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "restoreOnAction",
+        "type": {
+          "kind": "enumTypeNode",
+          "variants": [
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "none"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "upgrade"
+            },
+            {
+              "kind": "enumEmptyVariantTypeNode",
+              "name": "rollback"
+            }
+          ],
+          "size": {
+            "kind": "numberTypeNode",
+            "format": "u8",
+            "endian": "le"
+          }
+        }
+      }
+    ],
+    "events": [
+      {
+        "kind": "eventNode",
+        "name": "configSet",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "svmChainSelector",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "feeQuoter",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "rmnRemote",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "linkTokenMint",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "feeAggregator",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "0f683b10ecf10806",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "0f683b10ecf10806",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "feeTokenAdded",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "feeToken",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "enabled",
+                "type": {
+                  "kind": "booleanTypeNode",
+                  "size": {
+                    "kind": "numberTypeNode",
+                    "format": "u8",
+                    "endian": "le"
+                  }
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "b5b4fc15d74f5ded",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "b5b4fc15d74f5ded",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "feeTokenEnabled",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "feeToken",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "6ab491bd71b4150f",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "6ab491bd71b4150f",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "feeTokenDisabled",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "feeToken",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "228b424b1e112d97",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "228b424b1e112d97",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "feeTokenRemoved",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "feeToken",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "281fe6fcb79693c9",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "281fe6fcb79693c9",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "destChainConfigUpdated",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "destChainSelector",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "destChainConfig",
+                "type": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "destChainConfig"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "038d49be49e73350",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "038d49be49e73350",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "destChainAdded",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "destChainSelector",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "destChainConfig",
+                "type": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "destChainConfig"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "3b9a3051e62950c8",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "3b9a3051e62950c8",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "ownershipTransferRequested",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "from",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "to",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "4f36637b39f48623",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "4f36637b39f48623",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "ownershipTransferred",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "from",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "to",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "ac3dcdb7fa322662",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "ac3dcdb7fa322662",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "offrampAdded",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "sourceChainSelector",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "offramp",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "9e4d344971f74c96",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "9e4d344971f74c96",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "offrampRemoved",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "sourceChainSelector",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "offramp",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "e751ca0959c19a25",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "e751ca0959c19a25",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "ccipVersionForDestChainVersionBumped",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "destChainSelector",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "previousSequenceNumber",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "newSequenceNumber",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "51615a469aa3ff4e",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "51615a469aa3ff4e",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "ccipVersionForDestChainVersionRolledBack",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "destChainSelector",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "previousSequenceNumber",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "newSequenceNumber",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "324f2cafe8f1e1ab",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "324f2cafe8f1e1ab",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "ccipmessageSent",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "destChainSelector",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "sequenceNumber",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "message",
+                "type": {
+                  "kind": "definedTypeLinkNode",
+                  "name": "svm2AnyRampMessage"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "174d49b77bb97339",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "174d49b77bb97339",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "poolSet",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "token",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "previousPoolLookupTable",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "newPoolLookupTable",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "87cbb96a7157b120",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "87cbb96a7157b120",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "administratorTransferRequested",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "token",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "currentAdmin",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "newAdmin",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "9f1e6e561623467d",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "9f1e6e561623467d",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "administratorTransferred",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "token",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "newAdmin",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "677fff72a8a39f7c",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "677fff72a8a39f7c",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "poolEdited",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "token",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "supportsAutoDerivation",
+                "type": {
+                  "kind": "booleanTypeNode",
+                  "size": {
+                    "kind": "numberTypeNode",
+                    "format": "u8",
+                    "endian": "le"
+                  }
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "8fd938840d2a78c3",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "8fd938840d2a78c3",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "kind": "eventNode",
+        "name": "pdaUpgraded",
+        "data": {
+          "kind": "hiddenPrefixTypeNode",
+          "type": {
+            "kind": "structTypeNode",
+            "fields": [
+              {
+                "kind": "structFieldTypeNode",
+                "name": "address",
+                "type": {
+                  "kind": "publicKeyTypeNode"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "oldVersion",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "newVersion",
+                "type": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "name",
+                "type": {
+                  "kind": "sizePrefixTypeNode",
+                  "type": {
+                    "kind": "stringTypeNode",
+                    "encoding": "utf8"
+                  },
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              },
+              {
+                "kind": "structFieldTypeNode",
+                "name": "seeds",
+                "type": {
+                  "kind": "sizePrefixTypeNode",
+                  "type": {
+                    "kind": "bytesTypeNode"
+                  },
+                  "prefix": {
+                    "kind": "numberTypeNode",
+                    "format": "u32",
+                    "endian": "le"
+                  }
+                }
+              }
+            ]
+          },
+          "prefix": [
+            {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "cc9b3b69ab82c0a9",
+                "encoding": "base16"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "constantDiscriminatorNode",
+            "offset": 0,
+            "constant": {
+              "kind": "constantValueNode",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "value": {
+                "kind": "bytesValueNode",
+                "data": "cc9b3b69ab82c0a9",
+                "encoding": "base16"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "unauthorized",
+        "code": 7000,
+        "message": "The signer is unauthorized",
+        "docs": [
+          "Unauthorized: The signer is unauthorized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidRmnremoteAddress",
+        "code": 7001,
+        "message": "Invalid RMN Remote Address",
+        "docs": [
+          "InvalidRMNRemoteAddress: Invalid RMN Remote Address"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidInputsMint",
+        "code": 7002,
+        "message": "Mint account input is invalid",
+        "docs": [
+          "InvalidInputsMint: Mint account input is invalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidVersion",
+        "code": 7003,
+        "message": "Invalid version of the onchain state",
+        "docs": [
+          "InvalidVersion: Invalid version of the onchain state"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "feeTokenMismatch",
+        "code": 7004,
+        "message": "Fee token doesn't match transfer token",
+        "docs": [
+          "FeeTokenMismatch: Fee token doesn't match transfer token"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "redundantOwnerProposal",
+        "code": 7005,
+        "message": "Proposed owner is the current owner",
+        "docs": [
+          "RedundantOwnerProposal: Proposed owner is the current owner"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "reachedMaxSequenceNumber",
+        "code": 7006,
+        "message": "Reached max sequence number",
+        "docs": [
+          "ReachedMaxSequenceNumber: Reached max sequence number"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidInputsTokenIndices",
+        "code": 7007,
+        "message": "Invalid pool account account indices",
+        "docs": [
+          "InvalidInputsTokenIndices: Invalid pool account account indices"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidInputsPoolAccounts",
+        "code": 7008,
+        "message": "Invalid pool accounts",
+        "docs": [
+          "InvalidInputsPoolAccounts: Invalid pool accounts"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidInputsTokenAccounts",
+        "code": 7009,
+        "message": "Invalid token accounts",
+        "docs": [
+          "InvalidInputsTokenAccounts: Invalid token accounts"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidInputsTokenAdminRegistryAccounts",
+        "code": 7010,
+        "message": "Invalid Token Admin Registry account",
+        "docs": [
+          "InvalidInputsTokenAdminRegistryAccounts: Invalid Token Admin Registry account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidInputsLookupTableAccounts",
+        "code": 7011,
+        "message": "Invalid LookupTable account",
+        "docs": [
+          "InvalidInputsLookupTableAccounts: Invalid LookupTable account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidInputsLookupTableAccountWritable",
+        "code": 7012,
+        "message": "Invalid LookupTable account writable access",
+        "docs": [
+          "InvalidInputsLookupTableAccountWritable: Invalid LookupTable account writable access"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidInputsTokenAmount",
+        "code": 7013,
+        "message": "Cannot send zero tokens",
+        "docs": [
+          "InvalidInputsTokenAmount: Cannot send zero tokens"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidInputsTransferAllAmount",
+        "code": 7014,
+        "message": "Must specify zero amount to send alongside transfer_all",
+        "docs": [
+          "InvalidInputsTransferAllAmount: Must specify zero amount to send alongside transfer_all"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidInputsAtaAddress",
+        "code": 7015,
+        "message": "Invalid Associated Token Account address",
+        "docs": [
+          "InvalidInputsAtaAddress: Invalid Associated Token Account address"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidInputsAtaWritable",
+        "code": 7016,
+        "message": "Invalid Associated Token Account writable flag",
+        "docs": [
+          "InvalidInputsAtaWritable: Invalid Associated Token Account writable flag"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidInputsChainSelector",
+        "code": 7017,
+        "message": "Chain selector is invalid",
+        "docs": [
+          "InvalidInputsChainSelector: Chain selector is invalid"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "insufficientLamports",
+        "code": 7018,
+        "message": "Insufficient lamports",
+        "docs": [
+          "InsufficientLamports: Insufficient lamports"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "insufficientFunds",
+        "code": 7019,
+        "message": "Insufficient funds",
+        "docs": [
+          "InsufficientFunds: Insufficient funds"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "sourceTokenDataTooLarge",
+        "code": 7020,
+        "message": "Source token data is too large",
+        "docs": [
+          "SourceTokenDataTooLarge: Source token data is too large"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTokenAdminRegistryInputsZeroAddress",
+        "code": 7021,
+        "message": "New Admin can not be zero address",
+        "docs": [
+          "InvalidTokenAdminRegistryInputsZeroAddress: New Admin can not be zero address"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTokenAdminRegistryProposedAdmin",
+        "code": 7022,
+        "message": "An already owned registry can not be proposed",
+        "docs": [
+          "InvalidTokenAdminRegistryProposedAdmin: An already owned registry can not be proposed"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "senderNotAllowed",
+        "code": 7023,
+        "message": "Sender not allowed for that destination chain",
+        "docs": [
+          "SenderNotAllowed: Sender not allowed for that destination chain"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidCodeVersion",
+        "code": 7024,
+        "message": "Invalid code version",
+        "docs": [
+          "InvalidCodeVersion: Invalid code version"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidCcipVersionRollback",
+        "code": 7025,
+        "message": "Invalid rollback attempt on the CCIP version of the onramp to the destination chain",
+        "docs": [
+          "InvalidCcipVersionRollback: Invalid rollback attempt on the CCIP version of the onramp to the destination chain"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidAccountListForPdaDerivation",
+        "code": 7026,
+        "message": "Invalid account list for PDA derivation",
+        "docs": [
+          "InvalidAccountListForPdaDerivation: Invalid account list for PDA derivation"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidDerivationStage",
+        "code": 7027,
+        "message": "Unexpected account derivation stage",
+        "docs": [
+          "InvalidDerivationStage: Unexpected account derivation stage"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidNonceVersion",
+        "code": 7028,
+        "message": "Invalid version of the Nonce account",
+        "docs": [
+          "InvalidNonceVersion: Invalid version of the Nonce account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTokenPoolAccountDerivationResponse",
+        "code": 7029,
+        "message": "Token pool returned an unexpected derivation response",
+        "docs": [
+          "InvalidTokenPoolAccountDerivationResponse: Token pool returned an unexpected derivation response"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "accountDerivationResponseTooLarge",
+        "code": 7030,
+        "message": "Can't fit account derivation response.",
+        "docs": [
+          "AccountDerivationResponseTooLarge: Can't fit account derivation response."
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "defaultOwnerProposal",
+        "code": 7031,
+        "message": "Proposed owner is the default pubkey",
+        "docs": [
+          "DefaultOwnerProposal: Proposed owner is the default pubkey"
+        ]
+      }
+    ]
+  }
+}

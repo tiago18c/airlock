@@ -615,3 +615,14 @@ idlSha256 = "2ca50a8068baeed992d181353a71245ec2ba10743b94ffbfcd3e69b2093cbe5b"
 source = { repo = "https://github.com/onre-finance/onre-sol", commit = "c0490831f438074562ebf51e437ca5f8e027596b" }
 verified = "FvmhydbpHGQzMUp51GmhB1fwsrkyfmnRsTg7oPwDe25f"
 reviewed = "2026-11-12"
+
+[[builds]]
+# ccipRouter (pack). The binary logs the 28 instruction names the IDL lists and no others besides Anchor's IDL instructions; the OtterSec-verified source (chains/solana, ccip_router 1.6.2) has the same 28 entrypoints. Successful mainnet transactions decode with the IDL, every account named, for ccipSend (with and without tokens), getFee, setPool, addChainSelector, ccipAdminProposeAdministrator, acceptAdminRoleTokenAdminRegistry and withdrawBilledFunds.
+programId = "Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C"
+network = "mainnet"
+programHash = "5df2380944e2b037326bc9b2fce1f6b796391bbbb1bd6ed82d74c200bb1ad590"
+authority = "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf"
+idlSha256 = "e39eaed10c3c9819c00989f1eaa2463926292fb1429e7aaf14080d3860482492"
+source = { repo = "https://github.com/smartcontractkit/chainlink-ccip", commit = "9546a59bd0a3cee4ddc8ae4042da533e62225b78" }
+verified = "GoFoFfEDgALWRTw5dSY3VZQSwbFpvBEhDv1sFAWzYpbf"
+reviewed = "2026-11-12"
