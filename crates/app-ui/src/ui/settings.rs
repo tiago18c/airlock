@@ -70,7 +70,8 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
     } else {
         session.custom_cluster()
     };
-    // Custom was picked in the list. It takes effect once a URL is applied.
+    // Custom was picked in the list with no URL saved before. It takes
+    // effect once a URL is applied; a saved one is used at once.
     let mut picking_custom = use_signal(|| false);
     let custom_shown = cluster.is_custom() || picking_custom();
     let selected = if custom_shown {
@@ -96,6 +97,7 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
         && cluster.rpc_url() == custom_url().trim()
         && (cluster.name() == custom_name().trim()
             || (custom_name().trim().is_empty() && cluster.name() == "custom"));
+    let in_use = in_use_name(&cluster);
     let vector = session.vector_offered();
     let settings = (session.settings)();
     let auto_lock_secs = settings.auto_lock.as_secs();
@@ -122,10 +124,19 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                             onchange: move |e| {
                                 custom_error.set(None);
                                 let cluster = match e.value().as_str() {
-                                    "custom" => {
-                                        picking_custom.set(true);
-                                        return;
-                                    }
+                                    // The URL used before is used again at
+                                    // once, as a public cluster is.
+                                    "custom" => match session.custom_cluster() {
+                                        Some(saved) => {
+                                            custom_name.set(saved.name().to_string());
+                                            custom_url.set(saved.rpc_url().to_string());
+                                            saved
+                                        }
+                                        None => {
+                                            picking_custom.set(true);
+                                            return;
+                                        }
+                                    },
                                     "mainnet-beta" => Cluster::MainnetBeta,
                                     "testnet" => Cluster::Testnet,
                                     _ => Cluster::Devnet,
@@ -138,6 +149,14 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                             option { value: "mainnet-beta", selected: selected == "mainnet-beta", "Mainnet Beta" }
                             option { value: "custom", selected: selected == "custom", "Custom RPC" }
                         }
+                    }
+                    // What the app reads the chain through now, whatever the
+                    // fields below hold.
+                    p { class: "rpc-in-use",
+                        "In use: "
+                        strong { "{in_use}" }
+                        " · "
+                        code { "{rpc_url}" }
                     }
                     if custom_shown {
                         label {
@@ -167,6 +186,11 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                         if let Some(problem) = custom_error() {
                             p { class: "error", role: "alert", "{problem}" }
                         }
+                        if !applied {
+                            p { class: "warn", role: "status",
+                                "Not in use yet: the app still reads {in_use}. Press Use this RPC to switch to this URL."
+                            }
+                        }
                         // A state is a chip, not a button that cannot be
                         // pressed: once in use, the chip beside RPC URL
                         // says so and this button goes.
@@ -188,9 +212,6 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                         p { class: "hint wordy",
                             "Any Solana JSON-RPC endpoint: a provider's URL, or a validator on this machine such as surfpool, which serves a local copy of a public network at {LOCAL_RPC_URL}. Everything the app reads and submits goes to this URL. The URL is stored in the workspace file as typed, including any API key in it."
                         }
-                    }
-                    if !picking_custom() || cluster.is_custom() {
-                        p { class: "muted mono", "{rpc_url}" }
                     }
                     p { class: "hint wordy",
                         "At launch and on a cluster change the app asks the node for its genesis hash, and may correct the cluster from the reply. A custom RPC is never corrected: it is used as typed, whatever network it reports."
@@ -623,5 +644,16 @@ fn FingerprintUnlock() -> Element {
         if let Some(err) = error() {
             p { class: "error", "{err}" }
         }
+    }
+}
+
+/// The cluster in use as Settings names it: the list's word for a public
+/// one, and the name typed for a custom RPC.
+fn in_use_name(cluster: &Cluster) -> String {
+    match cluster {
+        Cluster::MainnetBeta => "Mainnet Beta".to_string(),
+        Cluster::Devnet => "Devnet".to_string(),
+        Cluster::Testnet => "Testnet".to_string(),
+        Cluster::Custom { name, .. } => format!("the custom RPC “{name}”"),
     }
 }
