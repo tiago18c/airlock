@@ -1065,3 +1065,22 @@ theirs as Additional Account. Position and smart collateral or debt amounts are 
 decimals of token 0 and token 1, read from chain; swap amounts are in base units, \
 because a flag decides the input token. Fees, ranges and expansion percents are shown as \
 percent and times as durations. Display nodes added by hand."""
+
+# Streamflow's token vesting and payment stream program (streamflow 0.6.0,
+# formerly timelock): a sender locks tokens in a contract that unlocks them to
+# a recipient on a schedule. The file is the IDL in Streamflow's public
+# JavaScript SDK: the Anchor IDL account on mainnet holds an older document
+# (timelock 0.1.0) without create_v2, which Streamflow's SDK builds,
+# transfer_sender or the fee claims the deployed program runs.
+[[idls]]
+file = "streamflow.json"
+programId = "strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m"
+name = "streamflow"
+networks = ["mainnet"]
+source = { kind = "repository", url = "https://github.com/streamflow-finance/js-sdk/blob/fb236fff325ab02d7ff5d0ff5e393be8934cda9d/packages/stream/solana/descriptor/idl/streamflow.json" }
+changes = """Converted from Anchor to Codama. Start time and cliff time are read as absent when zero, \
+which the program takes as "when created" and "at the start", instead of as 1 January \
+1970. The Token program's mint account is added, so the amounts of the create, withdraw \
+and top-up instructions read the decimals of the mint they name; the new amount per \
+period of update stays in base units, since update names no mint. Display nodes added by \
+hand."""
