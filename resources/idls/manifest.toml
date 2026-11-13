@@ -1043,3 +1043,25 @@ changes = """Converted from Anchor to Codama. operate and preOperate set optiona
 programId. operate's supply and borrow changes are in the decimals of its mint, read \
 from chain; rate curve points, fees, utilization limits and limit expansions are shown \
 as percent and expansion times as durations. Display nodes added by hand."""
+
+# Jupiter Lend's DEX: two-token pools whose liquidity sits on Jupiter Lend's
+# liquidity layer, swapped through by aggregators, with smart collateral and
+# smart debt positions that the Borrow program's smart vaults deposit,
+# withdraw, borrow and repay for their users. The chain's Anchor IDL account
+# holds an older dex 0.1.0 whose swap and position account lists do not match
+# the deployed program; the file is the Anchor IDL in Jupiter's
+# jup-ag/jupiter-lend repository, which does.
+[[idls]]
+file = "jupiter-lend-dex.json"
+programId = "jupZ4m2GqUCJ5iueMfzQf8khFfH31d4XAQt3RzCT9Vd"
+name = "dex"
+networks = ["mainnet"]
+source = { kind = "repository", url = "https://github.com/jup-ag/jupiter-lend/blob/7960a14a5a760abc41db3ed1395dc5cb56a1f8db/target/idl/dex.json" }
+changes = """Converted from Anchor to Codama. Instructions with optional accounts set \
+optionalAccountStrategy to programId. Swaps, the non-even position instructions and the \
+one-token instructions declare the pool's price oracle accounts as remaining accounts, \
+shown as Price Oracle Account; the even position instructions and previewDexShares show \
+theirs as Additional Account. Position and smart collateral or debt amounts are in the \
+decimals of token 0 and token 1, read from chain; swap amounts are in base units, \
+because a flag decides the input token. Fees, ranges and expansion percents are shown as \
+percent and times as durations. Display nodes added by hand."""
