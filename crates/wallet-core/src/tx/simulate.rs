@@ -33,6 +33,66 @@ pub struct SimulationError {
     /// transaction was refused before any instruction ran.
     pub instruction: Option<usize>,
     pub message: String,
+    /// A program's own error code, when the failure is one, with the
+    /// program that returned it as far as the node's logs tell.
+    /// Boxed: a simulation is kept in screen state, and this is rare.
+    pub custom: Option<Box<CustomError>>,
+}
+
+/// An error code a program returned.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct CustomError {
+    pub code: u32,
+    /// The program that returned it: the first the logs say failed with this
+    /// code, which can be one the instruction called. `None` when the logs
+    /// do not say.
+    pub program: Option<Pubkey>,
+    /// `program` is not the failing instruction's own program but one it
+    /// called.
+    pub called: bool,
+}
+
+impl SimulationError {
+    /// The failure in words. `words` gives the name and message an IDL of
+    /// the program that returned a custom error has for its code, which
+    /// then comes first, the number after it.
+    pub fn worded(&self, words: Option<(&str, &str)>) -> String {
+        let what = match (self.custom.as_deref(), words) {
+            (Some(custom), Some((name, message))) => {
+                let said = if message.trim().is_empty() {
+                    spaced_name(name)
+                } else {
+                    message.trim().trim_end_matches('.').to_string()
+                };
+                let who = if custom.called {
+                    "a program it called"
+                } else {
+                    "the program"
+                };
+                format!(
+                    "{said} ({who} returned error {code}, {code:#x})",
+                    code = custom.code
+                )
+            }
+            _ => self.message.clone(),
+        };
+        match self.instruction {
+            Some(index) => format!("instruction {}: {what}", index + 1),
+            None => what,
+        }
+    }
+}
+
+/// `notEnoughUserFunds` or `NotEnoughUserFunds` as "not enough user funds".
+fn spaced_name(name: &str) -> String {
+    let mut out = String::with_capacity(name.len() + 8);
+    for ch in name.chars() {
+        if ch.is_ascii_uppercase() && !out.is_empty() {
+            out.push(' ');
+        }
+        out.push(ch.to_ascii_lowercase());
+    }
+    out
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -88,7 +148,7 @@ pub fn read_simulation(
         .err
         .as_ref()
         .filter(|err| !err.is_null())
-        .map(describe_error);
+        .map(|err| describe_error(err, &reply.logs, tx));
 
     let mut balance_changes = Vec::new();
     // A failed transaction changes nothing but the fee payer's balance, and
@@ -161,20 +221,36 @@ fn inner_calls(group: &InnerReply, tx: &DecodedTx) -> InnerCalls {
 
 /// A node's `err` value in words. Its shape is the runtime's
 /// `TransactionError`: a name, or a name with details.
-fn describe_error(err: &Value) -> SimulationError {
+fn describe_error(err: &Value, logs: &[String], tx: &DecodedTx) -> SimulationError {
     if let Some(parts) = err.get("InstructionError").and_then(Value::as_array) {
         let instruction = parts
             .first()
             .and_then(Value::as_u64)
             .and_then(|index| usize::try_from(index).ok());
         let detail = parts.get(1).unwrap_or(&Value::Null);
-        let message = match detail.get("Custom").and_then(Value::as_u64) {
+        let code = detail
+            .get("Custom")
+            .and_then(Value::as_u64)
+            .and_then(|code| u32::try_from(code).ok());
+        let message = match code {
             Some(code) => format!("the program returned error {code} ({code:#x})"),
             None => spaced(&plain(detail)),
         };
+        let custom = code.map(|code| {
+            let program = failing_program(logs, code);
+            let own = instruction
+                .and_then(|index| tx.instructions.get(index))
+                .map(|raw| raw.program_id);
+            Box::new(CustomError {
+                code,
+                program,
+                called: program.is_some() && own.is_some() && program != own,
+            })
+        });
         return SimulationError {
             instruction,
             message,
+            custom,
         };
     }
     let name = plain(err);
@@ -188,7 +264,20 @@ fn describe_error(err: &Value) -> SimulationError {
     SimulationError {
         instruction: None,
         message,
+        custom: None,
     }
+}
+
+/// The program the logs say failed with `code`: the runtime writes
+/// "Program <id> failed: custom program error: 0x<code>" for the program
+/// that returned it, and again for each caller it passes up through, so the
+/// first such line is the one that returned it.
+fn failing_program(logs: &[String], code: u32) -> Option<Pubkey> {
+    let tail = format!(" failed: custom program error: {code:#x}");
+    logs.iter().find_map(|line| {
+        let id = line.strip_prefix("Program ")?.strip_suffix(tail.as_str())?;
+        id.parse().ok()
+    })
 }
 
 fn plain(value: &Value) -> String {
@@ -344,6 +433,11 @@ mod tests {
             Some(SimulationError {
                 instruction: Some(0),
                 message: "the program returned error 3 (0x3)".into(),
+                custom: Some(Box::new(CustomError {
+                    code: 3,
+                    program: None,
+                    called: false,
+                })),
             })
         );
         assert!(custom.balance_changes.is_empty());
@@ -354,6 +448,7 @@ mod tests {
             Some(SimulationError {
                 instruction: Some(1),
                 message: "invalid account data".into(),
+                custom: None,
             })
         );
 
@@ -363,5 +458,80 @@ mod tests {
 
         let odd = read(json!({ "InsufficientFundsForRent": { "account_index": 2 } }));
         assert!(odd.error.unwrap().message.contains("account_index"));
+    }
+
+    #[test]
+    fn a_custom_error_is_worded_by_the_idl_of_the_program_that_returned_it() {
+        use crate::idl::{IdlStore, MemoryBodies};
+        use crate::ids::TOKEN_PROGRAM_ID;
+        use wallet_vault::store::MemoryStore;
+
+        let tx = tx();
+        let failing = |logs: Vec<String>, code: u64| {
+            let reply = SimulationReply {
+                err: Some(json!({ "InstructionError": [0, { "Custom": code }] })),
+                logs,
+                ..SimulationReply::default()
+            };
+            read_simulation(reply, &tx, &[], &[]).error.unwrap()
+        };
+        let catalog = IdlStore::open(MemoryStore::new(), MemoryBodies::new()).with_builtins();
+
+        // The instruction's own program: the System program's IDL words 1.
+        let own = failing(
+            vec![
+                format!("Program {SYSTEM_PROGRAM_ID} invoke [1]"),
+                "Transfer: insufficient lamports 1, need 5".into(),
+                format!("Program {SYSTEM_PROGRAM_ID} failed: custom program error: 0x1"),
+            ],
+            1,
+        );
+        assert_eq!(
+            own.custom.as_deref(),
+            Some(&CustomError {
+                code: 1,
+                program: Some(SYSTEM_PROGRAM_ID),
+                called: false
+            })
+        );
+        assert_eq!(
+            crate::idl::word_simulation_error(&own, &catalog),
+            "instruction 1: account does not have enough SOL to perform the operation (the program returned error 1, 0x1)"
+        );
+
+        // A program it called, named by the first failure the logs give.
+        let deep = failing(
+            vec![
+                format!("Program {SYSTEM_PROGRAM_ID} invoke [1]"),
+                format!("Program {TOKEN_PROGRAM_ID} invoke [2]"),
+                format!("Program {TOKEN_PROGRAM_ID} failed: custom program error: 0x1"),
+                format!("Program {SYSTEM_PROGRAM_ID} failed: custom program error: 0x1"),
+            ],
+            1,
+        );
+        let called = deep.custom.as_deref().unwrap();
+        assert_eq!(called.program, Some(TOKEN_PROGRAM_ID));
+        assert!(called.called);
+        assert_eq!(
+            crate::idl::word_simulation_error(&deep, &catalog),
+            "instruction 1: Insufficient funds (a program it called returned error 1, 0x1)"
+        );
+
+        // Logs that do not say, or a code the IDL does not hold: the number.
+        let unsaid = failing(Vec::new(), 1);
+        assert_eq!(
+            crate::idl::word_simulation_error(&unsaid, &catalog),
+            "instruction 1: the program returned error 1 (0x1)"
+        );
+        let unknown = failing(
+            vec![format!(
+                "Program {SYSTEM_PROGRAM_ID} failed: custom program error: 0x63"
+            )],
+            99,
+        );
+        assert_eq!(
+            crate::idl::word_simulation_error(&unknown, &catalog),
+            "instruction 1: the program returned error 99 (0x63)"
+        );
     }
 }

@@ -109,6 +109,8 @@ pub struct ButtonFacts {
     /// transaction is signed only once it has: after an authorization that is
     /// what shows what the authorized transaction runs, and what fits its limits.
     pub simulating: bool,
+    /// It is larger than its format allows: no node would take it.
+    pub too_large: bool,
 }
 
 /// Whether Sign can be pressed. An expired blockhash holds it back only if the
@@ -120,6 +122,7 @@ pub fn may_sign(facts: ButtonFacts) -> bool {
         && !facts.busy
         && !facts.blind_holds
         && !facts.reading
+        && !facts.too_large
         && !(facts.simulating && facts.step == NextSignature::Transaction)
         && (facts.step == NextSignature::Authorization
             || !facts.blockhash.expired
@@ -155,6 +158,7 @@ pub fn may_submit(facts: ButtonFacts) -> bool {
         && !facts.busy
         && !facts.blockhash.expired
         && !facts.site_holds
+        && !facts.too_large
 }
 
 /// Where the instructions of a transaction that say yes to something it does
@@ -347,6 +351,8 @@ pub struct ModalFacts {
     pub simulated: Simulated,
     pub clock_expired: bool,
     pub step: Option<NextSignature>,
+    /// It is larger than its format allows: no node would take it.
+    pub too_large: bool,
 }
 
 /// What the request modal offers.
@@ -387,6 +393,7 @@ pub fn modal_offer(facts: ModalFacts) -> ModalOffer {
         })
         && !facts.looking_for_idls
         && facts.simulated != Simulated::Pending
+        && !facts.too_large
         && !expired;
     // A summary missing an instruction, or worded by an IDL from the chain, still
     // lets Sign through, and so does a node that does not say it would succeed.
@@ -852,6 +859,7 @@ mod tests {
             blind_holds: false,
             reading: false,
             simulating: false,
+            too_large: false,
         }
     }
 
@@ -936,6 +944,11 @@ mod tests {
             },
             ButtonFacts {
                 busy: true,
+                ..ready()
+            },
+            // No node would take it.
+            ButtonFacts {
+                too_large: true,
                 ..ready()
             },
         ] {
@@ -1161,6 +1174,7 @@ mod tests {
             simulated: Simulated::Succeeds,
             clock_expired: false,
             step: Some(Transaction),
+            too_large: false,
         }
     }
 
@@ -1221,6 +1235,11 @@ mod tests {
             },
             ModalFacts {
                 looking_for_idls: true,
+                ..clear()
+            },
+            // Too large for any node: Review says so.
+            ModalFacts {
+                too_large: true,
                 ..clear()
             },
             ModalFacts {

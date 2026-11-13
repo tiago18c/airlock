@@ -99,7 +99,7 @@ pub(in crate::ui) fn WalletRow(wallet: WalletSummary, current: bool) -> Element 
             label: label.clone(),
             require_label: can_sign,
             lede: if can_sign {
-                "This deletes the signer key from this device. The app does not keep a copy, so the key cannot be recovered after removal. Any programmatic signer or multisig that used it loses that setting.".to_string()
+                "This deletes the signer key from this device. The app does not keep a copy, so the key cannot be recovered after removal. Any programmatic signer or multisig that used it loses that setting. Its address stays in the address book as a plain address, which no key here signs for.".to_string()
             } else {
                 "This removes the wallet from this device. No key is stored here, so none is lost. Its address stays in the address book.".to_string()
             },

@@ -45,6 +45,9 @@ pub struct ProgramLine {
     pub sha256: Option<[u8; 32]>,
     /// Where the IDL came from: shipped with the app, a file, or the chain.
     pub origin: Option<IdlOrigin>,
+    /// The program whose file carries this one's IDL, by that file's name,
+    /// when another file carries it.
+    pub carried_by: Option<String>,
     pub status: IdlPinStatus,
     /// Set when a kind 3 note pinned this program id.
     pub context_pin: Option<ContextPinMatch>,

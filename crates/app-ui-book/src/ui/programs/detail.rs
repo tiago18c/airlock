@@ -147,8 +147,15 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                                     }
                                     "{checksum}"
                                 }
-                                if record.origin == IdlOrigin::Builtin {
-                                    span { class: "chip", "built-in" }
+                                match record.origin {
+                                    IdlOrigin::Builtin => rsx! { span { class: "chip", "built-in" } },
+                                    IdlOrigin::File => rsx! { span { class: "chip info", "imported" } },
+                                    IdlOrigin::ProgramMetadata | IdlOrigin::Anchor => rsx! {
+                                        span { class: "chip warn",
+                                            title: "Read from the program's IDL account on the chain, which whoever controls the program writes",
+                                            "read from the chain"
+                                        }
+                                    },
                                 }
                                 if let Some(host) = host_name.clone() {
                                     span { class: "chip info", "from the {host} IDL" }
@@ -192,8 +199,15 @@ pub(in crate::ui) fn ProgramDetail() -> Element {
                             }
                             "{checksum}"
                         }
-                        if record.origin == IdlOrigin::Builtin {
-                            span { class: "chip", "built-in" }
+                        match record.origin {
+                            IdlOrigin::Builtin => rsx! { span { class: "chip", "built-in" } },
+                            IdlOrigin::File => rsx! { span { class: "chip info", "imported" } },
+                            IdlOrigin::ProgramMetadata | IdlOrigin::Anchor => rsx! {
+                                span { class: "chip warn",
+                                    title: "Read from the program's IDL account on the chain, which whoever controls the program writes",
+                                    "read from the chain"
+                                }
+                            },
                         }
                         if let Some(host) = host_name.clone() {
                             span { class: "chip info", "from the {host} IDL" }

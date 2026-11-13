@@ -2,6 +2,7 @@
 //! against the chain.
 
 use crate::actions::idl_check::check_idl;
+use crate::state::forms::{PendingFiles, PendingImport};
 use crate::state::session::Session;
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
@@ -228,15 +229,106 @@ fn put(mut signal: Signal<Option<String>>, value: Option<String>) {
     }
 }
 
+/// Import one IDL file, unless it would take the place of an IDL that ships
+/// with the app: that waits for the user's yes (see [`confirm_import`]).
 pub fn apply_one(
     session: &Session,
     bytes: &[u8],
     note: Signal<Option<String>>,
     error: Signal<Option<String>>,
 ) {
+    let replaces = shipped_names(session.idls.peek().shipped_replaced_by_file(bytes));
+    if !replaces.is_empty() {
+        ask_first(
+            session,
+            PendingFiles::One(bytes.to_vec()),
+            replaces,
+            note,
+            error,
+        );
+        return;
+    }
+    import_one_now(session, bytes, &[], note, error);
+}
+
+/// Each shipped IDL an import would replace, as "<program> on <network>".
+fn shipped_names(shipped: Vec<(Pubkey, String, wallet_core::IdlNetwork)>) -> Vec<String> {
+    shipped
+        .into_iter()
+        .map(|(program, name, network)| {
+            let name = wallet_core::program_display_name(&program).map_or(name, str::to_string);
+            format!("{name} on {}", network.words())
+        })
+        .collect()
+}
+
+/// Hold an import that replaces shipped IDLs until the user says yes.
+fn ask_first(
+    session: &Session,
+    files: PendingFiles,
+    replaces: Vec<String>,
+    note: Signal<Option<String>>,
+    error: Signal<Option<String>>,
+) {
+    put(note, None);
+    put(error, None);
+    let mut pending = session.forms.program.pending_import;
+    pending.set(Some(PendingImport { files, replaces }));
+}
+
+/// The user's answer to an import held by [`ask_first`].
+pub fn confirm_import(
+    session: &Session,
+    replace: bool,
+    note: Signal<Option<String>>,
+    error: Signal<Option<String>>,
+) {
+    let mut pending = session.forms.program.pending_import;
+    let Some(held) = pending.take() else {
+        return;
+    };
+    if !replace {
+        report(note, error, Ok("Nothing was imported.".into()));
+        return;
+    }
+    match held.files {
+        PendingFiles::One(bytes) => import_one_now(session, &bytes, &held.replaces, note, error),
+        PendingFiles::Bundle(files) => {
+            import_bundle_now(session, &files, &held.replaces, note, error)
+        }
+    }
+}
+
+/// What an import replaced, as a sentence to add to its message.
+fn replaced_sentence(replaces: &[String]) -> String {
+    match replaces {
+        [] => String::new(),
+        [one] => format!(" It replaces the IDL that ships with Airlock for {one}."),
+        [rest @ .., last] => format!(
+            " It replaces the IDLs that ship with Airlock for {} and {last}.",
+            rest.join(", ")
+        ),
+    }
+}
+
+fn import_one_now(
+    session: &Session,
+    bytes: &[u8],
+    replaces: &[String],
+    note: Signal<Option<String>>,
+    error: Signal<Option<String>>,
+) {
     match session.import_idl(bytes, None) {
         Ok(record) => {
-            report(note, error, Ok(format!("Imported {}.", record.name)));
+            report(
+                note,
+                error,
+                Ok(format!(
+                    "Imported {}.{}",
+                    record.name,
+                    replaced_sentence(replaces)
+                )),
+            );
             let mut selected = session.forms.program.selected;
             selected.set(Some(record.program_id));
         }
@@ -244,6 +336,8 @@ pub fn apply_one(
     }
 }
 
+/// Import a bundle, unless it would take the place of IDLs that ship with
+/// the app: that waits for the user's yes (see [`confirm_import`]).
 pub fn apply_bundle(
     session: &Session,
     files: &[(String, Vec<u8>)],
@@ -254,9 +348,38 @@ pub fn apply_bundle(
         .iter()
         .map(|(name, bytes)| (name.as_str(), bytes.as_slice()))
         .collect();
+    let replaces = shipped_names(session.idls.peek().shipped_replaced_by_bundle(&borrowed));
+    if !replaces.is_empty() {
+        ask_first(
+            session,
+            PendingFiles::Bundle(files.to_vec()),
+            replaces,
+            note,
+            error,
+        );
+        return;
+    }
+    import_bundle_now(session, files, &[], note, error);
+}
+
+fn import_bundle_now(
+    session: &Session,
+    files: &[(String, Vec<u8>)],
+    replaces: &[String],
+    note: Signal<Option<String>>,
+    error: Signal<Option<String>>,
+) {
+    let borrowed: Vec<(&str, &[u8])> = files
+        .iter()
+        .map(|(name, bytes)| (name.as_str(), bytes.as_slice()))
+        .collect();
     match session.import_idl_bundle(&borrowed) {
         Ok(report) => {
-            let mut text = format!("Imported {} programs.", report.imported.len());
+            let mut text = format!(
+                "Imported {} programs.{}",
+                report.imported.len(),
+                replaced_sentence(replaces)
+            );
             if !report.skipped.is_empty() {
                 text.push_str(" Skipped: ");
                 text.push_str(&report.skipped.join("; "));

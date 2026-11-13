@@ -30,6 +30,8 @@ pub struct Problem {
     /// The account or argument of that instruction.
     pub field: Option<String>,
     pub message: String,
+    /// The program this network has no IDL for, when that is the problem.
+    pub missing_program: Option<Pubkey>,
 }
 
 impl std::fmt::Display for Problem {
@@ -239,6 +241,7 @@ impl Pass<'_> {
             instruction: Some(instruction.to_string()),
             field: field.map(str::to_string),
             message,
+            missing_program: None,
         };
         if !self.problems.contains(&problem) {
             self.problems.push(problem);
@@ -479,7 +482,7 @@ pub(crate) fn analyze(template: &Template, idls: &dyn IdlCatalog) -> Result<Chec
         for program_id in candidates(template, block) {
             let Some((program_name, client)) = lookup(idls, &program_id) else {
                 let message = format!(
-                    "No IDL for `${}` ({program_id}) on this network.",
+                    "Airlock has no IDL for the program `${}` ({program_id}) on this network.",
                     block.program
                 );
                 // An option whose block this network cannot build is not
@@ -495,6 +498,7 @@ pub(crate) fn analyze(template: &Template, idls: &dyn IdlCatalog) -> Result<Chec
                     instruction: Some(block.instruction.clone()),
                     field: None,
                     message,
+                    missing_program: Some(program_id),
                 });
                 continue;
             };
@@ -543,6 +547,7 @@ pub(crate) fn analyze(template: &Template, idls: &dyn IdlCatalog) -> Result<Chec
                             "`${}` is bound to fields that take different things: {} and {}.",
                             input.name, first.place, other.place
                         ),
+                        missing_program: None,
                     });
                 }
                 first.kind.clone()
@@ -610,6 +615,7 @@ fn parameter_problem(template: &Template, input: &str, kind: &InputKind) -> Opti
                         call.function.name(),
                         call.function.usage()
                     ),
+                    missing_program: None,
                 });
             }
         }

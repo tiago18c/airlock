@@ -52,7 +52,7 @@ mod online;
 pub use online::{use_online_core, use_online_window};
 
 #[cfg(all(feature = "desktop", not(target_arch = "wasm32")))]
-pub use window::{desktop_config, use_desktop_window, window_controls};
+pub use window::{airgap_desktop_config, desktop_config, use_desktop_window, window_controls};
 
 #[cfg(all(feature = "bridge", feature = "desktop", not(target_arch = "wasm32")))]
 pub use window::use_tray;

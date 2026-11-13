@@ -302,6 +302,13 @@ fn program_line(store: &dyn IdlCatalog, program_id: Pubkey, note: &DisplayNote) 
             name: Some(record.name.clone()),
             sha256: Some(record.sha256),
             origin: Some(record.origin),
+            carried_by: record.host.map(|host| {
+                store
+                    .records()
+                    .iter()
+                    .find(|other| other.program_id == host)
+                    .map_or_else(|| host.to_string(), |other| other.name.clone())
+            }),
             status: IdlPinStatus::of(record.check.as_ref()),
             context_pin: context_pin(program_id, Some(record.sha256), note),
         },
@@ -310,6 +317,7 @@ fn program_line(store: &dyn IdlCatalog, program_id: Pubkey, note: &DisplayNote) 
             name: None,
             sha256: None,
             origin: None,
+            carried_by: None,
             status: IdlPinStatus::NoIdl,
             context_pin: context_pin(program_id, None, note),
         },
@@ -371,6 +379,20 @@ fn explain_one(
         Some((client, sha256, origin))
     });
     let (client, sha256, origin) = slot.as_ref()?;
+    // The Associated Token program reads empty data as Create, which is
+    // how its first clients sent it and many still do; the IDL gives Create
+    // its one-byte tag, 0.
+    let tagged;
+    let instruction =
+        if program_id == crate::ids::ASSOCIATED_TOKEN_PROGRAM_ID && instruction.data.is_empty() {
+            tagged = Instruction {
+                data: vec![0],
+                ..instruction.clone()
+            };
+            &tagged
+        } else {
+            instruction
+        };
     let parsed = client.parse_instruction(instruction).ok().flatten()?;
     let empty = HashMap::new();
     let supplied = if note_supplies_accounts(&program_id, Some(*sha256), note) {

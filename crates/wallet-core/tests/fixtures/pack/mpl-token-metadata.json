@@ -1064,7 +1064,7 @@
       "from": "2g59JHAArQaaLoj7RmfKtjo7KUc9KdaQn9tJe3yW4rmi5jiHNameE8jdYcmrvtwMXRHYhQCdrPSnYCnL2xEqUZDt#2.16",
       "intent": "Create a token's metadata",
       "programId": "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s",
-      "sentence": "8vLa6QFPXp4FHvqeSboN7hHw5m8LPxxXtohEXmER4LTG creates 9sL8mdvi1fUR17TpHd9rEmfjUV41g9UR375Rbv45D94m (Programmable NFT) named SMB Gen3, symbol \u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000, link https://nftstorage.link/ipfs/bafkreiaemkowa7qfppq4b6wsnliivwzd7buj5yqjz5lt5e3s2uro63gbda?i=h61l, royalty 5 %, with HV4Nvm9zHfNA43JYYkjZu8vwqiuE8bfEhwcKFfyQ65o5 as update authority",
+      "sentence": "8vLa6QFPXp4FHvqeSboN7hHw5m8LPxxXtohEXmER4LTG creates 9sL8mdvi1fUR17TpHd9rEmfjUV41g9UR375Rbv45D94m (Programmable NFT) named SMB Gen3, symbol \u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000, link https://nftstorage.link/ipfs/bafkreiaemkowa7qfppq4b6wsnliivwzd7buj5yqjz5lt5e3s2uro63gbda?i=h61l, royalty 5 %, claiming the collection 8Rt3Ayqth4DAiPnW9MDFi63TiQJHmohfTWLMQFHi4KZH, with HV4Nvm9zHfNA43JYYkjZu8vwqiuE8bfEhwcKFfyQ65o5 as update authority",
       "unnamedAccounts": 0
     },
     {
@@ -1221,7 +1221,7 @@
       "data": "2b00010000000000000000",
       "fields": [
         [
-          "Amount",
+          "Amount, in base units",
           "1"
         ],
         [
@@ -1252,7 +1252,7 @@
       "from": "2g59JHAArQaaLoj7RmfKtjo7KUc9KdaQn9tJe3yW4rmi5jiHNameE8jdYcmrvtwMXRHYhQCdrPSnYCnL2xEqUZDt#2.27",
       "intent": "Mint tokens",
       "programId": "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s",
-      "sentence": "HV4Nvm9zHfNA43JYYkjZu8vwqiuE8bfEhwcKFfyQ65o5 mints 1 of 9sL8mdvi1fUR17TpHd9rEmfjUV41g9UR375Rbv45D94m to token account 37bHrHiDzWST6FpdsHCeZ4Q8snenT2RpfFD97DEsj6LU",
+      "sentence": "HV4Nvm9zHfNA43JYYkjZu8vwqiuE8bfEhwcKFfyQ65o5 mints 1 of 9sL8mdvi1fUR17TpHd9rEmfjUV41g9UR375Rbv45D94m, counted in base units, to token account 37bHrHiDzWST6FpdsHCeZ4Q8snenT2RpfFD97DEsj6LU",
       "unnamedAccounts": 0
     },
     {

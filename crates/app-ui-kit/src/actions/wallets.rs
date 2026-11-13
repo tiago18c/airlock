@@ -224,25 +224,59 @@ pub async fn create_nonce(session: Session, id: WalletId) -> Result<(), String> 
 /// as the authority: remember its address on the wallet, make it the
 /// default path when none is chosen yet, and open the transaction that
 /// creates it in Sign. Deprecated once the programmatic signer or Vector is
-/// on mainnet.
-pub async fn create_durable_nonce(session: Session, id: WalletId) -> Result<(), String> {
+/// on mainnet. The nonce is recorded for the network in use. When this key's
+/// nonce account is on that network already, it is used and nothing is
+/// created: the answer then says so.
+pub async fn create_durable_nonce(
+    session: Session,
+    id: WalletId,
+) -> Result<Option<String>, String> {
     let route = session.route_of(id).map_err(|err| err.to_string())?;
     if route.fee_payer.is_none() {
         return Err("Pick a hot wallet to pay fees first.".into());
     }
+    let network = session.network_key();
     let rpc = session.rpc().map_err(|err| err.to_string())?;
     let made = wallet_flows::offline_nonce::create(rpc.as_ref(), &route)
         .await
         .map_err(|err| err.to_string())?;
+    // Its address comes from the fee payer and the key, so it is the same on
+    // every network. One already on this network is this key's: it is used,
+    // and nothing is created.
+    let already = matches!(
+        wallet_flows::refresh::fetch_lifetime(rpc.as_ref(), Some(made.account)).await,
+        Ok(wallet_core::Lifetime::Nonce(found))
+            if matches!(route.steps.as_slice(), [wallet_core::RouteStep::OutsideKey { pubkey }] if *pubkey == found.authority)
+    );
     session
-        .update_wallet(id, |kind| kind.set_durable_nonce(Some(made.account)))
+        .update_wallet(id, |kind| {
+            kind.set_durable_nonce_on(Some(made.account), Some(network.clone()))
+        })
         .map_err(|err| err.to_string())?;
+    if already {
+        return Ok(Some(format!(
+            "This key's nonce account is already on {}. It is used from now on.",
+            wallet_core::Cluster::network_words(&network)
+        )));
+    }
     session.open_in_sign(
         SignLoad::new(made.wire, TxSource::Wallets).with_note(
             "This creates the durable nonce account of the offline key. Once it lands, what this key signs for itself stays valid until it is signed.",
         ),
     );
-    Ok(())
+    Ok(None)
+}
+
+/// Whether `account` is, on the network in use, a durable nonce that `key`
+/// controls. `None` when the node could not say.
+pub async fn nonce_is_here(session: Session, account: Pubkey, key: Pubkey) -> Option<bool> {
+    let rpc = session.rpc().ok()?;
+    match wallet_flows::refresh::fetch_lifetime(rpc.as_ref(), Some(account)).await {
+        Ok(wallet_core::Lifetime::Nonce(found)) => Some(found.authority == key),
+        Ok(_) => Some(false),
+        Err(wallet_core::RpcError::Message(_)) => Some(false),
+        Err(_) => None,
+    }
 }
 
 /// Open the transaction that initializes the Vector wallet `id`, paid by its
@@ -382,6 +416,7 @@ mod tests {
             fee_payer: None,
             derivation_path: None,
             durable_nonce: None,
+            nonce_network: None,
             default_path: None,
             on_device: None,
             device: None,

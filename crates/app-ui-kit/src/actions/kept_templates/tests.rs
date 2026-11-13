@@ -363,14 +363,21 @@ async fn a_file_that_does_not_fit_this_network_can_still_be_kept() {
     assert!(read.can_save());
     let problems = &read.view().unwrap().problems;
     assert_eq!(problems.len(), 1, "{problems:?}");
-    assert!(problems[0].contains("No IDL"), "{problems:?}");
+    assert!(
+        problems[0].contains("Airlock has no description of"),
+        "{problems:?}"
+    );
     match keep_text(&screen, &text, false).unwrap() {
         TextSaved::Saved(saved) => assert!(saved.note.contains("listed greyed"), "{saved:?}"),
         other => panic!("{other:?}"),
     }
     let mine = yours(&screen);
     assert_eq!(mine.len(), 1);
-    assert!(mine[0].problem.as_deref().unwrap().contains("No IDL"));
+    assert!(mine[0]
+        .problem
+        .as_deref()
+        .unwrap()
+        .contains("Airlock has no description of there"));
     assert!(
         !mine[0].is_broken(),
         "listed disabled, as a built-in would be"

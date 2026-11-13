@@ -73,7 +73,7 @@ async fn every_field_a_shipped_template_sets_is_on_its_blocks_tab_once() {
                     && shown_view
                         .problems
                         .iter()
-                        .all(|problem| problem.contains("No IDL")),
+                        .all(|problem| problem.contains("Airlock has no description of there")),
             "{}: {:?}",
             builtin.id,
             shown_view.problems
@@ -397,7 +397,7 @@ async fn the_dialog_opens_on_the_first_template_that_can_be_used() {
     assert!(greyed.problem.is_some());
     assert_eq!(greyed.problems.len(), 1, "{:?}", greyed.problems);
     assert!(
-        greyed.problems[0].contains("No IDL"),
+        greyed.problems[0].contains("Airlock has no description of there"),
         "{:?}",
         greyed.problems
     );

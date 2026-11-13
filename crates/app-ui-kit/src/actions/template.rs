@@ -59,9 +59,14 @@ pub fn template_entries(session: &Session) -> Vec<TemplateEntry> {
                 let problems = wallet_core::template::check(&template, &*idls)
                     .err()
                     .unwrap_or_default();
+                let said = problems_in_words(&problems, &idls);
                 TemplateEntry {
-                    problem: (!problems.is_empty()).then(|| first_problem(&problems)),
-                    problems: problems.iter().map(super::sentence).collect(),
+                    problem: (!problems.is_empty()).then(|| {
+                        said.first()
+                            .cloned()
+                            .unwrap_or_else(|| first_problem(&problems))
+                    }),
+                    problems: said,
                     name: template.name,
                     summary: template.summary,
                     source,
@@ -79,6 +84,80 @@ pub fn template_entries(session: &Session) -> Vec<TemplateEntry> {
             },
         })
         .collect()
+}
+
+/// A template's problems on this network in words: what it needs that this
+/// network has no IDL for first, as one sentence, then the rest.
+pub(crate) fn problems_in_words(
+    problems: &[Problem],
+    idls: &crate::platform::storage::AppIdls,
+) -> Vec<String> {
+    let mut said: Vec<String> = missing_programs(problems, idls).into_iter().collect();
+    said.extend(
+        problems
+            .iter()
+            .filter(|problem| problem.missing_program.is_none())
+            .map(super::sentence),
+    );
+    said
+}
+
+/// What a template needs that this network has no IDL for, in a user's
+/// words: the networks the IDLs that ship with the app cover for all of it,
+/// then the programs missing here. `None` when no IDL is missing.
+fn missing_programs(
+    problems: &[Problem],
+    idls: &crate::platform::storage::AppIdls,
+) -> Option<String> {
+    let mut programs: Vec<solana_pubkey::Pubkey> = Vec::new();
+    for program in problems
+        .iter()
+        .filter_map(|problem| problem.missing_program)
+    {
+        if !programs.contains(&program) {
+            programs.push(program);
+        }
+    }
+    if programs.is_empty() {
+        return None;
+    }
+    let here = idls.network();
+    let named: Vec<String> = programs
+        .iter()
+        .map(|program| match wallet_core::program_display_name(program) {
+            Some(name) => format!("the {name}"),
+            None => format!("the program at {program}"),
+        })
+        .collect();
+    let needs = match named.as_slice() {
+        [one] => one.clone(),
+        [rest @ .., last] => format!("{} and {last}", rest.join(", ")),
+        [] => String::new(),
+    };
+    let works_on: Vec<&str> = wallet_core::IdlNetwork::ALL
+        .into_iter()
+        .filter(|network| *network != here)
+        .filter(|network| {
+            programs
+                .iter()
+                .all(|program| idls.shipped_networks(program).contains(network))
+        })
+        .map(wallet_core::IdlNetwork::words)
+        .collect();
+    let lead = match works_on.as_slice() {
+        [] => String::new(),
+        [one] => format!("It works on {one}. "),
+        [rest @ .., last] => format!("It works on {} and {last}. ", rest.join(", ")),
+    };
+    let which = if programs.len() == 1 {
+        "which"
+    } else {
+        "which each"
+    };
+    Some(format!(
+        "{lead}On {} it needs {needs}, {which} Airlock has no description of there.",
+        here.words()
+    ))
 }
 
 /// The first of `problems`, as a sentence.

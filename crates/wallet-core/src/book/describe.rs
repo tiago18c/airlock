@@ -353,8 +353,14 @@ impl Directory {
         let mut facts = Vec::new();
         let category = match entry {
             Some(entry) => match entry.kind {
-                // A key of this device that the wallets do not list.
-                AddressKind::Account if entry.wallet_id.is_some() => {
+                // A key of this device that the wallets do not list. An
+                // entry still tied to a wallet that is gone is a plain
+                // address: its key is no longer here.
+                AddressKind::Account
+                    if entry
+                        .wallet_id
+                        .is_some_and(|id| self.wallets.iter().any(|wallet| wallet.id == id)) =>
+                {
                     Category::Wallet(WalletSort::Hot)
                 }
                 AddressKind::Account => Category::Contact,
@@ -826,7 +832,7 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
 ];
 
 /// The display name of a program whose IDL ships with the app.
-fn program_display_name(pubkey: &Pubkey) -> Option<&'static str> {
+pub fn program_display_name(pubkey: &Pubkey) -> Option<&'static str> {
     PROGRAM_DISPLAY_NAMES
         .iter()
         .find(|(known, _)| known == pubkey)

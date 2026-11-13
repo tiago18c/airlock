@@ -274,6 +274,39 @@ fn creating_an_associated_account_names_the_wallet_and_mint() {
     }
 }
 
+/// Instruction 1 of mainnet transaction 2B49dafRFB6AG9i8EH3ovUWyyuQRzbMPmgyAnTeDEKhSWdamkHmvzmUHzB7ZSoAfVDGMZKQANCpZkQByJ9f8btuD:
+/// an Associated Token Create sent with no data, which the program reads as
+/// Create.
+#[test]
+fn an_associated_token_create_with_no_data_reads_as_create() {
+    use solana_instruction::AccountMeta;
+    let key = |s: &str| s.parse::<Pubkey>().unwrap();
+    let (payer, ata, owner, mint) = (
+        key("HGpnrp3eUHTxrE534HuJ8hjKjm178cpdgWuAErxr1YNW"),
+        key("9oz3WzRZRiYJ41sHWB2insRrtFmuvn32uN9UGgBauW3j"),
+        key("dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH"),
+        key("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"),
+    );
+    let ix = Instruction {
+        program_id: crate::ids::ASSOCIATED_TOKEN_PROGRAM_ID,
+        accounts: vec![
+            AccountMeta::new(payer, true),
+            AccountMeta::new(ata, false),
+            AccountMeta::new_readonly(owner, false),
+            AccountMeta::new_readonly(mint, false),
+            AccountMeta::new_readonly(crate::ids::SYSTEM_PROGRAM_ID, false),
+            AccountMeta::new_readonly(TOKEN_PROGRAM_ID, false),
+        ],
+        data: Vec::new(),
+    };
+    let idl = explain_one_ix(&builtins(), payer, ix);
+    assert_eq!(idl.intent, "Create associated token account");
+    assert_eq!(field(&idl, "Owner"), owner.to_string());
+    assert_eq!(field(&idl, "Mint"), mint.to_string());
+    assert!(idl.interpolated_intent.is_some());
+    assert!(idl.undescribed_bytes.is_empty());
+}
+
 #[test]
 fn compute_budget_instructions_are_explained() {
     let payer = pk(1);

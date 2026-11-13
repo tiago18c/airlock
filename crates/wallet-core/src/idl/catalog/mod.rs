@@ -313,6 +313,21 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
             .find(|idl| idl.program_id == file && idl.runs_on(self.network))
     }
 
+    /// The networks an IDL that ships with the app describes `program_id`
+    /// on, its own file's or the file that carries it, in the usual order.
+    pub fn shipped_networks(&self, program_id: &Pubkey) -> Vec<IdlNetwork> {
+        let carried_by = self.host_of(program_id);
+        IdlNetwork::ALL
+            .into_iter()
+            .filter(|network| {
+                self.embedded.iter().any(|idl| {
+                    (idl.program_id == *program_id || Some(idl.program_id) == carried_by)
+                        && idl.runs_on(*network)
+                })
+            })
+            .collect()
+    }
+
     /// Put each embedded IDL of the network shown in its program's slot,
     /// unless an import holds it.
     fn restore_builtins(&mut self) {

@@ -22,11 +22,22 @@ use dioxus::desktop::DesktopContext;
 /// 640 px), with the top bar's tools and the window buttons on one line.
 const MIN_WINDOW: LogicalSize<f64> = LogicalSize::new(720.0, 540.0);
 
-/// The window and WebView settings both desktop builds launch with. `icon`
-/// is the build's PNG app icon, for the window and the taskbar. On Windows
-/// the window has no native frame: the shell draws its own title bar from
-/// [`window_controls`].
+/// The window and WebView settings the online desktop build launches with.
+/// `icon` is the build's PNG app icon, for the window and the taskbar. On
+/// Windows the window has no native frame: the shell draws its own title bar
+/// from [`window_controls`].
 pub fn desktop_config(title: &str, icon: &[u8]) -> dioxus::desktop::Config {
+    config(title, icon, false)
+}
+
+/// As [`desktop_config`], for Airlock Offline: on Windows the WebView is
+/// also kept off the network. The page never needs it: it loads from the
+/// app and talks to it over loopback.
+pub fn airgap_desktop_config(title: &str, icon: &[u8]) -> dioxus::desktop::Config {
+    config(title, icon, true)
+}
+
+fn config(title: &str, icon: &[u8], airgap: bool) -> dioxus::desktop::Config {
     // Replaces the whole builder Config::new made, so the title is set again.
     let window = dioxus::desktop::WindowBuilder::new()
         .with_title(title)
@@ -52,14 +63,35 @@ pub fn desktop_config(title: &str, icon: &[u8]) -> dioxus::desktop::Config {
     // scanned. Its feature has to share the one `--disable-features`: only
     // the last is read.
     #[cfg(windows)]
-    let cfg = cfg.with_windows_browser_args(concat!(
+    let cfg = cfg.with_windows_browser_args(browser_args(airgap));
+    #[cfg(not(windows))]
+    let _ = airgap;
+    cfg
+}
+
+/// The WebView2 arguments. Without a network the WebView would otherwise
+/// still fetch on its own: its component updates, variations and pings,
+/// a minute or so after it starts. The airgap build turns that background
+/// traffic off, and sends anything else to a proxy that is not there, so
+/// nothing leaves the machine; loopback, which Dioxus talks to the page
+/// over, never goes through a proxy.
+#[cfg(windows)]
+fn browser_args(airgap: bool) -> String {
+    let mut args = String::from(concat!(
         "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection,",
         "MediaFoundationD3D11VideoCapture ",
         "--unsafely-treat-insecure-origin-as-secure=",
         "http://dioxus.index.html,http://dioxus.localhost ",
         "--autoplay-policy=no-user-gesture-required"
     ));
-    cfg
+    if airgap {
+        args.push_str(concat!(
+            " --disable-background-networking --disable-component-update",
+            " --disable-domain-reliability --no-pings --disable-sync",
+            " --proxy-server=http://127.0.0.1:9 --proxy-bypass-list=<local>"
+        ));
+    }
+    args
 }
 
 /// The title bar buttons for `AppShell { window_controls }`: Windows only,

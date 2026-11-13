@@ -32,6 +32,23 @@ pub struct ProgramForm {
     /// on the pane, so that leaving the pane while one is open neither lets
     /// a second one open nor drops what the first one picks.
     pub file_dialog: Signal<bool>,
+    /// An import that would take the place of IDLs that ship with the app,
+    /// waiting for the user to say yes.
+    pub pending_import: Signal<Option<PendingImport>>,
+}
+
+/// An IDL file or bundle read, not imported yet, and the shipped IDLs it
+/// would replace, each as "<name> on <network>".
+#[derive(Clone, Debug, PartialEq)]
+pub struct PendingImport {
+    pub files: PendingFiles,
+    pub replaces: Vec<String>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum PendingFiles {
+    One(Vec<u8>),
+    Bundle(Vec<(String, Vec<u8>)>),
 }
 
 /// A tab of a program's IDL.
@@ -182,6 +199,7 @@ pub fn use_forms() -> Forms {
             selected: use_signal(|| None::<Pubkey>),
             section: use_signal(IdlSection::default),
             file_dialog: use_signal(|| false),
+            pending_import: use_signal(|| None),
         },
         history: HistoryForm {
             wallet: use_signal(|| None::<Pubkey>),

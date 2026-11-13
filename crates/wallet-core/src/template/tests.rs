@@ -730,8 +730,11 @@ fn a_program_with_no_idl_on_the_network_is_named() {
     // Block 2 runs only with the transfer fee: it leaves that option out
     // instead of refusing the template.
     assert_eq!(problems.len(), 2);
-    has(&problems, 1, None, "No IDL for `$system`");
-    has(&problems, 3, None, "No IDL for `$token`");
+    has(&problems, 1, None, "has no IDL for the program `$system`");
+    has(&problems, 3, None, "has no IDL for the program `$token`");
+    assert!(problems
+        .iter()
+        .all(|problem| problem.missing_program.is_some()));
 }
 
 /// An option whose block needs a program this network has no IDL for is
@@ -752,7 +755,7 @@ fn an_option_on_a_program_with_no_idl_here_is_not_offered() {
     assert!(
         form.unavailable[0]
             .1
-            .contains("No IDL for `$token_metadata`"),
+            .contains("has no IDL for the program `$token_metadata`"),
         "{:?}",
         form.unavailable
     );
