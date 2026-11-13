@@ -406,3 +406,30 @@ Token program's mint account is added, so the collateral of a request or limit o
 reads its input mint's decimals and JLP amounts the JLP mint's; position sizes, \
 collateral decreases, price limits and trigger prices are in USD with 6 decimals; other \
 token amounts are in base units; fees are in percent. Display nodes added by hand."""
+
+# Kamino Lend (kamino_lending), Kamino Finance's lending program. The file is
+# the legacy Anchor IDL its Anchor IDL account publishes on mainnet (1.27.0);
+# it has no program-metadata account. Devnet runs another executable with
+# another IDL, so the file is mainnet only.
+[[idls]]
+file = "kamino-lend.json"
+programId = "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
+name = "kaminoLending"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "838837c76e4454563f206461411259c6573daddb1e269dee8cc94347ccfdc367" }
+changes = """Converted from Anchor to Codama. The program's address is set, which a legacy Anchor IDL \
+does not carry. In repayAndWithdrawAndRedeem, depositAndWithdraw, \
+liquidateObligationAndRedeemReserveCollateralV2 and rolloverFixedTermBorrow, whose \
+account groups repeat names (two owners, two obligations, two farm accounts), every \
+grouped account takes its group's name as a prefix (withdrawAccountsOwner), as the v01 \
+and TypeScript converters do and the legacy converter does not; nothing else is renamed. \
+Instructions that read accounts after their named ones declare them as remaining \
+accounts, which Anchor IDLs cannot: the obligation's reserves (and its referrer token \
+states) for refreshObligation, requestElevationGroup and the borrow, repay, liquidation \
+and loss instructions, the reserves a batch refresh lists, and the permissioning \
+authority a permissioned market requires as the last signer of a deposit, borrow or \
+liquidation. The Token program's mint account is added, so liquidity and collateral \
+token amounts read their mint's decimals where the mint is an account of the \
+instruction; collateral amounts of depositObligationCollateral and \
+withdrawObligationCollateral, and socialized losses, are in base units. Fees, rates and \
+execution bonuses are in percent, terms are durations. Display nodes added by hand."""
