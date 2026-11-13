@@ -326,7 +326,8 @@ export function githubSource(url) {
 
 const capitalise = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 const repoLink = (repo) => `[${repo}](https://github.com/${repo})`;
-const cell = (text) => text.replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
+// A backslash first, so one already in the text is not read as escaping the bar after it.
+const cell = (text) => text.replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
 
 function takenFrom(entry, row) {
   const { source } = entry;
