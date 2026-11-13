@@ -35,7 +35,8 @@ pub struct SimulationError {
     pub message: String,
     /// A program's own error code, when the failure is one, with the
     /// program that returned it as far as the node's logs tell.
-    pub custom: Option<CustomError>,
+    /// Boxed: a simulation is kept in screen state, and this is rare.
+    pub custom: Option<Box<CustomError>>,
 }
 
 /// An error code a program returned.
@@ -56,7 +57,7 @@ impl SimulationError {
     /// the program that returned a custom error has for its code, which
     /// then comes first, the number after it.
     pub fn worded(&self, words: Option<(&str, &str)>) -> String {
-        let what = match (self.custom, words) {
+        let what = match (self.custom.as_deref(), words) {
             (Some(custom), Some((name, message))) => {
                 let said = if message.trim().is_empty() {
                     spaced_name(name)
@@ -90,6 +91,7 @@ pub fn word_simulation_error(
 ) -> String {
     let words = error
         .custom
+        .as_deref()
         .and_then(|custom| crate::idl::program_error_words(catalog, &custom.program?, custom.code));
     error.worded(
         words
@@ -256,11 +258,11 @@ fn describe_error(err: &Value, logs: &[String], tx: &DecodedTx) -> SimulationErr
             let own = instruction
                 .and_then(|index| tx.instructions.get(index))
                 .map(|raw| raw.program_id);
-            CustomError {
+            Box::new(CustomError {
                 code,
                 program,
                 called: program.is_some() && own.is_some() && program != own,
-            }
+            })
         });
         return SimulationError {
             instruction,
@@ -448,11 +450,11 @@ mod tests {
             Some(SimulationError {
                 instruction: Some(0),
                 message: "the program returned error 3 (0x3)".into(),
-                custom: Some(CustomError {
+                custom: Some(Box::new(CustomError {
                     code: 3,
                     program: None,
                     called: false,
-                }),
+                })),
             })
         );
         assert!(custom.balance_changes.is_empty());
@@ -502,8 +504,8 @@ mod tests {
             1,
         );
         assert_eq!(
-            own.custom,
-            Some(CustomError {
+            own.custom.as_deref(),
+            Some(&CustomError {
                 code: 1,
                 program: Some(SYSTEM_PROGRAM_ID),
                 called: false
@@ -524,8 +526,9 @@ mod tests {
             ],
             1,
         );
-        assert_eq!(deep.custom.unwrap().program, Some(TOKEN_PROGRAM_ID));
-        assert!(deep.custom.unwrap().called);
+        let called = deep.custom.as_deref().unwrap();
+        assert_eq!(called.program, Some(TOKEN_PROGRAM_ID));
+        assert!(called.called);
         assert_eq!(
             word_simulation_error(&deep, &catalog),
             "instruction 1: Insufficient funds (a program it called returned error 1, 0x1)"
