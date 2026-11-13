@@ -14,7 +14,7 @@ desktop app's icon) and writes apps/airlock-mobile/android/res/:
                                       its monochrome layer, for Android 13's
                                       themed icons: the door's padlock, cut out
                                       of the same art by its glowing lines
-  values/airlock_icon.xml             its background: the dark theme's --bg
+  values/airlock_icon.xml             its background: the brand colour, --brand
   mipmap-<density>/ic_launcher.webp   the door alone, for a launcher that does
                                       not draw adaptive icons
 
@@ -35,9 +35,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SOURCE = os.path.join(ROOT, "apps", "airlock-mobile", "icons", "icon.png")
 OUT = os.path.join(ROOT, "apps", "airlock-mobile", "android", "res")
 
-# tokens.css, the dark theme's --bg: the colour the app opens on in the dark,
-# and close to the door's own glass.
-BACKGROUND = "#0C0F15"
+# tokens.css, --brand: the app's primary colour. The dark theme's --bg would
+# match the door's glass, but on a dark wallpaper the launcher's shape around
+# the door would not show.
+BACKGROUND = "#4F46E5"
 
 # Pixels per dp at each density.
 DENSITIES = {"mdpi": 1, "hdpi": 1.5, "xhdpi": 2, "xxhdpi": 3, "xxxhdpi": 4}
