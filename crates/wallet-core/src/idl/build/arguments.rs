@@ -95,11 +95,14 @@ pub(super) fn parse_argument(
                 serde_json::from_str::<serde_json::Value>(text).map_err(|_| json_shape(kind))?;
             json_value(kind, &json).map(Some)
         }
-        IdlArgKind::Raw { note } => Err(format!(
-            "This field ({note}) has to be filled by hand in a later slice."
-        )),
+        IdlArgKind::Raw { .. } => Err(NO_WIDGET.to_string()),
     }
 }
+
+/// What building says of a field Build has no widget for
+/// ([`IdlArgKind::Raw`]), after the field's name: what it is, and what can
+/// be done instead.
+pub const NO_WIDGET: &str = "this version of Build cannot fill this kind of field, so it cannot build this instruction. Write the instruction as Raw, its accounts and bytes, or build it with another tool.";
 
 /// A list typed as a JSON array: `["--features", "mainnet"]`. Blank is the
 /// empty list. Each item is read as a field of the item's kind would read

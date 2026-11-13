@@ -104,7 +104,11 @@ fn prepare(form: &IdlForm, input: &IdlBuildInput) -> Result<Ready, IdlBuildFailu
     let text = argument_text(input);
     let mut arguments: Vec<(String, Value)> = Vec::new();
     for field in &form.arguments {
-        let Some(value) = parse_field(field, &text).map_err(IdlBuildFailure::Message)? else {
+        let parsed = parse_field(field, &text).map_err(|err| match err.as_str() {
+            NO_WIDGET => IdlBuildFailure::Message(format!("{}: {err}", field.name)),
+            _ => IdlBuildFailure::Message(err),
+        });
+        let Some(value) = parsed? else {
             continue;
         };
         // A struct's fields, in the order the struct declares them.

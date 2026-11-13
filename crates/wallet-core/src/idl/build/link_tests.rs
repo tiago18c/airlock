@@ -410,3 +410,40 @@ fn types_that_link_to_themselves_end_unfilled() {
     assert_eq!(classify_in(&program, &link("ping")), unread);
     assert_eq!(classify_in(&program, &link("maybeLoop")), unread);
 }
+
+/// A field Build has no widget for says so in words a person can act on,
+/// naming the field, rather than in the IDL's type names.
+#[test]
+fn a_field_with_no_widget_is_named_and_says_what_to_do_instead() {
+    let store = shipped_catalog(IdlNetwork::Mainnet);
+    let metadata = Pubkey::from_str_const("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
+    let client = store.program_client(&metadata).unwrap();
+    let instruction = "updateAsUpdateAuthorityV2";
+    let form = idl_instruction_form(&client, instruction, &IdlBuildInput::default()).unwrap();
+    let mut draft =
+        IdlDraft::for_instruction(metadata, "tokenMetadata", &client, Some(instruction));
+    for (i, account) in form.accounts.iter().enumerate() {
+        if account.source != IdlAccountSource::Derived {
+            draft.set_account(&account.name, Some(pk(100 + i as u8)));
+        }
+    }
+    for field in &form.arguments {
+        if let Some(text) = sample_text(&field.kind, &field.scale, false) {
+            draft.set_argument(&field.name, text);
+        }
+    }
+    let mut built = draft.build(&client);
+    for _ in 0..4 {
+        match &built {
+            Err(IdlBuildFailure::FillAddress { account, .. }) => {
+                draft.set_account(&account.clone(), Some(pk(90)));
+                built = draft.build(&client);
+            }
+            _ => break,
+        }
+    }
+    let err = built.unwrap_err().to_string();
+    assert_eq!(err, format!("uses: {NO_WIDGET}"));
+    assert!(!err.contains("definedTypeLinkNode") && !err.contains("slice"));
+    assert!(err.contains("Raw") && err.contains("another tool"), "{err}");
+}

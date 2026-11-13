@@ -300,7 +300,9 @@ pub(in crate::ui) fn kind_placeholder(
             })
             .collect::<Vec<_>>()
             .join(" or "),
-        IdlArgKind::Raw { note } => note.clone(),
+        // The IDL's own word for the type (`definedTypeLinkNode`) means
+        // nothing to a person.
+        IdlArgKind::Raw { .. } => "Build cannot fill this field yet".to_string(),
         IdlArgKind::Integer { float: true, .. } => "number".to_string(),
         IdlArgKind::Integer { .. } => match places {
             Places::BaseUnits => "whole number, in base units".to_string(),

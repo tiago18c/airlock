@@ -33,7 +33,7 @@ hint = "A link to a JSON file with the token's image and description."
 [[input]]
 name = "update_authority"
 label = "Update authority"
-hint = "Can change the name, symbol and link later."
+hint = "Can change the name, symbol and link later, with a tool that writes Token Metadata's update instruction. Build cannot write it yet."
 default = "$wallet"
 
 [[input]]

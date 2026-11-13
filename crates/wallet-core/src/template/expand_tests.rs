@@ -1164,3 +1164,36 @@ arguments = { amount = "$n" }
         )]
     );
 }
+
+/// A shipped template that says a name or link can be changed later says
+/// Build cannot do it, for as long as Build cannot lay out Token
+/// Metadata's update. Once it can, this fails, and the text can say so.
+#[test]
+fn a_promise_of_a_later_change_says_build_cannot_make_it_yet() {
+    let store = crate::fixtures::shipped_catalog(crate::IdlNetwork::Mainnet);
+    let client = store
+        .program_client(&super::expand::TOKEN_METADATA_PROGRAM_ID)
+        .unwrap();
+    let form = crate::idl_instruction_form(
+        &client,
+        "updateAsUpdateAuthorityV2",
+        &crate::IdlBuildInput::default(),
+    )
+    .unwrap();
+    let no_widget = form
+        .arguments
+        .iter()
+        .any(|field| matches!(field.kind, crate::IdlArgKind::Raw { .. }));
+    assert!(no_widget, "Build can update Token Metadata now: say so");
+    let mut promises = 0;
+    for builtin in BUILTIN_TEMPLATES.iter() {
+        for line in builtin.toml.lines() {
+            let said = line.starts_with("hint") || line.starts_with("summary");
+            if said && line.contains("change") && line.contains("later") {
+                promises += 1;
+                assert!(line.contains("Build cannot"), "{}: {line}", builtin.id);
+            }
+        }
+    }
+    assert!(promises >= 2, "{promises}");
+}
