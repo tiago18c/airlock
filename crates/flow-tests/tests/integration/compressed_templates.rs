@@ -183,3 +183,58 @@ fn only_the_trees_creator_mints_into_a_tree_that_is_not_public() {
     );
     assert!(refused.is_err());
 }
+
+/// The text a shipped template shows: its summary and hints.
+fn text_of(id: &str) -> &'static str {
+    wallet_core::builtin_template(id).unwrap().toml
+}
+
+/// A tree costs its rent and no fee; a mint costs no rent and Bubblegum's
+/// fee, which it keeps in the tree's config. Both templates say so.
+#[test]
+fn a_tree_costs_its_rent_and_each_mint_bubblegums_fee() {
+    let desk = desk();
+    let me = desk.me();
+    // The account is read before the chain is locked again.
+    let rent = |address: &Pubkey| {
+        let len = desk.data(address).len();
+        desk.node.chain().rent(len)
+    };
+    let before = desk.balance(&me);
+    let (tree, _) = make_tree(&desk, &[]);
+    let config = config_of(&tree);
+    let paid = before - desk.balance(&me);
+    // The tree and config's rent, and the fees of two signatures.
+    assert_eq!(paid, rent(&tree) + rent(&config) + 10_000);
+    assert_eq!(desk.balance(&tree), rent(&tree));
+    // About 0.16 SOL for the shape filled in.
+    assert_eq!(
+        (rent(&tree) + 5_000_000) / 10_000_000,
+        16,
+        "{}",
+        rent(&tree)
+    );
+    let text = text_of("create-nft-tree");
+    assert!(text.contains("about 0.16 SOL") && text.contains("no fee"));
+
+    let config_before = desk.balance(&config);
+    let before = desk.balance(&me);
+    desk.land(
+        "mint-compressed-nft",
+        &[],
+        &[
+            ("tree", tree.to_string()),
+            ("nft_name", "Leaf #1".to_string()),
+            ("symbol", "LEAF".to_string()),
+            ("uri", "https://example.com/leaf/1.json".to_string()),
+        ],
+        &[],
+        &[],
+    )
+    .unwrap_or_else(|logs| panic!("{logs}"));
+    let fee = desk.balance(&config) - config_before;
+    assert_eq!(fee, 90_000, "Bubblegum's mint fee");
+    assert_eq!(before - desk.balance(&me), fee + 5_000);
+    let text = text_of("mint-compressed-nft");
+    assert!(text.contains("no rent") && text.contains("0.00009 SOL"));
+}

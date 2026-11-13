@@ -1,6 +1,6 @@
 format = 1
 name = "Add a name and symbol to a token"
-summary = "Gives a token on the Token program a name, a symbol and a link, kept by Metaplex Token Metadata, where wallets and explorers look for them. The mint authority signs."
+summary = "Gives a token on the Token program a name, a symbol and a link, kept by Metaplex Token Metadata, where wallets and explorers look for them. The mint authority signs. Token Metadata keeps a fee of 0.01 SOL for it (when this was written; Metaplex sets it), on top of about 0.004 SOL of rent."
 
 [programs]
 system = "11111111111111111111111111111111"
@@ -33,7 +33,7 @@ hint = "A link to a JSON file with the token's image and description."
 [[input]]
 name = "update_authority"
 label = "Update authority"
-hint = "Can change the name, symbol and link later, with a tool that writes Token Metadata's update instruction. Build cannot write it yet."
+hint = "Can change the name, symbol and link later, with another tool: Build cannot write Token Metadata's update yet."
 default = "$wallet"
 
 [[input]]

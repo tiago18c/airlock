@@ -11,7 +11,7 @@ token_metadata = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
 [[option]]
 name = "metadata"
 label = "Name and symbol"
-hint = "Stores a name, a symbol and a link to more details with Metaplex Token Metadata, where wallets and explorers look for them. The mint authority signs this transaction too, and can change them later with a tool that writes Token Metadata's update instruction. Build cannot write it yet."
+hint = "Stores a name, a symbol and a link with Metaplex Token Metadata, where wallets and explorers look for them, for a 0.01 SOL fee (when this was written) plus about 0.004 SOL of rent. The mint authority signs too, and can change them later with another tool: Build cannot write that update yet."
 
 [[option]]
 name = "first_supply"

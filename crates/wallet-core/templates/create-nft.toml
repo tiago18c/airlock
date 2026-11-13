@@ -1,6 +1,6 @@
 format = 1
 name = "Create an NFT"
-summary = "A new NFT on Metaplex Token Metadata, the classic standard: a mint of one token with its metadata and master edition, the token held by this wallet."
+summary = "A new NFT on Metaplex Token Metadata, the classic standard: a mint of one token with its metadata and master edition, the token held by this wallet. Token Metadata keeps a 0.01 SOL fee (when this was written; Metaplex sets it), plus about 0.01 SOL of rent for the four accounts."
 
 [programs]
 associated_token = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"

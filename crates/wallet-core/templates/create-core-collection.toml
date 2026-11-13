@@ -1,6 +1,6 @@
 format = 1
 name = "Create a Core collection"
-summary = "A new collection on Metaplex Core, its key made on this device, that Core NFTs can be added to by its update authority."
+summary = "A new collection on Metaplex Core, its key made on this device, that Core NFTs can be added to by its update authority. This wallet pays its rent, about 0.001 SOL; Core took no fee for a collection when this was written."
 
 [programs]
 core = "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"

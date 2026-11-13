@@ -1,6 +1,6 @@
 format = 1
 name = "Create a Core NFT"
-summary = "A new NFT on Metaplex Core: one account, its key made on this device, holding the NFT's name, link and owner. This wallet pays its rent."
+summary = "A new NFT on Metaplex Core: one account, its key made on this device, holding the NFT's name, link and owner. This wallet pays its rent, about 0.0012 SOL, and the fee Core keeps in it, 0.0015 SOL when this was written (Metaplex sets it)."
 
 [programs]
 core = "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"

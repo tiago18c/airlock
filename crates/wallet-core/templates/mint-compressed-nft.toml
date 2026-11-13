@@ -1,6 +1,6 @@
 format = 1
 name = "Mint a compressed NFT"
-summary = "Mints a compressed NFT into a Metaplex Bubblegum tree (version 2) this wallet created or may mint into. No proof is needed: a mint adds the next leaf."
+summary = "Mints a compressed NFT into a Metaplex Bubblegum tree (version 2) this wallet created or may mint into. No proof is needed: a mint adds the next leaf. It needs no account, so no rent; Bubblegum keeps a fee of 0.00009 SOL for each mint (when this was written; Metaplex sets it)."
 
 [programs]
 bubblegum = "BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY"
