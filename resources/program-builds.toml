@@ -512,13 +512,13 @@ idlSha256 = "8d067c8305137e9318c48e517fb59794f74bb48070897b3f59868fda2400421b"
 reviewed = "2026-11-12"
 
 [[builds]]
-# raydiumLaunchpad (pack). Closed source; deployed at slot 446221802; OtterSec lists no verify record. Each of the 28 instructions the IDL lists is in this binary by its Anchor log name and its discriminator, and the binary logs no other. 34 successful mainnet instructions of 13 of them (the four trades but sellExactOut, both live pool creations, the creator, platform and vesting claims, vesting creation, the CP swap migration and three admin instructions) decode with every account named and the bytes their arguments take.
+# raydiumLaunchpad (pack). Closed source; deployed at slot 446221802; OtterSec lists no verify record. Each of the 28 instructions the IDL lists is in this binary by its Anchor log name and its discriminator, and the binary logs no other. 34 successful mainnet instructions of 13 of them (the four trades but sellExactOut, both live pool creations, the creator, platform and vesting claims, vesting creation, the CP swap migration and three admin instructions) decode with every account named and the bytes their arguments take. Since 2026-11-13 the file declares the ten unused bytes Raydium's SDK sends after transferFeeExtensionParam, which Anchor's handler leaves unread.
 programId = "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"
 network = "mainnet"
 programHash = "a44d24cf2976f69f7be510f7f058b00a681eda193c1991b5bc218bccdf725bb9"
 authority = "FytDrVzDybM1TwFQPGb8qaxZR7dBCzNeqT3vtQsceZQK"
-idlSha256 = "172fee9e4a85423ccb40e03487297df472598ed005ba38088824ed3358a33512"
-reviewed = "2026-11-12"
+idlSha256 = "4b8e4156f60c8d19bf8ed762b7c87c39d363ac000088dd1d6511333666faf524"
+reviewed = "2026-11-13"
 
 [[builds]]
 # marinade_finance (pack). Deployed at slot 433290841; OtterSec's only record for this hash is not verified. All 29 of the IDL's instructions are in this binary by their Anchor log name, and it logs none the IDL lacks besides Anchor's own IDL-account instructions. Mainnet transactions of 16 instructions (staking SOL and stake accounts, liquid and delayed unstaking, withdrawing a stake account, adding and removing liquidity, validator management and the crank) decode with every account named and with the data length the IDL describes.

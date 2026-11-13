@@ -6991,6 +6991,31 @@
               "kind": "structFieldDisplayNode",
               "label": "Transfer Fee"
             }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "unusedTransferFeeParams",
+            "docs": [
+              "Not read by the program. Raydium's SDK writes the transfer fee parameters as a fixed ten bytes, zeros when the option above is not set; the program reads only the option and stops."
+            ],
+            "type": {
+              "kind": "remainderOptionTypeNode",
+              "item": {
+                "kind": "fixedSizeTypeNode",
+                "size": 10,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              }
+            },
+            "defaultValueStrategy": "omitted",
+            "defaultValue": {
+              "kind": "noneValueNode"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
           }
         ],
         "discriminators": [

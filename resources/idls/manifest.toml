@@ -478,7 +478,11 @@ CpSwapConfig and AllInfo changes read; migrateToCpswap declares the accounts it 
 after the named ones as one hidden group. The Token program's mint account is added, so \
 the trades' amounts read their base or quote mint's decimals. Rates are per million, as \
 the program counts them; vesting shares and a new pool's curve settings are in base \
-units. Display nodes added by hand."""
+units. initializeWithToken2022 ends with a hidden optional ten bytes, \
+unusedTransferFeeParams: Raydium's SDK (raydium-sdk-V2 src/raydium/launchpad/instrument.ts) \
+writes the transfer fee parameters as a fixed ten bytes, zeros when there are none, and \
+the program, an Anchor build whose own IDL ends at transferFeeExtensionParam, reads the \
+option and stops. Display nodes added by hand."""
 
 # Marinade's liquid staking program, behind mSOL: staking SOL or a stake
 # account for mSOL, unstaking at once through its mSOL-SOL liquidity pool or
