@@ -1056,3 +1056,21 @@ programHash = "af40bd111c783e4c4bf28fa1d36297db012cfcc3838a75a3a5a8361546742eb4"
 authority = "Fsxr5WVKZZoeb7xgwTWRHymSRVGY9vk7m5B5GPu1KU59"
 idlSha256 = "b50e04840a1be9c6f2e98da506d11c0858b031332bdb41e963b940da16b32366"
 reviewed = "2026-11-12"
+
+[[builds]]
+# bubblegum (pack). The binary logs exactly the 36 `Instruction: ...` names of the file, and no other program instruction; the Anchor IDL account's 0.12.0 IDL has 17 of them. Executed transfers, mints, burns and metadata updates (7 instructions, 18 samples) decode with every account named, the proof as remaining accounts, and exactly the data length the file describes.
+programId = "BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY"
+network = "mainnet"
+programHash = "8d8b3432caed8dfb06d20fa3c884038312508b440f0d80aeab8b9531241ed2c1"
+authority = "bfQVv6niKVgEURYqQ1beJmiEQQN7MrvLRvk3mZGFubb"
+idlSha256 = "4e2de0f45231a0dd4705013f2c97512128059cb920c704973cb0ecd4c4e9540f"
+reviewed = "2026-11-12"
+
+[[builds]]
+# bubblegum (pack). The same executable as mainnet's (same program hash), so the mainnet checks hold; devnet tree creations and V2 burns decode the same way.
+programId = "BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY"
+network = "devnet"
+programHash = "8d8b3432caed8dfb06d20fa3c884038312508b440f0d80aeab8b9531241ed2c1"
+authority = "Fsxr5WVKZZoeb7xgwTWRHymSRVGY9vk7m5B5GPu1KU59"
+idlSha256 = "4e2de0f45231a0dd4705013f2c97512128059cb920c704973cb0ecd4c4e9540f"
+reviewed = "2026-11-12"

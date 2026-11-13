@@ -1600,3 +1600,24 @@ oracle, a lifecycle hook or the Agent Identity registry reads); Execute's remain
 accounts are those of the instruction the asset signs, Collect's the assets it collects \
 from, and the group instructions' the collections, assets or groups they act on, each a \
 shown group. Display nodes added by hand."""
+
+# Metaplex Bubblegum, the program for compressed NFTs: leaves of a merkle tree
+# minted, transferred, delegated and burned with a proof. Its Anchor IDL
+# account still holds version 0.12.0, without the V2 instructions the deployed
+# program has (transfers, mints and burns of NFTs in Core collections), so the
+# file is the IDL in Metaplex's repository, which names every instruction the
+# binary logs. Devnet runs the same executable.
+[[idls]]
+file = "mpl-bubblegum.json"
+programId = "BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY"
+name = "bubblegum"
+networks = ["mainnet", "devnet"]
+source = { kind = "repository", url = "https://github.com/metaplex-foundation/mpl-bubblegum/blob/79e1a1954bddb7fe5dcd52a5570a66a9f7d465e4/idls/bubblegum.json" }
+changes = """Converted from Anchor to Codama. Every instruction that replaces a leaf declares the \
+merkle proof it carries after its listed accounts as a hidden remaining-accounts group \
+(the nodes from the leaf up to the canopy); the mints declare the extra signers they \
+count as verified creators as a shown group. Optional accounts are read as absent when \
+they hold the program's own address. Royalties read as a percent. The merkle roots and \
+the hashes that identify a leaf, `[u8; 32]` arrays in the source, are typed as 32-byte \
+fixed-size bytes so they read as hex; the bytes are the same. Display nodes added by \
+hand."""
