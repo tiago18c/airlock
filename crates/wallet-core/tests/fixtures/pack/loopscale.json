@@ -1,0 +1,1851 @@
+{
+  "accounts": {
+    "5Y8NV33Vv7WbnLfq3zBcKSdYPrk7g2KoiQoe7M2tcxp5": {
+      "data": "AQAAAI6kU++aopg4v2jQVL8dQmaKipFzLtff9l/j1ir5Clt0HuHmx7xTrwMJAQEAAAAtvVUbmg0MwPymG0C3ScIpoOHW0ZL+7Cfeq/hrYIDisg==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E": {
+      "data": "AQAAAK1n66kMGdYbS8shklj+ApsTUCpTVtEx35i1Trt1Tkw1k9oi2ecTAAAGAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "8oiU4hotYZntejsfgW1ugddSSktN61sBrooisAPnABtu": {
+      "data": "AQAAAJaHLZDv8Yt4zkfyfeh88mJS2fwmm1h8CFTaYmxdhYiddR4p6VMAAAAGAQEAAACWhy2Q7/GLeM5H8n3ofPJiUtn8JptYfAhU2mJsXYWInQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARIAQACWhy2Q7/GLeM5H8n3ofPJiUtn8JptYfAhU2mJsXYWInZaHLZDv8Yt4zkfyfeh88mJS2fwmm1h8CFTaYmxdhYidAwAgAJaHLZDv8Yt4zkfyfeh88mJS2fwmm1h8CFTaYmxdhYidEwCmAJaHLZDv8Yt4zkfyfeh88mJS2fwmm1h8CFTaYmxdhYidc/lpgxgFvXPro7jvqEGm6Af+Sihvf4ZhmCRqgKIkPGIJAAAAaHlVU0QgT05FCAAAAG9uZUh5VVNERQAAAGh0dHBzOi8vaHlsby10b2tlbi1tZXRhZGF0YS5zMy51cy1lYXN0LTIuYW1hem9uYXdzLmNvbS9oeVVTRC9pY29uLnBuZwAAAAA=",
+      "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+    },
+    "BULKoNSGzxtCqzwTvg5hFJg8fx6dqZRScyXe5LYMfxrn": {
+      "data": "AQAAAA1Ax1MZRZD90dBrLv9h3QRaD3hL0MXRVreWYZHPB0jeeOWMjXc6AAAJAQAAAACPY9CrVufcOH0Zzrb/xvC1aZDqtyHqPZOUUNMi4RzSlg==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": {
+      "data": "AQAAAJj+huiNm+Lqi8HMpIeLKYjCQPUrhCS/tA7Rot3LXhmbhga3vHxdHwAGAQEAAABicKqKWcWUBbRShshncubNEm6bil06OFNtN/e0FOi2Zw==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "So11111111111111111111111111111111111111112": {
+      "data": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "dawn7ZUF7h7anFuEsDdAU1Y3HYwikwqNMAENZsQJdNL": {
+      "data": "AQAAAJEC4dSE+nue3MGY19NeB892y3qm4qlzuaG9iqYZJOew/yflVvkvAAAGAQEAAAA0TG6QtOn4fWGfWl2iaVF5Zn6+JzSd4EUvVXt0GTjgzQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARIAQAA0TG6QtOn4fWGfWl2iaVF5Zn6+JzSd4EUvVXt0GTjgzQlfSky2z9t5RW4Pbev7oUH0Jzsl/ZAbzQkWCm71NtO9DgBAADRMbpC06fh9YZ9aXaJpUXlmfr4nNJ3gRS9Ve3QZOODNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaACEANExukLTp+H1hn1pdomlReWZ+vic0neBFL1V7dBk44M0AEwDWADRMbpC06fh9YZ9aXaJpUXlmfr4nNJ3gRS9Ve3QZOODNCV9KTLbP23lFbg9t6/uhQfQnOyX9kBvNCRYKbvU2070JAAAAVVNELmluZnJhCQAAAFVTRC5pbmZyYXQAAABodHRwczovL2dyZWVuLW9iZWRpZW50LWFsYmF0cm9zcy0xNTUubXlwaW5hdGEuY2xvdWQvaXBmcy9iYWZrcmVpYmp5NjNxcnN3dnczZzNyb2I1M2FmNXZzdG1rNGt6Y2U0NDY1NnF3c201M3Q0dTVjN3R6eQAAAAA=",
+      "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+    }
+  },
+  "instructions": [
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:sw",
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:sw",
+        "DDujVes5RDwrVn38e1gxH8DJUHemXdpjQiucb1WW3jCD:w",
+        "B3U15Utj7aWshsNjeAqLgFFoe8MHS6zEAWYTUx9MpUVP:w",
+        "B3U15Utj7aWshsNjeAqLgFFoe8MHS6zEAWYTUx9MpUVP:w",
+        "GVh2HdyhENCqsNhCbkPgtkAsHJKsqMNn8FtAJHUPMdrM:w",
+        "GVh2HdyhENCqsNhCbkPgtkAsHJKsqMNn8FtAJHUPMdrM:w",
+        "7DMykYN7u8PNuvDhcZM9eg7FsoWWaW6g1xkUR8obSPEh:w",
+        "7DMykYN7u8PNuvDhcZM9eg7FsoWWaW6g1xkUR8obSPEh:w",
+        "zBTCug3er3tLyffELcvDNrKkCymbPWysGcWihESYfLg",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+        "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH",
+        "11111111111111111111111111111111",
+        "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH",
+        "11111111111111111111111111111111"
+      ],
+      "data": "6729862b8c98fd4a000003000000030003",
+      "fields": [
+        [
+          "Ledger Index (of the loan's ledgers)",
+          "0"
+        ],
+        [
+          "Duration Slot (index into the new strategy's terms)",
+          "0"
+        ],
+        [
+          "Asset Index Guidance (hex, one byte per index into the market's asset list)",
+          "030003"
+        ],
+        [
+          "Loopscale Refinance Admin",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Loan",
+          "DDujVes5RDwrVn38e1gxH8DJUHemXdpjQiucb1WW3jCD"
+        ],
+        [
+          "Old Strategy",
+          "B3U15Utj7aWshsNjeAqLgFFoe8MHS6zEAWYTUx9MpUVP"
+        ],
+        [
+          "New Strategy",
+          "B3U15Utj7aWshsNjeAqLgFFoe8MHS6zEAWYTUx9MpUVP"
+        ],
+        [
+          "Old Strategy Token Account",
+          "GVh2HdyhENCqsNhCbkPgtkAsHJKsqMNn8FtAJHUPMdrM"
+        ],
+        [
+          "New Strategy Token Account",
+          "GVh2HdyhENCqsNhCbkPgtkAsHJKsqMNn8FtAJHUPMdrM"
+        ],
+        [
+          "Old Strategy Market",
+          "7DMykYN7u8PNuvDhcZM9eg7FsoWWaW6g1xkUR8obSPEh"
+        ],
+        [
+          "New Strategy Market",
+          "7DMykYN7u8PNuvDhcZM9eg7FsoWWaW6g1xkUR8obSPEh"
+        ],
+        [
+          "Principal Token",
+          "zBTCug3er3tLyffELcvDNrKkCymbPWysGcWihESYfLg"
+        ],
+        [
+          "Health Check Account #1",
+          "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH"
+        ],
+        [
+          "Health Check Account #2",
+          "11111111111111111111111111111111"
+        ],
+        [
+          "Health Check Account #3",
+          "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH"
+        ],
+        [
+          "Health Check Account #4",
+          "11111111111111111111111111111111"
+        ]
+      ],
+      "from": "38mwUBqgQX58waf5yRaJXAvZarXsPhujWUbHfTvQ6bM6SunfixqxQ1c1VsR3oL1tpcRvJ8Dr138jaXn4j2heqeN2#3",
+      "intent": "Refinance a loan",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs refinances ledger 0 of loan DDujVes5RDwrVn38e1gxH8DJUHemXdpjQiucb1WW3jCD from strategy B3U15Utj7aWshsNjeAqLgFFoe8MHS6zEAWYTUx9MpUVP into strategy B3U15Utj7aWshsNjeAqLgFFoe8MHS6zEAWYTUx9MpUVP, for duration slot 0",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "rektbdF5r7HnWrPDRvD76pC1V9rVfaGmbSY3Dsrj8Kx:sw",
+        "rektbdF5r7HnWrPDRvD76pC1V9rVfaGmbSY3Dsrj8Kx:sw",
+        "EnhM1kQi94SquhgCRtV6yJRDd75c7AZFcqQno3XU1wvp:w",
+        "Btu42Ck1xYHLxS8cMv7z8hHLUiMc2PVh8GykyrncUwkY:w",
+        "FXxcLNnjRSpTJQhccmfg6ziZi1LMyoXYvWKgfoCPG1LG:w",
+        "Go6kfCbT9f1R1MFSfbh9uYviWE4TAG9MFrTWot8s7rCB:w",
+        "G25ehgbGJGXqnRkqKDar35xQFQxbebHtqjH57zfbrRb:w",
+        "2VRcewqz9Lk8cxLT6L23TXSMciDVXmjHXV5uU7umSUED:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "11111111111111111111111111111111",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+        "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH",
+        "11111111111111111111111111111111",
+        "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH",
+        "beamVVkNmKeXcuZ6zLpC9eM5YgVyAn4Z9xdPrz3gCW2",
+        "HH7FiYbEfDwQoK2ZJpkMz1T6wG6TqPsWcxWCtEVgigrZ",
+        "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH",
+        "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB:w",
+        "EfbirLRfGCYmCeZttzTPTryYHsZEth7s9rFooWgmg6HV:w",
+        "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8:w",
+        "7jaiZR5Sk8hdYN9MxTpczTcwbWpb5WEoxSANuUwveuat:w",
+        "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA",
+        "HH7FiYbEfDwQoK2ZJpkMz1T6wG6TqPsWcxWCtEVgigrZ",
+        "76oKLZc4fL6XC2zvdn4coWQbzPohJhDARq35466JdiHc:w",
+        "446u2owVF8Z656YFdx9x9SxcT7Bvf816rY1Z4J2scyxS:w"
+      ],
+      "data": "057c6555feafb8f9000102000000010e",
+      "fields": [
+        [
+          "Ledger Index (of the loan's ledgers)",
+          "0"
+        ],
+        [
+          "Unwrap SOL",
+          "true"
+        ],
+        [
+          "Asset Index Guidance (hex, one byte per index into the market's asset list)",
+          "010e"
+        ],
+        [
+          "Payer",
+          "rektbdF5r7HnWrPDRvD76pC1V9rVfaGmbSY3Dsrj8Kx"
+        ],
+        [
+          "Liquidator",
+          "rektbdF5r7HnWrPDRvD76pC1V9rVfaGmbSY3Dsrj8Kx"
+        ],
+        [
+          "Borrower",
+          "EnhM1kQi94SquhgCRtV6yJRDd75c7AZFcqQno3XU1wvp"
+        ],
+        [
+          "Loan",
+          "Btu42Ck1xYHLxS8cMv7z8hHLUiMc2PVh8GykyrncUwkY"
+        ],
+        [
+          "Lender Strategy",
+          "FXxcLNnjRSpTJQhccmfg6ziZi1LMyoXYvWKgfoCPG1LG"
+        ],
+        [
+          "Market",
+          "Go6kfCbT9f1R1MFSfbh9uYviWE4TAG9MFrTWot8s7rCB"
+        ],
+        [
+          "Liquidator Token Account",
+          "G25ehgbGJGXqnRkqKDar35xQFQxbebHtqjH57zfbrRb"
+        ],
+        [
+          "Strategy Token Account",
+          "2VRcewqz9Lk8cxLT6L23TXSMciDVXmjHXV5uU7umSUED"
+        ],
+        [
+          "Principal Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Additional Account #1",
+          "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH"
+        ],
+        [
+          "Additional Account #2",
+          "11111111111111111111111111111111"
+        ],
+        [
+          "Additional Account #3",
+          "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH"
+        ],
+        [
+          "Additional Account #4",
+          "beamVVkNmKeXcuZ6zLpC9eM5YgVyAn4Z9xdPrz3gCW2"
+        ],
+        [
+          "Additional Account #5",
+          "HH7FiYbEfDwQoK2ZJpkMz1T6wG6TqPsWcxWCtEVgigrZ"
+        ],
+        [
+          "Additional Account #6",
+          "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH"
+        ],
+        [
+          "Additional Account #7",
+          "2s37akK2eyBbp8DZgCm7RtsaEz8eJP3Nxd4urLHQv7yB"
+        ],
+        [
+          "Additional Account #8",
+          "EfbirLRfGCYmCeZttzTPTryYHsZEth7s9rFooWgmg6HV"
+        ],
+        [
+          "Additional Account #9",
+          "4qp6Fx6tnZkY5Wropq9wUYgtFxXKwE6viZxFHg3rdAG8"
+        ],
+        [
+          "Additional Account #10",
+          "7jaiZR5Sk8hdYN9MxTpczTcwbWpb5WEoxSANuUwveuat"
+        ],
+        [
+          "Additional Account #11",
+          "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA"
+        ],
+        [
+          "Additional Account #12",
+          "HH7FiYbEfDwQoK2ZJpkMz1T6wG6TqPsWcxWCtEVgigrZ"
+        ],
+        [
+          "Additional Account #13",
+          "76oKLZc4fL6XC2zvdn4coWQbzPohJhDARq35466JdiHc"
+        ],
+        [
+          "Additional Account #14",
+          "446u2owVF8Z656YFdx9x9SxcT7Bvf816rY1Z4J2scyxS"
+        ]
+      ],
+      "from": "67ptJrb3ThLQvFpwJcAAsX8dQshRqWy9NgsnoTZ1byg1MSPijLmC29Z8N28kDnSF8Uy32nz5RbWQjzLTQkLzTEwx#3",
+      "intent": "Liquidate a loan",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "rektbdF5r7HnWrPDRvD76pC1V9rVfaGmbSY3Dsrj8Kx liquidates ledger 0 of loan Btu42Ck1xYHLxS8cMv7z8hHLUiMc2PVh8GykyrncUwkY of EnhM1kQi94SquhgCRtV6yJRDd75c7AZFcqQno3XU1wvp, repaying strategy FXxcLNnjRSpTJQhccmfg6ziZi1LMyoXYvWKgfoCPG1LG in EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from G25ehgbGJGXqnRkqKDar35xQFQxbebHtqjH57zfbrRb",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "HPuxKT7MmHVWadZNHzXwC4CZC7yNQ86X3yfo6oxUbGme:sw",
+        "HPuxKT7MmHVWadZNHzXwC4CZC7yNQ86X3yfo6oxUbGme:sw",
+        "9ifHpSuDkxUKoJTFj2NHuQ7RmQdtwNdtmKxiWp4SgL8o:w",
+        "5Xhhynz5tUUDiCtK371C7B8ChvE9AkNeLRAhZeHbowXD:w",
+        "ETFinqwJzkB7iHZyma5ndm9yzwYDC3fg9hWD8HgPYce7:w",
+        "5Y8NV33Vv7WbnLfq3zBcKSdYPrk7g2KoiQoe7M2tcxp5",
+        "5Y8NV33Vv7WbnLfq3zBcKSdYPrk7g2KoiQoe7M2tcxp5",
+        "11111111111111111111111111111111",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+        "QHAK6enikqxGoEpyUpCfJ4WtzKbAwhPfSGSEFBCb7TN",
+        "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH",
+        "11111111111111111111111111111111",
+        "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH",
+        "11111111111111111111111111111111",
+        "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH",
+        "11111111111111111111111111111111"
+      ],
+      "data": "9c838e7492f7a278006aacc2210000000043681626afead43e86e92c2d3e0fa635d568a1bde81b89f098da7ac6e5d9f1ae03000000011111",
+      "fields": [
+        [
+          "Amount",
+          "145"
+        ],
+        [
+          "Asset Type (code)",
+          "0"
+        ],
+        [
+          "Asset Identifier",
+          "5Y8NV33Vv7WbnLfq3zBcKSdYPrk7g2KoiQoe7M2tcxp5"
+        ],
+        [
+          "Asset Index Guidance (hex, one byte per index into the market's asset list)",
+          "011111"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "HPuxKT7MmHVWadZNHzXwC4CZC7yNQ86X3yfo6oxUbGme"
+        ],
+        [
+          "Borrower",
+          "HPuxKT7MmHVWadZNHzXwC4CZC7yNQ86X3yfo6oxUbGme"
+        ],
+        [
+          "Loan",
+          "9ifHpSuDkxUKoJTFj2NHuQ7RmQdtwNdtmKxiWp4SgL8o"
+        ],
+        [
+          "Borrower Token Account",
+          "5Xhhynz5tUUDiCtK371C7B8ChvE9AkNeLRAhZeHbowXD"
+        ],
+        [
+          "Loan Collateral Account",
+          "ETFinqwJzkB7iHZyma5ndm9yzwYDC3fg9hWD8HgPYce7"
+        ],
+        [
+          "Collateral Token",
+          "5Y8NV33Vv7WbnLfq3zBcKSdYPrk7g2KoiQoe7M2tcxp5"
+        ],
+        [
+          "Asset Identifier Account",
+          "5Y8NV33Vv7WbnLfq3zBcKSdYPrk7g2KoiQoe7M2tcxp5"
+        ],
+        [
+          "Ledger Market or Oracle Account #1",
+          "QHAK6enikqxGoEpyUpCfJ4WtzKbAwhPfSGSEFBCb7TN"
+        ],
+        [
+          "Ledger Market or Oracle Account #2",
+          "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH"
+        ],
+        [
+          "Ledger Market or Oracle Account #3",
+          "11111111111111111111111111111111"
+        ],
+        [
+          "Ledger Market or Oracle Account #4",
+          "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH"
+        ],
+        [
+          "Ledger Market or Oracle Account #5",
+          "11111111111111111111111111111111"
+        ],
+        [
+          "Ledger Market or Oracle Account #6",
+          "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH"
+        ],
+        [
+          "Ledger Market or Oracle Account #7",
+          "11111111111111111111111111111111"
+        ]
+      ],
+      "from": "6384zbdqRg1dsCa37tst4zSXfZwLUHcVcQuakNod2Qu8UR8bN6hofYyfZYnzF2Kv2xv6CogdNV6PtGXuGRNFf78j#3",
+      "intent": "Deposit collateral",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "HPuxKT7MmHVWadZNHzXwC4CZC7yNQ86X3yfo6oxUbGme deposits 145 of 5Y8NV33Vv7WbnLfq3zBcKSdYPrk7g2KoiQoe7M2tcxp5 from 5Xhhynz5tUUDiCtK371C7B8ChvE9AkNeLRAhZeHbowXD as collateral for loan 9ifHpSuDkxUKoJTFj2NHuQ7RmQdtwNdtmKxiWp4SgL8o",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "EeviK3N1nCuumEFhiJTp7xW5aVVS9bMVZigVd7j4kjyw:sw",
+        "EeviK3N1nCuumEFhiJTp7xW5aVVS9bMVZigVd7j4kjyw:sw",
+        "Ge8ztfH9RsMvnkHt1KdnQKpezFTwRxR9DaCJxCwPdjC6:w",
+        "7DShWmbP2LicxspDVhcdbhXeTqfgduW7qJzEsXWXFUrW:w",
+        "6eKFezeQK7g1VhMYCnh3CG4azeprsBLp9DaTXjEoQdnP:w",
+        "5Y8NV33Vv7WbnLfq3zBcKSdYPrk7g2KoiQoe7M2tcxp5",
+        "5Y8NV33Vv7WbnLfq3zBcKSdYPrk7g2KoiQoe7M2tcxp5",
+        "11111111111111111111111111111111",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+        "QHAK6enikqxGoEpyUpCfJ4WtzKbAwhPfSGSEFBCb7TN",
+        "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH",
+        "11111111111111111111111111111111",
+        "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH",
+        "11111111111111111111111111111111",
+        "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH",
+        "11111111111111111111111111111111"
+      ],
+      "data": "9c838e7492f7a2786a5bfa00030000000043681626afead43e86e92c2d3e0fa635d568a1bde81b89f098da7ac6e5d9f1ae03000000011111",
+      "fields": [
+        [
+          "Amount",
+          "12.90130929"
+        ],
+        [
+          "Asset Type (code)",
+          "0"
+        ],
+        [
+          "Asset Identifier",
+          "5Y8NV33Vv7WbnLfq3zBcKSdYPrk7g2KoiQoe7M2tcxp5"
+        ],
+        [
+          "Asset Index Guidance (hex, one byte per index into the market's asset list)",
+          "011111"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "EeviK3N1nCuumEFhiJTp7xW5aVVS9bMVZigVd7j4kjyw"
+        ],
+        [
+          "Borrower",
+          "EeviK3N1nCuumEFhiJTp7xW5aVVS9bMVZigVd7j4kjyw"
+        ],
+        [
+          "Loan",
+          "Ge8ztfH9RsMvnkHt1KdnQKpezFTwRxR9DaCJxCwPdjC6"
+        ],
+        [
+          "Borrower Token Account",
+          "7DShWmbP2LicxspDVhcdbhXeTqfgduW7qJzEsXWXFUrW"
+        ],
+        [
+          "Loan Collateral Account",
+          "6eKFezeQK7g1VhMYCnh3CG4azeprsBLp9DaTXjEoQdnP"
+        ],
+        [
+          "Collateral Token",
+          "5Y8NV33Vv7WbnLfq3zBcKSdYPrk7g2KoiQoe7M2tcxp5"
+        ],
+        [
+          "Asset Identifier Account",
+          "5Y8NV33Vv7WbnLfq3zBcKSdYPrk7g2KoiQoe7M2tcxp5"
+        ],
+        [
+          "Ledger Market or Oracle Account #1",
+          "QHAK6enikqxGoEpyUpCfJ4WtzKbAwhPfSGSEFBCb7TN"
+        ],
+        [
+          "Ledger Market or Oracle Account #2",
+          "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH"
+        ],
+        [
+          "Ledger Market or Oracle Account #3",
+          "11111111111111111111111111111111"
+        ],
+        [
+          "Ledger Market or Oracle Account #4",
+          "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH"
+        ],
+        [
+          "Ledger Market or Oracle Account #5",
+          "11111111111111111111111111111111"
+        ],
+        [
+          "Ledger Market or Oracle Account #6",
+          "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH"
+        ],
+        [
+          "Ledger Market or Oracle Account #7",
+          "11111111111111111111111111111111"
+        ]
+      ],
+      "from": "hKPmc57FL5ZSerPYtUMLorUYBBxEr5fhmHXNM4kWLPS6XLcMHNiyGHgJVQQQB3roK8riNueQg2gaUzyWxDQA5Dm#3",
+      "intent": "Deposit collateral",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "EeviK3N1nCuumEFhiJTp7xW5aVVS9bMVZigVd7j4kjyw deposits 12.90130929 of 5Y8NV33Vv7WbnLfq3zBcKSdYPrk7g2KoiQoe7M2tcxp5 from 7DShWmbP2LicxspDVhcdbhXeTqfgduW7qJzEsXWXFUrW as collateral for loan Ge8ztfH9RsMvnkHt1KdnQKpezFTwRxR9DaCJxCwPdjC6",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "Dm6hjhrjaSaPt1NyafbUESpeKwGXqz2o59BdAPxDbbMk:sw",
+        "Dm6hjhrjaSaPt1NyafbUESpeKwGXqz2o59BdAPxDbbMk:sw",
+        "B8bhzZb3i4BMXbUkp1uo6thxoSZWjbXvEAKknfzF6YTN:w",
+        "8oiU4hotYZntejsfgW1ugddSSktN61sBrooisAPnABtu:w",
+        "8jhzzzfixS5trSZy4sBfKETohjRecFPXmMekzG9t1HxZ:w",
+        "3JJWjUXa9LR2HDPVAgJxdQZizPyiRJ66AC32QGWwtFwL:w",
+        "Ac6RtigKjKWqe6AnL79ibVxq6WuqNhSqvA1UJtMsKuRD:w",
+        "4NsctXnb8VSeprD6nB7UCEFJyqc41Jbe3untGwy22W4B:w",
+        "CGsJ8qckHEAd12hRjFqREdzRExv8D9AadzGBtvnvBzmh:w",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78"
+      ],
+      "data": "534ee67be2289e61020000000000000000",
+      "fields": [
+        [
+          "Action Type (code)",
+          "2"
+        ],
+        [
+          "Principal Amount (recorded)",
+          "0 base units"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "Dm6hjhrjaSaPt1NyafbUESpeKwGXqz2o59BdAPxDbbMk"
+        ],
+        [
+          "User",
+          "Dm6hjhrjaSaPt1NyafbUESpeKwGXqz2o59BdAPxDbbMk"
+        ],
+        [
+          "Vault",
+          "B8bhzZb3i4BMXbUkp1uo6thxoSZWjbXvEAKknfzF6YTN"
+        ],
+        [
+          "Share Token",
+          "8oiU4hotYZntejsfgW1ugddSSktN61sBrooisAPnABtu"
+        ],
+        [
+          "Stake Account",
+          "8jhzzzfixS5trSZy4sBfKETohjRecFPXmMekzG9t1HxZ"
+        ],
+        [
+          "Your Share Account",
+          "3JJWjUXa9LR2HDPVAgJxdQZizPyiRJ66AC32QGWwtFwL"
+        ],
+        [
+          "Stake Share Account",
+          "Ac6RtigKjKWqe6AnL79ibVxq6WuqNhSqvA1UJtMsKuRD"
+        ],
+        [
+          "Vault Rewards",
+          "4NsctXnb8VSeprD6nB7UCEFJyqc41Jbe3untGwy22W4B"
+        ],
+        [
+          "Your Rewards Record",
+          "CGsJ8qckHEAd12hRjFqREdzRExv8D9AadzGBtvnvBzmh"
+        ]
+      ],
+      "from": "4LSvve7uXmHpXHMDsJFj6rFjVNr6y7MgaSaqe7qHmYNjTPpF67kVYtmYtZYFkZf1qMsQ8pFKkuoWP8Qu8Xq9zFxw#3",
+      "intent": "Unstake vault shares",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "Dm6hjhrjaSaPt1NyafbUESpeKwGXqz2o59BdAPxDbbMk unstakes the shares of vault B8bhzZb3i4BMXbUkp1uo6thxoSZWjbXvEAKknfzF6YTN held in stake account 8jhzzzfixS5trSZy4sBfKETohjRecFPXmMekzG9t1HxZ into 3JJWjUXa9LR2HDPVAgJxdQZizPyiRJ66AC32QGWwtFwL",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "DR478QKgFnSGdDT5vPBk9ycu6tibA1mzpMKpjyDCVTCH:sw",
+        "DR478QKgFnSGdDT5vPBk9ycu6tibA1mzpMKpjyDCVTCH:sw",
+        "7PeYxZpM2dpc4RRDQovexMJ6tkSVLWtRN4mbNywsU3e6:w",
+        "22YqEw7CPkguXZfB3s3yt2SfLvTwTjeUih4a8agWxzxM:w",
+        "FPxvMwUbfJHQhC6F2vLNitQdkGfxc44XqefFevpwStNE",
+        "FEakRQjYAB7hUhmqGzpDVgUU2yHgjwY3PCTFYVwwxX5d:w",
+        "CiH4W4w7rRG8XqGPCkh71cQEETauaaW7NerXdnneN5EG:w",
+        "BT6KfWDJXjjjFJF1ud8U2kqtGkzBvauk13Ra5sCS758g:w",
+        "B8wA892ibCDNuuNv8nvY94KuJxzi3S6cW6Mfjdb3Medd:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78"
+      ],
+      "data": "0950868ad4143d2a018096980000000000c5348b0000000000",
+      "fields": [
+        [
+          "Withdrawal",
+          "Exact Out (Amount Out: 10000000, Max Amount In: 9123013)"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "DR478QKgFnSGdDT5vPBk9ycu6tibA1mzpMKpjyDCVTCH"
+        ],
+        [
+          "User",
+          "DR478QKgFnSGdDT5vPBk9ycu6tibA1mzpMKpjyDCVTCH"
+        ],
+        [
+          "Vault",
+          "7PeYxZpM2dpc4RRDQovexMJ6tkSVLWtRN4mbNywsU3e6"
+        ],
+        [
+          "Vault Strategy",
+          "22YqEw7CPkguXZfB3s3yt2SfLvTwTjeUih4a8agWxzxM"
+        ],
+        [
+          "Market",
+          "FPxvMwUbfJHQhC6F2vLNitQdkGfxc44XqefFevpwStNE"
+        ],
+        [
+          "Share Token",
+          "FEakRQjYAB7hUhmqGzpDVgUU2yHgjwY3PCTFYVwwxX5d"
+        ],
+        [
+          "Your Share Account",
+          "CiH4W4w7rRG8XqGPCkh71cQEETauaaW7NerXdnneN5EG"
+        ],
+        [
+          "Your Token Account",
+          "BT6KfWDJXjjjFJF1ud8U2kqtGkzBvauk13Ra5sCS758g"
+        ],
+        [
+          "Strategy Token Account",
+          "B8wA892ibCDNuuNv8nvY94KuJxzi3S6cW6Mfjdb3Medd"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ]
+      ],
+      "from": "2Cf5cymk2Lkew7CgFWxkBaKTCszvjhjmVWK2ThBnP3eV5fHiNUNnYzqikESCR88Ro4oexrRrD5ajcU6HVqK2MwJm#4",
+      "intent": "Withdraw from a vault",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "DR478QKgFnSGdDT5vPBk9ycu6tibA1mzpMKpjyDCVTCH withdraws EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from vault 7PeYxZpM2dpc4RRDQovexMJ6tkSVLWtRN4mbNywsU3e6 into BT6KfWDJXjjjFJF1ud8U2kqtGkzBvauk13Ra5sCS758g by burning shares from CiH4W4w7rRG8XqGPCkh71cQEETauaaW7NerXdnneN5EG",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "FmTTpg3yaZwsYCta2TG7ksLwLC3BJHQDP9xQVauVD3To:sw",
+        "FmTTpg3yaZwsYCta2TG7ksLwLC3BJHQDP9xQVauVD3To:sw",
+        "7PeYxZpM2dpc4RRDQovexMJ6tkSVLWtRN4mbNywsU3e6:w",
+        "22YqEw7CPkguXZfB3s3yt2SfLvTwTjeUih4a8agWxzxM:w",
+        "FPxvMwUbfJHQhC6F2vLNitQdkGfxc44XqefFevpwStNE",
+        "FEakRQjYAB7hUhmqGzpDVgUU2yHgjwY3PCTFYVwwxX5d:w",
+        "6Enr69HruabapRg3HgpVKaCgKLvNx7PoDjcwZWhMHJUw:w",
+        "FuzDtf3PFAx2L7tXhn9PJkshKjdrNwKyGa5tG5QQsZHn:w",
+        "B8wA892ibCDNuuNv8nvY94KuJxzi3S6cW6Mfjdb3Medd:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78"
+      ],
+      "data": "0950868ad4143d2a013cb32c3c00000000ca26d83600000000",
+      "fields": [
+        [
+          "Withdrawal",
+          "Exact Out (Amount Out: 1009562428, Max Amount In: 920135370)"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "FmTTpg3yaZwsYCta2TG7ksLwLC3BJHQDP9xQVauVD3To"
+        ],
+        [
+          "User",
+          "FmTTpg3yaZwsYCta2TG7ksLwLC3BJHQDP9xQVauVD3To"
+        ],
+        [
+          "Vault",
+          "7PeYxZpM2dpc4RRDQovexMJ6tkSVLWtRN4mbNywsU3e6"
+        ],
+        [
+          "Vault Strategy",
+          "22YqEw7CPkguXZfB3s3yt2SfLvTwTjeUih4a8agWxzxM"
+        ],
+        [
+          "Market",
+          "FPxvMwUbfJHQhC6F2vLNitQdkGfxc44XqefFevpwStNE"
+        ],
+        [
+          "Share Token",
+          "FEakRQjYAB7hUhmqGzpDVgUU2yHgjwY3PCTFYVwwxX5d"
+        ],
+        [
+          "Your Share Account",
+          "6Enr69HruabapRg3HgpVKaCgKLvNx7PoDjcwZWhMHJUw"
+        ],
+        [
+          "Your Token Account",
+          "FuzDtf3PFAx2L7tXhn9PJkshKjdrNwKyGa5tG5QQsZHn"
+        ],
+        [
+          "Strategy Token Account",
+          "B8wA892ibCDNuuNv8nvY94KuJxzi3S6cW6Mfjdb3Medd"
+        ],
+        [
+          "Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ]
+      ],
+      "from": "5tEmKXsseqvUPr5LXdJ7D6bNw1AadJeym8UzV9GMZV6ZAg7AoJVvkuTYaoU1QFNQBQzuRVN9pRe11z13h6ch5CAt#4",
+      "intent": "Withdraw from a vault",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "FmTTpg3yaZwsYCta2TG7ksLwLC3BJHQDP9xQVauVD3To withdraws EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from vault 7PeYxZpM2dpc4RRDQovexMJ6tkSVLWtRN4mbNywsU3e6 into FuzDtf3PFAx2L7tXhn9PJkshKjdrNwKyGa5tG5QQsZHn by burning shares from 6Enr69HruabapRg3HgpVKaCgKLvNx7PoDjcwZWhMHJUw",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "Dm6hjhrjaSaPt1NyafbUESpeKwGXqz2o59BdAPxDbbMk:sw",
+        "Dm6hjhrjaSaPt1NyafbUESpeKwGXqz2o59BdAPxDbbMk:sw",
+        "3sdUnPQxh7ZCxuZeYPJZkhFRfXvfoUxLsDGqo4ujLSA9:s",
+        "B8bhzZb3i4BMXbUkp1uo6thxoSZWjbXvEAKknfzF6YTN:w",
+        "6SJfgnsU9JdGc9WNZQSA5mrQw3KBiFPoRjqdhfNQcjqz:w",
+        "8oiU4hotYZntejsfgW1ugddSSktN61sBrooisAPnABtu:w",
+        "3JJWjUXa9LR2HDPVAgJxdQZizPyiRJ66AC32QGWwtFwL:w",
+        "5pup2eo6ue8z2zGxj16VZ5LRRajEFT4tt1qyjcwx1EFF:w",
+        "4NsctXnb8VSeprD6nB7UCEFJyqc41Jbe3untGwy22W4B:w",
+        "GdebSyx892a9jneM5F6mn5uqxS3YroeRYDg1QrWjE6mC:w",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78"
+      ],
+      "data": "7284c2d1d0952b88a0508001000000003e851e00000000000101000000000001",
+      "fields": [
+        [
+          "Shares",
+          "25.186464"
+        ],
+        [
+          "Principal Amount (recorded)",
+          "2,000,190 base units"
+        ],
+        [
+          "Stake All",
+          "true"
+        ],
+        [
+          "Lock Duration",
+          "0"
+        ],
+        [
+          "Lock Duration Unit (code)",
+          "0"
+        ],
+        [
+          "Action Type (code)",
+          "1"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "Dm6hjhrjaSaPt1NyafbUESpeKwGXqz2o59BdAPxDbbMk"
+        ],
+        [
+          "User",
+          "Dm6hjhrjaSaPt1NyafbUESpeKwGXqz2o59BdAPxDbbMk"
+        ],
+        [
+          "Stake Seed",
+          "3sdUnPQxh7ZCxuZeYPJZkhFRfXvfoUxLsDGqo4ujLSA9"
+        ],
+        [
+          "Vault",
+          "B8bhzZb3i4BMXbUkp1uo6thxoSZWjbXvEAKknfzF6YTN"
+        ],
+        [
+          "Stake Account",
+          "6SJfgnsU9JdGc9WNZQSA5mrQw3KBiFPoRjqdhfNQcjqz"
+        ],
+        [
+          "Share Token",
+          "8oiU4hotYZntejsfgW1ugddSSktN61sBrooisAPnABtu"
+        ],
+        [
+          "Your Share Account",
+          "3JJWjUXa9LR2HDPVAgJxdQZizPyiRJ66AC32QGWwtFwL"
+        ],
+        [
+          "Stake Share Account",
+          "5pup2eo6ue8z2zGxj16VZ5LRRajEFT4tt1qyjcwx1EFF"
+        ],
+        [
+          "Vault Rewards",
+          "4NsctXnb8VSeprD6nB7UCEFJyqc41Jbe3untGwy22W4B"
+        ],
+        [
+          "Your Rewards Record",
+          "GdebSyx892a9jneM5F6mn5uqxS3YroeRYDg1QrWjE6mC"
+        ]
+      ],
+      "from": "4LSvve7uXmHpXHMDsJFj6rFjVNr6y7MgaSaqe7qHmYNjTPpF67kVYtmYtZYFkZf1qMsQ8pFKkuoWP8Qu8Xq9zFxw#5",
+      "intent": "Stake vault shares",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "Dm6hjhrjaSaPt1NyafbUESpeKwGXqz2o59BdAPxDbbMk stakes shares of vault B8bhzZb3i4BMXbUkp1uo6thxoSZWjbXvEAKknfzF6YTN from 3JJWjUXa9LR2HDPVAgJxdQZizPyiRJ66AC32QGWwtFwL in stake account 6SJfgnsU9JdGc9WNZQSA5mrQw3KBiFPoRjqdhfNQcjqz",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "5ibZpVQDnfxPeW4m3yCG6YgxPjjJdz5L8iHHTP6ZTqHX:sw",
+        "5ibZpVQDnfxPeW4m3yCG6YgxPjjJdz5L8iHHTP6ZTqHX:sw",
+        "EEfBH6HWLkMVAcvp8uoaz1cAEiVBG5UJxWupVmwoqjYd:w",
+        "6tv6XYnXUFjLSaAeap4T1GQusYeEw3nK6KTcVyyHf3ns:w",
+        "5qjqX4YQL6HSQMagRfTVfFDXrwxzKpS6bHguCWPe768y:w",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "AzesjcAKKZaeRXCmj3PiswBbDXZzbqyg99x4xs1GWniB:w",
+        "3GAu8zG1bLHEd2K5JUvysEjLSkfTw4aXYCFaUcQCYsA2:w",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78"
+      ],
+      "data": "e54353414d54508d80b2e60e000000000000",
+      "fields": [
+        [
+          "Amount",
+          "250"
+        ],
+        [
+          "Ledger Index (of the loan's ledgers)",
+          "0"
+        ],
+        [
+          "Repay All",
+          "false"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "5ibZpVQDnfxPeW4m3yCG6YgxPjjJdz5L8iHHTP6ZTqHX"
+        ],
+        [
+          "Borrower",
+          "5ibZpVQDnfxPeW4m3yCG6YgxPjjJdz5L8iHHTP6ZTqHX"
+        ],
+        [
+          "Loan",
+          "EEfBH6HWLkMVAcvp8uoaz1cAEiVBG5UJxWupVmwoqjYd"
+        ],
+        [
+          "Lender Strategy",
+          "6tv6XYnXUFjLSaAeap4T1GQusYeEw3nK6KTcVyyHf3ns"
+        ],
+        [
+          "Market",
+          "5qjqX4YQL6HSQMagRfTVfFDXrwxzKpS6bHguCWPe768y"
+        ],
+        [
+          "Principal Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Borrower Token Account",
+          "AzesjcAKKZaeRXCmj3PiswBbDXZzbqyg99x4xs1GWniB"
+        ],
+        [
+          "Strategy Token Account",
+          "3GAu8zG1bLHEd2K5JUvysEjLSkfTw4aXYCFaUcQCYsA2"
+        ]
+      ],
+      "from": "58ooZpPVtxZA3o7CVHZeeXmf8AYvTbMAiNxu24o7QSL8Pk7tcKYqnkMeifC1cwaGDAPtcEGDAwRsVPpJyxFwYUsr#3",
+      "intent": "Repay a loan",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "5ibZpVQDnfxPeW4m3yCG6YgxPjjJdz5L8iHHTP6ZTqHX repays 250 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from AzesjcAKKZaeRXCmj3PiswBbDXZzbqyg99x4xs1GWniB (or the whole ledger, when Repay All is set) on ledger 0 of loan EEfBH6HWLkMVAcvp8uoaz1cAEiVBG5UJxWupVmwoqjYd, to strategy 6tv6XYnXUFjLSaAeap4T1GQusYeEw3nK6KTcVyyHf3ns",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "3pYGZw5mR3mCqZ5AQDEMFES9hAFEhBFtir9N4EMQ1Us1:sw",
+        "3pYGZw5mR3mCqZ5AQDEMFES9hAFEhBFtir9N4EMQ1Us1:sw",
+        "8VEnRQmm7FBKnhX42qvy1iK1Yq64HcMgQkjXSe1r3VMw:w",
+        "FhZ9BHMfmhsekSnZkuEF48LF3JRyBYkGxRF8cYKBAk96:w",
+        "BPMngb4qKrqmctJhSkYpRvan3VorQr3oW8s8NiYnrtWC:w",
+        "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E",
+        "2PykZD5aMyC5EeweMTfXoEMB2EAAbbvWQ5urcuCdyy3M:w",
+        "Hi9uZzDFVE47YTxqrFbQi3SvoSr4BwsxJVYb5P4Hskch:w",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78"
+      ],
+      "data": "e54353414d54508dffc11c01000000000000",
+      "fields": [
+        [
+          "Amount",
+          "18.661887"
+        ],
+        [
+          "Ledger Index (of the loan's ledgers)",
+          "0"
+        ],
+        [
+          "Repay All",
+          "false"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "3pYGZw5mR3mCqZ5AQDEMFES9hAFEhBFtir9N4EMQ1Us1"
+        ],
+        [
+          "Borrower",
+          "3pYGZw5mR3mCqZ5AQDEMFES9hAFEhBFtir9N4EMQ1Us1"
+        ],
+        [
+          "Loan",
+          "8VEnRQmm7FBKnhX42qvy1iK1Yq64HcMgQkjXSe1r3VMw"
+        ],
+        [
+          "Lender Strategy",
+          "FhZ9BHMfmhsekSnZkuEF48LF3JRyBYkGxRF8cYKBAk96"
+        ],
+        [
+          "Market",
+          "BPMngb4qKrqmctJhSkYpRvan3VorQr3oW8s8NiYnrtWC"
+        ],
+        [
+          "Principal Token",
+          "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E"
+        ],
+        [
+          "Borrower Token Account",
+          "2PykZD5aMyC5EeweMTfXoEMB2EAAbbvWQ5urcuCdyy3M"
+        ],
+        [
+          "Strategy Token Account",
+          "Hi9uZzDFVE47YTxqrFbQi3SvoSr4BwsxJVYb5P4Hskch"
+        ]
+      ],
+      "from": "5FnqZ8nRNfKF3YfuE4RaxMfSCuTyQShxVdjLivssH2bfuzoQqxASb6qEpTEuEnbenq9QEyRULXLgAPzjEDuckPzb#3",
+      "intent": "Repay a loan",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "3pYGZw5mR3mCqZ5AQDEMFES9hAFEhBFtir9N4EMQ1Us1 repays 18.661887 of 5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E from 2PykZD5aMyC5EeweMTfXoEMB2EAAbbvWQ5urcuCdyy3M (or the whole ledger, when Repay All is set) on ledger 0 of loan 8VEnRQmm7FBKnhX42qvy1iK1Yq64HcMgQkjXSe1r3VMw, to strategy FhZ9BHMfmhsekSnZkuEF48LF3JRyBYkGxRF8cYKBAk96",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "Dm6hjhrjaSaPt1NyafbUESpeKwGXqz2o59BdAPxDbbMk:sw",
+        "Dm6hjhrjaSaPt1NyafbUESpeKwGXqz2o59BdAPxDbbMk:sw",
+        "B8bhzZb3i4BMXbUkp1uo6thxoSZWjbXvEAKknfzF6YTN:w",
+        "FhZ9BHMfmhsekSnZkuEF48LF3JRyBYkGxRF8cYKBAk96:w",
+        "BPMngb4qKrqmctJhSkYpRvan3VorQr3oW8s8NiYnrtWC",
+        "8oiU4hotYZntejsfgW1ugddSSktN61sBrooisAPnABtu:w",
+        "3JJWjUXa9LR2HDPVAgJxdQZizPyiRJ66AC32QGWwtFwL:w",
+        "DDAY4szQQhk8frVGDLzr7WmcLyTzwn9dABBgafo67brA:w",
+        "Hi9uZzDFVE47YTxqrFbQi3SvoSr4BwsxJVYb5P4Hskch:w",
+        "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78"
+      ],
+      "data": "ccbeb6e00fdbf779003e851e00000000008cc81c0000000000",
+      "fields": [
+        [
+          "Deposit",
+          "Exact In (Amount In: 2000190, Min Amount Out: 1886348)"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "Dm6hjhrjaSaPt1NyafbUESpeKwGXqz2o59BdAPxDbbMk"
+        ],
+        [
+          "User",
+          "Dm6hjhrjaSaPt1NyafbUESpeKwGXqz2o59BdAPxDbbMk"
+        ],
+        [
+          "Vault",
+          "B8bhzZb3i4BMXbUkp1uo6thxoSZWjbXvEAKknfzF6YTN"
+        ],
+        [
+          "Vault Strategy",
+          "FhZ9BHMfmhsekSnZkuEF48LF3JRyBYkGxRF8cYKBAk96"
+        ],
+        [
+          "Market",
+          "BPMngb4qKrqmctJhSkYpRvan3VorQr3oW8s8NiYnrtWC"
+        ],
+        [
+          "Share Token",
+          "8oiU4hotYZntejsfgW1ugddSSktN61sBrooisAPnABtu"
+        ],
+        [
+          "Your Share Account",
+          "3JJWjUXa9LR2HDPVAgJxdQZizPyiRJ66AC32QGWwtFwL"
+        ],
+        [
+          "Your Token Account",
+          "DDAY4szQQhk8frVGDLzr7WmcLyTzwn9dABBgafo67brA"
+        ],
+        [
+          "Strategy Token Account",
+          "Hi9uZzDFVE47YTxqrFbQi3SvoSr4BwsxJVYb5P4Hskch"
+        ],
+        [
+          "Token",
+          "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E"
+        ]
+      ],
+      "from": "4LSvve7uXmHpXHMDsJFj6rFjVNr6y7MgaSaqe7qHmYNjTPpF67kVYtmYtZYFkZf1qMsQ8pFKkuoWP8Qu8Xq9zFxw#4",
+      "intent": "Deposit into a vault",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "Dm6hjhrjaSaPt1NyafbUESpeKwGXqz2o59BdAPxDbbMk deposits 5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E from DDAY4szQQhk8frVGDLzr7WmcLyTzwn9dABBgafo67brA into vault B8bhzZb3i4BMXbUkp1uo6thxoSZWjbXvEAKknfzF6YTN and receives its shares in 3JJWjUXa9LR2HDPVAgJxdQZizPyiRJ66AC32QGWwtFwL",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "GEBAoninbCBbCQKb4iqH1hADNtcQ3UamrExpX9sHANWH:sw",
+        "GEBAoninbCBbCQKb4iqH1hADNtcQ3UamrExpX9sHANWH:sw",
+        "8Fm99pB76gWxfHRtY9Uoxn22tL5TNStarjNEwbZNBMM8",
+        "HdojpTYBNc48LCMfxnCLfezLVmD1j2stafceoEMCQ9mW:w",
+        "F1vjpLWmihPJr2LaAC118sdHwKo8vGmur8nt8K6DgiDr:w",
+        "9ZvBx3jUY6MEmpFJmdKMQcU17rw6T5PAYQgQq2Tnkxbt:w",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+        "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E",
+        "GFpG2kFb9FJwMzvT9Tcsyd5yagNLJsCE2YVCXoksFd3u:w",
+        "AyHDoL79VFp7aYMRzCG63EdYZBgUK7JMe7XJVnckYuBU:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "00984b1dc3df0c65010000004377371c74f86ea18bf17fb160338452aa63fadcacd5a31fb3acf54ba52e88ad",
+      "fields": [
+        [
+          "Reward Tokens",
+          "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "GEBAoninbCBbCQKb4iqH1hADNtcQ3UamrExpX9sHANWH"
+        ],
+        [
+          "User",
+          "GEBAoninbCBbCQKb4iqH1hADNtcQ3UamrExpX9sHANWH"
+        ],
+        [
+          "Vault",
+          "8Fm99pB76gWxfHRtY9Uoxn22tL5TNStarjNEwbZNBMM8"
+        ],
+        [
+          "Vault Rewards",
+          "HdojpTYBNc48LCMfxnCLfezLVmD1j2stafceoEMCQ9mW"
+        ],
+        [
+          "User Rewards Record",
+          "F1vjpLWmihPJr2LaAC118sdHwKo8vGmur8nt8K6DgiDr"
+        ],
+        [
+          "Stake Account",
+          "9ZvBx3jUY6MEmpFJmdKMQcU17rw6T5PAYQgQq2Tnkxbt"
+        ],
+        [
+          "Reward Account #1",
+          "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E"
+        ],
+        [
+          "Reward Account #2",
+          "GFpG2kFb9FJwMzvT9Tcsyd5yagNLJsCE2YVCXoksFd3u"
+        ],
+        [
+          "Reward Account #3",
+          "AyHDoL79VFp7aYMRzCG63EdYZBgUK7JMe7XJVnckYuBU"
+        ],
+        [
+          "Reward Account #4",
+          "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        ]
+      ],
+      "from": "628gB5WWULkKf7nSd2PqFhPCQKNc4kVpnJgYJNorin1SrEgJ5QRJ4uzSeYwgVECo5tNF7b5hpUywvZdX2CsGdSsb#3",
+      "intent": "Claim vault rewards",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "GEBAoninbCBbCQKb4iqH1hADNtcQ3UamrExpX9sHANWH claims the rewards of GEBAoninbCBbCQKb4iqH1hADNtcQ3UamrExpX9sHANWH from vault 8Fm99pB76gWxfHRtY9Uoxn22tL5TNStarjNEwbZNBMM8",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3:sw",
+        "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3:sw",
+        "732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN:w",
+        "9rutZMt7EyNubx3v8f6124jvK8uAKnUvsHW6P54qKuiv:w",
+        "4fu92Bnxgx2TuniJ5ex6nniEXN6PowfJWxj5aE7LYRRe:w",
+        "11111111111111111111111111111111",
+        "BULKoNSGzxtCqzwTvg5hFJg8fx6dqZRScyXe5LYMfxrn",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+        "2qSCbuG39pvPVkNhD1y3v5HdYeHNJorJtympBr4TY83F",
+        "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH",
+        "11111111111111111111111111111111",
+        "3aUmJDNpMHjkxunQEkHTj2chzyryKoH2uQj6YACLD174"
+      ],
+      "data": "7387a86a8bd68a9600f2052a010000000002000000116d50c3000000000000f07e0e00000000000000000000000000000000000000",
+      "fields": [
+        [
+          "Amount",
+          "5"
+        ],
+        [
+          "Collateral Index (of the loan's collateral)",
+          "0"
+        ],
+        [
+          "Asset Index Guidance (hex, one byte per index into the market's asset list)",
+          "116d"
+        ],
+        [
+          "Expected APY",
+          "5 %"
+        ],
+        [
+          "Expected Liquidation Thresholds (1,000,000 = 100%)",
+          "950000, 0, 0, 0, 0"
+        ],
+        [
+          "Close Loan If Empty",
+          "false"
+        ],
+        [
+          "Withdraw All",
+          "false"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3"
+        ],
+        [
+          "Borrower",
+          "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3"
+        ],
+        [
+          "Loan",
+          "732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN"
+        ],
+        [
+          "Borrower Token Account",
+          "9rutZMt7EyNubx3v8f6124jvK8uAKnUvsHW6P54qKuiv"
+        ],
+        [
+          "Loan Collateral Account",
+          "4fu92Bnxgx2TuniJ5ex6nniEXN6PowfJWxj5aE7LYRRe"
+        ],
+        [
+          "Collateral Token",
+          "BULKoNSGzxtCqzwTvg5hFJg8fx6dqZRScyXe5LYMfxrn"
+        ],
+        [
+          "Ledger or Health Check Account #1",
+          "2qSCbuG39pvPVkNhD1y3v5HdYeHNJorJtympBr4TY83F"
+        ],
+        [
+          "Ledger or Health Check Account #2",
+          "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH"
+        ],
+        [
+          "Ledger or Health Check Account #3",
+          "11111111111111111111111111111111"
+        ],
+        [
+          "Ledger or Health Check Account #4",
+          "3aUmJDNpMHjkxunQEkHTj2chzyryKoH2uQj6YACLD174"
+        ]
+      ],
+      "from": "3JVTUJfNMRAmXxqmzQXuM4pckHxPnZUuZ6Nd9Te4o4BUtCXLCoNhsm2PxFwdxKT18dYKvMiLYMTNMHEnhuRGLEUk#3",
+      "intent": "Withdraw collateral",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3 withdraws 5 of BULKoNSGzxtCqzwTvg5hFJg8fx6dqZRScyXe5LYMfxrn of collateral (or all of it, when Withdraw All is set) from loan 732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN into 9rutZMt7EyNubx3v8f6124jvK8uAKnUvsHW6P54qKuiv",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "GhMN2xQhRLt8mKpgX4Z4dautZqB5q3kNzf9Cd5P4JfB4:sw",
+        "GhMN2xQhRLt8mKpgX4Z4dautZqB5q3kNzf9Cd5P4JfB4:sw",
+        "9KKLSXbjEgzeTppupt7U6QSbRbJSLmDm5agusa2vWykP:w",
+        "9VmUKBrcmcUHr3M2AB1kmT3QYf5C4T7fbiX2ZRBhvthr:w",
+        "WjeH2kyyZ9kFAHK4N7HJNWcbDzfN386tQodvvhpWwYL:w",
+        "11111111111111111111111111111111",
+        "5Y8NV33Vv7WbnLfq3zBcKSdYPrk7g2KoiQoe7M2tcxp5",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78"
+      ],
+      "data": "7387a86a8bd68a96ffe3c571d40500000000000000000000000000000000000000000000000000000000000000000000000000",
+      "fields": [
+        [
+          "Amount",
+          "6,409.999999999"
+        ],
+        [
+          "Collateral Index (of the loan's collateral)",
+          "0"
+        ],
+        [
+          "Asset Index Guidance (hex, one byte per index into the market's asset list)",
+          ""
+        ],
+        [
+          "Expected APY",
+          "0 %"
+        ],
+        [
+          "Expected Liquidation Thresholds (1,000,000 = 100%)",
+          "0, 0, 0, 0, 0"
+        ],
+        [
+          "Close Loan If Empty",
+          "false"
+        ],
+        [
+          "Withdraw All",
+          "false"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "GhMN2xQhRLt8mKpgX4Z4dautZqB5q3kNzf9Cd5P4JfB4"
+        ],
+        [
+          "Borrower",
+          "GhMN2xQhRLt8mKpgX4Z4dautZqB5q3kNzf9Cd5P4JfB4"
+        ],
+        [
+          "Loan",
+          "9KKLSXbjEgzeTppupt7U6QSbRbJSLmDm5agusa2vWykP"
+        ],
+        [
+          "Borrower Token Account",
+          "9VmUKBrcmcUHr3M2AB1kmT3QYf5C4T7fbiX2ZRBhvthr"
+        ],
+        [
+          "Loan Collateral Account",
+          "WjeH2kyyZ9kFAHK4N7HJNWcbDzfN386tQodvvhpWwYL"
+        ],
+        [
+          "Collateral Token",
+          "5Y8NV33Vv7WbnLfq3zBcKSdYPrk7g2KoiQoe7M2tcxp5"
+        ]
+      ],
+      "from": "4fGc72HPeQqa7YZmEb7GUq6TjRFobMRFzHxG6u2vHrHmPtb7UrYu3dxuvx85fEvCiBhwnkkE7GCtVA2mq2kQ28Up#4",
+      "intent": "Withdraw collateral",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "GhMN2xQhRLt8mKpgX4Z4dautZqB5q3kNzf9Cd5P4JfB4 withdraws 6,409.999999999 of 5Y8NV33Vv7WbnLfq3zBcKSdYPrk7g2KoiQoe7M2tcxp5 of collateral (or all of it, when Withdraw All is set) from loan 9KKLSXbjEgzeTppupt7U6QSbRbJSLmDm5agusa2vWykP into 9VmUKBrcmcUHr3M2AB1kmT3QYf5C4T7fbiX2ZRBhvthr",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "bs1PuRvB9rBBZkryBjADYvxc2qYh51EVW2fsb1uTiBN:sw",
+        "bs1PuRvB9rBBZkryBjADYvxc2qYh51EVW2fsb1uTiBN:sw",
+        "Bif5zZsJeRphkTF4anjowJLUfhtuKrT9sV4moksqmnmh:w",
+        "v6xaphfwAAprdnL2exW1HdHkjzFE9aUhZxJEG216Zd1:sw",
+        "61QkMTUpkbEBkekzrkrzRBtTB45wfjKH2PqeDjJPxLag:w",
+        "QHAK6enikqxGoEpyUpCfJ4WtzKbAwhPfSGSEFBCb7TN",
+        "11111111111111111111111111111111",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+        "Corda2ft7VZjCaYShPtRTUpFLs5NuZEWgcrNwm541bZi"
+      ],
+      "data": "f30a6eaa47fbd25700af71640b92b4654ce55eafb45a838a29d6ea67fa2fb0577b12210e1b348d30e1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaf71640b92b4654ce55eafb45a838a29d6ea67fa2fb0577b12210e1b348d30e101000000000000000000000000000000000000000000000000000000000000000001c16b4417f33a5198286db3e6a0158cf42d5ba0a31f97d1463f518b717b0d21c801130150c3000001100e01b0710b000100350c00000100",
+      "fields": [
+        [
+          "Change",
+          "Add Collateral (Collateral Terms: Asset Identifier: Corda2ft7VZjCaYShPtRTUpFLs5NuZEWgcrNwm541bZi, Terms: 18446744073709551615, 18446744073709551615, 18446744073709551615, 18446744073709551615, 18446744073709551615, Update Asset Data Params: Asset Identifier: Corda2ft7VZjCaYShPtRTUpFLs5NuZEWgcrNwm541bZi, Quote Mint: 11111111111111111111111111111111, Oracle Account: E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH, Oracle Type: 19, Max Uncertainty: 50000, Max Age: 3600, Ltv: 750000, Liquidation Threshold: 800000, Max Collateral Allocation Pct: None, Remove: false)"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "bs1PuRvB9rBBZkryBjADYvxc2qYh51EVW2fsb1uTiBN"
+        ],
+        [
+          "Manager",
+          "bs1PuRvB9rBBZkryBjADYvxc2qYh51EVW2fsb1uTiBN"
+        ],
+        [
+          "Vault",
+          "Bif5zZsJeRphkTF4anjowJLUfhtuKrT9sV4moksqmnmh"
+        ],
+        [
+          "Timelocked Change",
+          "v6xaphfwAAprdnL2exW1HdHkjzFE9aUhZxJEG216Zd1"
+        ],
+        [
+          "Vault Market",
+          "61QkMTUpkbEBkekzrkrzRBtTB45wfjKH2PqeDjJPxLag"
+        ],
+        [
+          "External Market",
+          "QHAK6enikqxGoEpyUpCfJ4WtzKbAwhPfSGSEFBCb7TN"
+        ],
+        [
+          "Additional Account",
+          "Corda2ft7VZjCaYShPtRTUpFLs5NuZEWgcrNwm541bZi"
+        ]
+      ],
+      "from": "3VeAWV1utaCvj9kFWAfsRiRd5fSHv7nzMymSzWo1esSj7PJxF4THkXGsb4tyQqzK5PhRFDd55hbwfjXh1gwpjJHB#3",
+      "intent": "Propose a vault change",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "bs1PuRvB9rBBZkryBjADYvxc2qYh51EVW2fsb1uTiBN proposes a timelocked change v6xaphfwAAprdnL2exW1HdHkjzFE9aUhZxJEG216Zd1 to vault Bif5zZsJeRphkTF4anjowJLUfhtuKrT9sV4moksqmnmh",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "bs1PuRvB9rBBZkryBjADYvxc2qYh51EVW2fsb1uTiBN:sw",
+        "Bif5zZsJeRphkTF4anjowJLUfhtuKrT9sV4moksqmnmh:w",
+        "v6xaphfwAAprdnL2exW1HdHkjzFE9aUhZxJEG216Zd1:sw",
+        "4KNmR2s1Tz9VLA5ZVQkaxWqhDwqc7C7roxzp6crtrvZZ:w",
+        "61QkMTUpkbEBkekzrkrzRBtTB45wfjKH2PqeDjJPxLag:w",
+        "FN3AYE1sWAa2DkfuNpeFvuyEVYxX92A93SnCZMYhcUG2:w",
+        "11111111111111111111111111111111",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+        "Corda2ft7VZjCaYShPtRTUpFLs5NuZEWgcrNwm541bZi",
+        "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH"
+      ],
+      "data": "a0c2f008d45d9ddd",
+      "fields": [
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "bs1PuRvB9rBBZkryBjADYvxc2qYh51EVW2fsb1uTiBN"
+        ],
+        [
+          "Vault",
+          "Bif5zZsJeRphkTF4anjowJLUfhtuKrT9sV4moksqmnmh"
+        ],
+        [
+          "Timelocked Change",
+          "v6xaphfwAAprdnL2exW1HdHkjzFE9aUhZxJEG216Zd1"
+        ],
+        [
+          "Vault Strategy",
+          "4KNmR2s1Tz9VLA5ZVQkaxWqhDwqc7C7roxzp6crtrvZZ"
+        ],
+        [
+          "Market",
+          "61QkMTUpkbEBkekzrkrzRBtTB45wfjKH2PqeDjJPxLag"
+        ],
+        [
+          "Strategy Token Account",
+          "FN3AYE1sWAa2DkfuNpeFvuyEVYxX92A93SnCZMYhcUG2"
+        ],
+        [
+          "Principal Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Additional Account #1",
+          "Corda2ft7VZjCaYShPtRTUpFLs5NuZEWgcrNwm541bZi"
+        ],
+        [
+          "Additional Account #2",
+          "E22Z2nKBdA3RpJhM8G2mB35zFA95Qdbs3WGbMNxFhmuH"
+        ]
+      ],
+      "from": "3VeAWV1utaCvj9kFWAfsRiRd5fSHv7nzMymSzWo1esSj7PJxF4THkXGsb4tyQqzK5PhRFDd55hbwfjXh1gwpjJHB#4",
+      "intent": "Apply a vault change",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "bs1PuRvB9rBBZkryBjADYvxc2qYh51EVW2fsb1uTiBN applies timelocked change v6xaphfwAAprdnL2exW1HdHkjzFE9aUhZxJEG216Zd1 to vault Bif5zZsJeRphkTF4anjowJLUfhtuKrT9sV4moksqmnmh",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "87hrzuaQoTsFmAF9efviVJdsCwUJf7mxX33Mvr7Xvo1f:sw",
+        "87hrzuaQoTsFmAF9efviVJdsCwUJf7mxX33Mvr7Xvo1f:sw",
+        "BRrwHTJyA1HHPpCqtzfeSDfrBs4Ty73MmA8nmaJdbMmr:w",
+        "dawn7ZUF7h7anFuEsDdAU1Y3HYwikwqNMAENZsQJdNL",
+        "2n8RnH1MmBxQxPB7NZFaqFzuZkC4A29KUp7Lok5XJT8X",
+        "Fe8c72ZzudH1kQSNtvrx2JpqQLTV3NPtPpQfzho164mV:w",
+        "BiEFWebGwMBYeeSpoREs32etQx2P3eaT1ikNVGCDqTna:w",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "11111111111111111111111111111111",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78"
+      ],
+      "data": "1f2da205c1d986bcc0e1e4000000000000",
+      "fields": [
+        [
+          "Amount",
+          "15"
+        ],
+        [
+          "Withdraw All",
+          "false"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "87hrzuaQoTsFmAF9efviVJdsCwUJf7mxX33Mvr7Xvo1f"
+        ],
+        [
+          "Lender",
+          "87hrzuaQoTsFmAF9efviVJdsCwUJf7mxX33Mvr7Xvo1f"
+        ],
+        [
+          "Strategy",
+          "BRrwHTJyA1HHPpCqtzfeSDfrBs4Ty73MmA8nmaJdbMmr"
+        ],
+        [
+          "Principal Token",
+          "dawn7ZUF7h7anFuEsDdAU1Y3HYwikwqNMAENZsQJdNL"
+        ],
+        [
+          "Market",
+          "2n8RnH1MmBxQxPB7NZFaqFzuZkC4A29KUp7Lok5XJT8X"
+        ],
+        [
+          "Lender Token Account",
+          "Fe8c72ZzudH1kQSNtvrx2JpqQLTV3NPtPpQfzho164mV"
+        ],
+        [
+          "Strategy Token Account",
+          "BiEFWebGwMBYeeSpoREs32etQx2P3eaT1ikNVGCDqTna"
+        ]
+      ],
+      "from": "2KLZ53ngtenoTn1WnMMyFsHaE8yBdD2bBTZ8V7qunzTgsqY78ny6tXLmxJi1wkoBgNgx9t11PHcmzrRGWqj4jK5S#3",
+      "intent": "Withdraw from a strategy",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "87hrzuaQoTsFmAF9efviVJdsCwUJf7mxX33Mvr7Xvo1f withdraws 15 of dawn7ZUF7h7anFuEsDdAU1Y3HYwikwqNMAENZsQJdNL (or all that can be withdrawn, when Withdraw All is set) from strategy BRrwHTJyA1HHPpCqtzfeSDfrBs4Ty73MmA8nmaJdbMmr into Fe8c72ZzudH1kQSNtvrx2JpqQLTV3NPtPpQfzho164mV",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3:sw",
+        "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3:sw",
+        "732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN:w",
+        "Sysvar1nstructions1111111111111111111111111",
+        "11111111111111111111111111111111",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z"
+      ],
+      "data": "1c6534f092e65f1609",
+      "fields": [
+        [
+          "Unlock Instruction Index (in this transaction)",
+          "9"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3"
+        ],
+        [
+          "Borrower",
+          "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3"
+        ],
+        [
+          "Loan",
+          "732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN"
+        ]
+      ],
+      "from": "5J5GFLK3NPk3D9JyR7qw3nr1sMmJ62rDi1K2EUvh7cMbDM9qiooKqrTcUVL4XkPeiMirupz2CB4fQUaq9biMk38F#4",
+      "intent": "Lock a loan",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3 locks loan 732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN until instruction 9 of this transaction (counted from 0) unlocks it",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3:sw",
+        "732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN:w",
+        "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3:sw",
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "11111111111111111111111111111111",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "2qSCbuG39pvPVkNhD1y3v5HdYeHNJorJtympBr4TY83F:w",
+        "7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE",
+        "3aUmJDNpMHjkxunQEkHTj2chzyryKoH2uQj6YACLD174:w"
+      ],
+      "data": "79e2b262d7d1f02602000000116d",
+      "fields": [
+        [
+          "Asset Index Guidance (hex, one byte per index into the market's asset list)",
+          "116d"
+        ],
+        [
+          "Borrower",
+          "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3"
+        ],
+        [
+          "Loan",
+          "732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN"
+        ],
+        [
+          "Payer",
+          "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Health Check Account #1",
+          "2qSCbuG39pvPVkNhD1y3v5HdYeHNJorJtympBr4TY83F"
+        ],
+        [
+          "Health Check Account #2",
+          "7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE"
+        ],
+        [
+          "Health Check Account #3",
+          "3aUmJDNpMHjkxunQEkHTj2chzyryKoH2uQj6YACLD174"
+        ]
+      ],
+      "from": "5J5GFLK3NPk3D9JyR7qw3nr1sMmJ62rDi1K2EUvh7cMbDM9qiooKqrTcUVL4XkPeiMirupz2CB4fQUaq9biMk38F#10",
+      "intent": "Unlock a loan",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3 unlocks loan 732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3:sw",
+        "732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN:w",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "2qSCbuG39pvPVkNhD1y3v5HdYeHNJorJtympBr4TY83F:w",
+        "8oCX3kkgviLPxYGBfSt1kCKWVmHer1pHqutPTiBYnGpu:w",
+        "8oCX3kkgviLPxYGBfSt1kCKWVmHer1pHqutPTiBYnGpu:w",
+        "2qSCbuG39pvPVkNhD1y3v5HdYeHNJorJtympBr4TY83F:w",
+        "2qSCbuG39pvPVkNhD1y3v5HdYeHNJorJtympBr4TY83F:w",
+        "2qSCbuG39pvPVkNhD1y3v5HdYeHNJorJtympBr4TY83F:w",
+        "7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE",
+        "3aUmJDNpMHjkxunQEkHTj2chzyryKoH2uQj6YACLD174:w"
+      ],
+      "data": "fca625cf9a53bb800040420f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000030000006d116d",
+      "fields": [
+        [
+          "Collateral Index (of the loan's collateral)",
+          "0"
+        ],
+        [
+          "Weights per Ledger (1,000,000 = 100%)",
+          "1000000, 0, 0, 0, 0"
+        ],
+        [
+          "Expected APY",
+          "0 %"
+        ],
+        [
+          "Expected Liquidation Thresholds (1,000,000 = 100%)",
+          "0, 0, 0, 0, 0"
+        ],
+        [
+          "Asset Index Guidance (hex, one byte per index into the market's asset list)",
+          "6d116d"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Borrower",
+          "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3"
+        ],
+        [
+          "Loan",
+          "732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN"
+        ],
+        [
+          "Ledger or Health Check Account #1",
+          "2qSCbuG39pvPVkNhD1y3v5HdYeHNJorJtympBr4TY83F"
+        ],
+        [
+          "Ledger or Health Check Account #2",
+          "8oCX3kkgviLPxYGBfSt1kCKWVmHer1pHqutPTiBYnGpu"
+        ],
+        [
+          "Ledger or Health Check Account #3",
+          "8oCX3kkgviLPxYGBfSt1kCKWVmHer1pHqutPTiBYnGpu"
+        ],
+        [
+          "Ledger or Health Check Account #4",
+          "2qSCbuG39pvPVkNhD1y3v5HdYeHNJorJtympBr4TY83F"
+        ],
+        [
+          "Ledger or Health Check Account #5",
+          "2qSCbuG39pvPVkNhD1y3v5HdYeHNJorJtympBr4TY83F"
+        ],
+        [
+          "Ledger or Health Check Account #6",
+          "2qSCbuG39pvPVkNhD1y3v5HdYeHNJorJtympBr4TY83F"
+        ],
+        [
+          "Ledger or Health Check Account #7",
+          "7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE"
+        ],
+        [
+          "Ledger or Health Check Account #8",
+          "3aUmJDNpMHjkxunQEkHTj2chzyryKoH2uQj6YACLD174"
+        ]
+      ],
+      "from": "5J5GFLK3NPk3D9JyR7qw3nr1sMmJ62rDi1K2EUvh7cMbDM9qiooKqrTcUVL4XkPeiMirupz2CB4fQUaq9biMk38F#9",
+      "intent": "Rebalance loan collateral",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3 sets how collateral 0 of loan 732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN is split across its ledgers",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3:sw",
+        "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3:sw",
+        "732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN:w",
+        "11111111111111111111111111111111",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78"
+      ],
+      "data": "60726fcc95e4eb7c",
+      "fields": [
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3"
+        ],
+        [
+          "Borrower",
+          "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3"
+        ],
+        [
+          "Loan",
+          "732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN"
+        ]
+      ],
+      "from": "5RTxaGnLpFJ3q6YpRddWLHEEA4dEJ13iK656HA4EdsdLXwNQXCqU23nyEakGwWpiv4yJv7jwb7bQbcs9x4oh8Uow#6",
+      "intent": "Close a loan",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3 closes loan 732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3:sw",
+        "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3:sw",
+        "732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN:w",
+        "11111111111111111111111111111111",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78"
+      ],
+      "data": "a68376db8adace8cb389276a00000000",
+      "fields": [
+        [
+          "Loan Nonce",
+          "1,780,976,051"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3"
+        ],
+        [
+          "Borrower",
+          "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3"
+        ],
+        [
+          "Loan",
+          "732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN"
+        ]
+      ],
+      "from": "5J5GFLK3NPk3D9JyR7qw3nr1sMmJ62rDi1K2EUvh7cMbDM9qiooKqrTcUVL4XkPeiMirupz2CB4fQUaq9biMk38F#3",
+      "intent": "Open a loan",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3 opens loan 732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs:s",
+        "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3:sw",
+        "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3:sw",
+        "732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN:w",
+        "8oCX3kkgviLPxYGBfSt1kCKWVmHer1pHqutPTiBYnGpu:w",
+        "2qSCbuG39pvPVkNhD1y3v5HdYeHNJorJtympBr4TY83F:w",
+        "So11111111111111111111111111111111111111112",
+        "G4ao13eUP93HUHY8DJ826M5x17Qpkqta8cCugaE1um2w:w",
+        "EPneH88gcV1kKi1ykj96XmuJsrkbF9aL5iTwvv6eZjW9:w",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "HcgXEnEsgvGowVnSjMmrzSewdx9yGvfXixiuMJPhyW2z",
+        "6sbyEiDvcYELrqoxurz3XTTLLg5wpe8dHCXi4uTvSSTV",
+        "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78"
+      ],
+      "data": "6a0a26cc8bbc7c3204b214c005000000010000006d000000000000000000000000000000000000000000000000000000000001",
+      "fields": [
+        [
+          "Principal",
+          "24.697418244"
+        ],
+        [
+          "Asset Index Guidance (hex, one byte per index into the market's asset list)",
+          "6d"
+        ],
+        [
+          "Duration Slot (index into the strategy's terms)",
+          "0"
+        ],
+        [
+          "Expected APY",
+          "0 %"
+        ],
+        [
+          "Expected Liquidation Thresholds (1,000,000 = 100%)",
+          "0, 0, 0, 0, 0"
+        ],
+        [
+          "Keep SOL Wrapped",
+          "true"
+        ],
+        [
+          "Loopscale Co-signer",
+          "CyNKPfqsSLAejjZtEeNG3pR4SkPhSPHXdGhuNTyudrNs"
+        ],
+        [
+          "Payer",
+          "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3"
+        ],
+        [
+          "Borrower",
+          "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3"
+        ],
+        [
+          "Loan",
+          "732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN"
+        ],
+        [
+          "Lender Strategy",
+          "8oCX3kkgviLPxYGBfSt1kCKWVmHer1pHqutPTiBYnGpu"
+        ],
+        [
+          "Market",
+          "2qSCbuG39pvPVkNhD1y3v5HdYeHNJorJtympBr4TY83F"
+        ],
+        [
+          "Principal Token",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Borrower Token Account",
+          "G4ao13eUP93HUHY8DJ826M5x17Qpkqta8cCugaE1um2w"
+        ],
+        [
+          "Strategy Token Account",
+          "EPneH88gcV1kKi1ykj96XmuJsrkbF9aL5iTwvv6eZjW9"
+        ]
+      ],
+      "from": "5J5GFLK3NPk3D9JyR7qw3nr1sMmJ62rDi1K2EUvh7cMbDM9qiooKqrTcUVL4XkPeiMirupz2CB4fQUaq9biMk38F#5",
+      "intent": "Borrow",
+      "programId": "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78",
+      "sentence": "7iEPnutcBTVbdWkGdyHCQYCpmFtDbUagge32nFXSYYa3 borrows 24.697418244 of So11111111111111111111111111111111111111112 from strategy 8oCX3kkgviLPxYGBfSt1kCKWVmHer1pHqutPTiBYnGpu into G4ao13eUP93HUHY8DJ826M5x17Qpkqta8cCugaE1um2w on loan 732fXeRuhsBEZMuKTZxt3Th1snDEwPuCSyEZ7uLR41jN, for duration slot 0",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}

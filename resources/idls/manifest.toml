@@ -788,3 +788,29 @@ when absent. The validator and transient stake account pairs after \
 updateValidatorListBalance's accounts are one hidden remaining-accounts group. The Token \
 program's mint account is added, so pool token amounts read the pool mint's decimals. \
 Display nodes added by hand."""
+
+# Loopscale (loopscale), an order-book lending protocol: borrowers take
+# fixed-rate, fixed-term loans from lenders' strategies against collateral,
+# and Loopscale Vaults lend their depositors' tokens through a strategy. The
+# file is the Anchor IDL its Anchor IDL account publishes on mainnet; it has
+# no program-metadata account and no devnet deployment. Loopscale co-signs
+# user transactions with its protocol admin key.
+[[idls]]
+file = "loopscale.json"
+programId = "1oopBoJG58DgkUVKkEzKgyG9dvRmpgeEm1AVjoHkF78"
+name = "loopscale"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "f8f5480a328f11a10d99df2dd1c3da65b62f4b70d07311e2434b1375d5f61e49" }
+changes = """Converted from Anchor to Codama. Loan, ledger and liquidity-position instructions \
+declare the accounts they read after their listed accounts, which Anchor IDLs cannot: \
+the strategy and market of each of the loan's ledgers and the oracle accounts of its \
+health check (named from the IDL's own docs on DepositCollateralParams and \
+WithdrawCollateralParams and from executed transactions), the reward token accounts of a \
+rewards claim, and, on a liquidation and on proposing or applying a timelocked vault \
+change, accounts the file does not name one by one (labelled Additional Account). \
+sellLedger takes absent optional accounts as the program's address. The Token program's \
+mint account is added, so principal, collateral, share, fee and reward amounts read \
+their mint's decimals where that mint is an account of the instruction; amounts inside \
+vault deposit and withdrawal modes, timelocked changes and market caps stay in base \
+units. Rates, fees, LTVs and liquidation thresholds in Loopscale's cbps (1,000,000 = \
+100%) read as percent where they are single numbers. Display nodes added by hand."""
