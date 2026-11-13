@@ -277,6 +277,35 @@ fn a_site_is_shown_keys_and_contracts_and_a_locked_vault_shows_what_the_book_tie
 }
 
 #[test]
+fn a_removed_wallet_is_no_longer_offered_to_sites_and_its_address_stays_a_plain_one() {
+    let mut data = VaultData::default();
+    let mut workspace = Workspace::default();
+    let (kept, gone) = (hot("Main"), hot("Main"));
+    let signers = [kept.clone(), gone.clone()];
+    data.add_signers(&signers).unwrap();
+    name_signers(&mut workspace.book, &signers);
+    data.remove_wallet(gone.wallet.id);
+
+    // A book written before removal untied it still offers only the key
+    // that is here.
+    let offered = |data: &VaultData, workspace: &Workspace| -> Vec<Pubkey> {
+        shareable_accounts(Some(data), workspace)
+            .iter()
+            .map(|account| account.pubkey)
+            .collect()
+    };
+    assert_eq!(offered(&data, &workspace), [kept.pubkey]);
+
+    // Removing it unties its address, which stays in the book.
+    assert!(workspace.book.forget_wallet(gone.wallet.id));
+    let entry = workspace.book.get(&gone.pubkey).unwrap();
+    assert_eq!((entry.label.as_str(), entry.wallet_id), ("Main", None));
+    assert_eq!(offered(&data, &workspace), [kept.pubkey]);
+    assert_eq!(shareable_accounts(None, &workspace).len(), 1);
+    assert!(!workspace.book.forget_wallet(gone.wallet.id));
+}
+
+#[test]
 fn a_refresh_reads_owners_contacts_and_wallets_once_each_and_the_known_nonces() {
     let mut data = VaultData::default();
     let mut book = AddressBook::default();

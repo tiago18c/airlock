@@ -738,8 +738,14 @@ impl Session {
         Ok(())
     }
 
-    /// Remove a wallet, and clear every setting of another wallet that pointed at it.
+    /// Remove a wallet, and clear every setting of another wallet that
+    /// pointed at it. Its address stays in the book as a plain address, no
+    /// longer tied to a wallet, so it is not offered to sites as one.
     pub fn remove_wallet(&self, id: WalletId) -> Result<(), VaultError> {
-        self.mutate_vault("remove_wallet", |data| data.remove_wallet(id))
+        self.mutate_vault("remove_wallet", |data| data.remove_wallet(id))?;
+        self.mutate_workspace(|ws| {
+            ws.book.forget_wallet(id);
+        })?;
+        Ok(())
     }
 }

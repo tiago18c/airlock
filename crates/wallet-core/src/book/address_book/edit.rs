@@ -61,6 +61,21 @@ impl AddressBook {
         self.insert_kind(pubkey, label, AddressKind::Account, origin, wallet_id)
     }
 
+    /// Untie every entry from a wallet that is gone. Its addresses stay, as
+    /// plain addresses: the book is the user's record, and an address whose
+    /// key was deleted here can still hold funds and history. Says whether
+    /// any entry changed.
+    pub fn forget_wallet(&mut self, wallet: WalletId) -> bool {
+        let mut changed = false;
+        for entry in self.local.entries.values_mut() {
+            if entry.wallet_id == Some(wallet) {
+                entry.wallet_id = None;
+                changed = true;
+            }
+        }
+        changed
+    }
+
     /// Name an account typed in by hand.
     pub fn insert_contact(&mut self, pubkey: Pubkey, label: impl Into<String>) -> &AddressEntry {
         self.insert_account(pubkey, label, Origin::Imported, None)
