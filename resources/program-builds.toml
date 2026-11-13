@@ -1101,3 +1101,14 @@ programHash = "4aa11c027f68364d935f8eb2c234608fc485a265377fcb0a545943c967d5b913"
 authority = "8VE2uJkoheDbJd9rCyKzfXmiMqAS4o1B3XGshEh86BGk"
 idlSha256 = "3c4e346c3e013c119eb19d85ef69f54af7350da83f8c37ecb5856ddaf523414c"
 reviewed = "2026-11-12"
+
+[[builds]]
+# augustVault (pack). This binary (v0.3.0, deployed at slot 456925461) logs 27 instruction names; the IDL's 16 are among them, and 15 keep the accounts and arguments the verified source and its generated client give, while initialize changed and is removed. Mainnet deposits, redemptions and operator transactions decode with every account named; deposit_checked and redeem_checked, added from the verified source, decode their sampled transactions with no data left over; nine admin instructions are not in the IDL and read raw.
+programId = "up12bytoZBmwofqsySf2uqKQ7zpfeKiAWwfvqzJjtRt"
+network = "mainnet"
+programHash = "f258ab095f0235e75186dfb1c5cc2d4aaeaa71b4d326549dbdb85fc7da17df31"
+authority = "B75DMrVVhSgjjFQyVrYdDWMw9nCHLBU8UnsSXBGHkfYM"
+idlSha256 = "3187a29bd44ec2da6c0af7cc123e1ea185df30b01dc91270e26a50e63ec3f8ad"
+source = { repo = "https://github.com/fractal-protocol/solana-upshift-vault-programs", commit = "87c0f2d41e5b6a1f4d504548edd070d303b2c163" }
+verified = "B75DMrVVhSgjjFQyVrYdDWMw9nCHLBU8UnsSXBGHkfYM"
+reviewed = "2026-11-12"
