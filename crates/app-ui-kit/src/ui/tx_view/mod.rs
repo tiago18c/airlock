@@ -13,7 +13,7 @@ use std::collections::{HashMap, HashSet};
 use wallet_core::{
     display_note, explain_with_note, group_thousands, ContextPinMatch, DecodedTx, ExplainedIx,
     ExplainedTx, IdlExplanation, IdlOrigin, IdlPinStatus, InnerKind, InnerMessage, IntentBody,
-    IntentSpan, IntentValue, NextKey, ScaleSource, COMPUTE_BUDGET_PROGRAM_ID, MAX_TRANSACTION_SIZE,
+    IntentSpan, IntentValue, NextKey, ScaleSource, COMPUTE_BUDGET_PROGRAM_ID,
 };
 
 mod facts;

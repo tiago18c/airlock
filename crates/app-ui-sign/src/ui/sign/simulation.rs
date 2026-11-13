@@ -37,10 +37,10 @@ pub(in crate::ui) fn SimulationStrip(tx: std::rc::Rc<DecodedTx>, inspect: bool) 
                 "sim fail",
                 "Simulation failed".to_string(),
                 Some(Glyph::X),
-                Some(match error.instruction {
-                    Some(index) => format!("instruction {}: {}", index + 1, error.message),
-                    None => error.message.clone(),
-                }),
+                Some(wallet_core::simulate::word_simulation_error(
+                    error,
+                    &*session.idls.read(),
+                )),
             ),
         },
     };

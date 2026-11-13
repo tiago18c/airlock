@@ -456,3 +456,49 @@ fn parse_lookup_table_skips_the_header() {
     assert_eq!(parse_lookup_table_addresses(&data).unwrap(), vec![a, b]);
     assert!(parse_lookup_table_addresses(&[0u8; 10]).is_err());
 }
+
+#[test]
+fn a_transaction_is_held_to_the_limit_of_its_own_format() {
+    let from = KeypairSigner::new_random();
+    let outs: Vec<Instruction> = (0..60u8)
+        .map(|n| transfer(from.pubkey(), Pubkey::new_from_array([n + 10; 32]), 1_000))
+        .collect();
+    let mut message = LegacyMessage::new(&outs, Some(&from.pubkey()));
+    message.recent_blockhash = hash_from_byte(1);
+    let wire = wincode::serialize(&VersionedTransaction {
+        signatures: empty_sigs(1),
+        message: VersionedMessage::Legacy(message),
+    })
+    .unwrap();
+    let legacy = decode_transaction(&wire, &LookupTables::new()).unwrap();
+    assert_eq!(legacy.size_limit(), 1232);
+    assert!(legacy.wire.len() > 1232 && legacy.wire.len() < 4096);
+    assert!(legacy.too_large());
+    let note = legacy.too_large_note(false).unwrap();
+    assert!(
+        note.contains("a legacy transaction holds at most 1,232"),
+        "{note}"
+    );
+    assert!(
+        note.contains("v1 transaction, which holds up to 4,096"),
+        "{note}"
+    );
+    assert!(legacy
+        .too_large_note(true)
+        .unwrap()
+        .contains("Ask the site for smaller transactions"));
+
+    // A v1 transaction holds 4,096 bytes.
+    let mut v1 = decode_v1_transaction(&compile(from.pubkey(), outs[..1].to_vec()).wire).unwrap();
+    assert_eq!(v1.size_limit(), 4096);
+    assert_eq!(v1.too_large_note(false), None);
+    v1.wire.resize(5066, 0);
+    let note = v1.too_large_note(false).unwrap();
+    assert!(
+        note.starts_with(
+            "Too large to be sent: 5,066 bytes, and a transaction holds at most 4,096."
+        ),
+        "{note}"
+    );
+    assert!(note.contains("Split its instructions"), "{note}");
+}
