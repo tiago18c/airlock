@@ -155,6 +155,7 @@ pub(super) fn argument_fields(
                 kind: classify_in(program, &field.r#type),
                 blank_uses_default: false,
                 scale: IdlArgScale::None,
+                remainder_option: false,
             })
             .collect(),
         _ => argument_field(program, instruction, argument)
@@ -198,6 +199,7 @@ pub(super) fn argument_field(
         kind,
         blank_uses_default: argument.default_value_strategy == Some(DefaultValueStrategy::Optional),
         scale,
+        remainder_option: matches!(unwrap_type(&argument.r#type), TypeNode::RemainderOption(_)),
     })
 }
 

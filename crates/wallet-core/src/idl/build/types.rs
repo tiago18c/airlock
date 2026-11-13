@@ -146,6 +146,47 @@ pub struct IdlArgField {
     pub blank_uses_default: bool,
     /// How an integer is typed. [`IdlArgScale::None`] for anything else.
     pub scale: IdlArgScale,
+    /// An option the program reads only if bytes are left (Codama's
+    /// `remainderOptionTypeNode`): none is written as nothing at all. Of
+    /// several such options at the end of an instruction, one left blank
+    /// before one that is filled would have the later one's bytes read as
+    /// its own, so the build refuses that ([`trailing_option_gap`]).
+    pub remainder_option: bool,
+}
+
+/// Of `form`'s trailing options ([`IdlArgField::remainder_option`]), the
+/// first one left blank while a later one holds a value, and that later
+/// one: `(blank, filled)`. The program reads such options in order and
+/// stops at the end of the bytes, so the later value would be read as the
+/// blank one. `None` when every filled one follows only filled ones.
+pub fn trailing_option_gap<'a>(
+    arguments: &'a [IdlArgField],
+    input: &IdlBuildInput,
+) -> Option<(&'a str, &'a str)> {
+    let text = |name: &str| {
+        input
+            .arguments
+            .iter()
+            .find(|(entry, _)| entry == name)
+            .map_or("", |(_, value)| value.trim())
+    };
+    let mut blank: Option<&str> = None;
+    for field in arguments.iter().filter(|field| field.remainder_option) {
+        match (text(&field.name).is_empty(), blank) {
+            (true, None) => blank = Some(&field.name),
+            (false, Some(first)) => return Some((first, &field.name)),
+            _ => {}
+        }
+    }
+    None
+}
+
+/// What the build says when [`trailing_option_gap`] finds one: the field
+/// to fill first, and why, in words a person can act on.
+pub fn trailing_option_message(blank: &str, filled: &str) -> String {
+    format!(
+        "Fill {blank} first, or clear {filled}. The program reads these values in order and stops where the data ends, so with {blank} blank it would read {filled} as {blank}."
+    )
 }
 
 /// The form for one IDL instruction.

@@ -12,8 +12,9 @@ pub(crate) mod pack;
 mod system_idl;
 
 pub use build::{
-    build_idl_instruction, idl_instruction_form, IdlAccountField, IdlAccountSource, IdlArgField,
-    IdlArgKind, IdlArgScale, IdlBuildFailure, IdlBuildInput, IdlForm, IdlVariant,
+    build_idl_instruction, idl_instruction_form, trailing_option_gap, trailing_option_message,
+    IdlAccountField, IdlAccountSource, IdlArgField, IdlArgKind, IdlArgScale, IdlBuildFailure,
+    IdlBuildInput, IdlForm, IdlVariant,
 };
 pub use builtin::{
     builtin_idl, pinned_program, BuiltinIdl, EmbeddedIdl, IdlSource, PinnedProgram, BUILTIN_IDLS,

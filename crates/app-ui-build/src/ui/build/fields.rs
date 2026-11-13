@@ -99,10 +99,13 @@ pub(in crate::ui) fn idl_account_field(
     }
 }
 
+/// The field for one argument. `missing` says why it has to be filled,
+/// and marks it as a template's unanswered question is marked.
 pub(in crate::ui) fn idl_argument_field(
     form: crate::state::forms::BuildForm,
     id: u64,
     idl: &IdlDraft,
+    missing: Option<String>,
     argument: wallet_core::IdlArgField,
 ) -> Element {
     let name = argument.name.clone();
@@ -111,14 +114,23 @@ pub(in crate::ui) fn idl_argument_field(
             d.set_argument(&name, value);
         });
     });
-    argument_input(
+    let widget = argument_input(
         argument_label(&argument),
         argument_placeholder(&argument),
         &argument.kind,
         idl.argument(&argument.name).to_string(),
         form.picker_reset,
         on_change,
-    )
+    );
+    match missing {
+        Some(why) => rsx! {
+            div { class: "idl-argument missing",
+                {widget}
+                p { class: "field-missing", "{why}" }
+            }
+        },
+        None => widget,
+    }
 }
 
 /// The widget for an argument of kind `kind`, holding `text`: a checkbox

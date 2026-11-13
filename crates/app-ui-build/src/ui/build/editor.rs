@@ -71,6 +71,14 @@ pub(in crate::ui) fn InstructionEditor(draft: IxDraft) -> Element {
     }
 }
 
+/// What a trailing option left blank says while `filled`, after it, holds
+/// a value.
+fn fill_first_note(filled: &str) -> String {
+    format!(
+        "Fill this first, or clear {filled}. The program reads these values in order, so it would read {filled} here."
+    )
+}
+
 #[component]
 pub(in crate::ui) fn IdlFields(draft: IxDraft) -> Element {
     let session = use_context::<Session>();
@@ -126,6 +134,16 @@ pub(in crate::ui) fn IdlFields(draft: IxDraft) -> Element {
         .as_ref()
         .and_then(|(_, spec)| spec.as_ref().err())
         .cloned();
+    // A trailing option left blank before one that is filled: the build
+    // refuses it, and the blank one is marked as the field to fill first.
+    let fill_first = wallet_core::trailing_option_gap(&arguments, &idl.input())
+        .map(|(blank, filled)| (blank.to_string(), filled.to_string()));
+    let missing = move |argument: &wallet_core::IdlArgField| {
+        fill_first
+            .as_ref()
+            .filter(|(blank, _)| *blank == argument.name)
+            .map(|(_, filled)| fill_first_note(filled))
+    };
 
     // What the IDL fills in folds away: an address it derived, and an
     // argument left to its default.
@@ -227,7 +245,7 @@ pub(in crate::ui) fn IdlFields(draft: IxDraft) -> Element {
                 { idl_account_field(form, id, &idl, account) }
             }
             for argument in arguments {
-                { idl_argument_field(form, id, &idl, argument) }
+                { idl_argument_field(form, id, &idl, missing(&argument), argument) }
             }
             if filled > 0 {
                 Accordion {
@@ -237,7 +255,7 @@ pub(in crate::ui) fn IdlFields(draft: IxDraft) -> Element {
                         { idl_account_field(form, id, &idl, account) }
                     }
                     for argument in filled_arguments {
-                        { idl_argument_field(form, id, &idl, argument) }
+                        { idl_argument_field(form, id, &idl, missing(&argument), argument) }
                     }
                 }
             }
