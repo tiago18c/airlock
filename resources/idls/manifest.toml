@@ -1408,3 +1408,18 @@ changes = """Converted from Anchor to Codama. The Token program's mint account i
 mints of deposit and withdraw link to it, so the deposit amount reads in the underlying \
 token's units and the withdrawal amount in the wrapped token's. Display nodes added by \
 hand."""
+
+# Jito's tip distribution program (jito_tip_distribution 0.1.5): each epoch a
+# validator opens a tip distribution account that collects its MEV tips; after
+# the epoch a merkle root upload authority (now Jito's Tip Router) uploads a
+# merkle root of who gets how much, and stakers are paid by merkle claims,
+# which the Tip Router makes on their behalf.
+[[idls]]
+file = "jito-tip-distribution.json"
+programId = "4R3gSG8BpU4t19KYj8CfnbtRpnT8gtk4dvTHxVRwc2r7"
+name = "jitoTipDistribution"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "2d5134d20d97c967b4787b4d7dc32ace50969e5a88702e69ae1a9e7a7198893a" }
+changes = """Converted from Anchor to Codama. The Config struct, which update_config takes as its \
+argument and which the converter keeps only as the Config account's data, is restored \
+unchanged as a defined type, so update_config can be read. Display nodes added by hand."""
