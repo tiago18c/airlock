@@ -979,3 +979,29 @@ and referral accounts it may read after the listed ones, and the liquidity instr
 the staking price account. The Token program's mint account is added, so LP token \
 amounts and the deposits of a new pool read their mint's decimals; swap and liquidity \
 token amounts are in base units. Display nodes added by hand."""
+
+# Manifest, an on-chain order book exchange, mostly reached through
+# aggregators and market makers. It publishes no IDL on chain; the file is the
+# Shank IDL in its author's repository (CKS-Systems/manifest, now
+# Bonasa-Tech/manifest), checked tag by tag against the program source and the
+# deployed binary. A swap's and a batch update's trailing accounts depend on
+# the market, so each is one shown group.
+[[idls]]
+file = "manifest-exchange.json"
+programId = "MNFSTqtC93rEfYHB6hF82sKdZpUDFWkViLByLd1k1Ms"
+name = "manifest"
+networks = ["mainnet"]
+source = { kind = "repository", url = "https://github.com/Bonasa-Tech/manifest/blob/c51120ba8d63fae2851acc3d8a211fa4ad77b9d6/client/idl/manifest.json" }
+changes = """Converted from Shank to Codama (the file names its origin). Checked against the program \
+source at c51120ba (lib.rs, the account loaders and the processors): dropped the second \
+swapV2, which the repository's generator appended under tag 4, Swap's tag; swap and \
+swapV2 name the accounts up to the base token program, and the base mint, quote token \
+program, quote mint, global account and global vault the program reads after it, each \
+only when present and told apart by owner, are one shown group (Additional Account); \
+batchUpdate names the trader, the market and the System program, and the up to two \
+groups of five global-order accounts that follow, for either side in either order, are \
+one shown group (Global Order Account); expand gains its optional trailing count of free \
+blocks, and defrag its optional relocation budget, seat budget and retire flag, which \
+the program reads when present. Deposit, withdrawal and global account amounts are \
+scaled by the decimals of the mint the instruction names (the file carries the Token \
+program's `mint` layout for that). Display nodes added by hand."""

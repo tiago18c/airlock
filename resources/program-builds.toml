@@ -743,3 +743,12 @@ programHash = "8fef5f63ddaf33ae6ac7153b039dc1eac0451fc9c7038e3bc972f245938a3c38"
 authority = "JADaUV8kvDpDbJr55wxXJHVaBS3VCj8thZZHjfeuCVLd"
 idlSha256 = "fc5fe35dcd0c5a476e6443fdcea9b262fb349170d3f6ccc84130034a5c9b2b65"
 reviewed = "2026-11-12"
+
+[[builds]]
+# Manifest (pack). The program logs no instruction names; the binary holds all 41 messages that the processors and account loaders at c51120ba pass to require!, including the defrag close-flag message that commit added. Every sampled instruction (tags 1 to 6, 9, 10 and 12 to 14) decodes with the file to its last byte and names all of its accounts.
+programId = "MNFSTqtC93rEfYHB6hF82sKdZpUDFWkViLByLd1k1Ms"
+network = "mainnet"
+programHash = "e6e2305935a5efae038df5cad834d6893338f2304285438864ba1ab54de82d7c"
+authority = "CDFU8tEWsVU2ZMiek57Sgk3Huha2yBNcSHLAts3V3Cbf"
+idlSha256 = "de99318874e636549205a0c8ba0996799de4e2bcd2df5606362df4741b8dd175"
+reviewed = "2026-11-12"
