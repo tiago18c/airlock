@@ -44,6 +44,18 @@ fn app(held: Held) -> Element {
     rsx! {}
 }
 
+/// The shipped templates on Token Metadata, Streamflow and Marinade, whose
+/// IDLs ship for mainnet only.
+pub(crate) const MAINNET_ONLY: [&str; 7] = [
+    "add-token-metadata",
+    "create-nft",
+    "create-stream",
+    "stake-marinade",
+    "unstake-marinade",
+    "order-unstake-marinade",
+    "claim-marinade-ticket",
+];
+
 /// A window with a vault that holds one hot key, selected.
 pub(crate) struct Screen {
     pub(crate) kit: Kit,
@@ -256,7 +268,27 @@ async fn a_built_in_template_opens_in_place_of_the_blocks() {
     );
     let entries = screen.act(|| template_entries(&screen.session));
     assert_eq!(entries.len(), wallet_core::BUILTIN_TEMPLATES.len());
-    assert!(entries.iter().all(|entry| entry.problem.is_none()));
+    // The session is on devnet: a template whose programs' IDLs ship for
+    // mainnet only says why it cannot be used here; every other one can.
+    for entry in &entries {
+        match &entry.source {
+            TemplateSource::Builtin(id) if MAINNET_ONLY.contains(id) => assert!(
+                entry
+                    .problem
+                    .as_deref()
+                    .is_some_and(|problem| problem.contains("No IDL")),
+                "{}: {:?}",
+                entry.name,
+                entry.problem
+            ),
+            _ => assert!(
+                entry.problem.is_none(),
+                "{}: {:?}",
+                entry.name,
+                entry.problem
+            ),
+        }
+    }
     assert!(entries
         .iter()
         .all(|entry| entry.source.chip() == "built-in"));
