@@ -671,3 +671,21 @@ programHash = "3e3743fadc302a970f0c664e493d64e8a1f245572701da0ef48101184567d0ab"
 authority = "D6GEJYVtQGVrLVj1QSZbxWW73NnKJyHEzMBDAtCzraaF"
 idlSha256 = "64c22a081090f982f74a8d7c09ab2865e80f8a4bc2f1bc386a37b0681f446718"
 reviewed = "2026-11-12"
+
+[[builds]]
+# huma (pack). The binary logs the names of all 67 instructions of the IDL, the four mock instructions included, and no others besides Anchor's own IDL instructions. Successful mainnet transactions decode with the IDL, every data length exact, for addApprovedLender, closeEpoch, closePool, createPoolAccounts, createReceivable, declarePayment, deposit, drawdown, enablePool, makeInitialDeposit, makePayment, makePrincipalPayment, refreshCredit, setLpConfig, setPoolSettings, submitReceivable, updateLimitAndCommitment, withdrawAfterPoolClosure, withdrawProtocolFees, withdrawYields.
+programId = "EVQ4s1b6N1vmWFDv8PRNc77kufBP8HcrSNWXQAhRsJq9"
+network = "mainnet"
+programHash = "553349d6a2935b3b5b6cf2b7b1ee0cc5b82c2b6cb9f927aa698e3a141f49c3f9"
+authority = "D6GEJYVtQGVrLVj1QSZbxWW73NnKJyHEzMBDAtCzraaF"
+idlSha256 = "24c8a87384df30c60d726ce30950793db0eb83661e31bd29373643b3ac1f473b"
+reviewed = "2026-11-12"
+
+[[builds]]
+# huma (pack). A different build from mainnet's, whose Anchor IDL account holds the same document byte for byte. Its binary logs the names of all 67 instructions of the IDL and no others; no devnet transactions were decoded.
+programId = "EVQ4s1b6N1vmWFDv8PRNc77kufBP8HcrSNWXQAhRsJq9"
+network = "devnet"
+programHash = "6cfb329aa73780f4ed9e255d98038a666a8d4b9d63285cb9f50c6512e6791665"
+authority = "7PWzcTrxjskRB6spuxPqQ81aqWextu9AhspZiq8iAnz6"
+idlSha256 = "24c8a87384df30c60d726ce30950793db0eb83661e31bd29373643b3ac1f473b"
+reviewed = "2026-11-12"

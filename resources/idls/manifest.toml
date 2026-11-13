@@ -834,3 +834,27 @@ instantWithdrawPrivileged the deployment target's lending-protocol accounts, whi
 Anchor IDLs cannot. The Token program's mint account is added, so deposit, deployment, \
 loss and fee amounts read the stablecoin's decimals and share amounts the mode token's, \
 where that mint is an account of the instruction. Display nodes added by hand."""
+
+# Huma's institutional program (huma), Huma Finance's permissioned credit
+# pools: approved lenders deposit USDC into junior and senior tranches,
+# borrowers draw down and repay credit lines, and an evaluation agent approves
+# credit and receivables. The file is the Anchor IDL its Anchor IDL account
+# publishes (3.2.0), the same document on mainnet and devnet; it has no
+# program-metadata account. One PDA seed that names a missing argument is
+# corrected before conversion.
+[[idls]]
+file = "huma.json"
+programId = "EVQ4s1b6N1vmWFDv8PRNc77kufBP8HcrSNWXQAhRsJq9"
+name = "huma"
+networks = ["mainnet", "devnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "d3eb0ef47e04fc3aebe6bd645c4ca9ba17ab721731fcd41016d81ac045255a1a" }
+changes = """Converted from Anchor to Codama, after renaming one PDA seed: removePauser's \
+pauserConfig seed names an argument `pauser_key`, while the instruction's only argument \
+is `pauser` (Anchor binds #[instruction] arguments by position), and the converter \
+refuses the unknown name. Instructions with optional accounts take an absent one as the \
+program's address (optionalAccountStrategy programId). addApprovedLender, \
+createPoolAccounts and createReceivable declare the accounts executed instructions carry \
+beyond those the IDL lists as a remaining-accounts group, shown as "Additional Account". \
+The Token program's mint account is added, so deposit, borrowing, payment and fee \
+amounts read the stablecoin's decimals and redemption shares the tranche token's, where \
+that mint is an account of the instruction. Display nodes added by hand."""

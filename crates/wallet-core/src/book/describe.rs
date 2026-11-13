@@ -651,6 +651,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn"),
         "Huma Permissionless Program",
     ),
+    (
+        Pubkey::from_str_const("EVQ4s1b6N1vmWFDv8PRNc77kufBP8HcrSNWXQAhRsJq9"),
+        "Huma Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.
