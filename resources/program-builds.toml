@@ -1092,3 +1092,12 @@ programHash = "c5cd829c984cf60fe5aaddc196a0252458cbd29ca30df2f4282dcea50337c6e2"
 authority = "DXchT5vygBxnUnQGp9w7i9CFZdcZ7Uujwkw5a7VeAC8D"
 idlSha256 = "0b2efa51a89ff3f55102489a71544b3c719bdd3c6996ae90978a2a1de582d493"
 reviewed = "2026-11-12"
+
+[[builds]]
+# stakedex (pack). Deployed at slot 341718242. The binary's instruction enum has exactly the file's nine variants, with the argument structs it describes (amount, bridge_stake_seed) and its sixteen error messages. Mainnet transactions of stakeWrappedSol, withdrawWrappedSol, depositStake, prefundWithdrawStake and prefundSwapViaStake decode with exactly the data length the arguments take, the fixed accounts at the file's positions and the pool's accounts after them. OtterSec has no record of this program.
+programId = "stkitrT1Uoy18Dk1fTrgPw8W6MVzoCfYoAFT4MLsmhq"
+network = "mainnet"
+programHash = "4aa11c027f68364d935f8eb2c234608fc485a265377fcb0a545943c967d5b913"
+authority = "8VE2uJkoheDbJd9rCyKzfXmiMqAS4o1B3XGshEh86BGk"
+idlSha256 = "3c4e346c3e013c119eb19d85ef69f54af7350da83f8c37ecb5856ddaf523414c"
+reviewed = "2026-11-12"

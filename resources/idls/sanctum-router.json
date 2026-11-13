@@ -1,0 +1,1983 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "stakedex",
+    "publicKey": "stkitrT1Uoy18Dk1fTrgPw8W6MVzoCfYoAFT4MLsmhq",
+    "version": "0.1.0",
+    "origin": "shank",
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "stakeWrappedSol",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "user",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "The authority of wsol_account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "User"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "wsolFrom",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The wrapped SOL token account to stake wrapped SOL from"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From wSOL Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destTokenTo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The liquid staked SOL token account to receive the resulting tokens"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "wsolBridgeIn",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The PDA that serves as the wSOL account to bridge user's wSOL to SOL. Pubkey::create_with_seed(). base = sol_bridge_out.pubkey, seed = 'wsol_bridge_in'. owner = token_program"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "solBridgeOut",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The PDA that serves as the system account to bridge user's wSOL to SOL. Seeds = ['sol_bridge_out']"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destTokenFeeTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The liquid staked SOL token account collecting fees. PDA. Seeds = ['fee', dest_token_mint.pubkey]"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destTokenMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The liquid staked SOL mint"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Output Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "wsolMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "wSOL token mint"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "System program. The deposit SOL accounts slice follows."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 0.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "numberValueNode",
+                  "number": 9
+                },
+                "unit": {
+                  "kind": "stringValueNode",
+                  "string": "wSOL"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount In"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "stakePoolAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts of the stake pool (or Marinade) that wrapped SOL is deposited into, which vary by pool, starting with its program."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool Accounts"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Stake wrapped SOL",
+          "interpolatedIntent": "${accounts.user} stakes ${data.amount} from ${accounts.wsolFrom} for ${accounts.destTokenMint} to ${accounts.destTokenTo}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "swapViaStake",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "user",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "The authority of src_token_from. Needs to be mutable to support marinade deposit stake."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "User"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "srcTokenFrom",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The token account to swap src tokens from"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destTokenTo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The token account to receive dest tokens to"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "bridgeStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The bridge stake account thats withdrawn then deposited. PDA. seeds = ['bridge_stake', user.pubkey, SwapArgs.bridge_stake_seed]. Might be long-lived, make sure the seed is not already in use"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Bridge Stake Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destTokenFeeTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The dest_token_mint token account collecting fees. PDA. Seeds = ['fee', dest_token_mint.pubkey]"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "srcTokenMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Input token mint. If this is wrapped SOL, the account can be set to read-only"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Input Mint"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destTokenMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Output token mint. If this is wrapped SOL, the account can be set to read-only. The withdraw stake and deposit stake accounts slices follow."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Output Mint"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 1.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "args",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "swapViaStakeArgs"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "stakePoolAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts of the stake pool (or Lido) that the stake account is withdrawn from, then those of the stake pool (or Marinade, or the Sanctum reserve for wrapped SOL) it is deposited into, each starting with its program; they vary by pool."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool Accounts"
+            }
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "inputDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "srcTokenMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Swap via a stake account",
+          "interpolatedIntent": "${accounts.user} swaps ${data.args.amount} of ${accounts.srcTokenMint} from ${accounts.srcTokenFrom} for ${accounts.destTokenMint} to ${accounts.destTokenTo}, by way of a stake account"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "createFeeTokenAccount",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "The person paying for the new fee token account. Can be anyone."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The self-owned fee token account to be created. Seeds = ['fee', mint_pubkey]"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 2.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a router fee account",
+          "interpolatedIntent": "${accounts.payer} creates the router's fee account ${accounts.feeTokenAccount} for ${accounts.mint}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "closeFeeTokenAccount",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "The authorized program admin"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The self-owned fee token account to close. Must be empty or wrapped SOL. Seeds = ['fee', mint_pubkey]"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "closeTo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Refund fee_token_account's rent lamports to here"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Rent Recipient"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 3.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Close a router fee account",
+          "interpolatedIntent": "${accounts.admin} closes the router's fee account ${accounts.feeTokenAccount} for ${accounts.mint} and sends its rent to ${accounts.closeTo}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawFees",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "admin",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "The authorized program admin"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "feeTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The self-owned fee token account to withdraw fees from. Seeds = ['fee', mint_pubkey]"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "withdrawTo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Withdraw accumulated fees to here"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Recipient"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "mint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 4.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw router fees",
+          "interpolatedIntent": "${accounts.admin} withdraws the fees collected in ${accounts.feeTokenAccount} to ${accounts.withdrawTo}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "depositStake",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "user",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "The withdraw authority of stake_account. Needs to be mutable to support marinade deposit stake."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "User"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The stake account to deposit"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destTokenTo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The token account to receive dest tokens to"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destTokenFeeTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The dest_token_mint token account collecting fees. PDA. Seeds = ['fee', dest_token_mint.pubkey]"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destTokenMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Output token mint. If this is wrapped SOL, the account can be set to read-only. The deposit stake accounts slice follows."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Output Mint"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 5.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "stakePoolAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts of the stake pool (or Marinade, or the Sanctum reserve for wrapped SOL) that the stake account is deposited into, which vary by pool, starting with its program."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool Accounts"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Deposit a stake account",
+          "interpolatedIntent": "${accounts.user} deposits the stake account ${accounts.stakeAccount} for ${accounts.destTokenMint} to ${accounts.destTokenTo}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "prefundWithdrawStake",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "user",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "The withdraw authority of stake_account. Needs to be mutable and system account to receive slumlord flash loan."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "User"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "srcTokenFrom",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The token account to burn src tokens from in order to withdraw stake"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "bridgeStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The bridge stake account thats withdrawn and given to the user. PDA. seeds = ['bridge_stake', user.pubkey, SwapArgs.bridge_stake_seed]. Might be long-lived, make sure the seed is not already in use"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Withdrawn Stake Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "srcTokenMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Input LST token mint"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Input Mint"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "prefunder",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The system account PDA that contains enough SOL to prefund 2 stake accounts for withdrawal. Someone must send SOL to here to initialize it. Seeds = ['prefunder']"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "slumdogStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The slumdog stake account is split from bridge_stake upon stake withdraw and instant unstaked to repay slumlord's flash loan. create_with_seed(bridge_stake.pubkey, 'slumdog', stake_program). Might be long-lived, but should be not in use as long as bridge_stake is not in use"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "unstakeitProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sanctum unstake program. unpXTU2Ndrc7WWNyEhQWe4udTzSibLPi25SXv2xbCHQ"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "unstakePool",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sanctum unstake pool. FypPtwbY3FUfzJUtXHSyVRokVKG2jKtH29FmK4ebxRSd"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "poolSolReserves",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sanctum unstake pool SOL reserves. 3rBnnH9TTgd3xwu48rnzGsaQkSr1hR64nY71DrDt6VrQ"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "unstakeFee",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sanctum unstake pool Fee account. 5Pcu8WeQa3VbBz2vdBT49Rj4gbS4hsnfzuL1LmuRaKFY"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "slumdogStakeAccRecord",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sanctum unstake pool stake account record for slumdog stake. PDA of sanctum unstake program. Seeds = [unstakePool.pubkey, slumdogStake.pubkey]."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "unstakeProtocolFee",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sanctum unstake pool protocol fee account. 2hN9UhvRFVfPYKL6rZJ5YiLEPCLTpN755pgwDJHWgFbU"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "unstakeProtocolFeeDest",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sanctum unstake pool protocol fee destination. unstakeProtocolFee.destination"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "clock",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "sysvar clock"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "stake program"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "System program. The withdraw stake accounts slices follow."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 6.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "args",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "swapViaStakeArgs"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "stakePoolAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts of the stake pool (or Lido) that the stake account is withdrawn from, which vary by pool, starting with its program."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool Accounts"
+            }
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "inputDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "srcTokenMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw a stake account",
+          "interpolatedIntent": "${accounts.user} burns ${data.args.amount} of ${accounts.srcTokenMint} from ${accounts.srcTokenFrom} to withdraw the stake account ${accounts.bridgeStake}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "prefundSwapViaStake",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "user",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "The authority of src_token_from, mutable system account. Prefunds the rent for the stake accounts, amount is refunded via instant unstake."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "User"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "srcTokenFrom",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The token account to swap src tokens from"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destTokenTo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The token account to receive dest tokens to"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "bridgeStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The bridge stake account thats withdrawn then deposited. PDA. seeds = ['bridge_stake', user.pubkey, SwapArgs.bridge_stake_seed]. Might be long-lived, make sure the seed is not already in use"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Bridge Stake Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destTokenFeeTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The dest_token_mint token account collecting fees. PDA. Seeds = ['fee', dest_token_mint.pubkey]"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "srcTokenMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Input token mint. If this is wrapped SOL, the account can be set to read-only"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Input Mint"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "destTokenMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Output token mint. If this is wrapped SOL, the account can be set to read-only"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Output Mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "prefunder",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The system account PDA that contains enough SOL to prefund 2 stake accounts for withdrawal. Someone must send SOL to here to initialize it. Seeds = ['prefunder']"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "slumdogStake",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The slumdog stake account is split from bridge_stake upon stake withdraw and instant unstaked to refund user. create_with_seed(bridge_stake.pubkey, 'slumdog', stake_program). Might be long-lived, but should be not in use as long as bridge_stake is not in use"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "unstakeitProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sanctum unstake program. unpXTU2Ndrc7WWNyEhQWe4udTzSibLPi25SXv2xbCHQ"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "unstakePool",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sanctum unstake pool. FypPtwbY3FUfzJUtXHSyVRokVKG2jKtH29FmK4ebxRSd"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "poolSolReserves",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sanctum unstake pool SOL reserves. 3rBnnH9TTgd3xwu48rnzGsaQkSr1hR64nY71DrDt6VrQ"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "unstakeFee",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sanctum unstake pool Fee account. 5Pcu8WeQa3VbBz2vdBT49Rj4gbS4hsnfzuL1LmuRaKFY"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "slumdogStakeAccRecord",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sanctum unstake pool stake account record for slumdog stake. PDA of sanctum unstake program. Seeds = [unstakePool.pubkey, slumdogStake.pubkey]."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "unstakeProtocolFee",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sanctum unstake pool protocol fee account. 2hN9UhvRFVfPYKL6rZJ5YiLEPCLTpN755pgwDJHWgFbU"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "unstakeProtocolFeeDest",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Sanctum unstake pool protocol fee destination. unstakeProtocolFee.destination"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "clock",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "sysvar clock"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "stakeProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "stake program"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "System program. The withdraw stake and deposit stake accounts slices follow."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 7.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "args",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "swapViaStakeArgs"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "stakePoolAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts of the stake pool (or Lido) that the stake account is withdrawn from, then those of the stake pool (or Marinade, or the Sanctum reserve for wrapped SOL) it is deposited into, each starting with its program; they vary by pool."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool Accounts"
+            }
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "inputDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "srcTokenMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Swap via a stake account",
+          "interpolatedIntent": "${accounts.user} swaps ${data.args.amount} of ${accounts.srcTokenMint} from ${accounts.srcTokenFrom} for ${accounts.destTokenMint} to ${accounts.destTokenTo}, by way of a stake account"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdrawWrappedSol",
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "user",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "The withdraw authority of src_token_from."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "User"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "srcTokenFrom",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The token account to burn and redeem LSTs from"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "From Token Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "wsolTo",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The wSOL token account to receive withdrawn wrapped SOL to"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "To wSOL Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "wsolFeeTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The dest_token_mint token account collecting fees. PDA. Seeds = ['fee', dest_token_mint.pubkey]"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Router Fee Account"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "srcTokenMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Input LST token mint"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Input Mint"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "wsolMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "wSOL token mint"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Tokenkeg program. The withdraw SOL accounts slice follows"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 8.0
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "amount",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le",
+              "display": {
+                "kind": "amountNumberDisplayNode",
+                "decimals": {
+                  "kind": "injectedValueNode",
+                  "key": "inputDecimals"
+                }
+              }
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Amount In"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "stakePoolAccounts"
+            },
+            "isOptional": true,
+            "isWritable": true,
+            "docs": [
+              "The accounts of the stake pool that the input token is withdrawn from as SOL, which vary by pool, starting with its program."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Stake Pool Accounts"
+            }
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "inputDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "srcTokenMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Withdraw to wrapped SOL",
+          "interpolatedIntent": "${accounts.user} redeems ${data.amount} of ${accounts.srcTokenMint} from ${accounts.srcTokenFrom} for wrapped SOL to ${accounts.wsolTo}"
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "swapViaStakeArgs",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "decimals": {
+                    "kind": "injectedValueNode",
+                    "key": "inputDecimals"
+                  }
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Amount In"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "bridgeStakeSeed",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u32",
+                "endian": "le"
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "skip": "always"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "wrongWsolBridgeIn",
+        "code": 0,
+        "message": "Wrong wsol_bridge_in account",
+        "docs": [
+          "WrongWsolBridgeIn: Wrong wsol_bridge_in account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "wrongSolBridgeOut",
+        "code": 1,
+        "message": "Wrong sol_bridge_out account",
+        "docs": [
+          "WrongSolBridgeOut: Wrong sol_bridge_out account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "wrongFeeTokenAccount",
+        "code": 2,
+        "message": "Wrong fee token account",
+        "docs": [
+          "WrongFeeTokenAccount: Wrong fee token account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "wrongTokenProgram",
+        "code": 3,
+        "message": "Wrong token program",
+        "docs": [
+          "WrongTokenProgram: Wrong token program"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "notSystemAccount",
+        "code": 4,
+        "message": "Not system account",
+        "docs": [
+          "NotSystemAccount: Not system account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "notWsolMint",
+        "code": 5,
+        "message": "Not wSOL mint",
+        "docs": [
+          "NotWsolMint: Not wSOL mint"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "wrongStakePoolProgram",
+        "code": 6,
+        "message": "Wrong stake pool program",
+        "docs": [
+          "WrongStakePoolProgram: Wrong stake pool program"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "wrongBridgeStake",
+        "code": 7,
+        "message": "Wrong bridge stake account",
+        "docs": [
+          "WrongBridgeStake: Wrong bridge stake account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "wrongAdmin",
+        "code": 8,
+        "message": "Wrong admin authority",
+        "docs": [
+          "WrongAdmin: Wrong admin authority"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "stakeAccInactive",
+        "code": 9,
+        "message": "Stake account has no voter",
+        "docs": [
+          "StakeAccInactive: Stake account has no voter"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "validatorNotPartOfStakePool",
+        "code": 10,
+        "message": "Validator not part of stake pool",
+        "docs": [
+          "ValidatorNotPartOfStakePool: Validator not part of stake pool"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "notSignedByAdmin",
+        "code": 11,
+        "message": "Not signed by admin",
+        "docs": [
+          "NotSignedByAdmin: Not signed by admin"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "numericalError",
+        "code": 12,
+        "message": "Numerical error",
+        "docs": [
+          "NumericalError: Numerical error"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unsupportedProgram",
+        "code": 13,
+        "message": "Unsupported stake pool program",
+        "docs": [
+          "UnsupportedProgram: Unsupported stake pool program"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "unreachableError",
+        "code": 14,
+        "message": "If you see this, there's a serious bug somewhere",
+        "docs": [
+          "UnreachableError: If you see this, there's a serious bug somewhere"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "slumdogUnstakeTooSmall",
+        "code": 17,
+        "message": "Instant unstake of slumdog stake was not enough to cover rent",
+        "docs": [
+          "SlumdogUnstakeTooSmall: Instant unstake of slumdog stake was not enough to cover rent"
+        ]
+      }
+    ],
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mintAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority used to mint new tokens. The mint authority may only",
+                "be provided during mint creation. If no mint authority is present",
+                "then the mint has a fixed supply and no further tokens may be minted."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "supply",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "docs": [
+                "Total supply of tokens."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "decimals",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "docs": [
+                "Number of base 10 digits to the right of the decimal place."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isInitialized",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "docs": [
+                "Is `true` if this structure has been initialized."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "freezeAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority to freeze token accounts."
+              ]
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "sizeDiscriminatorNode",
+            "size": 82
+          }
+        ],
+        "name": "mint",
+        "docs": [],
+        "size": 82
+      }
+    ]
+  }
+}
