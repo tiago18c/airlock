@@ -171,7 +171,7 @@ The Transaction tab's text is the wire alone in base64, as other tools read one.
 The same binary plays every role. Settings decides which.
 
 - **Online.** Reads the chain, rebuilds, simulates, submits, and answers the browser bridge.
-- **Offline (airgap).** Opens no connection of its own, and only the device having no network makes that certain. It decodes and explains the transaction with its own IDLs, signs with its own keys, and exports signatures. It cannot rebuild, simulate or submit, and it has no browser bridge.
+- **Offline (airgap).** Opens no connection of its own, and only the device having no network makes that certain. It decodes and explains the transaction with its own IDLs, those of the network chosen in Settings → **Read transactions for** (mainnet until one is chosen; Review and Sign names it), signs with its own keys, and exports signatures. It cannot rebuild, simulate or submit, and it has no browser bridge.
 
 An offline wallet record on the online device holds only the pubkey. The secret lives in the vault of the offline device, as a hot wallet there.
 

@@ -193,6 +193,10 @@ pub(in crate::ui) fn AddWalletModal() -> Element {
                         label { "Private key"
                             textarea {
                                 placeholder: "Base58 secret key, hex seed, or a JSON keypair array.",
+                                autocomplete: "off",
+                                autocapitalize: "off",
+                                autocorrect: "off",
+                                spellcheck: "false",
                                 value: "{secret}",
                                 oninput: move |e| secret.set(e.value()),
                             }

@@ -172,6 +172,8 @@ pub(in crate::ui) fn TemplateBrowser(
                         button {
                             class: "ghost template-back",
                             r#type: "button",
+                            // What Android's Back presses (MainActivity).
+                            "data-back": "true",
                             onclick: move |_| selected.set(None),
                             Icon { glyph: Glyph::ChevronLeft }
                             "Templates"

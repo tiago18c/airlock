@@ -19,6 +19,10 @@ pub(in crate::ui) fn SeedImportFields(state: ModalState, accounts: Memo<SeedAcco
         label { "Seed phrase"
             textarea {
                 placeholder: "12 or 24 words",
+                autocomplete: "off",
+                autocapitalize: "off",
+                autocorrect: "off",
+                spellcheck: "false",
                 value: "{secret}",
                 oninput: move |e| {
                     secret.set(e.value());
@@ -30,6 +34,8 @@ pub(in crate::ui) fn SeedImportFields(state: ModalState, accounts: Memo<SeedAcco
         label { "Passphrase (optional)"
             input {
                 r#type: "password",
+                // Part of the seed, not a password to offer to save.
+                autocomplete: "off",
                 value: "{passphrase}",
                 oninput: move |e| {
                     passphrase.set(e.value());

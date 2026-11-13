@@ -406,6 +406,10 @@ pub fn VectorForm(creating: bool, on_done: EventHandler<()>) -> Element {
                 textarea {
                     class: "mono",
                     placeholder: "The words, in order",
+                    autocomplete: "off",
+                    autocapitalize: "off",
+                    autocorrect: "off",
+                    spellcheck: "false",
                     value: "{typed_phrase}",
                     oninput: move |evt| typed_phrase.set(evt.value()),
                 }
