@@ -3,7 +3,10 @@
 //! Expansion never fails on a blank or unreadable answer: the field it fills
 //! is left blank, so a half-filled form can still be shown as blocks. What
 //! is still needed comes back with the blocks: the inputs nobody answered,
-//! and the chain facts the node has to supply.
+//! answers a function cannot take, and the chain facts the node has to
+//! supply. A value a function cannot work out from answers it could read
+//! is such an answer ([`Missing::Invalid`]), never a blank: a blank
+//! optional field means none.
 
 use super::check::{analyze, candidates, InputScale, Problem};
 use super::model::*;
@@ -150,7 +153,9 @@ pub enum Missing {
     /// The caller has not made the keypair of this `new-keypair` value.
     Keypair(String),
     /// An input whose answer a function cannot take, and why: a canopy too
-    /// shallow or too deep for its tree.
+    /// shallow or too deep for its tree, an amount with more decimal places
+    /// than its unit has. `input` is the value's name when no input is
+    /// behind it, as in a template whose literals a function refuses.
     Invalid { input: String, message: String },
 }
 
@@ -284,6 +289,10 @@ struct Run<'a> {
     missing: Vec<Missing>,
     needs: Vec<Fact>,
     uses: Vec<Fact>,
+    /// How many times something was not known: a term with no value yet,
+    /// a fact not answered, something missing. A value that works out to
+    /// nothing while this stays put was refused by its function.
+    unknowns: usize,
 }
 
 /// Writes `template` out as blocks from `answers`. Fails only when the
@@ -311,6 +320,7 @@ pub fn expand(
         missing: Vec::new(),
         needs: Vec::new(),
         uses: Vec::new(),
+        unknowns: 0,
     };
 
     for input in &template.inputs {
@@ -329,7 +339,11 @@ pub fn expand(
     let mut worked_out = BTreeMap::new();
     for name in template.value_order() {
         if live.contains(name) {
+            let unknowns = run.unknowns;
             let value = run.evaluate(name);
+            if value.is_none() && run.unknowns == unknowns {
+                run.refused(name);
+            }
             if let Some(text) = value.as_ref().map(Val::text) {
                 worked_out.insert(name.to_string(), text);
             }
@@ -457,6 +471,103 @@ pub fn expand(
     })
 }
 
+/// Which argument of `call` its function refused, and why, in words a
+/// person can act on, when every argument has a value and the function
+/// still worked out nothing.
+fn refusal(call: &Call, args: &[Option<Val>]) -> (usize, String) {
+    let text = |at: usize| match args.get(at) {
+        Some(Some(value)) => value.text().trim().to_string(),
+        _ => String::new(),
+    };
+    let not_address = |at: usize| {
+        args.get(at)
+            .and_then(Option::as_ref)
+            .is_some_and(|value| value.address().is_none())
+    };
+    let first_not_address = |count: usize| (0..count.min(args.len())).find(|&at| not_address(at));
+    let whole = |at: usize| (at, format!("Enter a whole number, not `{}`.", text(at)));
+    let address = |at: usize| (at, format!("`{}` is not an address.", text(at)));
+    match call.function {
+        Function::BaseUnits => {
+            let decimals = args
+                .get(1)
+                .and_then(Option::as_ref)
+                .and_then(Val::integer)
+                .and_then(|n| u8::try_from(n).ok());
+            let Some(decimals) = decimals else {
+                return (
+                    1,
+                    format!(
+                        "Enter a number of decimal places from 0 to 255, not `{}`.",
+                        text(1)
+                    ),
+                );
+            };
+            let amount = text(0);
+            if let Some(Some(Val::Address(_))) = args.first() {
+                return (0, format!("Enter an amount, not the address `{amount}`."));
+            }
+            let message = match crate::units::decimal_to_base(&amount, decimals) {
+                Err(crate::units::DecimalError::NotANumber) => {
+                    format!("Enter a number, not `{amount}`.")
+                }
+                Err(crate::units::DecimalError::TooManyPlaces) if decimals == 0 => {
+                    format!("Enter a whole number, not `{amount}`.")
+                }
+                Err(crate::units::DecimalError::TooManyPlaces) if decimals == 1 => {
+                    format!("`{amount}` has more than 1 decimal place.")
+                }
+                Err(crate::units::DecimalError::TooManyPlaces) => {
+                    format!("`{amount}` has more than {decimals} decimal places.")
+                }
+                Ok(digits) if digits.starts_with('-') => {
+                    format!("Enter an amount of 0 or more, not `{amount}`.")
+                }
+                Ok(_) => format!("`{amount}` is too large."),
+            };
+            (0, message)
+        }
+        Function::RentFor => (
+            0,
+            format!("Enter a whole number of bytes, not `{}`.", text(0)),
+        ),
+        Function::TreeDepth | Function::TreeBuffer | Function::MerkleTreeSpace => (
+            0,
+            format!("`{}` is not one of the tree sizes offered.", text(0)),
+        ),
+        Function::WhenLesser => match first_not_address(2) {
+            Some(at) => address(at),
+            None if args
+                .get(2)
+                .and_then(Option::as_ref)
+                .and_then(Val::integer)
+                .is_none() =>
+            {
+                whole(2)
+            }
+            None if args
+                .get(3)
+                .and_then(Option::as_ref)
+                .and_then(Val::integer)
+                .is_none() =>
+            {
+                whole(3)
+            }
+            None => (
+                0,
+                format!(
+                    "`{}` is given twice: the two addresses have to differ.",
+                    text(0)
+                ),
+            ),
+        },
+        _ => match first_not_address(args.len()) {
+            Some(at) => address(at),
+            None => (0, format!("`{}` cannot be used here.", text(0))),
+        },
+    }
+}
+
 /// The values the enabled blocks reach, directly or through other values.
 fn live_values<'a>(
     template: &'a Template,
@@ -486,6 +597,7 @@ fn live_values<'a>(
 
 impl<'a> Run<'a> {
     fn miss(&mut self, missing: Missing) {
+        self.unknowns += 1;
         if !self.missing.contains(&missing) {
             self.missing.push(missing);
         }
@@ -497,9 +609,48 @@ impl<'a> Run<'a> {
         if !self.uses.contains(&fact) {
             self.uses.push(fact);
         }
-        if !self.facts.knows(&fact) && !self.needs.contains(&fact) {
-            self.needs.push(fact);
+        if !self.facts.knows(&fact) {
+            self.unknowns += 1;
+            if !self.needs.contains(&fact) {
+                self.needs.push(fact);
+            }
         }
+    }
+
+    /// Value `name` worked out to nothing from arguments that all had a
+    /// value: its function refused them. The answer behind the argument it
+    /// refused is marked, with why.
+    fn refused(&mut self, name: &str) {
+        let Some(call) = self.template.values.get(name) else {
+            return;
+        };
+        let args: Vec<Option<Val>> = call.args.iter().map(|arg| self.term(arg)).collect();
+        let (at, message) = refusal(call, &args);
+        let input = call
+            .args
+            .get(at)
+            .and_then(|term| self.input_behind(term))
+            .unwrap_or_else(|| name.to_string());
+        self.miss(Missing::Invalid { input, message });
+    }
+
+    /// The input `term` is, or the first input the value it names is
+    /// worked out from.
+    fn input_behind(&self, term: &Term) -> Option<String> {
+        let mut stack = vec![term.reference()?];
+        let mut seen = BTreeSet::new();
+        while let Some(name) = stack.pop() {
+            if self.template.input(name).is_some() {
+                return Some(name.to_string());
+            }
+            if !seen.insert(name) {
+                continue;
+            }
+            if let Some(call) = self.template.values.get(name) {
+                stack.extend(call.args.iter().rev().filter_map(Term::reference));
+            }
+        }
+        None
     }
 
     fn enabled(&self, block: &Block) -> bool {
@@ -558,10 +709,14 @@ impl<'a> Run<'a> {
         if let Some(address) = self.template.programs.get(name) {
             return Some(Val::Address(*address));
         }
-        if let Some(input) = self.template.input(name) {
-            return self.input_text(input).map(Val::Text);
+        let value = match self.template.input(name) {
+            Some(input) => self.input_text(input).map(Val::Text),
+            None => self.values.get(name).cloned().flatten(),
+        };
+        if value.is_none() {
+            self.unknowns += 1;
         }
-        self.values.get(name).cloned().flatten()
+        value
     }
 
     fn evaluate(&mut self, name: &'a str) -> Option<Val> {
@@ -701,7 +856,9 @@ impl<'a> Run<'a> {
                     return None;
                 };
                 let (depth, buffer) = super::tree::tree_shape(text)?;
-                let canopy = u32::try_from(args.get(1)?.as_ref()?.integer()?).ok();
+                // A canopy that is not a whole number is out of range too.
+                let canopy = args.get(1)?.as_ref()?;
+                let canopy = canopy.integer().and_then(|n| u32::try_from(n).ok());
                 match canopy.and_then(|canopy| super::tree::merkle_tree_len(depth, buffer, canopy))
                 {
                     Some(len) => Some(Val::Integer(len as u128)),

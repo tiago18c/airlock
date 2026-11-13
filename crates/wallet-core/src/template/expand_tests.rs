@@ -988,3 +988,179 @@ fn a_raydium_pool_orders_the_mints_and_deposits_each_tokens_own_units() {
         .iter()
         .any(|meta| meta.pubkey == mint_b && meta.is_signer));
 }
+
+fn invalid(input: &str, message: &str) -> Missing {
+    Missing::Invalid {
+        input: input.to_string(),
+        message: message.to_string(),
+    }
+}
+
+/// An answer a function cannot read is named on its own input, in words a
+/// person can act on, and the expansion is not complete: before, the field
+/// it fed was left blank and nothing said why.
+#[test]
+fn an_answer_a_function_cannot_take_is_named_on_its_input() {
+    // A royalty with more decimal places than a hundredth of a percent.
+    let template = builtin("create-nft");
+    let answers = Answers::for_template(&template)
+        .answer("nft_name", "Ape")
+        .answer("symbol", "APE")
+        .answer("uri", "https://e.x/a.json")
+        .answer("royalty", "2.555");
+    let expansion = run(&template, &answers, &env(), &rent(82, 1_461_600));
+    assert_eq!(
+        expansion.missing,
+        [invalid(
+            "royalty",
+            "`2.555` has more than 2 decimal places."
+        )]
+    );
+    assert!(!expansion.is_complete());
+
+    // An amount with more decimal places than the token has.
+    let template = builtin("create-stream");
+    let mint = pk(40);
+    let answers = Answers::for_template(&template)
+        .answer("recipient", &pk(41).to_string())
+        .answer("mint", &mint.to_string())
+        .answer("amount", "1.1234567")
+        .answer("per_period", "0.1")
+        .answer("period", "60");
+    let facts = Facts {
+        decimals: [(mint, 6)].into(),
+        token_programs: [(mint, TOKEN_PROGRAM_ID)].into(),
+        ..Facts::default()
+    };
+    let expansion = run(&template, &answers, &env(), &facts);
+    assert_eq!(
+        expansion.missing,
+        [invalid(
+            "amount",
+            "`1.1234567` has more than 6 decimal places."
+        )]
+    );
+    // Not while the decimals are still to come from the node.
+    let waiting = run(&template, &answers, &env(), &Facts::default());
+    assert!(waiting.missing.is_empty(), "{:?}", waiting.missing);
+
+    // mSOL to the lamport, and one place more.
+    let template = builtin("unstake-marinade");
+    let answers = Answers::for_template(&template).answer("amount", "0.0000000001");
+    let expansion = run(&template, &answers, &env(), &Facts::default());
+    assert_eq!(
+        expansion.missing,
+        [invalid(
+            "amount",
+            "`0.0000000001` has more than 9 decimal places."
+        )]
+    );
+
+    // A canopy that is not a whole number is out of range too.
+    let template = builtin("create-nft-tree");
+    let answers = Answers::for_template(&template).answer("canopy", "1.5");
+    let expansion = run(&template, &answers, &env(), &Facts::default());
+    assert_eq!(
+        expansion.missing,
+        [invalid(
+            "canopy",
+            "A tree of depth 14 takes a canopy of 0 to 13."
+        )]
+    );
+
+    // An address that is not one, through a function.
+    let template = builtin("mint-tokens");
+    let answers = Answers::for_template(&template).answer("mint", "not a mint");
+    let expansion = run(&template, &answers, &env(), &Facts::default());
+    assert!(
+        expansion
+            .missing
+            .contains(&invalid("mint", "`not a mint` is not an address.")),
+        "{:?}",
+        expansion.missing
+    );
+}
+
+/// A hand-written template whose value feeds an optional field: a value
+/// that cannot be worked out is not written as the blank that means none.
+#[test]
+fn a_value_that_cannot_be_worked_out_never_reads_as_none() {
+    let text = r#"
+format = 1
+name = "Optional freeze"
+[programs]
+token = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+[[input]]
+name = "a"
+label = "A"
+[[input]]
+name = "b"
+label = "B"
+[[input]]
+name = "mint"
+label = "Mint"
+[values]
+freeze = "lesser-address $a $b"
+[[block]]
+program = "$token"
+instruction = "initializeMint2"
+accounts = { mint = "$mint" }
+arguments = { decimals = "9", mintAuthority = "$wallet", freezeAuthority = "$freeze" }
+"#;
+    let template = Template::parse(text).unwrap();
+    let answers = Answers::for_template(&template)
+        .answer("mint", &pk(8).to_string())
+        .answer("a", &pk(8).to_string())
+        .answer("b", "not an address");
+    let expansion = run(&template, &answers, &env(), &Facts::default());
+    assert_eq!(
+        expansion.missing,
+        [invalid("b", "`not an address` is not an address.")]
+    );
+    assert!(
+        !expansion.is_complete(),
+        "it does not build without a freeze"
+    );
+    let answers = answers.answer("b", &pk(9).to_string());
+    let expansion = run(&template, &answers, &env(), &Facts::default());
+    assert!(expansion.is_complete(), "{:?}", expansion.missing);
+    assert_eq!(
+        expansion.blocks[0].draft.argument("freezeAuthority"),
+        pk(8).to_string()
+    );
+
+    // An amount through base-units into an optional field, and two equal
+    // addresses through when-lesser, are refused the same way.
+    let text = r#"
+format = 1
+name = "Equal"
+[programs]
+system = "11111111111111111111111111111111"
+[[input]]
+name = "a"
+label = "A"
+[[input]]
+name = "b"
+label = "B"
+[values]
+n = "when-lesser $a $b 1 2"
+[[block]]
+program = "$system"
+instruction = "transferSol"
+accounts = { source = "$wallet", destination = "$a" }
+arguments = { amount = "$n" }
+"#;
+    let template = Template::parse(text).unwrap();
+    let same = pk(8).to_string();
+    let answers = Answers::for_template(&template)
+        .answer("a", &same)
+        .answer("b", &same);
+    let expansion = run(&template, &answers, &env(), &Facts::default());
+    assert_eq!(
+        expansion.missing,
+        [invalid(
+            "a",
+            &format!("`{same}` is given twice: the two addresses have to differ.")
+        )]
+    );
+}

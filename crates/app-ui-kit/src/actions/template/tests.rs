@@ -595,3 +595,42 @@ async fn the_sign_note_names_the_template_and_nothing_else_of_it() {
         assert!(!rest.contains(word), "{word:?} is in {note:?}");
     }
 }
+
+/// An answer a template function cannot take is named on its field at
+/// once, stops Review with words a person can act on, and is not shown as
+/// blocks with the field it feeds left blank.
+#[tokio::test]
+async fn an_answer_a_function_cannot_take_is_named_and_stops_review_and_blocks() {
+    let screen = Screen::offline().await;
+    fill_token_2022(&screen);
+    screen.turn_on("first_supply");
+    screen.answer("amount", "5");
+    screen.answer("to", "not an address");
+    screen.type_rent();
+    let expansion = screen.expansion();
+    assert_eq!(
+        expansion.missing,
+        [Missing::Invalid {
+            input: "to".to_string(),
+            message: "`not an address` is not an address.".to_string(),
+        }]
+    );
+
+    screen.compile();
+    assert_eq!(
+        screen.error().as_deref(),
+        Some("Fill in To (`not an address` is not an address.) first.")
+    );
+    assert_eq!(screen.sign_wire(), None);
+    let marked = screen.open_template().unwrap().marked;
+    assert_eq!(marked, ["to".to_string()].into_iter().collect());
+
+    screen.act(|| screen.form().error.clone().set(None));
+    screen.act(|| show_as_blocks(&screen.session));
+    assert!(screen.open_template().is_some(), "still the template");
+    assert!(screen.drafts().is_empty());
+    assert_eq!(
+        screen.error().as_deref(),
+        Some("Fix To (`not an address` is not an address.) first.")
+    );
+}

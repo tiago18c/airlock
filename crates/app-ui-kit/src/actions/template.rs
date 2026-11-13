@@ -305,8 +305,10 @@ pub fn template_source_note(name: &str) -> String {
 }
 
 /// Write the template's blocks onto Build as ordinary blocks, and leave the
-/// template. Blank answers leave blank fields. There is no way back: Clear
-/// starts over.
+/// template. Blank answers leave blank fields. An answer a function cannot
+/// take stops it, named and marked as Review does: the field it feeds would
+/// be blank, and a blank optional field means none. There is no way back:
+/// Clear starts over.
 pub fn show_as_blocks(session: &Session) {
     let Some(OpenExpansion {
         open, expansion, ..
@@ -323,6 +325,18 @@ pub fn show_as_blocks(session: &Session) {
             return;
         }
     };
+    let refused: Vec<Missing> = expansion
+        .missing
+        .iter()
+        .filter(|item| matches!(item, Missing::Invalid { .. }))
+        .cloned()
+        .collect();
+    if !refused.is_empty() {
+        let (words, inputs) = missing_words(&open, &refused);
+        change(session, |open| open.marked = inputs);
+        error.set(Some(format!("Fix {} first.", listed(&words))));
+        return;
+    }
     close_template(session);
     for block in expansion.blocks {
         form.add_instruction(None, IxBody::Idl(block.draft));
