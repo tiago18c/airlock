@@ -28,6 +28,52 @@ impl<S: VaultStore, B: IdlBodies> IdlStore<S, B> {
         Ok(files)
     }
 
+    /// The IDLs that ship with the app an import of the IDL file `bytes`, for
+    /// the network shown, would take the place of, each as "<name> on
+    /// <network>". Empty when nothing ships for its program there, or when
+    /// the file is not an IDL (the import then says why).
+    pub fn shipped_replaced_by_file(&self, bytes: &[u8]) -> Vec<String> {
+        inspect_idl(bytes, None)
+            .ok()
+            .and_then(|inspected| self.shipped_name(&inspected.program_id, self.network))
+            .into_iter()
+            .collect()
+    }
+
+    /// As [`Self::shipped_replaced_by_file`], for every file a bundle's
+    /// `index.json` names, each on the network it is listed under.
+    pub fn shipped_replaced_by_bundle(&self, files: &[(&str, &[u8])]) -> Vec<String> {
+        let Some(index) = files
+            .iter()
+            .find(|(name, _)| file_name(name).eq_ignore_ascii_case("index.json"))
+            .and_then(|(_, bytes)| serde_json::from_slice::<IdlIndex>(bytes).ok())
+        else {
+            return Vec::new();
+        };
+        let mut out = Vec::new();
+        for entry in index.records {
+            let network = entry.network.unwrap_or(self.network);
+            if let Some(name) = self.shipped_name(&entry.record.program_id, network) {
+                if !out.contains(&name) {
+                    out.push(name);
+                }
+            }
+        }
+        out
+    }
+
+    /// "<name> on <network>" when an IDL ships with the app for `program_id`
+    /// on `network`.
+    fn shipped_name(&self, program_id: &Pubkey, network: IdlNetwork) -> Option<String> {
+        let idl = self
+            .embedded
+            .iter()
+            .find(|idl| idl.program_id == *program_id && idl.runs_on(network))?;
+        let name = crate::book::program_display_name(program_id)
+            .map_or_else(|| idl.name.clone(), str::to_string);
+        Some(format!("{name} on {}", network.words()))
+    }
+
     /// Import every body named by `index.json`, each for the network it is
     /// listed under. A bundle from before IDLs were kept per network is
     /// imported for the network shown. A bad file is skipped. The others
