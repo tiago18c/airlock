@@ -149,6 +149,8 @@ fn Online(core: CopyValue<app_core::Core>) -> Element {
 
 #[component]
 fn Offline(core: CopyValue<app_core::Core>) -> Element {
+    // Before the session opens the IDL catalog on it.
+    use_hook(|| app_ui::settle_offline_network(&core.peek()));
     // Provides the session context AppShell reads; the value is unused here.
     let _session = app_ui::use_session(core, OnlineHooks::none(), SubmitHandle::none());
     // No Network: every pane shows its offline form, and nothing probes a node.
