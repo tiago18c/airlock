@@ -1,0 +1,440 @@
+{
+  "accounts": {},
+  "instructions": [
+    {
+      "accounts": [
+        "4vvKh3Ws4vGzgXRVdo8SdL4jePXDvCqKVmi21BCBGwvn:w",
+        "CzGfkQVdh273HQraNYKagwZnNb8cGFBw8Hkki7QrBV2k:w",
+        "FNw3hAu1UgKEcxxmcn8Yt2SjtxizsYV6B7CFFtDzA4Vt:sw",
+        "CzYxANBCJ9WND4NmSSoW3nVBKhXH6GHBYy3vpQZ4gG7u:s",
+        "11111111111111111111111111111111"
+      ],
+      "data": "020000",
+      "fields": [
+        [
+          "Operator Fee",
+          "0 %"
+        ],
+        [
+          "Operator",
+          "CzGfkQVdh273HQraNYKagwZnNb8cGFBw8Hkki7QrBV2k"
+        ],
+        [
+          "Admin",
+          "FNw3hAu1UgKEcxxmcn8Yt2SjtxizsYV6B7CFFtDzA4Vt"
+        ],
+        [
+          "Operator Seed Key",
+          "CzYxANBCJ9WND4NmSSoW3nVBKhXH6GHBYy3vpQZ4gG7u"
+        ]
+      ],
+      "from": "47akxy7zb79gL3ZoQkBE6cbmEGGBQMYYFARkqf4Sz9eS9KHesLi2hCViaxNv5CXpntemSS8UkK5eSCB284A5uHRM#1",
+      "intent": "Register an operator",
+      "programId": "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q",
+      "sentence": "FNw3hAu1UgKEcxxmcn8Yt2SjtxizsYV6B7CFFtDzA4Vt registers operator CzGfkQVdh273HQraNYKagwZnNb8cGFBw8Hkki7QrBV2k with a fee of 0 % and becomes its admin",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "29rxXT5zbTR1ctiooHtb1Sa1TD4odzhQHsrLz3D78G5w",
+        "4BtQfU1dNBwDCKEMqHxUqUyS9WfyrdvdxBS1ZL7j1dSg:sw",
+        "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn",
+        "5AkKLYrNhLeqA4dXA9Ah6mN4xxCXZEHVAYa9vXxVsUk4:w",
+        "4BtQfU1dNBwDCKEMqHxUqUyS9WfyrdvdxBS1ZL7j1dSg:sw",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+      ],
+      "data": "17",
+      "fields": [
+        [
+          "Operator",
+          "29rxXT5zbTR1ctiooHtb1Sa1TD4odzhQHsrLz3D78G5w"
+        ],
+        [
+          "Operator Delegate Admin",
+          "4BtQfU1dNBwDCKEMqHxUqUyS9WfyrdvdxBS1ZL7j1dSg"
+        ],
+        [
+          "Token",
+          "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn"
+        ],
+        [
+          "Operator's Token Account",
+          "5AkKLYrNhLeqA4dXA9Ah6mN4xxCXZEHVAYa9vXxVsUk4"
+        ],
+        [
+          "Delegate",
+          "4BtQfU1dNBwDCKEMqHxUqUyS9WfyrdvdxBS1ZL7j1dSg"
+        ]
+      ],
+      "from": "4N4TRogEpSAowST9fjisYDRtvAaS5v6H5qHXm68kXXNEoK4ZrNaoaLuwagSsTQBqpH91UtkjMfCWE9rpyQ2R9xF6#2",
+      "intent": "Delegate an operator token account",
+      "programId": "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q",
+      "sentence": "4BtQfU1dNBwDCKEMqHxUqUyS9WfyrdvdxBS1ZL7j1dSg lets 4BtQfU1dNBwDCKEMqHxUqUyS9WfyrdvdxBS1ZL7j1dSg move any amount of J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn from operator 29rxXT5zbTR1ctiooHtb1Sa1TD4odzhQHsrLz3D78G5w's token account 5AkKLYrNhLeqA4dXA9Ah6mN4xxCXZEHVAYa9vXxVsUk4",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4vvKh3Ws4vGzgXRVdo8SdL4jePXDvCqKVmi21BCBGwvn",
+        "5zb1ky39GHa4qHtLffYPRXCNtucefEcFcWsHqgaCm8Y4",
+        "HR1ANmDHjaEhknvsTaK48M5xZtbBiwNdXM5NTiWhAb4S",
+        "8iJAxWiGEccnPLq7Cac7qygRpTQpsBTVbqBthCxogHgB:w",
+        "BhDFUXSVEcfbNY9nc7ynd5ZMkKf2R6zTLpUTCprZU4rT:sw"
+      ],
+      "data": "0f",
+      "fields": [
+        [
+          "Operator",
+          "5zb1ky39GHa4qHtLffYPRXCNtucefEcFcWsHqgaCm8Y4"
+        ],
+        [
+          "Vault",
+          "HR1ANmDHjaEhknvsTaK48M5xZtbBiwNdXM5NTiWhAb4S"
+        ],
+        [
+          "Operator Vault Ticket",
+          "8iJAxWiGEccnPLq7Cac7qygRpTQpsBTVbqBthCxogHgB"
+        ],
+        [
+          "Operator Vault Admin",
+          "BhDFUXSVEcfbNY9nc7ynd5ZMkKf2R6zTLpUTCprZU4rT"
+        ]
+      ],
+      "from": "4wj62TRiWp5Qb8zWfrGSuMFScRLqbyaXpf2eZMM7RJgFEQCtJxKeSxEMjt7BcAfbQ3kR8VWr5ynshSMfuDqw1cHZ#1",
+      "intent": "Operator opts in to a vault",
+      "programId": "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q",
+      "sentence": "BhDFUXSVEcfbNY9nc7ynd5ZMkKf2R6zTLpUTCprZU4rT opts operator 5zb1ky39GHa4qHtLffYPRXCNtucefEcFcWsHqgaCm8Y4 in to vault HR1ANmDHjaEhknvsTaK48M5xZtbBiwNdXM5NTiWhAb4S; it becomes active after one full epoch of warm-up",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4vvKh3Ws4vGzgXRVdo8SdL4jePXDvCqKVmi21BCBGwvn",
+        "EPshnxoP514BgPLvLavL2SESXfW8CX1WTrwXUr5GuQMH:w",
+        "EDSmUc6dF6wNwbEGyr7KACQxkJDo5Y5KtJUc397t7JxK:sw"
+      ],
+      "data": "15d007",
+      "fields": [
+        [
+          "Operator Fee",
+          "20 %"
+        ],
+        [
+          "Operator",
+          "EPshnxoP514BgPLvLavL2SESXfW8CX1WTrwXUr5GuQMH"
+        ],
+        [
+          "Operator Admin",
+          "EDSmUc6dF6wNwbEGyr7KACQxkJDo5Y5KtJUc397t7JxK"
+        ]
+      ],
+      "from": "3J5qfgzqtXtmQxTxxz3W8L6L4sUYA3Vv1FbvZhJAEvKBMCBEaaPjg5KfqWBJ1xBUE5gA1FdjEda2BeDCCKBV9KKq#1",
+      "intent": "Set an operator's fee",
+      "programId": "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q",
+      "sentence": "EDSmUc6dF6wNwbEGyr7KACQxkJDo5Y5KtJUc397t7JxK sets the fee of operator EPshnxoP514BgPLvLavL2SESXfW8CX1WTrwXUr5GuQMH to 20 %",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4vvKh3Ws4vGzgXRVdo8SdL4jePXDvCqKVmi21BCBGwvn",
+        "jtoF4epChkmd75V2kxXSmywatczAomDqKu6VfWUQocT:w",
+        "2sHNuid4rus4sK2EmndLeZcPNKkgzuEoc8Vro3PH2qop:w",
+        "E9ktriaE65LGq1diHNRV12iqQJ6B3LeRE32Wawpc2B6r:w",
+        "aaaDerwdMyzNkoX1aSoTi3UtFe2W45vh5wCgQNhsjF8:sw",
+        "aaaDerwdMyzNkoX1aSoTi3UtFe2W45vh5wCgQNhsjF8:sw",
+        "11111111111111111111111111111111"
+      ],
+      "data": "06",
+      "fields": [
+        [
+          "Network (NCN)",
+          "jtoF4epChkmd75V2kxXSmywatczAomDqKu6VfWUQocT"
+        ],
+        [
+          "Operator",
+          "2sHNuid4rus4sK2EmndLeZcPNKkgzuEoc8Vro3PH2qop"
+        ],
+        [
+          "Network Operator State",
+          "E9ktriaE65LGq1diHNRV12iqQJ6B3LeRE32Wawpc2B6r"
+        ],
+        [
+          "Network Operator Admin",
+          "aaaDerwdMyzNkoX1aSoTi3UtFe2W45vh5wCgQNhsjF8"
+        ],
+        [
+          "Payer",
+          "aaaDerwdMyzNkoX1aSoTi3UtFe2W45vh5wCgQNhsjF8"
+        ]
+      ],
+      "from": "5ieMqQJLa4JoTeU4wuipDYZMnf5Ypzuko6eqmxx2ecGvJpMWXfAC6WHBeACcPdJ8Frr1Hy9LUnJJNXLG93MMG7jR#1",
+      "intent": "Add an operator to a network",
+      "programId": "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q",
+      "sentence": "aaaDerwdMyzNkoX1aSoTi3UtFe2W45vh5wCgQNhsjF8 adds operator 2sHNuid4rus4sK2EmndLeZcPNKkgzuEoc8Vro3PH2qop to network jtoF4epChkmd75V2kxXSmywatczAomDqKu6VfWUQocT, creating the state E9ktriaE65LGq1diHNRV12iqQJ6B3LeRE32Wawpc2B6r through which each side opts in",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4vvKh3Ws4vGzgXRVdo8SdL4jePXDvCqKVmi21BCBGwvn",
+        "GZxp4e2Tm3Pw9GyAaxuF6odT3XkRM96jpZkp3nxhoK4Y:w",
+        "CQpvXgoaaawDCLh8FwMZEwQqnPakRUZ5BnzhjnEBPJv",
+        "27kW9RSSGVhkyHN9WCUfSNmFC8a5QqwVSaiKKw6MMPWG:w",
+        "FtBYVfukgJgr6TuxPVuX4RGD9tMVcyAFshyj8fGzk6Zi:sw",
+        "FtBYVfukgJgr6TuxPVuX4RGD9tMVcyAFshyj8fGzk6Zi:sw",
+        "11111111111111111111111111111111"
+      ],
+      "data": "05",
+      "fields": [
+        [
+          "Operator",
+          "GZxp4e2Tm3Pw9GyAaxuF6odT3XkRM96jpZkp3nxhoK4Y"
+        ],
+        [
+          "Vault",
+          "CQpvXgoaaawDCLh8FwMZEwQqnPakRUZ5BnzhjnEBPJv"
+        ],
+        [
+          "Operator Vault Ticket",
+          "27kW9RSSGVhkyHN9WCUfSNmFC8a5QqwVSaiKKw6MMPWG"
+        ],
+        [
+          "Operator Vault Admin",
+          "FtBYVfukgJgr6TuxPVuX4RGD9tMVcyAFshyj8fGzk6Zi"
+        ],
+        [
+          "Payer",
+          "FtBYVfukgJgr6TuxPVuX4RGD9tMVcyAFshyj8fGzk6Zi"
+        ]
+      ],
+      "from": "5rvS4firHAqDrkFxWLirkQbkP7xAjBn53ybLW9Vc379JRGSTTpD1cFTzuWCQCQ15xjZnmugRP2ZojvuqbSeaf7fq#1",
+      "intent": "Add a vault to an operator",
+      "programId": "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q",
+      "sentence": "FtBYVfukgJgr6TuxPVuX4RGD9tMVcyAFshyj8fGzk6Zi adds vault CQpvXgoaaawDCLh8FwMZEwQqnPakRUZ5BnzhjnEBPJv to operator GZxp4e2Tm3Pw9GyAaxuF6odT3XkRM96jpZkp3nxhoK4Y, creating ticket 27kW9RSSGVhkyHN9WCUfSNmFC8a5QqwVSaiKKw6MMPWG",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4vvKh3Ws4vGzgXRVdo8SdL4jePXDvCqKVmi21BCBGwvn",
+        "5qgY5nLTzjNRVNvJbFegQuwEhhqnE9Dy2RAZsDZfVP9w",
+        "3nr7hfipgVjiTmBv9UYzgE3XvqjBNp2wh9zdsxtSumzy",
+        "HwsfLaptPPuw1QuHPkJVGzqif62T4MuSh7mh4ZEGAJ44:w",
+        "aaaDerwdMyzNkoX1aSoTi3UtFe2W45vh5wCgQNhsjF8:sw"
+      ],
+      "data": "09",
+      "fields": [
+        [
+          "Network (NCN)",
+          "5qgY5nLTzjNRVNvJbFegQuwEhhqnE9Dy2RAZsDZfVP9w"
+        ],
+        [
+          "Operator",
+          "3nr7hfipgVjiTmBv9UYzgE3XvqjBNp2wh9zdsxtSumzy"
+        ],
+        [
+          "Network Operator State",
+          "HwsfLaptPPuw1QuHPkJVGzqif62T4MuSh7mh4ZEGAJ44"
+        ],
+        [
+          "Network Operator Admin",
+          "aaaDerwdMyzNkoX1aSoTi3UtFe2W45vh5wCgQNhsjF8"
+        ]
+      ],
+      "from": "4YH6RtN5NRygKtEKVPsTHZHwh8udJTA36kzMFcJBgfqp9SufyrJ7Qmy6N4dnykQyE59ewSBHXhmKS5pkFPrG2Egj#1",
+      "intent": "Network opts in to an operator",
+      "programId": "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q",
+      "sentence": "aaaDerwdMyzNkoX1aSoTi3UtFe2W45vh5wCgQNhsjF8 opts network 5qgY5nLTzjNRVNvJbFegQuwEhhqnE9Dy2RAZsDZfVP9w in to operator 3nr7hfipgVjiTmBv9UYzgE3XvqjBNp2wh9zdsxtSumzy; it becomes active after one full epoch of warm-up",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4vvKh3Ws4vGzgXRVdo8SdL4jePXDvCqKVmi21BCBGwvn",
+        "5qgY5nLTzjNRVNvJbFegQuwEhhqnE9Dy2RAZsDZfVP9w",
+        "3nr7hfipgVjiTmBv9UYzgE3XvqjBNp2wh9zdsxtSumzy",
+        "HwsfLaptPPuw1QuHPkJVGzqif62T4MuSh7mh4ZEGAJ44:w",
+        "aaaDerwdMyzNkoX1aSoTi3UtFe2W45vh5wCgQNhsjF8:sw"
+      ],
+      "data": "0b",
+      "fields": [
+        [
+          "Network (NCN)",
+          "5qgY5nLTzjNRVNvJbFegQuwEhhqnE9Dy2RAZsDZfVP9w"
+        ],
+        [
+          "Operator",
+          "3nr7hfipgVjiTmBv9UYzgE3XvqjBNp2wh9zdsxtSumzy"
+        ],
+        [
+          "Network Operator State",
+          "HwsfLaptPPuw1QuHPkJVGzqif62T4MuSh7mh4ZEGAJ44"
+        ],
+        [
+          "Operator Network Admin",
+          "aaaDerwdMyzNkoX1aSoTi3UtFe2W45vh5wCgQNhsjF8"
+        ]
+      ],
+      "from": "4YH6RtN5NRygKtEKVPsTHZHwh8udJTA36kzMFcJBgfqp9SufyrJ7Qmy6N4dnykQyE59ewSBHXhmKS5pkFPrG2Egj#2",
+      "intent": "Operator opts in to a network",
+      "programId": "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q",
+      "sentence": "aaaDerwdMyzNkoX1aSoTi3UtFe2W45vh5wCgQNhsjF8 opts operator 3nr7hfipgVjiTmBv9UYzgE3XvqjBNp2wh9zdsxtSumzy in to network 5qgY5nLTzjNRVNvJbFegQuwEhhqnE9Dy2RAZsDZfVP9w; it becomes active after one full epoch of warm-up",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "jtoF4epChkmd75V2kxXSmywatczAomDqKu6VfWUQocT:w",
+        "6mAP5JjR6vTzBuMAHrxqps3xJgMjJ47s856AeyhwQBGA:w",
+        "9X5Zn4dFBJVqzaCBYeqmEUasbX3G1QFwbmj4Ht3zDeaC:sw"
+      ],
+      "data": "11",
+      "fields": [
+        [
+          "Network (NCN)",
+          "jtoF4epChkmd75V2kxXSmywatczAomDqKu6VfWUQocT"
+        ],
+        [
+          "Network Admin",
+          "6mAP5JjR6vTzBuMAHrxqps3xJgMjJ47s856AeyhwQBGA"
+        ],
+        [
+          "New Admin",
+          "9X5Zn4dFBJVqzaCBYeqmEUasbX3G1QFwbmj4Ht3zDeaC"
+        ]
+      ],
+      "from": "3yArgRim7bZbWrR1pNWwy2tvbwnb7YJ5nabDuFZYfvq82WDNtECiZSdC8y4yQKs1ZSPF2ifFRpPaw28WZWAesCoC#4.1",
+      "intent": "Hand over a network",
+      "programId": "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q",
+      "sentence": "6mAP5JjR6vTzBuMAHrxqps3xJgMjJ47s856AeyhwQBGA hands the admin role of network jtoF4epChkmd75V2kxXSmywatczAomDqKu6VfWUQocT, and every other role it holds there, to 9X5Zn4dFBJVqzaCBYeqmEUasbX3G1QFwbmj4Ht3zDeaC",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4vvKh3Ws4vGzgXRVdo8SdL4jePXDvCqKVmi21BCBGwvn",
+        "CVrMxNfzEyDGa6akHjreTr2Vsdx3Pwv9dGWUm4j5Qebv:w",
+        "HR1ANmDHjaEhknvsTaK48M5xZtbBiwNdXM5NTiWhAb4S",
+        "2tGMjJy5uDgdVwg7bGZjcaacdFRTkmFfCbT49ZTSaa3R:w",
+        "Aumes2trowrTbjFWBn4Hb5pwu18Y72DiUt1CdwmASnZg",
+        "2kjDwKUSFGHr8aNvXgPFwWRP9xUZKAvsKY4go9jA3xfB:sw",
+        "11111111111111111111111111111111"
+      ],
+      "data": "04",
+      "fields": [
+        [
+          "Network (NCN)",
+          "CVrMxNfzEyDGa6akHjreTr2Vsdx3Pwv9dGWUm4j5Qebv"
+        ],
+        [
+          "Vault",
+          "HR1ANmDHjaEhknvsTaK48M5xZtbBiwNdXM5NTiWhAb4S"
+        ],
+        [
+          "Network Vault Ticket",
+          "2tGMjJy5uDgdVwg7bGZjcaacdFRTkmFfCbT49ZTSaa3R"
+        ],
+        [
+          "Network Vault Admin",
+          "Aumes2trowrTbjFWBn4Hb5pwu18Y72DiUt1CdwmASnZg"
+        ],
+        [
+          "Payer",
+          "2kjDwKUSFGHr8aNvXgPFwWRP9xUZKAvsKY4go9jA3xfB"
+        ]
+      ],
+      "from": "23ze7ziKahEDN9muJGzqU6VwsRubd5yHZwRjGRQfQjauoCj9duchu84Bj818uSetTSWqQ7Cifopa5HmARBRnikwG#1.1",
+      "intent": "Add a vault to a network",
+      "programId": "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q",
+      "sentence": "Aumes2trowrTbjFWBn4Hb5pwu18Y72DiUt1CdwmASnZg adds vault HR1ANmDHjaEhknvsTaK48M5xZtbBiwNdXM5NTiWhAb4S to network CVrMxNfzEyDGa6akHjreTr2Vsdx3Pwv9dGWUm4j5Qebv, creating ticket 2tGMjJy5uDgdVwg7bGZjcaacdFRTkmFfCbT49ZTSaa3R",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4vvKh3Ws4vGzgXRVdo8SdL4jePXDvCqKVmi21BCBGwvn:w",
+        "4qRt8P7FTUwpyUfrm9MxZajLpV2NediuFEww4nt5ACdz:w",
+        "ncnAySXaEEafrYTa6uiQLR7SaX9pcyhkYjarhMaZymJ:sw",
+        "5woRRvdtbJQwbeGBi18VskhA8Le4CTAfAjeHm7s22PVm:s",
+        "11111111111111111111111111111111"
+      ],
+      "data": "01",
+      "fields": [
+        [
+          "Network (NCN)",
+          "4qRt8P7FTUwpyUfrm9MxZajLpV2NediuFEww4nt5ACdz"
+        ],
+        [
+          "Admin",
+          "ncnAySXaEEafrYTa6uiQLR7SaX9pcyhkYjarhMaZymJ"
+        ],
+        [
+          "Network Seed Key",
+          "5woRRvdtbJQwbeGBi18VskhA8Le4CTAfAjeHm7s22PVm"
+        ]
+      ],
+      "from": "3q914kbr6Qxqi2KM5cryk8AymDjLM4h8H2BuLBfcjLKktiKXKfsEfh7MKGVsWC3mVsvpajew2xAQnQwnXr6ZTrSC#1",
+      "intent": "Register a network",
+      "programId": "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q",
+      "sentence": "ncnAySXaEEafrYTa6uiQLR7SaX9pcyhkYjarhMaZymJ registers network 4qRt8P7FTUwpyUfrm9MxZajLpV2NediuFEww4nt5ACdz and becomes its admin",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "7yofWXChEHkPTSnyFdKx2Smq5iWVbGB4P1dkdC6zHWYR:w",
+        "7HC6V7Xeeov2N3GUfcpuk3TaZFit5yJgX1o8LY4MK1cx:sw",
+        "8xppGydv1HD6H3ZS84FyBSSgRWoU9FDWa1oRonpFhWPo"
+      ],
+      "data": "1402",
+      "fields": [
+        [
+          "Role",
+          "Voter"
+        ],
+        [
+          "Operator",
+          "7yofWXChEHkPTSnyFdKx2Smq5iWVbGB4P1dkdC6zHWYR"
+        ],
+        [
+          "Operator Admin",
+          "7HC6V7Xeeov2N3GUfcpuk3TaZFit5yJgX1o8LY4MK1cx"
+        ],
+        [
+          "New Holder",
+          "8xppGydv1HD6H3ZS84FyBSSgRWoU9FDWa1oRonpFhWPo"
+        ]
+      ],
+      "from": "59twuEDcHSnhji3NLVhE8d5qbi2AyCWvXadqmvTyLJWLsCkKUxoFBZ6VUyvG5ZZ9bs5HG15z5gET1q9XKAxFjQc#1",
+      "intent": "Set an operator role",
+      "programId": "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q",
+      "sentence": "7HC6V7Xeeov2N3GUfcpuk3TaZFit5yJgX1o8LY4MK1cx gives the Voter role of operator 7yofWXChEHkPTSnyFdKx2Smq5iWVbGB4P1dkdC6zHWYR to 8xppGydv1HD6H3ZS84FyBSSgRWoU9FDWa1oRonpFhWPo",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4vvKh3Ws4vGzgXRVdo8SdL4jePXDvCqKVmi21BCBGwvn",
+        "jtoF4epChkmd75V2kxXSmywatczAomDqKu6VfWUQocT",
+        "CugziSqZXcUStNPXbtRmq6atsrHqWY2fH2tAhsyApQrV",
+        "B7crGpcUdE6L1hs2tHAZ1RWY3UGCRR8DBnPFiAwWoYnd:w",
+        "aaaDerwdMyzNkoX1aSoTi3UtFe2W45vh5wCgQNhsjF8:sw"
+      ],
+      "data": "07",
+      "fields": [
+        [
+          "Network (NCN)",
+          "jtoF4epChkmd75V2kxXSmywatczAomDqKu6VfWUQocT"
+        ],
+        [
+          "Vault",
+          "CugziSqZXcUStNPXbtRmq6atsrHqWY2fH2tAhsyApQrV"
+        ],
+        [
+          "Network Vault Ticket",
+          "B7crGpcUdE6L1hs2tHAZ1RWY3UGCRR8DBnPFiAwWoYnd"
+        ],
+        [
+          "Network Vault Admin",
+          "aaaDerwdMyzNkoX1aSoTi3UtFe2W45vh5wCgQNhsjF8"
+        ]
+      ],
+      "from": "62kPMqxFrqGFTh6Q1VDtcXq5QmbYXhVeWaeUADDnShQA2gXkynsCVtziKuSdYuwogvEzBNsgBtTzupjzdBoYHKpg#1",
+      "intent": "Network opts in to a vault",
+      "programId": "RestkWeAVL8fRGgzhfeoqFhsqKRchg6aa1XrcH96z4Q",
+      "sentence": "aaaDerwdMyzNkoX1aSoTi3UtFe2W45vh5wCgQNhsjF8 opts network jtoF4epChkmd75V2kxXSmywatczAomDqKu6VfWUQocT in to vault CugziSqZXcUStNPXbtRmq6atsrHqWY2fH2tAhsyApQrV; it becomes active after one full epoch of warm-up",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}
