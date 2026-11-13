@@ -1112,3 +1112,12 @@ idlSha256 = "3187a29bd44ec2da6c0af7cc123e1ea185df30b01dc91270e26a50e63ec3f8ad"
 source = { repo = "https://github.com/fractal-protocol/solana-upshift-vault-programs", commit = "87c0f2d41e5b6a1f4d504548edd070d303b2c163" }
 verified = "B75DMrVVhSgjjFQyVrYdDWMw9nCHLBU8UnsSXBGHkfYM"
 reviewed = "2026-11-12"
+
+[[builds]]
+# quarryMine (pack). Deployed at slot 145136845; OtterSec lists no verify record. The binary logs `Instruction:` for exactly the IDL's 21 instructions, and mainnet stakes, withdrawals, claims (v1 and v2), miner, quarry and rewarder creation and the rewarder authority's rate, share and famine changes decode with no data left over and every account named.
+programId = "QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB"
+network = "mainnet"
+programHash = "8643382a17e256399c589003cc1d92dddc409f9ce5e705e561e6bafac6b07da6"
+authority = "6Jtj2TDynyyZWkwY5MjWqYqhkQztAdvNFra1HW1BZmKR"
+idlSha256 = "ef4b19baa2804cb213365a66d81235ce954d44debc44dddda01b7d4e0a6bae03"
+reviewed = "2026-11-12"
