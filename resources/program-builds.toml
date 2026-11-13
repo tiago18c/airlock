@@ -604,3 +604,14 @@ programHash = "699a7d4ac09781f556062a844b756f0be187253ed6d16bd5f16f2f4fb7984cfd"
 authority = "3pAxu6C9ykZvyyzdknZvmz6CbWGZPTjRevjk4PRF5ib7"
 idlSha256 = "dadeca63cac0031670c34c6f1784ca38d58eb936be5bdc8c7948b1a658b6c04f"
 reviewed = "2026-11-12"
+
+[[builds]]
+# onreapp (pack). The binary logs 66 instruction names and dispatches on 66 discriminators, exactly the IDL's, and the IDL is byte for byte target/idl/onreapp.json of the OtterSec-verified commit. Successful mainnet transactions decode with the IDL, every account named and no data left over, for takeOfferV2, takeOfferPermissionless, takeOfferPermissionlessV2, openSwapSell, withdrawConfigurableVault, settleBuffer, refreshMarketStats, updateCirculatingSupplyExcludedBalance, configurePropAmm and getNav.
+programId = "onreuGhHHgVzMWSkj2oQDLDtvvGvoepBPkqyaubFcwe"
+network = "mainnet"
+programHash = "c9bf59ff7b718eafc2a3c0766cef5124f076864d5539de867f7c1ed356f28668"
+authority = "FvmhydbpHGQzMUp51GmhB1fwsrkyfmnRsTg7oPwDe25f"
+idlSha256 = "2ca50a8068baeed992d181353a71245ec2ba10743b94ffbfcd3e69b2093cbe5b"
+source = { repo = "https://github.com/onre-finance/onre-sol", commit = "c0490831f438074562ebf51e437ca5f8e027596b" }
+verified = "FvmhydbpHGQzMUp51GmhB1fwsrkyfmnRsTg7oPwDe25f"
+reviewed = "2026-11-12"
