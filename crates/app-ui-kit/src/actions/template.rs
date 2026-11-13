@@ -232,6 +232,19 @@ pub fn expand_open(session: &Session) -> Option<OpenExpansion> {
     })
 }
 
+/// Whether the form asks for the chain facts by hand: offline, when the
+/// node would not answer, and while any fact is typed. Typing one makes it
+/// known, so nothing is needed from the node any more and its failure is
+/// forgotten; the fields stay, so the rest of a number can be typed and a
+/// typed value corrected.
+pub fn asks_for_facts(session: &Session, open: &OpenTemplate) -> bool {
+    let failed = matches!(
+        session.forms.build.fact_read.read().state,
+        FactReadState::Failed(_)
+    );
+    session.rpc().is_err() || failed || !open.typed_facts.is_empty()
+}
+
 /// Ask the node for `needs`, once the answers have been still for
 /// [`FACT_READ_DELAY`]. Asking again for what is being read, or was just
 /// refused, does nothing; a reply to an older question is dropped. Offline

@@ -634,3 +634,55 @@ async fn an_answer_a_function_cannot_take_is_named_and_stops_review_and_blocks()
         Some("Fix To (`not an address` is not an address.) first.")
     );
 }
+
+/// Online, when the node will not answer, the form asks for the facts by
+/// hand. Typing the first digit makes the fact known and the failure is
+/// forgotten (nothing is needed from the node any more), but the field
+/// stays, so the rest of the number can be typed. Before, it went after
+/// the first keystroke and kept a rent of one lamport.
+#[tokio::test]
+async fn a_fact_typed_after_the_node_failed_keeps_its_field_while_it_is_typed() {
+    let mut screen = Screen::online(FakeRpc {
+        offline: true,
+        ..FakeRpc::default()
+    })
+    .await;
+    screen.open(TOKEN_2022);
+    let needs = screen.expansion().needs;
+    let [Fact::Rent(bytes)] = needs.as_slice() else {
+        panic!("{needs:?}");
+    };
+    let fact = Fact::Rent(*bytes);
+    let asks = |screen: &Screen| {
+        screen.act(|| asks_for_facts(&screen.session, &screen.open_template().unwrap()))
+    };
+    assert!(!asks(&screen), "online, the node is asked first");
+    screen.act(|| request_facts(screen.session, needs.clone()));
+    screen.wait_out_the_delay().await;
+    assert!(matches!(
+        screen.act(|| screen.form().fact_read.peek().state.clone()),
+        FactReadState::Failed(_)
+    ));
+    assert!(asks(&screen), "the node did not answer");
+
+    // The first digit, and what the form's effect then does with what the
+    // expansion still needs: nothing.
+    screen.act(|| type_fact(&screen.session, fact, "1".into()));
+    let needs = screen.expansion().needs;
+    assert!(needs.is_empty());
+    screen.act(|| request_facts(screen.session, needs));
+    assert_eq!(
+        screen.act(|| screen.form().fact_read.peek().state.clone()),
+        FactReadState::Idle,
+        "the failure is forgotten"
+    );
+    assert!(asks(&screen), "the field stays");
+
+    // The rest of the number is typed into it.
+    screen.act(|| type_fact(&screen.session, fact, "1461600".into()));
+    assert!(asks(&screen));
+    assert_eq!(
+        block(&screen.expansion(), "createAccount").argument("lamports"),
+        "0.0014616"
+    );
+}
