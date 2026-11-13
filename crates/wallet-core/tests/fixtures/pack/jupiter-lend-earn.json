@@ -43,7 +43,7 @@
       "fields": [
         [
           "Amount",
-          "18,446,744,073,709.551615"
+          "the maximum"
         ],
         [
           "Owner",
@@ -97,7 +97,7 @@
       "from": "cfdWt63PsjtGAuQpomXXyVepmdUBbKNi6scGKuB2gMm4oYHru59dioe3GdJaXyWPwSkciyXZD7Q4KLBidgxYYeW#2",
       "intent": "Withdraw from earn",
       "programId": "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9",
-      "sentence": "BdJLTnPDesKzpaZSn5Z1scFbAKzA2zJtYj2C7TPXPo8 withdraws 18,446,744,073,709.551615 of HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr to CXifSijEGreModKdSrPPDjDvwrRG2wrpndegJrtuJWkb, paying with GcV9tEj62VncGithz4o4N9x6HWXARxuRgEAYk9zahNA8 shares from 2dDdfjMot8tiw4HCocGeUNcQnVToKojFrsotT6UuD6p7",
+      "sentence": "BdJLTnPDesKzpaZSn5Z1scFbAKzA2zJtYj2C7TPXPo8 withdraws the maximum of HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr to CXifSijEGreModKdSrPPDjDvwrRG2wrpndegJrtuJWkb, paying with GcV9tEj62VncGithz4o4N9x6HWXARxuRgEAYk9zahNA8 shares from 2dDdfjMot8tiw4HCocGeUNcQnVToKojFrsotT6UuD6p7",
       "unnamedAccounts": 0
     },
     {

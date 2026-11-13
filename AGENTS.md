@@ -20,7 +20,7 @@ cargo build -p airlock -p bridge-host
 node scripts/drive-desktop.mjs <outdir> [transfer|unread|batch|realms ...]
 ```
 
-It sends one `signTransaction` request per scenario, screenshots the modal into `<outdir>/<scenario>.png`, prints its buttons and rejects the request. Add a scenario to its `scenarios` table for a transaction of your own. For the before screenshots, build `main` and run it into another folder.
+It sends one `signTransaction` request per scenario, screenshots the modal into `<outdir>/<scenario>.png`, prints its buttons and rejects the request. With `DRIVE_REVIEW=1` it also opens each request on Review and Sign and screenshots that page into `<outdir>/<scenario>-review.png`. Add a scenario to its `scenarios` table for a transaction of your own. For the before screenshots, build `main` and run it into another folder.
 
 It needs a debug build: a release build drops every `WEBVIEW2_*` variable at start, so the debugging port below is never opened.
 

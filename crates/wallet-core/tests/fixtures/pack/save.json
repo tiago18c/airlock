@@ -598,7 +598,7 @@
       "fields": [
         [
           "Amount (Reserve's Token; the highest value repays the whole debt)",
-          "18,446,744,073,709,551,615 base units"
+          "the maximum"
         ],
         [
           "From",
@@ -628,7 +628,7 @@
       "from": "4T1J6RqqGeDi5S66jwC6iAAbHgydULyjaEfdyRBJjFtpzMwuoS9z56R38FXLoQ3Qs2shbn3uhFXVoP3hoaT3BLrG#6",
       "intent": "Repay a loan",
       "programId": "So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo",
-      "sentence": "6ywJkpgLqACZXxbEZXWPdAEvi61BEf3q6V5shyZdL5gs repays up to 18,446,744,073,709,551,615 base units of the debt of obligation 4CV3pyAiAjuLpbk1saGVrW6AE6brHE9mUdb9i84Ww3gF to reserve 8PbodeaosQP19SjYFx855UMqWxH2HynZLdBXmsrbac36, from HjwV24pb49CECMTdYQ39sA7U1adNBAVByqrvfRRM8FYG",
+      "sentence": "6ywJkpgLqACZXxbEZXWPdAEvi61BEf3q6V5shyZdL5gs repays up to the maximum of the debt of obligation 4CV3pyAiAjuLpbk1saGVrW6AE6brHE9mUdb9i84Ww3gF to reserve 8PbodeaosQP19SjYFx855UMqWxH2HynZLdBXmsrbac36, from HjwV24pb49CECMTdYQ39sA7U1adNBAVByqrvfRRM8FYG",
       "unnamedAccounts": 0
     },
     {

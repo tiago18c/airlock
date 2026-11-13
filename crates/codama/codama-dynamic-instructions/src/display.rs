@@ -858,11 +858,25 @@ fn account_scale_source(node: &Node, ctx: &Ctx<'_>) -> ScaleSource {
     }
 }
 
+/// What an amount reads as when it is the largest value a 64 or 128-bit
+/// field can hold. Programs take that to mean "everything" or "no limit",
+/// and it is how their own apps withdraw a whole balance; scaled like any
+/// other amount it reads as eighteen trillion tokens.
+pub const MAXIMUM_AMOUNT: &str = "the maximum";
+
+fn is_maximum(value: &Value) -> bool {
+    matches!(
+        value,
+        Value::Number(NumberValue::Unsigned(n)) if *n == u128::from(u64::MAX) || *n == u128::MAX
+    )
+}
+
 fn scale_shown(value: &Value, decimals: u32, unit: Option<&str>, scale_from: ScaleSource) -> Shown {
     let Some(scaled) = scale_value(value, decimals) else {
         return degraded(value);
     };
     let text = match unit {
+        _ if is_maximum(value) => MAXIMUM_AMOUNT.to_string(),
         Some(unit) if !unit.is_empty() => format!("{scaled} {unit}"),
         _ => scaled,
     };
@@ -1583,6 +1597,7 @@ mod tests {
             ]),
             accounts,
             remaining_accounts: vec![],
+            unread: 0,
         }
     }
 

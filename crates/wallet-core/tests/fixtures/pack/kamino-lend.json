@@ -257,7 +257,7 @@
       "fields": [
         [
           "Collateral Tokens (the highest value withdraws as much as allowed)",
-          "18,446,744,073,709.551615"
+          "the maximum"
         ],
         [
           "Owner",
@@ -299,7 +299,7 @@
       "from": "1oBNEE8jYRNMWWwxNt8zgVzaMHPAq9XcuzrwWYWMpVtxqntXnNdegKTCGWDhGe5VMkZ5zR542sCnKUEYjAp8Hmh#7",
       "intent": "Withdraw a deposit",
       "programId": "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
-      "sentence": "48NwoWfgvLjFqk7mLSKs2obsSg622Ge1KpraFMeQ6tRk withdraws up to 18,446,744,073,709.551615 collateral tokens of reserve 37Jk2zkz23vkAYBT66HM2gaqJuNg2nYLsCreQAVt5MWK from obligation 4iNCXrRBStApRfpD7XhYGDHs9oRf9errX9zi9sRC4Zvj and redeems them for cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij into FuYfTHQba2QcuSNqKJoVCrbzU8dZ26yn1RWoEaPS7HYR",
+      "sentence": "48NwoWfgvLjFqk7mLSKs2obsSg622Ge1KpraFMeQ6tRk withdraws up to the maximum collateral tokens of reserve 37Jk2zkz23vkAYBT66HM2gaqJuNg2nYLsCreQAVt5MWK from obligation 4iNCXrRBStApRfpD7XhYGDHs9oRf9errX9zi9sRC4Zvj and redeems them for cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij into FuYfTHQba2QcuSNqKJoVCrbzU8dZ26yn1RWoEaPS7HYR",
       "unnamedAccounts": 0
     },
     {
@@ -395,7 +395,7 @@
       "fields": [
         [
           "Collateral Tokens (the highest value withdraws as much as allowed)",
-          "18,446,744,073,709.551615"
+          "the maximum"
         ],
         [
           "Owner",
@@ -437,7 +437,7 @@
       "from": "2Qm1hf71RKbHvmoTKnYx6yDAj5cKXXAQA1iYU3UMHkjNudDVpKdfZxZb2VyafgXoCTSQCqs5veR3c7LcoG5jiW3z#7",
       "intent": "Withdraw a deposit",
       "programId": "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
-      "sentence": "GQgxqKCEoGKweMn35mbpbMTjJuoHqAH9MFcTeUgkMGnc withdraws up to 18,446,744,073,709.551615 collateral tokens of reserve d4A2prbA2whesmvHaL88BH6Ewn5N4bTSU2Ze8P6Bc4Q from obligation URc8kqAB15WkmB6LQubjifMBnjgxC2zPBKUZP7JXogd and redeems them for So11111111111111111111111111111111111111112 into 8b43dxELVZRiQJbijMrgtbEiUH1CrqhNz2JizxrUbUvL",
+      "sentence": "GQgxqKCEoGKweMn35mbpbMTjJuoHqAH9MFcTeUgkMGnc withdraws up to the maximum collateral tokens of reserve d4A2prbA2whesmvHaL88BH6Ewn5N4bTSU2Ze8P6Bc4Q from obligation URc8kqAB15WkmB6LQubjifMBnjgxC2zPBKUZP7JXogd and redeems them for So11111111111111111111111111111111111111112 into 8b43dxELVZRiQJbijMrgtbEiUH1CrqhNz2JizxrUbUvL",
       "unnamedAccounts": 0
     },
     {

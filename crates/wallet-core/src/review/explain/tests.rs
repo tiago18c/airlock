@@ -205,6 +205,46 @@ fn a_system_transfer_reads_as_a_sentence_with_its_amount_in_sol() {
     assert_eq!(idl.unnamed_accounts, 0);
 }
 
+/// A codec reads what its type takes and stops, so data longer than the IDL
+/// describes reads all the same. A program may read the rest as an argument
+/// a newer version of it added, so the rest is kept for the row to show.
+#[test]
+fn bytes_after_the_ones_an_idl_describes_are_kept_apart() {
+    let exact = fixtures::transfer(pk(1), pk(2), 1_500_000_000);
+    let mut longer = exact.clone();
+    longer.data.extend([0, 7]);
+
+    let read = explain_one_ix(&builtins(), pk(1), exact);
+    assert!(read.undescribed_bytes.is_empty());
+    let read_longer = explain_one_ix(&builtins(), pk(1), longer);
+    assert_eq!(read_longer.undescribed_bytes, [0, 7]);
+    // What the IDL does describe reads the same.
+    assert_eq!(read_longer.interpolated_intent, read.interpolated_intent);
+    assert_eq!(read_longer.fields, read.fields);
+}
+
+/// The largest value a field holds is how a program is told "everything",
+/// and scaled like an amount it reads as eighteen trillion tokens.
+#[test]
+fn an_amount_at_the_most_its_field_holds_reads_as_the_maximum() {
+    let all = explain_one_ix(
+        &builtins(),
+        pk(1),
+        fixtures::transfer(pk(1), pk(2), u64::MAX),
+    );
+    assert_eq!(field(&all, "Amount"), "the maximum");
+    assert_eq!(
+        all.interpolated_intent.as_deref(),
+        Some(format!("Transfer the maximum from {} to {}", pk(1), pk(2)).as_str())
+    );
+    let nearly = explain_one_ix(
+        &builtins(),
+        pk(1),
+        fixtures::transfer(pk(1), pk(2), u64::MAX - 1),
+    );
+    assert_eq!(field(&nearly, "Amount"), "18,446,744,073.709551614 SOL");
+}
+
 #[test]
 fn a_token_transfer_names_its_mint_authority_and_scaled_amount() {
     for program in [TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID] {
@@ -2715,6 +2755,9 @@ struct RecordedIx {
     fields: Vec<(String, String)>,
     #[serde(default)]
     unnamed_accounts: usize,
+    /// The bytes of the data that follow the ones the IDL describes, in hex.
+    #[serde(default)]
+    undescribed_bytes: String,
 }
 
 impl RecordedIx {
@@ -2771,6 +2814,10 @@ fn recorded_explanation(
 /// instructions as a cluster executed them, so an IDL of the pack is checked
 /// against what its program accepted and not against bytes built from the IDL
 /// itself.
+///
+/// After a change to how something is displayed, set `AIRLOCK_RECORDED_OUT`
+/// to a path: what each instruction reads now is written there, one JSON
+/// object a line, to re-record the files from and read the difference.
 #[test]
 fn every_recorded_instruction_of_the_pack_reads_as_recorded() {
     use base64::Engine;
@@ -2785,6 +2832,7 @@ fn every_recorded_instruction_of_the_pack_reads_as_recorded() {
     assert!(!files.is_empty());
 
     let mut failures = Vec::new();
+    let mut read_now = Vec::new();
     for path in files {
         let name = path.file_name().unwrap().to_string_lossy().into_owned();
         let file: RecordedFile = serde_json::from_slice(&std::fs::read(&path).unwrap())
@@ -2831,7 +2879,24 @@ fn every_recorded_instruction_of_the_pack_reads_as_recorded() {
             if idl.unnamed_accounts != recorded.unnamed_accounts {
                 failures.push(format!("{at}: {} unnamed accounts", idl.unnamed_accounts));
             }
+            let undescribed = hex::encode(&idl.undescribed_bytes);
+            if undescribed != recorded.undescribed_bytes {
+                failures.push(format!("{at}: undescribed bytes {undescribed:?}"));
+            }
+            read_now.push(serde_json::json!({
+                "file": name,
+                "from": recorded.from,
+                "intent": idl.intent,
+                "sentence": idl.interpolated_intent,
+                "fields": fields,
+                "unnamedAccounts": idl.unnamed_accounts,
+                "undescribedBytes": undescribed,
+            }));
         }
+    }
+    if let Ok(out) = std::env::var("AIRLOCK_RECORDED_OUT") {
+        let lines: Vec<String> = read_now.iter().map(|line| line.to_string()).collect();
+        std::fs::write(&out, lines.join("\n")).unwrap_or_else(|err| panic!("{out}: {err}"));
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
