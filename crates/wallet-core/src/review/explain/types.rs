@@ -158,6 +158,10 @@ pub struct IdlExplanation {
     /// the IDL allows none. The program may be reading a different layout than
     /// the one shown, so the account names cannot be trusted.
     pub unnamed_accounts: usize,
+    /// The bytes of the instruction's data that follow the ones its IDL
+    /// describes, when there are any. The program may read them as an
+    /// argument a newer version of it added, which nothing here shows.
+    pub undescribed_bytes: Vec<u8>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

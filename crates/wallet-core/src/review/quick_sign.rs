@@ -134,8 +134,8 @@ impl Reading {
                 }
             }
             // Extra accounts mean the program may read a layout the IDL does
-            // not describe.
-            (None, Some(idl)) if idl.unnamed_accounts == 0 => {
+            // not describe, and extra bytes an argument it does not show.
+            (None, Some(idl)) if idl.unnamed_accounts == 0 && idl.undescribed_bytes.is_empty() => {
                 if !vetted(&instruction.program_id) {
                     self.unvetted += 1;
                 }
@@ -316,6 +316,15 @@ mod tests {
             .accounts
             .push(AccountMeta::new_readonly(pk(9), false));
         let wire = compile(key.pubkey(), vec![padded]).wire;
+        assert_eq!(judge(&wire, &[key.pubkey()]).unread, 1);
+    }
+
+    #[test]
+    fn bytes_the_idl_does_not_describe_make_the_instruction_unread() {
+        let key = KeypairSigner::new_random();
+        let mut longer = transfer(key.pubkey(), pk(2), 5);
+        longer.data.push(0);
+        let wire = compile(key.pubkey(), vec![longer]).wire;
         assert_eq!(judge(&wire, &[key.pubkey()]).unread, 1);
     }
 

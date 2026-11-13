@@ -686,7 +686,7 @@
       "fields": [
         [
           "Shares (the highest value withdraws all your shares)",
-          "18,446,744,073,709.551615"
+          "the maximum"
         ],
         [
           "Owner",
@@ -720,7 +720,7 @@
       "from": "Zyqsbg3DLMAVyJkmDcpwZQaLP8QV1X22qXUwUskPNijJYpDwEHLg1TPUsBuQmrfJU7MksrfmtpyHSaLAXvE6axw#5",
       "intent": "Withdraw from a vault",
       "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
-      "sentence": "BV8QRnXC9wjQEfnwUDTwrKJwAujAhYawiGEYCXXoNVaH withdraws EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from vault 3SMNuqK7m13KorY9gX8DzjQAVXGbhgRVni65Pk6LTBgC into FTfVMa78TeGL6rDLVVzUiUaQjoV66bFNqUnpMMZGnVKK by burning up to 18,446,744,073,709.551615 shares from Ex526sAzQSx26nduU88Fers5oqGNvTKgBKRZnfAYDgqP, paid from the vault's available tokens only",
+      "sentence": "BV8QRnXC9wjQEfnwUDTwrKJwAujAhYawiGEYCXXoNVaH withdraws EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from vault 3SMNuqK7m13KorY9gX8DzjQAVXGbhgRVni65Pk6LTBgC into FTfVMa78TeGL6rDLVVzUiUaQjoV66bFNqUnpMMZGnVKK by burning up to the maximum shares from Ex526sAzQSx26nduU88Fers5oqGNvTKgBKRZnfAYDgqP, paid from the vault's available tokens only",
       "unnamedAccounts": 0
     },
     {
@@ -757,7 +757,7 @@
       "fields": [
         [
           "Shares (the highest value withdraws all your shares)",
-          "18,446,744,073,709.551615"
+          "the maximum"
         ],
         [
           "Owner",
@@ -811,7 +811,7 @@
       "from": "4hrED8LWEFgYUrEm9BnWgiLa3BsfygbzJRfme4jtnVQcKUtRSi33TVGWSTYDUvtLpy1Q1knzfJcjEQJpZ9y842EG#5",
       "intent": "Withdraw from a vault",
       "programId": "KvauGMspG5k6rtzrqqn7WNn3oZdyKqLKwK2XWQ8FLjd",
-      "sentence": "4Fa7xCiNpaDTP156o99BASfC57Ya9pMrxCZLpw7Cx3D5 withdraws EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from vault B5pjfZAiKjyUEuqB2694NHrsjcaM67uuJaWqjzTVtzR6 into 4QKCuQKnvU4yXLFVTFCWxMDnj9KCjsVb6sWfxN1gawSa by burning up to 18,446,744,073,709.551615 shares from zR75fAGYrujVH5mEdtr7rkNCN1R7Ez5XNJDnFZYMLMk, paid from the vault's available tokens and then from reserve C2Wp6bpsVevig3AZ1KSCkgHZhsWfN2tw9eQ4kG9z7U7J",
+      "sentence": "4Fa7xCiNpaDTP156o99BASfC57Ya9pMrxCZLpw7Cx3D5 withdraws EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from vault B5pjfZAiKjyUEuqB2694NHrsjcaM67uuJaWqjzTVtzR6 into 4QKCuQKnvU4yXLFVTFCWxMDnj9KCjsVb6sWfxN1gawSa by burning up to the maximum shares from zR75fAGYrujVH5mEdtr7rkNCN1R7Ez5XNJDnFZYMLMk, paid from the vault's available tokens and then from reserve C2Wp6bpsVevig3AZ1KSCkgHZhsWfN2tw9eQ4kG9z7U7J",
       "unnamedAccounts": 0
     },
     {
@@ -926,7 +926,7 @@
         ],
         [
           "Token Cap (the highest value means no cap)",
-          "18,446,744,073,709,551,615 base units"
+          "the maximum"
         ],
         [
           "Collateral Token Cap (the highest value means no cap)",

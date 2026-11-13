@@ -565,7 +565,7 @@
         ],
         [
           "Maximum Quote Token",
-          "18,446,744,073.709551615"
+          "the maximum"
         ],
         [
           "Pool Config",
@@ -607,7 +607,7 @@
       "from": "4tvh2wyU2DodmDzxacXUCajnFe2jMhh52h2bjuyC5t8CM5VTazw9rJTvz8HuLrQLd9gv6bmpWSQxiF5tHaUBkrfC#5",
       "intent": "Claim partner trading fees",
       "programId": "dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN",
-      "sentence": "6pdsnYdpLyrWGSSucaZBui9izxQ7Ubg7bYesa8RQbZ7X claims the partner's trading fees of pool 8p7dqRjTnT8JGPWLdKuP92ymAuCS6XK62DVCTU1N6Uf7: at most 0 of k8H2Bm1Gy49uPutnRqPkxR81aDXv2Fw675FDskNe6AT to BkHEvcoDDZYnR6wCm97BTKxzyhxvb8o69rnkRV7b28TW and at most 18,446,744,073.709551615 of So11111111111111111111111111111111111111112 to 5ovGDj2d1HBz23nGy24LH9byn93sQt6tyW1mWZHUtDch",
+      "sentence": "6pdsnYdpLyrWGSSucaZBui9izxQ7Ubg7bYesa8RQbZ7X claims the partner's trading fees of pool 8p7dqRjTnT8JGPWLdKuP92ymAuCS6XK62DVCTU1N6Uf7: at most 0 of k8H2Bm1Gy49uPutnRqPkxR81aDXv2Fw675FDskNe6AT to BkHEvcoDDZYnR6wCm97BTKxzyhxvb8o69rnkRV7b28TW and at most the maximum of So11111111111111111111111111111111111111112 to 5ovGDj2d1HBz23nGy24LH9byn93sQt6tyW1mWZHUtDch",
       "unnamedAccounts": 0
     },
     {

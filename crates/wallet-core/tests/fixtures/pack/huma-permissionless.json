@@ -78,7 +78,8 @@
       "intent": "Request a redemption",
       "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
       "sentence": "Afm5PSuVT6A3QksJ8ZAcCVcDSxnorokh4qtpYwunXnDY asks to redeem 19,877.349385 of 59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw from pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS, to be paid out later: the tokens move from HXWfnjaRESqqX63DtonSvxAq6j3mc9pbwzW9TM8gYifi to the pool until the request is processed",
-      "unnamedAccounts": 0
+      "unnamedAccounts": 0,
+      "undescribedBytes": "0000000000000000"
     },
     {
       "accounts": [
@@ -593,7 +594,8 @@
       "intent": "Switch modes",
       "programId": "HumaXepHnjaRCpjYTokxY4UtaJcmx41prQ8cxGmFC5fn",
       "sentence": "shakRDxyKwaBbduqZTZt8Q4etTALbDLnAANStv9TLH3 switches 102.488912 of HUPfpnsaJtJGpJxAPNX1vXah7BgYiQYt1c2JMgMumvPs from mode AcHvC47rpoMAY22CbHRpp7vsAskRyhyZGYQCqdm4BWcH to mode 3FhoMDyKzQqxtGxnz9DfysfoGQKvgDnSFjoDGgguDCQN of pool 28hFhD21Nka3stL27a8zZ4nRLgaDVxRYwJgeEVgeakzS, for 59obFNBzyTBGowrkif5uK7ojS58vsuWz3ZCvg6tfZAGw paid to 29LGJ8o6ttqQ6dy1PB3EPyHFokKhc3Jk5rSLw46sE4Pm",
-      "unnamedAccounts": 0
+      "unnamedAccounts": 0,
+      "undescribedBytes": "000000000800000053564d5f54455354"
     },
     {
       "accounts": [

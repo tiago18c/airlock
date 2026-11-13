@@ -14,6 +14,10 @@ use solana_instruction::{AccountMeta, Instruction};
 pub struct ParsedData {
     pub data: Value,
     pub path: NodePath,
+    /// How many bytes follow the ones the node describes. A codec reads what
+    /// its type takes and stops, so data longer than that decodes all the
+    /// same; whoever shows it should know the rest was not read.
+    pub unread: usize,
 }
 
 /// Parses `bytes` as an account's data.
@@ -44,7 +48,11 @@ pub fn parse_data(
     let codec = get_node_codec(&path)?;
     let mut input = bytes;
     let data = codec.decode(&mut input)?;
-    Ok(Some(ParsedData { data, path }))
+    Ok(Some(ParsedData {
+        data,
+        path,
+        unread: input.len(),
+    }))
 }
 
 /// Decodes `bytes` against a specific account type by name, bypassing
@@ -69,7 +77,11 @@ pub fn parse_account_data_as(
     let codec = get_node_codec(&path)?;
     let mut input = bytes;
     let data = codec.decode(&mut input)?;
-    Ok(Some(ParsedData { data, path }))
+    Ok(Some(ParsedData {
+        data,
+        path,
+        unread: input.len(),
+    }))
 }
 
 /// An instruction account paired with its Codama name.
@@ -89,6 +101,9 @@ pub struct ParsedInstruction {
     /// Account metas that follow the named accounts. Display grouping uses these
     /// for `remainingAccounts`; they are not part of the named account list.
     pub remaining_accounts: Vec<AccountMeta>,
+    /// How many bytes of the instruction's data follow the ones its node
+    /// describes: see [`ParsedData::unread`].
+    pub unread: usize,
 }
 
 /// Parses a native [`Instruction`]: decodes its data and pairs each account
@@ -129,6 +144,7 @@ pub fn parse_instruction(
         path: parsed.path,
         accounts,
         remaining_accounts: extra.to_vec(),
+        unread: parsed.unread,
     }))
 }
 
