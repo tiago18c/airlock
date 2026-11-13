@@ -3224,6 +3224,24 @@
             "offset": 0
           }
         ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "additionalAccounts"
+            },
+            "isOptional": true,
+            "isWritable": false,
+            "docs": [
+              "Accounts a calling program passes after the listed ones. Hylo's SDK passes none. A router seen on mainnet (Titan, through the account D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM) passes three on every Hylo instruction it calls: the SOL/USD Pyth feed 7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE, the hyUSD mint 5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E and the xSOL mint 4sWNB8zGWHkh6UnmwiEtzNxL4XrN7uK9tosbESbJFfVs. The program's source is not public, so whether it reads them is not established; they are shown, not named."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Additional Account"
+            }
+          }
+        ],
         "provides": [
           {
             "kind": "providedNode",
@@ -3742,6 +3760,24 @@
             "kind": "fieldDiscriminatorNode",
             "name": "discriminator",
             "offset": 0
+          }
+        ],
+        "remainingAccounts": [
+          {
+            "kind": "instructionRemainingAccountsNode",
+            "value": {
+              "kind": "argumentValueNode",
+              "name": "additionalAccounts"
+            },
+            "isOptional": true,
+            "isWritable": false,
+            "docs": [
+              "Accounts a calling program passes after the listed ones. Hylo's SDK passes none. A router seen on mainnet (Titan, through the account D5YqVMoSxnqeZAKAUUE1Dm3bmjtdxQ5DCF356ozqN9cM) passes three on every Hylo instruction it calls: the SOL/USD Pyth feed 7AviUf9nL62mcxNbQGKm4nKDQnPjswo6c5MX4D57HmyE, the hyUSD mint 5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E and the xSOL mint 4sWNB8zGWHkh6UnmwiEtzNxL4XrN7uK9tosbESbJFfVs. The program's source is not public, so whether it reads them is not established; they are shown, not named."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Additional Account"
+            }
           }
         ],
         "provides": [
