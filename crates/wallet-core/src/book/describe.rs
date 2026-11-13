@@ -587,6 +587,10 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
         Pubkey::from_str_const("LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"),
         "Raydium LaunchLab Program",
     ),
+    (
+        Pubkey::from_str_const("MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD"),
+        "Marinade Liquid Staking Program",
+    ),
 ];
 
 /// The display name of a program whose IDL ships with the app.
