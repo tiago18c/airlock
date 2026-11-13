@@ -182,6 +182,9 @@ pub fn ProgramsPanel() -> Element {
                 }
             }
         }
+        if let Some(held) = (session.forms.program.pending_import)() {
+            ReplaceShipped { replaces: held.replaces, note, error }
+        }
         input {
             id: "idl-one",
             class: "file-hidden",
@@ -414,5 +417,54 @@ mod tests {
         assert!(name_matches("transferChecked", ""));
         assert!(name_matches("transferChecked", "checked"));
         assert!(!name_matches("transferChecked", "burn"));
+    }
+}
+
+/// Asks before an import takes the place of IDLs that ship with the app,
+/// naming each.
+#[component]
+fn ReplaceShipped(
+    replaces: Vec<String>,
+    note: Signal<Option<String>>,
+    error: Signal<Option<String>>,
+) -> Element {
+    let session = use_context::<Session>();
+    let one = replaces.len() == 1;
+    rsx! {
+        div { class: "modal-backdrop",
+            div { class: "modal",
+                role: "alertdialog",
+                aria_modal: "true",
+                aria_label: "Replace a built-in IDL",
+                div { class: "stack",
+                    h3 { if one { "Replace a built-in IDL?" } else { "Replace built-in IDLs?" } }
+                    p {
+                        if one {
+                            "This file takes the place of the IDL that ships with Airlock for:"
+                        } else {
+                            "These files take the place of the IDLs that ship with Airlock for:"
+                        }
+                    }
+                    ul {
+                        for name in replaces.clone() {
+                            li { key: "{name}", "{name}" }
+                        }
+                    }
+                    p { class: "warn",
+                        "Review and Sign then puts those programs' instructions in this file's words, and counts them as read with an IDL you chose. Replace only with a file you trust as much as the one that ships. Removing the import in Programs brings the built-in one back."
+                    }
+                    div { class: "btn-row",
+                        button { class: "ghost",
+                            onclick: move |_| confirm_import(&session, false, note, error),
+                            "Cancel"
+                        }
+                        button { class: "warn solid",
+                            onclick: move |_| confirm_import(&session, true, note, error),
+                            "Replace"
+                        }
+                    }
+                }
+            }
+        }
     }
 }

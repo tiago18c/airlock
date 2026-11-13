@@ -1086,3 +1086,29 @@ fn an_omitted_default_is_a_fixed_argument_with_its_value() {
     assert_eq!(linked.fixed_value, None);
     assert!(!arg(serde_json::json!({})).fixed);
 }
+
+#[test]
+fn an_import_says_which_shipped_idls_it_would_replace() {
+    let store = crate::fixtures::shipped_catalog(IdlNetwork::Devnet);
+    let token = crate::ids::TOKEN_PROGRAM_ID;
+    let shipped = builtin_idl(IdlNetwork::Devnet, &token).unwrap();
+    let replaced = store.shipped_replaced_by_file(shipped.json.as_bytes());
+    assert_eq!(replaced.len(), 1, "{replaced:?}");
+    assert!(replaced[0].ends_with(" on Devnet"), "{replaced:?}");
+    // Nothing ships for this program, so nothing is replaced.
+    assert!(store
+        .shipped_replaced_by_file(&codama(pk(9), "1.0.0"))
+        .is_empty());
+
+    // A bundle names each file with its network.
+    let index = format!(
+        r#"{{"records":[
+            {{"network":"devnet","programId":"{token}","name":"token","sha256":"{zero}","spec":"codama","origin":"file"}},
+            {{"network":"devnet","programId":"{other}","name":"mine","sha256":"{zero}","spec":"codama","origin":"file"}}
+        ]}}"#,
+        other = pk(9),
+        zero = "00".repeat(32),
+    );
+    let files = [("index.json", index.as_bytes())];
+    assert_eq!(store.shipped_replaced_by_bundle(&files), replaced);
+}
