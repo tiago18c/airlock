@@ -291,3 +291,23 @@ the transfer-hook accounts they forward, and this build's TransferContext PDA an
 program, as a hidden remaining-accounts group. The Token program's mint account is \
 added, so the amounts of transfers and plans read their mint's decimals; delegation and \
 subscribe amounts are in base units. Display nodes added by hand."""
+
+# PumpSwap, pump.fun's constant-product AMM. The file is the IDL in pump.fun's
+# public docs repository, not the one the program publishes: its Anchor IDL
+# account (the same on mainnet and devnet) predates 12 instructions both
+# deployed builds run, the v2 trades and the multi-hop swap among them. The
+# repository's lists exactly the instructions both builds have.
+[[idls]]
+file = "pump-amm.json"
+programId = "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+name = "pumpAmm"
+networks = ["mainnet", "devnet"]
+source = { kind = "repository", url = "https://github.com/pump-fun/pump-public-docs/blob/639b87fb45c3adeffa6f7c4a1bf0cb85e392bf22/idl/pump_amm.json" }
+changes = """Converted from Anchor to Codama. buy, buyExactQuoteIn and sell declare the accounts they \
+read after the named ones (a cashback coin's accounts, the pool-v2 account, a buyback \
+fee recipient and its token account) as one remaining-accounts group, since their number \
+depends on the coin; multiHopSwap declares its hops, five accounts each, as one. \
+trackVolume (buy, buyExactQuoteIn) and createPool's creatorFeeBps, canEditCreatorFee and \
+isHolderReward are remainder options: the program takes data that leaves them out. The \
+Token program's mint account is added, so token amounts read their mint's decimals; fees \
+are in percent. Display nodes added by hand."""

@@ -427,3 +427,21 @@ programHash = "e705f5a309f84f849b402f20de4bea5f2cc1d1d4f691ba7caabcb07c8b46af51"
 authority = "4AVYqLW61CkqMPurJ3z4aaneVA2kZGyrJo7d3Ls5ZYGe"
 idlSha256 = "59e6bd28801686aa48587f5592460622b0b31a035dce8bab778bfa11b0da3c19"
 reviewed = "2026-11-12"
+
+[[builds]]
+# pumpAmm (pack). Closed source. The binary has exactly the IDL's 38 instructions, by Anchor log name and by discriminator. Successful mainnet transactions decode with the IDL and name every account for 19 of them: the v1 and v2 trades, multiHopSwap, createPool, deposit, withdraw, both fee sweeps, collectCoinCreatorFee, transferCreatorFeesToPump, adminCtoPool, initBoost, boostBuyAndBurn and the volume accumulator instructions.
+programId = "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+network = "mainnet"
+programHash = "4d5fc41918374b24b16d8372d14a1ac64c768c83a2971bfeef1c8660dad649e7"
+authority = "7gZufwwAo17y5kg8FMyJy2phgpvv9RSdzWtdXiWHjFr8"
+idlSha256 = "0827dc62931fc1b646332ee47abba020221058cd97d6c4d97082742e3e633cea"
+reviewed = "2026-11-12"
+
+[[builds]]
+# pumpAmm (pack). Closed source. Another build than mainnet's, with exactly the IDL's 38 instructions by Anchor log name and by discriminator. Devnet transactions decode with the IDL for buyV2, buyExactQuoteInV2, sellV2, createPool, initBoost, collectCoinCreatorFee and closeUserVolumeAccumulator.
+programId = "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+network = "devnet"
+programHash = "3ffd5e3b5a31ccc86b434405e8a1876926da1e8685f891dc964b7f919c172ee1"
+authority = "GUYCUEpxSkm1ccDo3LSKMR4Xpe5bgMnEZaFygWUSEVH3"
+idlSha256 = "0827dc62931fc1b646332ee47abba020221058cd97d6c4d97082742e3e633cea"
+reviewed = "2026-11-12"
