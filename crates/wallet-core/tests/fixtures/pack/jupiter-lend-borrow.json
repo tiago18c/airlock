@@ -1,0 +1,1791 @@
+{
+  "accounts": {
+    "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4": {
+      "data": "AQAAAI0mUwybJH+SiOrON1RLJjiAwCytBNMhUO0dAfj73SOGdPhb5xCpAAAGAQEAAACNJlMMmyR/kojqzjdUSyY4gMAsrQTTIVDtHQH4+90jhg==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH": {
+      "data": "AQAAABhfYuvgAXOwgprIsQ6TwRGWJmshKTAnPwJxcQMSa7gL/+lBGJ/AAQAGAQEAAAAXhTJh72q4Uypn8FOGWq0xKT/PB88SCrW5oVcGVI3AKwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQMAIAAXhTJh72q4Uypn8FOGWq0xKT/PB88SCrW5oVcGVI3AKwwAIAAXhTJh72q4Uypn8FOGWq0xKT/PB88SCrW5oVcGVI3AKwEAbAAXhTJh72q4Uypn8FOGWq0xKT/PB88SCrW5oVcGVI3AKxeFMmHvarhTKmfwU4ZarTEpP88HzxIKtbmhVwZUjcArAAAAAAAAAADSAgAAAAAAAAAAAAAAAAAAAADSAgAAAAAAAAAAAAAAAAAAAAAEAEEAF4UyYe9quFMqZ/BThlqtMSk/zwfPEgq1uaFXBlSNwCsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAIEAF4UyYe9quFMqZ/BThlqtMSk/zwfPEgq1uaFXBlSNwCsm0cx6nT0Kf+Fu2TflaERKcxbP98dKRVQu4LCksu7ubQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgBAABeFMmHvarhTKmfwU4ZarTEpP88HzxIKtbmhVwZUjcArAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASAEAAF4UyYe9quFMqZ/BThlqtMSk/zwfPEgq1uaFXBlSNwCscLuZ/Ek327fKp0r9eOlM8dwG1j42qlXIQoeWwYYzSvhMArgAXhTJh72q4Uypn8FOGWq0xKT/PB88SCrW5oVcGVI3AKxwu5n8STfbt8qnSv146Uzx3AbWPjaqVchCh5bBhjNK+DQAAAEdsb2JhbCBEb2xsYXIEAAAAVVNER00AAABodHRwczovL3Rva2VuLW1ldGFkYXRhLnBheG9zLmNvbS91c2RnX21ldGFkYXRhL3Byb2Qvc29sYW5hL3VzZGdfbWV0YWRhdGEuanNvbgAAAAA=",
+      "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+    },
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": {
+      "data": "AQAAAJj+huiNm+Lqi8HMpIeLKYjCQPUrhCS/tA7Rot3LXhmbjIpsrYhxHwAGAQEAAABicKqKWcWUBbRShshncubNEm6bil06OFNtN/e0FOi2Zw==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "So11111111111111111111111111111111111111112": {
+      "data": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "USDSwr9ApdHk5bvJKMjzff41FfuX8bSxdKcR81vTwcA": {
+      "data": "AQAAAJgl3Ay+ryKDaTHADLiRWS8KltDcamWkxnmSsB4NuNEiiXEt7/gDAAAGAQEAAACNxBJSn4dsnzvAHXwwlbzWzR1tUXe1mqA/BOXFtCIUew==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    },
+    "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB": {
+      "data": "AQAAAGVqQkIv6okUBqQZ0dHeCPQqhHlBtaGulevOYZrDFyk0BhKnkuIUAAAIAQEAAAD/3+wbzSzTg5PITaoIyRzA041nf/jQq3tdAz8A9zLMMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARIAQABD+fHuLje4B+pFy3TmAJcivsAJKWAm5ORVi0NeJKXpxgfoNYJBH+oUgvCZS4CqUSqXyU8l3yg77Fpno4H8hitKDAAgAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGBgABAAEZADgABm9ZIlHMR3R4JaWa0UIupDVz9SjaXe4q94ErMU+ZReMAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8aACEA/9/sG80s04OTyE2qCMkcwNONZ3/40Kt7XQM/APcyzDAABABBAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgBAAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAKUAQ/nx7i43uAfqRct05gCXIr7ACSlgJuTkVYtDXiSl6cYH6DWCQR/qFILwmUuAqlEql8lPJd8oO+xaZ6OB/IYrSgwAAABUZXNsYSB4U3RvY2sFAAAAVFNMQXhEAAAAaHR0cHM6Ly94c3RvY2tzLW1ldGFkYXRhLmJhY2tlZC5maS90b2tlbnMvU29sYW5hL1RTTEF4L21ldGFkYXRhLmpzb24AAAAA",
+      "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+    },
+    "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh": {
+      "data": "AQAAAGVqQkIv6okUBqQZ0dHeCPQqhHlBtaGulevOYZrDFyk0vfGL0jcdAAAIAQEAAAD/3+wbzSzTg5PITaoIyRzA041nf/jQq3tdAz8A9zLMMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARIAQABD+fHuLje4B+pFy3TmAJcivsAJKWAm5ORVi0NeJKXpxgfopQ4UD9pXkfRWapV/064/hz5qNGb/wT15EZ36mrUKDAAgAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGBgABAAEZADgABm9ZIlHMR3R4JaWa0UIupDVz9SjaXe4q94ErMU+ZReM/9BuswgPwPwj6oWoAAAAAqf6J1fcG8D8aACEA/9/sG80s04OTyE2qCMkcwNONZ3/40Kt7XQM/APcyzDAABABBAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgBAAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAKYAQ/nx7i43uAfqRct05gCXIr7ACSlgJuTkVYtDXiSl6cYH6KUOFA/aV5H0VmqVf9OuP4c+ajRm/8E9eRGd+pq1Cg0AAABOVklESUEgeFN0b2NrBQAAAE5WREF4RAAAAGh0dHBzOi8veHN0b2Nrcy1tZXRhZGF0YS5iYWNrZWQuZmkvdG9rZW5zL1NvbGFuYS9OVkRBeC9tZXRhZGF0YS5qc29uAAAAAA==",
+      "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+    },
+    "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij": {
+      "data": "AQAAAKoz6yzOpQMSoLLEk9JQue0dVo65NoiFL7Q6iHB0233zXK+HzkQAAAAIAQEAAAC4w8iB6IaECTptFFc7SwwIK5GelttHc5YkHziM1W49cw==",
+      "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    }
+  },
+  "instructions": [
+    {
+      "accounts": [
+        "HXFnCoTBugxzdsjrpxcSBWLd2BroR5iSvaqVBjB4Vtx4:sw",
+        "6Y6U5P34fQjewhSQ1Diu3rpAga9pQSMaPVZCmYa4KYKY:w",
+        "EEHMzvHppkgn11HZed916c1SvqxAmfm6X5ntMc9ySQQy:w",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "Dnrc3CxMiDbcLPNaDVFZKf8SapkbQE6Az2obcKfWwBke",
+        "8GmQKSaHvjuYpEDPNXsDJQGud8jWr6J19Rcro7Ve5SUB:w",
+        "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "Fa1zDwJrXzZUyoUjmoojPrEQseYSW9M5xy2LmcDPPCHc",
+        "Eb1DLxoFS3riditbBETv6Uq9uGeds2P9drNCJwXXcZL8:w",
+        "5SFCNdLnh98ZLeivDkrAmiuLgSsHrKTF24Ew8dL8emA4",
+        "hLE7W8Jn9quD1uzH4BEP7JUyvUVVpSwvekg5tMALFTo:w",
+        "4v378QNLJ3tkHH9sV4i1yMd7L2vJfH559WKWEADd8G4i:w",
+        "ANqTgMK59zNp8p424Et8ECYSspqvUossA3KkBaNnVzqw",
+        "BafKfX7GZySaQdVBBaWdc1n8Jc1GpDMq7EDMF2jhjxG:w",
+        "GWVJvWFNxAtTodu7BZztjfCiNJ2zaMqSkzopByZGtMKP:w",
+        "AKjTdSmBXCTTKhM3fPbHmivCQxmeZnXrNi6zZrtcenTC:w",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "H9PFEEp9Cz42PEhd4Kit8NGzwfMrXZ1pgeNBtEoVPwHb:w",
+        "EiKp953hmDHchpLzYoePcdM6bwXFMBmTGJxtRJmDkqLV:w",
+        "8hUNm2U6dR5X7j7gU7Pb8HRA5oRMAh2HBpqV8A1pet3e",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688",
+        "5xzPn2sbkibVga6PvLEst1axzJPRX8wNvDLMeBd9WFeh:w",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "jupnw4B6Eqs7ft6rxpzYLJZYSnrpRgPcr589n5Kv4oc",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "A4RuZpjfbdzo1fQTqu1ng7kNya1knC2fHSSG5Sv4G4EH",
+        "48CHb7zL5JRSd7iMyKCUZmuf5xFS3gpjTvNKXpFqSzHp:w",
+        "3ACmot8xgdsdtD8vWD84YcSNFj4WfTV4UC1YnqHMMLSS:w",
+        "3ACmot8xgdsdtD8vWD84YcSNFj4WfTV4UC1YnqHMMLSS:w"
+      ],
+      "data": "d96ad06374972a870000000000000000000000000000000040597307000000000000000000000000010103000000010102",
+      "fields": [
+        [
+          "Collateral Change (positive deposits, negative withdraws, most negative withdraws all)",
+          "0"
+        ],
+        [
+          "Debt Change (positive borrows, negative repays, most negative repays all)",
+          "125"
+        ],
+        [
+          "Transfer Type",
+          "Direct"
+        ],
+        [
+          "Signer",
+          "HXFnCoTBugxzdsjrpxcSBWLd2BroR5iSvaqVBjB4Vtx4"
+        ],
+        [
+          "Signer Collateral Token Account",
+          "6Y6U5P34fQjewhSQ1Diu3rpAga9pQSMaPVZCmYa4KYKY"
+        ],
+        [
+          "Signer Debt Token Account",
+          "EEHMzvHppkgn11HZed916c1SvqxAmfm6X5ntMc9ySQQy"
+        ],
+        [
+          "Vault Config",
+          "Dnrc3CxMiDbcLPNaDVFZKf8SapkbQE6Az2obcKfWwBke"
+        ],
+        [
+          "Vault",
+          "8GmQKSaHvjuYpEDPNXsDJQGud8jWr6J19Rcro7Ve5SUB"
+        ],
+        [
+          "Collateral Token",
+          "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh"
+        ],
+        [
+          "Debt Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Oracle",
+          "Fa1zDwJrXzZUyoUjmoojPrEQseYSW9M5xy2LmcDPPCHc"
+        ],
+        [
+          "Position",
+          "Eb1DLxoFS3riditbBETv6Uq9uGeds2P9drNCJwXXcZL8"
+        ],
+        [
+          "Position NFT Account",
+          "5SFCNdLnh98ZLeivDkrAmiuLgSsHrKTF24Ew8dL8emA4"
+        ],
+        [
+          "Current Tick",
+          "hLE7W8Jn9quD1uzH4BEP7JUyvUVVpSwvekg5tMALFTo"
+        ],
+        [
+          "Final Tick",
+          "4v378QNLJ3tkHH9sV4i1yMd7L2vJfH559WKWEADd8G4i"
+        ],
+        [
+          "Current Tick Liquidation Record",
+          "ANqTgMK59zNp8p424Et8ECYSspqvUossA3KkBaNnVzqw"
+        ],
+        [
+          "Final Tick Liquidation Record",
+          "BafKfX7GZySaQdVBBaWdc1n8Jc1GpDMq7EDMF2jhjxG"
+        ],
+        [
+          "Branch",
+          "GWVJvWFNxAtTodu7BZztjfCiNJ2zaMqSkzopByZGtMKP"
+        ],
+        [
+          "Collateral Liquidity Reserve",
+          "AKjTdSmBXCTTKhM3fPbHmivCQxmeZnXrNi6zZrtcenTC"
+        ],
+        [
+          "Debt Liquidity Reserve",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ],
+        [
+          "Vault Collateral Position on Liquidity",
+          "H9PFEEp9Cz42PEhd4Kit8NGzwfMrXZ1pgeNBtEoVPwHb"
+        ],
+        [
+          "Vault Debt Position on Liquidity",
+          "EiKp953hmDHchpLzYoePcdM6bwXFMBmTGJxtRJmDkqLV"
+        ],
+        [
+          "Collateral Rate Model",
+          "8hUNm2U6dR5X7j7gU7Pb8HRA5oRMAh2HBpqV8A1pet3e"
+        ],
+        [
+          "Debt Rate Model",
+          "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688"
+        ],
+        [
+          "Liquidity Collateral Vault",
+          "5xzPn2sbkibVga6PvLEst1axzJPRX8wNvDLMeBd9WFeh"
+        ],
+        [
+          "Liquidity Debt Vault",
+          "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB"
+        ]
+      ],
+      "from": "5okiDTx6dUsPwYfprvEyfsv9kCLyAE5bMZmAmAn8eNdfXX2WXzx6Uu9p1AZVXY7dUzdzojBeEc5z9tpjWuMvuHZJ#3",
+      "intent": "Change a position",
+      "programId": "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+      "sentence": "HXFnCoTBugxzdsjrpxcSBWLd2BroR5iSvaqVBjB4Vtx4 changes the collateral and debt of position Eb1DLxoFS3riditbBETv6Uq9uGeds2P9drNCJwXXcZL8 in the vault with Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh collateral and EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v debt",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "ExzCUnFq5txWp3L41WTCx6XEyGXsWU3psSV59izDBB8M:sw",
+        "6yvuJv5DSH1XbzXKexa7o6rqt1vS4Yevk2YQjUYFLb99:w",
+        "9ajXRc6w12fuEL64uhQsqkXzZXds4two4GmSmYtDGNKQ:w",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "2L6xsj9zKbvxALDroGQHmPx2kCw8RqZ8yru4zceUoB6k",
+        "HnSMEmypWgJ1a6JNnBycccsBeQQvqNKphgSMquCaFiy9:w",
+        "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "CNJ9ertXEXT4Gm9GjTpxMgnboDvUe2tbgkW1yKhnQKro",
+        "8fjUNovWZYR8erDCE1xo7qXyUCDsiaVt4LwqNBWfYUKo:w",
+        "H7Gsa4Z1HnuMMs6wnjMFNW6xG6CNN8v9nhyBm127TTUB",
+        "AMCNoFGW6DCTUWr2ineJa1GH4kTzDozcEdroAgR6QPHQ:w",
+        "CUsGshjra7qaj2eCDfWHDgLkXWNQa1P9s9nBMM9sHAkV:w",
+        "9RUffvkMFzfwit2EzvPoi2MauHEQ5ZKSJZkriXyDuFeh",
+        "CJvFuAcL7CKfPJfJoD2BT9R7CHG3ttTKMzxxyDcUkqWH:w",
+        "xxLeqUfqoHxYfTsbdhc4LRLEgU7dQygBBW6HqvjhKok:w",
+        "DALcPrc81yGgwqaBuuCRXtEU8PHFLv2xEgWyhnfvbVKH:w",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "GzsJrAYkxPbYimVA98yVMRWABrHH8F49MK49KVPzncdR:w",
+        "3NQ98P7E8pUu3YjFymuEZMnQzGdBci6hKYEKcUneskYX:w",
+        "EqpNebkM6hdhPGQw7wMkC5ctCjja8z7Z7DCt2K1tuMPu",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688",
+        "E7VPMhsjvVXpGVFMJRJgJjRmc5bhERpRjtYEbmBhWNcF:w",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "jupnw4B6Eqs7ft6rxpzYLJZYSnrpRgPcr589n5Kv4oc",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "Cv4T27XbjVoKUYwP72NQQanvZeA7W4YF9L4EnYT9kx5o",
+        "Co1hu7wFYKYNmFsBRxGcDDjXBgx8L7JiDd8QiSQynj3L:w",
+        "ASTTBXCW2Uqpko4VjZVx2yY917oKA3nim2QnqpzuhYnT:w",
+        "xyrmkNMN9dsS89rJ6zG2YMYDMP66StQgNB5Y5nVv5mg:w"
+      ],
+      "data": "d96ad06374972a870000000000000000000000000000008000000000000000000000000000000080010103000000010102",
+      "fields": [
+        [
+          "Collateral Change (positive deposits, negative withdraws, most negative withdraws all)",
+          "-1,701,411,834,604,692,317,316,873,037,158.84105728"
+        ],
+        [
+          "Debt Change (positive borrows, negative repays, most negative repays all)",
+          "-170,141,183,460,469,231,731,687,303,715,884.105728"
+        ],
+        [
+          "Transfer Type",
+          "Direct"
+        ],
+        [
+          "Signer",
+          "ExzCUnFq5txWp3L41WTCx6XEyGXsWU3psSV59izDBB8M"
+        ],
+        [
+          "Signer Collateral Token Account",
+          "6yvuJv5DSH1XbzXKexa7o6rqt1vS4Yevk2YQjUYFLb99"
+        ],
+        [
+          "Signer Debt Token Account",
+          "9ajXRc6w12fuEL64uhQsqkXzZXds4two4GmSmYtDGNKQ"
+        ],
+        [
+          "Vault Config",
+          "2L6xsj9zKbvxALDroGQHmPx2kCw8RqZ8yru4zceUoB6k"
+        ],
+        [
+          "Vault",
+          "HnSMEmypWgJ1a6JNnBycccsBeQQvqNKphgSMquCaFiy9"
+        ],
+        [
+          "Collateral Token",
+          "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij"
+        ],
+        [
+          "Debt Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Oracle",
+          "CNJ9ertXEXT4Gm9GjTpxMgnboDvUe2tbgkW1yKhnQKro"
+        ],
+        [
+          "Position",
+          "8fjUNovWZYR8erDCE1xo7qXyUCDsiaVt4LwqNBWfYUKo"
+        ],
+        [
+          "Position NFT Account",
+          "H7Gsa4Z1HnuMMs6wnjMFNW6xG6CNN8v9nhyBm127TTUB"
+        ],
+        [
+          "Current Tick",
+          "AMCNoFGW6DCTUWr2ineJa1GH4kTzDozcEdroAgR6QPHQ"
+        ],
+        [
+          "Final Tick",
+          "CUsGshjra7qaj2eCDfWHDgLkXWNQa1P9s9nBMM9sHAkV"
+        ],
+        [
+          "Current Tick Liquidation Record",
+          "9RUffvkMFzfwit2EzvPoi2MauHEQ5ZKSJZkriXyDuFeh"
+        ],
+        [
+          "Final Tick Liquidation Record",
+          "CJvFuAcL7CKfPJfJoD2BT9R7CHG3ttTKMzxxyDcUkqWH"
+        ],
+        [
+          "Branch",
+          "xxLeqUfqoHxYfTsbdhc4LRLEgU7dQygBBW6HqvjhKok"
+        ],
+        [
+          "Collateral Liquidity Reserve",
+          "DALcPrc81yGgwqaBuuCRXtEU8PHFLv2xEgWyhnfvbVKH"
+        ],
+        [
+          "Debt Liquidity Reserve",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ],
+        [
+          "Vault Collateral Position on Liquidity",
+          "GzsJrAYkxPbYimVA98yVMRWABrHH8F49MK49KVPzncdR"
+        ],
+        [
+          "Vault Debt Position on Liquidity",
+          "3NQ98P7E8pUu3YjFymuEZMnQzGdBci6hKYEKcUneskYX"
+        ],
+        [
+          "Collateral Rate Model",
+          "EqpNebkM6hdhPGQw7wMkC5ctCjja8z7Z7DCt2K1tuMPu"
+        ],
+        [
+          "Debt Rate Model",
+          "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688"
+        ],
+        [
+          "Liquidity Collateral Vault",
+          "E7VPMhsjvVXpGVFMJRJgJjRmc5bhERpRjtYEbmBhWNcF"
+        ],
+        [
+          "Liquidity Debt Vault",
+          "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB"
+        ]
+      ],
+      "from": "4xhtVtDnQj5LikSUrNg4DxasP9KNmnmLSFuwJENq6EKfxCQMnFZVTog1znksFSrnMbz1hqqBwrDv6bbTLqjop6Za#3",
+      "intent": "Change a position",
+      "programId": "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+      "sentence": "ExzCUnFq5txWp3L41WTCx6XEyGXsWU3psSV59izDBB8M changes the collateral and debt of position 8fjUNovWZYR8erDCE1xo7qXyUCDsiaVt4LwqNBWfYUKo in the vault with cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij collateral and EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v debt",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Dr91VxPi2dyTFyg5hjpFP3murEpWsXzjKXy6joS9hJZX:sw",
+        "5FDf4NSEZwAAbHhKjX32kqJHruES4smo4QkzmF34aDEp:w",
+        "JBZq5znNZHWcPQ6aGFTHf86xTLRwd7PKCZWh5vJCdMM4:w",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "5f561RUPHDqRh98W62FdaYjHCqEvwzV7ePHXszdfQC5Z",
+        "Hs4oBSGMJqAEKnKrwmhcaznNJJMnuwsurgbYeCX25oZP:w",
+        "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "Hxkqy3LBkuUcx3DPGSAaMV4Vfyh5rzX2i4n7yQNwAdTx",
+        "HJhcv7CS6WwJ1HXbP21eUpxZ6bveivZBSznxu5pPMA9N:w",
+        "9FXyq8aqqm3CQ8GS2wZvFB1f1Njchb7M9wBGvN297c4W",
+        "BVuingYE22Tc2YhTekirozSZtwBTnACXsXi5GE1yubYq:w",
+        "3MQPVMXdZ8B12NWQsYus6pxacAqaYUtVnuZyo2jFmunw:w",
+        "5LNKg95Y4m3Hk6mhiFX5FcaCniZUqPfSw5Lb7SCgFqrP",
+        "C5q5XwxjPj9PMCAvpmATHLSE74d6hZXvXxZ66GZ5BtE4:w",
+        "3sga9LYva4efQFkTGove7R8ZJoywLzzhhqvMuVAwaLTq:w",
+        "34Mtaa43fxiQ18cn5oby6WdyxgUqV7R7LDuix3MFBTZL:w",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "4kpdvgPT1y4fsTpP1XP13wC9bc1kp7iMLu8Fi48uxnuz:w",
+        "5rkuCimSF2kj2Ua4WG89ECCBad1s92Coyvcq4RHrqVrg:w",
+        "A8S6ohdDEi3s7g389nfxTVXeihydacCuv71qrVHGgdGw",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688",
+        "EcAfcAhcm4ZFFtjTsFMxz6C8XBvpKKDmqrqKKQE5MeWW:w",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "jupnw4B6Eqs7ft6rxpzYLJZYSnrpRgPcr589n5Kv4oc",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "BJWkdfRiH2Yroomx27VS1TxGxPWcfQoXHMmafBY7apZo",
+        "8t8qqZARRiv8ezc96SrZonZfQecFH7s2q3Jm8jgUCFKD:w",
+        "ApxYBprfmdgoomaTvkkQ8zbdfUu38JdrDbNFreu384cx:w",
+        "ApxYBprfmdgoomaTvkkQ8zbdfUu38JdrDbNFreu384cx:w"
+      ],
+      "data": "d96ad06374972a87c07e45feffffffffffffffffffffffff81e2d3fbffffffffffffffffffffffff010103000000010102",
+      "fields": [
+        [
+          "Collateral Change (positive deposits, negative withdraws, most negative withdraws all)",
+          "-0.29"
+        ],
+        [
+          "Debt Change (positive borrows, negative repays, most negative repays all)",
+          "-69.999999"
+        ],
+        [
+          "Transfer Type",
+          "Direct"
+        ],
+        [
+          "Signer",
+          "Dr91VxPi2dyTFyg5hjpFP3murEpWsXzjKXy6joS9hJZX"
+        ],
+        [
+          "Signer Collateral Token Account",
+          "5FDf4NSEZwAAbHhKjX32kqJHruES4smo4QkzmF34aDEp"
+        ],
+        [
+          "Signer Debt Token Account",
+          "JBZq5znNZHWcPQ6aGFTHf86xTLRwd7PKCZWh5vJCdMM4"
+        ],
+        [
+          "Vault Config",
+          "5f561RUPHDqRh98W62FdaYjHCqEvwzV7ePHXszdfQC5Z"
+        ],
+        [
+          "Vault",
+          "Hs4oBSGMJqAEKnKrwmhcaznNJJMnuwsurgbYeCX25oZP"
+        ],
+        [
+          "Collateral Token",
+          "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB"
+        ],
+        [
+          "Debt Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Oracle",
+          "Hxkqy3LBkuUcx3DPGSAaMV4Vfyh5rzX2i4n7yQNwAdTx"
+        ],
+        [
+          "Position",
+          "HJhcv7CS6WwJ1HXbP21eUpxZ6bveivZBSznxu5pPMA9N"
+        ],
+        [
+          "Position NFT Account",
+          "9FXyq8aqqm3CQ8GS2wZvFB1f1Njchb7M9wBGvN297c4W"
+        ],
+        [
+          "Current Tick",
+          "BVuingYE22Tc2YhTekirozSZtwBTnACXsXi5GE1yubYq"
+        ],
+        [
+          "Final Tick",
+          "3MQPVMXdZ8B12NWQsYus6pxacAqaYUtVnuZyo2jFmunw"
+        ],
+        [
+          "Current Tick Liquidation Record",
+          "5LNKg95Y4m3Hk6mhiFX5FcaCniZUqPfSw5Lb7SCgFqrP"
+        ],
+        [
+          "Final Tick Liquidation Record",
+          "C5q5XwxjPj9PMCAvpmATHLSE74d6hZXvXxZ66GZ5BtE4"
+        ],
+        [
+          "Branch",
+          "3sga9LYva4efQFkTGove7R8ZJoywLzzhhqvMuVAwaLTq"
+        ],
+        [
+          "Collateral Liquidity Reserve",
+          "34Mtaa43fxiQ18cn5oby6WdyxgUqV7R7LDuix3MFBTZL"
+        ],
+        [
+          "Debt Liquidity Reserve",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ],
+        [
+          "Vault Collateral Position on Liquidity",
+          "4kpdvgPT1y4fsTpP1XP13wC9bc1kp7iMLu8Fi48uxnuz"
+        ],
+        [
+          "Vault Debt Position on Liquidity",
+          "5rkuCimSF2kj2Ua4WG89ECCBad1s92Coyvcq4RHrqVrg"
+        ],
+        [
+          "Collateral Rate Model",
+          "A8S6ohdDEi3s7g389nfxTVXeihydacCuv71qrVHGgdGw"
+        ],
+        [
+          "Debt Rate Model",
+          "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688"
+        ],
+        [
+          "Liquidity Collateral Vault",
+          "EcAfcAhcm4ZFFtjTsFMxz6C8XBvpKKDmqrqKKQE5MeWW"
+        ],
+        [
+          "Liquidity Debt Vault",
+          "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB"
+        ]
+      ],
+      "from": "xQE4KUkDouN22opR5KMgEAKf8cwK1fzZpA1Na5LdLMnJjEDoEPYSuoqnKCbk88UWX9vPnvSbj3Qyo4VZBorWpGk#3",
+      "intent": "Change a position",
+      "programId": "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+      "sentence": "Dr91VxPi2dyTFyg5hjpFP3murEpWsXzjKXy6joS9hJZX changes the collateral and debt of position HJhcv7CS6WwJ1HXbP21eUpxZ6bveivZBSznxu5pPMA9N in the vault with XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB collateral and EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v debt",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HXFnCoTBugxzdsjrpxcSBWLd2BroR5iSvaqVBjB4Vtx4:sw",
+        "6Y6U5P34fQjewhSQ1Diu3rpAga9pQSMaPVZCmYa4KYKY:w",
+        "EEHMzvHppkgn11HZed916c1SvqxAmfm6X5ntMc9ySQQy:w",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "Dnrc3CxMiDbcLPNaDVFZKf8SapkbQE6Az2obcKfWwBke",
+        "8GmQKSaHvjuYpEDPNXsDJQGud8jWr6J19Rcro7Ve5SUB:w",
+        "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "Fa1zDwJrXzZUyoUjmoojPrEQseYSW9M5xy2LmcDPPCHc",
+        "Eb1DLxoFS3riditbBETv6Uq9uGeds2P9drNCJwXXcZL8:w",
+        "5SFCNdLnh98ZLeivDkrAmiuLgSsHrKTF24Ew8dL8emA4",
+        "4v378QNLJ3tkHH9sV4i1yMd7L2vJfH559WKWEADd8G4i:w",
+        "7oiJnrmNijCjPJ7n4PZatMFjAL51obGJ2bVEY9DQfk8H:w",
+        "BafKfX7GZySaQdVBBaWdc1n8Jc1GpDMq7EDMF2jhjxG",
+        "8TTku16udZVtBk4mHAurtyKhG35t4u4hfkz3d55E5imi:w",
+        "GWVJvWFNxAtTodu7BZztjfCiNJ2zaMqSkzopByZGtMKP:w",
+        "AKjTdSmBXCTTKhM3fPbHmivCQxmeZnXrNi6zZrtcenTC:w",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "H9PFEEp9Cz42PEhd4Kit8NGzwfMrXZ1pgeNBtEoVPwHb:w",
+        "EiKp953hmDHchpLzYoePcdM6bwXFMBmTGJxtRJmDkqLV:w",
+        "8hUNm2U6dR5X7j7gU7Pb8HRA5oRMAh2HBpqV8A1pet3e",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688",
+        "5xzPn2sbkibVga6PvLEst1axzJPRX8wNvDLMeBd9WFeh:w",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "jupnw4B6Eqs7ft6rxpzYLJZYSnrpRgPcr589n5Kv4oc",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "A4RuZpjfbdzo1fQTqu1ng7kNya1knC2fHSSG5Sv4G4EH",
+        "48CHb7zL5JRSd7iMyKCUZmuf5xFS3gpjTvNKXpFqSzHp:w",
+        "3ACmot8xgdsdtD8vWD84YcSNFj4WfTV4UC1YnqHMMLSS:w",
+        "3ACmot8xgdsdtD8vWD84YcSNFj4WfTV4UC1YnqHMMLSS:w"
+      ],
+      "data": "d96ad06374972a870c2aa40400000000000000000000000000000000000000000000000000000000010103000000010102",
+      "fields": [
+        [
+          "Collateral Change (positive deposits, negative withdraws, most negative withdraws all)",
+          "0.77867532"
+        ],
+        [
+          "Debt Change (positive borrows, negative repays, most negative repays all)",
+          "0"
+        ],
+        [
+          "Transfer Type",
+          "Direct"
+        ],
+        [
+          "Signer",
+          "HXFnCoTBugxzdsjrpxcSBWLd2BroR5iSvaqVBjB4Vtx4"
+        ],
+        [
+          "Signer Collateral Token Account",
+          "6Y6U5P34fQjewhSQ1Diu3rpAga9pQSMaPVZCmYa4KYKY"
+        ],
+        [
+          "Signer Debt Token Account",
+          "EEHMzvHppkgn11HZed916c1SvqxAmfm6X5ntMc9ySQQy"
+        ],
+        [
+          "Vault Config",
+          "Dnrc3CxMiDbcLPNaDVFZKf8SapkbQE6Az2obcKfWwBke"
+        ],
+        [
+          "Vault",
+          "8GmQKSaHvjuYpEDPNXsDJQGud8jWr6J19Rcro7Ve5SUB"
+        ],
+        [
+          "Collateral Token",
+          "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh"
+        ],
+        [
+          "Debt Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Oracle",
+          "Fa1zDwJrXzZUyoUjmoojPrEQseYSW9M5xy2LmcDPPCHc"
+        ],
+        [
+          "Position",
+          "Eb1DLxoFS3riditbBETv6Uq9uGeds2P9drNCJwXXcZL8"
+        ],
+        [
+          "Position NFT Account",
+          "5SFCNdLnh98ZLeivDkrAmiuLgSsHrKTF24Ew8dL8emA4"
+        ],
+        [
+          "Current Tick",
+          "4v378QNLJ3tkHH9sV4i1yMd7L2vJfH559WKWEADd8G4i"
+        ],
+        [
+          "Final Tick",
+          "7oiJnrmNijCjPJ7n4PZatMFjAL51obGJ2bVEY9DQfk8H"
+        ],
+        [
+          "Current Tick Liquidation Record",
+          "BafKfX7GZySaQdVBBaWdc1n8Jc1GpDMq7EDMF2jhjxG"
+        ],
+        [
+          "Final Tick Liquidation Record",
+          "8TTku16udZVtBk4mHAurtyKhG35t4u4hfkz3d55E5imi"
+        ],
+        [
+          "Branch",
+          "GWVJvWFNxAtTodu7BZztjfCiNJ2zaMqSkzopByZGtMKP"
+        ],
+        [
+          "Collateral Liquidity Reserve",
+          "AKjTdSmBXCTTKhM3fPbHmivCQxmeZnXrNi6zZrtcenTC"
+        ],
+        [
+          "Debt Liquidity Reserve",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ],
+        [
+          "Vault Collateral Position on Liquidity",
+          "H9PFEEp9Cz42PEhd4Kit8NGzwfMrXZ1pgeNBtEoVPwHb"
+        ],
+        [
+          "Vault Debt Position on Liquidity",
+          "EiKp953hmDHchpLzYoePcdM6bwXFMBmTGJxtRJmDkqLV"
+        ],
+        [
+          "Collateral Rate Model",
+          "8hUNm2U6dR5X7j7gU7Pb8HRA5oRMAh2HBpqV8A1pet3e"
+        ],
+        [
+          "Debt Rate Model",
+          "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688"
+        ],
+        [
+          "Liquidity Collateral Vault",
+          "5xzPn2sbkibVga6PvLEst1axzJPRX8wNvDLMeBd9WFeh"
+        ],
+        [
+          "Liquidity Debt Vault",
+          "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB"
+        ]
+      ],
+      "from": "5AJY9DAXUy8vtrHsrfVm26f2uLi9vFLcevwkavXj4ndPcKS39AgKLg42qGDXLvbQFAiwZfGDcdC9aJ2DVN3kS2bJ#3",
+      "intent": "Change a position",
+      "programId": "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+      "sentence": "HXFnCoTBugxzdsjrpxcSBWLd2BroR5iSvaqVBjB4Vtx4 changes the collateral and debt of position Eb1DLxoFS3riditbBETv6Uq9uGeds2P9drNCJwXXcZL8 in the vault with Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh collateral and EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v debt",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "BfbPgHTkPVe38hig1QuGb5mjQFAi254S5jYwTSCXfUMg:sw",
+        "84aez2Km76LYQbuLmCjLtGzAr6Jii5k6ZAindiW8RtD4:w",
+        "6QJ87nJGjkFmZuEapXx3isk41SoE3cgYbkpnBYe8zXiS:w",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "4pxgCs6fqcChNN2aNnYr5bo7iG4Qcbpo16WKjytb4Btq",
+        "6XFoTSVsNN4Tm2jARSynkcpt8jLiV1gX5QdqpU8QKdFE:w",
+        "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4",
+        "So11111111111111111111111111111111111111112",
+        "58SXH8bZiEvgV9zND1Pw3HLPmL2kJkQxdNbMykcLiXwp",
+        "2mDvw2AhZLe4tiG1qx5oBJFSSFfEKsoTMurkJkz5Q6rn:w",
+        "3mzWXfR3WX6DzdWPnAsVCFjpUDagUBzbfcw2J6YWz7FE",
+        "8eTLyGP4gmPEvCrT9EPjbGEZrw6NeraT57oee5JgHyHz:w",
+        "AUbEKcC46Pa9hFPWT4L2XrMsvGRZTcRtRywb1ctxibRi:w",
+        "C9M6M4DuNkN44Q8wH6dKAMTtE2txUMPnwtAc4XLvLfh",
+        "4nr1NFxDU5BYutTseATMhE22TAof7AKe6EzidtHyCddq:w",
+        "6TS9mHrEih9fDHj2GMJqgPLZsPJUAV6AUiUut3sxn2ML:w",
+        "2cYcYwTWHkiszdzDs8aPq1fkcpipJ8zVEzwCXo5RzXpx:w",
+        "4Y66HtUEqbbbpZdENGtFdVhUMS3tnagffn3M4do59Nfy:w",
+        "5QeVxY3xoxY61JWiExVrxtwo5pgXVus2TrhCcbZ5H6KP:w",
+        "GjtSRBvzJrRo7LbsF6f7yxRHgq3tJmCirp7tqhaa6pyU:w",
+        "9miY226e1qR9YgHfCE6hTKTxMRiyFZSUUTcdeZD6Ntmw",
+        "Acvyi9HBGmqh3Exe1N4PjBVyY8fokq2AdC6fSLqV6KSo",
+        "EJ6CLvJPJErjkUnPQicVahzw4Q4NHLfpDV9knoP7iqfK:w",
+        "5JP5zgYCb9W37QQLgAHRHuinFLrKt87akDY1CgZoTPzr:w",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "jupnw4B6Eqs7ft6rxpzYLJZYSnrpRgPcr589n5Kv4oc",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "AyxByfn15hAEhR4G2jR89kqEXZwbaWX4sgyTpGCxSom8",
+        "CH31Xns5z3M1cTAbKW34jcxPPciazARpijcHj9rxtemt",
+        "6TS9mHrEih9fDHj2GMJqgPLZsPJUAV6AUiUut3sxn2ML:w",
+        "2auZeC8NDkx74SXuYXntMPgvRiJYGZxN1WXYCeCdg5xq:w",
+        "2auZeC8NDkx74SXuYXntMPgvRiJYGZxN1WXYCeCdg5xq:w"
+      ],
+      "data": "d96ad06374972a875314dfd3ffffffffffffffffffffffff7651b89df7ffffffffffffffffffffff010103000000020102",
+      "fields": [
+        [
+          "Collateral Change (positive deposits, negative withdraws, most negative withdraws all)",
+          "-740.354989"
+        ],
+        [
+          "Debt Change (positive borrows, negative repays, most negative repays all)",
+          "-36.008603274"
+        ],
+        [
+          "Transfer Type",
+          "Direct"
+        ],
+        [
+          "Signer",
+          "BfbPgHTkPVe38hig1QuGb5mjQFAi254S5jYwTSCXfUMg"
+        ],
+        [
+          "Signer Collateral Token Account",
+          "84aez2Km76LYQbuLmCjLtGzAr6Jii5k6ZAindiW8RtD4"
+        ],
+        [
+          "Signer Debt Token Account",
+          "6QJ87nJGjkFmZuEapXx3isk41SoE3cgYbkpnBYe8zXiS"
+        ],
+        [
+          "Vault Config",
+          "4pxgCs6fqcChNN2aNnYr5bo7iG4Qcbpo16WKjytb4Btq"
+        ],
+        [
+          "Vault",
+          "6XFoTSVsNN4Tm2jARSynkcpt8jLiV1gX5QdqpU8QKdFE"
+        ],
+        [
+          "Collateral Token",
+          "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4"
+        ],
+        [
+          "Debt Token",
+          "So11111111111111111111111111111111111111112"
+        ],
+        [
+          "Oracle",
+          "58SXH8bZiEvgV9zND1Pw3HLPmL2kJkQxdNbMykcLiXwp"
+        ],
+        [
+          "Position",
+          "2mDvw2AhZLe4tiG1qx5oBJFSSFfEKsoTMurkJkz5Q6rn"
+        ],
+        [
+          "Position NFT Account",
+          "3mzWXfR3WX6DzdWPnAsVCFjpUDagUBzbfcw2J6YWz7FE"
+        ],
+        [
+          "Current Tick",
+          "8eTLyGP4gmPEvCrT9EPjbGEZrw6NeraT57oee5JgHyHz"
+        ],
+        [
+          "Final Tick",
+          "AUbEKcC46Pa9hFPWT4L2XrMsvGRZTcRtRywb1ctxibRi"
+        ],
+        [
+          "Current Tick Liquidation Record",
+          "C9M6M4DuNkN44Q8wH6dKAMTtE2txUMPnwtAc4XLvLfh"
+        ],
+        [
+          "Final Tick Liquidation Record",
+          "4nr1NFxDU5BYutTseATMhE22TAof7AKe6EzidtHyCddq"
+        ],
+        [
+          "Branch",
+          "6TS9mHrEih9fDHj2GMJqgPLZsPJUAV6AUiUut3sxn2ML"
+        ],
+        [
+          "Collateral Liquidity Reserve",
+          "2cYcYwTWHkiszdzDs8aPq1fkcpipJ8zVEzwCXo5RzXpx"
+        ],
+        [
+          "Debt Liquidity Reserve",
+          "4Y66HtUEqbbbpZdENGtFdVhUMS3tnagffn3M4do59Nfy"
+        ],
+        [
+          "Vault Collateral Position on Liquidity",
+          "5QeVxY3xoxY61JWiExVrxtwo5pgXVus2TrhCcbZ5H6KP"
+        ],
+        [
+          "Vault Debt Position on Liquidity",
+          "GjtSRBvzJrRo7LbsF6f7yxRHgq3tJmCirp7tqhaa6pyU"
+        ],
+        [
+          "Collateral Rate Model",
+          "9miY226e1qR9YgHfCE6hTKTxMRiyFZSUUTcdeZD6Ntmw"
+        ],
+        [
+          "Debt Rate Model",
+          "Acvyi9HBGmqh3Exe1N4PjBVyY8fokq2AdC6fSLqV6KSo"
+        ],
+        [
+          "Liquidity Collateral Vault",
+          "EJ6CLvJPJErjkUnPQicVahzw4Q4NHLfpDV9knoP7iqfK"
+        ],
+        [
+          "Liquidity Debt Vault",
+          "5JP5zgYCb9W37QQLgAHRHuinFLrKt87akDY1CgZoTPzr"
+        ]
+      ],
+      "from": "ysZ9G9T8Lih1v23RjWPZfGyCVrUxU6qf9wSugpmR3RVQ2kXBUg8TBeHgwa7hcq5m3CryAN3PbXm76zFiDuDZvNF#3",
+      "intent": "Change a position",
+      "programId": "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+      "sentence": "BfbPgHTkPVe38hig1QuGb5mjQFAi254S5jYwTSCXfUMg changes the collateral and debt of position 2mDvw2AhZLe4tiG1qx5oBJFSSFfEKsoTMurkJkz5Q6rn in the vault with 27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4 collateral and So11111111111111111111111111111111111111112 debt",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4BcK6rTghTRqLgn3uBCzyQPWiAeVSgooRdkaP4j3xPzw:sw",
+        "D5dxFZKJCqdC48GK4v6jb8pzjPh5we2Qtn8d9iUzR7Mt:w",
+        "J2ZLeSuqH585r6MWvfyKBrFAkV98r767Qt7HGEzh44eE:w",
+        "11111111111111111111111111111111"
+      ],
+      "data": "386e79a998f156b70b00b717000000000000",
+      "fields": [
+        [
+          "Vault ID",
+          "11"
+        ],
+        [
+          "Tick",
+          "6,071"
+        ],
+        [
+          "Total IDs",
+          "0"
+        ],
+        [
+          "Signer",
+          "4BcK6rTghTRqLgn3uBCzyQPWiAeVSgooRdkaP4j3xPzw"
+        ],
+        [
+          "Tick Account",
+          "D5dxFZKJCqdC48GK4v6jb8pzjPh5we2Qtn8d9iUzR7Mt"
+        ],
+        [
+          "Tick Liquidation Record",
+          "J2ZLeSuqH585r6MWvfyKBrFAkV98r767Qt7HGEzh44eE"
+        ]
+      ],
+      "from": "274Tz4tW74UMXXthmsg9s78648xRmrZHod1FZDtqeujrvZ1SpwjBi1JHF4E7HZ4u5qTMFFomw2whhXeLm1cWdNyH#4",
+      "intent": "Set up a tick liquidation record",
+      "programId": "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+      "sentence": "4BcK6rTghTRqLgn3uBCzyQPWiAeVSgooRdkaP4j3xPzw creates the liquidation record of tick 6071 in vault 11",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "4BcK6rTghTRqLgn3uBCzyQPWiAeVSgooRdkaP4j3xPzw:sw",
+        "2L6xsj9zKbvxALDroGQHmPx2kCw8RqZ8yru4zceUoB6k",
+        "D5dxFZKJCqdC48GK4v6jb8pzjPh5we2Qtn8d9iUzR7Mt:w",
+        "11111111111111111111111111111111"
+      ],
+      "data": "160d3e8d4959b21d0b00b7170000",
+      "fields": [
+        [
+          "Vault ID",
+          "11"
+        ],
+        [
+          "Tick",
+          "6,071"
+        ],
+        [
+          "Signer",
+          "4BcK6rTghTRqLgn3uBCzyQPWiAeVSgooRdkaP4j3xPzw"
+        ],
+        [
+          "Vault Config",
+          "2L6xsj9zKbvxALDroGQHmPx2kCw8RqZ8yru4zceUoB6k"
+        ],
+        [
+          "Tick Account",
+          "D5dxFZKJCqdC48GK4v6jb8pzjPh5we2Qtn8d9iUzR7Mt"
+        ]
+      ],
+      "from": "274Tz4tW74UMXXthmsg9s78648xRmrZHod1FZDtqeujrvZ1SpwjBi1JHF4E7HZ4u5qTMFFomw2whhXeLm1cWdNyH#3",
+      "intent": "Set up a tick",
+      "programId": "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+      "sentence": "4BcK6rTghTRqLgn3uBCzyQPWiAeVSgooRdkaP4j3xPzw creates the account of tick 6071 in vault 11",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "LionX7R69tL1EEcpRkJ9jRuwV7bi4jFoKmZZnxiVK6y:sw",
+        "1mZKorqwt2VPUrP8AMLYNqv9KqZbxndX6zGiHdoajNa:w",
+        "LionX7R69tL1EEcpRkJ9jRuwV7bi4jFoKmZZnxiVK6y:sw",
+        "522K4u8TNmMsDJPsDpSaNcokY8w5bxLkUNvMpbMjD44c:w",
+        "81TJHkQr5r47cvL7JiEKUNxGiRGtX3SJWr9Qh3DNpoHx",
+        "GvRdjzvpr68NvUsmffnKefueb9xW9w2kBYxcEMU8RXGh:w",
+        "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij",
+        "USDSwr9ApdHk5bvJKMjzff41FfuX8bSxdKcR81vTwcA",
+        "CNJ9ertXEXT4Gm9GjTpxMgnboDvUe2tbgkW1yKhnQKro",
+        "LUJSwT1pY8xfrub3m4q3QkztxLK62p1vdrd2UdB9wki:w",
+        "DALcPrc81yGgwqaBuuCRXtEU8PHFLv2xEgWyhnfvbVKH:w",
+        "BWC9tYzhfDGL9iozaKnxCxACoHLWvyruKddL5ZkGQNrz:w",
+        "DNhwRwTdsaqkkjYAEQSqn5ZBQzPrxj7oBn8Atb6Ye9Vj:w",
+        "2mcyrZmdNa97Li5KTWYXCcZvD3jhF7p1SFKVTLGMu5oN:w",
+        "EqpNebkM6hdhPGQw7wMkC5ctCjja8z7Z7DCt2K1tuMPu",
+        "TTVqDjkSxXBzCF3khfYwvpfv7SkTM41uG4EYtLm3NRS",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "E7VPMhsjvVXpGVFMJRJgJjRmc5bhERpRjtYEbmBhWNcF:w",
+        "Fk7zHKR5evWj1bQnHS6QH3J9FdQMRn22pDhNNWoz23Cj:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "jupnw4B6Eqs7ft6rxpzYLJZYSnrpRgPcr589n5Kv4oc",
+        "Cv4T27XbjVoKUYwP72NQQanvZeA7W4YF9L4EnYT9kx5o",
+        "BWAdRCoa4Kee6k16XwNsZknWR2Ct9qiXFVHHGmh5UBFD:w",
+        "7tPY1znHGfV31gXMPDpLnXXGuM2T7dJouoFe3poR8j7j:w",
+        "5tqrJ5MY34qyyYqsczdWvexmrUE3ztwcuKB3Y3NBgFMS:w"
+      ],
+      "data": "dfb3e27d302e274abdbc000000000000000000000000000000000000000000000001010400000001010101",
+      "fields": [
+        [
+          "Maximum Debt to Repay",
+          "0.048317"
+        ],
+        [
+          "Minimum Collateral per Unit of Debt",
+          "0"
+        ],
+        [
+          "Absorb Bad Debt",
+          "false"
+        ],
+        [
+          "Transfer Type",
+          "Direct"
+        ],
+        [
+          "Liquidator",
+          "LionX7R69tL1EEcpRkJ9jRuwV7bi4jFoKmZZnxiVK6y"
+        ],
+        [
+          "Debt Paid From",
+          "1mZKorqwt2VPUrP8AMLYNqv9KqZbxndX6zGiHdoajNa"
+        ],
+        [
+          "Collateral Recipient",
+          "LionX7R69tL1EEcpRkJ9jRuwV7bi4jFoKmZZnxiVK6y"
+        ],
+        [
+          "Collateral To",
+          "522K4u8TNmMsDJPsDpSaNcokY8w5bxLkUNvMpbMjD44c"
+        ],
+        [
+          "Vault Config",
+          "81TJHkQr5r47cvL7JiEKUNxGiRGtX3SJWr9Qh3DNpoHx"
+        ],
+        [
+          "Vault",
+          "GvRdjzvpr68NvUsmffnKefueb9xW9w2kBYxcEMU8RXGh"
+        ],
+        [
+          "Collateral Token",
+          "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij"
+        ],
+        [
+          "Debt Token",
+          "USDSwr9ApdHk5bvJKMjzff41FfuX8bSxdKcR81vTwcA"
+        ],
+        [
+          "Oracle",
+          "CNJ9ertXEXT4Gm9GjTpxMgnboDvUe2tbgkW1yKhnQKro"
+        ],
+        [
+          "Branch",
+          "LUJSwT1pY8xfrub3m4q3QkztxLK62p1vdrd2UdB9wki"
+        ],
+        [
+          "Collateral Liquidity Reserve",
+          "DALcPrc81yGgwqaBuuCRXtEU8PHFLv2xEgWyhnfvbVKH"
+        ],
+        [
+          "Debt Liquidity Reserve",
+          "BWC9tYzhfDGL9iozaKnxCxACoHLWvyruKddL5ZkGQNrz"
+        ],
+        [
+          "Vault Collateral Position on Liquidity",
+          "DNhwRwTdsaqkkjYAEQSqn5ZBQzPrxj7oBn8Atb6Ye9Vj"
+        ],
+        [
+          "Vault Debt Position on Liquidity",
+          "2mcyrZmdNa97Li5KTWYXCcZvD3jhF7p1SFKVTLGMu5oN"
+        ],
+        [
+          "Collateral Rate Model",
+          "EqpNebkM6hdhPGQw7wMkC5ctCjja8z7Z7DCt2K1tuMPu"
+        ],
+        [
+          "Debt Rate Model",
+          "TTVqDjkSxXBzCF3khfYwvpfv7SkTM41uG4EYtLm3NRS"
+        ],
+        [
+          "Liquidity Collateral Vault",
+          "E7VPMhsjvVXpGVFMJRJgJjRmc5bhERpRjtYEbmBhWNcF"
+        ],
+        [
+          "Liquidity Debt Vault",
+          "Fk7zHKR5evWj1bQnHS6QH3J9FdQMRn22pDhNNWoz23Cj"
+        ]
+      ],
+      "from": "3PzCTZCEg9ZNBids3HkdhqKPwA5Mg9GaB5MbC2cWcE6pR1YUJLgxEZ93MHj2cuzo42AGijwMVXaLx3EC7jT5en4y#3",
+      "intent": "Liquidate positions",
+      "programId": "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+      "sentence": "LionX7R69tL1EEcpRkJ9jRuwV7bi4jFoKmZZnxiVK6y liquidates up to 0.048317 of USDSwr9ApdHk5bvJKMjzff41FfuX8bSxdKcR81vTwcA debt in the vault with cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij collateral, paying from 1mZKorqwt2VPUrP8AMLYNqv9KqZbxndX6zGiHdoajNa",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "CatyeC3LgBxub7HcpW2n7cZZZ66CUKdcZ8DzHucHrSiP:sw",
+        "Ay72b1PeqnTqaoES92S73xXDtRZTerB8oNYfBdk9b7rh:w",
+        "CatyeC3LgBxub7HcpW2n7cZZZ66CUKdcZ8DzHucHrSiP:sw",
+        "G6jaUPspEttaxrUXxYF9SEtMzrbyorj9mWYpDbbH7j8Z:w",
+        "5bKa8e5yN6KF8qfW8CgsQQ36KTBMYm23QaPBqiZa5b3G",
+        "GzZs58J4iFfispMso7iiyiA95c4p59m8CXcFZXiuwnYk:w",
+        "CtzPWv73Sn1dMGVU3ZtLv9yWSyUAanBni19YWDaznnkn",
+        "2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH",
+        "CNJ9ertXEXT4Gm9GjTpxMgnboDvUe2tbgkW1yKhnQKro",
+        "bBVbijpakuiru1L4FNym8xz3vhippnbKrubvHqzQmRx:w",
+        "G2Fampi79nG87tQv93DBAugo8MFfinHApcEYQ8uyqYdU:w",
+        "G4KAenCBfybnZLtVe4LdNrmEtQoW3x93oTowFJUPSvx6:w",
+        "833Udver66tGCYT6vFJsYJ7WAqRWbEuNDsnh1xbuUG4i:w",
+        "CN8wAfKvZihiSGrk954Zow4iU2ZZ26xe4r3uHSpgqjqx:w",
+        "5Q6RuM1ttMdZnL2FoHEriTciJNampBqVFp5HBH424oMW",
+        "6iHHKAK9Mqjn57CVmWe4szAPyTH8s8pniXSj6vWaKW5r",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "6AhEg795zTMXGRHs3T27hrTugqJ5v48fjdpSPfjmVfEm:w",
+        "E1prFSvCtp5ze1hAegjdtN3kQWVoRuSGWLoc8Vj9h4nm:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "11111111111111111111111111111111",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "jupnw4B6Eqs7ft6rxpzYLJZYSnrpRgPcr589n5Kv4oc",
+        "Cv4T27XbjVoKUYwP72NQQanvZeA7W4YF9L4EnYT9kx5o",
+        "bBVbijpakuiru1L4FNym8xz3vhippnbKrubvHqzQmRx:w",
+        "ApgWhXfu4Nf114jvAbk5dDJ4y5hME6anAtpBW2n3M9Vw:w"
+      ],
+      "data": "dfb3e27d302e274a06dea403000000000000000000000000000000000000000000000400000001010001",
+      "fields": [
+        [
+          "Maximum Debt to Repay",
+          "61.13639"
+        ],
+        [
+          "Minimum Collateral per Unit of Debt",
+          "0"
+        ],
+        [
+          "Absorb Bad Debt",
+          "false"
+        ],
+        [
+          "Transfer Type",
+          "None"
+        ],
+        [
+          "Liquidator",
+          "CatyeC3LgBxub7HcpW2n7cZZZ66CUKdcZ8DzHucHrSiP"
+        ],
+        [
+          "Debt Paid From",
+          "Ay72b1PeqnTqaoES92S73xXDtRZTerB8oNYfBdk9b7rh"
+        ],
+        [
+          "Collateral Recipient",
+          "CatyeC3LgBxub7HcpW2n7cZZZ66CUKdcZ8DzHucHrSiP"
+        ],
+        [
+          "Collateral To",
+          "G6jaUPspEttaxrUXxYF9SEtMzrbyorj9mWYpDbbH7j8Z"
+        ],
+        [
+          "Vault Config",
+          "5bKa8e5yN6KF8qfW8CgsQQ36KTBMYm23QaPBqiZa5b3G"
+        ],
+        [
+          "Vault",
+          "GzZs58J4iFfispMso7iiyiA95c4p59m8CXcFZXiuwnYk"
+        ],
+        [
+          "Collateral Token",
+          "CtzPWv73Sn1dMGVU3ZtLv9yWSyUAanBni19YWDaznnkn"
+        ],
+        [
+          "Debt Token",
+          "2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH"
+        ],
+        [
+          "Oracle",
+          "CNJ9ertXEXT4Gm9GjTpxMgnboDvUe2tbgkW1yKhnQKro"
+        ],
+        [
+          "Branch",
+          "bBVbijpakuiru1L4FNym8xz3vhippnbKrubvHqzQmRx"
+        ],
+        [
+          "Collateral Liquidity Reserve",
+          "G2Fampi79nG87tQv93DBAugo8MFfinHApcEYQ8uyqYdU"
+        ],
+        [
+          "Debt Liquidity Reserve",
+          "G4KAenCBfybnZLtVe4LdNrmEtQoW3x93oTowFJUPSvx6"
+        ],
+        [
+          "Vault Collateral Position on Liquidity",
+          "833Udver66tGCYT6vFJsYJ7WAqRWbEuNDsnh1xbuUG4i"
+        ],
+        [
+          "Vault Debt Position on Liquidity",
+          "CN8wAfKvZihiSGrk954Zow4iU2ZZ26xe4r3uHSpgqjqx"
+        ],
+        [
+          "Collateral Rate Model",
+          "5Q6RuM1ttMdZnL2FoHEriTciJNampBqVFp5HBH424oMW"
+        ],
+        [
+          "Debt Rate Model",
+          "6iHHKAK9Mqjn57CVmWe4szAPyTH8s8pniXSj6vWaKW5r"
+        ],
+        [
+          "Liquidity Collateral Vault",
+          "6AhEg795zTMXGRHs3T27hrTugqJ5v48fjdpSPfjmVfEm"
+        ],
+        [
+          "Liquidity Debt Vault",
+          "E1prFSvCtp5ze1hAegjdtN3kQWVoRuSGWLoc8Vj9h4nm"
+        ]
+      ],
+      "from": "4kW8UBRpoYo5vU2sFq8jmwgguyfZT926kCLnFEnguG98rpvkjqq3UXqzFUF9vS2oNYRUH6zWjKwCs6u8bCS5cMU8#3.1",
+      "intent": "Liquidate positions",
+      "programId": "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+      "sentence": "CatyeC3LgBxub7HcpW2n7cZZZ66CUKdcZ8DzHucHrSiP liquidates up to 61.13639 of 2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH debt in the vault with CtzPWv73Sn1dMGVU3ZtLv9yWSyUAanBni19YWDaznnkn collateral, paying from Ay72b1PeqnTqaoES92S73xXDtRZTerB8oNYfBdk9b7rh",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "EmH7msj4qwd9E28BUVtXpWxa6iaqnYJ4GKk8beKnxUfb:sw",
+        "4Pgx2M7ZsDRvXU4CitoT94EJUohxqSk3eBuLsoz834dm",
+        "FU6R6LFuFUjq1PzquPxBbwvaSs3nxCNWUzi7JntkMZtf:w",
+        "3jASiGocPyhf8LrRyNysBwh2foiMuAtS1wfYKUTG25c5:w",
+        "GFgkYvhcNK6UanXJ7RrTnqCCu3E8SrtHFvPJwqcmEjS:w",
+        "39tdaSogH6MS7SQ3HCvZYofMBqpB9WUaE4bLfBvGyEGu:w",
+        "kf1n5AoTVEFv82ADTMPBwT5vHEW1Z5yihvkAsapq9Cm:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "11111111111111111111111111111111",
+        "Sysvar1nstructions1111111111111111111111111",
+        "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s",
+        "SysvarRent111111111111111111111111111111111"
+      ],
+      "data": "c5140a0161a0b15b0100032a0000",
+      "fields": [
+        [
+          "Vault ID",
+          "1"
+        ],
+        [
+          "Position ID",
+          "10,755"
+        ],
+        [
+          "Owner",
+          "EmH7msj4qwd9E28BUVtXpWxa6iaqnYJ4GKk8beKnxUfb"
+        ],
+        [
+          "Vault",
+          "FU6R6LFuFUjq1PzquPxBbwvaSs3nxCNWUzi7JntkMZtf"
+        ],
+        [
+          "Position",
+          "3jASiGocPyhf8LrRyNysBwh2foiMuAtS1wfYKUTG25c5"
+        ],
+        [
+          "Position NFT Mint",
+          "GFgkYvhcNK6UanXJ7RrTnqCCu3E8SrtHFvPJwqcmEjS"
+        ],
+        [
+          "Position NFT Account",
+          "39tdaSogH6MS7SQ3HCvZYofMBqpB9WUaE4bLfBvGyEGu"
+        ],
+        [
+          "Position NFT Metadata",
+          "kf1n5AoTVEFv82ADTMPBwT5vHEW1Z5yihvkAsapq9Cm"
+        ]
+      ],
+      "from": "4ZnWhnpdeRweJMvzurni3m5jNCRfcYDUf9dAhXXxj4pMjcfNWnBPbbxnEG9YNX1C24bkDhEeg6iLJY2daziQMZez#7",
+      "intent": "Open a position",
+      "programId": "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+      "sentence": "EmH7msj4qwd9E28BUVtXpWxa6iaqnYJ4GKk8beKnxUfb opens position 10755 in vault 1, receiving its NFT in 39tdaSogH6MS7SQ3HCvZYofMBqpB9WUaE4bLfBvGyEGu",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "FU6R6LFuFUjq1PzquPxBbwvaSs3nxCNWUzi7JntkMZtf:w",
+        "nMzVs8GiXMVUENEwkev7JZfDcCENmz18ScheeVRdnb1:w",
+        "4Y66HtUEqbbbpZdENGtFdVhUMS3tnagffn3M4do59Nfy:w",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w"
+      ],
+      "data": "d10ebc5ff21477c40100",
+      "fields": [
+        [
+          "Vault ID",
+          "1"
+        ],
+        [
+          "Vault",
+          "FU6R6LFuFUjq1PzquPxBbwvaSs3nxCNWUzi7JntkMZtf"
+        ],
+        [
+          "Vault Config",
+          "nMzVs8GiXMVUENEwkev7JZfDcCENmz18ScheeVRdnb1"
+        ],
+        [
+          "Collateral Liquidity Reserve",
+          "4Y66HtUEqbbbpZdENGtFdVhUMS3tnagffn3M4do59Nfy"
+        ],
+        [
+          "Debt Liquidity Reserve",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ]
+      ],
+      "from": "JULxVm5Wvrh7p4NT81k77XtNDeptzZYgx2c5fBe2Eb9Te7Fmt9aJ5R8JcukZeKQ1sDko9ySTAQpCnx9dUGZnSs6#3.5",
+      "intent": "Update exchange prices",
+      "programId": "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+      "sentence": "Updates the exchange prices of vault 1",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "MoENpDSUhRnojBtRCLjbev3Sef1joyjmuAzKVTxpomx:sw",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "4nUCfYdunYkwr4wXowkGhgXtedTa9u1XRoAYvgknDsD6:w",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "AhPwhwH9y1R4y3z6XCXLNcyrqfzKjcpj5DH1Qb9PS5QQ:w",
+        "6vD1hVZwDwm9aJ2Agui2kAwhvqchmU7uFDWko8fQzKLD:w",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "CuYFY3M3rhtejaRmP5hTfW1nG7CfZWy5phZiWe822njv",
+        "75F4kHP5LNAFEq6btugX1QooRvtn4XMT8qMT4xYbPzCV:w",
+        "H8W2v8W1E1ga1RSn1QrVTVkXaEPVP3o7DHHuYK8FfZfc",
+        "4UpnwsgLaPVjT3fxuFFfxC1wmp2b2tVxKpdXoEmWfTsd:w",
+        "GcWrzHohDALzJL8brLNiFFGhZLzKmnzupyCCz1hFHp2z:w",
+        "Hu9L6hbBH85uR9nk3VW8U2zgYq4ipE1eU5g9Fm8QMFQg",
+        "eCms6RNiApcV2UN54fgtTb6VABKLFJD9vtpBpPjCVD2:w",
+        "4cCvc9aTQSxomyccQbHk5MiefGKyCKLgHKvbNFUgmUsh:w",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "83kqFxcgTrJtdhyKHyjdXC4hsp4RqGzTVYGBLkpgoY2Y:w",
+        "F76hu4WBMdtsm9CmbYgNziJZZvZZrkm8xcokFnn3z7GD:w",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "jupnw4B6Eqs7ft6rxpzYLJZYSnrpRgPcr589n5Kv4oc",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "11111111111111111111111111111111",
+        "DQfkVMGvZzqdq5jwoCRAyD26rJEioPM6kRGjC7BYts5P:w",
+        "9JYhQPuccHVPMoi8LHm4V7jNHBzrfq5UvFKAeXhkLpHi:w",
+        "9HQrexcQc68QPVVwWSCmHJKRLKBvqr8LdKq7WGhACRVL:w",
+        "4nUCfYdunYkwr4wXowkGhgXtedTa9u1XRoAYvgknDsD6:w",
+        "JuprjznTrTSp2UFa3ZBUFgwdAmtZCq4MQCwysN55USD",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "2tQE8jVR5ezDw3PDa21BNzfyQ14Ug5cTf6n3swJNjkod:w",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "2hT44GA9r5PiqsbbmqN5CuF7ymtquoEdokRncAs9CVej",
+        "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688",
+        "9kGqd5zsQGaFfFPdUuEgbRM4V7x72Jdt7WTS4uRouAQ7:w",
+        "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB:w",
+        "7GZDFpTsU5v3h4xSvfz9WxG6FzrTaZBFAsG4q7ncNHr4:w",
+        "FUgnjynwLsDvYivpBZs511PQrheyLc18P9QpN8bbXxgj:w",
+        "9FniG9V2R63bS1e7u3ZitEzNuDUmqKa3o2hTosQpMRV:w",
+        "FwhxZFAeD6HbonKCa4jyLkJKfnNwmBCnJLRakMgJmFi9:w",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupZ4m2GqUCJ5iueMfzQf8khFfH31d4XAQt3RzCT9Vd",
+        "CjpDxZ4oMTgY6WAxvA3WUYYwcm5bsdsExiVZ4CoCkrWo",
+        "DQfkVMGvZzqdq5jwoCRAyD26rJEioPM6kRGjC7BYts5P:w",
+        "7GZDFpTsU5v3h4xSvfz9WxG6FzrTaZBFAsG4q7ncNHr4:w",
+        "FUgnjynwLsDvYivpBZs511PQrheyLc18P9QpN8bbXxgj:w",
+        "2tQE8jVR5ezDw3PDa21BNzfyQ14Ug5cTf6n3swJNjkod:w",
+        "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu:w",
+        "4cCvc9aTQSxomyccQbHk5MiefGKyCKLgHKvbNFUgmUsh:w",
+        "9RSuZh4yxxK1KTMC6bKtTSj4BAug3DTghpnCKyWnkcn2:w",
+        "5FYrwB3pAy6hMYeCKekZdJQDEAYDK5gXmCzftr1JKhhM:w",
+        "Bt3sjqzCiu32XYVLVT28owibJJaLoU58CX1KnKZkwcTG:w"
+      ],
+      "data": "5822b44d98baa6a20101000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100010000000000000000000000000000008001010400000006010300",
+      "fields": [
+        [
+          "Collateral Change (base units)",
+          "Amounts: Perfect Shares: 0, Token0Min Max: 0, Token1Min Max: 0, New Col: None"
+        ],
+        [
+          "Debt Change (base units)",
+          "Amounts: None, New Debt: -170141183460469231731687303715884105728"
+        ],
+        [
+          "Transfer Type",
+          "Direct"
+        ],
+        [
+          "Signer",
+          "MoENpDSUhRnojBtRCLjbev3Sef1joyjmuAzKVTxpomx"
+        ],
+        [
+          "Signer Debt Token Account",
+          "4nUCfYdunYkwr4wXowkGhgXtedTa9u1XRoAYvgknDsD6"
+        ],
+        [
+          "Vault Config",
+          "AhPwhwH9y1R4y3z6XCXLNcyrqfzKjcpj5DH1Qb9PS5QQ"
+        ],
+        [
+          "Vault",
+          "6vD1hVZwDwm9aJ2Agui2kAwhvqchmU7uFDWko8fQzKLD"
+        ],
+        [
+          "Debt Token",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Oracle",
+          "CuYFY3M3rhtejaRmP5hTfW1nG7CfZWy5phZiWe822njv"
+        ],
+        [
+          "Position",
+          "75F4kHP5LNAFEq6btugX1QooRvtn4XMT8qMT4xYbPzCV"
+        ],
+        [
+          "Position NFT Account",
+          "H8W2v8W1E1ga1RSn1QrVTVkXaEPVP3o7DHHuYK8FfZfc"
+        ],
+        [
+          "Current Tick",
+          "4UpnwsgLaPVjT3fxuFFfxC1wmp2b2tVxKpdXoEmWfTsd"
+        ],
+        [
+          "Final Tick",
+          "GcWrzHohDALzJL8brLNiFFGhZLzKmnzupyCCz1hFHp2z"
+        ],
+        [
+          "Current Tick Liquidation Record",
+          "Hu9L6hbBH85uR9nk3VW8U2zgYq4ipE1eU5g9Fm8QMFQg"
+        ],
+        [
+          "Final Tick Liquidation Record",
+          "eCms6RNiApcV2UN54fgtTb6VABKLFJD9vtpBpPjCVD2"
+        ],
+        [
+          "Branch",
+          "4cCvc9aTQSxomyccQbHk5MiefGKyCKLgHKvbNFUgmUsh"
+        ],
+        [
+          "Debt Liquidity Reserve",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ],
+        [
+          "Vault Collateral Position on Liquidity",
+          "83kqFxcgTrJtdhyKHyjdXC4hsp4RqGzTVYGBLkpgoY2Y"
+        ],
+        [
+          "Vault Debt Position on Liquidity",
+          "F76hu4WBMdtsm9CmbYgNziJZZvZZrkm8xcokFnn3z7GD"
+        ],
+        [
+          "Debt Rate Model",
+          "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688"
+        ],
+        [
+          "Liquidity Debt Vault",
+          "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB"
+        ],
+        [
+          "Collateral DEX Pool",
+          "DQfkVMGvZzqdq5jwoCRAyD26rJEioPM6kRGjC7BYts5P"
+        ],
+        [
+          "Collateral DEX Pool Position",
+          "9JYhQPuccHVPMoi8LHm4V7jNHBzrfq5UvFKAeXhkLpHi"
+        ],
+        [
+          "Collateral DEX Signer Token 0 Account",
+          "9HQrexcQc68QPVVwWSCmHJKRLKBvqr8LdKq7WGhACRVL"
+        ],
+        [
+          "Collateral DEX Signer Token 1 Account",
+          "4nUCfYdunYkwr4wXowkGhgXtedTa9u1XRoAYvgknDsD6"
+        ],
+        [
+          "Collateral DEX Token 0",
+          "JuprjznTrTSp2UFa3ZBUFgwdAmtZCq4MQCwysN55USD"
+        ],
+        [
+          "Collateral DEX Token 1",
+          "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        ],
+        [
+          "Collateral DEX Token 0 Liquidity Reserve",
+          "2tQE8jVR5ezDw3PDa21BNzfyQ14Ug5cTf6n3swJNjkod"
+        ],
+        [
+          "Collateral DEX Token 1 Liquidity Reserve",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ],
+        [
+          "Collateral DEX Token 0 Rate Model",
+          "2hT44GA9r5PiqsbbmqN5CuF7ymtquoEdokRncAs9CVej"
+        ],
+        [
+          "Collateral DEX Token 1 Rate Model",
+          "5pjzT5dFTsXcwixoab1QDLvZQvpYJxJeBphkyfHGn688"
+        ],
+        [
+          "Collateral DEX Token 0 Liquidity Vault",
+          "9kGqd5zsQGaFfFPdUuEgbRM4V7x72Jdt7WTS4uRouAQ7"
+        ],
+        [
+          "Collateral DEX Token 1 Liquidity Vault",
+          "BmkUoKMFYBxNSzWXyUjyMJjMAaVz4d8ZnxwwmhDCUXFB"
+        ],
+        [
+          "Collateral DEX Token 0 Supply Position",
+          "7GZDFpTsU5v3h4xSvfz9WxG6FzrTaZBFAsG4q7ncNHr4"
+        ],
+        [
+          "Collateral DEX Token 1 Supply Position",
+          "FUgnjynwLsDvYivpBZs511PQrheyLc18P9QpN8bbXxgj"
+        ],
+        [
+          "Collateral DEX Token 0 Borrow Position",
+          "9FniG9V2R63bS1e7u3ZitEzNuDUmqKa3o2hTosQpMRV"
+        ],
+        [
+          "Collateral DEX Token 1 Borrow Position",
+          "FwhxZFAeD6HbonKCa4jyLkJKfnNwmBCnJLRakMgJmFi9"
+        ],
+        [
+          "Additional Account #1",
+          "CjpDxZ4oMTgY6WAxvA3WUYYwcm5bsdsExiVZ4CoCkrWo"
+        ],
+        [
+          "Additional Account #2",
+          "DQfkVMGvZzqdq5jwoCRAyD26rJEioPM6kRGjC7BYts5P"
+        ],
+        [
+          "Additional Account #3",
+          "7GZDFpTsU5v3h4xSvfz9WxG6FzrTaZBFAsG4q7ncNHr4"
+        ],
+        [
+          "Additional Account #4",
+          "FUgnjynwLsDvYivpBZs511PQrheyLc18P9QpN8bbXxgj"
+        ],
+        [
+          "Additional Account #5",
+          "2tQE8jVR5ezDw3PDa21BNzfyQ14Ug5cTf6n3swJNjkod"
+        ],
+        [
+          "Additional Account #6",
+          "94vK29npVbyRHXH63rRcTiSr26SFhrQTzbpNJuhQEDu"
+        ],
+        [
+          "Additional Account #7",
+          "4cCvc9aTQSxomyccQbHk5MiefGKyCKLgHKvbNFUgmUsh"
+        ],
+        [
+          "Additional Account #8",
+          "9RSuZh4yxxK1KTMC6bKtTSj4BAug3DTghpnCKyWnkcn2"
+        ],
+        [
+          "Additional Account #9",
+          "5FYrwB3pAy6hMYeCKekZdJQDEAYDK5gXmCzftr1JKhhM"
+        ],
+        [
+          "Additional Account #10",
+          "Bt3sjqzCiu32XYVLVT28owibJJaLoU58CX1KnKZkwcTG"
+        ]
+      ],
+      "from": "2tqoxkEaYrVmnWt34eQJhyRDHHAoac8cVGZjRZGC5zyNtYkqtYBkLUWUT1imrfYzkhirJ4evLw6NM5eFoEbFr6ZF#3",
+      "intent": "Change a smart vault position",
+      "programId": "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+      "sentence": "MoENpDSUhRnojBtRCLjbev3Sef1joyjmuAzKVTxpomx changes the collateral and debt of position 75F4kHP5LNAFEq6btugX1QooRvtn4XMT8qMT4xYbPzCV in smart vault 6vD1hVZwDwm9aJ2Agui2kAwhvqchmU7uFDWko8fQzKLD",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa:w",
+        "4Pgx2M7ZsDRvXU4CitoT94EJUohxqSk3eBuLsoz834dm:w",
+        "9Eio7YRtCRQQaVrcsfByWUinVzY6QMb8rXFaTmkDVtfR:w",
+        "4MnUFX2SNC9KJWRn1FgJexWyPzaony9RXyxKciTQVHgu:w",
+        "2gFY1YckrZtmK6LiTzTSdq5JbU3SdfZaHzLQoseD1xHu",
+        "sUSDai6Y3GxysDEtA9BVcEFTaog6UZpYUVxJiMhAKYE",
+        "72puLt71H93Z9CzHuBRTwFpL4TG3WZUhnoCC7p8gxigu",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+        "11111111111111111111111111111111"
+      ],
+      "data": "29c245fec4f6e2c3700000000000602228231c25f401c8000001b13839e11e9e27599a38d38b8942de33fdd953e3d7501ab14058ef1fc632ec5f0afe1e97e456cbb92e642a25b50ba6396ff248164bca746963a84592acd6ccc30afe1f4ce4264c24d16ba399bb3856596e5dc3cd730615ae96e3cc68cbdb7623",
+      "fields": [
+        [
+          "Vault ID",
+          "112"
+        ],
+        [
+          "Supply Rate Magnifier (raw value)",
+          "0"
+        ],
+        [
+          "Borrow Rate Magnifier (raw value)",
+          "0"
+        ],
+        [
+          "Collateral Factor (raw value)",
+          "8,800"
+        ],
+        [
+          "Liquidation Threshold (raw value)",
+          "9,000"
+        ],
+        [
+          "Liquidation Max Limit (raw value)",
+          "9,500"
+        ],
+        [
+          "Withdraw Gap (raw value)",
+          "500"
+        ],
+        [
+          "Liquidation Penalty (raw value)",
+          "200"
+        ],
+        [
+          "Borrow Fee (raw value)",
+          "0"
+        ],
+        [
+          "Vault Type",
+          "1"
+        ],
+        [
+          "Rebalancer",
+          "Cvnta5ecoiCgNbLEXYm6kvhJMmRv3JM3ksKgTLVPg4hk"
+        ],
+        [
+          "Liquidity Program",
+          "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC"
+        ],
+        [
+          "Oracle Program",
+          "jupnw4B6Eqs7ft6rxpzYLJZYSnrpRgPcr589n5Kv4oc"
+        ],
+        [
+          "Authority",
+          "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa"
+        ],
+        [
+          "Vault Config",
+          "9Eio7YRtCRQQaVrcsfByWUinVzY6QMb8rXFaTmkDVtfR"
+        ],
+        [
+          "Vault Metadata",
+          "4MnUFX2SNC9KJWRn1FgJexWyPzaony9RXyxKciTQVHgu"
+        ],
+        [
+          "Oracle",
+          "2gFY1YckrZtmK6LiTzTSdq5JbU3SdfZaHzLQoseD1xHu"
+        ],
+        [
+          "Collateral Token",
+          "sUSDai6Y3GxysDEtA9BVcEFTaog6UZpYUVxJiMhAKYE"
+        ],
+        [
+          "Debt Token",
+          "72puLt71H93Z9CzHuBRTwFpL4TG3WZUhnoCC7p8gxigu"
+        ]
+      ],
+      "from": "2WqEGoR6kxU4iajPGbPsdcRUTpDJTicyJuBZ93Bjykx7GAB4tdgQabxbwvQtKsNek3z6TY7oDXEwkzucP68v2dkb#4.1",
+      "intent": "Create a vault",
+      "programId": "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+      "sentence": "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa creates the configuration of vault 112",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa:w",
+        "4Pgx2M7ZsDRvXU4CitoT94EJUohxqSk3eBuLsoz834dm:w",
+        "9Eio7YRtCRQQaVrcsfByWUinVzY6QMb8rXFaTmkDVtfR:w",
+        "5YPiYiGbg7FJm1fcKBouEXuuTsRc2R8PvMqvFggST4Xi:w",
+        "2zhomdC3giLb5vf91fCZiKWiFXAD9NwMcV8EQo8NmA3i:w",
+        "7azQBZTPxJBoq74c538uAURWknrAAZBv5txS7YmgnzgX:w",
+        "11111111111111111111111111111111"
+      ],
+      "data": "60781764990b0da57000",
+      "fields": [
+        [
+          "Vault ID",
+          "112"
+        ],
+        [
+          "Authority",
+          "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa"
+        ],
+        [
+          "Vault Config",
+          "9Eio7YRtCRQQaVrcsfByWUinVzY6QMb8rXFaTmkDVtfR"
+        ],
+        [
+          "Vault",
+          "5YPiYiGbg7FJm1fcKBouEXuuTsRc2R8PvMqvFggST4Xi"
+        ],
+        [
+          "Collateral Liquidity Reserve",
+          "2zhomdC3giLb5vf91fCZiKWiFXAD9NwMcV8EQo8NmA3i"
+        ],
+        [
+          "Debt Liquidity Reserve",
+          "7azQBZTPxJBoq74c538uAURWknrAAZBv5txS7YmgnzgX"
+        ]
+      ],
+      "from": "2WqEGoR6kxU4iajPGbPsdcRUTpDJTicyJuBZ93Bjykx7GAB4tdgQabxbwvQtKsNek3z6TY7oDXEwkzucP68v2dkb#4.4",
+      "intent": "Create a vault state",
+      "programId": "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+      "sentence": "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa creates the state of vault 112",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa:w",
+        "4Pgx2M7ZsDRvXU4CitoT94EJUohxqSk3eBuLsoz834dm:w",
+        "4MnUFX2SNC9KJWRn1FgJexWyPzaony9RXyxKciTQVHgu:w"
+      ],
+      "data": "dd3b1ef66adf8937700056f6518ddbfc038ffd76423136f7d466b72b25c59034bb3d952952f04ddf185a",
+      "fields": [
+        [
+          "Vault ID",
+          "112"
+        ],
+        [
+          "Lookup Table",
+          "6rTudVfra6uTqYkxv2XYhvnKQnpqHcAUfZbZxTsHWiND"
+        ],
+        [
+          "Authority",
+          "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa"
+        ],
+        [
+          "Vault Metadata",
+          "4MnUFX2SNC9KJWRn1FgJexWyPzaony9RXyxKciTQVHgu"
+        ]
+      ],
+      "from": "2WqEGoR6kxU4iajPGbPsdcRUTpDJTicyJuBZ93Bjykx7GAB4tdgQabxbwvQtKsNek3z6TY7oDXEwkzucP68v2dkb#4.6",
+      "intent": "Set vault lookup table",
+      "programId": "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+      "sentence": "HqPrpa4ESBDnRHRWaiYtjv4xe93wvCS9NNZtDwR89cVa sets the address lookup table of vault 112 to 6rTudVfra6uTqYkxv2XYhvnKQnpqHcAUfZbZxTsHWiND",
+      "unnamedAccounts": 0
+    },
+    {
+      "accounts": [
+        "Cvnta5ecoiCgNbLEXYm6kvhJMmRv3JM3ksKgTLVPg4hk:w",
+        "6tq54U3wqW6pVbPBJW11iuHL4WujWaZ7HZRYa21Hshsq:w",
+        "2FJ9TRTw13JKpTxLux8k1NAMXvMWLVbYHctvB1trzYqT:w",
+        "7A5fcWbCyobrcExHZLcXcDEdp8yNtuuFBEEwEELDE6ww:w",
+        "HRTjNNfu5TrurCvrHV5w87y2wD4BHSbVGiqdN6uEw7Ze:w",
+        "jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v",
+        "2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH",
+        "7HZhrUgLcHiQ8hkvNXM9gkM7CAeP21s478P8pHhANwns:w",
+        "G4KAenCBfybnZLtVe4LdNrmEtQoW3x93oTowFJUPSvx6:w",
+        "6so4eJqJfit3BL6GGJ1TAGSPUEZgA2anhKzmeqp8QFEH:w",
+        "2UcfVZLJxovLb5GcAbszyyseFbNxRsmaM2ZzR99nS3V6:w",
+        "DeXnF8AYp6qg9xq5BwD2RU42j9RCAmZEutv4ei2es3Cf",
+        "6iHHKAK9Mqjn57CVmWe4szAPyTH8s8pniXSj6vWaKW5r",
+        "7s1da8DduuBFqGra5bJBjpnvL5E9mGzCuMk1Qkh4or2Z",
+        "jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC",
+        "B8yLjTzygXWWb5cedEDVE913kEoupPu7ioQNqCbThcHq:w",
+        "E1prFSvCtp5ze1hAegjdtN3kQWVoRuSGWLoc8Vj9h4nm:w",
+        "11111111111111111111111111111111",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+      ],
+      "data": "6c9e4d09d234583e",
+      "fields": [
+        [
+          "Rebalancer",
+          "Cvnta5ecoiCgNbLEXYm6kvhJMmRv3JM3ksKgTLVPg4hk"
+        ],
+        [
+          "Rebalancer Collateral Account",
+          "6tq54U3wqW6pVbPBJW11iuHL4WujWaZ7HZRYa21Hshsq"
+        ],
+        [
+          "Rebalancer Debt Account",
+          "2FJ9TRTw13JKpTxLux8k1NAMXvMWLVbYHctvB1trzYqT"
+        ],
+        [
+          "Vault Config",
+          "7A5fcWbCyobrcExHZLcXcDEdp8yNtuuFBEEwEELDE6ww"
+        ],
+        [
+          "Vault",
+          "HRTjNNfu5TrurCvrHV5w87y2wD4BHSbVGiqdN6uEw7Ze"
+        ],
+        [
+          "Collateral Token",
+          "jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v"
+        ],
+        [
+          "Debt Token",
+          "2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH"
+        ],
+        [
+          "Collateral Liquidity Reserve",
+          "7HZhrUgLcHiQ8hkvNXM9gkM7CAeP21s478P8pHhANwns"
+        ],
+        [
+          "Debt Liquidity Reserve",
+          "G4KAenCBfybnZLtVe4LdNrmEtQoW3x93oTowFJUPSvx6"
+        ],
+        [
+          "Vault Collateral Position on Liquidity",
+          "6so4eJqJfit3BL6GGJ1TAGSPUEZgA2anhKzmeqp8QFEH"
+        ],
+        [
+          "Vault Debt Position on Liquidity",
+          "2UcfVZLJxovLb5GcAbszyyseFbNxRsmaM2ZzR99nS3V6"
+        ],
+        [
+          "Collateral Rate Model",
+          "DeXnF8AYp6qg9xq5BwD2RU42j9RCAmZEutv4ei2es3Cf"
+        ],
+        [
+          "Debt Rate Model",
+          "6iHHKAK9Mqjn57CVmWe4szAPyTH8s8pniXSj6vWaKW5r"
+        ],
+        [
+          "Liquidity Collateral Vault",
+          "B8yLjTzygXWWb5cedEDVE913kEoupPu7ioQNqCbThcHq"
+        ],
+        [
+          "Liquidity Debt Vault",
+          "E1prFSvCtp5ze1hAegjdtN3kQWVoRuSGWLoc8Vj9h4nm"
+        ]
+      ],
+      "from": "5uyuqs9zZYkkBYtwxbJ9y8h9ygpY79SyYvbxvs5mBem2XEY8gWwshhN6anZZx8v5bEJXNJycpzvWchVndxJwN1v4#4.1",
+      "intent": "Rebalance a vault",
+      "programId": "jupr81YtYssSyPt8jbnGuiWon5f6x9TcDEFxYe3Bdzi",
+      "sentence": "Cvnta5ecoiCgNbLEXYm6kvhJMmRv3JM3ksKgTLVPg4hk rebalances the vault with jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v collateral and 2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH debt",
+      "unnamedAccounts": 0
+    }
+  ],
+  "network": "mainnet"
+}
