@@ -103,13 +103,13 @@ idlSha256 = "3fac399546087cd5acb3eb15b000541f9569de56f9d62ed8e8e85f4c25b6539b"
 reviewed = "2026-11-11"
 
 [[builds]]
-# splGovernance (pack). spl-governance v3.1.3. Every instruction the IDL keeps is in this binary by name (see the manifest for those it drops).
+# splGovernance (pack). spl-governance 3.1.7 by its version string, redeployed at slot 468575556 (2026-11-12). Every instruction the IDL keeps is in this binary by name (see the manifest for those it drops), and its instruction variant and field names are those of the 3.1.2 build devnet runs, which this IDL was also reviewed against: what 3.1.7 adds to the read-only data is error text (a maintenance mode that refuses new proposals, an SPL Token program check) and source paths, no instruction. All 55 successful mainnet transactions that name the program from the redeploy to 2026-11-13 were read: the 68 instructions it ran in 54 of them ( castVote, insertTransaction, signOffProposal, executeTransaction, createProposal, addSignatory, depositGoverningTokens, relinquishVote, createTokenOwnerRecord, createRealm, createGovernance, createNativeTreasury, setRealmAuthority) decode with every account named and exactly the bytes their arguments take.
 programId = "GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw"
 network = "mainnet"
-programHash = "0ad7fdd41122eea3aac9fbe703e52d06cc0bded844de21a9967ca62a26ff96e6"
+programHash = "6474049d682c9ca719b585246be73c254396b2543c1294dda87c6fd14a206d16"
 authority = "HF7gCq7BMB6cFfhharTGGm31sqDdpmvLTgF4WEoW8y9n"
 idlSha256 = "0328455cdcd62d02cb286e0b5a12ea5cdd37f26746e7d54a1ef5208567a5d53c"
-reviewed = "2026-11-09"
+reviewed = "2026-11-13"
 
 [[builds]]
 # squadsMultisigProgram (core). Every instruction the IDL lists is in this binary by name.
@@ -465,22 +465,22 @@ idlSha256 = "9ee71d80caf2e2a3b5f9ae7f9cf1cc5bc342a3636dfda0a93c48860a5cf8e8d2"
 reviewed = "2026-11-12"
 
 [[builds]]
-# eternal (pack). No verified build. The program is native Rust and logs no Anchor instruction names, so the check was by discriminator: the binary's dispatch table holds exactly the 125 discriminators the IDL declares, no more and no fewer. Successful mainnet transactions decode with the IDL, every account named and every byte accounted for, for placeMarketOrder, placeLimitOrder, placeMultiLimitOrder, cancelOrdersById, cancelAll, placeStopLoss, cancelStopLoss, executeStopLoss, depositFunds, withdrawFunds, withdrawFundsWithFee, transferCollateral, transferCollateralChildToParent, registerTrader, reallocTrader, createPermission, setPermission, setPermissionDelegated, setTraderCapabilitiesDelegated, updateTraderFees, syncParentToChild, withdrawNativeSol, transferNativeSolFromChildToParent, liquidateNativeSol, updateTraderState, clearExpiredOrders, updateOraclePricesWithOrdering, updateSplinePrice, updateSplinePriceWithMetadata, updateSplineParameters, log and logEventLengths.
+# eternal (pack). No verified build. Redeployed at slot 468612424 (2026-11-12). The program is native Rust and logs no Anchor instruction names, so the check was by discriminator: the binary's dispatch table holds the 125 discriminators the IDL declares and one more, 8751d829fd49bfe0, which no published Phoenix IDL names (the beta deployment's build has it too); an instruction with it reads raw. The one new message in the binary is "CollateralWithdraw: failed to charge withdrawal fee". 99 instructions of 47 successful mainnet transactions since the redeploy decode with the IDL, every account named and every byte accounted for, for placeMarketOrder, placeLimitOrder, placeMultiLimitOrder, placeStopLoss, cancelAll, depositFunds, withdrawFunds, withdrawFundsWithFee, withdrawNativeSol, liquidateNativeSol, transferCollateral, transferCollateralChildToParent, syncParentToChild, registerTrader, createPermission, setPermission, setTraderCapabilitiesDelegated, updateTraderFees, updateTraderState, updateOraclePricesWithOrdering, updateSplinePrice, updateSplinePriceWithMetadata, updateSplineParameters, log and logEventLengths.
 programId = "EtrnLzgbS7nMMy5fbD42kXiUzGg8XQzJ972Xtk1cjWih"
 network = "mainnet"
-programHash = "e88dde79aa30c026a5f1b8de6477d3c3cdb55c996d7d453b8181d4f82cacfd3e"
+programHash = "f1a0120e15d05e1b8a810eaa3d5036ab098d0a751e8f729743e52bbc8d6de5ff"
 authority = "GPgADQrhzGoUgLqxsZMKvSpwcLaJFVTq6gEixKhmcwpm"
 idlSha256 = "307255c54e847d0fcd10613463a4080ae2310d96d46c695dba6d9d8eb799530c"
-reviewed = "2026-11-12"
+reviewed = "2026-11-13"
 
 [[builds]]
-# swapOrchestrator (pack). Closed source; deployed at slot 467533307; OtterSec lists no verify record. Each of the 18 instructions the IDL lists is in this binary by its Anchor log name, and the binary logs no other. Successful mainnet transactions of swap, swap2, swapWithDestination, swap2WithDestination, swapWithDestinationNative, swap2WithDestinationNative, transferToSponsor, wrapSol and unwrapSol decode with every named account and exactly the bytes their arguments take.
+# swapOrchestrator (pack). Closed source; redeployed at slot 468646007 (2026-11-12); OtterSec lists no verify record. Each of the 18 instructions the IDL lists is in this binary by its Anchor log name, and the binary logs no other: its read-only data is byte for byte that of the build reviewed before it (slot 467533307), and only its code differs. 73 instructions of 65 successful mainnet transactions since the redeploy (swap, swap2, swapWithDestination with and without its destination mint, swap2WithDestination, swap2WithDestinationNative, wrapSol, unwrapSol) decode with every named account and exactly the bytes their arguments take. swapWithDestinationNative and transferToSponsor did not run in that sample; they were checked on the build before.
 programId = "DF1ow4tspfHX9JwWJsAb9epbkA8hmpSEAtxXy1V27QBH"
 network = "mainnet"
-programHash = "40821b0aa4923e6073a404e0747fa7e62ba64f702172150818a6cec39aaaa56c"
+programHash = "dad1df177b69f86ea1dd94eb0ac3ab856e8e2bdb4d458c79a95db02db2095129"
 authority = "9uo2iJKJkmiYwy5MrkrbGQXbPqwHXqvQaUqxhCkowgsh"
 idlSha256 = "e1c69af0c0a5befd60e7c912d768d4d7546768b0c77a72755006dc6d22ba86a0"
-reviewed = "2026-11-12"
+reviewed = "2026-11-13"
 
 [[builds]]
 # perpetuals (pack). Deployed at slot 465131236; closed source, OtterSec lists no verify record. 58 of the IDL's 59 instructions are in this binary by their Anchor log name; setMaxGlobalSizes is not and is removed, and the binary logs one the IDL lacks, DepositExternalReward. Mainnet transactions of 23 instructions (instant trades, requests, limit and take-profit or stop-loss orders, swaps, buying JLP, borrowing against JLP, keeper execution and liquidation) decode with every account named and with the data length the IDL describes.
