@@ -1391,3 +1391,20 @@ the optional ADL permission account, and updateTraderFees the arena accounts the
 says may follow. Collateral amounts are in base units of the deployment's collateral \
 token, whose mint is never an account of those instructions. Display nodes added by \
 hand, the same as the main deployment's file for the instructions both have."""
+
+# Phoenix Ember, the token wrapper of Ellipsis Labs' perpetuals exchange: it
+# takes USDC into a vault and mints the exchange's collateral token, and burns
+# that token to pay USDC back. One wrapper exists per exchange program (the
+# main deployment's wraps USDC, the beta deployment's a beta USDC mint). The
+# file is the IDL its program-metadata account publishes on mainnet; the
+# program is native Rust.
+[[idls]]
+file = "phoenix-ember.json"
+programId = "EMBERpYNE6ehWmXymZZS2skiFmCa9V5dp14e1iduM5qy"
+name = "ember"
+networks = ["mainnet"]
+source = { kind = "chain", network = "mainnet", account = "programMetadata", sha256 = "f572240cf0f437bc799f699b39898a42ffbe4888434b90e5498489b0d4974feb" }
+changes = """Converted from Anchor to Codama. The Token program's mint account is added and the two \
+mints of deposit and withdraw link to it, so the deposit amount reads in the underlying \
+token's units and the withdrawal amount in the wrapped token's. Display nodes added by \
+hand."""

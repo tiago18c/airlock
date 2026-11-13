@@ -1,0 +1,1089 @@
+{
+  "kind": "rootNode",
+  "standard": "codama",
+  "version": "1.8.0",
+  "program": {
+    "kind": "programNode",
+    "name": "ember",
+    "publicKey": "EMBERpYNE6ehWmXymZZS2skiFmCa9V5dp14e1iduM5qy",
+    "version": "0.1.0",
+    "origin": "anchor",
+    "accounts": [
+      {
+        "kind": "accountNode",
+        "name": "emberState",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "discriminator",
+              "defaultValueStrategy": "omitted",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 8,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "defaultValue": {
+                "kind": "bytesValueNode",
+                "data": "8ece0bb13f9d3762",
+                "encoding": "base16"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "authority",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "inputMint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "outputMint",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "phoenixProgram",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              }
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ]
+      },
+      {
+        "kind": "accountNode",
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "mintAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority used to mint new tokens. The mint authority may only",
+                "be provided during mint creation. If no mint authority is present",
+                "then the mint has a fixed supply and no further tokens may be minted."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "supply",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "docs": [
+                "Total supply of tokens."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "decimals",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u8",
+                "endian": "le"
+              },
+              "docs": [
+                "Number of base 10 digits to the right of the decimal place."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "isInitialized",
+              "type": {
+                "kind": "booleanTypeNode",
+                "size": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "docs": [
+                "Is `true` if this structure has been initialized."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "freezeAuthority",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "publicKeyTypeNode"
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u32",
+                  "endian": "le"
+                },
+                "fixed": true
+              },
+              "docs": [
+                "Optional authority to freeze token accounts."
+              ]
+            }
+          ]
+        },
+        "discriminators": [
+          {
+            "kind": "sizeDiscriminatorNode",
+            "size": 82
+          }
+        ],
+        "name": "mint",
+        "docs": [],
+        "size": 82
+      }
+    ],
+    "instructions": [
+      {
+        "kind": "instructionNode",
+        "name": "init",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "payer",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "Fee payer account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Payer"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "authority",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The state authority for admin actions"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Admin"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "state",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The state account for the token wrapper"
+            ],
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "state",
+                "programId": "EMBERpYNE6ehWmXymZZS2skiFmCa9V5dp14e1iduM5qy",
+                "seeds": [
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "phoenixProgram",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "E2Vfkfn",
+                      "encoding": "base58"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "phoenixProgram",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "phoenixProgram"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Wrapper State"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "inputMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The input mint for the token wrapper"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Underlying Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "outputMint",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "The output mint for the token wrapper"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Wrapped Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The vault account for the token wrapper input mint"
+            ],
+            "defaultValue": {
+              "kind": "pdaValueNode",
+              "pda": {
+                "kind": "pdaNode",
+                "name": "vault",
+                "programId": "EMBERpYNE6ehWmXymZZS2skiFmCa9V5dp14e1iduM5qy",
+                "seeds": [
+                  {
+                    "kind": "variablePdaSeedNode",
+                    "name": "phoenixProgram",
+                    "type": {
+                      "kind": "publicKeyTypeNode"
+                    }
+                  },
+                  {
+                    "kind": "constantPdaSeedNode",
+                    "type": {
+                      "kind": "bytesTypeNode"
+                    },
+                    "value": {
+                      "kind": "bytesValueNode",
+                      "data": "EMeDBmd",
+                      "encoding": "base58"
+                    }
+                  }
+                ]
+              },
+              "seeds": [
+                {
+                  "kind": "pdaSeedValueNode",
+                  "name": "phoenixProgram",
+                  "value": {
+                    "kind": "accountValueNode",
+                    "name": "phoenixProgram"
+                  }
+                }
+              ]
+            },
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Wrapper Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "phoenixProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Phoenix Eternal program used as a PDA seed"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Exchange Program"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "systemProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "System program account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "dc3bcfec6cfa2f64",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create a token wrapper",
+          "interpolatedIntent": "${accounts.payer} creates the token wrapper of exchange program ${accounts.phoenixProgram}: it takes ${accounts.inputMint} into vault ${accounts.vault} and mints the new token ${accounts.outputMint}, with ${accounts.authority} as its admin"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "deposit",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "owner",
+            "isWritable": false,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "The token owner"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "state",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The state account for the token wrapper"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Wrapper State"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "inputMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The input mint for the token wrapper"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Underlying Token"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "outputMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The output mint for the token wrapper"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Wrapped Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "inputTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The input token account owned by the owner"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Underlying Token From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "outputTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The output token account owned by the owner"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Wrapped Token To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The vault account for the token wrapper input mint"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Wrapper Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "f223c68952e1f2b6",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "depositParams",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "depositParams"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "underlyingDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "inputMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Wrap tokens",
+          "interpolatedIntent": "${accounts.owner} deposits ${data.depositParams.amount} of ${accounts.inputMint} from ${accounts.inputTokenAccount} into the wrapper's vault and receives ${accounts.outputMint} in ${accounts.outputTokenAccount}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "withdraw",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "owner",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The token owner"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Owner"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "state",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The state account for the token wrapper"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Wrapper State"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "inputMint",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The input mint for the token wrapper"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Underlying Token"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "outputMint",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The output mint for the token wrapper"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Wrapped Token"
+            },
+            "accountLink": {
+              "kind": "accountLinkNode",
+              "name": "mint"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "inputTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The input token account owned by the owner"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Underlying Token To"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "outputTokenAccount",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The output token account owned by the owner"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Wrapped Token From"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vault",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The vault account for the token wrapper input mint"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Wrapper Vault"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "tokenProgram",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "Token program account"
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "defaultValueStrategy": "omitted",
+            "type": {
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
+            },
+            "defaultValue": {
+              "kind": "bytesValueNode",
+              "data": "b712469c946da122",
+              "encoding": "base16"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
+            "name": "withdrawParams",
+            "type": {
+              "kind": "definedTypeLinkNode",
+              "name": "withdrawParams"
+            },
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "flatten": true
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "provides": [
+          {
+            "kind": "providedNode",
+            "name": "wrappedDecimals",
+            "node": {
+              "kind": "accountFieldValueNode",
+              "account": "outputMint",
+              "path": "decimals"
+            }
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Unwrap tokens",
+          "interpolatedIntent": "Burns ${data.withdrawParams.amount} of ${accounts.outputMint} from ${accounts.outputTokenAccount} of ${accounts.owner} and pays ${accounts.inputMint} from the wrapper's vault to ${accounts.inputTokenAccount}"
+        }
+      }
+    ],
+    "definedTypes": [
+      {
+        "kind": "definedTypeNode",
+        "name": "depositParams",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amount",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le",
+                "display": {
+                  "kind": "amountNumberDisplayNode",
+                  "decimals": {
+                    "kind": "injectedValueNode",
+                    "key": "underlyingDecimals"
+                  }
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Amount"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "definedTypeNode",
+        "name": "withdrawParams",
+        "type": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "amount",
+              "type": {
+                "kind": "optionTypeNode",
+                "item": {
+                  "kind": "numberTypeNode",
+                  "format": "u64",
+                  "endian": "le",
+                  "display": {
+                    "kind": "amountNumberDisplayNode",
+                    "decimals": {
+                      "kind": "injectedValueNode",
+                      "key": "wrappedDecimals"
+                    }
+                  }
+                },
+                "prefix": {
+                  "kind": "numberTypeNode",
+                  "format": "u8",
+                  "endian": "le"
+                }
+              },
+              "display": {
+                "kind": "structFieldDisplayNode",
+                "label": "Amount (none: the whole balance)"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "unauthorized",
+        "code": 6000,
+        "message": "Unauthorized",
+        "docs": [
+          "Unauthorized: Unauthorized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "stateNotInitialized",
+        "code": 6001,
+        "message": "State account not initialized",
+        "docs": [
+          "StateNotInitialized: State account not initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "statePdaMismatch",
+        "code": 6002,
+        "message": "State account PDA mismatch",
+        "docs": [
+          "StatePdaMismatch: State account PDA mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "stateAlreadyInitialized",
+        "code": 6003,
+        "message": "State account already initialized",
+        "docs": [
+          "StateAlreadyInitialized: State account already initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "stateDataMismatch",
+        "code": 6004,
+        "message": "State account data mismatch",
+        "docs": [
+          "StateDataMismatch: State account data mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "inputMintMismatch",
+        "code": 6010,
+        "message": "Input mint mismatch",
+        "docs": [
+          "InputMintMismatch: Input mint mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "outputMintMismatch",
+        "code": 6011,
+        "message": "Output mint mismatch",
+        "docs": [
+          "OutputMintMismatch: Output mint mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "inputMintDataLengthMismatch",
+        "code": 6012,
+        "message": "Input mint data length mismatch",
+        "docs": [
+          "InputMintDataLengthMismatch: Input mint data length mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "outputMintDataLengthMismatch",
+        "code": 6013,
+        "message": "Output mint data length mismatch",
+        "docs": [
+          "OutputMintDataLengthMismatch: Output mint data length mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "outputMintMissingAuthority",
+        "code": 6014,
+        "message": "Output mint must have a mint authority",
+        "docs": [
+          "OutputMintMissingAuthority: Output mint must have a mint authority"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "outputMintAuthorityMismatch",
+        "code": 6015,
+        "message": "Output mint must be owned by the State account",
+        "docs": [
+          "OutputMintAuthorityMismatch: Output mint must be owned by the State account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "outputMintAlreadyInitialized",
+        "code": 6016,
+        "message": "Output mint account already initialized",
+        "docs": [
+          "OutputMintAlreadyInitialized: Output mint account already initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "inputTokenAccountNotInitialized",
+        "code": 6020,
+        "message": "Input token account not initialized",
+        "docs": [
+          "InputTokenAccountNotInitialized: Input token account not initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "outputTokenAccountNotInitialized",
+        "code": 6021,
+        "message": "Output token account not initialized",
+        "docs": [
+          "OutputTokenAccountNotInitialized: Output token account not initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "inputTokenAccountMintMismatch",
+        "code": 6022,
+        "message": "Input token account mint mismatch",
+        "docs": [
+          "InputTokenAccountMintMismatch: Input token account mint mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "outputTokenAccountMintMismatch",
+        "code": 6023,
+        "message": "Output token account mint mismatch",
+        "docs": [
+          "OutputTokenAccountMintMismatch: Output token account mint mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "inputTokenAccountOwnerMismatch",
+        "code": 6024,
+        "message": "Input token account owner mismatch",
+        "docs": [
+          "InputTokenAccountOwnerMismatch: Input token account owner mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "outputTokenAccountOwnerMismatch",
+        "code": 6025,
+        "message": "Output token account owner mismatch",
+        "docs": [
+          "OutputTokenAccountOwnerMismatch: Output token account owner mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "inputTokenAccountDataLengthMismatch",
+        "code": 6026,
+        "message": "Input token account data length mismatch",
+        "docs": [
+          "InputTokenAccountDataLengthMismatch: Input token account data length mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "outputTokenAccountDataLengthMismatch",
+        "code": 6027,
+        "message": "Output token account data length mismatch",
+        "docs": [
+          "OutputTokenAccountDataLengthMismatch: Output token account data length mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "insufficientBalance",
+        "code": 6028,
+        "message": "Insufficient balance. Expected: {0}, Actual: {1}",
+        "docs": [
+          "InsufficientBalance: Insufficient balance. Expected: {0}, Actual: {1}"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultPdaMismatch",
+        "code": 6030,
+        "message": "Vault account PDA mismatch",
+        "docs": [
+          "VaultPdaMismatch: Vault account PDA mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultAlreadyInitialized",
+        "code": 6031,
+        "message": "Vault account already initialized",
+        "docs": [
+          "VaultAlreadyInitialized: Vault account already initialized"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultDataLengthMismatch",
+        "code": 6032,
+        "message": "Vault account data length mismatch",
+        "docs": [
+          "VaultDataLengthMismatch: Vault account data length mismatch"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultMintMismatch",
+        "code": 6033,
+        "message": "Vault account mint mismatch. Expected the vault mint to be the input mint",
+        "docs": [
+          "VaultMintMismatch: Vault account mint mismatch. Expected the vault mint to be the input mint"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultOwnerMismatch",
+        "code": 6034,
+        "message": "Vault account owner mismatch. Expected to be owned by the State account",
+        "docs": [
+          "VaultOwnerMismatch: Vault account owner mismatch. Expected to be owned by the State account"
+        ]
+      },
+      {
+        "kind": "errorNode",
+        "name": "vaultNotInitialized",
+        "code": 6035,
+        "message": "Vault token account not initialized",
+        "docs": [
+          "VaultNotInitialized: Vault token account not initialized"
+        ]
+      }
+    ]
+  }
+}

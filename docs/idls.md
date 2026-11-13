@@ -126,6 +126,7 @@ Each embedded IDL, core or pack, lists the networks it is read on, its source (`
 | LayerZero Endpoint | mainnet | the Anchor IDL mainnet publishes |
 | Sanctum Infinity | mainnet | the IDL in Sanctum's `inf-1.5` repository at `29dbbd4` |
 | Phoenix Perpetuals (beta) | mainnet | the IDL mainnet's program-metadata account publishes |
+| Phoenix Ember | mainnet | the IDL mainnet's program-metadata account publishes |
 | Upgradeable BPF loader (loader-v3) | all | the loader-v3 repository's Shank IDL at `b9c8ab3`, with its `codama.mjs` transforms; account states added by hand |
 
 A program at different addresses on two networks has a file for each: the file declares its address, and often accounts that differ by network too (Raydium's admin and fee receiver). The mainnet Raydium files are the devnet ones with those addresses swapped, which is all the two networks' published IDLs differ in, and a test checks that.
