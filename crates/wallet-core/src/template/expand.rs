@@ -531,6 +531,21 @@ fn refusal(call: &Call, args: &[Option<Val>]) -> (usize, String) {
             0,
             format!("Enter a whole number of bytes, not `{}`.", text(0)),
         ),
+        Function::UnixSeconds => {
+            let given = text(0);
+            match args.first().and_then(Option::as_ref).and_then(Val::integer) {
+                Some(_) => (
+                    0,
+                    format!(
+                        "`{given}` is thousands of years away, or in milliseconds. Enter the time in seconds: 1794441600 is 12 November 2026."
+                    ),
+                ),
+                None => (
+                    0,
+                    format!("Enter a Unix time as a whole number of seconds, not `{given}`."),
+                ),
+            }
+        }
         Function::TreeDepth | Function::TreeBuffer | Function::MerkleTreeSpace => (
             0,
             format!("`{}` is not one of the tree sizes offered.", text(0)),
@@ -776,6 +791,10 @@ impl<'a> Run<'a> {
             Function::GreaterAddress => {
                 let (left, right) = (address(0)?, address(1)?);
                 Some(Val::Address(std::cmp::max(left, right)))
+            }
+            Function::UnixSeconds => {
+                let seconds = args.first()?.as_ref()?.integer()?;
+                (seconds < MAX_UNIX_SECONDS).then_some(Val::Integer(seconds))
             }
             Function::WhenLesser => {
                 let (left, right) = (address(0)?, address(1)?);

@@ -975,7 +975,7 @@
         "display": {
           "kind": "instructionDisplayNode",
           "intent": "Create a vesting contract",
-          "interpolatedIntent": "${accounts.sender} locks ${data.netAmountDeposited} of ${accounts.mint} from ${accounts.senderTokens} for ${accounts.recipient}, plus Streamflow's fees: ${data.cliffAmount} unlocks at the cliff, then ${data.amountPerPeriod} every ${data.period}"
+          "interpolatedIntent": "${accounts.sender} locks ${data.netAmountDeposited} of ${accounts.mint} from ${accounts.senderTokens} for ${accounts.recipient}, plus Streamflow's fees: ${data.cliffAmount} unlocks at the cliff, then ${data.amountPerPeriod} every ${data.period}. Starts ${data.startTime} (None: when created), cliff ${data.cliff} (None: at the start). Can cancel: sender ${data.cancelableBySender}, recipient ${data.cancelableByRecipient}. Can hand to another recipient: sender ${data.transferableBySender}, recipient ${data.transferableByRecipient}"
         }
       },
       {
@@ -1486,7 +1486,7 @@
         "display": {
           "kind": "instructionDisplayNode",
           "intent": "Create a vesting contract",
-          "interpolatedIntent": "${accounts.sender} locks ${data.netAmountDeposited} of ${accounts.mint} from ${accounts.senderTokens} for ${data.recipient}, plus Streamflow's fees: ${data.cliffAmount} unlocks at the cliff, then ${data.amountPerPeriod} every ${data.period}"
+          "interpolatedIntent": "${accounts.sender} locks ${data.netAmountDeposited} of ${accounts.mint} from ${accounts.senderTokens} for ${data.recipient}, plus Streamflow's fees: ${data.cliffAmount} unlocks at the cliff, then ${data.amountPerPeriod} every ${data.period}. Starts ${data.startTime} (None: when created), cliff ${data.cliff} (None: at the start). Can cancel: sender ${data.cancelableBySender}, recipient ${data.cancelableByRecipient}. Can hand to another recipient: sender ${data.transferableBySender}, recipient ${data.transferableByRecipient}"
         }
       },
       {
@@ -2010,7 +2010,7 @@
         "display": {
           "kind": "instructionDisplayNode",
           "intent": "Create a vesting contract",
-          "interpolatedIntent": "${accounts.sender} locks ${data.netAmountDeposited} of ${accounts.mint} from ${accounts.senderTokens} for ${data.recipient}, plus Streamflow's fees: ${data.cliffAmount} unlocks at the cliff, then ${data.amountPerPeriod} every ${data.period}"
+          "interpolatedIntent": "${accounts.sender} locks ${data.netAmountDeposited} of ${accounts.mint} from ${accounts.senderTokens} for ${data.recipient}, plus Streamflow's fees: ${data.cliffAmount} unlocks at the cliff, then ${data.amountPerPeriod} every ${data.period}. Starts ${data.startTime} (None: when created), cliff ${data.cliff} (None: at the start). Can cancel: sender ${data.cancelableBySender}, recipient ${data.cancelableByRecipient}. Can hand to another recipient: sender ${data.transferableBySender}, recipient ${data.transferableByRecipient}"
         }
       },
       {
@@ -2532,7 +2532,7 @@
         "display": {
           "kind": "instructionDisplayNode",
           "intent": "Create a vesting contract",
-          "interpolatedIntent": "${accounts.sender} locks ${data.netAmountDeposited} of ${accounts.mint} from ${accounts.senderTokens} for ${data.recipient}, plus Streamflow's fees: ${data.cliffAmount} unlocks at the cliff, then ${data.amountPerPeriod} every ${data.period}"
+          "interpolatedIntent": "${accounts.sender} locks ${data.netAmountDeposited} of ${accounts.mint} from ${accounts.senderTokens} for ${data.recipient}, plus Streamflow's fees: ${data.cliffAmount} unlocks at the cliff, then ${data.amountPerPeriod} every ${data.period}. Starts ${data.startTime} (None: when created), cliff ${data.cliff} (None: at the start). Can cancel: sender ${data.cancelableBySender}, recipient ${data.cancelableByRecipient}. Can hand to another recipient: sender ${data.transferableBySender}, recipient ${data.transferableByRecipient}"
         }
       },
       {
@@ -3067,7 +3067,7 @@
         "display": {
           "kind": "instructionDisplayNode",
           "intent": "Create a vesting contract",
-          "interpolatedIntent": "${accounts.sender} locks ${data.netAmountDeposited} of ${accounts.mint} from ${accounts.senderTokens} for ${data.recipient}, plus Streamflow's fees: ${data.cliffAmount} unlocks at the cliff, then ${data.amountPerPeriod} every ${data.period}"
+          "interpolatedIntent": "${accounts.sender} locks ${data.netAmountDeposited} of ${accounts.mint} from ${accounts.senderTokens} for ${data.recipient}, plus Streamflow's fees: ${data.cliffAmount} unlocks at the cliff, then ${data.amountPerPeriod} every ${data.period}. Starts ${data.startTime} (None: when created), cliff ${data.cliff} (None: at the start). Can cancel: sender ${data.cancelableBySender}, recipient ${data.cancelableByRecipient}. Can hand to another recipient: sender ${data.transferableBySender}, recipient ${data.transferableByRecipient}"
         }
       },
       {
@@ -3634,7 +3634,7 @@
         "display": {
           "kind": "instructionDisplayNode",
           "intent": "Create a vesting contract",
-          "interpolatedIntent": "${accounts.sender} locks ${data.netAmountDeposited} of ${accounts.mint} from ${accounts.senderTokens} for ${accounts.recipient}, plus Streamflow's fees: ${data.cliffAmount} unlocks at the cliff, then ${data.amountPerPeriod} every ${data.period}"
+          "interpolatedIntent": "${accounts.sender} locks ${data.netAmountDeposited} of ${accounts.mint} from ${accounts.senderTokens} for ${accounts.recipient}, plus Streamflow's fees: ${data.cliffAmount} unlocks at the cliff, then ${data.amountPerPeriod} every ${data.period}. Starts ${data.startTime} (None: when created), cliff ${data.cliff} (None: at the start). Can cancel: sender ${data.cancelableBySender}, recipient ${data.cancelableByRecipient}. Can hand to another recipient: sender ${data.transferableBySender}, recipient ${data.transferableByRecipient}"
         }
       },
       {

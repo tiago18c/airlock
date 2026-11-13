@@ -562,6 +562,7 @@ fn words_of(template: &Template, term: &Term, facts: Option<FactsFrom>) -> Strin
             arg(0),
             arg(3)
         ),
+        Function::UnixSeconds => format!("{}, a time in seconds", arg(0)),
     }
 }
 

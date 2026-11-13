@@ -786,7 +786,7 @@ programId = "strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m"
 network = "mainnet"
 programHash = "fa7644fadb76fb3dc02a32982e2410fe263e052cae9dbd222fcbac2a667531c6"
 authority = "5u7o2WGgHckh18opTfPsqKb8E3nhDKcReBrbzUeXg2n7"
-idlSha256 = "fa30a21d8174a8bd1d96cf589267314ac158dc292e7f8c9569f4bd4c30b31d01"
+idlSha256 = "7c3a9d6ccac25c2088b5ec44f2ecc684689a5edbc5ca432275b40899a0729408"
 reviewed = "2026-11-12"
 
 [[builds]]

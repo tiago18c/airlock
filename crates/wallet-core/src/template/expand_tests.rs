@@ -1197,3 +1197,58 @@ fn a_promise_of_a_later_change_says_build_cannot_make_it_yet() {
     }
     assert!(promises >= 2, "{promises}");
 }
+
+/// A stream's start and cliff are Unix times in seconds. One typed in
+/// milliseconds, a time tens of thousands of years away, is refused on
+/// its field; a blank one is still none, so the stream starts when it
+/// lands.
+#[test]
+fn a_streams_start_or_cliff_in_milliseconds_is_refused_on_its_field() {
+    let template = builtin("create-stream");
+    let mint = pk(40);
+    let facts = Facts {
+        decimals: [(mint, 6)].into(),
+        token_programs: [(mint, TOKEN_PROGRAM_ID)].into(),
+        ..Facts::default()
+    };
+    let answers = Answers::for_template(&template)
+        .answer("recipient", &pk(41).to_string())
+        .answer("mint", &mint.to_string())
+        .answer("amount", "100")
+        .answer("per_period", "10")
+        .answer("period", "86400");
+    let blank = run(&template, &answers, &env(), &facts);
+    assert!(blank.is_complete(), "{:?}", blank.missing);
+    assert_eq!(blank.blocks[0].draft.argument("startTime"), "");
+    assert_eq!(blank.blocks[0].draft.argument("cliff"), "");
+
+    let seconds = answers
+        .clone()
+        .answer("start", "1794441600")
+        .answer("cliff", "1795046400");
+    let expansion = run(&template, &seconds, &env(), &facts);
+    assert!(expansion.is_complete(), "{:?}", expansion.missing);
+    assert_eq!(
+        expansion.blocks[0].draft.argument("startTime"),
+        "1794441600"
+    );
+    assert_eq!(expansion.blocks[0].draft.argument("cliff"), "1795046400");
+
+    let millis = seconds.answer("start", "1794441600000");
+    let expansion = run(&template, &millis, &env(), &facts);
+    assert_eq!(
+        expansion.missing,
+        [Missing::Invalid {
+            input: "start".to_string(),
+            message: "`1794441600000` is thousands of years away, or in milliseconds. Enter the time in seconds: 1794441600 is 12 November 2026.".to_string(),
+        }]
+    );
+    let millis = millis
+        .answer("start", "1794441600")
+        .answer("cliff", "1795046400000");
+    let expansion = run(&template, &millis, &env(), &facts);
+    assert!(matches!(
+        &expansion.missing[..],
+        [Missing::Invalid { input, .. }] if input == "cliff"
+    ));
+}

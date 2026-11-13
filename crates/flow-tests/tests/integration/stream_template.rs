@@ -195,6 +195,16 @@ fn a_vesting_stream_holds_its_schedule_and_its_tokens_in_escrow() {
         sentences[0]
     );
     assert!(sentences[0].contains("7.5 every"), "{}", sentences[0]);
+    // The start, the cliff and who may cancel or hand it on are in the
+    // sentence Review and Sign shows, not only under Inspect.
+    for said in [
+        "Starts 20",
+        "(None: when created), cliff 20",
+        "Can cancel: sender true, recipient false.",
+        "Can hand to another recipient: sender false, recipient false",
+    ] {
+        assert!(sentences[0].contains(said), "{said}: {}", sentences[0]);
+    }
 }
 
 #[test]
@@ -202,24 +212,25 @@ fn a_stream_with_no_start_or_cliff_starts_when_it_lands_and_names_who_may_act() 
     let (desk, mint) = desk_with_token();
     let recipient = KeypairSigner::new_random().pubkey();
     let stream = KeypairSigner::new_random();
-    desk.land(
-        "create-stream",
-        &[],
-        &[
-            ("recipient", recipient.to_string()),
-            ("mint", mint.to_string()),
-            ("amount", "12".to_string()),
-            ("per_period", "1".to_string()),
-            ("period", "3600".to_string()),
-            ("sender_cancels", "false".to_string()),
-            ("recipient_cancels", "true".to_string()),
-            ("sender_transfers", "true".to_string()),
-            ("recipient_transfers", "true".to_string()),
-        ],
-        &[("stream", &stream)],
-        &[],
-    )
-    .unwrap_or_else(|logs| panic!("{logs}"));
+    let landed = desk
+        .land(
+            "create-stream",
+            &[],
+            &[
+                ("recipient", recipient.to_string()),
+                ("mint", mint.to_string()),
+                ("amount", "12".to_string()),
+                ("per_period", "1".to_string()),
+                ("period", "3600".to_string()),
+                ("sender_cancels", "false".to_string()),
+                ("recipient_cancels", "true".to_string()),
+                ("sender_transfers", "true".to_string()),
+                ("recipient_transfers", "true".to_string()),
+            ],
+            &[("stream", &stream)],
+            &[],
+        )
+        .unwrap_or_else(|logs| panic!("{logs}"));
     let contract = read_contract(&desk.data(&stream.pubkey()));
     // A blank start is the moment it lands, and a blank cliff the start.
     assert_eq!(contract.start, NOW as u64);
@@ -227,6 +238,14 @@ fn a_stream_with_no_start_or_cliff_starts_when_it_lands_and_names_who_may_act() 
     assert_eq!(contract.at_cliff, 0);
     assert_eq!(contract.flags, [false, true, false, true, true, false]);
     assert_eq!(contract.name, "");
+    let sentences = desk.sentences(&landed.instructions);
+    for said in [
+        "Starts None (None: when created), cliff None (None: at the start).",
+        "Can cancel: sender false, recipient true.",
+        "Can hand to another recipient: sender true, recipient true",
+    ] {
+        assert!(sentences[0].contains(said), "{said}: {}", sentences[0]);
+    }
 }
 
 #[test]
