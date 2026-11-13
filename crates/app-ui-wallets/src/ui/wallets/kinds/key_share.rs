@@ -69,7 +69,7 @@ pub(in crate::ui) fn KeyExportModal(keys: Vec<WalletKey>, on_close: EventHandler
 /// The end of a wallet card's buttons: its dialogs and its less used actions.
 ///
 /// On a wider screen, the Details and Settings icon buttons where `dialogs`
-/// (see [`WalletDialogButtons`]), then a three-dot menu with Export key,
+/// (see [`WalletDialogButtons`]), then a three-dot menu with Export public key,
 /// when another device can add the wallet by its key, and Remove.
 ///
 /// On a phone a menu under the button would cover the card it acts on, and
@@ -128,7 +128,7 @@ pub(in crate::ui) fn WalletRowMenu(
                         title,
                         onclick: move |_| export_open.set(true),
                         Icon { glyph: Glyph::Export }
-                        "Export key"
+                        "Export public key"
                     }
                 }
                 button { class: "pane-menu-item danger",
@@ -166,7 +166,7 @@ pub(in crate::ui) fn WalletRowMenu(
                     title,
                     onclick: move |_| export_open.set(true),
                     Icon { glyph: Glyph::Export }
-                    span { "Export key" }
+                    span { "Export public key" }
                 }
             }
             button { class: "more-item danger",
@@ -286,7 +286,7 @@ pub fn KeyImportForm(on_done: EventHandler<()>) -> Element {
         for object in objects {
             let QrObject::WalletKeys(keys) = object else {
                 error.set(Some(
-                    "That is not an export of wallet keys. On the other device, use Export key on a wallet, or Export keys on Wallets."
+                    "That is not an export of wallet keys. On the other device, use Export public key on a wallet, or Export public keys on Wallets."
                         .into(),
                 ));
                 return;
