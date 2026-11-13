@@ -1539,3 +1539,19 @@ carries none. mint, mintV2 and route take the accounts the active guards (or the
 guard) need after the listed ones, as a remaining-accounts group that is shown, since it \
 holds where a payment goes. optionalAccountStrategy is programId on mintV2, as the \
 converter sets it. Display nodes added by hand."""
+
+# Metaplex Candy Machine v3 (candy_machine_core): the account a launch's
+# creator fills with items and from which NFTs of one collection are minted,
+# nearly always through a Candy Guard, which calls its mint. The IDL is the
+# legacy Anchor IDL the program publishes; devnet runs the same executable and
+# holds the same document.
+[[idls]]
+file = "mpl-candy-machine.json"
+programId = "CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR"
+name = "candyMachineCore"
+networks = ["mainnet", "devnet"]
+source = { kind = "chain", network = "mainnet", account = "anchor", sha256 = "5e384fc28488df4f24031944ffd208113ce854ab829d01f55279d1347cc91409" }
+changes = """Converted from Anchor to Codama. The program's address is set, since the legacy IDL \
+carries none. optionalAccountStrategy is programId on initializeV2, mintV2, \
+setCollectionV2 and setTokenStandard, as the converter sets it. The royalty reads as a \
+percent. Display nodes added by hand."""

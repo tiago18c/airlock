@@ -1011,3 +1011,21 @@ programHash = "6e9d8e58441be5da5305d273610b25f0dbf4b357ba4b0b2b0c233d7d5a7f1bbd"
 authority = "AuthgDeTCAHVZiM2Hoi2wzXiPn9YPbtibzK3ztttY4c4"
 idlSha256 = "7424994d5c6df1b5a34b8cdb655e0682756bcb54127c1412715012a9fb895f5e"
 reviewed = "2026-11-12"
+
+[[builds]]
+# Metaplex Candy Machine Program (pack). The binary logs the twelve instruction names the IDL lists and holds all 30 of its error messages. The IDL is the one the program publishes, the same document on mainnet and devnet, which run the same executable; executed initializeV2, addConfigLines, mintV2, setMintAuthority, setAuthority, update and withdraw instructions decode with it and name every account.
+programId = "CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR"
+network = "mainnet"
+programHash = "7e6265350b94f2f6c56ba0666c664968266b9bdaa4790fd5021c000d09024bcc"
+authority = "CandyWZGCKPmkMETExHzCTM4XLUBzBx3KsexWjpEkMVU"
+idlSha256 = "47273ba4431b5098a316a1a646890fdcdc0cb10c3c97452d0c16090caa772e22"
+reviewed = "2026-11-12"
+
+[[builds]]
+# Metaplex Candy Machine Program (pack). The binary logs the twelve instruction names the IDL lists and holds all 30 of its error messages. The IDL is the one the program publishes, the same document on mainnet and devnet, which run the same executable; executed initializeV2, addConfigLines, mintV2, setMintAuthority, setAuthority, update and withdraw instructions decode with it and name every account.
+programId = "CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR"
+network = "devnet"
+programHash = "7e6265350b94f2f6c56ba0666c664968266b9bdaa4790fd5021c000d09024bcc"
+authority = "CandyWZGCKPmkMETExHzCTM4XLUBzBx3KsexWjpEkMVU"
+idlSha256 = "47273ba4431b5098a316a1a646890fdcdc0cb10c3c97452d0c16090caa772e22"
+reviewed = "2026-11-12"
