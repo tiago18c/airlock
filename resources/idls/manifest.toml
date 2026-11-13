@@ -1335,3 +1335,29 @@ settings and configs, the treasury, and four accounts for the executor and for e
 whose number varies). initConfig declares its payer and the message library's accounts \
 the same way, setConfig the message library's accounts, and quote the send library's \
 accounts, hidden. Display nodes added by hand."""
+
+# Sanctum Infinity's controller, the multi-LST pool behind the INF token:
+# swaps between liquid staking tokens, and INF minted for an LST deposited or
+# burned for one withdrawn, priced by SOL value calculator programs and a
+# pricing program it calls. It publishes no IDL on chain. The file is the IDL
+# in Sanctum's inf-1.5 repository, where the deployed controller is developed;
+# the IDL in the archived S repository describes an older build.
+[[idls]]
+file = "sanctum-infinity.json"
+programId = "5ocnV1qiCgaQR8Jb8xWnVbApfaygJ8tNoZfgPwsgx9kx"
+name = "infController"
+networks = ["mainnet"]
+source = { kind = "repository", url = "https://github.com/igneous-labs/inf-1.5/blob/29dbbd47e822e5e3fbcc5a2e2190f00dd4e075be/idl/inf_controller.json" }
+changes = """The repository's file mixes legacy Anchor account flags with a one-byte `discriminator` \
+array, which the converter read as Shank without tags; it is marked as Shank and each \
+instruction given the Shank `discriminant` its byte states before converting to Codama. \
+The program reads, after an instruction's fixed accounts, the first SOL value calculator \
+program and its accounts, then the next calculator's or the pricing program's, as many \
+as the count arguments say; the file named those later programs at fixed positions, \
+which holds only when a count is 1, so outCalcProgram and pricingProgram \
+(startRebalance's inpCalcProgram) are removed and everything after the first calculator \
+program is one hidden remaining-accounts group. syncSolValue, setSolValueCalculator and \
+endRebalance declare the same group for their calculator's accounts. The INF mint is \
+writable in addLiquidity and removeLiquidity, as the program mints and burns through it. \
+The Token program's mint account is added, so token amounts read their mint's decimals; \
+the protocol fee is shown in percent. Display nodes added by hand."""
