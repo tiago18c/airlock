@@ -233,3 +233,23 @@ optionalAccountStrategy to programId. The swaps, the three pool creations, \
 declare the remaining accounts they read. The Token program's mint account is added, so \
 liquidity limits and reward funding read their mint's decimals; swap amounts are in base \
 units. Display nodes added by hand."""
+
+# Pump's fee program: the fee lookup Pump's bonding curve and PumpSwap call in
+# every trade, withdrawals from a user's referral vault, and creator fee
+# sharing, social fee, donation and buyback accounts. The file is the
+# repository's IDL: the Anchor IDL the program publishes (the same on mainnet
+# and devnet) is older than the program, without withdraw,
+# getFeesWithQuoteMint, adminCtoSharingConfig and setExoticFlatFees. Devnet
+# runs another executable, without withdraw.
+[[idls]]
+file = "pump-fees.json"
+programId = "pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ"
+name = "pumpFees"
+networks = ["mainnet", "devnet"]
+source = { kind = "repository", url = "https://github.com/pump-fun/pump-public-docs/blob/639b87fb45c3adeffa6f7c4a1bf0cb85e392bf22/idl/pump_fees.json" }
+changes = """Converted from Anchor to Codama. createFeeSharingConfig and withdraw set \
+optionalAccountStrategy to programId. updateFeeShares and updateFeeSharesV2 declare the \
+accounts they read after the named ones (the current shareholders, their token accounts, \
+the pool) as one hidden remaining-accounts group, which Anchor IDLs cannot. The fees of \
+updateFeeConfig's flat fees and of setExoticFlatFees are in percent. Display nodes added \
+by hand."""

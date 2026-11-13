@@ -389,3 +389,21 @@ programHash = "0712ca6d350757b9a71a0ea40da8fe9d5b48fca044f2deae0b65a33320e6a59b"
 authority = "JADaUV8kvDpDbJr55wxXJHVaBS3VCj8thZZHjfeuCVLd"
 idlSha256 = "3bfdcdc15d1b4809917b2f2c68c46d506cbc38ee73d13ae5f950341a9d16237b"
 reviewed = "2026-11-12"
+
+[[builds]]
+# pumpFees (pack). Deployed at slot 456132171; OtterSec lists no verify record. Each of the 31 instructions the file lists is in this binary by its Anchor log name and by its discriminator, and the binary logs no other. Mainnet transactions of ten instructions (withdraw in SOL and in a token, getFeesWithQuoteMint, createFeeSharingConfig, updateFeeShares, updateFeeSharesV2, createSocialFeePda, claimSocialFeePdaV2, createDonationFeePda, crankDonationFeePda, sweepBuyback) decode with every account named.
+programId = "pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ"
+network = "mainnet"
+programHash = "8ad2ca93c7ae97a7fb0de8a99de4d8825ccfdf89f73138cd49bda948e124b8b8"
+authority = "7gZufwwAo17y5kg8FMyJy2phgpvv9RSdzWtdXiWHjFr8"
+idlSha256 = "556d95f4f92b8b9fc1da443a41fc498db08bf8e06193ba97878f54e023113e73"
+reviewed = "2026-11-12"
+
+[[builds]]
+# pumpFees (pack). Deployed at slot 508659783: another executable than mainnet's. 30 of the 31 instructions the file lists are in it by Anchor log name and discriminator, and it logs no other; withdraw is in it by neither, so a withdraw sent to devnet fails there. Devnet transactions of getFeesWithQuoteMint, createFeeSharingConfig and updateFeeSharesV2 decode with every account named.
+programId = "pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ"
+network = "devnet"
+programHash = "9701b698bf970005ceb3f5358ff691bf8008cd9f9348440beb1c35fc47230f6a"
+authority = "GUYCUEpxSkm1ccDo3LSKMR4Xpe5bgMnEZaFygWUSEVH3"
+idlSha256 = "556d95f4f92b8b9fc1da443a41fc498db08bf8e06193ba97878f54e023113e73"
+reviewed = "2026-11-12"
