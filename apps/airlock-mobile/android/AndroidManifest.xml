@@ -35,8 +35,14 @@
           it, and cannot start it twice in one process, so a launch that would
           make a second one (another app's intent, a launcher intent that does
           not match how the task began) brings this one forward instead.
+
+          configChanges: every change the activity can take in place. For any
+          change not listed, Android recreates the activity, which the app
+          cannot survive (wry starts Rust once per process): it closed when
+          the font size or display size changed. The page lays itself out
+          again, and MainActivity keeps its text zoom on the font size.
         -->
-        <activity android:configChanges="orientation|screenLayout|screenSize|keyboardHidden|uiMode" android:exported="true"
+        <activity android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|screenLayout|fontScale|uiMode|orientation|density|screenSize|smallestScreenSize|layoutDirection|colorMode|fontWeightAdjustment|grammaticalGender" android:exported="true"
             android:launchMode="singleTask"
             android:label="Airlock" android:name="dev.dioxus.main.MainActivity">
             <meta-data android:name="android.app.lib_name" android:value="main" />

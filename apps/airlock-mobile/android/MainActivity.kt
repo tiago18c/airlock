@@ -35,6 +35,7 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 import android.view.View
+import android.webkit.WebView
 import androidx.annotation.Keep
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -73,10 +74,18 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 import org.json.JSONArray
 import org.json.JSONObject
+import kotlin.math.roundToInt
 
 typealias BuildConfig = dev.airlock.mobile.BuildConfig
 
 class MainActivity : WryActivity() {
+    /// The page's WebView, once wry has made it.
+    private var webView: WebView? = null
+
+    override fun onWebViewCreate(webView: WebView) {
+        this.webView = webView
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // Before super: wry starts the app's Rust from it, which may ask the
         // bridges for the activity at once.
@@ -85,9 +94,14 @@ class MainActivity : WryActivity() {
         fitSystemBars()
     }
 
+    /// The manifest takes every configuration change in place (configChanges),
+    /// since the activity cannot be made again. The page lays itself out for
+    /// a new size or density by itself; its text follows the font size here,
+    /// as the WebView set it from the font size when it was made.
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         followTheme()
+        webView?.settings?.textZoom = (newConfig.fontScale * 100).roundToInt()
     }
 
     /// From Android 15 the app is drawn under the system bars, and the
