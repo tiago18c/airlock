@@ -224,7 +224,9 @@ QRS1 carries a payload of one to 64 typed objects, written with wincode, as one 
 
 MIT. See [LICENSE](LICENSE).
 
-The vendored RPC client under `vendor/solana-client-wasm` is Apache-2.0; see `vendor/ORIGIN.md`. The IDL files under `crates/wallet-core/idls` are copied from their programs' repositories (`solana-program`, Squads, Vector, Raydium) and keep their own licenses.
+The vendored RPC client under `vendor/solana-client-wasm` is Apache-2.0; see `vendor/ORIGIN.md`.
+
+The IDL files under `crates/wallet-core/idls` and `resources/idls` are not under the MIT licence. They are other projects' interface descriptions, taken from their repositories or from the chain, or written by hand from their source, and then modified. Each keeps its source's terms. [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) lists every one with its source and that source's licence, and ships with each release.
 
 ## Disclaimer
 

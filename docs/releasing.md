@@ -22,6 +22,7 @@ A release is a tag. Pushing `v1.2.3` builds the files and opens a **draft** rele
 | `bridge-host-<version>-macos-arm64.tar.gz` | The same, for macOS. The online app has it inside |
 | `airlock-mobile-<version>-android-arm64.apk` | Android app, for Android 14 and later on arm64 phones |
 | `airlock-extension-<version>.zip` | Browser extension, ready to load or to upload to a store |
+| `THIRD-PARTY-NOTICES.md` | Where each IDL file the apps ship was taken from, and the licence of that source. Copied from the repository as it is at the tag |
 | `SHA256SUMS.txt` | Checksum of every file above |
 | `airlock-<version>.sigstore.json` | The provenance attestation of every file above, as a Sigstore bundle |
 
