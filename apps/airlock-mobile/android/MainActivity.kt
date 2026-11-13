@@ -82,6 +82,8 @@ typealias BuildConfig = dev.airlock.mobile.BuildConfig
 class MainActivity : WryActivity() {
     /// The page's WebView, once wry has made it.
     private var webView: WebView? = null
+    /// Whether the keyboard is up, as the page was last told.
+    private var keyboardShown = false
 
     override fun onWebViewCreate(webView: WebView) {
         this.webView = webView
@@ -172,6 +174,15 @@ class MainActivity : WryActivity() {
                 WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.ime()
             ).bottom
             view.setPadding(0, top, 0, bottom)
+            // The page cannot tell the keyboard is up (the WebView only
+            // shrinks), so it is told: its tab bar stands aside meanwhile.
+            val keyboard = insets.isVisible(WindowInsetsCompat.Type.ime())
+            if (keyboard != keyboardShown) {
+                keyboardShown = keyboard
+                webView?.evaluateJavascript(
+                    "document.documentElement.classList.toggle('keyboard', $keyboard)", null
+                )
+            }
             WindowInsetsCompat.CONSUMED
         }
         followTheme()

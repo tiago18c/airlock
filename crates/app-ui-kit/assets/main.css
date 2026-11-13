@@ -5659,6 +5659,13 @@ html:has(> body .app.phone), html:has(> body .app.phone) > body { overflow-x: cl
 
 /* The phone's tab bar is always along the bottom, whatever the width. */
 .app.phone { grid-template-columns: minmax(0, 1fr); }
+/* While the keyboard is up (MainActivity sets html.keyboard), the tab bar
+   stands aside: in the little room the keyboard leaves, it covered the
+   field being typed in, or the one the keyboard's Next moved to. */
+html.keyboard .app.phone .sidebar { display: none; }
+/* A picker's field scrolled to the top stops under the top bar, so its
+   suggestions have the room down to the keyboard. */
+.app.phone .picker > label { scroll-margin-top: calc(var(--top-h, 0px) + var(--space-2)); }
 .app.phone .sidebar {
   position: fixed;
   top: auto;
