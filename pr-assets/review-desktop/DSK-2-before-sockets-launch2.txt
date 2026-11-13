@@ -1,0 +1,4 @@
+﻿watching pid 46700 for 600 s from 2026-11-13T21:30:30
++  60s  msedgewebview2.exe:21324 (network.mojom.NetworkService)  ->  2620:1ec:33:1::11:443  Established
++ 122s  msedgewebview2.exe:21324 (network.mojom.NetworkService)  ->  2620:1ec:33::11:443  Established
+done: 2 remote endpoint(s) seen
