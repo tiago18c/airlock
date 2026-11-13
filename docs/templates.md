@@ -139,13 +139,16 @@ The whole list. A function is pure, or names the chain fact it needs.
 | `idl-metadata-of <program>` | The program's canonical IDL account on program-metadata (seed `idl`) | nothing |
 | `metadata-of <mint>` | The mint's metadata account on Metaplex Token Metadata (`metadata`, the program, the mint) | nothing |
 | `master-edition-of <mint>` | The mint's master edition account on Metaplex Token Metadata (as above, then `edition`) | nothing |
-| `base-units <amount> <decimals>` | An amount typed in a token's units, in base units. The input is typed with `<decimals>` places: fixed when it is a literal, once known when it is a value such as `decimals-of` (`InputScale::FromValue`) | nothing |
+| `base-units <amount> <decimals>` | An amount typed in a token's units, in base units. The input is typed with `<decimals>` places: fixed when it is a literal, once known when it is a value such as `decimals-of` (`InputScale::FromValue`), and as many as another question holds when it is an input (`InputScale::FromInput`). 1.5 with 6 decimals is 1500000; more decimal places than `<decimals>` works out to nothing | nothing |
 | `sole-creator <address>` | The JSON of a Metaplex creator list naming `<address>` alone, verified, with the whole share. It is verified only if that address signs | nothing |
 | `unverified-collection <address>` | The JSON of a Metaplex collection naming `<address>`, not verified | nothing |
 | `stream-escrow-of <stream>` | The token account a Streamflow stream holds its tokens in (`strm`, the stream) | nothing |
 | `tree-config-of <tree>` | The config account Metaplex Bubblegum keeps for a merkle tree (the tree) | nothing |
 | `tree-depth <shape>`, `tree-buffer <shape>` | The depth and buffer size of a merkle tree shape | nothing |
 | `merkle-tree-space <shape> <canopy>` | The bytes of a merkle tree account of that shape and canopy depth on MPL Account Compression | nothing |
+| `lesser-address <a> <b>` | Whichever address sorts first, byte for byte, the order Solana uses | nothing |
+| `greater-address <a> <b>` | Whichever address sorts last | nothing |
+| `when-lesser <a> <b> <when a is first> <when b is first>` | The third argument when `<a>` sorts before `<b>`, otherwise the fourth. The two numbers are integers. Equal addresses work out to nothing | nothing |
 
 An input given to a function and bound to no field takes the parameter's type: a whole number, an amount in a token's units (`base-units`), or for a tree shape a choice of the 34 depth and buffer pairs the account compression programs take, each named with what it holds ("16,384 NFTs (depth 14, buffer 64)"); any other pair fails on chain. A function that cannot take an answer says so on that input (`Missing::Invalid`): `merkle-tree-space` refuses a canopy as deep as the tree, or one that leaves proofs longer than the 17 nodes Bubblegum takes, and names the range.
 

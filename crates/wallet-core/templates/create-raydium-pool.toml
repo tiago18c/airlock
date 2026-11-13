@@ -1,0 +1,132 @@
+format = 1
+name = "Create a Raydium pool"
+summary = "Two new tokens on devnet, a supply of each minted to this wallet, and a Raydium constant-product pool that deposits some of each. The pool orders the mints by address."
+
+[programs]
+associated_token = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+raydium = "DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb"
+system = "11111111111111111111111111111111"
+token = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+
+[[input]]
+name = "decimals_a"
+label = "Decimals of token A"
+hint = "How many decimal places an amount of token A has."
+default = "9"
+
+[[input]]
+name = "decimals_b"
+label = "Decimals of token B"
+hint = "How many decimal places an amount of token B has."
+default = "9"
+
+[[input]]
+name = "authority"
+label = "Mint authority"
+hint = "Can mint more of either token."
+default = "$wallet"
+
+[[input]]
+name = "freeze_authority"
+label = "Freeze authority"
+hint = "Can freeze accounts of either token. Leave blank for none."
+optional = true
+
+[[input]]
+name = "supply_a"
+label = "Supply of token A"
+hint = "Minted to this wallet, in token A's own units."
+
+[[input]]
+name = "supply_b"
+label = "Supply of token B"
+hint = "Minted to this wallet, in token B's own units."
+
+[[input]]
+name = "deposit_a"
+label = "Deposit of token A"
+hint = "Added to the pool from this wallet, in token A's own units. It cannot be more than the supply."
+
+[[input]]
+name = "deposit_b"
+label = "Deposit of token B"
+hint = "Added to the pool from this wallet, in token B's own units. It cannot be more than the supply."
+
+[[input]]
+name = "config"
+label = "AMM config"
+hint = "The fee tier. Devnet's config 0 is filled in until you change it."
+default = "5MxLgy9oPdTC3YgkiePHqr3EoCRD9uLVYRQS2ANAs7wy"
+
+[[input]]
+name = "open_time"
+label = "Open time"
+hint = "When swapping may start, as a unix time. 0 means now."
+default = "0"
+
+[values]
+account_0 = "associated-token-account $wallet $mint_0 $token"
+account_1 = "associated-token-account $wallet $mint_1 $token"
+account_a = "associated-token-account $wallet $mint_a $token"
+account_b = "associated-token-account $wallet $mint_b $token"
+amount_0 = "when-lesser $mint_a $mint_b $base_a $base_b"
+amount_1 = "when-lesser $mint_a $mint_b $base_b $base_a"
+base_a = "base-units $deposit_a $decimals_a"
+base_b = "base-units $deposit_b $decimals_b"
+lamports = "rent-for 82"
+mint_0 = "lesser-address $mint_a $mint_b"
+mint_1 = "greater-address $mint_a $mint_b"
+mint_a = "new-keypair"
+mint_b = "new-keypair"
+
+[[block]]
+program = "$system"
+instruction = "createAccount"
+accounts = { newAccount = "$mint_a", payer = "$fee-payer" }
+arguments = { lamports = "$lamports", programAddress = "$token", space = "82" }
+
+[[block]]
+program = "$token"
+instruction = "initializeMint2"
+accounts = { mint = "$mint_a" }
+arguments = { decimals = "$decimals_a", freezeAuthority = "$freeze_authority", mintAuthority = "$authority" }
+
+[[block]]
+program = "$associated_token"
+instruction = "createAssociatedTokenIdempotent"
+accounts = { mint = "$mint_a", owner = "$wallet", payer = "$fee-payer" }
+
+[[block]]
+program = "$token"
+instruction = "mintToChecked"
+accounts = { mint = "$mint_a", mintAuthority = "$authority", token = "$account_a" }
+arguments = { amount = "$supply_a", decimals = "$decimals_a" }
+
+[[block]]
+program = "$system"
+instruction = "createAccount"
+accounts = { newAccount = "$mint_b", payer = "$fee-payer" }
+arguments = { lamports = "$lamports", programAddress = "$token", space = "82" }
+
+[[block]]
+program = "$token"
+instruction = "initializeMint2"
+accounts = { mint = "$mint_b" }
+arguments = { decimals = "$decimals_b", freezeAuthority = "$freeze_authority", mintAuthority = "$authority" }
+
+[[block]]
+program = "$associated_token"
+instruction = "createAssociatedTokenIdempotent"
+accounts = { mint = "$mint_b", owner = "$wallet", payer = "$fee-payer" }
+
+[[block]]
+program = "$token"
+instruction = "mintToChecked"
+accounts = { mint = "$mint_b", mintAuthority = "$authority", token = "$account_b" }
+arguments = { amount = "$supply_b", decimals = "$decimals_b" }
+
+[[block]]
+program = "$raydium"
+instruction = "initialize"
+accounts = { ammConfig = "$config", creator = "$wallet", creatorToken0 = "$account_0", creatorToken1 = "$account_1", token0Mint = "$mint_0", token0Program = "$token", token1Mint = "$mint_1", token1Program = "$token" }
+arguments = { initAmount0 = "$amount_0", initAmount1 = "$amount_1", openTime = "$open_time" }

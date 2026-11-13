@@ -1,7 +1,7 @@
 //! Making a template from blocks: what it writes, what it refuses, and that
 //! opening it with the blocks' values gives the blocks back.
 
-use super::tests::catalog;
+use super::tests::{catalog, on_network};
 use super::*;
 use crate::fixtures::pk;
 use crate::idl::catalog::IdlCatalog;
@@ -218,6 +218,9 @@ fn the_blocks_a_built_in_template_shows_open_to_the_same_blocks() {
     let mint = pk(7);
     for builtin in &BUILTIN_TEMPLATES {
         let template = builtin.template().unwrap();
+        // Raydium's pool program ships for devnet at this address.
+        let _devnet =
+            (builtin.id == "create-raydium-pool").then(|| on_network(crate::IdlNetwork::Devnet));
         let mut answers = Answers::for_template(&template);
         for option in &template.options {
             answers = answers.turn_on(&option.name);
@@ -244,22 +247,19 @@ fn the_blocks_a_built_in_template_shows_open_to_the_same_blocks() {
                 "repository" | "commit" | "version" => "x".to_string(),
                 "build_args" => r#"["--library-name", "x"]"#.to_string(),
                 "deploy_slot" => "123".to_string(),
+                "supply_a" | "supply_b" | "deposit_a" | "deposit_b" => "1".to_string(),
                 _ => continue,
             };
             answers = answers.answer(&input.name, &text);
         }
+        let mut keypairs = BTreeMap::new();
+        for (i, name) in template.keypair_values().into_iter().enumerate() {
+            keypairs.insert(name.to_string(), pk(MADE_HERE + u8::try_from(i).unwrap()));
+        }
         let env = Env {
             wallet: wallet(),
             fee_payer: fee_payer(),
-            keypairs: [
-                ("mint".to_string(), pk(MADE_HERE)),
-                ("stream".to_string(), pk(31)),
-                ("ticket".to_string(), pk(32)),
-                ("asset".to_string(), pk(33)),
-                ("collection".to_string(), pk(34)),
-                ("tree".to_string(), pk(35)),
-            ]
-            .into(),
+            keypairs,
         };
         let mut facts = Facts {
             decimals: [(mint, 6)].into(),

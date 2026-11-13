@@ -75,10 +75,28 @@ accounts = { mint = "$mint" }
 arguments = { decimals = "$decimals", mintAuthority = "$authority", freezeAuthority = "$freeze_authority" }
 "#;
 
+thread_local! {
+    /// The network whose IDLs [`catalog`] opens for the test on this thread.
+    static NETWORK: std::cell::Cell<IdlNetwork> =
+        const { std::cell::Cell::new(IdlNetwork::Mainnet) };
+}
+
 /// Mainnet's: every program the tests use has its IDL there, Token
-/// Metadata's included.
+/// Metadata's included, but for a template of a program that ships for
+/// another network only, which asks for it with [`on_network`].
 pub(super) fn catalog() -> impl IdlCatalog {
-    crate::fixtures::shipped_catalog(IdlNetwork::Mainnet)
+    crate::fixtures::shipped_catalog(NETWORK.get())
+}
+
+/// Makes [`catalog`] open `network`'s IDLs until what it returns is dropped.
+pub(super) fn on_network(network: IdlNetwork) -> impl Drop {
+    struct Back(IdlNetwork);
+    impl Drop for Back {
+        fn drop(&mut self) {
+            NETWORK.set(self.0);
+        }
+    }
+    Back(NETWORK.replace(network))
 }
 
 /// A small template around one block, for refusals.
@@ -1074,6 +1092,9 @@ fn every_builtin_template_checks_on_every_network_its_programs_run_on() {
             | "unstake-marinade"
             | "order-unstake-marinade"
             | "claim-marinade-ticket" => vec![(Mainnet, true)],
+            // Raydium's constant-product program on devnet. Mainnet's is another
+            // address.
+            "create-raydium-pool" => vec![(Devnet, true)],
             "create-token" => IdlNetwork::ALL
                 .into_iter()
                 .map(|network| (network, network == Mainnet))
