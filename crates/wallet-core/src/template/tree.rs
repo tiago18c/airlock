@@ -69,7 +69,7 @@ pub fn shape_name(depth: u32, buffer: u32) -> String {
     let digits = capacity.to_string();
     let mut grouped = String::new();
     for (at, digit) in digits.chars().enumerate() {
-        if at > 0 && (digits.len() - at) % 3 == 0 {
+        if at > 0 && (digits.len() - at).is_multiple_of(3) {
             grouped.push(',');
         }
         grouped.push(digit);
