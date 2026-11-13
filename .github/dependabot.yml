@@ -33,3 +33,8 @@ updates:
     cooldown:
       default-days: 7
     labels: [dependencies, no-changelog]
+    groups:
+      # init and analyze have to be the same version, or CodeQL fails: one
+      # pull request for both.
+      codeql:
+        patterns: ["github/codeql-action", "github/codeql-action/*"]
