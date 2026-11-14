@@ -1147,8 +1147,7 @@
       "intent": "Create a token and pool",
       "programId": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj",
       "sentence": "A1JrvkhK8KyNXf1viPUb4v1qMSv8QdrfcSPNFzASEmHQ creates token Bombaclat (BOMBACLAT) at 5PHqy3Ak2Xvku8z6ABQcWy55xfpjvKWxbh4EYoTy6YGN and its pool FKbYK2pw7dcmg7Lm32pK87HCrAHAjxdA75SAU6DKWCMk, sold for Xs3oZwbHvqis4NYcf4YKWmEia2eC84wSiVrcYcTqpH8, with A1JrvkhK8KyNXf1viPUb4v1qMSv8QdrfcSPNFzASEmHQ as its creator",
-      "unnamedAccounts": 0,
-      "undescribedBytes": "00000000000000000000"
+      "unnamedAccounts": 0
     },
     {
       "accounts": [

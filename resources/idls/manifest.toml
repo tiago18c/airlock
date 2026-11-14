@@ -479,7 +479,11 @@ CpSwapConfig and AllInfo changes read; migrateToCpswap declares the accounts it 
 after the named ones as one hidden group. The Token program's mint account is added, so \
 the trades' amounts read their base or quote mint's decimals. Rates are per million, as \
 the program counts them; vesting shares and a new pool's curve settings are in base \
-units. Display nodes added by hand."""
+units. initializeWithToken2022 ends with a hidden optional ten bytes, \
+unusedTransferFeeParams: Raydium's SDK (raydium-sdk-V2 src/raydium/launchpad/instrument.ts) \
+writes the transfer fee parameters as a fixed ten bytes, zeros when there are none, and \
+the program, an Anchor build whose own IDL ends at transferFeeExtensionParam, reads the \
+option and stops. Display nodes added by hand."""
 
 # Marinade's liquid staking program, behind mSOL: staking SOL or a stake
 # account for mSOL, unstaking at once through its mSOL-SOL liquidity pool or
@@ -550,7 +554,12 @@ changes = """Converted from Anchor to Codama. The swap, liquidity and position i
 they read (tick arrays, the bitmap extension, reward accounts, supported-mint records, a \
 swap route), which Anchor IDLs cannot. The Token program's mint account is added, so \
 liquidity limits, fee collections and a routed swap's input read their mint's decimals; \
-the other swap amounts are in base units. Display nodes added by hand."""
+the other swap amounts are in base units. increaseLiquidityV2, openPositionV2 and \
+openPositionWithToken22Nft end with a hidden optional byte, unusedBaseFlagValue: clients \
+that lay out the base flag as a fixed tag and value (Raydium's SDK, raydium-sdk-V2 \
+src/raydium/clmm/instrument.ts) write the value byte even when the flag is not set, and \
+the program, an Anchor build whose own IDL ends at baseFlag, reads the option and stops. \
+Display nodes added by hand."""
 
 # Jupiter Lend's Borrow program (vaults): positions held as NFTs, each with
 # collateral in one token and debt in another, changed by one operate
