@@ -194,7 +194,7 @@ dependencies = [
 
 [[package]]
 name = "airlock"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "app-core",
  "app-desktop",
@@ -216,7 +216,7 @@ dependencies = [
 
 [[package]]
 name = "airlock-mobile"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "app-core",
  "app-desktop",
@@ -229,7 +229,7 @@ dependencies = [
 
 [[package]]
 name = "airlock-offline"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "app-core",
  "app-desktop",
@@ -337,7 +337,7 @@ dependencies = [
 
 [[package]]
 name = "app-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "base64 0.22.1",
  "bridge-protocol",
@@ -365,7 +365,7 @@ dependencies = [
 
 [[package]]
 name = "app-desktop"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "app-core",
  "app-ui-kit",
@@ -396,7 +396,7 @@ dependencies = [
 
 [[package]]
 name = "app-mobile"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "app-core",
  "app-desktop",
@@ -416,7 +416,7 @@ dependencies = [
 
 [[package]]
 name = "app-online"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "app-core",
  "app-ui-kit",
@@ -437,7 +437,7 @@ dependencies = [
 
 [[package]]
 name = "app-ui"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "app-core",
  "app-ui-book",
@@ -454,7 +454,7 @@ dependencies = [
 
 [[package]]
 name = "app-ui-book"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "app-ui-kit",
  "dioxus",
@@ -464,7 +464,7 @@ dependencies = [
 
 [[package]]
 name = "app-ui-build"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "app-ui-kit",
  "dioxus",
@@ -475,7 +475,7 @@ dependencies = [
 
 [[package]]
 name = "app-ui-kit"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "app-core",
  "base64 0.22.1",
@@ -512,7 +512,7 @@ dependencies = [
 
 [[package]]
 name = "app-ui-sign"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "app-core",
  "app-ui-kit",
@@ -527,7 +527,7 @@ dependencies = [
 
 [[package]]
 name = "app-ui-wallets"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "app-ui-kit",
  "base64 0.22.1",
@@ -1551,7 +1551,7 @@ dependencies = [
 
 [[package]]
 name = "bridge-host"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "bridge-protocol",
  "interprocess",
@@ -1566,7 +1566,7 @@ dependencies = [
 
 [[package]]
 name = "bridge-protocol"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "base64 0.22.1",
  "serde_json",
@@ -3966,7 +3966,7 @@ dependencies = [
 
 [[package]]
 name = "flow-tests"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -4808,14 +4808,14 @@ checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 
 [[package]]
 name = "hw-protocol"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "ur-codec",
 ]
 
 [[package]]
 name = "hw-transport"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "async-hid",
  "futures-lite",
@@ -4989,7 +4989,7 @@ checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
 
 [[package]]
 name = "idl-pack"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "flate2",
  "serde_json",
@@ -7153,7 +7153,7 @@ dependencies = [
 
 [[package]]
 name = "program-watch"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "hex",
  "idl-pack",
@@ -7223,7 +7223,7 @@ dependencies = [
 
 [[package]]
 name = "qr-codec"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "png 0.18.1",
  "qrcode",
@@ -7231,14 +7231,14 @@ dependencies = [
 
 [[package]]
 name = "qr-codec-wasm"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "qr-codec",
 ]
 
 [[package]]
 name = "qr-protocol"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "base64 0.22.1",
  "bs58",
@@ -11511,7 +11511,7 @@ checksum = "fd3ca314f692efd6c868f8408f53fe444634a845f96c028b97d35f6a1f79f0ee"
 
 [[package]]
 name = "tokens-api"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "async-trait",
  "reqwest",
@@ -11986,7 +11986,7 @@ checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
 name = "ur-codec"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 name = "uriparse"
@@ -12122,7 +12122,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "agave-reserved-account-keys",
  "async-trait",
@@ -12178,7 +12178,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-flows"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "async-trait",
  "hex",
@@ -12198,7 +12198,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-rpc"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -12226,7 +12226,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-vault"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "argon2",
  "base64 0.22.1",
