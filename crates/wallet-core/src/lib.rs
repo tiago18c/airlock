@@ -40,12 +40,12 @@ mod layers;
 // written out, not globbed, so the public surface reads here, and an item
 // can move between modules without its root name changing.
 pub use book::{
-    connect_choice, current_first, reconnect_accounts, AddressBook, AddressBookFile, AddressEntry,
-    AddressKind, AddressPlace, BookGroupInfo, BookRow, Category, Cluster, ConnectChoice,
-    Connections, Described, Directory, Fact, Group, HoldingSummary, Holdings, HoldingsStore,
-    KnownCluster, Origin, SiteGrant, TokenFlag, TokenHolding, WalletSort, Workspace,
-    WorkspaceStore, DEFAULT_AUTO_LOCK_SECS, DEVNET_GENESIS, LOCAL_GROUP_ID, LOCAL_RPC_URL,
-    MAINNET_BETA_GENESIS, TESTNET_GENESIS,
+    connect_choice, current_first, program_display_name, reconnect_accounts, AddressBook,
+    AddressBookFile, AddressEntry, AddressKind, AddressPlace, BookGroupInfo, BookRow, Category,
+    Cluster, ConnectChoice, Connections, Described, Directory, Fact, Group, HoldingSummary,
+    Holdings, HoldingsStore, KnownCluster, Origin, SiteGrant, TokenFlag, TokenHolding, WalletSort,
+    Workspace, WorkspaceStore, DEFAULT_AUTO_LOCK_SECS, DEVNET_GENESIS, LOCAL_GROUP_ID,
+    LOCAL_RPC_URL, MAINNET_BETA_GENESIS, TESTNET_GENESIS,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use idl::DirIdlBodies;
@@ -54,13 +54,13 @@ pub use idl::{
     idl_bytes_from_anchor_account, idl_bytes_from_program_metadata, idl_instruction_form,
     idls_from_pack, inspect_idl, outline_idl, pinned_program, pretty_idl,
     program_metadata_account_data, program_metadata_idl_address, sha256_bytes, trailing_option_gap,
-    trailing_option_message, BuiltinIdl, CatalogView, EmbeddedIdl, IdlAccountField,
-    IdlAccountSource, IdlAccountUse, IdlArgField, IdlArgKind, IdlArgOutline, IdlArgScale,
-    IdlBodies, IdlBuildFailure, IdlBuildInput, IdlBundleReport, IdlCatalog, IdlChainSource,
-    IdlCheck, IdlDraft, IdlError, IdlErrorOutline, IdlFieldOutline, IdlForm, IdlIxOutline,
-    IdlNamed, IdlNetwork, IdlOrigin, IdlOutline, IdlPackError, IdlPdaOutline, IdlRecord, IdlSource,
-    IdlSpec, IdlStore, IdlVariant, InspectedIdl, MemoryBodies, NoIdls, PinnedProgram, BUILTIN_IDLS,
-    ED25519_SIGNER_PROGRAM_ID, MAX_IDL_BYTES, PINNED_PROGRAMS,
+    trailing_option_message, word_simulation_error, BuiltinIdl, CatalogView, EmbeddedIdl,
+    IdlAccountField, IdlAccountSource, IdlAccountUse, IdlArgField, IdlArgKind, IdlArgOutline,
+    IdlArgScale, IdlBodies, IdlBuildFailure, IdlBuildInput, IdlBundleReport, IdlCatalog,
+    IdlChainSource, IdlCheck, IdlDraft, IdlError, IdlErrorOutline, IdlFieldOutline, IdlForm,
+    IdlIxOutline, IdlNamed, IdlNetwork, IdlOrigin, IdlOutline, IdlPackError, IdlPdaOutline,
+    IdlRecord, IdlSource, IdlSpec, IdlStore, IdlVariant, InspectedIdl, MemoryBodies, NoIdls,
+    PinnedProgram, BUILTIN_IDLS, ED25519_SIGNER_PROGRAM_ID, MAX_IDL_BYTES, PINNED_PROGRAMS,
 };
 pub use idl::{
     base64_text, hex_dump, inspect_account, AccountHeader, AccountReading, InspectedAccount, Leaf,

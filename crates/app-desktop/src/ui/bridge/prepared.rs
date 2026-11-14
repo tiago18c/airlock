@@ -405,6 +405,9 @@ pub(in crate::ui) fn use_prepared_request(
         simulated,
         clock_expired: clock_expired(),
         step,
+        too_large: shown
+            .as_ref()
+            .is_some_and(wallet_core::DecodedTx::too_large),
     });
 
     let for_review = ready.clone();

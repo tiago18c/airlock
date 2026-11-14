@@ -101,6 +101,41 @@ impl Cluster {
         ws_url_for(self.rpc_url())
     }
 
+    /// The network as a wallet's durable nonce records it: a public
+    /// cluster's name, or for a custom RPC its URL without credentials,
+    /// since a local copy of a network holds accounts the network does not.
+    pub fn network_key(&self) -> String {
+        match self {
+            Self::Custom { rpc_url, .. } => {
+                let bare = rpc_url.split(['?', '#']).next().unwrap_or_default();
+                let bare = match bare.split_once("://") {
+                    Some((scheme, rest)) => {
+                        let (authority, path) = rest.split_at(rest.find('/').unwrap_or(rest.len()));
+                        let host = authority.rsplit('@').next().unwrap_or(authority);
+                        format!("{scheme}://{host}{path}")
+                    }
+                    None => bare.to_string(),
+                };
+                format!("custom {bare}")
+            }
+            other => other.name().to_string(),
+        }
+    }
+
+    /// A network key in words: "Mainnet Beta", "Devnet", or "the custom RPC
+    /// at …".
+    pub fn network_words(key: &str) -> String {
+        match key {
+            "mainnet-beta" => "Mainnet Beta".into(),
+            "devnet" => "Devnet".into(),
+            "testnet" => "Testnet".into(),
+            other => match other.strip_prefix("custom ") {
+                Some(url) => format!("the custom RPC at {url}"),
+                None => other.to_string(),
+            },
+        }
+    }
+
     pub fn name(&self) -> &str {
         match self {
             Self::MainnetBeta => "mainnet-beta",
@@ -177,6 +212,20 @@ fn ws_url_for(rpc_url: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn a_network_key_names_a_public_cluster_or_a_custom_url_without_credentials() {
+        assert_eq!(Cluster::Devnet.network_key(), "devnet");
+        assert_eq!(Cluster::MainnetBeta.network_key(), "mainnet-beta");
+        let custom =
+            Cluster::custom("fork", "https://user:pw@rpc.example/v1?api-key=SECRET").unwrap();
+        assert_eq!(custom.network_key(), "custom https://rpc.example/v1");
+        assert_eq!(
+            Cluster::network_words(&custom.network_key()),
+            "the custom RPC at https://rpc.example/v1"
+        );
+        assert_eq!(Cluster::network_words("devnet"), "Devnet");
+    }
+
     use super::*;
     use std::str::FromStr;
 

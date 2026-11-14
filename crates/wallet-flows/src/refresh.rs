@@ -16,7 +16,11 @@ pub async fn fetch_lifetime(
     let account = rpc
         .get_account(&pubkey)
         .await?
-        .ok_or_else(|| RpcError::Message(format!("Nonce account {pubkey} does not exist.")))?;
+        .ok_or_else(|| {
+            RpcError::Message(format!(
+                "Nonce account {pubkey} does not exist on this network. A nonce account made on another network is not here: a wallet's Settings can create one."
+            ))
+        })?;
     parse_nonce_account(pubkey, &account)
         .map(Lifetime::Nonce)
         .ok_or_else(|| RpcError::Message(format!("{pubkey} is not an initialized nonce account.")))

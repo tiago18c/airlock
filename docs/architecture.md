@@ -6,7 +6,7 @@ How the app is put together: the two builds, the core that outlives the window, 
 
 | Question | Decision |
 | --- | --- |
-| How the airgap build is made | A separate app over the same UI crates, which have no network dependencies. No `cfg(feature = "offline")` in shared code. |
+| How the airgap build is made | A separate app over the same UI crates, which have no network dependencies. No `cfg(feature = "offline")` in shared code. On Windows its WebView starts with its background networking off and a proxy that is not there for all but loopback (`app_desktop::airgap_desktop_config`): left alone, WebView2 opens a TLS connection to Microsoft about a minute after it starts. |
 | What closing does | Hides the window and keeps the webview. Restoring is instant: the DOM, scroll positions and half-filled forms are still there. The cost is the webview's memory while hidden. |
 | Auto-lock | Locks itself after a while hidden, or after the same time with no input while the window is open. A sign request that arrives while it is locked asks for the password when the window opens. |
 | The web build | Stays. The core must therefore run without threads, and it gets no bridge, tray or OS notifications in the browser. |
@@ -99,7 +99,7 @@ Storage is `app_core::storage`: files under the data directory on desktop, `loca
 - **Screen state** (drafts, tabs, the Sign view, filters) stays in plain Dioxus signals. It belongs to the window, and it survives hiding because the webview does.
 - **Optional capabilities.** A shared pane does its online parts through `use_network() -> Option<Network>`, a context the online app provides. `Network` carries a `dyn SolanaRpc` and the network status. Without it, which is how the airgap build works and how the online build behaves while offline: Sign has no Simulate, Submit, Refresh or Rebuild; Wallets has no balances or Vector account state; Build takes its lifetime from a durable nonce.
 - **The app builds the navigation.** Panes only one build has, and slots only the online build fills (a balances column, the network and sync chips), are passed in by the app. They are not branches inside shared panes.
-- **`ToastHost`**, mounted once beside the panes, shows the notices whose toast is still up. The notification center lists them all.
+- **`ToastHost`**, mounted once beside the panes, shows the notices whose toast is still up. The notification center lists them all. A toast that only informs leaves by itself (Confirmed after 10 seconds, Not sent after 20); a failure, and a transaction still on its way, stays until dismissed or settled. Three show at once, one in a window narrower than 760 pixels, with how many more; while a dialog is open they go under it.
 
 ## app-online
 

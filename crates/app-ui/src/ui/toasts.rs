@@ -12,8 +12,25 @@ use crate::ui::{tx_status_chip, CopyButton};
 
 /// How long a Confirmed toast stays before dismissing itself.
 const CONFIRMED_HIDE: Duration = Duration::from_secs(10);
-/// Visible toast slots before "n more".
+/// How long one that only informs stays, such as a transaction the site did
+/// not send: long enough to read, and it stays under the bell.
+const INFO_HIDE: Duration = Duration::from_secs(20);
+/// Visible toast slots before "n more". A narrow window shows one, by CSS.
 const MAX_VISIBLE: usize = 3;
+
+/// How long a toast of this status stays before it dismisses itself. A
+/// failure stays until dismissed, as does one still on its way.
+fn shown_for(status: &TxStatus) -> Option<Duration> {
+    match status {
+        TxStatus::Confirmed { .. } => Some(CONFIRMED_HIDE),
+        TxStatus::NotSent => Some(INFO_HIDE),
+        TxStatus::Sent
+        | TxStatus::Failed { .. }
+        | TxStatus::Rejected { .. }
+        | TxStatus::Expired
+        | TxStatus::Unknown => None,
+    }
+}
 /// Signature characters kept on each side when the full line does not fit.
 const SIG_SIDE: usize = 20;
 
@@ -25,7 +42,8 @@ pub fn ToastHost(pinned: Option<Element>) -> Element {
     let session = use_context::<Session>();
     let mut auto_hide = use_signal(HashSet::<NoticeId>::new);
 
-    // Confirmed toasts hide after 10 s (timer runs outside the WebView).
+    // A toast that only informs hides by itself (timer runs outside the
+    // WebView). Every one stays in the notifications list.
     use_effect(move || {
         let notices = (session.notices)();
         for notice in notices.items() {
@@ -35,9 +53,9 @@ pub fn ToastHost(pinned: Option<Element>) -> Element {
             let NoticeKind::Transaction { status, .. } = &notice.kind else {
                 continue;
             };
-            if !matches!(status, TxStatus::Confirmed { .. }) {
+            let Some(shown) = shown_for(status) else {
                 continue;
-            }
+            };
             let id = notice.id;
             // peek: writing the set must not re-run this effect.
             if auto_hide.peek().contains(&id) {
@@ -45,7 +63,7 @@ pub fn ToastHost(pinned: Option<Element>) -> Element {
             }
             auto_hide.write().insert(id);
             spawn(async move {
-                crate::rt::sleep(CONFIRMED_HIDE).await;
+                crate::rt::sleep(shown).await;
                 session.dismiss_toast(id);
             });
         }
@@ -64,10 +82,16 @@ pub fn ToastHost(pinned: Option<Element>) -> Element {
 
     let extra = up.len().saturating_sub(MAX_VISIBLE);
     let visible = &up[..up.len().min(MAX_VISIBLE)];
-    let more_label = if extra == 1 {
-        "1 more".to_string()
+    let more = |extra: usize| match extra {
+        1 => "1 more".to_string(),
+        _ => format!("{extra} more"),
+    };
+    // A narrow window shows only the newest, so the rest count as more. A
+    // pinned card is that one, and every notice under it counts.
+    let narrow_extra = if pinned.is_some() {
+        up.len()
     } else {
-        format!("{extra} more")
+        up.len().saturating_sub(1)
     };
 
     rsx! {
@@ -77,7 +101,10 @@ pub fn ToastHost(pinned: Option<Element>) -> Element {
                 ToastCard { key: "{notice.id}", notice }
             }
             if extra > 0 {
-                div { class: "toast-more", role: "status", "{more_label}" }
+                div { class: "toast-more wide", role: "status", "{more(extra)}" }
+            }
+            if narrow_extra > 0 {
+                div { class: "toast-more narrow", role: "status", "{more(narrow_extra)}" }
             }
         }
     }

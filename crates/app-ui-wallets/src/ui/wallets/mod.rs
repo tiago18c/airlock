@@ -81,7 +81,7 @@ pub fn WalletsPanel() -> Element {
             title: "Show the public keys of wallets here, for another device to add them",
             onclick: move |_| export_open.set(true),
             Icon { glyph: Glyph::Export }
-            "Export keys"
+            "Export public keys"
         }
         if online {
             button { class: item_class,

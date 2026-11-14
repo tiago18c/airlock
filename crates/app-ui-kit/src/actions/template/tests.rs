@@ -273,10 +273,9 @@ async fn a_built_in_template_opens_in_place_of_the_blocks() {
     for entry in &entries {
         match &entry.source {
             TemplateSource::Builtin(id) if MAINNET_ONLY.contains(id) => assert!(
-                entry
-                    .problem
-                    .as_deref()
-                    .is_some_and(|problem| problem.contains("No IDL")),
+                entry.problem.as_deref().is_some_and(|problem| problem
+                    .starts_with("It works on Mainnet. On Devnet it needs the ")
+                    && problem.ends_with("Airlock has no description of there.")),
                 "{}: {:?}",
                 entry.name,
                 entry.problem

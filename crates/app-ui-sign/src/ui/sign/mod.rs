@@ -593,6 +593,12 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
 
         PersonalSignBox { tx: tx.clone(), status: status.clone() }
 
+        // No node takes a transaction larger than its format allows: said
+        // first, with what can be done, and Sign is not offered.
+        if let Some(note) = tx.too_large_note(from_browser) {
+            p { class: "error", role: "alert", "{note}" }
+        }
+
         SimulatedDeltas {
             // The signature rows draw no balance change, so a signer's change
             // that no sentence names is listed under the transaction.
@@ -670,6 +676,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             online,
             busy,
             blind_holds: blind.holds_sign,
+            too_large: tx.too_large(),
             reading: reading.unsettled(),
             simulating,
             needs_rebuild,
@@ -808,6 +815,8 @@ fn SignActions(
     needs_rebuild: bool,
     /// It says yes to something it does not hold, and that is not settled.
     blind_holds: bool,
+    /// It is larger than its format allows.
+    too_large: bool,
     /// It is still being read.
     reading: bool,
     /// The node has not answered for this message yet.
@@ -858,6 +867,7 @@ fn SignActions(
         blind_holds,
         reading,
         simulating,
+        too_large,
     };
     let can_sign = may_sign(buttons);
     let can_submit = may_submit(buttons);
@@ -898,8 +908,9 @@ fn SignActions(
     // Sign is left out while this device has nothing to sign, now, once an
     // authorization from elsewhere is in, or once it is rebuilt: it could
     // not be pressed.
-    let sign_shown =
-        status.signable + on_device > 0 || status.waiting_for_authority || needs_rebuild;
+    // Nor while it is too large for any node to take.
+    let sign_shown = !too_large
+        && (status.signable + on_device > 0 || status.waiting_for_authority || needs_rebuild);
     let submit_waits = (!can_submit).then(|| {
         submit_waits_for(
             &status,

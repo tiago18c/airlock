@@ -362,7 +362,7 @@ pub fn VectorForm(creating: bool, on_done: EventHandler<()>) -> Element {
         }
         if source() == AuthoritySource::Elsewhere && scheme().key_len() > 33 {
             p { class: "hint",
-                "A long key is easier to bring over with Export key on the other device, then Add wallet, From another device here."
+                "A long key is easier to bring over with Export public key on the other device, then Add wallet, From another device here."
             }
         }
         if source() == AuthoritySource::Elsewhere {

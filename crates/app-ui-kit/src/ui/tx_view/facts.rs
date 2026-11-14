@@ -9,7 +9,7 @@ pub fn TxFacts(tx: DecodedTx) -> Element {
     let size = format!(
         "{} / {} bytes",
         number(tx.wire.len() as u64),
-        number(MAX_TRANSACTION_SIZE as u64)
+        number(tx.size_limit() as u64)
     );
     let limit = match tx.budget.compute_unit_limit {
         Some(limit) => format!("{} units", number(limit.into())),
@@ -176,8 +176,17 @@ pub fn ProgramList(explained_programs: Vec<wallet_core::ProgramLine>) -> Element
                         }
                         match line.origin {
                             Some(IdlOrigin::Builtin) => rsx! { span { class: "chip", "built-in" } },
-                            Some(_) => rsx! { span { class: "chip info", "imported" } },
+                            Some(IdlOrigin::File) => rsx! { span { class: "chip info", "imported" } },
+                            Some(IdlOrigin::ProgramMetadata | IdlOrigin::Anchor) => rsx! {
+                                span { class: "chip warn",
+                                    title: "Read from the program's IDL account on the chain, which whoever controls the program writes",
+                                    "read from the chain"
+                                }
+                            },
                             None => rsx! {},
+                        }
+                        if let Some(host) = line.carried_by.clone() {
+                            span { class: "chip info", "from the {host} IDL" }
                         }
                         if line.status != IdlPinStatus::NotChecked || line.origin != Some(IdlOrigin::Builtin) {
                             span { class: pin_class(line.status), "{line.status.label()}" }

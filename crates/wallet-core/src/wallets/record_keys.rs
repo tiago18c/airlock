@@ -135,6 +135,7 @@ impl WalletRecord {
                 pubkey: _,
                 fee_payer: _,
                 durable_nonce: _,
+                nonce_network: _,
                 default_path: _,
             }
             | WalletKind::Hardware {
@@ -145,6 +146,7 @@ impl WalletRecord {
                 seen: _,
                 fee_payer: _,
                 durable_nonce: _,
+                nonce_network: _,
                 default_path: _,
             }
             | WalletKind::Squads {
