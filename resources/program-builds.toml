@@ -447,13 +447,13 @@ idlSha256 = "0827dc62931fc1b646332ee47abba020221058cd97d6c4d97082742e3e633cea"
 reviewed = "2026-11-12"
 
 [[builds]]
-# pump (pack). No verify record. Every instruction the IDL lists is in this binary by its Anchor log name, the binary logs none beyond them, and all 110 error names of the IDL are in it. Successful mainnet transactions decode exactly with the IDL, with every account named, for the legacy, v2 and v3 buys and sells, multiHopCurveSwap, createV2, sweepCreatorFee, the creator fee collections and distributions, distributeFeeToHolders, claimCashbackV2, the volume accumulators, extendAccount, migrate, migrateV2 and migrateBondingCurveCreator.
+# pump (pack). No verify record. Redeployed at slot 469055660 (2026-11-13). The binary logs the same instruction names as the build reviewed before it, each instruction the IDL lists and none beyond them, and holds all 110 error names of the IDL. Its text gains one error name the IDL lacks, CreatorFeeRangeInvalid, and two messages about a configured minimum and maximum for creator fees. The IDL in pump's Anchor account and the one in pump-public-docs are the ones they were. 33 instructions of 33 successful mainnet transactions since the redeploy decode with the IDL, with every account named, for buy, buyExactSolIn, buyV3, buyExactQuoteInV2, buyExactQuoteInV3, sell, sellV2, sellV3, multiHopCurveSwap, distributeFeeToHolders and closeUserVolumeAccumulator. createV2, sweepCreatorFee, the creator fee collections and distributions, claimCashbackV2, extendAccount, migrate, migrateV2 and migrateBondingCurveCreator did not run in that sample; they were checked on the build before.
 programId = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
 network = "mainnet"
-programHash = "756c04ab1ac76122dcdcf2eeb0073bb139087b23d58d3f0d6c895510ab59d582"
+programHash = "fc5e46177f13719a2c4ac52a67ef1ab9b5180020d8661ccfa236ed114bd5254b"
 authority = "7gZufwwAo17y5kg8FMyJy2phgpvv9RSdzWtdXiWHjFr8"
 idlSha256 = "9ee71d80caf2e2a3b5f9ae7f9cf1cc5bc342a3636dfda0a93c48860a5cf8e8d2"
-reviewed = "2026-11-12"
+reviewed = "2026-11-14"
 
 [[builds]]
 # pump (pack). Another build than mainnet's, with another upgrade authority, and no verify record. It logs exactly the instruction names the IDL lists and holds all 110 of its error names. Successful devnet transactions decode exactly with the IDL, with every account named, for create, createV2, the legacy, v2 and v3 buys and sells, sweepCreatorFee, collectCreatorFee, both creator fee distributions, claimCashback, closeUserVolumeAccumulator, extendAccount, migrateV2 and migrateBondingCurveCreator.
@@ -474,13 +474,13 @@ idlSha256 = "307255c54e847d0fcd10613463a4080ae2310d96d46c695dba6d9d8eb799530c"
 reviewed = "2026-11-13"
 
 [[builds]]
-# swapOrchestrator (pack). Closed source; redeployed at slot 468646007 (2026-11-12); OtterSec lists no verify record. Each of the 18 instructions the IDL lists is in this binary by its Anchor log name, and the binary logs no other: its read-only data is byte for byte that of the build reviewed before it (slot 467533307), and only its code differs. 73 instructions of 65 successful mainnet transactions since the redeploy (swap, swap2, swapWithDestination with and without its destination mint, swap2WithDestination, swap2WithDestinationNative, wrapSol, unwrapSol) decode with every named account and exactly the bytes their arguments take. swapWithDestinationNative and transferToSponsor did not run in that sample; they were checked on the build before.
+# swapOrchestrator (pack). Closed source; redeployed at slot 469017374 (2026-11-13), the third build in three days; OtterSec lists no verify record. Each of the 18 instructions the IDL lists is in this binary by its Anchor log name, and the binary logs no other: its read-only data is byte for byte that of the two builds reviewed before it (slots 467533307 and 468646007), and only its code differs. 18 instructions of 17 successful mainnet transactions since the redeploy (swap, swap2, swapWithDestination, swap2WithDestination, swap2WithDestinationNative, wrapSol, unwrapSol) decode with every named account. swapWithDestinationNative and transferToSponsor did not run in that sample; they were checked on the first of the three builds.
 programId = "DF1ow4tspfHX9JwWJsAb9epbkA8hmpSEAtxXy1V27QBH"
 network = "mainnet"
-programHash = "dad1df177b69f86ea1dd94eb0ac3ab856e8e2bdb4d458c79a95db02db2095129"
+programHash = "63bf79eba6d8cf98591cb08e996131e13666599f9268e634ba0636cf3abee4f5"
 authority = "9uo2iJKJkmiYwy5MrkrbGQXbPqwHXqvQaUqxhCkowgsh"
 idlSha256 = "56b7753135a29d4d744ca549d82fdd5957972553e5d9329b32f0085584574ef0"
-reviewed = "2026-11-13"
+reviewed = "2026-11-14"
 
 [[builds]]
 # perpetuals (pack). Deployed at slot 465131236; closed source, OtterSec lists no verify record. 58 of the IDL's 59 instructions are in this binary by their Anchor log name; setMaxGlobalSizes is not and is removed, and the binary logs one the IDL lacks, DepositExternalReward. Mainnet transactions of 23 instructions (instant trades, requests, limit and take-profit or stop-loss orders, swaps, buying JLP, borrowing against JLP, keeper execution and liquidation) decode with every account named and with the data length the IDL describes.
@@ -736,13 +736,13 @@ idlSha256 = "e56df1b17e3ee62f146fa6068c707078b59d336dc6a029894a6d5394c4666dec"
 reviewed = "2026-11-12"
 
 [[builds]]
-# amm (pack). The binary logs 30 instruction names: all 26 of the IDL's are among them, and `zapProtocolFee`, `claimProtocolFee2`, `createOperatorAccount` and `closeOperatorAccount`, which the IDL lacks, read raw. Compared with Meteora's damm-v1-sdk IDL 0.5.7, which lists the binary's 30, the IDL differs only in `withdrawProtocolFees`, which is left out. Mainnet transactions of ten instructions decode with no byte or account left over.
+# amm (pack). Redeployed at slot 468782174 (2026-11-13). The binary's read-only data is byte for byte that of the build reviewed before it, and only its code differs, so it logs the same 30 instruction names: all 26 of the IDL's are among them, and `zapProtocolFee`, `claimProtocolFee2`, `createOperatorAccount` and `closeOperatorAccount`, which the IDL lacks, read raw. Compared with Meteora's damm-v1-sdk IDL 0.5.7, which lists the binary's 30, the IDL differs only in `withdrawProtocolFees`, which is left out. 13 instructions of 12 successful mainnet transactions since the redeploy decode with every account named; they are swap and claimFee, the only two kinds among 300 sampled transactions. The build before was checked on ten instructions.
 programId = "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB"
 network = "mainnet"
-programHash = "8fef5f63ddaf33ae6ac7153b039dc1eac0451fc9c7038e3bc972f245938a3c38"
+programHash = "1327af802c5c8a82f45f5ed5895ebb90c0f3641843cecb6fac0d1ce0d8db51cf"
 authority = "JADaUV8kvDpDbJr55wxXJHVaBS3VCj8thZZHjfeuCVLd"
 idlSha256 = "fc5fe35dcd0c5a476e6443fdcea9b262fb349170d3f6ccc84130034a5c9b2b65"
-reviewed = "2026-11-12"
+reviewed = "2026-11-14"
 
 [[builds]]
 # Manifest (pack). The program logs no instruction names; the binary holds all 41 messages that the processors and account loaders at c51120ba pass to require!, including the defrag close-flag message that commit added. Every sampled instruction (tags 1 to 6, 9, 10 and 12 to 14) decodes with the file to its last byte and names all of its accounts.
@@ -914,13 +914,13 @@ idlSha256 = "e1fb8b0653a469257fd6d597abe2372da6eb962d7bb9d5f9db96102b67dd7573"
 reviewed = "2026-11-12"
 
 [[builds]]
-# eternal (pack). No verified build. The program is native Rust and logs no Anchor instruction names, so the check was by discriminator: the binary's dispatch table holds 126 entries, the 80 this IDL declares, 45 more that only the main deployment's IDL declares, and one that no IDL names. Successful mainnet transactions decode with the file, every account named and every byte accounted for, for placeMarketOrder, placePositionConditionalOrder, cancelAllPlusConditional, executeConditionalOrders, depositFunds, transferCollateral, transferCollateralChildToParent, syncParentToChild, createPermission, setPermission, uncrossCrank, updateOraclePricesWithOrdering, updateSplinePrice, updateSplineParameters, log, logEventLengths.
+# eternal (pack). No verified build. Redeployed at slot 469087710 (2026-11-13). The program is native Rust and logs no Anchor instruction names, so the check was by discriminator: the binary's dispatch table holds 129 entries, the 76 this IDL declares, 49 more that only the main deployment's IDL declares, and four that no IDL names. Three of the four are new in this build, which also names three admin instructions the build before did not (UpdateGlobalLiquidationFee, UpdatePerpLiquidationFee, UpdatePerpLiquidationMarginTolerance); an instruction with one of them reads raw. Its messages about liquidation changed too: a liquidation fee, its recipient, and a liquidator's own trader account. The IDL in the program-metadata account is the one it was. 38 instructions of successful mainnet transactions since the redeploy decode with the file, every account named, for placeMarketOrder, uncrossCrank, updateOraclePricesWithOrdering, updateSplinePrice, updateSplineParameters, log and logEventLengths; setSpotAssetPrice and updateSplinePriceWithMetadata, which only the main deployment's IDL declares, read raw as before. placePositionConditionalOrder, cancelAllPlusConditional, executeConditionalOrders, depositFunds, transferCollateral, transferCollateralChildToParent, syncParentToChild, createPermission and setPermission did not run in that sample; they were checked on the build before. No liquidation ran in it either.
 programId = "phDEVv4w6BcfkLrLNeXr8HhhgQxnxziVGXpGPcaadMf"
 network = "mainnet"
-programHash = "ac03e0e39cc7701cf8b95b52d32a6f4ceca99511e1efda3b80444ddb1a56ece3"
+programHash = "0ea55ab01cfce728225bb02c8b5f2e8f39cdea89e5e08a5c0ab89219a23874a0"
 authority = "GhcyhaiSvr6Sd9FDp5Bpe4LT4ny4WqZfwZEvnFxAgMgE"
 idlSha256 = "059ae179f56130e1f078fbbe63e12bc247b47b1da166d6cdc54e11d9f66fad0e"
-reviewed = "2026-11-12"
+reviewed = "2026-11-14"
 
 [[builds]]
 # ember (pack). No verified build. The program is native Rust: it logs `Instruction: Init` only, so the check was by discriminator. Each of the IDL's three discriminators is loaded once as a 64-bit immediate in the binary, which rejects any other tag ("Ember: unknown instruction tag"). Successful mainnet transactions decode with the IDL, every account named and every byte accounted for, for deposit and withdraw, on both the main and the beta exchange's wrapper.
