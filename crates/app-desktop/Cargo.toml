@@ -36,7 +36,7 @@ notify-rust = { version = "4", optional = true }
 [target.'cfg(windows)'.dependencies]
 webview2-com = "0.38"
 # The COM casts and strings webview2-com's own API takes.
-windows-core = "0.61"
+windows-core = "0.62"
 # The title bar's close and system menu: WM_CLOSE, WM_SYSCOMMAND.
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
 
