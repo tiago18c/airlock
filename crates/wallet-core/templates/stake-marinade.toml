@@ -1,6 +1,6 @@
 format = 1
 name = "Stake SOL with Marinade"
-summary = "Stakes SOL with Marinade for mSOL, which earns the staking yield and can be unstaked at once for a fee, or in a few days without one."
+summary = "Stakes SOL with Marinade for mSOL, which earns the staking yield and can be unstaked at once for a fee of up to a few percent, or in a few days for Marinade's delayed-unstake fee (0.2 % when this was written; Marinade sets it)."
 
 [programs]
 associated_token = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"

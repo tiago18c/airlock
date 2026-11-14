@@ -156,7 +156,15 @@ pub enum Function {
     /// `<a> <b> <when a is first> <when b is first>`: one of the two numbers,
     /// chosen by which address sorts first.
     WhenLesser,
+    /// `<time>`: a Unix time in seconds, as given, refused from
+    /// [`MAX_UNIX_SECONDS`] on: a time in milliseconds lands there.
+    UnixSeconds,
 }
+
+/// The first Unix time `unix-seconds` refuses: 100,000,000,000 seconds is
+/// the year 5138, while the same moment of today in milliseconds is about
+/// 1,800,000,000,000.
+pub const MAX_UNIX_SECONDS: u128 = 100_000_000_000;
 
 /// What a value or an argument is.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -176,7 +184,7 @@ pub(crate) enum ValueType {
 }
 
 impl Function {
-    pub const ALL: [Function; 22] = [
+    pub const ALL: [Function; 23] = [
         Self::NewKeypair,
         Self::AssociatedTokenAccount,
         Self::Token2022MintSpace,
@@ -199,6 +207,7 @@ impl Function {
         Self::LesserAddress,
         Self::GreaterAddress,
         Self::WhenLesser,
+        Self::UnixSeconds,
     ];
 
     /// The name a file writes it by.
@@ -226,6 +235,7 @@ impl Function {
             Self::LesserAddress => "lesser-address",
             Self::GreaterAddress => "greater-address",
             Self::WhenLesser => "when-lesser",
+            Self::UnixSeconds => "unix-seconds",
         }
     }
 
@@ -253,7 +263,7 @@ impl Function {
             | Self::UnverifiedCollection
             | Self::StreamEscrowOf
             | Self::TreeConfigOf => &[Address],
-            Self::RentFor => &[Integer],
+            Self::RentFor | Self::UnixSeconds => &[Integer],
             Self::BaseUnits => &[Amount, Integer],
             Self::TreeDepth | Self::TreeBuffer => &[Shape],
             Self::MerkleTreeSpace => &[Shape, Integer],
@@ -281,6 +291,7 @@ impl Function {
             Self::MerkleTreeSpace => "a tree shape and a canopy depth",
             Self::LesserAddress | Self::GreaterAddress => "two addresses",
             Self::WhenLesser => "two addresses and the two numbers to choose between",
+            Self::UnixSeconds => "a Unix time in seconds",
         }
     }
 
@@ -304,7 +315,8 @@ impl Function {
             | Self::TreeDepth
             | Self::TreeBuffer
             | Self::MerkleTreeSpace
-            | Self::WhenLesser => ValueType::Integer,
+            | Self::WhenLesser
+            | Self::UnixSeconds => ValueType::Integer,
             Self::TokenProgramOf => ValueType::Program,
             Self::SoleCreator | Self::UnverifiedCollection => ValueType::Json,
         }

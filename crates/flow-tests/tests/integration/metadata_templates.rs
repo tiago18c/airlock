@@ -344,3 +344,101 @@ fn an_nft_can_claim_a_collection_it_is_not_verified_in() {
     assert_eq!(metadata.collection, Some((false, collection)));
     assert_eq!(metadata.royalty, 0);
 }
+
+/// The text a shipped template shows: its summary, hints and options.
+fn text_of(id: &str) -> &'static str {
+    wallet_core::builtin_template(id).unwrap().toml
+}
+
+/// Token Metadata keeps 0.01 SOL in each metadata account it creates, over
+/// the account's rent. The three templates that create one say so, with
+/// the rent in round terms.
+#[test]
+fn token_metadata_keeps_a_fee_the_templates_name() {
+    let desk = desk();
+    let me = desk.me();
+    // The account is read before the chain is locked again.
+    let rent = |address: &Pubkey| {
+        let len = desk.data(address).len();
+        desk.node.chain().rent(len)
+    };
+    let over_rent = |address: &Pubkey| desk.balance(address) - rent(address);
+
+    let mint = KeypairSigner::new_random();
+    desk.land(
+        "create-token",
+        &["metadata"],
+        &[
+            ("decimals", text("6")),
+            ("token_name", text("Gold")),
+            ("symbol", text("GLD")),
+            ("uri", text("https://example.com/gold.json")),
+        ],
+        &[("mint", &mint)],
+        &[],
+    )
+    .unwrap_or_else(|logs| panic!("{logs}"));
+    let metadata = metadata_of(&mint.pubkey());
+    assert_eq!(over_rent(&metadata), 10_000_000, "0.01 SOL");
+    // About 0.004 SOL of rent.
+    assert_eq!(
+        (rent(&metadata) + 500_000) / 1_000_000,
+        4,
+        "{}",
+        rent(&metadata)
+    );
+
+    let bare = KeypairSigner::new_random();
+    desk.land(
+        "create-token",
+        &[],
+        &[("decimals", text("9"))],
+        &[("mint", &bare)],
+        &[],
+    )
+    .unwrap_or_else(|logs| panic!("{logs}"));
+    desk.land(
+        "add-token-metadata",
+        &[],
+        &[
+            ("mint", bare.pubkey().to_string()),
+            ("token_name", text("Silver")),
+            ("symbol", text("SLV")),
+            ("uri", text("https://example.com/silver.json")),
+        ],
+        &[],
+        &[],
+    )
+    .unwrap_or_else(|logs| panic!("{logs}"));
+    assert_eq!(over_rent(&metadata_of(&bare.pubkey())), 10_000_000);
+
+    let nft = KeypairSigner::new_random();
+    let before = desk.balance(&me);
+    desk.land(
+        "create-nft",
+        &[],
+        &[
+            ("nft_name", text("Ape #1")),
+            ("symbol", text("APE")),
+            ("uri", text("https://example.com/ape/1.json")),
+            ("royalty", text("5.5")),
+        ],
+        &[("mint", &nft)],
+        &[],
+    )
+    .unwrap_or_else(|logs| panic!("{logs}"));
+    let metadata = metadata_of(&nft.pubkey());
+    assert_eq!(over_rent(&metadata), 10_000_000);
+    // The rest is the rent of its four accounts, about 0.01 SOL, and the
+    // fees of two signatures.
+    let rents = before - desk.balance(&me) - 10_000_000 - 10_000;
+    assert_eq!((rents + 5_000_000) / 10_000_000, 1, "{rents}");
+
+    for id in ["create-token", "add-token-metadata", "create-nft"] {
+        let text = text_of(id);
+        assert!(text.contains("0.01 SOL"), "{id} names the fee");
+    }
+    assert!(text_of("create-token").contains("about 0.004 SOL of rent"));
+    assert!(text_of("add-token-metadata").contains("about 0.004 SOL of rent"));
+    assert!(text_of("create-nft").contains("about 0.01 SOL of rent"));
+}

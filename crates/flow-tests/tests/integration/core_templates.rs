@@ -164,3 +164,61 @@ fn only_the_collections_update_authority_can_add_to_it() {
     assert!(refused.is_err());
     assert!(!desk.exists(&asset.pubkey()));
 }
+
+/// Core keeps 0.0015 SOL in each NFT it creates, over the account's rent,
+/// and nothing over a collection's. The templates say so, with the rent
+/// in round terms.
+#[test]
+fn core_keeps_a_fee_on_an_nft_and_none_on_a_collection() {
+    let desk = desk();
+    let me = desk.me();
+    // The account is read before the chain is locked again.
+    let rent = |address: &Pubkey| {
+        let len = desk.data(address).len();
+        desk.node.chain().rent(len)
+    };
+    let text_of = |id: &str| wallet_core::builtin_template(id).unwrap().toml;
+
+    let asset = KeypairSigner::new_random();
+    let before = desk.balance(&me);
+    desk.land(
+        "create-core-nft",
+        &[],
+        &[
+            ("nft_name", text("Ape #1")),
+            ("uri", text("https://example.com/ape/1.json")),
+        ],
+        &[("asset", &asset)],
+        &[],
+    )
+    .unwrap_or_else(|logs| panic!("{logs}"));
+    let fee = desk.balance(&asset.pubkey()) - rent(&asset.pubkey());
+    assert_eq!(fee, 1_500_000, "0.0015 SOL");
+    assert_eq!(
+        before - desk.balance(&me),
+        desk.balance(&asset.pubkey()) + 10_000
+    );
+    // About 0.0012 SOL of rent for a short name and link.
+    let held = rent(&asset.pubkey());
+    assert_eq!((held + 50_000) / 100_000, 12, "{held}");
+    let said = text_of("create-core-nft");
+    assert!(said.contains("0.0015 SOL") && said.contains("about 0.0012 SOL"));
+
+    let collection = KeypairSigner::new_random();
+    desk.land(
+        "create-core-collection",
+        &[],
+        &[
+            ("collection_name", text("Apes")),
+            ("uri", text("https://example.com/apes.json")),
+        ],
+        &[("collection", &collection)],
+        &[],
+    )
+    .unwrap_or_else(|logs| panic!("{logs}"));
+    let held = desk.balance(&collection.pubkey());
+    assert_eq!(held, rent(&collection.pubkey()), "no fee");
+    assert_eq!((held + 500_000) / 1_000_000, 1, "{held}");
+    let said = text_of("create-core-collection");
+    assert!(said.contains("about 0.001 SOL") && said.contains("no fee"));
+}

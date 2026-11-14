@@ -38,13 +38,13 @@ hint = "How often the amount per period unlocks: 86400 is a day, 604800 a week, 
 [[input]]
 name = "start"
 label = "Start, as a Unix time"
-hint = "Seconds since 1 January 1970 (UTC) when the stream starts. Leave blank to start when it lands."
+hint = "Seconds since 1 January 1970 (UTC) when the stream starts: 1794441600 is 12 November 2026. Leave blank to start when it lands."
 optional = true
 
 [[input]]
 name = "cliff"
 label = "Cliff, as a Unix time"
-hint = "When the amount at the cliff unlocks. Leave blank for the start."
+hint = "When the amount at the cliff unlocks, in seconds as the start is. Leave blank for the start."
 optional = true
 
 [[input]]
@@ -76,6 +76,7 @@ optional = true
 
 [values]
 at_cliff = "base-units $cliff_amount $decimals"
+cliff_time = "unix-seconds $cliff"
 decimals = "decimals-of $mint"
 deposit = "base-units $amount $decimals"
 escrow = "stream-escrow-of $stream"
@@ -83,6 +84,7 @@ fee_tokens = "associated-token-account 5SEpbdjFK5FxwTvfsGMXVQTD2v4M2c5tyRTxhdsPk
 per_period_units = "base-units $per_period $decimals"
 recipient_tokens = "associated-token-account $recipient $mint $token"
 sender_tokens = "associated-token-account $wallet $mint $token"
+start_time = "unix-seconds $start"
 stream = "new-keypair"
 token = "token-program-of $mint"
 
@@ -90,4 +92,4 @@ token = "token-program-of $mint"
 program = "$streamflow"
 instruction = "create"
 accounts = { escrowTokens = "$escrow", feeOracle = "B743wFVk2pCYhV91cn287e1xY7f1vt4gdY48hhNiuQmT", metadata = "$stream", mint = "$mint", partner = "$wallet", partnerTokens = "$sender_tokens", recipient = "$recipient", recipientTokens = "$recipient_tokens", sender = "$wallet", senderTokens = "$sender_tokens", streamflowTreasury = "5SEpbdjFK5FxwTvfsGMXVQTD2v4M2c5tyRTxhdsPkgDw", streamflowTreasuryTokens = "$fee_tokens", timelockProgram = "$streamflow", tokenProgram = "$token", withdrawor = "wdrwhnCv4pzW8beKsbPa4S2UDZrXenjg16KJdKSpb5u" }
-arguments = { amountPerPeriod = "$per_period_units", automaticWithdrawal = "false", canTopup = "false", canUpdateRate = "false", cancelableByRecipient = "$recipient_cancels", cancelableBySender = "$sender_cancels", cliff = "$cliff", cliffAmount = "$at_cliff", netAmountDeposited = "$deposit", pausable = "false", period = "$period", startTime = "$start", streamName = "$stream_name", transferableByRecipient = "$recipient_transfers", transferableBySender = "$sender_transfers", withdrawFrequency = "$period" }
+arguments = { amountPerPeriod = "$per_period_units", automaticWithdrawal = "false", canTopup = "false", canUpdateRate = "false", cancelableByRecipient = "$recipient_cancels", cancelableBySender = "$sender_cancels", cliff = "$cliff_time", cliffAmount = "$at_cliff", netAmountDeposited = "$deposit", pausable = "false", period = "$period", startTime = "$start_time", streamName = "$stream_name", transferableByRecipient = "$recipient_transfers", transferableBySender = "$sender_transfers", withdrawFrequency = "$period" }

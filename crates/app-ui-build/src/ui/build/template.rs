@@ -217,8 +217,8 @@ pub(in crate::ui) fn TemplateForm() -> Element {
     };
     let reading = online && read.state == FactReadState::Reading && !expansion.needs.is_empty();
     // Offline, or when the node would not say, the facts come from the
-    // person, one field each.
-    let ask_facts = !online || failed.is_some();
+    // person, one field each, and stay while any is typed.
+    let ask_facts = asks_for_facts(&session, &open);
     let facts: Vec<Element> = if ask_facts {
         expansion
             .uses

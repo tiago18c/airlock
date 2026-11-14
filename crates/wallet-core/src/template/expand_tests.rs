@@ -988,3 +988,267 @@ fn a_raydium_pool_orders_the_mints_and_deposits_each_tokens_own_units() {
         .iter()
         .any(|meta| meta.pubkey == mint_b && meta.is_signer));
 }
+
+fn invalid(input: &str, message: &str) -> Missing {
+    Missing::Invalid {
+        input: input.to_string(),
+        message: message.to_string(),
+    }
+}
+
+/// An answer a function cannot read is named on its own input, in words a
+/// person can act on, and the expansion is not complete: before, the field
+/// it fed was left blank and nothing said why.
+#[test]
+fn an_answer_a_function_cannot_take_is_named_on_its_input() {
+    // A royalty with more decimal places than a hundredth of a percent.
+    let template = builtin("create-nft");
+    let answers = Answers::for_template(&template)
+        .answer("nft_name", "Ape")
+        .answer("symbol", "APE")
+        .answer("uri", "https://e.x/a.json")
+        .answer("royalty", "2.555");
+    let expansion = run(&template, &answers, &env(), &rent(82, 1_461_600));
+    assert_eq!(
+        expansion.missing,
+        [invalid(
+            "royalty",
+            "`2.555` has more than 2 decimal places."
+        )]
+    );
+    assert!(!expansion.is_complete());
+
+    // An amount with more decimal places than the token has.
+    let template = builtin("create-stream");
+    let mint = pk(40);
+    let answers = Answers::for_template(&template)
+        .answer("recipient", &pk(41).to_string())
+        .answer("mint", &mint.to_string())
+        .answer("amount", "1.1234567")
+        .answer("per_period", "0.1")
+        .answer("period", "60");
+    let facts = Facts {
+        decimals: [(mint, 6)].into(),
+        token_programs: [(mint, TOKEN_PROGRAM_ID)].into(),
+        ..Facts::default()
+    };
+    let expansion = run(&template, &answers, &env(), &facts);
+    assert_eq!(
+        expansion.missing,
+        [invalid(
+            "amount",
+            "`1.1234567` has more than 6 decimal places."
+        )]
+    );
+    // Not while the decimals are still to come from the node.
+    let waiting = run(&template, &answers, &env(), &Facts::default());
+    assert!(waiting.missing.is_empty(), "{:?}", waiting.missing);
+
+    // mSOL to the lamport, and one place more.
+    let template = builtin("unstake-marinade");
+    let answers = Answers::for_template(&template).answer("amount", "0.0000000001");
+    let expansion = run(&template, &answers, &env(), &Facts::default());
+    assert_eq!(
+        expansion.missing,
+        [invalid(
+            "amount",
+            "`0.0000000001` has more than 9 decimal places."
+        )]
+    );
+
+    // A canopy that is not a whole number is out of range too.
+    let template = builtin("create-nft-tree");
+    let answers = Answers::for_template(&template).answer("canopy", "1.5");
+    let expansion = run(&template, &answers, &env(), &Facts::default());
+    assert_eq!(
+        expansion.missing,
+        [invalid(
+            "canopy",
+            "A tree of depth 14 takes a canopy of 0 to 13."
+        )]
+    );
+
+    // An address that is not one, through a function.
+    let template = builtin("mint-tokens");
+    let answers = Answers::for_template(&template).answer("mint", "not a mint");
+    let expansion = run(&template, &answers, &env(), &Facts::default());
+    assert!(
+        expansion
+            .missing
+            .contains(&invalid("mint", "`not a mint` is not an address.")),
+        "{:?}",
+        expansion.missing
+    );
+}
+
+/// A hand-written template whose value feeds an optional field: a value
+/// that cannot be worked out is not written as the blank that means none.
+#[test]
+fn a_value_that_cannot_be_worked_out_never_reads_as_none() {
+    let text = r#"
+format = 1
+name = "Optional freeze"
+[programs]
+token = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+[[input]]
+name = "a"
+label = "A"
+[[input]]
+name = "b"
+label = "B"
+[[input]]
+name = "mint"
+label = "Mint"
+[values]
+freeze = "lesser-address $a $b"
+[[block]]
+program = "$token"
+instruction = "initializeMint2"
+accounts = { mint = "$mint" }
+arguments = { decimals = "9", mintAuthority = "$wallet", freezeAuthority = "$freeze" }
+"#;
+    let template = Template::parse(text).unwrap();
+    let answers = Answers::for_template(&template)
+        .answer("mint", &pk(8).to_string())
+        .answer("a", &pk(8).to_string())
+        .answer("b", "not an address");
+    let expansion = run(&template, &answers, &env(), &Facts::default());
+    assert_eq!(
+        expansion.missing,
+        [invalid("b", "`not an address` is not an address.")]
+    );
+    assert!(
+        !expansion.is_complete(),
+        "it does not build without a freeze"
+    );
+    let answers = answers.answer("b", &pk(9).to_string());
+    let expansion = run(&template, &answers, &env(), &Facts::default());
+    assert!(expansion.is_complete(), "{:?}", expansion.missing);
+    assert_eq!(
+        expansion.blocks[0].draft.argument("freezeAuthority"),
+        pk(8).to_string()
+    );
+
+    // An amount through base-units into an optional field, and two equal
+    // addresses through when-lesser, are refused the same way.
+    let text = r#"
+format = 1
+name = "Equal"
+[programs]
+system = "11111111111111111111111111111111"
+[[input]]
+name = "a"
+label = "A"
+[[input]]
+name = "b"
+label = "B"
+[values]
+n = "when-lesser $a $b 1 2"
+[[block]]
+program = "$system"
+instruction = "transferSol"
+accounts = { source = "$wallet", destination = "$a" }
+arguments = { amount = "$n" }
+"#;
+    let template = Template::parse(text).unwrap();
+    let same = pk(8).to_string();
+    let answers = Answers::for_template(&template)
+        .answer("a", &same)
+        .answer("b", &same);
+    let expansion = run(&template, &answers, &env(), &Facts::default());
+    assert_eq!(
+        expansion.missing,
+        [invalid(
+            "a",
+            &format!("`{same}` is given twice: the two addresses have to differ.")
+        )]
+    );
+}
+
+/// A shipped template that says a name or link can be changed later says
+/// Build cannot do it, for as long as Build cannot lay out Token
+/// Metadata's update. Once it can, this fails, and the text can say so.
+#[test]
+fn a_promise_of_a_later_change_says_build_cannot_make_it_yet() {
+    let store = crate::fixtures::shipped_catalog(crate::IdlNetwork::Mainnet);
+    let client = store
+        .program_client(&super::expand::TOKEN_METADATA_PROGRAM_ID)
+        .unwrap();
+    let form = crate::idl_instruction_form(
+        &client,
+        "updateAsUpdateAuthorityV2",
+        &crate::IdlBuildInput::default(),
+    )
+    .unwrap();
+    let no_widget = form
+        .arguments
+        .iter()
+        .any(|field| matches!(field.kind, crate::IdlArgKind::Raw { .. }));
+    assert!(no_widget, "Build can update Token Metadata now: say so");
+    let mut promises = 0;
+    for builtin in BUILTIN_TEMPLATES.iter() {
+        for line in builtin.toml.lines() {
+            let said = line.starts_with("hint") || line.starts_with("summary");
+            if said && line.contains("change") && line.contains("later") {
+                promises += 1;
+                assert!(line.contains("Build cannot"), "{}: {line}", builtin.id);
+            }
+        }
+    }
+    assert!(promises >= 2, "{promises}");
+}
+
+/// A stream's start and cliff are Unix times in seconds. One typed in
+/// milliseconds, a time tens of thousands of years away, is refused on
+/// its field; a blank one is still none, so the stream starts when it
+/// lands.
+#[test]
+fn a_streams_start_or_cliff_in_milliseconds_is_refused_on_its_field() {
+    let template = builtin("create-stream");
+    let mint = pk(40);
+    let facts = Facts {
+        decimals: [(mint, 6)].into(),
+        token_programs: [(mint, TOKEN_PROGRAM_ID)].into(),
+        ..Facts::default()
+    };
+    let answers = Answers::for_template(&template)
+        .answer("recipient", &pk(41).to_string())
+        .answer("mint", &mint.to_string())
+        .answer("amount", "100")
+        .answer("per_period", "10")
+        .answer("period", "86400");
+    let blank = run(&template, &answers, &env(), &facts);
+    assert!(blank.is_complete(), "{:?}", blank.missing);
+    assert_eq!(blank.blocks[0].draft.argument("startTime"), "");
+    assert_eq!(blank.blocks[0].draft.argument("cliff"), "");
+
+    let seconds = answers
+        .clone()
+        .answer("start", "1794441600")
+        .answer("cliff", "1795046400");
+    let expansion = run(&template, &seconds, &env(), &facts);
+    assert!(expansion.is_complete(), "{:?}", expansion.missing);
+    assert_eq!(
+        expansion.blocks[0].draft.argument("startTime"),
+        "1794441600"
+    );
+    assert_eq!(expansion.blocks[0].draft.argument("cliff"), "1795046400");
+
+    let millis = seconds.answer("start", "1794441600000");
+    let expansion = run(&template, &millis, &env(), &facts);
+    assert_eq!(
+        expansion.missing,
+        [Missing::Invalid {
+            input: "start".to_string(),
+            message: "`1794441600000` is thousands of years away, or in milliseconds. Enter the time in seconds: 1794441600 is 12 November 2026.".to_string(),
+        }]
+    );
+    let millis = millis
+        .answer("start", "1794441600")
+        .answer("cliff", "1795046400000");
+    let expansion = run(&template, &millis, &env(), &facts);
+    assert!(matches!(
+        &expansion.missing[..],
+        [Missing::Invalid { input, .. }] if input == "cliff"
+    ));
+}

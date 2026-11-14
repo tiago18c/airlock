@@ -1,6 +1,6 @@
 format = 1
 name = "Create a compressed NFT tree"
-summary = "A merkle tree on Metaplex Bubblegum (version 2, on MPL Account Compression) that compressed NFTs are minted into, its key made on this device. This wallet can mint into it."
+summary = "A merkle tree on Metaplex Bubblegum (version 2) that compressed NFTs are minted into, its key made on this device. This wallet can mint into it and pays its rent, which stays in the tree: about 0.16 SOL for the shape filled in. Bubblegum took no fee for a tree when this was written."
 
 [programs]
 bubblegum = "BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY"

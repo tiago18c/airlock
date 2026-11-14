@@ -99,10 +99,13 @@ pub(in crate::ui) fn idl_account_field(
     }
 }
 
+/// The field for one argument. `missing` says why it has to be filled,
+/// and marks it as a template's unanswered question is marked.
 pub(in crate::ui) fn idl_argument_field(
     form: crate::state::forms::BuildForm,
     id: u64,
     idl: &IdlDraft,
+    missing: Option<String>,
     argument: wallet_core::IdlArgField,
 ) -> Element {
     let name = argument.name.clone();
@@ -111,7 +114,7 @@ pub(in crate::ui) fn idl_argument_field(
             d.set_argument(&name, value);
         });
     });
-    argument_input(
+    let widget = argument_input(
         argument_label(&argument),
         argument_placeholder(&argument),
         input_mode(&argument.kind, &argument_places(&argument)),
@@ -119,7 +122,16 @@ pub(in crate::ui) fn idl_argument_field(
         idl.argument(&argument.name).to_string(),
         form.picker_reset,
         on_change,
-    )
+    );
+    match missing {
+        Some(why) => rsx! {
+            div { class: "idl-argument missing",
+                {widget}
+                p { class: "field-missing", "{why}" }
+            }
+        },
+        None => widget,
+    }
 }
 
 /// The widget for an argument of kind `kind`, holding `text`: a checkbox
@@ -319,7 +331,9 @@ pub(in crate::ui) fn kind_placeholder(
             })
             .collect::<Vec<_>>()
             .join(" or "),
-        IdlArgKind::Raw { note } => note.clone(),
+        // The IDL's own word for the type (`definedTypeLinkNode`) means
+        // nothing to a person.
+        IdlArgKind::Raw { .. } => "Build cannot fill this field yet".to_string(),
         IdlArgKind::Integer { float: true, .. } => "number".to_string(),
         IdlArgKind::Integer { .. } => match places {
             Places::BaseUnits => "whole number, in base units".to_string(),

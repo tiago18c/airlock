@@ -2341,6 +2341,10 @@ div.ix-block.on::before { background: var(--brand); color: var(--on-brand); }
 .template-input.missing input[type="text"],
 .template-input.missing select { background: var(--danger-soft); border-color: var(--danger-line); }
 .field-missing { color: var(--danger-text); font-size: var(--text-md); }
+/* A Build argument that has to be filled before the block builds. */
+.idl-argument { display: grid; gap: var(--space-1); min-width: 0; }
+.idl-argument.missing input[type="text"],
+.idl-argument.missing select { background: var(--danger-soft); border-color: var(--danger-line); }
 .template-options { display: grid; gap: var(--space-3); }
 .template-option { display: grid; gap: var(--space-1); }
 /* A hint and the inputs of an option sit under its label, past the box. */

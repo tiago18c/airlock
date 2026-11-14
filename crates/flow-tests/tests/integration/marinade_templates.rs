@@ -47,6 +47,13 @@ fn msol_balance(desk: &TemplateDesk, owner: &Pubkey) -> u64 {
     u64::from_le_bytes(data[64..72].try_into().unwrap())
 }
 
+/// The delayed-unstake fee Marinade's state sets, in millionths
+/// (`delayed_unstake_fee`, a `FeeCents`: hundredths of a basis point).
+fn delayed_unstake_fee(desk: &TemplateDesk) -> u32 {
+    let state = desk.data(&STATE);
+    u32::from_le_bytes(state[609..613].try_into().unwrap())
+}
+
 /// Stakes `sol` from the wallet with the template.
 fn stake(desk: &TemplateDesk, sol: &str) -> Vec<String> {
     let landed = desk
@@ -78,6 +85,32 @@ fn the_fixed_accounts_are_marinades_own() {
         state.windows(32).any(|window| window == MSOL_LEG.as_ref()),
         "the state names the pool's mSOL leg"
     );
+}
+
+#[test]
+fn the_templates_name_the_delayed_unstake_fee_the_state_keeps() {
+    let desk = desk();
+    let fee = delayed_unstake_fee(&desk);
+    // Millionths to a percentage as the summaries write it: 2000 is 0.2 %.
+    let percent = format!("{} %", fee as f64 / 10_000.0);
+    for id in ["stake-marinade", "order-unstake-marinade"] {
+        let template = wallet_core::builtin_template(id)
+            .unwrap()
+            .template()
+            .unwrap();
+        let summary = template.summary.unwrap_or_default();
+        assert!(
+            summary.contains("delayed-unstake fee") && summary.contains(&percent),
+            "{id} names the {percent} fee: {summary}"
+        );
+        assert!(
+            summary.contains("Marinade sets it"),
+            "{id} says the fee can change: {summary}"
+        );
+        for promise in ["no fee", "without one", "without a fee"] {
+            assert!(!summary.contains(promise), "{id}: {summary}");
+        }
+    }
 }
 
 #[test]
@@ -156,7 +189,16 @@ fn a_delayed_unstake_makes_a_ticket_claimable_from_the_next_epoch() {
     assert_eq!(Pubkey::try_from(&data[8..40]).unwrap(), STATE);
     assert_eq!(Pubkey::try_from(&data[40..72]).unwrap(), me, "beneficiary");
     let worth = u64::from_le_bytes(data[72..80].try_into().unwrap());
-    assert!(worth > 4 * SOL, "{worth}");
+    // The ticket is worth the SOL the 4 mSOL stood for, at the rate the
+    // stake above got, less the delayed-unstake fee Marinade's state sets.
+    let fee = delayed_unstake_fee(&desk);
+    assert!(fee > 0, "the fixture's state keeps a delayed-unstake fee");
+    let at_rate = (4 * SOL as u128 * 20 * SOL as u128 / held as u128) as u64;
+    let less_fee = at_rate - (at_rate as u128 * fee as u128 / 1_000_000) as u64;
+    assert!(
+        worth.abs_diff(less_fee) <= 2,
+        "the ticket holds {worth}; {at_rate} less a fee of {fee} millionths is {less_fee}"
+    );
     assert_eq!(u64::from_le_bytes(data[80..88].try_into().unwrap()), EPOCH);
     let sentences = desk.sentences(&landed.instructions);
     eprintln!("{sentences:#?}");

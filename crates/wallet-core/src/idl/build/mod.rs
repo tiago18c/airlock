@@ -32,6 +32,8 @@ mod link_tests;
 mod scale_tests;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod trailing_tests;
 
 pub(crate) use arguments::data_variant;
 use arguments::*;
@@ -94,10 +96,19 @@ fn prepare(form: &IdlForm, input: &IdlBuildInput) -> Result<Ready, IdlBuildFailu
         }
     }
 
+    if let Some((blank, filled)) = trailing_option_gap(&form.arguments, input) {
+        return Err(IdlBuildFailure::Message(trailing_option_message(
+            blank, filled,
+        )));
+    }
     let text = argument_text(input);
     let mut arguments: Vec<(String, Value)> = Vec::new();
     for field in &form.arguments {
-        let Some(value) = parse_field(field, &text).map_err(IdlBuildFailure::Message)? else {
+        let parsed = parse_field(field, &text).map_err(|err| match err.as_str() {
+            NO_WIDGET => IdlBuildFailure::Message(format!("{}: {err}", field.name)),
+            _ => IdlBuildFailure::Message(err),
+        });
+        let Some(value) = parsed? else {
             continue;
         };
         // A struct's fields, in the order the struct declares them.

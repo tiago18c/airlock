@@ -299,7 +299,7 @@
       "from": "3JrxqdCsyDfzyjjTkTnDGKMmY9EogqBxR5Lu2WJGJozLbrVQroHaZbn3r27wXKmPo3LZa1KMzvHq6QkZsvWBPHdx#4",
       "intent": "Create a vesting contract",
       "programId": "strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m",
-      "sentence": "2k8Hgck8w3mQ2kZy2akG4GfpxTHMT3XaHjCEJtRf62Jm locks 65,955,934.550769 of 2hVjgoesyZSbSGXEQY83hCjC19Grge8ud2kyTN2Rpump from GvGWqdqUYEsTY7FD7VhswqHq4aTKZz8rrvqNMmpNunwH for 2k8Hgck8w3mQ2kZy2akG4GfpxTHMT3XaHjCEJtRf62Jm, plus Streamflow's fees: 65,955,934.550769 unlocks at the cliff, then 0.000001 every 00:00:01",
+      "sentence": "2k8Hgck8w3mQ2kZy2akG4GfpxTHMT3XaHjCEJtRf62Jm locks 65,955,934.550769 of 2hVjgoesyZSbSGXEQY83hCjC19Grge8ud2kyTN2Rpump from GvGWqdqUYEsTY7FD7VhswqHq4aTKZz8rrvqNMmpNunwH for 2k8Hgck8w3mQ2kZy2akG4GfpxTHMT3XaHjCEJtRf62Jm, plus Streamflow's fees: 65,955,934.550769 unlocks at the cliff, then 0.000001 every 00:00:01. Starts 2027-02-10T16:30:09.000Z (None: when created), cliff 2027-02-10T16:30:09.000Z (None: at the start). Can cancel: sender false, recipient false. Can hand to another recipient: sender false, recipient false",
       "unnamedAccounts": 0,
       "undescribedBytes": "00000000000000000000"
     },
@@ -438,7 +438,7 @@
       "from": "21ABirFjbBMLz4S9CXzicg7iToCsEUDSDmeDT8dvtbYgQymXQx34W4FNrajYxBVSv9DQDg3hj5wCXBUm73JnJnTt#1",
       "intent": "Create a vesting contract",
       "programId": "strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m",
-      "sentence": "6fn9crvDbzjouqKwLfVtFVWxvTyVET2GvLAMsNbEHkJG locks 10 of E9kNiWxHhMCzdjCoZ3wHJN4Ss4z4S255pKqiohSpJ1e2 from CvifS6wry8hZusvPP9xBvSHNDB9B1XvdmKYPYPTdyyDK for 6fn9crvDbzjouqKwLfVtFVWxvTyVET2GvLAMsNbEHkJG, plus Streamflow's fees: 0 unlocks at the cliff, then 5 every 336:00:00",
+      "sentence": "6fn9crvDbzjouqKwLfVtFVWxvTyVET2GvLAMsNbEHkJG locks 10 of E9kNiWxHhMCzdjCoZ3wHJN4Ss4z4S255pKqiohSpJ1e2 from CvifS6wry8hZusvPP9xBvSHNDB9B1XvdmKYPYPTdyyDK for 6fn9crvDbzjouqKwLfVtFVWxvTyVET2GvLAMsNbEHkJG, plus Streamflow's fees: 0 unlocks at the cliff, then 5 every 336:00:00. Starts None (None: when created), cliff None (None: at the start). Can cancel: sender false, recipient false. Can hand to another recipient: sender false, recipient true",
       "unnamedAccounts": 0,
       "undescribedBytes": "00000000000000000000"
     },
@@ -701,7 +701,7 @@
       "from": "3H5K3yW69Am6WTqgBdoX7utFTxHNWEEXfC8CNR2s5onnRVUxJtgPwRVxJThCWQyvPSCdDw897zxwKuUaqUw7JBzf#3.10",
       "intent": "Create a vesting contract",
       "programId": "strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m",
-      "sentence": "AXkvP3RyK6EWV7Ce6ic3RSDNegGbeHtnW63Br6Ya7PAE locks 299,096.762831 of DKYcjobF7HPtL9RyQBRdeRQ2iWvizpfbgWwPWNXdpump from A77qwJg8kQ66L3tfbDUWu4cczn7ktRsn31wrEJs64Ra3 for 39rG3oyEJ3kdC2RMScrxXV62VZEJJs9nFrFAJafyB2yK, plus Streamflow's fees: 0 unlocks at the cliff, then 0.000001 every 00:01:00",
+      "sentence": "AXkvP3RyK6EWV7Ce6ic3RSDNegGbeHtnW63Br6Ya7PAE locks 299,096.762831 of DKYcjobF7HPtL9RyQBRdeRQ2iWvizpfbgWwPWNXdpump from A77qwJg8kQ66L3tfbDUWu4cczn7ktRsn31wrEJs64Ra3 for 39rG3oyEJ3kdC2RMScrxXV62VZEJJs9nFrFAJafyB2yK, plus Streamflow's fees: 0 unlocks at the cliff, then 0.000001 every 00:01:00. Starts 2026-11-12T00:16:33.000Z (None: when created), cliff 2026-11-12T00:16:33.000Z (None: at the start). Can cancel: sender false, recipient false. Can hand to another recipient: sender false, recipient false",
       "unnamedAccounts": 0
     },
     {
@@ -839,7 +839,7 @@
       "from": "5GnKVkRRcRYrbHR5Rv6hojUXBDou4RJTXFAEEBJQr5LjdEgdRyaDTVX6iVoJDBo11i3WDTFWv2QsLPhc49pycgWf#3",
       "intent": "Create a vesting contract",
       "programId": "strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m",
-      "sentence": "6vANPEJEgRKAyn37nJL5pzLA7jyjKpUDX2VJwVXgCFuG locks 100,000 of BW3B9kbJCLcHET2vFN3bbhobPmNsNYqGi7dKMTwASeh1 from QV5cpFJ1jikZbLuAEy1odocrtmx8YLVfTKYCmM9EXRm for 6vANPEJEgRKAyn37nJL5pzLA7jyjKpUDX2VJwVXgCFuG, plus Streamflow's fees: 49,999.999996 unlocks at the cliff, then 4,166.666667 every 729:36:00",
+      "sentence": "6vANPEJEgRKAyn37nJL5pzLA7jyjKpUDX2VJwVXgCFuG locks 100,000 of BW3B9kbJCLcHET2vFN3bbhobPmNsNYqGi7dKMTwASeh1 from QV5cpFJ1jikZbLuAEy1odocrtmx8YLVfTKYCmM9EXRm for 6vANPEJEgRKAyn37nJL5pzLA7jyjKpUDX2VJwVXgCFuG, plus Streamflow's fees: 49,999.999996 unlocks at the cliff, then 4,166.666667 every 729:36:00. Starts 2026-11-05T04:16:33.000Z (None: when created), cliff 2027-11-04T23:28:33.000Z (None: at the start). Can cancel: sender false, recipient false. Can hand to another recipient: sender false, recipient false",
       "unnamedAccounts": 0,
       "undescribedBytes": "00000000000000000000"
     },
@@ -978,7 +978,7 @@
       "from": "K2GRBk76yue4NKtdqnkvndoyazndSk6J7pTKwL7WKZJMddsA4MeN6yFSrfB1qesYVUhV2aFJQQPfLnL6MDohmD1#4",
       "intent": "Create a vesting contract",
       "programId": "strmRqUCoQUgGUan5YhzUZa6KqdzwX5L6FpUxfmKg5m",
-      "sentence": "DC36MkGUeUFuC9JXb6sESBja4vaLP92UtHUCtmAN3BUU locks 6,750,000 of EzyoYH87K3GSEiN6zJNGEjN2vtPhzx7JFCHxTRG5PcT3 from 5cFyGjCWRUEWkE8wNHGJhHifWekGDwZkntx6Ft5iMPsN for 32FcGHgZPAV6o1kzh9W5PNHN85Qxd49wUW2zZ5dHbsAW, plus Streamflow's fees: 0 unlocks at the cliff, then 56,250 every 00:01:00",
+      "sentence": "DC36MkGUeUFuC9JXb6sESBja4vaLP92UtHUCtmAN3BUU locks 6,750,000 of EzyoYH87K3GSEiN6zJNGEjN2vtPhzx7JFCHxTRG5PcT3 from 5cFyGjCWRUEWkE8wNHGJhHifWekGDwZkntx6Ft5iMPsN for 32FcGHgZPAV6o1kzh9W5PNHN85Qxd49wUW2zZ5dHbsAW, plus Streamflow's fees: 0 unlocks at the cliff, then 56,250 every 00:01:00. Starts 2026-10-19T07:49:53.000Z (None: when created), cliff 2026-10-21T16:47:54.000Z (None: at the start). Can cancel: sender false, recipient false. Can hand to another recipient: sender false, recipient false",
       "unnamedAccounts": 0,
       "undescribedBytes": "00000000000000000000"
     },
