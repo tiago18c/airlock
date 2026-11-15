@@ -281,7 +281,7 @@ pub static BUILTIN_IDLS: [BuiltinIdl; 10] = [
         source: on_chain(
             IdlNetwork::Devnet,
             IdlOrigin::ProgramMetadata,
-            "98599236e4cf8f0c30aac6645e8ca8adadefd331a8e3acf89c4c66c26481bd35",
+            "45c3f486f5128d844c234a5f42edfdbf209a1a7892150033dedf7bfd3f428b9e",
         ),
         changes: DISPLAY_NODES,
     },

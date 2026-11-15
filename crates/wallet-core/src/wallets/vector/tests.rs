@@ -27,9 +27,10 @@ fn account(scheme: SchemeId, key: &[u8]) -> RawAccount {
     let mut data = vec![0u8; scheme.account_len()];
     data[..32].copy_from_slice(&[5; 32]);
     data[32..64].copy_from_slice(&seed(key));
-    data[64] = scheme.byte();
-    data[65] = 254;
-    data[66] = 253;
+    data[64..72].copy_from_slice(&42u64.to_le_bytes());
+    data[72] = scheme.byte();
+    data[73] = 254;
+    data[74] = 253;
     // Every scheme but Falcon-512 keeps the key first.
     if scheme != SchemeId::Falcon512 {
         data[HEADER_LEN..HEADER_LEN + key.len()].copy_from_slice(key);
@@ -51,7 +52,7 @@ fn every_scheme_has_the_sizes_and_the_address_the_program_gives_it() {
             1,
             64,
             32,
-            100,
+            108,
             "5pcSenKB8hXe5W7JEMhoQVuFCDHHWNYqVDewJZfQXSvY",
         ),
         (
@@ -59,7 +60,7 @@ fn every_scheme_has_the_sizes_and_the_address_the_program_gives_it() {
             2,
             65,
             20,
-            88,
+            96,
             "C5vjXSBxeDC5tNt7dC74RiredJo7aPGEpbNzwtFvdM74",
         ),
         (
@@ -67,7 +68,7 @@ fn every_scheme_has_the_sizes_and_the_address_the_program_gives_it() {
             3,
             64,
             33,
-            101,
+            109,
             "8ZP9DgiVXxAtP3kxEPddN6JtJqvgWPAoeYC3UXFCLwds",
         ),
         (
@@ -75,7 +76,7 @@ fn every_scheme_has_the_sizes_and_the_address_the_program_gives_it() {
             4,
             666,
             897,
-            1092,
+            1100,
             "EU4PpxJB2izzE4BDCGqAfuSHsiKuf9kVJaHJm3z2fFeb",
         ),
         (
@@ -83,7 +84,7 @@ fn every_scheme_has_the_sizes_and_the_address_the_program_gives_it() {
             5,
             2420,
             1312,
-            21_924,
+            21_932,
             "G5Kv1LRgwebHUL1KZxGDvt8MTMmJVWpisYxE9EReuDBK",
         ),
         (
@@ -91,7 +92,7 @@ fn every_scheme_has_the_sizes_and_the_address_the_program_gives_it() {
             6,
             849,
             41,
-            109,
+            117,
             "ADptnFTgjs5n5t1bPGBM5Nb6QqM9uYGXbTvMuZiE1iW8",
         ),
         (
@@ -99,7 +100,7 @@ fn every_scheme_has_the_sizes_and_the_address_the_program_gives_it() {
             7,
             1037,
             41,
-            113,
+            121,
             "2dELfUWuxRg4NJrn7fsiTLwL3JC1doP47Qv8eRDTxZQp",
         ),
     ];
@@ -148,6 +149,7 @@ fn an_account_is_read_for_its_nonce_its_key_and_its_next_leaf() {
         let read = VectorAccount::parse(&program(), &account(scheme, &key)).unwrap();
         assert_eq!(read.scheme, scheme);
         assert_eq!(read.nonce, [5; 32]);
+        assert_eq!(read.created, 42);
         assert!(read.created_with(&key), "{scheme:?}");
         assert!(!read.created_with(&[9; 32]), "{scheme:?}");
         match scheme {
@@ -193,7 +195,7 @@ fn an_account_that_is_not_a_complete_vector_account_is_refused_with_the_reason()
     zeroed.data.fill(0);
     assert_eq!(parse(&zeroed), VectorError::UnsupportedScheme(0));
     let mut winternitz = good.clone();
-    winternitz.data[64] = 6;
+    winternitz.data[72] = 6;
     assert_eq!(
         parse(&winternitz),
         VectorError::Incomplete {
@@ -210,7 +212,7 @@ fn an_account_that_is_not_a_complete_vector_account_is_refused_with_the_reason()
         parse(&growing),
         VectorError::Incomplete {
             scheme: "ML-DSA-44",
-            expected: 21_924,
+            expected: 21_932,
             found: 10_240
         }
     );

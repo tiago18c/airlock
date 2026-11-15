@@ -468,6 +468,7 @@ mod tests {
             &[wrap],
             payer.pubkey(),
             blockhash(2),
+            1_000,
         )
         .unwrap();
         let tx = decode_v1_transaction(&wire).unwrap();
@@ -520,6 +521,7 @@ mod tests {
             }],
             payer.pubkey(),
             blockhash(2),
+            1_000,
         )
         .unwrap();
         let tx = decode_v1_transaction(&wire).unwrap();

@@ -28,7 +28,7 @@ pub fn initialize(
     scheme: SchemeId,
     key: &[u8],
 ) -> Result<Vec<Instruction>, VectorError> {
-    scheme.check_key(key)?;
+    scheme.check_creatable(key)?;
     Ok(vector_core::create_initialize_instructions(
         payer,
         &scheme.core(),
@@ -50,8 +50,9 @@ pub struct AdvanceEntry<'a> {
 }
 
 /// The `Advance` for `signers`, in the order their next keys and signatures
-/// are laid out.
-pub fn advance(signers: &[AdvanceEntry]) -> Result<Instruction, VectorError> {
+/// are laid out. Past slot `valid_until` the program refuses it; every
+/// signature covers it ([`valid_until`](super::valid_until) picks one).
+pub fn advance(valid_until: u64, signers: &[AdvanceEntry]) -> Result<Instruction, VectorError> {
     check_signers(signers.iter().map(|entry| (entry.scheme, entry.key)))?;
     for entry in signers {
         entry.scheme.check_next_key(entry.next_key)?;
@@ -64,26 +65,33 @@ pub fn advance(signers: &[AdvanceEntry]) -> Result<Instruction, VectorError> {
         .map(|(core, entry)| {
             (
                 vector_core::AdvanceSigner {
-                    scheme: core,
-                    identity: entry.key,
                     next_key: entry.next_key,
+                    ..vector_core::AdvanceSigner::new(core, entry.key)
                 },
                 entry.signature,
             )
         })
         .collect();
-    Ok(vector_core::create_multi_advance_instruction(&signers))
+    Ok(vector_core::create_multi_advance_instruction(
+        valid_until,
+        &signers,
+    ))
 }
 
 /// A transaction that only moves the account of `key` to `next_key`: one
-/// `Advance`, and nothing else that its signature covers.
+/// `Advance`, and nothing else that its signature covers. It never expires:
+/// only a Winternitz or XMSS key rotates, and one whose signature lapsed
+/// would have to sign again with the same key.
 pub fn rotation(scheme: SchemeId, key: &[u8], next_key: &[u8]) -> Result<Instruction, VectorError> {
-    advance(&[AdvanceEntry {
-        scheme,
-        key,
-        next_key,
-        signature: &vec![0; scheme.signature_len()],
-    }])
+    advance(
+        vector_core::NEVER_EXPIRES,
+        &[AdvanceEntry {
+            scheme,
+            key,
+            next_key,
+            signature: &vec![0; scheme.signature_len()],
+        }],
+    )
 }
 
 /// What the key of `key`'s account signs in a [`rotation`]. The `Advance`

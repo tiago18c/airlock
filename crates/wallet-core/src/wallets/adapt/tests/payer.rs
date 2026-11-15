@@ -181,7 +181,7 @@ fn a_filled_advance_refuses_a_swap_to_a_payer_an_instruction_names() {
         key: key.pubkey().to_bytes().to_vec(),
         next_key: None,
     };
-    let wire = wrap_for_vector(&site, &[wrap], sponsor, blockhash(2)).unwrap();
+    let wire = wrap_for_vector(&site, &[wrap], sponsor, blockhash(2), 1_000).unwrap();
     let known = [VectorContext {
         account,
         scheme: SchemeId::Ed25519,

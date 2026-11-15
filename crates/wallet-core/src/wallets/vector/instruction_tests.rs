@@ -9,6 +9,29 @@ fn key_of(scheme: SchemeId) -> Vec<u8> {
     vec![7; scheme.key_len()]
 }
 
+/// The Ed25519 base point, a key of large order in its canonical encoding.
+const ED25519_BASE: [u8; 32] = {
+    let mut key = [0x66; 32];
+    key[0] = 0x58;
+    key
+};
+
+/// The secp256k1 generator, compressed.
+const SECP256K1_GENERATOR: [u8; 33] = [
+    0x02, 0x79, 0xbe, 0x66, 0x7e, 0xf9, 0xdc, 0xbb, 0xac, 0x55, 0xa0, 0x62, 0x95, 0xce, 0x87, 0x0b,
+    0x07, 0x02, 0x9b, 0xfc, 0xdb, 0x2d, 0xce, 0x28, 0xd9, 0x59, 0xf2, 0x81, 0x5b, 0x16, 0xf8, 0x17,
+    0x98,
+];
+
+/// A key of `scheme` the program creates an account for.
+fn creatable_key(scheme: SchemeId) -> Vec<u8> {
+    match scheme {
+        SchemeId::Ed25519 => ED25519_BASE.to_vec(),
+        SchemeId::Secp256k1 => SECP256K1_GENERATOR.to_vec(),
+        _ => key_of(scheme),
+    }
+}
+
 fn transfer(from: Pubkey, to: Pubkey) -> Instruction {
     Instruction {
         program_id: crate::ids::SYSTEM_PROGRAM_ID,
@@ -56,7 +79,7 @@ fn a_key_of_the_wrong_length_is_refused_by_every_builder() {
     assert_eq!(withdraw(ed, &short, &pk(1), 1).unwrap_err(), wrong);
     assert_eq!(close(ed, &short, &pk(1)).unwrap_err(), wrong);
     assert_eq!(
-        advance(&[entry(ed, &short, &[], &[0; 64])]).unwrap_err(),
+        advance(u64::MAX, &[entry(ed, &short, &[], &[0; 64])]).unwrap_err(),
         wrong
     );
 }
@@ -65,7 +88,7 @@ fn a_key_of_the_wrong_length_is_refused_by_every_builder() {
 fn a_signature_of_the_wrong_length_is_refused() {
     let key = key_of(SchemeId::Eip191);
     assert_eq!(
-        advance(&[entry(SchemeId::Eip191, &key, &[], &[0; 64])]).unwrap_err(),
+        advance(u64::MAX, &[entry(SchemeId::Eip191, &key, &[], &[0; 64])]).unwrap_err(),
         VectorError::SignatureLength {
             scheme: "EIP-191",
             expected: 65,
@@ -77,7 +100,7 @@ fn a_signature_of_the_wrong_length_is_refused() {
 #[test]
 fn an_ml_dsa_account_is_created_in_three_initializes() {
     for scheme in SchemeId::ALL {
-        let key = key_of(scheme);
+        let key = creatable_key(scheme);
         let account = address(&PROGRAM_ID, scheme, &key).unwrap();
         let made = initialize(&pk(1), scheme, &key).unwrap();
         let calls = if scheme == SchemeId::MlDsa44 { 3 } else { 1 };
@@ -95,24 +118,30 @@ fn an_ml_dsa_account_is_created_in_three_initializes() {
 
 #[test]
 fn an_advance_lists_each_account_once_and_fits_one_instruction() {
-    assert_eq!(advance(&[]).unwrap_err(), VectorError::NoSigners);
+    assert_eq!(advance(u64::MAX, &[]).unwrap_err(), VectorError::NoSigners);
 
     let key = key_of(SchemeId::Ed25519);
-    let twice = advance(&[
-        entry(SchemeId::Ed25519, &key, &[], &[0; 64]),
-        entry(SchemeId::Ed25519, &key, &[], &[0; 64]),
-    ]);
+    let twice = advance(
+        u64::MAX,
+        &[
+            entry(SchemeId::Ed25519, &key, &[], &[0; 64]),
+            entry(SchemeId::Ed25519, &key, &[], &[0; 64]),
+        ],
+    );
     let account = address(&PROGRAM_ID, SchemeId::Ed25519, &key).unwrap();
     assert_eq!(twice.unwrap_err(), VectorError::SignerTwice(account));
 
     // The same bytes under two schemes are two accounts.
-    let both = advance(&[
-        entry(SchemeId::Ed25519, &[7; 32], &[], &[0; 64]),
-        entry(SchemeId::Secp256k1, &[7; 33], &[], &[0; 64]),
-    ])
+    let both = advance(
+        u64::MAX,
+        &[
+            entry(SchemeId::Ed25519, &[7; 32], &[], &[0; 64]),
+            entry(SchemeId::Secp256k1, &[7; 33], &[], &[0; 64]),
+        ],
+    )
     .unwrap();
     assert_eq!(both.accounts.len(), 3);
-    assert_eq!(both.data.len(), 1 + 64 + 64);
+    assert_eq!(both.data.len(), ADVANCE_HEADER_LEN + 64 + 64);
 
     let keys: Vec<[u8; 32]> = (0..=254u8).map(|i| [i; 32]).collect();
     let signers: Vec<_> = keys
@@ -120,23 +149,34 @@ fn an_advance_lists_each_account_once_and_fits_one_instruction() {
         .map(|key| entry(SchemeId::Ed25519, key, &[], &[0; 64]))
         .collect();
     assert_eq!(
-        advance(&signers).unwrap_err(),
+        advance(u64::MAX, &signers).unwrap_err(),
         VectorError::TooManySigners(255)
     );
-    assert_eq!(advance(&signers[..254]).unwrap().accounts.len(), 255);
+    assert_eq!(
+        advance(u64::MAX, &signers[..254]).unwrap().accounts.len(),
+        255
+    );
 }
 
 #[test]
 fn an_advance_names_the_next_key_of_a_rotating_account_before_its_signature() {
     let ed = key_of(SchemeId::Ed25519);
     assert_eq!(
-        advance(&[entry(SchemeId::Ed25519, &ed, &[1; 32], &[0; 64])]).unwrap_err(),
+        advance(
+            u64::MAX,
+            &[entry(SchemeId::Ed25519, &ed, &[1; 32], &[0; 64])]
+        )
+        .unwrap_err(),
         VectorError::KeepsItsKey { scheme: "Ed25519" }
     );
     let xmss = key_of(SchemeId::Xmss);
     let xmss_signature = vec![0; SchemeId::Xmss.signature_len()];
     assert_eq!(
-        advance(&[entry(SchemeId::Xmss, &xmss, &[1; 40], &xmss_signature)]).unwrap_err(),
+        advance(
+            u64::MAX,
+            &[entry(SchemeId::Xmss, &xmss, &[1; 40], &xmss_signature)]
+        )
+        .unwrap_err(),
         VectorError::KeyLength {
             scheme: "XMSS",
             expected: 41,
@@ -146,19 +186,27 @@ fn an_advance_names_the_next_key_of_a_rotating_account_before_its_signature() {
     let wots = key_of(SchemeId::Winternitz);
     let wots_signature = vec![9; SchemeId::Winternitz.signature_len()];
     assert_eq!(
-        advance(&[entry(SchemeId::Winternitz, &wots, &[], &wots_signature)]).unwrap_err(),
+        advance(
+            u64::MAX,
+            &[entry(SchemeId::Winternitz, &wots, &[], &wots_signature)]
+        )
+        .unwrap_err(),
         VectorError::NeedsNextKey {
             scheme: "Winternitz"
         }
     );
 
     let next = [4u8; 41];
-    let built = advance(&[
-        entry(SchemeId::Ed25519, &ed, &[], &[8; 64]),
-        entry(SchemeId::Winternitz, &wots, &next, &wots_signature),
-    ])
+    let built = advance(
+        1_234,
+        &[
+            entry(SchemeId::Ed25519, &ed, &[], &[8; 64]),
+            entry(SchemeId::Winternitz, &wots, &next, &wots_signature),
+        ],
+    )
     .unwrap();
     let mut expected = vec![ADVANCE_DISCRIMINATOR];
+    expected.extend(1_234u64.to_le_bytes());
     expected.extend([8; 64]);
     expected.extend(next);
     expected.extend(&wots_signature);
@@ -310,4 +358,58 @@ fn a_passthrough_that_is_not_what_the_program_runs_is_refused() {
         parse_passthrough(&extra),
         Err(VectorError::MalformedPassthrough(_))
     ));
+}
+
+#[test]
+fn a_key_the_program_refuses_gets_no_account() {
+    let refused = |scheme: SchemeId| VectorError::KeyRefused {
+        scheme: scheme.label(),
+    };
+    let ed = SchemeId::Ed25519;
+    assert!(initialize(&pk(1), ed, &ED25519_BASE).is_ok());
+    // A point of small order: the identity, and the point of order 2.
+    let mut identity = [0u8; 32];
+    identity[0] = 1;
+    assert_eq!(initialize(&pk(1), ed, &identity).unwrap_err(), refused(ed));
+    let mut order_two = [0xff; 32];
+    order_two[0] = 0xec;
+    order_two[31] = 0x7f;
+    assert_eq!(initialize(&pk(1), ed, &order_two).unwrap_err(), refused(ed));
+    // A second encoding of the identity point: y = p + 1.
+    let mut unreduced = [0xff; 32];
+    unreduced[0] = 0xee;
+    unreduced[31] = 0x7f;
+    assert_eq!(initialize(&pk(1), ed, &unreduced).unwrap_err(), refused(ed));
+    // Bytes that are no point at all.
+    let off_curve = (0..=255u8)
+        .map(|byte| [byte; 32])
+        .find(|key| !Pubkey::new_from_array(*key).is_on_curve())
+        .unwrap();
+    assert_eq!(initialize(&pk(1), ed, &off_curve).unwrap_err(), refused(ed));
+
+    let secp = SchemeId::Secp256k1;
+    assert!(initialize(&pk(1), secp, &SECP256K1_GENERATOR).is_ok());
+    let mut prefix = SECP256K1_GENERATOR;
+    prefix[0] = 0x04;
+    assert_eq!(
+        initialize(&pk(1), secp, &prefix).unwrap_err(),
+        refused(secp)
+    );
+    // x = 5 lifts to no point of secp256k1.
+    let mut no_point = [0u8; 33];
+    no_point[0] = 0x02;
+    no_point[32] = 5;
+    assert_eq!(
+        initialize(&pk(1), secp, &no_point).unwrap_err(),
+        refused(secp)
+    );
+
+    let eip = SchemeId::Eip191;
+    assert_eq!(initialize(&pk(1), eip, &[0; 20]).unwrap_err(), refused(eip));
+
+    // A key pasted in is held to the same rules.
+    assert_eq!(
+        parse_public_key(ed, &Pubkey::new_from_array(identity).to_string()).unwrap_err(),
+        refused(ed)
+    );
 }

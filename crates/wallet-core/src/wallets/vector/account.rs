@@ -3,14 +3,15 @@
 //! ```text
 //!  0..32   nonce     what the next signature has to be made over
 //! 32..64   seed      sha256 of the key the account was created with
-//! 64       scheme
-//! 65       bump
-//! 66       system bump   of the account's system PDA
-//! 67       pad
-//! 68..     what the scheme stores
+//! 64..72   created   the slot it was created in (u64)
+//! 72       scheme
+//! 73       bump
+//! 74       system bump   of the account's system PDA
+//! 75       pad
+//! 76..     what the scheme stores
 //! ```
 
-use super::scheme::{seed, SchemeId, HEADER_LEN};
+use super::scheme::{seed, SchemeId, HEADER_LEN, SCHEME_OFFSET};
 use super::VectorError;
 use crate::chain::RawAccount;
 use solana_pubkey::Pubkey;
@@ -23,6 +24,9 @@ pub struct VectorAccount {
     pub nonce: [u8; 32],
     /// The hash of the key the account was created with.
     pub seed: [u8; 32],
+    /// The slot the account was created in. The program refuses to close it
+    /// in that slot.
+    pub created: u64,
     /// What the scheme stores after the header.
     stored: Vec<u8>,
 }
@@ -42,8 +46,8 @@ impl VectorAccount {
             .data
             .split_at_checked(HEADER_LEN)
             .ok_or(VectorError::Truncated)?;
-        let scheme =
-            SchemeId::from_byte(header[64]).ok_or(VectorError::UnsupportedScheme(header[64]))?;
+        let byte = header[SCHEME_OFFSET];
+        let scheme = SchemeId::from_byte(byte).ok_or(VectorError::UnsupportedScheme(byte))?;
         if account.data.len() != scheme.account_len() {
             return Err(VectorError::Incomplete {
                 scheme: scheme.label(),
@@ -60,6 +64,7 @@ impl VectorAccount {
             scheme,
             nonce: field(0),
             seed: field(32),
+            created: u64::from_le_bytes(header[64..72].try_into().expect("8 bytes")),
             stored: stored.to_vec(),
         })
     }

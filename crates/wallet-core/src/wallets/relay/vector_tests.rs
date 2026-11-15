@@ -67,7 +67,14 @@ fn decoded(payer: Pubkey, instructions: Vec<Instruction>) -> DecodedTx {
 
 fn wrapped(owners: &[&Owner], instructions: Vec<Instruction>) -> DecodedTx {
     let wraps: Vec<VectorWrap> = owners.iter().map(|owner| owner.wrap()).collect();
-    let wire = wrap_for_vector(&decoded(pk(1), instructions), &wraps, pk(1), blockhash(2)).unwrap();
+    let wire = wrap_for_vector(
+        &decoded(pk(1), instructions),
+        &wraps,
+        pk(1),
+        blockhash(2),
+        1_000,
+    )
+    .unwrap();
     decode_v1_transaction(&wire).unwrap()
 }
 
@@ -84,7 +91,7 @@ fn each_run_of_vector_instructions_becomes_one_passthrough_in_place() {
             transfer(a.account, pk(9), 5),
         ],
     );
-    let wire = wrap_for_vector(&site, &[b.wrap(), a.wrap()], pk(1), blockhash(2)).unwrap();
+    let wire = wrap_for_vector(&site, &[b.wrap(), a.wrap()], pk(1), blockhash(2), 1_000).unwrap();
     let tx = decode_v1_transaction(&wire).unwrap();
     let native = tx.native_instructions();
     let programs: Vec<Pubkey> = native.iter().map(|ix| ix.program_id).collect();
@@ -129,7 +136,7 @@ fn a_transfer_out_becomes_a_withdraw_and_any_other_system_debit_is_refused() {
         solana_system_interface::instruction::create_account(&owner.account, &pk(5), 1, 0, &pk(6));
     let tx = decoded(pk(1), vec![transfer(pk(1), pk(2), 1), create]);
     assert_eq!(
-        wrap_for_vector(&tx, &[owner.wrap()], pk(1), blockhash(2)).unwrap_err(),
+        wrap_for_vector(&tx, &[owner.wrap()], pk(1), blockhash(2), 1_000).unwrap_err(),
         WrapError::VectorSystemDebit {
             instruction: 1,
             account: owner.account
@@ -141,14 +148,14 @@ fn a_transfer_out_becomes_a_withdraw_and_any_other_system_debit_is_refused() {
 fn what_one_advance_cannot_sign_is_refused() {
     let (a, b) = (Owner::new(), Owner::new());
     let both = [a.wrap(), b.wrap()];
-    let wrap = |tx: &DecodedTx| wrap_for_vector(tx, &both, pk(1), blockhash(2));
+    let wrap = |tx: &DecodedTx| wrap_for_vector(tx, &both, pk(1), blockhash(2), 1_000);
 
     let plain = decoded(pk(1), vec![transfer(pk(1), pk(2), 1)]);
     assert_eq!(wrap(&plain).unwrap_err(), WrapError::NothingToWrap);
 
     let pays = decoded(pk(1), vec![transfer(a.account, pk(2), 1)]);
     assert_eq!(
-        wrap_for_vector(&pays, &both, a.account, blockhash(2)).unwrap_err(),
+        wrap_for_vector(&pays, &both, a.account, blockhash(2), 1_000).unwrap_err(),
         WrapError::PayerCannotSign(a.account)
     );
 
@@ -213,7 +220,7 @@ fn two_mldsa44_signatures_do_not_fit_in_a_v1_transaction() {
             next_key: None,
         },
     ];
-    let err = wrap_for_vector(&site, &wraps, pk(1), blockhash(2)).unwrap_err();
+    let err = wrap_for_vector(&site, &wraps, pk(1), blockhash(2), 1_000).unwrap_err();
     let message = err.to_string();
     assert!(
         message.contains("4096") && message.contains("bytes"),
@@ -230,20 +237,23 @@ fn a_signature_goes_where_the_context_or_the_length_alone_puts_it() {
     let ml_account = address(&PROGRAM_ID, SchemeId::MlDsa44, &ml).unwrap();
     let zeros = |scheme: SchemeId| vec![0u8; scheme.signature_len()];
     let (ed_zeros, ml_zeros) = (zeros(SchemeId::Ed25519), zeros(SchemeId::MlDsa44));
-    let instruction = advance(&[
-        AdvanceEntry {
-            scheme: SchemeId::Ed25519,
-            key: &ed,
-            next_key: &[],
-            signature: &ed_zeros,
-        },
-        AdvanceEntry {
-            scheme: SchemeId::MlDsa44,
-            key: &ml,
-            next_key: &[],
-            signature: &ml_zeros,
-        },
-    ])
+    let instruction = advance(
+        u64::MAX,
+        &[
+            AdvanceEntry {
+                scheme: SchemeId::Ed25519,
+                key: &ed,
+                next_key: &[],
+                signature: &ed_zeros,
+            },
+            AdvanceEntry {
+                scheme: SchemeId::MlDsa44,
+                key: &ml,
+                next_key: &[],
+                signature: &ml_zeros,
+            },
+        ],
+    )
     .unwrap();
     let tx = decoded(pk(1), vec![instruction]);
 
@@ -264,7 +274,7 @@ fn a_signature_goes_where_the_context_or_the_length_alone_puts_it() {
         .collect();
     assert_eq!(
         places,
-        vec![(ed_account, Some((1, 64))), (ml_account, Some((65, 2420)))]
+        vec![(ed_account, Some((9, 64))), (ml_account, Some((73, 2420)))]
     );
 }
 
@@ -289,7 +299,7 @@ fn a_signature_made_here_verifies_over_the_digest_and_needs_the_nonce() {
     // The same signature, checked by hand.
     let message =
         crate::wallets::vector::advance_message(&after.native_instructions(), &pk(1)).unwrap();
-    let signature = &after.instructions[0].data[1..65];
+    let signature = &after.instructions[0].data[9..73];
     let key = owner.key.pubkey().to_bytes();
     verify(
         SchemeId::Ed25519,
@@ -315,7 +325,12 @@ fn a_signature_from_another_device_is_checked_against_the_nonce_and_the_key() {
     let sign_at = |nonce: &[u8; 32]| {
         owner
             .key
-            .try_sign_message(&signer_digest(&message, nonce, &owner.account, &[]))
+            .try_sign_message(&crate::wallets::vector::signed_message(&signer_digest(
+                &message,
+                nonce,
+                &owner.account,
+                &[],
+            )))
             .unwrap()
             .as_ref()
             .to_vec()
@@ -370,7 +385,7 @@ fn adjacent_vector_instructions_share_one_passthrough() {
             transfer(b.account, pk(5), 4),
         ],
     );
-    let wire = wrap_for_vector(&tx, &both, pk(1), blockhash(2)).unwrap();
+    let wire = wrap_for_vector(&tx, &both, pk(1), blockhash(2), 1_000).unwrap();
     let wrapped = decode_v1_transaction(&wire).unwrap();
     let native = wrapped.native_instructions();
     // Advance, one Passthrough for the first three, the plain transfer, and

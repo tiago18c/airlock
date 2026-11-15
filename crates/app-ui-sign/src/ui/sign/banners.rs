@@ -261,12 +261,16 @@ pub(in crate::ui) fn PersonalSignBox(tx: std::rc::Rc<DecodedTx>, status: Signing
     let Some((account, digest)) = pending else {
         return rsx! {};
     };
-    let digest_hex = format!("0x{}", hex::encode(digest));
+    // What the program checks: personal_sign of "vector:" and the digest.
+    let digest_hex = format!(
+        "0x{}",
+        hex::encode(wallet_core::vector::signed_message(&digest))
+    );
     rsx! {
         div { class: "callout",
             h4 { "Ethereum personal_sign" }
             p {
-                "Sign these 32 bytes with personal_sign (not the hex text), then paste the 65-byte signature."
+                "Sign these 39 bytes with personal_sign (\"vector:\" and the digest, as bytes, not as hex text), then paste the 65-byte signature."
             }
             p { class: "mono", "{digest_hex}" }
             CopyButton { text: digest_hex.clone() }

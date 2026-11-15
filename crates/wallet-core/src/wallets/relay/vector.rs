@@ -15,7 +15,7 @@ use crate::transport::handoff::SignatureObject;
 use crate::transport::protocol::ContextAuthorization;
 use crate::wallets::vector::{
     advance_accounts, advance_message, demoted_writable, signer_digest, verify, SchemeId,
-    VectorError, ADVANCE_DISCRIMINATOR, PROGRAM_ID,
+    VectorError, ADVANCE_DISCRIMINATOR, ADVANCE_HEADER_LEN, PROGRAM_ID,
 };
 use solana_instruction::Instruction;
 
@@ -132,9 +132,15 @@ impl AuthContext<'_> {
 }
 
 /// Where each account's next key and signature are in the data of an
-/// `Advance`, as `(signature start, signature length, next key length)`. The
-/// next key comes just before the signature. `None` when the context leaves
-/// more than one reading.
+/// `Advance`, as `(signature start, signature length, next key length)`. They
+/// follow the discriminator and `valid_until`, and the next key comes just
+/// before the signature. `None` when the context leaves more than one
+/// reading.
+///
+/// Every account listed is read as a signer. A nonce account of the program,
+/// which an `Advance` may list after its vector, takes no bytes, so a
+/// transaction that lists one reads wrong or not at all; nothing this app
+/// builds lists one.
 fn places(
     accounts: &[Pubkey],
     data_len: usize,
@@ -161,11 +167,16 @@ fn places(
     }
     let mut found = Vec::new();
     let mut chosen = Vec::with_capacity(accounts.len());
-    readings(&options, data_len.checked_sub(1)?, &mut chosen, &mut found);
+    readings(
+        &options,
+        data_len.checked_sub(ADVANCE_HEADER_LEN)?,
+        &mut chosen,
+        &mut found,
+    );
     let [only] = found.as_slice() else {
         return None;
     };
-    let mut start = 1;
+    let mut start = ADVANCE_HEADER_LEN;
     Some(
         only.iter()
             .map(|(next, signature)| {

@@ -9,10 +9,20 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 ## [Unreleased]
 
+### Changed
+
+- **Vector wallets use Vector 2.0**, to which the devnet program was upgraded on 2026-11-14. Vector wallets made before it no longer work: their accounts were left behind by the upgrade, and anything still in one cannot be moved out. Add the wallet again and initialize its new account. An Ethereum wallet's `personal_sign` for a Vector wallet now signs 39 bytes, `vector:` and the digest, as the Sign screen shows.
+
 ### Fixed
 
 - **On Android, Airlock no longer stops drawing after you come back to it.** Returning to Airlock from another app could leave it taking taps and changing nothing on screen, for seconds or longer. It was not waiting on the node or on prices. On a phone that cuts the network of an app in the background, as a Galaxy does, what Airlock sent its own page meanwhile was lost, and sent again only after a wait, during which the page stayed as it was: Airlock now sends its page nothing while it is in the background. And on any phone, a request to draw that arrived together with Android's notice that the app was in front again could be left waiting.
 - **On Android, answering a site's request takes you back to the site.** After you approved or rejected a connection or a signature a page in the browser asked for, Airlock stayed on screen with nothing to say it had worked, and the page waited behind it. On some phones, a Galaxy among them, a page in a browser that is not in front hears nothing, so it never got the answer and the site stayed unconnected. Airlock now steps back as soon as the request is answered, as it already did for a request from another app.
+
+### Security
+
+- **A Vector wallet's authorization expires** about an hour after Airlock makes it, so a relay can no longer hold it back to land it later, and one that failed on chain cannot be landed again much later by anyone. The Sign screen shows its last slot as **Valid until slot**. One a Winternitz or XMSS wallet signs never expires, since replacing it would take a second signature from the same key.
+- **A Vector key signs `vector:` and then the digest, never a bare 32-byte digest**, so a signature it made for anything else can never authorize a Vector account. Sites can no longer have a message that starts with `vector:` signed, and a 32-byte message may be signed again.
+- **A Vector wallet cannot be made for a key that cannot sign**: an Ed25519 key of small order or written in a second encoding, which anyone could sign for, or a secp256k1 key that is not on the curve. The program refuses them too.
 
 ## [0.2.0] - 2026-11-14
 

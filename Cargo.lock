@@ -9120,11 +9120,12 @@ dependencies = [
 
 [[package]]
 name = "solana-falcon512"
-version = "0.1.2"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "013a7c2272470451e19a23eb79d10777b2fc113fa26b9370d3bd12714ee98768"
+checksum = "7c8a411bd641429947da4a343f4e4eea7b1942c85f027b4a9ada93198f937c46"
 dependencies = [
  "solana-program-error",
+ "solana-shake",
 ]
 
 [[package]]
@@ -9450,7 +9451,8 @@ dependencies = [
 [[package]]
 name = "solana-ml-dsa"
 version = "0.1.0"
-source = "git+https://github.com/blueshift-gg/solana-ml-dsa?rev=e61fac4920bd7ca21464ab4ed04afa2259227e0d#e61fac4920bd7ca21464ab4ed04afa2259227e0d"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a3b2840a15081fc4be37b89d0bb5f38e37816db317eda08a9304ecc6143d736f"
 dependencies = [
  "solana-shake",
 ]
@@ -10106,8 +10108,9 @@ dependencies = [
 
 [[package]]
 name = "solana-shake"
-version = "0.1.0"
-source = "git+https://github.com/blueshift-gg/solana-shake?rev=684f8152dd8b75c8793ba495511b9b938b1b5aeb#684f8152dd8b75c8793ba495511b9b938b1b5aeb"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01afca2d63fff9bb19b61ee09ecc0a7a570b949aee24544d4dc4301a78887d06"
 
 [[package]]
 name = "solana-short-vec"
@@ -10799,11 +10802,21 @@ dependencies = [
 
 [[package]]
 name = "solana-winternitz"
-version = "0.1.0"
-source = "git+https://github.com/blueshift-gg/solana-winternitz?rev=d6c381a46929d2f8973619f38b66d79058c39b5a#d6c381a46929d2f8973619f38b66d79058c39b5a"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b06328ca1f9c6844896da72ae26664589bcad29224105d5e5aec06f31e4e2032"
 dependencies = [
  "getrandom 0.3.4",
  "sha3",
+]
+
+[[package]]
+name = "solana-xmss"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e27ccd75788a3d244f6268a10ed5c151cd161a03253a021fdaebd4ec68a16cd5"
+dependencies = [
+ "solana-winternitz",
 ]
 
 [[package]]
@@ -12060,8 +12073,8 @@ checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
 
 [[package]]
 name = "vector"
-version = "0.1.0"
-source = "git+https://github.com/tiago18c/vector?rev=e0566fc4f15686b5f49c419d7eb08bb4496bf9cc#e0566fc4f15686b5f49c419d7eb08bb4496bf9cc"
+version = "2.0.0"
+source = "git+https://github.com/tiago18c/vector?rev=6d893b5b7f056b4daf7155637c8574cbb2c7f37e#6d893b5b7f056b4daf7155637c8574cbb2c7f37e"
 dependencies = [
  "brine-ed25519",
  "libsecp256k1",
@@ -12075,12 +12088,13 @@ dependencies = [
  "solana-secp256k1",
  "solana-secp256k1-ecdsa",
  "solana-winternitz",
+ "solana-xmss",
 ]
 
 [[package]]
 name = "vector-core"
-version = "0.1.0"
-source = "git+https://github.com/tiago18c/vector?rev=e0566fc4f15686b5f49c419d7eb08bb4496bf9cc#e0566fc4f15686b5f49c419d7eb08bb4496bf9cc"
+version = "2.0.0"
+source = "git+https://github.com/tiago18c/vector?rev=6d893b5b7f056b4daf7155637c8574cbb2c7f37e#6d893b5b7f056b4daf7155637c8574cbb2c7f37e"
 dependencies = [
  "ed25519-dalek",
  "k256 0.13.4",
@@ -12168,6 +12182,7 @@ dependencies = [
  "solana-system-interface",
  "solana-transaction",
  "solana-winternitz",
+ "solana-xmss",
  "tempfile",
  "thiserror 2.0.21",
  "toml",

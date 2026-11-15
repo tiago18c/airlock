@@ -533,7 +533,8 @@ fn a_vector_passthrough_opens_to_what_it_carries() {
         key: key.pubkey().to_bytes().to_vec(),
         next_key: None,
     };
-    let wire = wrap_for_vector(&site, &[wrap], payer, Hash::new_from_array([2; 32])).unwrap();
+    let wire =
+        wrap_for_vector(&site, &[wrap], payer, Hash::new_from_array([2; 32]), 1_000).unwrap();
     let tx = decode_v1_transaction(&wire).unwrap();
     let store = IdlStore::open(MemoryStore::new(), MemoryBodies::new()).with_builtins();
 
@@ -544,8 +545,18 @@ fn a_vector_passthrough_opens_to_what_it_carries() {
         advance.interpolated_intent.as_deref(),
         Some(format!("Vector {account} signs and authorizes the nonce advance").as_str())
     );
-    // The signature blob and the sysvar are not shown.
-    assert_eq!(advance.fields.len(), 1);
+    // The signature blob and the sysvar are not shown; the slot it expires
+    // after is.
+    assert_eq!(advance.fields.len(), 2, "{:?}", advance.fields);
+    let expiry = advance
+        .fields
+        .iter()
+        .find(|field| field.label == "Valid until slot")
+        .unwrap();
+    assert!(
+        expiry.value.replace(',', "").contains("10000"),
+        "{expiry:?}"
+    );
 
     let passthrough = explained.instructions[1].inner.as_ref().unwrap();
     assert_eq!(
@@ -653,8 +664,8 @@ fn the_key_an_advance_hands_a_hash_based_account_to_is_shown_on_its_passthrough(
                 key: first.clone(),
                 next_key: Some(next_key.to_vec()),
             };
-            let wire =
-                wrap_for_vector(&site, &[wrap], payer, Hash::new_from_array([2; 32])).unwrap();
+            let wire = wrap_for_vector(&site, &[wrap], payer, Hash::new_from_array([2; 32]), 1_000)
+                .unwrap();
             decode_v1_transaction(&wire).unwrap()
         };
         let rotates = wrapped(&next);

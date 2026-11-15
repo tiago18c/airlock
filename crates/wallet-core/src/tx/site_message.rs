@@ -12,7 +12,9 @@ use solana_transaction::versioned::VersionedTransaction;
 use super::decode::parse_wire;
 
 const SIGNATURE_BYTES: usize = 64;
-const DIGEST_BYTES: usize = 32;
+/// What a Vector key signs before an `Advance`'s digest. A message that
+/// starts with it is an authorization of a Vector account.
+const VECTOR_PREFIX: &[u8] = b"vector:";
 /// How a message in Solana's offchain format starts.
 const OFFCHAIN_DOMAIN: &[u8] = b"\xffsolana offchain";
 /// The version of the offchain format a Ledger and a Trezor sign.
@@ -28,7 +30,7 @@ pub enum SiteMessageError {
         "These bytes could be read as a Solana transaction, so signing them could move funds."
     )]
     Transaction,
-    #[error("These 32 bytes could be a digest that authorizes a Vector account, so they are not signed as a message. A nonce of this length can be signed as 32 hex digits.")]
+    #[error("This message starts with \"vector:\", as an authorization of a Vector account does, so it is not signed as a message.")]
     Digest,
     #[error("These bytes are an offchain message, which Airlock does not sign yet.")]
     Offchain,
@@ -61,11 +63,10 @@ pub fn check_message(bytes: &[u8], origin: &str) -> Result<(), SiteMessageError>
     if reads_as_transaction(bytes) {
         return Err(SiteMessageError::Transaction);
     }
-    // A Vector authority signs a bare digest, which looks like nothing else.
-    // Reading as text proves nothing: whoever builds the transaction can vary
-    // it until its digest does, in about 2^36 tries. A digest that is all hex
-    // digits takes about 2^113, and that is how a nonce is often written.
-    if bytes.len() == DIGEST_BYTES && !bytes.iter().all(u8::is_ascii_hexdigit) {
+    // A Vector key signs `vector:` and then an `Advance`'s digest. Whatever
+    // follows the prefix, a site that builds the transaction can choose it,
+    // so the prefix alone is refused.
+    if bytes.starts_with(VECTOR_PREFIX) {
         return Err(SiteMessageError::Digest);
     }
     // A site must not get a sign-in to another site through a plain message.
@@ -456,25 +457,33 @@ mod tests {
     }
 
     #[test]
-    fn a_bare_digest_is_refused_even_if_it_reads_as_text() {
+    fn a_vector_authorization_is_refused_even_if_it_reads_as_text() {
+        let mut authorization = b"vector:".to_vec();
+        authorization.extend_from_slice(&[0xfe; 32]);
         assert_eq!(
-            check_message(&[0xfe; 32], ORIGIN),
+            check_message(&authorization, ORIGIN),
             Err(SiteMessageError::Digest)
         );
-        // About one digest in 2^36 reads as text, and a site can grind for one.
-        let reads = b"k7$Fz!mQ2_xR9@vL4#tN8&pW1*sY6%uC";
-        assert_eq!(reads.len(), 32);
+        // A site that builds the transaction can grind its digest until the
+        // whole message reads as text.
+        let reads = b"vector:k7$Fz!mQ2_xR9@vL4#tN8&pW1*sY6%uC";
         assert!(message_text(reads).is_some());
         assert_eq!(check_message(reads, ORIGIN), Err(SiteMessageError::Digest));
+        assert_eq!(
+            check_message(b"vector:", ORIGIN),
+            Err(SiteMessageError::Digest)
+        );
 
-        assert_eq!(check_message(&[0xfe; 31], ORIGIN), Ok(()));
-        assert_eq!(check_message(&[0xfe; 33], ORIGIN), Ok(()));
+        assert_eq!(check_message(b"Vector: hello", ORIGIN), Ok(()));
+        assert_eq!(check_message(b"my vector: hello", ORIGIN), Ok(()));
     }
 
     #[test]
-    fn a_nonce_of_32_hex_digits_may_be_signed() {
+    fn thirty_two_bytes_may_be_signed() {
+        // A bare digest authorizes nothing since Vector 2.0 prefixed what a
+        // key signs.
+        assert_eq!(check_message(&[0xfe; 32], ORIGIN), Ok(()));
         let nonce = b"0123456789abcdefABCDEF0123456789";
-        assert_eq!(nonce.len(), 32);
         assert_eq!(check_message(nonce, ORIGIN), Ok(()));
     }
 

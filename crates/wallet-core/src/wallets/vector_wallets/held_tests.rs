@@ -247,7 +247,10 @@ fn a_high_s_secp256k1_signature_still_verifies() {
     let secret = secp_key();
     let public = secp256k1_identity(&secret);
     let digest = [5u8; 32];
-    let (raw, _) = secret.sign_prehash(&digest).unwrap();
+    // A secp256k1 key signs the SHA-256 of "vector:" and the digest.
+    let prehash: [u8; 32] =
+        sha2::Sha256::digest(crate::wallets::vector::signed_message(&digest)).into();
+    let (raw, _) = secret.sign_prehash(&prehash).unwrap();
     let bytes: [u8; 64] = raw.to_bytes().into();
     let is_high = |bytes: &[u8; 64]| {
         let sig = SecpSignature::from_slice(bytes).unwrap();
@@ -285,9 +288,12 @@ fn parse_personal_sign_normalizes_v_and_refuses_a_text_signature() {
     // 0x prefix is accepted.
     parse_personal_sign(&address, &digest, &format!("0x{}", hex::encode(&signature))).unwrap();
 
-    // A signature over the digest's hex text recovers the address but is
-    // refused with a sentence that says so.
-    let text = format!("0x{}", hex::encode(digest));
+    // A signature over the hex text the Sign screen shows recovers the
+    // address but is refused with a sentence that says so.
+    let text = format!(
+        "0x{}",
+        hex::encode(crate::wallets::vector::signed_message(&digest))
+    );
     let mut hasher = sha3::Keccak256::new();
     use sha3::Digest;
     hasher.update(format!("\x19Ethereum Signed Message:\n{}", text.len()).as_bytes());
@@ -315,7 +321,7 @@ fn a_recovery_salt_is_pinned_and_is_the_same_whoever_makes_it() {
     // recovery signature: two builds would then sign one leaf twice.
     assert_eq!(
         hex::encode(salt),
-        "166eb3fe620aca81eafbb995d84e636f962f5e74d4"
+        "d76d9efabaee58d27169f1649a52b3106cb3a7aa94"
     );
     // The same key made again makes the same salt, so the same signature.
     let again = VectorSigner::Xmss(Box::new(xmss_from_seed(&seed).unwrap()));

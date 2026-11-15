@@ -738,12 +738,15 @@ fn the_shape_says_what_checks_would_join() {
         ApprovalShape::Other
     );
     let signature = vec![0; SchemeId::Ed25519.signature_len()];
-    let advance = crate::wallets::vector::advance(&[crate::wallets::vector::AdvanceEntry {
-        scheme: SchemeId::Ed25519,
-        key: &key,
-        next_key: &[],
-        signature: &signature,
-    }])
+    let advance = crate::wallets::vector::advance(
+        u64::MAX,
+        &[crate::wallets::vector::AdvanceEntry {
+            scheme: SchemeId::Ed25519,
+            key: &key,
+            next_key: &[],
+            signature: &signature,
+        }],
+    )
     .unwrap();
     assert_eq!(shape(vec![advance, vote(pk(1))]), ApprovalShape::Other);
 }
@@ -937,6 +940,7 @@ fn a_vector_members_checks_go_inside_its_passthrough() {
             }],
             hot,
             Hash::new_from_array([9; 32]),
+            1_000,
         )
         .unwrap()
     };
