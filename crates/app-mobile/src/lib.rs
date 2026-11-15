@@ -3,7 +3,8 @@
 //! offline, requests from other apps ([`wallet_adapter`]), and reporting to
 //! the core when the app is out of sight.
 //!
-//! Everything that calls into Android goes through [`android`], over JNI.
+//! Everything that calls into Android goes through [`android`], over JNI,
+//! but for waking the event loop ([`turns`]), which asks the NDK.
 //! On any other OS this crate builds, so the workspace checks it, but its
 //! Android calls answer that there is no Android.
 
@@ -13,7 +14,9 @@ mod android;
 
 pub mod key_guard;
 pub mod mode;
+mod pause;
 pub mod seed_vault;
+mod turns;
 mod usb;
 pub mod wallet_adapter;
 
@@ -23,6 +26,7 @@ use app_core::{Core, Links};
 use dioxus::prelude::*;
 
 pub use mode::Mode;
+pub use pause::{PauseMark, PauseMarker};
 
 /// Get the process ready before logging or any store opens: put the data
 /// folder under the app's private files folder, and pick the folder of the
@@ -104,26 +108,63 @@ pub fn links() -> Arc<dyn Links> {
 
 /// Tell the core when the app is in front and when it is not, so auto-lock
 /// counts the time it spent in the background, as it counts a hidden window
-/// on desktop.
-pub fn use_lifecycle(core: CopyValue<Core>) {
+/// on desktop. Keep the event loop awake through the activity's events,
+/// which can leave it asleep on a render it was asked for ([`turns`]). And
+/// have nothing sent to the page while the activity is paused ([`pause`]):
+/// mount a [`PauseMarker`] with the mark this returns.
+pub fn use_lifecycle(core: CopyValue<Core>) -> PauseMark {
     use dioxus::mobile::tao::event::{Event, WindowEvent};
 
     use_hook(move || core.peek().set_ui_visible(true));
-    dioxus::mobile::use_wry_event_handler(move |event, _| match event {
-        Event::Suspended => {
-            tracing::info!(target: "airlock::app", "app in the background");
-            core.peek().set_ui_visible(false);
-        }
-        Event::Resumed => {
-            tracing::info!(target: "airlock::app", "app in front");
-            core.peek().set_ui_visible(true);
-        }
-        Event::WindowEvent {
-            event: WindowEvent::Focused(focused),
-            ..
-        } => core.peek().set_ui_visible(*focused),
-        _ => {}
+    use_hook(|| {
+        let _ = app_ui_kit::platform::eval(pause::HOLD_SCRIPT);
     });
+    let mut mark = use_signal(|| 0u64);
+    let mut pauses = 0u64;
+    let mut turns = turns::Turns::default();
+    dioxus::mobile::use_wry_event_handler(move |event, _| {
+        let seen = match event {
+            Event::NewEvents(_) => Some(turns::Seen::Start),
+            Event::UserEvent(_) => Some(turns::Seen::Queued),
+            Event::MainEventsCleared => Some(turns::Seen::End),
+            // What tao sends once a turn's events are over.
+            Event::RedrawRequested(_) | Event::RedrawEventsCleared | Event::LoopDestroyed => None,
+            _ => Some(turns::Seen::Activity),
+        };
+        if seen.is_some_and(|seen| turns.see(seen)) {
+            wake_event_loop();
+        }
+        match event {
+            Event::Suspended => {
+                tracing::info!(target: "airlock::app", "app in the background");
+                core.peek().set_ui_visible(false);
+                pauses += 1;
+                mark.set(pauses);
+            }
+            Event::Resumed => {
+                tracing::info!(target: "airlock::app", "app in front");
+                core.peek().set_ui_visible(true);
+                mark.set(0);
+                // Not through Dioxus, which waits for the page's answer.
+                let _ = dioxus::mobile::window()
+                    .webview
+                    .evaluate_script(&pause::resume_script(pauses));
+            }
+            Event::WindowEvent {
+                event: WindowEvent::Focused(focused),
+                ..
+            } => core.peek().set_ui_visible(*focused),
+            _ => {}
+        }
+    });
+    PauseMark(mark)
+}
+
+/// Have the event loop, on whose thread this runs, take another turn at
+/// once, in which it empties its queue.
+fn wake_event_loop() {
+    #[cfg(target_os = "android")]
+    android::wake_this_looper();
 }
 
 /// Start the app again from the launcher, so it opens in the mode just

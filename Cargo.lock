@@ -406,6 +406,7 @@ dependencies = [
  "hw-protocol",
  "hw-transport",
  "jni 0.21.1",
+ "ndk",
  "ndk-context",
  "serde",
  "serde_json",
