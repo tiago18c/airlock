@@ -9,9 +9,15 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-15
+
+### Before you update
+
+- **Vector wallets made before this release no longer work.** The devnet Vector program was upgraded to Vector 2.0 on 2026-11-14, and their accounts were left behind by the upgrade: anything still in one cannot be moved out. Add the wallet again and initialize its new account.
+
 ### Changed
 
-- **Vector wallets use Vector 2.0**, to which the devnet program was upgraded on 2026-11-14. Vector wallets made before it no longer work: their accounts were left behind by the upgrade, and anything still in one cannot be moved out. Add the wallet again and initialize its new account. An Ethereum wallet's `personal_sign` for a Vector wallet now signs 39 bytes, `vector:` and the digest, as the Sign screen shows.
+- **Vector wallets use Vector 2.0.** An Ethereum wallet's `personal_sign` for a Vector wallet now signs 39 bytes, `vector:` and the digest, as the Sign screen shows.
 
 ### Fixed
 
