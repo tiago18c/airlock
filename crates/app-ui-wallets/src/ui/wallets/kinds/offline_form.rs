@@ -37,9 +37,6 @@ pub fn OfflineForm(on_done: EventHandler<()>) -> Element {
     };
 
     rsx! {
-        p { class: "note",
-            "An offline wallet is the address of a key kept on another device. This device prepares its transactions, and the other one signs them from a QR code or pasted text. No key is stored here."
-        }
         label { "Label"
             input {
                 r#type: "text",

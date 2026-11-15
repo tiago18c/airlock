@@ -3751,7 +3751,7 @@ textarea.editor-input:focus { box-shadow: none; }
   padding: 4px;
 }
 .modal.add-wallet {
-  height: min(44rem, calc(100vh - 48px));
+  height: min(52rem, calc(100vh - 48px));
   display: flex;
   flex-direction: column;
   overflow: hidden;

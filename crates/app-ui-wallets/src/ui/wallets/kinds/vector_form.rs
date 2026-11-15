@@ -260,9 +260,6 @@ pub fn VectorForm(creating: bool, on_done: EventHandler<()>) -> Element {
     };
 
     rsx! {
-        p { class: "note",
-            "A Vector wallet is an account of the Vector program. Its key signs a digest of whole transactions off chain; a hot wallet relays them. After you add it, Initialize on its row creates the account on this cluster."
-        }
         label { "Label"
             input {
                 r#type: "text",
