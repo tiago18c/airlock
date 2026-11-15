@@ -342,6 +342,79 @@ test("a host that went away is told the pages again when a new one starts", asyn
   await settle();
 });
 
+test("a resolution's change reaches only the pages of its origin", async () => {
+  newWindow();
+  const mine = pageOf("https://resolving.test");
+  const again = pageOf("https://resolving.test");
+  const other = pageOf("https://bystander.test");
+  native.onMessage.fire({ v: 1, id: nextId(mine, "status"), result: {} });
+  await settle();
+  const before = [mine.sent.length, again.sent.length, other.sent.length];
+
+  const push = {
+    v: 1,
+    method: "resolutionChanged",
+    origin: "https://resolving.test",
+    params: { resolution: { id: "r1", state: "done" } },
+  };
+  native.onMessage.fire(push);
+  assert.deepEqual(mine.sent.slice(before[0]), [{ push }]);
+  assert.deepEqual(again.sent.slice(before[1]), [{ push }]);
+  assert.equal(other.sent.length, before[2]);
+
+  // A push for an origin with no page goes nowhere, and one for a page that
+  // has gone is not an error.
+  again.close();
+  native.onMessage.fire({ ...push, origin: "https://nobody.test" });
+  native.onMessage.fire(push);
+  assert.equal(mine.sent.length, before[0] + 2);
+});
+
+test("the intent methods reach the app, and only a message counts as waiting", async () => {
+  newWindow();
+  const page = pageOf("https://intents.test");
+  for (const method of ["getSigningProfile", "resolve", "getResolution", "provideSignatures", "cancelResolution"]) {
+    const appId = nextId(page, method, { id: "r1" });
+    const request = toApp(method).at(-1);
+    assert.equal(request.origin, "https://intents.test");
+    assert.ok(request.expiresAt <= Math.floor((Date.now() + QUICK_TTL_MS) / 1000), method);
+    native.onMessage.fire({ v: 1, id: appId, result: { resolution: { id: "r1" } } });
+    await settle();
+  }
+
+  // As many quick ones as the rate allows, with no room taken among the
+  // requests that wait.
+  newWindow();
+  const ids = [];
+  for (let n = 0; n < MAX_PENDING_PER_ORIGIN + 2; n += 1) ids.push(nextId(page, "getResolution", { id: "r1" }));
+  for (const id of ids) native.onMessage.fire({ v: 1, id, result: {} });
+  await settle();
+
+  newWindow();
+  const waiting = [];
+  for (let n = 0; n < MAX_PENDING_PER_ORIGIN; n += 1) waiting.push(nextId(page, "resolveMessage", { mode: "signature" }));
+  page.onMessage.fire({ id: "over", method: "resolveMessage", params: {} });
+  assert.equal((await lastReply(page)).error.code, "too_many_requests");
+  for (const id of waiting) native.onMessage.fire({ v: 1, id, result: {} });
+  await settle();
+});
+
+test("a refusal's requirement reaches the page", async () => {
+  newWindow();
+  const page = pageOf("https://unsupported.test");
+  const appId = nextId(page, "resolve", {}, "asked");
+  native.onMessage.fire({
+    v: 1,
+    id: appId,
+    error: { code: "unsupported", message: "No cosign here.", requirement: "delivery" },
+  });
+  assert.deepEqual((await lastReply(page)).error, {
+    code: "unsupported",
+    message: "No cosign here.",
+    requirement: "delivery",
+  });
+});
+
 test("whoever waits when the host goes away hears about it, under the id they used", async () => {
   newWindow();
   const page = pageOf("https://orphan.test");

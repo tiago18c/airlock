@@ -12,6 +12,7 @@ mod error;
 pub mod explorer;
 pub mod idl;
 mod ids;
+pub mod intent;
 pub mod keys;
 mod market;
 pub mod migrate;

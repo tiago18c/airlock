@@ -125,11 +125,66 @@ pub async fn route_created(
     site_signs: bool,
     created: &[Pubkey],
 ) -> Result<Route, FlowError> {
-    let left = if site_signs {
+    route_keeping(
+        rpc,
+        tx,
+        hot,
+        known,
+        keyless,
+        site_signs,
+        created,
+        &Kept::default(),
+    )
+    .await
+}
+
+/// Signers of a request whose notes already said what becomes of them
+/// (`docs/intents.md`): no guess replaces them, and only `app_signs` is
+/// left for the site.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Kept {
+    /// Never replaced and never left for the site: keys made here for the
+    /// notes, and every address a note names that the app does not sign.
+    pub keep: Vec<Pubkey>,
+    /// Never replaced, and left for the site to sign after this device.
+    pub app_signs: Vec<Pubkey>,
+}
+
+impl Kept {
+    /// Whether a guess may replace `signer`.
+    pub fn replaceable(&self, signer: &Pubkey) -> bool {
+        !self.keep.contains(signer) && !self.app_signs.contains(signer)
+    }
+}
+
+/// [`route_created`], for a request whose notes decided some signers
+/// already: see [`Kept`].
+#[allow(clippy::too_many_arguments)]
+pub async fn route_keeping(
+    rpc: Option<&dyn SolanaRpc>,
+    tx: &DecodedTx,
+    hot: &[Pubkey],
+    known: &[Pubkey],
+    keyless: bool,
+    site_signs: bool,
+    created: &[Pubkey],
+    kept: &Kept,
+) -> Result<Route, FlowError> {
+    let mut left = if site_signs {
         left_for_site(tx, known, created)
     } else {
         Vec::new()
     };
+    left.retain(|signer| !kept.keep.contains(signer));
+    for signer in &kept.app_signs {
+        let unsigned = tx
+            .signers
+            .iter()
+            .any(|slot| slot.pubkey == *signer && !slot.filled);
+        if unsigned && !left.contains(signer) {
+            left.push(*signer);
+        }
+    }
     let unsigned_here = tx
         .signers
         .iter()
@@ -139,10 +194,10 @@ pub async fn route_created(
         return Ok(Route::AsIs);
     }
     // A node that cannot tell leaves the signature to stop the rewrite.
+    let mut candidates = replaceable_signers(tx, known, created);
+    candidates.retain(|signer| kept.replaceable(signer));
     let one_time = match rpc {
-        Some(rpc) => one_time_signers(rpc, &replaceable_signers(tx, known, created))
-            .await
-            .unwrap_or_default(),
+        Some(rpc) => one_time_signers(rpc, &candidates).await.unwrap_or_default(),
         None => Vec::new(),
     };
     let keys: Vec<(Pubkey, KeypairSigner)> = one_time
@@ -713,6 +768,59 @@ mod tests {
             panic!("a pasted request is converted");
         };
         assert_eq!(converted.replaced, vec![(pk(2), keys.pubkeys()[0])]);
+    }
+
+    #[test]
+    fn a_signer_the_notes_decided_is_neither_replaced_nor_guessed_for_the_site() {
+        let tx = new_account_legacy();
+        let rpc = succeeding();
+        let created = created_accounts(&tx, None);
+        let routed = |kept: &Kept, site_signs: bool| {
+            pollster::block_on(route_keeping(
+                Some(&rpc),
+                &tx,
+                &[],
+                &[pk(1)],
+                false,
+                site_signs,
+                &created,
+                kept,
+            ))
+            .unwrap()
+        };
+        // A key made here for the notes: the guess would replace it again.
+        let keep = Kept {
+            keep: vec![pk(2)],
+            app_signs: Vec::new(),
+        };
+        let Route::Converted(converted, keys) = routed(&keep, true) else {
+            panic!("an offline payer is converted");
+        };
+        assert!(keys.is_empty());
+        assert!(converted.replaced.is_empty());
+        // The app's own key for a new account it kept: left to it, not
+        // replaced, and signed as it is when the rest is hot.
+        let app = Kept {
+            keep: Vec::new(),
+            app_signs: vec![pk(2)],
+        };
+        let hot = pollster::block_on(route_keeping(
+            Some(&rpc),
+            &tx,
+            &[pk(1)],
+            &[pk(1)],
+            false,
+            false,
+            &created,
+            &app,
+        ))
+        .unwrap();
+        assert_eq!(hot, Route::AsIs);
+        let Route::Converted(converted, keys) = routed(&app, false) else {
+            panic!("an offline payer is converted");
+        };
+        assert!(keys.is_empty());
+        assert!(converted.replaced.is_empty());
     }
 
     fn succeeding() -> FakeRpc {

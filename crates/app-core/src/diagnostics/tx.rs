@@ -1,6 +1,8 @@
 //! Transaction stages under `airlock::tx`, each with a flow id.
 
+use std::collections::VecDeque;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Mutex, PoisonError};
 
 use base64::Engine;
 use solana_signature::{Signature, SIGNATURE_BYTES};
@@ -70,6 +72,12 @@ impl<'a> TxLog<'a> {
         log_stage!(self, "returned", origin = %origin, code = %code);
     }
 
+    /// Signed here for a resolution delivered `cosign`: held until the site
+    /// adds its signatures, then sent under this flow (see [`hold_flow`]).
+    pub fn log_held(self, origin: &str, code: &str) {
+        log_stage!(self, "held", origin = %origin, code = %code);
+    }
+
     pub fn log_sent(self, signature: &str) {
         log_stage!(self, "sent", signature = %signature);
     }
@@ -82,6 +90,41 @@ impl<'a> TxLog<'a> {
     pub fn log_unanswered(self, signature: &str, error: &str) {
         log_stage!(self, "unanswered", signature = %signature, error = %error);
     }
+}
+
+/// Flows of transactions held for a site's signatures, by the SHA-256 of
+/// their message, which the site's signatures leave as it is. Bounded: one
+/// never sent drops out, and is then sent under a flow of its own.
+static HELD_FLOWS: Mutex<VecDeque<([u8; 32], u64)>> = Mutex::new(VecDeque::new());
+const HELD_FLOWS_KEPT: usize = 64;
+
+fn message_hash(wire: &[u8]) -> Option<[u8; 32]> {
+    parse_wire(wire)
+        .ok()
+        .map(|view| sha256_bytes(&view.message))
+}
+
+/// Remember that `wire`, signed here and held for the site's signatures,
+/// belongs to `flow`, so what is sent once the site has signed is logged
+/// under the same flow ([`held_flow`]).
+pub fn hold_flow(wire: &[u8], flow: u64) {
+    let Some(hash) = message_hash(wire) else {
+        return;
+    };
+    let mut held = HELD_FLOWS.lock().unwrap_or_else(PoisonError::into_inner);
+    held.retain(|(kept, _)| *kept != hash);
+    if held.len() >= HELD_FLOWS_KEPT {
+        held.pop_front();
+    }
+    held.push_back((hash, flow));
+}
+
+/// The flow [`hold_flow`] kept for `wire`'s message, taken out.
+pub fn held_flow(wire: &[u8]) -> Option<u64> {
+    let hash = message_hash(wire)?;
+    let mut held = HELD_FLOWS.lock().unwrap_or_else(PoisonError::into_inner);
+    let at = held.iter().position(|(kept, _)| *kept == hash)?;
+    held.remove(at).map(|(_, flow)| flow)
 }
 
 /// A tracker (or any status update) logs the outcome under `airlock::tx`.
@@ -139,5 +182,36 @@ fn bs58_encode(bytes: &[u8]) -> String {
     match <[u8; SIGNATURE_BYTES]>::try_from(bytes) {
         Ok(arr) => Signature::from(arr).to_string(),
         Err(_) => hex::encode(bytes),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A legacy memo by `payer`, with its one signature slot set to `sig`.
+    fn memo(payer: u8, text: &[u8], sig: u8) -> Vec<u8> {
+        let mut wire = vec![1];
+        wire.extend([sig; 64]);
+        wire.extend([1, 0, 1, 2]);
+        wire.extend([payer; 32]);
+        wire.extend([9; 32]);
+        wire.extend([7; 32]);
+        wire.extend([1, 1, 1, 0, u8::try_from(text.len()).unwrap()]);
+        wire.extend(text);
+        wire
+    }
+
+    #[test]
+    fn a_held_flow_is_found_again_once_the_site_has_signed() {
+        let held = memo(1, b"held for the site", 0);
+        hold_flow(&held, 41);
+        // The site's signature changes the wire, not the message.
+        let signed = memo(1, b"held for the site", 5);
+        assert_eq!(held_flow(&memo(2, b"held for the site", 5)), None);
+        assert_eq!(held_flow(&signed), Some(41));
+        // Taken once.
+        assert_eq!(held_flow(&signed), None);
+        assert_eq!(held_flow(b"not a transaction"), None);
     }
 }

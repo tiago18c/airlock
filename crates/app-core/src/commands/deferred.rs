@@ -14,7 +14,8 @@ use crate::events::Event;
 use crate::history::History;
 use crate::notices::Notices;
 use crate::ranked::{Rank, Ranked, RankedGuard};
-use crate::storage::{AppHistory, AppHoldings, AppNotices, AppWorkspace};
+use crate::resolutions::Resolutions;
+use crate::storage::{AppHistory, AppHoldings, AppNotices, AppResolutions, AppWorkspace};
 
 /// What the core needs of a store it saves deferred.
 pub(super) trait Saves: 'static {
@@ -241,6 +242,18 @@ impl Saves for AppNotices {
 
     fn save(&self) -> Result<(), VaultError> {
         AppNotices::save(self)
+    }
+}
+
+impl Saves for AppResolutions {
+    type Data = Resolutions;
+
+    fn data_mut(&mut self) -> &mut Self::Data {
+        AppResolutions::data_mut(self)
+    }
+
+    fn save(&self) -> Result<(), VaultError> {
+        AppResolutions::save(self)
     }
 }
 

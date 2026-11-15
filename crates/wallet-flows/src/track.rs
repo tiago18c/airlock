@@ -24,6 +24,14 @@ pub const SITE_SEND_WINDOW: Duration = Duration::from_secs(10);
 /// How often the node is asked while watching for a site's send.
 pub const SITE_SEND_POLL: Duration = Duration::from_secs(1);
 
+/// How long a transaction a resolution returned to its site is watched for
+/// the site sending it (`docs/intents.md`, `return`). A site that signs
+/// and sends within a minute or two is seen; a blockhash this app chose
+/// lives about as long.
+pub const RETURNED_WINDOW: Duration = Duration::from_secs(3 * 60);
+/// How often the node is asked while watching for a returned transaction.
+pub const RETURNED_POLL: Duration = Duration::from_secs(3);
+
 /// Terminal outcome of tracking one signature.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TrackResult {
@@ -143,6 +151,40 @@ pub async fn watch_landed(
         }
     }
     seen
+}
+
+/// Ask the node about `signatures` every `every`, over `window`, until each
+/// has confirmed or failed. `None` for one it never settled: not seen, or
+/// seen and not confirmed, which may still land or be dropped. A poll the
+/// node does not answer finds nothing.
+pub async fn watch_outcomes(
+    rpc: &dyn SolanaRpc,
+    signatures: &[Signature],
+    window: Duration,
+    every: Duration,
+    mut sleep: impl FnMut(Duration) -> SleepFut,
+) -> Vec<Option<TrackResult>> {
+    let mut settled: Vec<Option<TrackResult>> = vec![None; signatures.len()];
+    let polls = (window.as_millis() / every.as_millis().max(1)).max(1);
+    for poll in 0..polls {
+        if poll > 0 {
+            sleep(every).await;
+        }
+        let pending: Vec<usize> = (0..signatures.len())
+            .filter(|&i| settled[i].is_none())
+            .collect();
+        let asked: Vec<(Signature, Option<u64>)> =
+            pending.iter().map(|&i| (signatures[i], None)).collect();
+        if let Ok(results) = poll_many(rpc, &asked).await {
+            for (index, result) in pending.into_iter().zip(results) {
+                settled[index] = result;
+            }
+        }
+        if settled.iter().all(Option::is_some) {
+            break;
+        }
+    }
+    settled
 }
 
 #[cfg(test)]
@@ -291,5 +333,56 @@ mod tests {
         assert_eq!(seen, vec![true, false]);
         assert_eq!(rpc.asked(), 10);
         assert_eq!(*elapsed.lock().unwrap(), 9_000);
+    }
+
+    #[test]
+    fn a_returned_watch_tells_what_ran_from_what_failed_and_leaves_the_rest_open() {
+        let rpc = FakeRpc::default()
+            .with_signature_status(
+                sig(1),
+                SignatureStatus {
+                    slot: 9,
+                    err: None,
+                    confirmation: Some(ConfirmationLevel::Confirmed),
+                },
+            )
+            .with_signature_status(
+                sig(2),
+                SignatureStatus {
+                    slot: 9,
+                    err: Some("InstructionError(0, Custom(1))".into()),
+                    confirmation: Some(ConfirmationLevel::Confirmed),
+                },
+            )
+            // Seen, and not confirmed by the end: it may still be dropped.
+            .with_signature_status(
+                sig(3),
+                SignatureStatus {
+                    slot: 9,
+                    err: None,
+                    confirmation: None,
+                },
+            );
+        let elapsed = Arc::new(Mutex::new(0));
+        let (sleep, _) = manual(elapsed.clone());
+        let settled = pollster::block_on(watch_outcomes(
+            &rpc,
+            &[sig(1), sig(2), sig(3), sig(4)],
+            Duration::from_secs(9),
+            Duration::from_secs(3),
+            sleep,
+        ));
+        assert_eq!(
+            settled,
+            vec![
+                Some(TrackResult::Confirmed { slot: 9 }),
+                Some(TrackResult::Failed {
+                    error: "InstructionError(0, Custom(1))".into()
+                }),
+                None,
+                None,
+            ]
+        );
+        assert_eq!(*elapsed.lock().unwrap(), 6_000);
     }
 }

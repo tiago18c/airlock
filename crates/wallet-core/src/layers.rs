@@ -34,6 +34,7 @@ const LAYERS: &[&[&str]] = &[
     &["import", "roster", "route", "proposals", "relay"],
     &["vector_wallets", "adapt", "enroll", "shared_keys"],
     &["describe", "portfolio", "review", "explorer", "edit"],
+    &["intent"],
 ];
 
 /// Modules whose own files only list what their children export.

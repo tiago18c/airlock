@@ -5,6 +5,14 @@ import { AirlockWallet } from "../src/wallet";
 
 const KEY = bytesToBase64(new Uint8Array(32).fill(7));
 const SENDING = ["solana:signTransaction", "solana:signAndSendTransaction", "solana:signAndSendAllTransactions"];
+const INTENTS = [
+  "airlock:getSigningProfile",
+  "airlock:resolve",
+  "airlock:getResolution",
+  "airlock:provideSignatures",
+  "airlock:cancelResolution",
+  "airlock:signMessage",
+];
 
 function walletWith(reply: (method: string, params: unknown) => unknown) {
   const calls: { method: string; params: unknown }[] = [];
@@ -23,6 +31,12 @@ const sign = (wallet: AirlockWallet, ...inputs: unknown[]) =>
 test("the wallet offers only what the desktop app can do", () => {
   const { wallet } = walletWith(() => ({}));
   assert.deepEqual(Object.keys(wallet.features).sort(), [
+    "airlock:cancelResolution",
+    "airlock:getResolution",
+    "airlock:getSigningProfile",
+    "airlock:provideSignatures",
+    "airlock:resolve",
+    "airlock:signMessage",
     "solana:signAndSendAllTransactions",
     "solana:signAndSendTransaction",
     "solana:signIn",
@@ -32,6 +46,9 @@ test("the wallet offers only what the desktop app can do", () => {
     "standard:disconnect",
     "standard:events",
   ]);
+  for (const name of INTENTS) {
+    assert.equal((wallet.features[name] as { version: string }).version, "0.1.0", name);
+  }
   const feature = wallet.features["solana:signTransaction"] as { supportedTransactionVersions: readonly unknown[] };
   assert.deepEqual([...feature.supportedTransactionVersions], ["legacy", 0, 1]);
   for (const name of ["solana:signAndSendTransaction", "solana:signAndSendAllTransactions"]) {
@@ -45,7 +62,7 @@ test("connect exposes the accounts the desktop app returned", async () => {
   const { accounts } = await connect(wallet);
   assert.equal(accounts.length, 1);
   assert.equal(wallet.accounts[0].label, "Treasury");
-  assert.deepEqual([...wallet.accounts[0].features], SENDING);
+  assert.deepEqual([...wallet.accounts[0].features], [...SENDING, ...INTENTS]);
 });
 
 test("a silent connect that cannot reach the app finds nothing, and a normal one fails", async () => {
@@ -64,14 +81,14 @@ const signMessage = (wallet: AirlockWallet, ...inputs: unknown[]) =>
 const signIn = (wallet: AirlockWallet, ...inputs: unknown[]) =>
   (wallet.features["solana:signIn"] as { signIn: (...i: unknown[]) => Promise<{ account: { address: string }; signedMessage: Uint8Array; signature: Uint8Array }[]> }).signIn(...inputs);
 
-test("only an account with a key here can sign messages", async () => {
+test("only an account with a key here can sign messages, and every account resolves", async () => {
   const OTHER = bytesToBase64(new Uint8Array(32).fill(8));
   const { wallet } = walletWith(() => ({
     accounts: [{ publicKey: KEY, signsMessages: true }, { publicKey: OTHER }],
   }));
   await connect(wallet);
-  assert.deepEqual([...wallet.accounts[0].features], [...SENDING, "solana:signMessage"]);
-  assert.deepEqual([...wallet.accounts[1].features], SENDING);
+  assert.deepEqual([...wallet.accounts[0].features], [...SENDING, "solana:signMessage", ...INTENTS]);
+  assert.deepEqual([...wallet.accounts[1].features], [...SENDING, ...INTENTS]);
 });
 
 test("a message is signed for a connected account, one input at a time", async () => {

@@ -366,8 +366,9 @@ pub fn name_offline_wallet(book: &mut AddressBook, pubkey: Pubkey, label: impl I
     }
 }
 
-/// Accounts this device can act as: the ones it holds a key for, and its
-/// programmatic signers and Squads vaults, with its Vector wallets while they
+/// Accounts this device can act as: the ones it holds a key for, its offline
+/// wallets (whose key signs on another device), and its programmatic signers
+/// and Squads vaults, with its Vector wallets while they
 /// are offered. With no vault data, which is a locked vault, the list comes
 /// from the address-book entries tied to a wallet.
 pub fn shareable_accounts(
@@ -382,7 +383,11 @@ pub fn shareable_accounts(
     {
         let contract = wallet.kind.class() == WalletClass::SmartContract;
         let on_device = wallet.kind.hardware_vendor();
-        if !wallet.kind.can_sign() && !contract && on_device.is_none() {
+        // A key on another device signs a site's request there, and its
+        // signature comes back here (docs/intents.md: an offline key is
+        // `async`), so a site may be shown it like a key held here.
+        let elsewhere = matches!(wallet.kind, WalletKind::Offline { .. });
+        if !wallet.kind.can_sign() && !contract && on_device.is_none() && !elsewhere {
             continue;
         }
         if wallet.kind.vector_settings().is_some() && !vector::offered(workspace) {

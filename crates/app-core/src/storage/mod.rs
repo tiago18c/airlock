@@ -31,6 +31,7 @@ use wallet_core::{
 
 use crate::history::HistoryStore;
 use crate::notices::NoticesStore;
+use crate::resolutions::ResolutionsStore;
 
 /// A place that opens one named file, or one browser key, at a time.
 pub trait Storage: Send + Sync {
@@ -66,6 +67,8 @@ pub const HOLDINGS_FILE: &str = "holdings.json";
 pub const NOTICES_FILE: &str = "notices.json";
 /// What the wallets did on chain, as read from nodes and sent from here.
 pub const HISTORY_FILE: &str = "history.json";
+/// What became of the requests sites asked to have resolved.
+pub const RESOLUTIONS_FILE: &str = "resolutions.json";
 pub const LEAF_MARKS_FILE: &str = "vector-leaves.json";
 
 pub struct BoxedStore(pub Box<dyn VaultStore>);
@@ -98,6 +101,7 @@ pub type AppWorkspace = WorkspaceStore<BoxedStore>;
 pub type AppHoldings = HoldingsStore<BoxedStore>;
 pub type AppNotices = NoticesStore<BoxedStore>;
 pub type AppHistory = HistoryStore<BoxedStore>;
+pub type AppResolutions = ResolutionsStore<BoxedStore>;
 pub type AppLeafMarks = LeafMarks<BoxedStore>;
 #[cfg(not(target_arch = "wasm32"))]
 pub type AppIdls = IdlStore<BoxedStore, wallet_core::DirIdlBodies>;
@@ -163,6 +167,10 @@ pub fn open_notices_in(storage: &dyn Storage) -> AppNotices {
 
 pub fn open_history_in(storage: &dyn Storage) -> AppHistory {
     HistoryStore::open(BoxedStore(storage.open(HISTORY_FILE)))
+}
+
+pub fn open_resolutions_in(storage: &dyn Storage) -> AppResolutions {
+    ResolutionsStore::open(BoxedStore(storage.open(RESOLUTIONS_FILE)))
 }
 
 pub fn open_vault() -> AppVault {

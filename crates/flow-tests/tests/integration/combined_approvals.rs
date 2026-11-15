@@ -181,7 +181,7 @@ impl Team {
                 &[&creator],
                 vec![
                     squad
-                        .create_transaction(1, 0, std::slice::from_ref(&payment), &by, &by)
+                        .create_transaction(1, 0, 0, std::slice::from_ref(&payment), &by, &by)
                         .unwrap(),
                     squad.create_proposal(1, &by, &by),
                 ],

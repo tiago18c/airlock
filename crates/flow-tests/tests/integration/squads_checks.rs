@@ -154,7 +154,7 @@ impl Desk {
                 &[&self.a],
                 vec![
                     self.squad
-                        .create_transaction(index, 0, instructions, &a, &a)
+                        .create_transaction(index, 0, 0, instructions, &a, &a)
                         .unwrap(),
                     self.squad.create_proposal(index, &a, &a),
                     self.squad.approve(index, &a),
@@ -798,7 +798,7 @@ impl VectorDesk {
                     &[&desk.payer],
                     vec![
                         squad
-                            .create_transaction(1, 0, &[payment], &payer, &payer)
+                            .create_transaction(1, 0, 0, &[payment], &payer, &payer)
                             .unwrap(),
                         squad.create_proposal(1, &payer, &payer),
                         squad.approve(1, &payer),

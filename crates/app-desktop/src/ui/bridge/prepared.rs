@@ -1,7 +1,11 @@
 //! Prepare a browser sign request for display and action.
 
 use super::*;
-use app_ui_kit::state::forms::{BlockhashClock, SimState};
+use app_ui_kit::actions::resolve::{
+    log_notes_applied, on_durable_nonce, onto_fresh_blockhash, resolve_request,
+};
+use app_ui_kit::actions::sign::{prepare_request_keeping, proposals_ahead};
+use app_ui_kit::state::forms::{BlockhashClock, ResolvedRequest, SimState};
 use wallet_flows::offer::{modal_offer, ModalFacts, Simulated};
 
 /// The transaction a sign request will be answered with.
@@ -96,8 +100,11 @@ pub(in crate::ui) struct PreparedRequest {
     pub for_sign: Option<SignWire>,
     pub replaced_payer: bool,
     /// Unsigned accounts the site's own transaction creates, such as a new
-    /// mint. The site signs for them once it has the transaction back.
+    /// mint. The site signs for them once it has the transaction back. For
+    /// a `resolve`, the signers its notes say the app signs for.
     pub site_signs: Vec<Pubkey>,
+    /// For a `resolve`, the request with its notes applied, once prepared.
+    pub resolved: Option<ResolvedRequest>,
 }
 
 /// Prepare transaction `index` of the sign request `current`.
@@ -108,6 +115,13 @@ pub(in crate::ui) fn use_prepared_request(
 ) -> PreparedRequest {
     let transaction = current.request.transactions().get(index);
     let original = transaction.and_then(|transaction| transaction.wire.bytes().map(<[u8]>::to_vec));
+    // The transactions before this one, as the site sent them: a multisig
+    // numbers the proposals they store before this one's.
+    let earlier: Vec<Vec<u8>> = current.request.transactions()
+        [..index.min(current.request.transactions().len())]
+        .iter()
+        .filter_map(|transaction| transaction.wire.bytes().map(<[u8]>::to_vec))
+        .collect();
     let account = transaction.map(|transaction| transaction.account);
 
     let mut prepared = use_signal(|| Prepared::Working);
@@ -126,6 +140,8 @@ pub(in crate::ui) fn use_prepared_request(
     let source = original.clone();
     let prepare_origin = current.origin.clone();
     let prepare_id = current.id.clone();
+    // A `resolve`: its notes are applied before anything else is done.
+    let resolve_call = current.request.resolve().cloned();
     use_effect(move || {
         let _ = (attempt(), unlocked());
         let Some(wire) = source.clone() else {
@@ -138,29 +154,53 @@ pub(in crate::ui) fn use_prepared_request(
         paid_here.set(false);
         let origin = prepare_origin.clone();
         let request_id = prepare_id.clone();
+        let call = resolve_call.clone();
+        let earlier = earlier.clone();
         // `prepare_request` logs `received` before anything can stop it.
         let log_received = !*received_logged.peek();
         received_logged.set(true);
         spawn(async move {
             let code = crate::bridge::request_code(&request_id);
-            let result = prepare_request(
-                session,
-                wire.clone(),
-                log_received.then(|| app_ui_kit::actions::sign::ReceivedMeta {
-                    source: "browser",
-                    origin: Some(&origin),
-                    code: Some(&code),
-                }),
-                Some(flow),
-                true,
-            )
-            .await;
+            let received = log_received.then(|| app_ui_kit::actions::sign::ReceivedMeta {
+                source: "browser",
+                origin: Some(&origin),
+                code: Some(&code),
+            });
+            let result = match &call {
+                None => {
+                    let ahead = proposals_ahead(session, &earlier, &wire);
+                    prepare_request_keeping(
+                        session,
+                        wire.clone(),
+                        received,
+                        Some(flow),
+                        true,
+                        &Default::default(),
+                        ahead,
+                    )
+                    .await
+                }
+                Some(call) => {
+                    let preparing = PreparingResolve {
+                        call,
+                        origin: &origin,
+                        request_id: &request_id,
+                        index,
+                        original: &wire,
+                        flow,
+                    };
+                    prepare_resolved(session, preparing, received).await
+                }
+            };
             if *turn.peek() != mine {
                 return;
             }
             let ready = result.is_ok();
+            // What a resolution asks of this device was checked when it
+            // arrived, and its notes may put a payer of this device in.
+            let resolves = call.is_some();
             prepared.set(match result {
-                Ok(prepared) if !session.site_given(&origin, &prepared.asks) => {
+                Ok(prepared) if !resolves && !session.site_given(&origin, &prepared.asks) => {
                     Prepared::Refused(crate::bridge::NOT_GIVEN_TO_SITE.to_owned())
                 }
                 Ok(prepared) => Prepared::Ready {
@@ -176,7 +216,12 @@ pub(in crate::ui) fn use_prepared_request(
                 Err(err) => Prepared::Failed(err),
             });
             // Payer swap only after a v1 (or converted) path; as-is legacy/v0
-            // keeps the site's fee payer.
+            // keeps the site's fee payer. A resolution's payer is replaced
+            // only where its notes allow, so it is never offered.
+            #[cfg(not(target_arch = "wasm32"))]
+            if resolves {
+                return;
+            }
             #[cfg(not(target_arch = "wasm32"))]
             if let Some(Prepared::Ready {
                 format: wallet_core::TxFormat::V1,
@@ -305,15 +350,23 @@ pub(in crate::ui) fn use_prepared_request(
     let ctx = wallet_core::relay::AuthContext {
         vector: &vector_known,
     };
-    let site_signs = shown
-        .as_ref()
-        .filter(|tx| tx.format != wallet_core::TxFormat::V1)
-        .map(|tx| {
-            let mut here = session.known_wallet_pubkeys();
-            here.extend(local_keys.iter().copied());
-            wallet_flows::request::left_for_site(tx, &here, &session.forms.sign.created_in(tx))
-        })
-        .unwrap_or_default();
+    let resolved = session.forms.sign.resolved(&current.id);
+    let site_signs = match &resolved {
+        // The notes say who the app signs for, whatever the format.
+        Some(resolved) => shown
+            .as_ref()
+            .map(|tx| resolved.app_signs_in(tx))
+            .unwrap_or_default(),
+        None => shown
+            .as_ref()
+            .filter(|tx| tx.format != wallet_core::TxFormat::V1)
+            .map(|tx| {
+                let mut here = session.known_wallet_pubkeys();
+                here.extend(local_keys.iter().copied());
+                wallet_flows::request::left_for_site(tx, &here, &session.forms.sign.created_in(tx))
+            })
+            .unwrap_or_default(),
+    };
     let verdict = match (&shown, &explained) {
         (Some(tx), Some(explained)) => Some(quick_sign_in(tx, &local, &ctx, explained)),
         _ => None,
@@ -455,5 +508,96 @@ pub(in crate::ui) fn use_prepared_request(
         for_sign,
         replaced_payer,
         site_signs,
+        resolved,
     }
+}
+
+/// What preparing one transaction of a `resolve` needs.
+struct PreparingResolve<'a> {
+    call: &'a app_core::bridge::ResolveCall,
+    origin: &'a str,
+    request_id: &'a str,
+    index: usize,
+    /// The transaction as the site sent it.
+    original: &'a [u8],
+    flow: u64,
+}
+
+/// Prepare transaction `index` of a `resolve`: its notes applied, once for
+/// the request (`resolve_request`); then as any site's transaction, with no
+/// guess touching what the notes decided; then onto a fresh blockhash, since
+/// the wallet chooses a resolution's lifetime. A rebuild chose one already,
+/// and a durable nonce keeps its own.
+async fn prepare_resolved(
+    session: Session,
+    preparing: PreparingResolve<'_>,
+    received: Option<app_ui_kit::actions::sign::ReceivedMeta<'_>>,
+) -> Result<app_ui_kit::actions::sign::PreparedRequest, String> {
+    let PreparingResolve {
+        call,
+        origin,
+        request_id,
+        index,
+        original,
+        flow,
+    } = preparing;
+    // `received` is the site's own transaction, before the notes change it.
+    if let Some(meta) = &received {
+        let cluster = session.cluster();
+        app_core::diagnostics::TxLog {
+            flow,
+            wire: original,
+            cluster: Some(&cluster),
+        }
+        .log_received(meta.source, meta.origin, meta.code);
+    }
+    if session.is_initialized() && !session.is_unlocked() {
+        return Err("The vault is locked. Unlock it before preparing a transaction.".into());
+    }
+    let resolved = resolve_request(session, origin, request_id, call).await?;
+    let wire = resolved
+        .wires
+        .get(index)
+        .cloned()
+        .ok_or_else(|| "This request has no such transaction.".to_string())?;
+    // Each preparation starts again from the site's transaction, and says
+    // so: the rewrite is the same each time.
+    log_notes_applied(session, flow, original, &wire);
+    // The site signs after this device only when it asked to.
+    let site_signs = resolved.delivery != wallet_core::intent::Delivery::Send;
+    let ahead = proposals_ahead(
+        session,
+        resolved.wires.get(..index).unwrap_or_default(),
+        &wire,
+    );
+    let mut prepared = prepare_request_keeping(
+        session,
+        wire,
+        None,
+        Some(flow),
+        site_signs,
+        &resolved.kept(),
+        ahead,
+    )
+    .await?;
+    if prepared.adapted.is_none()
+        && !prepared.onto_nonce
+        && !on_durable_nonce(&prepared.wire, &prepared.tables)
+    {
+        match onto_fresh_blockhash(session, &prepared.wire, prepared.flow).await {
+            Ok((moved, height)) => {
+                prepared.wire = moved;
+                prepared.last_valid_height = Some(height);
+            }
+            // A memo was built on no blockhash at all.
+            Err(why) if resolved.message.is_some() => {
+                return Err(format!(
+                    "A message signed as a memo goes on a recent blockhash, and the node could not give one. {why}"
+                ));
+            }
+            // The site's blockhash may still be good.
+            Err(_) => {}
+        }
+    }
+    Ok(prepared)
 }

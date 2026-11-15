@@ -24,9 +24,7 @@ pub fn renew(
     blockhash: Hash,
     swaps: &[(Pubkey, Pubkey)],
 ) -> Result<Vec<u8>, SignError> {
-    let tx: VersionedTransaction = wincode::deserialize(wire)
-        .map_err(|_| SignError::Message("the transaction could not be read".into()))?;
-    let mut message = tx.message;
+    let mut message = read_message(wire)?;
     let signers = usize::from(message.header().num_required_signatures);
     if is_nonce_advance(&message) {
         return Err(SignError::Message(
@@ -62,6 +60,12 @@ pub fn renew(
         VersionedMessage::V0(message) => message.recent_blockhash = blockhash,
         VersionedMessage::V1(message) => message.lifetime_specifier = blockhash,
     }
+    unsigned_wire(message)
+}
+
+/// `message` as a wire in its own format, with every signature slot empty.
+pub(crate) fn unsigned_wire(message: VersionedMessage) -> Result<Vec<u8>, SignError> {
+    let signers = usize::from(message.header().num_required_signatures);
     match message {
         // A v1 wire is the message, then its signatures.
         VersionedMessage::V1(_) => {
@@ -78,6 +82,18 @@ pub fn renew(
         })
         .map_err(|_| SignError::Message("the transaction could not be written".into())),
     }
+}
+
+/// The message of `wire`, in any format.
+pub(crate) fn read_message(wire: &[u8]) -> Result<VersionedMessage, SignError> {
+    wincode::deserialize::<VersionedTransaction>(wire)
+        .map(|tx| tx.message)
+        .map_err(|_| SignError::Message("the transaction could not be read".into()))
+}
+
+/// `wire` with every signature slot emptied.
+pub(crate) fn without_signatures(wire: &[u8]) -> Result<Vec<u8>, SignError> {
+    unsigned_wire(read_message(wire)?)
 }
 
 /// The v1 transaction `tx` moved onto the durable nonce `nonce`: its
@@ -129,7 +145,10 @@ pub fn onto_nonce(tx: &DecodedTx, nonce: &NonceSpec) -> Result<Vec<u8>, SignErro
         .map_err(|err| SignError::Message(err.to_string()))
 }
 
-fn parts(message: &mut VersionedMessage) -> (&mut Vec<Pubkey>, &mut Vec<CompiledInstruction>) {
+/// The static account keys and the instructions of `message`, to rewrite.
+pub(crate) fn parts(
+    message: &mut VersionedMessage,
+) -> (&mut Vec<Pubkey>, &mut Vec<CompiledInstruction>) {
     match message {
         VersionedMessage::Legacy(message) => (&mut message.account_keys, &mut message.instructions),
         VersionedMessage::V0(message) => (&mut message.account_keys, &mut message.instructions),

@@ -60,12 +60,16 @@ impl Squad {
 
     /// Store `instructions`, to be run later as vault `vault_index`, as
     /// transaction number `index`. `creator` is a member and signs.
-    /// `rent_payer` signs and pays for the account. `None` when the
-    /// instructions name more accounts or hold more than a stored message can.
+    /// `rent_payer` signs and pays for the account. `ephemeral_signers` is
+    /// how many of the transaction's ephemeral signers
+    /// ([`Self::ephemeral_signer`]) the instructions name as signers: the
+    /// program signs for them when it runs. `None` when the instructions
+    /// name more accounts or hold more than a stored message can.
     pub fn create_transaction(
         &self,
         index: u64,
         vault_index: u8,
+        ephemeral_signers: u8,
         instructions: &[Instruction],
         creator: &Pubkey,
         rent_payer: &Pubkey,
@@ -74,8 +78,7 @@ impl Squad {
         let stored = |index_name: &str| {
             record([
                 (index_name, vault_index.into()),
-                // No extra program-derived signers.
-                ("ephemeralSigners", 0u8.into()),
+                ("ephemeralSigners", ephemeral_signers.into()),
                 ("transactionMessage", Value::Bytes(message.clone())),
                 ("memo", Value::Option(None)),
             ])
@@ -167,7 +170,9 @@ impl Squad {
     }
 
     /// Run approved transaction `index`. `member` signs. `instructions` and
-    /// `vault_index` must be the ones the transaction was stored with.
+    /// `vault_index` must be the ones the transaction was stored with. A
+    /// signer of the instructions that is one of the transaction's ephemeral
+    /// signers is not a signer here: the program signs for it.
     pub fn execute(
         &self,
         index: u64,
@@ -177,7 +182,13 @@ impl Squad {
     ) -> Instruction {
         let vault = self.vault(vault_index);
         let message = vault_message(&vault, instructions);
-        self.execute_listing(index, member, message.execute_accounts())
+        // An ephemeral signer is numbered below the message's signer count,
+        // since each one is a signer of the message.
+        let candidates = match message.num_signers {
+            0 | 1 => Vec::new(),
+            signers => self.ephemeral_signers(index, signers - 1),
+        };
+        self.execute_listing(index, member, message.execute_accounts(&candidates))
     }
 
     /// Run approved transaction `stored`, as read from its account by

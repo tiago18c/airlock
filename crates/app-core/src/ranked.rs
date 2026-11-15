@@ -18,8 +18,13 @@ pub(crate) enum Rank {
     Holdings,
     Notices,
     History,
+    /// Before the bridge: a resolution is made, and answered, with the
+    /// queue's lock taken inside its own.
+    Resolutions,
     Bridge,
     Reach,
+    /// What the Proposals pane last read of each multisig, memory only.
+    Squads,
 }
 
 pub(crate) struct Ranked<T> {

@@ -105,6 +105,27 @@ impl Squad {
         ])
     }
 
+    /// Ephemeral signer `signer` of transaction `index`: an address the
+    /// program derives from the account that stores the transaction, and
+    /// signs as when it runs. A stored transaction declares how many it
+    /// uses, numbered from zero. No key exists for one, so it holds however
+    /// much later the transaction runs and whoever runs it.
+    pub fn ephemeral_signer(&self, index: u64, signer: u8) -> Pubkey {
+        self.program.address(&[
+            self.program.prefix(),
+            self.transaction(index).as_ref(),
+            b"ephemeral_signer",
+            &[signer],
+        ])
+    }
+
+    /// The first `count` ephemeral signers of transaction `index`.
+    pub fn ephemeral_signers(&self, index: u64, count: u8) -> Vec<Pubkey> {
+        (0..count)
+            .map(|signer| self.ephemeral_signer(index, signer))
+            .collect()
+    }
+
     pub fn proposal(&self, index: u64) -> Pubkey {
         self.program.address(&[
             self.program.prefix(),

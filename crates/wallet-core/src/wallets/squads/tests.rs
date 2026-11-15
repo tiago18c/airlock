@@ -57,7 +57,7 @@ fn a_stored_transaction_reads_back() {
     for squad in [Squad::v4(&pk(1)), Squad::smart_account(7)] {
         let vault = squad.vault(0);
         let stored = squad
-            .create_transaction(1, 0, &[transfer(vault)], &pk(2), &pk(3))
+            .create_transaction(1, 0, 0, &[transfer(vault)], &pk(2), &pk(3))
             .unwrap();
         let read = StoredTransaction::parse(&stored).unwrap();
         assert_eq!(
@@ -342,5 +342,137 @@ fn the_mainnet_smart_account_config_reads() {
         Some(address(
             "0ab482e5c90a9d95bf7edc0d49a413de6939ed6f69ad52069a876563c8ac47d1"
         ))
+    );
+}
+
+#[test]
+fn an_ephemeral_signer_is_derived_from_the_stored_transaction() {
+    for squad in [Squad::v4(&pk(1)), Squad::smart_account(7)] {
+        let program = squad.program;
+        let first = squad.ephemeral_signer(3, 0);
+        let transaction = squad.transaction(3);
+        // The program's prefix, the transaction account, the name, the index.
+        let seeds: [&[u8]; 4] = [
+            program.prefix(),
+            transaction.as_ref(),
+            b"ephemeral_signer",
+            &[0],
+        ];
+        assert_eq!(
+            first,
+            Pubkey::find_program_address(&seeds, &program.program_id()).0
+        );
+        assert!(!first.is_on_curve(), "no key exists for it");
+        assert_ne!(first, squad.ephemeral_signer(3, 1));
+        assert_ne!(first, squad.ephemeral_signer(4, 0));
+        assert_eq!(
+            squad.ephemeral_signers(3, 2),
+            vec![first, squad.ephemeral_signer(3, 1)]
+        );
+    }
+}
+
+/// A transfer from the vault to a new account at `new`, which signs.
+fn creating(vault: Pubkey, new: Pubkey) -> Instruction {
+    solana_system_interface::instruction::create_account(&vault, &new, 1, 0, &SYSTEM_PROGRAM_ID)
+}
+
+#[test]
+fn a_stored_transaction_declares_its_ephemeral_signers() {
+    for squad in [Squad::v4(&pk(1)), Squad::smart_account(7)] {
+        let vault = squad.vault(0);
+        let new = squad.ephemeral_signer(1, 0);
+        let instruction = squad
+            .create_transaction(1, 0, 1, &[creating(vault, new)], &pk(2), &pk(3))
+            .unwrap();
+        let read = StoredTransaction::parse(&instruction).unwrap();
+        assert_eq!(read.ephemeral_signers, 1);
+        // Inside, the new account signs: the program signs for it.
+        let accounts = &read.instructions[0].accounts;
+        assert!(accounts[0].is_signer && accounts[1].is_signer);
+        // A rewrite keeps the count.
+        let rewritten = StoredTransaction::rewrite(&instruction, &[creating(vault, new)]).unwrap();
+        assert_eq!(
+            StoredTransaction::parse(&rewritten)
+                .unwrap()
+                .ephemeral_signers,
+            1
+        );
+    }
+}
+
+#[test]
+fn an_execution_leaves_the_ephemeral_signers_to_the_program() {
+    for squad in [Squad::v4(&pk(1)), Squad::smart_account(7)] {
+        let vault = squad.vault(0);
+        let new = squad.ephemeral_signer(2, 0);
+        // A key made on this device signs beside it.
+        let mut both = creating(vault, new);
+        both.accounts.push(AccountMeta::new_readonly(pk(5), true));
+        let execute = squad.execute(2, 0, std::slice::from_ref(&both), &pk(3));
+        let flag = |key: Pubkey| {
+            execute
+                .accounts
+                .iter()
+                .find(|meta| meta.pubkey == key)
+                .map(|meta| (meta.is_signer, meta.is_writable))
+        };
+        assert_eq!(flag(vault), Some((false, true)));
+        assert_eq!(flag(new), Some((false, true)), "the program signs for it");
+        assert_eq!(
+            flag(pk(5)),
+            Some((true, false)),
+            "a key signs the execution"
+        );
+        assert_eq!(flag(pk(3)), Some((true, false)));
+
+        // An address of another number is no ephemeral signer of this one,
+        // so it would have to sign.
+        let stale = squad.execute(3, 0, &[both], &pk(3));
+        assert!(stale
+            .accounts
+            .iter()
+            .any(|meta| meta.pubkey == new && meta.is_signer));
+    }
+}
+
+/// A v4 vault transaction as the program writes it, with one ephemeral
+/// signer: what another client stored is executed with it left unsigned.
+#[test]
+fn a_stored_transaction_read_from_chain_leaves_its_ephemeral_signers_unsigned() {
+    let w = &written()[0];
+    let squad = w.squad;
+    let mut data = unhex(w.transaction);
+    // `ephemeralSignerBumps` is the vector after the account's bump, the
+    // vault index and the vault's bump: an empty one, then the message.
+    // Give it one bump.
+    let header = 8 + 32 + 32 + 8 + 1 + 1 + 1;
+    assert_eq!(&data[header..header + 4], &[0, 0, 0, 0]);
+    data.splice(header..header + 4, [1, 0, 0, 0, 255]);
+    // The message's second account, the recipient, becomes a signer, and
+    // its address becomes the ephemeral signer's.
+    let message = header + 5;
+    assert_eq!(&data[message..message + 3], &[1, 1, 1]);
+    data[message..message + 3].copy_from_slice(&[2, 2, 0]);
+    let new = squad.ephemeral_signer(1, 0);
+    let second = message + 3 + 4 + 32;
+    data[second..second + 32].copy_from_slice(new.as_ref());
+
+    let Some(StoredAccount::Vault(stored)) = squad.parse_transaction(&data) else {
+        panic!("not read as a vault transaction");
+    };
+    assert_eq!(stored.ephemeral_signers, 1);
+    assert!(stored.instructions[0].accounts[1].is_signer);
+    let execute = squad.execute_stored(&stored, &pk(3));
+    let named = execute
+        .accounts
+        .iter()
+        .find(|meta| meta.pubkey == new)
+        .unwrap();
+    assert!(!named.is_signer);
+    assert_eq!(
+        execute,
+        squad.execute(1, 0, &stored.instructions, &pk(3)),
+        "the same as built from its instructions"
     );
 }

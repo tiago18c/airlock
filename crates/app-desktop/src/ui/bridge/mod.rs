@@ -28,7 +28,7 @@ use app_core::bridge::{BridgeAnswer, SendPlan, SiteCall};
 use app_core::ports::Clock;
 use app_ui_kit::actions::idl_check::fetch_missing_idls;
 use app_ui_kit::actions::sentence;
-use app_ui_kit::actions::sign::{offer_paid_here, prepare_request, PaidHere, ONTO_NONCE_NOTE};
+use app_ui_kit::actions::sign::{offer_paid_here, PaidHere, ONTO_NONCE_NOTE};
 use app_ui_kit::state::forms::{use_blockhash_clock_state, BlockhashExpiry, SimState, TxSource};
 use app_ui_kit::ui::clock::BlockhashCountdown;
 use app_ui_kit::ui::tx_view::{
@@ -46,10 +46,12 @@ use wallet_flows::adapt::held_back_note;
 
 mod connect;
 mod prepared;
+mod resolve;
 mod sign_message;
 mod sign_request;
 
 pub(in crate::ui) use connect::*;
+pub(in crate::ui) use resolve::*;
 pub(in crate::ui) use sign_message::*;
 pub(in crate::ui) use sign_request::*;
 
@@ -343,6 +345,28 @@ fn RequestCard(current: BridgePrompt, on_open: EventHandler<()>) -> Element {
             "asks for a signature · open in Review and Sign".to_string()
         }
         (SiteCall::SignTransactions(_), _, false) => "asks for a signature".to_string(),
+        // A resolution reads as the request it is shown as: a message, a
+        // send, or transactions to sign.
+        (SiteCall::Resolve(call), _, _) if call.message.is_some() => {
+            "asks you to sign a message as a memo".to_string()
+        }
+        (SiteCall::Resolve(_), count, _) if current.sends => {
+            if count > 1 {
+                format!("asks you to sign and send {count} transactions")
+            } else {
+                "asks you to sign and send a transaction".to_string()
+            }
+        }
+        (SiteCall::Resolve(_), count, true) if count > 1 => {
+            format!("asks to sign {count} transactions · open in Review and Sign")
+        }
+        (SiteCall::Resolve(_), count, false) if count > 1 => {
+            format!("asks to sign {count} transactions")
+        }
+        (SiteCall::Resolve(_), _, true) => {
+            "asks for a signature · open in Review and Sign".to_string()
+        }
+        (SiteCall::Resolve(_), _, false) => "asks for a signature".to_string(),
     };
     let id = current.id.clone();
     let claim = app_claim(&current.id);
@@ -399,7 +423,7 @@ fn ChainNotice(current: BridgePrompt) -> Element {
     let name = cluster.name().to_string();
     rsx! {
         p { class: "warn",
-            if current.sends {
+            if airlock_sends(&current) {
                 "This site is on {chain}, and Airlock is on {name}. Change the network to send this."
             } else {
                 "This site says it is on {chain}, and Airlock is on {name}. What you see here is read from {name}."
@@ -411,7 +435,7 @@ fn ChainNotice(current: BridgePrompt) -> Element {
 /// Whether a send has to wait for the user to change the network.
 fn send_waits_for_network(session: Session, current: &BridgePrompt) -> bool {
     let cluster = session.cluster();
-    current.sends
+    airlock_sends(current)
         && current
             .chains
             .iter()

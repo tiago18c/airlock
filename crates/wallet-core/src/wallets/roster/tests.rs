@@ -257,11 +257,20 @@ fn a_site_is_shown_keys_and_contracts_and_a_locked_vault_shows_what_the_book_tie
             .map(|account| (account.pubkey, account.contract))
             .collect()
     };
-    assert_eq!(shown(&workspace), [(a.pubkey, false), (address, true)]);
+    // An offline wallet is shown too: its key signs on another device.
+    assert_eq!(
+        shown(&workspace),
+        [(a.pubkey, false), (address, true), (pk(3), false)]
+    );
     workspace.vector_wallets = true;
     assert_eq!(
         shown(&workspace),
-        [(a.pubkey, false), (address, true), (vector_address, true)]
+        [
+            (a.pubkey, false),
+            (address, true),
+            (pk(3), false),
+            (vector_address, true)
+        ]
     );
     assert!(!shareable_accounts(Some(&data), &workspace)[0]
         .summary

@@ -13,10 +13,17 @@ pub async fn load_page(
     squad: &Squad,
     from: Option<u64>,
 ) -> Result<(SquadState, Vec<ProposalEntry>), String> {
+    // The cluster the node belongs to, taken with it: one changed while the
+    // page is read is another cluster's.
+    let cluster = session.cluster();
     let rpc = session.rpc().map_err(sentence)?;
-    wallet_flows::squads::load_page(rpc.as_ref(), squad, from)
+    let read = wallet_flows::squads::load_page(rpc.as_ref(), squad, from)
         .await
-        .map_err(sentence)
+        .map_err(sentence)?;
+    // A site asking how this multisig's vault signs on this cluster is
+    // answered from the chain from now on, not from the wallet record.
+    session.squad_read(squad.address, cluster, read.0.clone());
+    Ok(read)
 }
 
 /// Compile what `request` asks for, on a fresh blockhash or on the combined

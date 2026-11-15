@@ -57,12 +57,13 @@ Each app is a thin `main.rs`: it picks its tabs and services and hands them to `
 | `bridge` | Pending browser requests (`BridgeQueue`) |
 | `notices` | What happened, newest first. Saved deferred to `notices.json` |
 | `history` | The wallets' transactions, newest first, each read in full once. Saved deferred to `history.json` |
+| `resolutions` | What became of each request a site asked to have resolved ([intents.md](intents.md)), under the origin that made it, and only that origin finds it. Saved deferred to `resolutions.json`, the latest 200. The wires signed and not sent yet stay in memory and are never written, so after a restart one that waited on the queue or on those wires ends: `failed`, or `unknown` when it was going out |
 | `sync` | Each background job's last success, error and next retry |
 
 **Commands change state.** Each command mutates under the slice's owner, publishes the new snapshot, and saves with one of two policies:
 
 - **Checked** (user edits to the vault, the book and settings): save now, roll back and return the error if it fails.
-- **Deferred** (caches that can be fetched again: holdings, balances, notices, history): mark the slice dirty. A saver task writes it at most once a second, off the UI thread, and reports a failure as an event without rolling back.
+- **Deferred** (caches that can be fetched again: holdings, balances, notices, history, resolutions): mark the slice dirty. A saver task writes it at most once a second, off the UI thread, and reports a failure as an event without rolling back.
 
 **Events are for things that happen once** (`app_core::events::Event`): `SaveFailed`, `SyncFailed`, `VaultLocked`, `RequestArrived`, `TxStatusChanged`. They go out on `tokio::sync::broadcast`.
 
@@ -112,6 +113,7 @@ Native and wasm:
 - **Prices and token logos** (`sync::prices`, `sync::logos`): while a Tokens API key is set and the cluster is mainnet, the prices job sends the Tokens API (`api.tokens.xyz`, through `tokens-api`) the mints held by the wallets and the watched addresses, never an address or an amount. Each price answer can name a token's logo (`logoURI`). Once the prices are applied, the job downloads the logos it has not asked for yet, at most 8 a run, one at a time, from whatever host the answer names: the Tokens API's own storage (`storage.googleapis.com`) or a third party's, such as `static.jup.ag`. Only the URL is sent: the request goes through a client of its own, with no key, cookie, `Referer` or header of ours, over `https://` only, with at most 3 redirects, a 10 second timeout and 128 KiB. Only a PNG, JPEG or WebP, told from its first bytes, is kept. A logo is downloaded once per mint, ever: the file goes to `logos/<mint>.<png|jpg|webp>` in the data folder, and `holdings.json` records that it was asked for, kept or not, so it is never asked again. One whose host could not be reached is tried once more while the app runs. A token the Tokens API thinks impersonates another gets none. The page shows a kept logo as a `data:` URL, read from its file once per run, and never loads a remote image. The browser build downloads no logos.
 - **The activity feed** (`sync::activity`): one WebSocket to the node, with an account and a logs subscription per wallet. A pushed balance is shown at once. A transaction that mentions a wallet, or one the app sent landing, has the balances job read again from a node that has seen its slot. While the feed is up, the balances job runs only now and then, in case it missed something.
 - **Transaction history** (`sync::history`): the latest transactions of each wallet (`getSignaturesForAddress`), merged into the `history` slice, then those not yet read in full (`getTransaction`), newest first and a few at a time. What is read is kept, so a transaction is read from a node once, and one the node does not have is asked for only a few times. The activity feed, a transaction landing and a new wallet run it at once. Older pages are the History pane's to ask for (`sync::load_older`): each wallet's next page before the oldest it keeps, read in full at once. A page shorter than asked marks where that wallet's history starts, so nothing older is asked for. The submitter puts what it sends in the history as it sends it, read from its own bytes, and the tracker's last word settles it: kept with its outcome once it lands, dropped if it never did.
+- **Resolutions** (`resolutions`): what a site asked to have resolved ([intents.md](intents.md)) after the person approved it. One task on the core's spawner watches the `resolutions` slice: a resolution whose last signature came from elsewhere (the site's, or another device's) is sent through `tx::Submitter` as a site's send is, on a network its chain matches, and one handed back to its site is watched for on the node for three minutes. The `resolutions` sync job follows a Squads proposal a resolution waits on until it runs or closes: every 20 seconds while one waits, and when a transaction lands or the Proposals pane reads. The wires it sends are those the core holds in memory, so after a restart nothing is sent or followed.
 - **Online-only panes:** Portfolio, Stake, History and Proposals. History opens a transaction as Review and Sign shows one, with what it did to each balance. Submit on Review and Sign waits on screen for the transaction to land, then offers History or a clear screen, or the same transaction again when it did not land.
 
 ## app-desktop
@@ -163,9 +165,10 @@ Every transaction gets a **flow id** when it enters the app (`app_core::diagnost
 | Stage | Extra fields |
 | --- | --- |
 | `received` | `source` (build, wallets, stake, pasted, scanned, browser; Proposals logs as wallets), and for a browser request `origin` and `code` |
-| `transformed` | `transform` (a Squads, programmatic or Vector rebuild, the conversion to v1, a payer swap, a blockhash refresh, `squads_checks` for what a Squads proposal holds added to its approval), `from_message` |
-| `signed` | `by` (hot key, Vector key, pasted, imported) |
+| `transformed` | `transform` (a Squads, programmatic or Vector rebuild, the conversion to v1, a payer swap, a blockhash refresh, `squads_checks` for what a Squads proposal holds added to its approval, `intent_notes` for a request's notes applied), `from_message` |
+| `signed` | `by` (hot key, Vector key, pasted, imported, `site` for a resolution delivered `cosign` once the site has added its signatures, logged as it is sent under the flow it was `held` in, or under a flow of its own when that is no longer known) |
 | `returned` | `origin`, `code` |
+| `held` | `origin`, `code`: signed here for a resolution delivered `cosign`, and kept until the site adds its signatures |
 | `sent` | `signature` |
 | `status` | `signature`, `status` (confirmed, failed, expired, unknown), `error`, `slot` |
 | `rejected` | `error`: sending failed before the node took it |
@@ -190,6 +193,7 @@ Settings has **Open log folder** (desktop) and **Copy diagnostics**: the version
 | Transaction history | the `history` store and slice in `app-core` (`app_core::history`), filled by the `history` job in `app-online::sync` and by `tx::Submitter`, shown by the History pane in `app-online` |
 | A new kind of notice | a `NoticeKind` variant in `app-core`, pushed by whoever knows it happened |
 | Sending a transaction from a new place | `app-online::tx::Submitter`, never `send_transaction` directly, so every send is logged, noticed and tracked |
+| Finishing a resolution after the window has let it go | `app-online::resolutions`, reading the `resolutions` slice and writing through `PublicCore`'s resolution commands |
 | OS notifications for anything | a notice or event in `app-core`, a rule in the app, the toast in `app-desktop` |
 | Browser bridge methods | `bridge-protocol` (types), `app-desktop::bridge` (transport and modals), `BridgeQueue` in `app-core` |
 | A pane only the online build has | `app-online` (or `app-desktop` if native only), mounted by the online app |

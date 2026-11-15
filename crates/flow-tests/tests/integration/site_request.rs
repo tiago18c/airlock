@@ -1022,6 +1022,67 @@ fn a_new_mint_whose_token_account_is_derived_from_it_cannot_be_reshaped() {
     );
 }
 
+/// The same request as above, with notes (`docs/intents.md`): the mint may
+/// be replaced, and its token account is derived from it. The wallet puts a
+/// key of its own in the mint's place, derives the token account again, and
+/// the result lands.
+#[test]
+fn a_new_mint_with_notes_gets_a_key_made_here_and_its_token_account_derived_again() {
+    use std::collections::BTreeMap;
+    use wallet_core::intent::{
+        apply_to_request, check_notes, AccountNote, Derivation, Notes, Pda, Seed,
+    };
+    let mut chain = Chain::new();
+    let payer = KeypairSigner::new_random();
+    chain.fund(&payer.pubkey(), 10 * SOL);
+    let mint = KeypairSigner::new_random();
+    let tx = new_mint_request(&chain, &payer.pubkey(), &mint, true);
+    let token = wallet_core::TOKEN_PROGRAM_ID;
+    let holder =
+        wallet_core::spl::associated_token_address(&payer.pubkey(), &mint.pubkey(), &token);
+    let notes = Notes {
+        accounts: [
+            (mint.pubkey(), AccountNote::New { replaceable: true }),
+            (
+                holder,
+                AccountNote::Derived(Derivation::Pda(Pda {
+                    program: wallet_core::ASSOCIATED_TOKEN_PROGRAM_ID,
+                    seeds: vec![
+                        Seed::Account(payer.pubkey()),
+                        Seed::Bytes(token.to_bytes().to_vec()),
+                        Seed::Account(mint.pubkey()),
+                    ],
+                })),
+            ),
+        ]
+        .into_iter()
+        .collect(),
+        data: Vec::new(),
+    };
+    check_notes(std::slice::from_ref(&tx), &notes, &payer.pubkey()).unwrap();
+
+    let made = KeypairSigner::new_random();
+    let (wires, replacements) = apply_to_request(
+        std::slice::from_ref(&tx.wire),
+        &notes,
+        &BTreeMap::from([(mint.pubkey(), made.pubkey())]),
+    )
+    .unwrap();
+    let new_holder =
+        wallet_core::spl::associated_token_address(&payer.pubkey(), &made.pubkey(), &token);
+    assert_eq!(replacements.addresses.get(&holder), Some(&new_holder));
+    // The site's signature over the old message is gone, and nobody else's
+    // is needed.
+    let signed = sign_locally(&wires[0], &[&made as &dyn WalletSigner, &payer]).unwrap();
+    chain
+        .send_wire(&signed.wire)
+        .unwrap_or_else(|failure| panic!("{}", logs(&failure)));
+    assert_eq!(chain.data(&made.pubkey()).len(), 82);
+    assert_eq!(chain.data(&new_holder).len(), 165);
+    assert!(chain.account(&mint.pubkey()).is_none());
+    assert!(chain.account(&holder).is_none());
+}
+
 /// A Token-2022 mint with a metadata pointer and metadata, as a site sent it
 /// to an offline wallet: v0, with the fee payer's slot and the new mint's
 /// slot both left empty. The pointer names the mint in its data.

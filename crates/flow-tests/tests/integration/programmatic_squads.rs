@@ -102,7 +102,7 @@ impl World {
     fn propose(&self) -> Vec<Instruction> {
         vec![
             self.squad
-                .create_transaction(1, 0, &self.payment(), &self.member, &self.hot.pubkey())
+                .create_transaction(1, 0, 0, &self.payment(), &self.member, &self.hot.pubkey())
                 .unwrap(),
             self.squad
                 .create_proposal(1, &self.member, &self.hot.pubkey()),
@@ -434,7 +434,7 @@ fn a_fee_payer_relays_both_programmatic_members_approving_and_executing() {
         )];
         let propose = vec![
             squad
-                .create_transaction(1, 0, &payment, &members[0], &hot.pubkey())
+                .create_transaction(1, 0, 0, &payment, &members[0], &hot.pubkey())
                 .unwrap(),
             squad.create_proposal(1, &members[0], &hot.pubkey()),
         ];
@@ -567,7 +567,7 @@ fn a_proposal_paying_many_recipients_fits_until_the_transaction_is_full() {
             let propose = vec![
                 world
                     .squad
-                    .create_transaction(1, 0, &payment, &world.member, &world.hot.pubkey())
+                    .create_transaction(1, 0, 0, &payment, &world.member, &world.hot.pubkey())
                     .unwrap(),
                 world
                     .squad

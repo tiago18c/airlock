@@ -4,6 +4,7 @@
 
 pub mod actions;
 pub mod network;
+pub mod resolutions;
 pub mod sync;
 pub mod tx;
 pub mod ui;
@@ -34,8 +35,9 @@ pub struct Jobs {
 }
 
 /// The online services over `core`: the network monitor, the sync scheduler
-/// with its balances and history jobs, and the submitter with its tracker,
-/// which picks up transactions still being followed. Returns what the shell
+/// with its balances and history jobs, the submitter with its tracker,
+/// which picks up transactions still being followed, and the service that
+/// finishes what sites asked to have resolved. Returns what the shell
 /// hands [`app_ui_kit::use_session`]. Call once, from the root.
 pub fn use_online(core: CopyValue<Core>) -> (OnlineHooks, SubmitHandle) {
     let (hooks, submitter, jobs) = use_hook(|| {
@@ -49,7 +51,7 @@ pub fn use_online(core: CopyValue<Core>) -> (OnlineHooks, SubmitHandle) {
         let moved = sync::Moved::default();
         register_balances(&scheduler, rpc.clone(), moved.clone());
         register_tokens(&scheduler, rpc.clone());
-        sync::register_history(&scheduler, rpc);
+        sync::register_history(&scheduler, rpc.clone());
         register_prices(&scheduler);
         kick_after_probe(&monitor, &scheduler);
         scheduler.start();
@@ -69,7 +71,9 @@ pub fn use_online(core: CopyValue<Core>) -> (OnlineHooks, SubmitHandle) {
             moved,
         ));
         tracker.resume(rpc_for_cluster);
-        let submitter = SubmitHandle::new(Submitter::new(public.clone(), tracker));
+        let sender = Submitter::new(public.clone(), tracker);
+        resolutions::start_resolutions(public.clone(), sender.clone(), &scheduler, rpc);
+        let submitter = SubmitHandle::new(sender);
 
         let hooks = OnlineHooks::new(
             {

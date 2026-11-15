@@ -270,6 +270,8 @@ pub fn read_after_landing(
         }
         scheduler.kick(BALANCES_JOB);
         scheduler.kick(HISTORY_JOB);
+        // A proposal a site waits on may have run in it.
+        scheduler.kick(crate::resolutions::RESOLUTIONS_JOB);
     }
 }
 

@@ -9,6 +9,15 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 ## [Unreleased]
 
+### Added
+
+- **A prototype of intents for sites, on desktop.** A site can ask how an account signs, send its transactions with notes on their accounts for Airlock to resolve however that account signs, and follow the request by an id after its page is closed or loaded again, as [docs/intents.md](docs/intents.md) describes. The request waits in the same queue and window as other browser requests, which say what the site asked and which of its accounts Airlock replaced. Airlock sends it, sends it once the site has added its signatures, or hands it back for the site to send and watches for it; a key on another device and a Squads proposal that waits for votes finish later, and the site is told. A site can also have a message signed as a memo.
+- **Offline wallets can be connected to a site.** The connect window lists them beside the wallets this device holds a key for; what a site asks of one is signed on the device that holds the key.
+
+### Fixed
+
+- **Several transactions for one Squads vault in one request.** Each is stored as a proposal with its own number, so all of them can land, not only the first.
+
 ## [0.3.0] - 2026-11-15
 
 ### Before you update

@@ -87,7 +87,7 @@ impl Squad {
                 .iter()
                 .map(|signer| AccountMeta::new_readonly(*signer, true)),
         );
-        instruction.accounts.extend(message.execute_accounts());
+        instruction.accounts.extend(message.execute_accounts(&[]));
         Some(instruction)
     }
 }

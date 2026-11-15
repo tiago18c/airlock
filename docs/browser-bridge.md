@@ -145,6 +145,8 @@ JSON objects, one per frame. A frame is a 32-bit little-endian length, then the 
 | `pages` | `{ "origins": ["<origin>", …] }`, every origin with a page open in this browser. From the service worker, whenever that changes and when the host starts | `{}` |
 | `cancel` | `{ "id": "<request id>" }`, a request from the same connection whose page closed. From the service worker | `{}` |
 
+The prototype of intents adds six methods, `getSigningProfile`, `resolve`, `getResolution`, `provideSignatures`, `cancelResolution` and `resolveMessage`, their errors, and a second message with no `id`, `resolutionChanged`. None of them waits for the user before it answers, except `resolveMessage` signed with a key. They are in [intents.md](intents.md#airlocks-prototype-the-bridge-messages).
+
 The app sends one message of its own, with no `id`: `{ "v": 1, "method": "accountsChanged", "origin": "<origin>", "params": { "accounts": [ { "publicKey": "<base64>", "label"?: string } ] } }`. It says what a site holds now, the account to act as first, and is empty when the site is disconnected. It goes to every browser, and the service worker passes it only to pages of that origin. A site that just got its accounts in a reply is not told again.
 
 A reply repeats `id` and has either `result` or `error`, with `error.code` one of:

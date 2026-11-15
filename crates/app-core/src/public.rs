@@ -4,6 +4,9 @@ use std::sync::Arc;
 
 use solana_signature::Signature;
 use tokio::sync::broadcast;
+use wallet_core::intent::{
+    ProfileError, Resolution, ResolutionFailure, SendResult, SigningProfile,
+};
 use wallet_core::{Holdings, Workspace};
 
 use crate::bridge::{BridgeRefused, BridgeReply, BridgeRequest, SiteConnect, SiteSign};
@@ -11,6 +14,7 @@ use crate::commands::Inner;
 use crate::events::Event;
 use crate::notices::{BridgeRequestOutcome, NoticeId, NoticeKind, TxStatus};
 use crate::ports::Ports;
+use crate::resolutions::{ResolutionCommandError, ResolutionRefused};
 use crate::slices::Slices;
 
 /// What a sync job, the network monitor or the bridge server may do: read the
@@ -246,5 +250,140 @@ impl PublicCore {
     /// Answers whether it was waiting.
     pub fn bridge_expire(&self, id: &str) -> bool {
         self.inner.bridge_expire(id)
+    }
+
+    // Resolutions (`docs/intents.md`). Each belongs to the origin that made
+    // it, and is found by that origin and its id: another origin's lookup
+    // finds nothing. Each change is saved deferred and published in
+    // `slices().resolutions`.
+
+    /// How `account`, a wallet of this device, signs, and the payer of its
+    /// signing route. Read without the vault's secrets, locked or not.
+    pub fn resolution_profile(
+        &self,
+        account: solana_pubkey::Pubkey,
+    ) -> Result<(SigningProfile, Option<solana_pubkey::Pubkey>), ProfileError> {
+        self.inner.resolution_profile(account)
+    }
+
+    /// What `cluster` said of `multisig` (threshold, members and their
+    /// permissions, time lock), as the Proposals pane read it. A site asking
+    /// how its vault signs, while the app is on that cluster, is answered
+    /// from this rather than from the wallet record. Kept in memory until
+    /// the app closes.
+    pub fn squad_read(
+        &self,
+        multisig: solana_pubkey::Pubkey,
+        cluster: wallet_core::Cluster,
+        state: wallet_core::squads::SquadState,
+    ) {
+        self.inner.squad_read(multisig, cluster, state);
+    }
+
+    /// Keep `resolution`, in `awaiting-approval`, for the origin of
+    /// `request`, a [`SiteCall::Resolve`](crate::bridge::SiteCall::Resolve),
+    /// and queue `request` for the user: both or neither. Nobody waits on a
+    /// reply to it; what the user decides goes to the resolution. It expires
+    /// once its approval window passes with nobody having decided.
+    pub fn resolution_create(
+        &self,
+        request: BridgeRequest,
+        resolution: Resolution,
+    ) -> Result<Resolution, ResolutionRefused> {
+        self.inner.resolution_create(request, resolution)
+    }
+
+    /// Resolution `id` of `origin`, as kept, with the wires it holds.
+    pub fn resolution(&self, origin: &str, id: &str) -> Option<Resolution> {
+        self.inner.resolution(origin, id)
+    }
+
+    /// The site cancelled: in `awaiting-approval`, which also takes its
+    /// request out of the queue, or in `awaiting-app`.
+    pub fn resolution_cancel(
+        &self,
+        origin: &str,
+        id: &str,
+    ) -> Result<Resolution, ResolutionCommandError> {
+        self.inner.resolution_cancel(origin, id)
+    }
+
+    /// Nobody decided within the approval window. Only in
+    /// `awaiting-approval`; its request leaves the queue.
+    pub fn resolution_expire(
+        &self,
+        origin: &str,
+        id: &str,
+    ) -> Result<Resolution, ResolutionCommandError> {
+        self.inner.resolution_expire(origin, id)
+    }
+
+    /// It cannot go on, for `failure`, before anything was sent: a check of
+    /// the notes that needed a node or the lookup tables, a rewrite that
+    /// failed. In `awaiting-approval` its request leaves the queue.
+    pub fn resolution_fail(
+        &self,
+        origin: &str,
+        id: &str,
+        failure: ResolutionFailure,
+    ) -> Result<Resolution, ResolutionCommandError> {
+        self.inner.resolution_fail(origin, id, failure)
+    }
+
+    /// The app's signatures, each `(transaction, signer, signature)` with
+    /// `transaction` an index into the resolution's `transactions`. All go
+    /// in or none does. Once none is owed it is `sending`, and the window
+    /// sends it (see [`Self::resolution_begin_send`]).
+    pub fn resolution_provide_signatures(
+        &self,
+        origin: &str,
+        id: &str,
+        signatures: Vec<(usize, solana_pubkey::Pubkey, [u8; 64])>,
+    ) -> Result<Resolution, ResolutionCommandError> {
+        self.inner
+            .resolution_provide_signatures(origin, id, signatures)
+    }
+
+    /// The wires to send for a resolution that is `sending` and that nobody
+    /// is sending yet (`KeptResolution::ready_to_send`), in order. Given
+    /// once: whoever takes them sends them, then calls
+    /// [`Self::resolution_sent`].
+    pub fn resolution_begin_send(&self, origin: &str, id: &str) -> Option<Vec<Vec<u8>>> {
+        self.inner.resolution_begin_send(origin, id)
+    }
+
+    /// What sending each transaction came to, one for each of its
+    /// `transactions` (`crate::resolutions::send_results` reads a site
+    /// send's results).
+    pub fn resolution_sent(
+        &self,
+        origin: &str,
+        id: &str,
+        results: Vec<SendResult>,
+    ) -> Result<Resolution, ResolutionCommandError> {
+        self.inner.resolution_sent(origin, id, results)
+    }
+
+    /// The proposal that its transaction `transaction` created ran, in the
+    /// transaction `signature`.
+    pub fn resolution_executed(
+        &self,
+        origin: &str,
+        id: &str,
+        transaction: usize,
+        signature: Signature,
+    ) -> Result<Resolution, ResolutionCommandError> {
+        self.inner
+            .resolution_executed(origin, id, transaction, signature)
+    }
+
+    /// A proposal it waits on was rejected or cancelled: `failed`.
+    pub fn resolution_proposal_closed(
+        &self,
+        origin: &str,
+        id: &str,
+        reason: String,
+    ) -> Result<Resolution, ResolutionCommandError> {
+        self.inner.resolution_proposal_closed(origin, id, reason)
     }
 }

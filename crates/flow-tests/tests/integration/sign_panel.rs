@@ -212,7 +212,7 @@ fn a_built_squads_proposal_by_a_programmatic_member_is_wrapped_and_lands() {
         let payment = vec![pay(&vault, &recipient, SOL)];
         let built = desk.built(vec![
             squad
-                .create_transaction(1, 0, &payment, &desk.address, &desk.hot.pubkey())
+                .create_transaction(1, 0, 0, &payment, &desk.address, &desk.hot.pubkey())
                 .unwrap(),
             squad.create_proposal(1, &desk.address, &desk.hot.pubkey()),
             squad.approve(1, &desk.address),

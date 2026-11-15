@@ -42,11 +42,31 @@ export const MAX_REQUEST_BYTES = 256 * 1024;
 /** What the desktop app answers today. Add a method here only with its desktop handler. */
 export const METHODS = ["status", "connect", "disconnect", "signTransaction", "signAndSendTransaction", "signAndSendAllTransactions", "signMessage", "signIn"] as const;
 
-export type BridgeMethod = (typeof METHODS)[number];
+/** The methods of the intents prototype (docs/intents.md), which the desktop
+ * app answers only in a build that has its handlers. They are kept apart from
+ * METHODS, which the app's tests hold to the handlers it ships. */
+export const INTENT_METHODS = ["getSigningProfile", "resolve", "getResolution", "provideSignatures", "cancelResolution", "resolveMessage"] as const;
+
+export type BridgeMethod = (typeof METHODS)[number] | (typeof INTENT_METHODS)[number];
+
+/** What the app sends with no id, for every page of one origin. */
+export const PUSH_METHODS = ["accountsChanged", "resolutionChanged"] as const;
+
+export function isBridgeMethod(value: unknown): value is BridgeMethod {
+  return (
+    (METHODS as readonly unknown[]).includes(value) || (INTENT_METHODS as readonly unknown[]).includes(value)
+  );
+}
+
+export function isPushMethod(value: unknown): value is (typeof PUSH_METHODS)[number] {
+  return (PUSH_METHODS as readonly unknown[]).includes(value);
+}
 
 export interface BridgeErrorBody {
   code: string;
   message: string;
+  /** What an account could not do, beside an `unsupported` refusal. */
+  requirement?: string;
 }
 
 export interface NativeRequest {
@@ -110,9 +130,19 @@ export function needsUserGesture(method: unknown, params: unknown): boolean {
   return method === "signIn" || (method === "connect" && !isSilentConnect(method, params));
 }
 
-/** Whether the desktop app asks the user before answering this. */
+/** The intent methods the app answers at once. What the person decides about a
+ * resolution arrives later, as a push. */
+const ANSWERED_AT_ONCE: readonly string[] = ["getSigningProfile", "resolve", "getResolution", "provideSignatures", "cancelResolution"];
+
+/** Whether the desktop app asks the user before answering this. A
+ * `resolveMessage` may be a signature, which waits as `signMessage` does. */
 export function waitsForUser(method: string, params: unknown): boolean {
-  return method !== "status" && method !== "disconnect" && !isSilentConnect(method, params);
+  return (
+    method !== "status" &&
+    method !== "disconnect" &&
+    !ANSWERED_AT_ONCE.includes(method) &&
+    !isSilentConnect(method, params)
+  );
 }
 
 /** How long to wait for the desktop app's reply before giving up on it. A send
@@ -193,12 +223,47 @@ export function encodeBase58(bytes: Uint8Array): string {
   return out;
 }
 
+/** The bytes of a base58 string, or null when it is not base58. */
+export function decodeBase58(value: string): Uint8Array | null {
+  let zeros = 0;
+  while (zeros < value.length && value[zeros] === "1") zeros += 1;
+  const bytes: number[] = [];
+  for (let i = zeros; i < value.length; i += 1) {
+    let carry = BASE58.indexOf(value[i]);
+    if (carry < 0) return null;
+    for (let j = 0; j < bytes.length; j += 1) {
+      carry += bytes[j] * 58;
+      bytes[j] = carry & 0xff;
+      carry >>= 8;
+    }
+    while (carry > 0) {
+      bytes.push(carry & 0xff);
+      carry >>= 8;
+    }
+  }
+  const out = new Uint8Array(zeros + bytes.length);
+  for (let i = 0; i < bytes.length; i += 1) out[out.length - 1 - i] = bytes[i];
+  return out;
+}
+
 export class BridgeError extends Error {
   readonly code: string;
+  /** For `unsupported`: what the account could not do. */
+  readonly requirement?: string;
 
-  constructor(code: string, message: string) {
+  constructor(code: string, message: string, requirement?: string) {
     super(message);
     this.code = code;
+    if (requirement !== undefined) this.requirement = requirement;
     this.name = code === "rejected" ? "WalletUserRejected" : "AirlockBridgeError";
+  }
+
+  /** The error a reply's error body stands for. */
+  static from(body: { code?: unknown; message?: unknown; requirement?: unknown } | null | undefined): BridgeError {
+    return new BridgeError(
+      typeof body?.code === "string" ? body.code : "internal",
+      typeof body?.message === "string" ? body.message : "The request failed.",
+      typeof body?.requirement === "string" ? body.requirement : undefined,
+    );
   }
 }

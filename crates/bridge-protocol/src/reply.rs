@@ -151,6 +151,65 @@ pub fn signed(id: &str, wires: &[Vec<u8>]) -> Vec<u8> {
     result(id, json!({ "signedTransactions": wires }))
 }
 
+// The intents prototype (`docs/intents.md`). What the wallet says of a
+// profile or a resolution is built by the app and arrives here as JSON.
+
+/// A failed reply that also names what the account could not do, for an
+/// `unsupported` refusal. Without a requirement it is [`error`].
+pub fn error_with_requirement(
+    id: &str,
+    code: &str,
+    message: &str,
+    requirement: Option<&str>,
+) -> Vec<u8> {
+    let mut body = json!({ "code": code, "message": message });
+    if let Some(requirement) = requirement {
+        body["requirement"] = json!(requirement);
+    }
+    encode(&json!({ "v": 1, "id": id, "error": body }))
+}
+
+/// A `getSigningProfile` answered.
+pub fn signing_profile(id: &str, profile: Value) -> Vec<u8> {
+    result(id, json!({ "profile": profile }))
+}
+
+/// A `resolve`, `getResolution`, `provideSignatures` or `cancelResolution`
+/// answered with the resolution as a site may see it.
+pub fn resolution(id: &str, resolution: Value) -> Vec<u8> {
+    result(id, json!({ "resolution": resolution }))
+}
+
+/// A `resolveMessage` answered at once: the message is signed as a memo, and
+/// this is its resolution.
+pub fn memo_resolution(id: &str, resolution: Value) -> Vec<u8> {
+    result(id, json!({ "kind": "memo", "resolution": resolution }))
+}
+
+/// A `resolveMessage` answered with a key's signature: the bytes signed in
+/// base64, and the signature in base58, as the intents' messages write it.
+pub fn message_signature(id: &str, signed: &[u8], signature_base58: &str) -> Vec<u8> {
+    result(
+        id,
+        json!({
+            "kind": "signature",
+            "signedMessage": base64(signed),
+            "signature": signature_base58,
+        }),
+    )
+}
+
+/// Not a reply: tells the extension that a resolution of `origin` changed,
+/// with what a site may see of it now.
+pub fn resolution_changed(origin: &str, resolution: Value) -> Vec<u8> {
+    encode(&json!({
+        "v": 1,
+        "method": "resolutionChanged",
+        "origin": origin,
+        "params": { "resolution": resolution },
+    }))
+}
+
 fn base64(bytes: &[u8]) -> String {
     base64::engine::general_purpose::STANDARD.encode(bytes)
 }
@@ -216,6 +275,46 @@ mod tests {
         assert!(accounts[1].get("label").is_none());
         assert_eq!(accounts[0]["signsMessages"], true);
         assert!(accounts[1].get("signsMessages").is_none());
+    }
+
+    #[test]
+    fn an_unsupported_refusal_names_its_requirement() {
+        let reply = read(&error_with_requirement(
+            "r1",
+            "unsupported",
+            "It cannot.",
+            Some("feePayer"),
+        ));
+        assert_eq!(reply["error"]["code"], "unsupported");
+        assert_eq!(reply["error"]["requirement"], "feePayer");
+        let plain = read(&error_with_requirement("r1", "bad_notes", "No.", None));
+        assert!(plain["error"].get("requirement").is_none());
+        assert_eq!(plain, read(&error("r1", "bad_notes", "No.")));
+    }
+
+    #[test]
+    fn an_intent_reply_wraps_what_the_app_built() {
+        let resolution = json!({ "id": "mint-1", "state": "awaiting-approval" });
+        let reply = read(&super::resolution("r1", resolution.clone()));
+        assert_eq!(reply["result"]["resolution"], resolution);
+        let memo = read(&memo_resolution("r2", resolution.clone()));
+        assert_eq!(memo["result"]["kind"], "memo");
+        assert_eq!(memo["result"]["resolution"], resolution);
+        let profile = read(&signing_profile("r3", json!({ "timing": "sync" })));
+        assert_eq!(profile["result"]["profile"]["timing"], "sync");
+        let signed = read(&message_signature("r4", b"hi", "5sig"));
+        assert_eq!(signed["result"]["kind"], "signature");
+        assert_eq!(signed["result"]["signedMessage"], base64(b"hi"));
+        assert_eq!(signed["result"]["signature"], "5sig");
+
+        let push = read(&resolution_changed(
+            "https://app.example",
+            resolution.clone(),
+        ));
+        assert!(push.get("id").is_none());
+        assert_eq!(push["method"], "resolutionChanged");
+        assert_eq!(push["origin"], "https://app.example");
+        assert_eq!(push["params"]["resolution"], resolution);
     }
 
     #[test]

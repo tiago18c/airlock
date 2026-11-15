@@ -28,6 +28,21 @@ pub fn plan_adaptation_with(
     selected: Option<WalletId>,
     made_here: &[Pubkey],
 ) -> Result<Option<AdaptPlan>, AdaptError> {
+    plan_adaptation_carrying(tx, wallets, selected, made_here, &[])
+}
+
+/// [`plan_adaptation_with`], where `carried` are addresses a multisig's
+/// program signs for: ephemeral signers of the proposal that stores the
+/// transaction, put in place of a site's new accounts. A vault proposal may
+/// name them as signers besides its vault, and [`AdaptPlan::build`] checks
+/// that they are the ones of the proposal's number.
+pub fn plan_adaptation_carrying(
+    tx: &DecodedTx,
+    wallets: &[WalletRecord],
+    selected: Option<WalletId>,
+    made_here: &[Pubkey],
+    carried: &[Pubkey],
+) -> Result<Option<AdaptPlan>, AdaptError> {
     let involved: Vec<&WalletRecord> = wallets
         .iter()
         .filter(|wallet| {
@@ -84,16 +99,24 @@ pub fn plan_adaptation_with(
         else {
             return Err(RouteError::UnknownWallet.into());
         };
-        // The vault signs inside the program. Besides it, only a key made
-        // here can, from the transaction that executes the proposal. The
-        // fee payer's message-level signer bit is not an inner signature
-        // (see [`site_instructions`]).
+        // The vault signs inside the program, and so does an ephemeral
+        // signer the proposal declares. Besides them, only a key made here
+        // can, from the transaction that executes the proposal. The fee
+        // payer's message-level signer bit is not an inner signature (see
+        // [`site_instructions`]).
         let mut one_time = Vec::new();
+        let mut ephemeral = Vec::new();
         for meta in site_instructions(tx, vault)
             .iter()
             .flat_map(|instruction| instruction.accounts.clone())
             .filter(|meta| meta.is_signer && meta.pubkey != vault)
         {
+            if carried.contains(&meta.pubkey) {
+                if !ephemeral.contains(&meta.pubkey) {
+                    ephemeral.push(meta.pubkey);
+                }
+                continue;
+            }
             if !made_here.contains(&meta.pubkey) {
                 return Err(AdaptError::OtherSigner {
                     squad: wallet.label.clone(),
@@ -124,6 +147,8 @@ pub fn plan_adaptation_with(
                 member,
                 members,
                 one_time,
+                carried: ephemeral,
+                ahead: 0,
             }),
             programmatic: Vec::new(),
             vector: Vec::new(),

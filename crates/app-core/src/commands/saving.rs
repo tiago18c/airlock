@@ -11,7 +11,7 @@ use super::{locked, report_checked, Core, Inner, CORE};
 use crate::history::History;
 use crate::notices::NoticeKind;
 use crate::slices::{network_from, settings_from};
-use crate::storage::{AppHistory, AppHoldings, AppNotices, AppWorkspace};
+use crate::storage::{AppHistory, AppHoldings, AppNotices, AppResolutions, AppWorkspace};
 
 impl Core {
     /// Write every deferred store now. A shell calls this before it quits.
@@ -67,6 +67,10 @@ impl Inner {
 
     pub(super) fn publish_history(&self, history: &AppHistory) {
         self.slices.history.publish_copy(history.data());
+    }
+
+    pub(super) fn publish_resolutions(&self, resolutions: &AppResolutions) {
+        self.slices.resolutions.publish_copy(resolutions.data());
     }
 
     // Commands.
@@ -152,6 +156,7 @@ impl Inner {
         self.save_deferred(&self.holdings);
         self.save_deferred(&self.notices);
         self.save_deferred(&self.history);
+        self.save_deferred(&self.resolutions);
     }
 }
 
@@ -163,5 +168,6 @@ impl Drop for Inner {
         let _ = self.holdings.save_if_dirty(&self.events);
         let _ = self.notices.save_if_dirty(&self.events);
         let _ = self.history.save_if_dirty(&self.events);
+        let _ = self.resolutions.save_if_dirty(&self.events);
     }
 }

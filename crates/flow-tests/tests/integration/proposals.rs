@@ -117,7 +117,7 @@ fn another_member_finds_an_open_proposal_and_approves_and_executes_it() {
                 &[&desk.a],
                 vec![
                     desk.squad
-                        .create_transaction(1, 0, std::slice::from_ref(&payment), &a, &a)
+                        .create_transaction(1, 0, 0, std::slice::from_ref(&payment), &a, &a)
                         .unwrap(),
                     desk.squad.create_proposal(1, &a, &a),
                     desk.squad.approve(1, &a),
@@ -180,7 +180,7 @@ fn an_approval_that_is_not_the_last_leaves_the_proposal_open_for_the_next_member
                     &[&desk.a],
                     vec![
                         desk.squad
-                            .create_transaction(index, 0, &[payment], &a, &a)
+                            .create_transaction(index, 0, 0, &[payment], &a, &a)
                             .unwrap(),
                         desk.squad.create_proposal(index, &a, &a),
                     ],
@@ -228,5 +228,107 @@ fn an_approval_that_is_not_the_last_leaves_the_proposal_open_for_the_next_member
             SOL / 2 + SOL / 4,
             "{program:?}"
         );
+    }
+}
+
+/// A new account at an ephemeral signer of the proposal: the program signs
+/// for it when the proposal runs, in a later transaction, whoever runs it.
+#[test]
+fn a_new_account_at_an_ephemeral_signer_is_created_when_another_member_executes() {
+    for program in BOTH {
+        let mut desk = Desk::new(program);
+        let a = desk.a.pubkey();
+        let new = desk.squad.ephemeral_signer(1, 0);
+        assert!(desk.chain.account(&new).is_none());
+        let create = solana_system_interface::instruction::create_account(
+            &desk.vault,
+            &new,
+            SOL / 100,
+            8,
+            &desk.recipient,
+        );
+        desk.chain
+            .send(
+                &[&desk.a],
+                vec![
+                    desk.squad
+                        .create_transaction(1, 0, 1, std::slice::from_ref(&create), &a, &a)
+                        .unwrap(),
+                    desk.squad.create_proposal(1, &a, &a),
+                    desk.squad.approve(1, &a),
+                ],
+            )
+            .unwrap_or_else(|failure| panic!("{program:?}: {}", logs(&failure)));
+
+        // What another member reads from the chain: one ephemeral signer,
+        // which signs inside and not in the execution.
+        let (_, entries) = desk.read();
+        let Stored::Vault(stored) = &entries[0].stored else {
+            panic!("{program:?}: {:?}", entries[0].stored);
+        };
+        assert_eq!(stored.ephemeral_signers, 1, "{program:?}");
+        assert_eq!(stored.instructions, vec![create.clone()], "{program:?}");
+        let execute = desk.squad.execute_stored(stored, &desk.b.pubkey());
+        assert!(execute
+            .accounts
+            .iter()
+            .any(|meta| meta.pubkey == new && !meta.is_signer && meta.is_writable));
+
+        // The other member approves and executes it, signing alone.
+        assert_eq!(
+            desk.act(&KeypairSigner::from_seed(&desk.b.seed_bytes()).unwrap(), 1),
+            ProposalAction::ApproveAndExecute,
+            "{program:?}"
+        );
+        let made = desk
+            .chain
+            .account(&new)
+            .unwrap_or_else(|| panic!("{program:?}: no account at {new}"));
+        assert_eq!(
+            (made.lamports, made.data.len(), made.owner),
+            (SOL / 100, 8, desk.recipient),
+            "{program:?}"
+        );
+    }
+}
+
+/// An address derived for another proposal number is not one the program
+/// signs for: the execution fails, and nothing is created.
+#[test]
+fn an_address_of_another_proposal_number_is_not_signed_for() {
+    for program in BOTH {
+        let mut desk = Desk::new(program);
+        let a = desk.a.pubkey();
+        let wrong = desk.squad.ephemeral_signer(2, 0);
+        let create = solana_system_interface::instruction::create_account(
+            &desk.vault,
+            &wrong,
+            SOL / 100,
+            0,
+            &desk.recipient,
+        );
+        desk.chain
+            .send(
+                &[&desk.a],
+                vec![
+                    desk.squad
+                        .create_transaction(1, 0, 1, std::slice::from_ref(&create), &a, &a)
+                        .unwrap(),
+                    desk.squad.create_proposal(1, &a, &a),
+                    desk.squad.approve(1, &a),
+                ],
+            )
+            .unwrap_or_else(|failure| panic!("{program:?}: {}", logs(&failure)));
+        let b = KeypairSigner::from_seed(&desk.b.seed_bytes()).unwrap();
+        // Listed as the program would list its own ephemeral signer.
+        let mut execute = desk.squad.execute(1, 0, &[create], &b.pubkey());
+        for meta in &mut execute.accounts {
+            if meta.pubkey == wrong {
+                meta.is_signer = false;
+            }
+        }
+        let instructions = vec![desk.squad.approve(1, &b.pubkey()), execute];
+        assert!(desk.chain.send(&[&b], instructions).is_err(), "{program:?}");
+        assert!(desk.chain.account(&wrong).is_none(), "{program:?}");
     }
 }

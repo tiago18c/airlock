@@ -7,6 +7,7 @@ use solana_pubkey::Pubkey;
 use tracing::{debug, debug_span, info};
 use wallet_core::{current_first, ShareableAccount, VaultData, VaultError};
 
+use super::resolutions::one_for_each;
 use super::{locked, Core, Inner, CORE};
 use crate::bridge::{
     BridgeAnswer, BridgeRefused, BridgeReply, BridgeRequest, BridgeState, ConnectedSite,
@@ -14,6 +15,7 @@ use crate::bridge::{
 };
 use crate::events::Event;
 use crate::notices::BridgeRequestOutcome;
+use crate::resolutions::send_results;
 use crate::sites::{self, labelled, Connect, Site};
 use crate::slices::shown_wallets;
 use crate::storage::AppWorkspace;
@@ -39,13 +41,16 @@ impl Core {
     }
 
     /// Take a send the user approved out of the queue, so it cannot be
-    /// rejected while it goes out. None when it is not waiting, is not a send,
-    /// or does not have `count` transactions.
-    pub fn bridge_begin_send(&self, id: &str, count: usize) -> Option<SendingRequest> {
-        self.inner.bridge_begin_send(id, count)
+    /// rejected while it goes out. `wires` are what goes out, one for each
+    /// transaction the site sent. None when it is not waiting, is not a send,
+    /// or does not have as many transactions. For a `resolve` its resolution
+    /// takes the wires, each with its role, and is `sending`.
+    pub fn bridge_begin_send(&self, id: &str, wires: &[Vec<u8>]) -> Option<SendingRequest> {
+        self.inner.bridge_begin_send(id, wires)
     }
 
-    /// Tell the site how its send went.
+    /// Tell the site how its send went: in a reply, or for a `resolve` in
+    /// its resolution.
     pub fn bridge_send_finished(
         &self,
         sending: SendingRequest,
@@ -125,6 +130,10 @@ impl Inner {
     /// Reply to `id` with what the user decided. Answers whether the request
     /// was waiting and `answer` fits its method.
     pub(crate) fn bridge_answer(self: &Arc<Self>, id: &str, answer: &BridgeAnswer) -> bool {
+        // Nobody waits on a reply to a `resolve`: its resolution hears.
+        if self.is_resolve(id) {
+            return self.resolve_answered(id, answer);
+        }
         let _span = debug_span!(target: CORE, "command", name = "bridge_answer").entered();
         let Some(taken) = self.bridge_take(id, Some(answer)) else {
             debug!(target: CORE, outcome = "not waiting", "command");
@@ -138,14 +147,23 @@ impl Inner {
         true
     }
 
-    pub(crate) fn bridge_begin_send(&self, id: &str, count: usize) -> Option<SendingRequest> {
-        let _span = debug_span!(target: CORE, "command", name = "bridge_begin_send").entered();
+    pub(crate) fn bridge_begin_send(
+        self: &Arc<Self>,
+        id: &str,
+        wires: &[Vec<u8>],
+    ) -> Option<SendingRequest> {
         // Empty results only to test the fit: one for each transaction.
-        let fits = BridgeAnswer::Sent(vec![Err(SendError::Failed(String::new())); count]);
+        let fits = BridgeAnswer::Sent(vec![Err(SendError::Failed(String::new())); wires.len()]);
+        if self.is_resolve(id) {
+            return self
+                .begin_resolve_send(id, Some(&fits), |account| one_for_each(wires, account));
+        }
+        let _span = debug_span!(target: CORE, "command", name = "bridge_begin_send").entered();
         let taken = self.bridge_take(id, Some(&fits))?;
         Some(SendingRequest {
             request: taken.request,
             reply: taken.reply,
+            resolution: None,
         })
     }
 
@@ -154,6 +172,14 @@ impl Inner {
         sending: SendingRequest,
         results: Vec<Result<[u8; 64], SendError>>,
     ) {
+        if let Some((origin, id)) = &sending.resolution {
+            // Its request left the queue, and its notice was set, when the
+            // send began.
+            let _ = self.resolution_change("bridge_send_finished", origin, id, |kept, now| {
+                kept.resolution.sent(send_results(results), now)
+            });
+            return;
+        }
         let _span = debug_span!(target: CORE, "command", name = "bridge_send_finished").entered();
         let answer = BridgeAnswer::Sent(results);
         let (bytes, outcome) = answer.reply(&sending.request);
@@ -166,6 +192,13 @@ impl Inner {
     /// Drop `id` unanswered: the transport stopped waiting. Answers whether
     /// it was waiting.
     pub(crate) fn bridge_expire(self: &Arc<Self>, id: &str) -> bool {
+        if self.is_resolve(id) {
+            return self
+                .resolve_answer("bridge_expire", id, None, |kept, now| {
+                    kept.resolution.expire(now)
+                })
+                .is_some();
+        }
         let _span = debug_span!(target: CORE, "command", name = "bridge_expire").entered();
         let Some(taken) = self.bridge_take(id, None) else {
             debug!(target: CORE, outcome = "not waiting", "command");
@@ -505,7 +538,11 @@ impl Inner {
         Some(taken)
     }
 
-    fn bridge_finished(self: &Arc<Self>, request: &BridgeRequest, outcome: BridgeRequestOutcome) {
+    pub(super) fn bridge_finished(
+        self: &Arc<Self>,
+        request: &BridgeRequest,
+        outcome: BridgeRequestOutcome,
+    ) {
         info!(
             target: "airlock::bridge",
             code = %request.code(),

@@ -60,7 +60,7 @@ const REALMS_CAST_VOTE: u8 = 13;
 
 /// What a Squads instruction is to this module, and where it names the accounts
 /// that matter. Every one of them names the multisig first.
-pub(super) enum SquadsCall {
+pub(crate) enum SquadsCall {
     /// Stores what its own bytes say, as the account at position 1.
     Stores,
     /// Opens voting on a stored transaction, the proposal at position 1. Its
@@ -77,7 +77,7 @@ pub(super) enum SquadsCall {
     },
 }
 
-pub(super) fn squads_call(program: SquadsProgram, data: &[u8]) -> Option<SquadsCall> {
+pub(crate) fn squads_call(program: SquadsProgram, data: &[u8]) -> Option<SquadsCall> {
     let tag: [u8; 8] = data.get(..8)?.try_into().ok()?;
     let runs = |proposal, transaction| {
         Some(SquadsCall::Runs {
@@ -503,7 +503,7 @@ mod tests {
             let vault = squad.vault(0);
             let payment = [transfer(vault, pk(2), 5)];
             let store = squad
-                .create_transaction(4, 0, &payment, &pk(1), &pk(1))
+                .create_transaction(4, 0, 0, &payment, &pk(1), &pk(1))
                 .unwrap();
             let open = squad.create_proposal(4, &pk(1), &pk(1));
             let vote = squad.approve(4, &pk(1));
@@ -525,7 +525,7 @@ mod tests {
             // Another number stored and opened here says nothing of number 4.
             let elsewhere = vec![
                 squad
-                    .create_transaction(5, 0, &payment, &pk(1), &pk(1))
+                    .create_transaction(5, 0, 0, &payment, &pk(1), &pk(1))
                     .unwrap(),
                 squad.create_proposal(5, &pk(1), &pk(1)),
                 vote,
@@ -544,12 +544,12 @@ mod tests {
         let vote = squad.approve(4, &pk(1));
         let carried = vec![
             squad
-                .create_transaction(4, 0, &payment, &pk(1), &pk(1))
+                .create_transaction(4, 0, 0, &payment, &pk(1), &pk(1))
                 .unwrap(),
             squad.create_proposal(4, &pk(1), &pk(1)),
         ];
         let carrying = other
-            .create_transaction(1, 0, &carried, &pk(1), &pk(1))
+            .create_transaction(1, 0, 0, &carried, &pk(1), &pk(1))
             .unwrap();
         assert_eq!(whats(vec![carrying, vote]), [SQUADS_APPROVAL]);
     }
@@ -559,7 +559,7 @@ mod tests {
         let squad = Squad::v4(&pk(50));
         let other = Squad::v4(&pk(51));
         let carrying = other
-            .create_transaction(1, 0, &[squad.approve(4, &pk(9))], &pk(1), &pk(1))
+            .create_transaction(1, 0, 0, &[squad.approve(4, &pk(9))], &pk(1), &pk(1))
             .unwrap();
         let again = squad.approve(4, &pk(9));
         assert_eq!(whats(vec![carrying, again]), [SQUADS_APPROVAL]);

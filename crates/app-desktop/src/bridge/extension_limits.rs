@@ -15,14 +15,17 @@ fn protocol_ts() -> String {
     std::fs::read_to_string(&path).unwrap_or_else(|err| panic!("{}: {err}", path.display()))
 }
 
-/// What `const NAME = …;` is set to in `source`, as written.
+/// What `const NAME = …;`, or `const NAME: Type = …;`, is set to in
+/// `source`, as written.
 fn written<'a>(source: &'a str, name: &str) -> &'a str {
-    let start = format!("const {name} = ");
+    let start = format!("const {name}");
     let from = source
-        .find(&start)
-        .unwrap_or_else(|| panic!("protocol.ts has no constant {name}"))
-        + start.len();
+        .match_indices(&start)
+        .map(|(at, _)| at + start.len())
+        .find(|after| matches!(source[*after..].chars().next(), Some(' ' | ':')))
+        .unwrap_or_else(|| panic!("protocol.ts has no constant {name}"));
     let rest = &source[from..];
+    let rest = &rest[rest.find("= ").expect("a constant is set") + 2..];
     rest[..rest.find(';').expect("a constant ends in a semicolon")].trim()
 }
 
@@ -110,10 +113,52 @@ fn the_extension_offers_only_methods_the_app_answers() {
 }
 
 #[test]
+fn the_extension_offers_the_intent_methods_the_app_answers_and_waits_as_it_does() {
+    let source = protocol_ts();
+    let methods = strings(&source, "INTENT_METHODS");
+    let ours: Vec<&str> = super::intents::INTENT_METHODS.to_vec();
+    assert_eq!(methods, ours);
+    // None of them is one the app holds to its older handlers.
+    let older = strings(&source, "METHODS");
+    assert!(methods.iter().all(|method| !older.contains(method)));
+    for method in &methods {
+        assert!(super::intents::is_intent_method(method), "{method}");
+        assert!(!waits_for_user(method), "{method}");
+    }
+    // What the extension gives a short time is what the app answers at
+    // once; the rest may wait for the person, and gets the long one.
+    let at_once = strings(&source, "ANSWERED_AT_ONCE");
+    for method in &methods {
+        assert_eq!(
+            at_once.contains(method),
+            !super::intents::may_wait(method),
+            "{method}"
+        );
+    }
+    assert!(at_once.iter().all(|method| methods.contains(method)));
+}
+
+#[test]
+fn the_extension_passes_on_the_pushes_the_app_sends() {
+    let pushes = strings(&protocol_ts(), "PUSH_METHODS");
+    let sent: Vec<String> = [
+        bridge_protocol::reply::accounts_changed("https://a.test", &[]),
+        bridge_protocol::reply::resolution_changed("https://a.test", serde_json::json!({})),
+    ]
+    .iter()
+    .map(|frame| {
+        let frame: serde_json::Value = serde_json::from_slice(frame).unwrap();
+        frame["method"].as_str().unwrap().to_owned()
+    })
+    .collect();
+    assert_eq!(pushes, sent);
+}
+
+#[test]
 fn a_constant_is_read_as_it_is_written() {
-    let source =
-        "const A = 4;\nexport const B = A * 10 * 1000;\nexport const L = [\"x\", \"y\"] as const;";
+    let source = "const A = 4;\nexport const B = A * 10 * 1000;\nexport const L = [\"x\", \"y\"] as const;\nconst LL: readonly string[] = [\"z\"];";
     assert_eq!(number(source, "A"), 4);
     assert_eq!(number(source, "B"), 40_000);
     assert_eq!(strings(source, "L"), ["x", "y"]);
+    assert_eq!(strings(source, "LL"), ["z"]);
 }

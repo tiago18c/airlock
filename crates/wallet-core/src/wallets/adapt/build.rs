@@ -133,9 +133,14 @@ impl AdaptPlan {
                     member: plan.member,
                 });
             }
-            let index = state.transaction_index.checked_add(1).ok_or_else(|| {
-                AdaptError::Message("the multisig has no transaction number left".into())
-            })?;
+            let index = state
+                .transaction_index
+                .checked_add(1)
+                .and_then(|next| next.checked_add(plan.ahead))
+                .ok_or_else(|| {
+                    AdaptError::Message("the multisig has no transaction number left".into())
+                })?;
+            let ephemeral_signers = carried_fit(plan, index)?;
 
             let chosen: Vec<ChosenMember> = plan
                 .members
@@ -169,8 +174,9 @@ impl AdaptPlan {
             // Enough members here to carry every vote and execute: a smart
             // account runs it at once. When that does not fit or cannot be
             // wrapped, the proposal is built as usual.
-            let at_once = self
-                .at_once
+            // An ephemeral signer is derived from the stored transaction, so
+            // a request that has one always stores it.
+            let at_once = (self.at_once && ephemeral_signers == 0)
                 .then(|| sync_signers(plan, &state, &chosen, shapes.first()))
                 .flatten();
             let sync = at_once.and_then(|signers| {
@@ -217,7 +223,7 @@ impl AdaptPlan {
                     plan,
                     tx,
                     &stored,
-                    index,
+                    (index, ephemeral_signers),
                     shape,
                     &chosen,
                     read,
@@ -311,6 +317,33 @@ impl AdaptPlan {
     }
 }
 
+/// How many ephemeral signers the proposal numbered `index` declares: the
+/// carried signers of `plan`, which have to be exactly its first ones. When
+/// they were derived for another number, the program would sign for other
+/// addresses than the stored instructions name, so it is refused.
+fn carried_fit(plan: &SquadsPlan, index: u64) -> Result<u8, AdaptError> {
+    let count = u8::try_from(plan.carried.len()).map_err(|_| {
+        AdaptError::Message("the transaction names more new accounts than a proposal can".into())
+    })?;
+    if count == 0 {
+        return Ok(0);
+    }
+    let derived = plan.squad.ephemeral_signers(index, count);
+    if plan.carried.iter().all(|address| derived.contains(address)) {
+        return Ok(count);
+    }
+    // The number they were derived for, when it is a nearby one.
+    let first = plan.carried[0];
+    let derived_for = (index.saturating_sub(16)..index.saturating_add(16))
+        .find(|other| plan.squad.ephemeral_signers(*other, count).contains(&first))
+        .map_or_else(|| "another".to_owned(), |other| other.to_string());
+    Err(AdaptError::CarriedMoved {
+        squad: plan.label.clone(),
+        derived_for,
+        index,
+    })
+}
+
 /// Why the fullest shape has no execute, when it is permissions or the
 /// threshold rather than size.
 fn structural_held_back(
@@ -349,7 +382,7 @@ fn try_squads_shape<'a>(
     squads: &SquadsPlan,
     site: &DecodedTx,
     stored: &[Instruction],
-    index: u64,
+    (index, ephemeral_signers): (u64, u8),
     shape: &ProposalShape,
     chosen: &[ChosenMember],
     read: impl Fn(&Pubkey) -> Option<&'a RawAccount>,
@@ -362,6 +395,7 @@ fn try_squads_shape<'a>(
         .create_transaction(
             index,
             squads.vault_index,
+            ephemeral_signers,
             stored,
             &squads.member,
             &plan.fee_payer,

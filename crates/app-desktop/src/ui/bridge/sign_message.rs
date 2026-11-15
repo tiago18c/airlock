@@ -7,7 +7,7 @@ use wallet_core::ShareableAccount;
 
 /// The bytes a request signs, as text or else in hex.
 #[component]
-fn MessageBody(bytes: Vec<u8>) -> Element {
+pub(in crate::ui) fn MessageBody(bytes: Vec<u8>) -> Element {
     match message_text(&bytes) {
         Some(text) => rsx! { pre { class: "site-message", "{text}" } },
         None => {

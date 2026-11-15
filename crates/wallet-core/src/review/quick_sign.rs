@@ -186,7 +186,7 @@ mod tests {
             payer,
             vec![
                 squad
-                    .create_transaction(4, 0, &payment, &payer, &payer)
+                    .create_transaction(4, 0, 0, &payment, &payer, &payer)
                     .unwrap(),
                 squad.create_proposal(4, &payer, &payer),
                 vote,
@@ -436,7 +436,14 @@ mod tests {
         let vault = squad.vault(0);
         let wire = wrap(vec![
             squad
-                .create_transaction(1, 0, &[transfer(vault, pk(2), 5)], &address, &hot.pubkey())
+                .create_transaction(
+                    1,
+                    0,
+                    0,
+                    &[transfer(vault, pk(2), 5)],
+                    &address,
+                    &hot.pubkey(),
+                )
                 .unwrap(),
             squad.create_proposal(1, &address, &hot.pubkey()),
         ]);

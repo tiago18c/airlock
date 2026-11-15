@@ -61,19 +61,36 @@ impl Session {
         tx: &wallet_core::DecodedTx,
         one_time: &[Pubkey],
     ) -> Result<Option<wallet_core::adapt::AdaptPlan>, wallet_core::adapt::AdaptError> {
+        self.plan_adaptation_carrying(tx, one_time, &[])
+    }
+
+    /// [`Self::plan_adaptation_allowing`], also taking `carried` for
+    /// addresses a multisig's program signs for, besides those of the
+    /// `resolve` requests kept ([`SignForm::carried_addresses`]).
+    ///
+    /// [`SignForm::carried_addresses`]: crate::state::forms::SignForm::carried_addresses
+    pub fn plan_adaptation_carrying(
+        &self,
+        tx: &wallet_core::DecodedTx,
+        one_time: &[Pubkey],
+        carried: &[Pubkey],
+    ) -> Result<Option<wallet_core::adapt::AdaptPlan>, wallet_core::adapt::AdaptError> {
         let offered = self.vector_offered();
         let mut made_here = self.made_here_pubkeys();
         made_here.extend_from_slice(one_time);
+        let mut carried = carried.to_vec();
+        carried.extend(self.forms.sign.carried_addresses());
         self.core().with_wallets(|data| {
             let Some(data) = data else {
                 return Ok(None);
             };
             // The acting wallet pays when the wallet asked to sign names nobody.
-            wallet_core::adapt::plan_adaptation_with(
+            wallet_core::adapt::plan_adaptation_carrying(
                 tx,
                 &data.wallets,
                 data.chosen_wallet(),
                 &made_here,
+                &carried,
             )?
             .map(|plan| plan.unless_vector_off(offered))
             .transpose()
@@ -128,6 +145,18 @@ impl Session {
             let chosen = wallet_core::proposals::chosen_members(&data.wallets, multisig, state);
             (chosen, nonce)
         })
+    }
+
+    /// Keep what `cluster` said of `multisig`, so a site asking how its
+    /// vault signs on that cluster is answered from it rather than from the
+    /// wallet record.
+    pub fn squad_read(
+        &self,
+        multisig: Pubkey,
+        cluster: wallet_core::Cluster,
+        state: wallet_core::squads::SquadState,
+    ) {
+        self.command(|core| core.squad_read(multisig, cluster, state));
     }
 
     /// Whether the fee payer `tx` names could be replaced by a hot wallet

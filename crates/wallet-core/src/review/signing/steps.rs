@@ -34,6 +34,9 @@ pub enum SignStepKind {
     Submit,
     /// Give the signed transaction back to the site that asked for it.
     ReturnToSite,
+    /// The site adds its signatures, then Airlock sends it: a resolution
+    /// delivered `cosign`, whose signed transaction stays here meanwhile.
+    SiteSignsThenSend,
     /// This device is offline: share the transaction with one that is not.
     ShareToSubmit,
 }
@@ -75,6 +78,7 @@ pub enum SimulationStage {
 pub enum SignFinish {
     Submit,
     ReturnToSite,
+    SiteSignsThenSend,
     ShareToSubmit,
 }
 
@@ -83,6 +87,7 @@ impl SignFinish {
         match self {
             Self::Submit => SignStepKind::Submit,
             Self::ReturnToSite => SignStepKind::ReturnToSite,
+            Self::SiteSignsThenSend => SignStepKind::SiteSignsThenSend,
             Self::ShareToSubmit => SignStepKind::ShareToSubmit,
         }
     }
@@ -261,6 +266,7 @@ pub fn only_simulate_and_sign(steps: &[SignStep]) -> bool {
                 | SignStepKind::SignOnDevice { .. }
                 | SignStepKind::Submit
                 | SignStepKind::ReturnToSite
+                | SignStepKind::SiteSignsThenSend
         )
     })
 }
@@ -309,6 +315,7 @@ fn held_up_by_expiry(kind: SignStepKind, inputs: &SignStepInputs) -> bool {
             SignStepKind::CollectSignatures
             | SignStepKind::Submit
             | SignStepKind::ReturnToSite
+            | SignStepKind::SiteSignsThenSend
             | SignStepKind::ShareToSubmit => true,
             SignStepKind::Rebuild
             | SignStepKind::SignAuthorization

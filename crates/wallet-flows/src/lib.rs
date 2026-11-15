@@ -15,6 +15,7 @@ pub mod device;
 mod error;
 pub mod history;
 pub mod idl;
+pub mod intent;
 pub mod loader;
 pub mod lookup;
 pub mod market;

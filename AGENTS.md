@@ -24,6 +24,20 @@ It sends one `signTransaction` request per scenario, screenshots the modal into 
 
 It needs a debug build: a release build drops every `WEBVIEW2_*` variable at start, so the debugging port below is never opened.
 
+`scripts/drive-intents.mjs` does the same for the intents prototype ([docs/intents.md](docs/intents.md)):
+
+```bash
+node scripts/drive-intents.mjs <outdir> [memo|mint|cosign|return|message ...]
+```
+
+For a hot key it sends `getSigningProfile`, then each scenario of its `scenarios` table (a `resolve` or a `resolveMessage`), screenshots the modal into `<outdir>/<scenario>.png`, prints the modal's text and buttons and every reply and `resolutionChanged` push, and declines. `DRIVE_REVIEW=1` opens each on Review and Sign instead (`<scenario>-review.png`), and `DRIVE_SIGN=cosign,return` presses Sign for those scenarios and prints what their resolutions became. Its helpers (starting the app, adding a wallet, setting a custom RPC, the frame reader and writer, the DevTools calls, program-derived addresses, and an approver that plays the person in the app's window) are in `scripts/drive-lib.mjs`, for a script of your own.
+
+`scripts/drive-intents-e2e.mjs` runs the intents test page (`examples/intents`) against the real app end to end, from built binaries: a local validator (`surfpool --offline`, which must be installed) with a random key funded, the app with that key as a hot wallet and the node as its custom RPC, the page's relay, the approver, and the page driver pressing every row. It takes about a minute, stops everything it started, and exits non-zero unless every run passed and the node holds every transaction the app said ran. Build the page first (`npm install && npm run build` in `examples/intents`). See [its README](examples/intents/README.md#all-of-it-in-one-command-against-the-real-app).
+
+```bash
+node scripts/drive-intents-e2e.mjs <outdir> [--only <runs>] [--keep] [--hold <seconds>]
+```
+
 What it does, for driving something else:
 
 1. Build `airlock` and `bridge-host`.

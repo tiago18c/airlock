@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": [],
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "paths": {
+      "@wallet-standard/*": ["./node_modules/@wallet-standard/*"],
+      "@solana/wallet-standard-features": ["./node_modules/@solana/wallet-standard-features"]
+    }
+  },
+  "include": ["src", "../../extension/src/png.d.ts"]
+}

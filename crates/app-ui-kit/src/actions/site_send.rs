@@ -68,7 +68,9 @@ pub fn send_for_site(
         ));
     }
     let rpc = session.rpc().map_err(sentence)?;
-    let Some(sending) = session.command(|core| core.bridge_begin_send(id, items.len())) else {
+    // The wires go with it: a `resolve` keeps them in its resolution.
+    let wires: Vec<Vec<u8>> = items.iter().map(|(wire, _)| wire.clone()).collect();
+    let Some(sending) = session.command(|core| core.bridge_begin_send(id, &wires)) else {
         return Err("The site stopped waiting for this request.".into());
     };
     let plan = match sending.request.send_plan() {

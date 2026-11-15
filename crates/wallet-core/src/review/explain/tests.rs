@@ -407,7 +407,7 @@ fn instructions_inside_instructions_are_opened_and_explained() {
     let built = compile_v1(
         hot,
         vec![squad
-            .create_transaction(1, 0, std::slice::from_ref(&payment), &member, &hot)
+            .create_transaction(1, 0, 0, std::slice::from_ref(&payment), &member, &hot)
             .unwrap()],
         None,
         Some(Hash::new_from_array([9; 32])),

@@ -144,6 +144,20 @@ test("a request the browser will not send is answered, not left waiting", () => 
   assert.deepEqual(toPage, []);
 });
 
+test("a push from the app reaches the page as it came", () => {
+  clear();
+  const push = { v: 1, method: "resolutionChanged", origin: "https://page.test", params: { resolution: { id: "r1" } } };
+  port.onMessage.fire({ push });
+  assert.deepEqual(toPage, [{ source: EXTENSION_SOURCE, push }]);
+});
+
+test("an error reaches the page with what it names", () => {
+  clear();
+  ask("u", "resolve", {});
+  port.onMessage.fire({ id: "u", error: { code: "unsupported", message: "no", requirement: "order" } });
+  assert.deepEqual(toPage[0].error, { code: "unsupported", message: "no", requirement: "order" });
+});
+
 test("a reply reaches the page under the request's id", () => {
   clear();
   ask("r", "status");

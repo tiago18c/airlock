@@ -3,18 +3,18 @@ import {
   MAX_PENDING,
   MAX_PENDING_PER_ORIGIN,
   MAX_REQUEST_BYTES,
-  METHODS,
   QUICK_TTL_MS,
   RATE_LIMIT,
   RATE_WINDOW_MS,
   REQUEST_TTL_MS,
+  isBridgeMethod,
+  isPushMethod,
   isRequestId,
   jsonBytes,
   newRequestId,
   replyWindowMs,
   shortCode,
   waitsForUser,
-  type BridgeMethod,
   type BridgeState,
   type NativeMessage,
   type NativeRequest,
@@ -83,7 +83,7 @@ async function handlePage(port: chrome.runtime.Port, origin: string, body: unkno
     return { v: 1, error: { code: "bad_request", message: "Missing request id." } };
   }
   const refuse = (code: string, message: string): NativeMessage => ({ v: 1, id: pageId, error: { code, message } });
-  if (typeof record.method !== "string" || !isMethod(record.method)) {
+  if (typeof record.method !== "string" || !isBridgeMethod(record.method)) {
     return refuse("bad_request", "Unsupported method.");
   }
   if (!withinRate(origin)) {
@@ -201,8 +201,9 @@ function connectNative(): chrome.runtime.Port {
   nativePort = port;
   reportedPages = null;
   port.onMessage.addListener((message: NativeMessage) => {
-    if (message.method === "accountsChanged") {
-      // Only that site's pages: another site must not learn its accounts.
+    if (isPushMethod(message.method)) {
+      // Only that site's pages: another site must not learn its accounts, or
+      // what became of its requests.
       for (const page of [...pagePorts]) {
         if (pageOrigins.get(page) !== message.origin) continue;
         try {
@@ -303,10 +304,6 @@ function notifyPopups(): void {
  * ask in that site's name. Every browser the manifest allows sets this. */
 function originOf(sender: chrome.runtime.MessageSender): string | null {
   return sender.origin && sender.origin !== "null" ? sender.origin : null;
-}
-
-function isMethod(value: string): value is BridgeMethod {
-  return (METHODS as readonly string[]).includes(value);
 }
 
 function remove(list: chrome.runtime.Port[], port: chrome.runtime.Port): void {

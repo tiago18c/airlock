@@ -11,8 +11,10 @@ use wallet_core::{AddressBook, Cluster, Holdings, Vault, VaultData, WalletId, Wa
 use crate::bridge::{BridgeQueue, SitesView};
 use crate::history::History;
 use crate::notices::Notices;
+use crate::resolutions::Resolutions;
 use crate::storage::{
-    AppHistory, AppHoldings, AppLeafMarks, AppNotices, AppVault, AppWalletList, AppWorkspace,
+    AppHistory, AppHoldings, AppLeafMarks, AppNotices, AppResolutions, AppVault, AppWalletList,
+    AppWorkspace,
 };
 
 /// One published value.
@@ -81,6 +83,9 @@ pub struct Slices {
     pub history: Slice<History>,
     /// Background sync jobs. Empty until the online scheduler registers them.
     pub sync: Slice<SyncStatus>,
+    /// What became of the requests sites asked to have resolved, each under
+    /// its origin, with the wires held until they are sent.
+    pub resolutions: Slice<Resolutions>,
 }
 
 /// Public wallet list and related pubkeys. While the vault is locked it comes
@@ -266,6 +271,10 @@ pub fn notices_from(notices: &AppNotices) -> Arc<Notices> {
 
 pub fn history_from(history: &AppHistory) -> Arc<History> {
     Arc::new(history.data().clone())
+}
+
+pub fn resolutions_from(resolutions: &AppResolutions) -> Arc<Resolutions> {
+    Arc::new(resolutions.data().clone())
 }
 
 pub fn vault_state_from(vault: &AppVault) -> VaultState {

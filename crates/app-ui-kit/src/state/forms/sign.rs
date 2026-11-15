@@ -311,6 +311,72 @@ pub struct SignForm {
     /// The site and request id the screen last set aside, for the note that
     /// says so, until that request is on screen again.
     pub displaced: Signal<Option<(String, String)>>,
+    /// Each `resolve` request with its notes applied, by its id in the
+    /// queue (see [`ResolvedRequest`]). Kept in memory, like `made_here`:
+    /// the keys and the rewritten transactions belong to the request, not
+    /// to one preparation of it, and an offline key's signature can come
+    /// back after the request left the queue.
+    pub resolved: Signal<Vec<ResolvedRequest>>,
+}
+
+/// A `resolve` request with its notes applied (`docs/intents.md`, "What the
+/// wallet does with them"), made once however often it is prepared.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ResolvedRequest {
+    /// Its id in the bridge's queue.
+    pub request: String,
+    pub origin: String,
+    /// The id of its resolution.
+    pub resolution: String,
+    pub account: Pubkey,
+    pub delivery: wallet_core::intent::Delivery,
+    pub timing: wallet_core::intent::Timing,
+    /// The site's transactions with the replaced addresses written in,
+    /// every signature dropped, in the request's order. Each is still on
+    /// the site's blockhash; preparing it moves it onto a fresh one.
+    pub wires: Vec<Vec<u8>>,
+    /// Address sent to address used: the plan's and every derived account
+    /// derived again.
+    pub replaced: std::collections::BTreeMap<Pubkey, Pubkey>,
+    /// Each `new` account given a key made here, with that key.
+    pub new_keys: Vec<(Pubkey, Pubkey)>,
+    /// Each `new` account a multisig's program signs for, with the address
+    /// it signs at: an ephemeral signer of the proposal that stores it.
+    pub carried: Vec<(Pubkey, Pubkey)>,
+    /// The multisig's newest transaction number when [`Self::carried`] was
+    /// derived. The proposals take the numbers after it, so when it moves
+    /// the addresses are derived again. `None` when nothing is carried.
+    pub derived_at: Option<u64>,
+    /// The fee payer replaced, and the payer of the account's route.
+    pub fee_payer: Option<(Pubkey, Pubkey)>,
+    /// Signers whose signatures the app owes, left for it to sign.
+    pub app_signs: Vec<Pubkey>,
+    /// Every other signer the notes decided: no guess replaces them.
+    pub keep: Vec<Pubkey>,
+    /// For a message signed as a memo, the message.
+    pub message: Option<String>,
+    /// Asked of another device on Review: its resolution is
+    /// `awaiting-signatures`, and the request left the queue.
+    pub elsewhere: bool,
+}
+
+impl ResolvedRequest {
+    /// What the guessing of `wallet_flows::request` may not touch.
+    pub fn kept(&self) -> wallet_flows::request::Kept {
+        wallet_flows::request::Kept {
+            keep: self.keep.clone(),
+            app_signs: self.app_signs.clone(),
+        }
+    }
+
+    /// The signers of `tx` whose slots are left for the app, unsigned.
+    pub fn app_signs_in(&self, tx: &wallet_core::DecodedTx) -> Vec<Pubkey> {
+        tx.signers
+            .iter()
+            .filter(|slot| !slot.valid && self.app_signs.contains(&slot.pubkey))
+            .map(|slot| slot.pubkey)
+            .collect()
+    }
 }
 
 /// A key made here, and the site's one-time key it takes the place of.
@@ -391,6 +457,73 @@ pub fn use_blockhash_clock_state() -> BlockhashClock {
 }
 
 impl SignForm {
+    /// The `resolve` request `id` with its notes applied, once it has been
+    /// prepared.
+    pub fn resolved(&self, id: &str) -> Option<ResolvedRequest> {
+        self.resolved
+            .peek()
+            .iter()
+            .find(|kept| kept.request == id)
+            .cloned()
+    }
+
+    /// [`Self::resolved`] for the site's request on screen, when it is a
+    /// `resolve`.
+    pub fn resolved_on_screen(&self) -> Option<ResolvedRequest> {
+        match &*self.source.peek() {
+            Some(TxSource::Browser { id, .. }) => self.resolved(id),
+            _ => None,
+        }
+    }
+
+    /// Keep `resolved`, unless its request already has one: the first made
+    /// stays, with the keys it made. One whose carried addresses were
+    /// derived at another transaction number of the multisig is replaced:
+    /// they follow the number, and no key was made for them.
+    pub fn keep_resolved(&self, resolved: ResolvedRequest) -> ResolvedRequest {
+        let mut kept = self.resolved;
+        let mut out = resolved.clone();
+        kept.with_mut(|kept| {
+            match kept
+                .iter_mut()
+                .find(|item| item.request == resolved.request)
+            {
+                Some(first)
+                    if !first.carried.is_empty() && first.derived_at != resolved.derived_at =>
+                {
+                    let elsewhere = first.elsewhere;
+                    *first = resolved;
+                    first.elsewhere = elsewhere;
+                    out = first.clone();
+                }
+                Some(first) => out = first.clone(),
+                None => kept.push(resolved),
+            }
+        });
+        out
+    }
+
+    /// The addresses multisigs sign for in place of sites' new accounts, in
+    /// every request kept: a rebuild may name them as signers inside a
+    /// proposal.
+    pub fn carried_addresses(&self) -> Vec<Pubkey> {
+        self.resolved
+            .peek()
+            .iter()
+            .flat_map(|item| item.carried.iter().map(|(_, address)| *address))
+            .collect()
+    }
+
+    /// Mark the `resolve` request `id` as asked of another device.
+    pub fn resolved_elsewhere(&self, id: &str) {
+        let mut kept = self.resolved;
+        kept.with_mut(|kept| {
+            if let Some(item) = kept.iter_mut().find(|item| item.request == id) {
+                item.elsewhere = true;
+            }
+        });
+    }
+
     /// The site's key and the key made here, for each key made here that
     /// signs `tx`.
     pub fn made_here_in(&self, tx: &wallet_core::DecodedTx) -> Vec<(Pubkey, Pubkey)> {

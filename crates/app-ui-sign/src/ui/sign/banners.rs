@@ -180,6 +180,16 @@ fn SignerChip(line: wallet_core::SignerLine) -> Element {
             },
             None => rsx! { span { class: "chip info", "on a hardware wallet · not signed" } },
         },
+        // A resolution's notes say the site signs for it, after this device.
+        SignerState::Missing
+            if session
+                .forms
+                .sign
+                .resolved_on_screen()
+                .is_some_and(|resolved| resolved.app_signs.contains(&line.authority_chip())) =>
+        {
+            rsx! { span { class: "chip", "the site signs after you" } }
+        }
         SignerState::Missing => {
             // Where this device knows what holds the key, it says so, in the
             // words of the Wallets screen.

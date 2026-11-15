@@ -166,7 +166,7 @@ fn a_payment_inside_a_squads_store_inside_a_submit_is_edited_in_place() {
     let built = compile_v1(
         hot,
         vec![squad
-            .create_transaction(1, 0, std::slice::from_ref(&payment), &member, &hot)
+            .create_transaction(1, 0, 0, std::slice::from_ref(&payment), &member, &hot)
             .unwrap()],
         None,
         Some(Hash::new_from_array([9; 32])),

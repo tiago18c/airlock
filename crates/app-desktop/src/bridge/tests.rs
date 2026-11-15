@@ -6,6 +6,9 @@ use bridge_protocol::reply::SendError;
 use wallet_core::TxFormat as Format;
 use wallet_core::WalletSigner;
 
+/// The methods of the intents prototype.
+mod intents;
+
 /// A bridge attached to a test core.
 fn attached_bridge() -> (Kit, Bridge) {
     let kit = kit();
@@ -704,7 +707,7 @@ async fn a_send_the_user_approved_goes_on_without_the_browser() {
     connected(&kit, &bridge, false);
     let peer = Peer::new(bridge.clone(), None);
     let waiting = sent(&peer, send_request("send", SEND, Some("solana:devnet")));
-    let sending = kit.core.bridge_begin_send("send", 1).unwrap();
+    let sending = kit.core.bridge_begin_send("send", &[vec![0x81]]).unwrap();
     assert!(kit.core.slices().bridge.get().is_empty());
 
     peer.closed();
@@ -938,7 +941,7 @@ async fn an_approved_send_leaves_the_queue_and_answers_when_done() {
     assert!(!kit
         .core
         .bridge_answer("send", &BridgeAnswer::Signed(vec![vec![0x81]])));
-    let sending = kit.core.bridge_begin_send("send", 1).unwrap();
+    let sending = kit.core.bridge_begin_send("send", &[vec![0x81]]).unwrap();
     assert!(kit.core.slices().bridge.get().is_empty());
     // Nobody can reject it now.
     assert!(!kit.core.bridge_answer("send", &BridgeAnswer::Rejected));
@@ -952,7 +955,7 @@ async fn an_approved_send_leaves_the_queue_and_answers_when_done() {
 async fn a_failed_send_tells_the_site_why() {
     let (kit, bridge) = attached_bridge();
     let asking = waiting_send(&kit, &bridge, SEND);
-    let sending = kit.core.bridge_begin_send("send", 1).unwrap();
+    let sending = kit.core.bridge_begin_send("send", &[vec![0x81]]).unwrap();
     kit.core.bridge_send_finished(
         sending,
         vec![Err(SendError::Failed("the node said no".into()))],
@@ -966,7 +969,7 @@ async fn a_failed_send_tells_the_site_why() {
 async fn a_send_that_may_still_land_is_not_called_a_failure() {
     let (kit, bridge) = attached_bridge();
     let asking = waiting_send(&kit, &bridge, SEND);
-    let sending = kit.core.bridge_begin_send("send", 1).unwrap();
+    let sending = kit.core.bridge_begin_send("send", &[vec![0x81]]).unwrap();
     kit.core.bridge_send_finished(
         sending,
         vec![Err(SendError::Unknown("it may still land".into()))],
@@ -987,7 +990,7 @@ async fn a_send_approved_as_time_runs_out_answers_with_its_result() {
         Duration::from_millis(50),
         &Waiting::default(),
     );
-    let sending = kit.core.bridge_begin_send("late", 1).unwrap();
+    let sending = kit.core.bridge_begin_send("late", &[vec![0x81]]).unwrap();
 
     // The time runs out with the send still going.
     let answer = std::thread::spawn(move || read(&settled(waiting)));
@@ -1010,7 +1013,7 @@ async fn a_send_dropped_without_a_result_does_not_wait_for_ever() {
         Duration::from_millis(10),
         &Waiting::default(),
     );
-    drop(kit.core.bridge_begin_send("lost", 1).unwrap());
+    drop(kit.core.bridge_begin_send("lost", &[vec![0x81]]).unwrap());
     assert_eq!(read(&settled(waiting))["error"]["code"], "expired");
 }
 
@@ -1018,8 +1021,11 @@ async fn a_send_dropped_without_a_result_does_not_wait_for_ever() {
 async fn send_all_answers_for_each_transaction() {
     let (kit, bridge) = attached_bridge();
     let asking = waiting_send(&kit, &bridge, SEND_ALL);
-    assert!(kit.core.bridge_begin_send("send", 2).is_none());
-    let sending = kit.core.bridge_begin_send("send", 1).unwrap();
+    assert!(kit
+        .core
+        .bridge_begin_send("send", &[vec![0x81], vec![0x81]])
+        .is_none());
+    let sending = kit.core.bridge_begin_send("send", &[vec![0x81]]).unwrap();
     kit.core
         .bridge_send_finished(sending, vec![Err(SendError::Failed("failed".into()))]);
     let value = asking.join().unwrap();

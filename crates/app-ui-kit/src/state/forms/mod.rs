@@ -170,6 +170,7 @@ pub fn use_forms() -> Forms {
             site_sends: use_signal(Vec::new),
             set_aside: use_signal(Vec::new),
             displaced: use_signal(|| None),
+            resolved: use_signal(Vec::new),
         },
         stake: StakeForm {
             snapshot: use_signal(|| None),

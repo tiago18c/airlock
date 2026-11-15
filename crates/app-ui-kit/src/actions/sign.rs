@@ -13,7 +13,7 @@ use wallet_core::{
 use wallet_flows::lookup::resolve_lookup_tables;
 use wallet_flows::request::wallets_asked;
 use wallet_flows::request::{
-    accounts_created, replaceable_signers, route_created, OneTimeKeys, Route,
+    accounts_created, replaceable_signers, route_keeping, Kept, OneTimeKeys, Route,
 };
 
 /// Who to name on the `received` line when preparing starts.
@@ -63,6 +63,33 @@ pub async fn prepare_request(
     flow: Option<u64>,
     site_signs: bool,
 ) -> Result<PreparedRequest, String> {
+    prepare_request_keeping(
+        session,
+        wire,
+        received,
+        flow,
+        site_signs,
+        &Kept::default(),
+        0,
+    )
+    .await
+}
+
+/// [`prepare_request`] for a request whose notes decided some of its
+/// signers already (`docs/intents.md`): no guess replaces those in `kept`,
+/// and of them only `kept.app_signs` is left for the site. `ahead` is how
+/// many proposals the transactions before this one, in the same request,
+/// store in the multisig this one is rebuilt for (see
+/// [`proposals_ahead`]): its proposal takes the number after theirs.
+pub async fn prepare_request_keeping(
+    session: Session,
+    wire: Vec<u8>,
+    received: Option<ReceivedMeta<'_>>,
+    flow: Option<u64>,
+    site_signs: bool,
+    kept: &Kept,
+    ahead: u64,
+) -> Result<PreparedRequest, String> {
     let flow = flow.unwrap_or_else(next_flow_id);
     let cluster = session.cluster();
     if let Some(meta) = &received {
@@ -87,7 +114,7 @@ pub async fn prepare_request(
             &wallets_here,
         );
         let (wire, adapted, last_valid_height) =
-            rebuild_for_wallets_flow(session, wire, flow).await?;
+            rebuild_for_wallets_flow(session, wire, flow, ahead).await?;
         let rebuilt = wire.clone();
         let (wire, last_valid_height) =
             onto_offline_nonce(session, wire, adapted.as_ref(), last_valid_height, flow).await;
@@ -114,11 +141,13 @@ pub async fn prepare_request(
     let created = accounts_created(rpc.as_deref(), &tx, &known).await;
     session.forms.sign.keep_created(&tx, created.clone());
     // A vault may be asked along with keys the rewrite would replace.
+    let mut replaceable = replaceable_signers(&tx, &known, &created);
+    replaceable.retain(|signer| kept.replaceable(signer));
     let keyless = session
-        .plan_adaptation_allowing(&tx, &replaceable_signers(&tx, &known, &created))
+        .plan_adaptation_allowing(&tx, &replaceable)
         .map_err(sentence)?
         .is_some();
-    let route = route_created(
+    let route = route_keeping(
         rpc.as_deref(),
         &tx,
         &session.local_signer_pubkeys(),
@@ -126,6 +155,7 @@ pub async fn prepare_request(
         keyless,
         site_signs,
         &created,
+        kept,
     )
     .await
     .map_err(sentence)?;
@@ -154,7 +184,7 @@ pub async fn prepare_request(
     // transaction voids every signature made before it.
     session.keep_made_here(one_time.pairs());
     let (wire, adapted, last_valid_height) =
-        rebuild_for_wallets_flow(session, converted.wire.clone(), flow).await?;
+        rebuild_for_wallets_flow(session, converted.wire.clone(), flow, ahead).await?;
     let rebuilt = wire.clone();
     let (wire, last_valid_height) =
         onto_offline_nonce(session, wire, adapted.as_ref(), last_valid_height, flow).await;
@@ -247,16 +277,36 @@ pub async fn rebuild_for_wallets(
     wire: Vec<u8>,
 ) -> Result<(Vec<u8>, Option<Adapted>, Option<u64>), String> {
     let flow = session.forms.sign.flow.peek().unwrap_or_else(next_flow_id);
-    rebuild_for_wallets_flow(session, wire, flow).await
+    rebuild_for_wallets_flow(session, wire, flow, 0).await
+}
+
+/// How many of `earlier`, the transactions before `wire` in one request,
+/// a rebuild stores as proposals in the multisig that `wire`'s rebuild
+/// stores one in. Zero when `wire` is rebuilt for no multisig. Read from the
+/// plans alone, with no node: a transaction that cannot be read counts for
+/// nothing.
+pub fn proposals_ahead(session: Session, earlier: &[Vec<u8>], wire: &[u8]) -> u64 {
+    let stores_in = |wire: &[u8]| {
+        let tx = decode_transaction(wire, &LookupTables::new()).ok()?;
+        session.plan_adaptation(&tx).ok().flatten()?.stores_in()
+    };
+    let Some(squad) = stores_in(wire) else {
+        return 0;
+    };
+    earlier
+        .iter()
+        .filter(|earlier| stores_in(earlier) == Some(squad))
+        .count() as u64
 }
 
 async fn rebuild_for_wallets_flow(
     session: Session,
     wire: Vec<u8>,
     flow: u64,
+    ahead: u64,
 ) -> Result<(Vec<u8>, Option<Adapted>, Option<u64>), String> {
     let from_message = message_hash(&wire);
-    let (wire, adapted, last_valid_height) = rebuild_quietly(session, wire).await?;
+    let (wire, adapted, last_valid_height) = rebuild_quietly(session, wire, ahead).await?;
     if let Some(adapted) = &adapted {
         log_rebuild(session, flow, adapted, &from_message);
     }
@@ -268,11 +318,13 @@ async fn rebuild_for_wallets_flow(
 async fn rebuild_quietly(
     session: Session,
     wire: Vec<u8>,
+    ahead: u64,
 ) -> Result<(Vec<u8>, Option<Adapted>, Option<u64>), String> {
     let tx = decode_v1_transaction(&wire).map_err(sentence)?;
     let Some(plan) = session.plan_adaptation(&tx).map_err(sentence)? else {
         return Ok((wire, None, None));
     };
+    let plan = plan.after_proposals(ahead);
     let rpc = session.rpc().map_err(sentence)?;
     let (adapted, last_valid_height) = wallet_flows::adapt::rebuild(rpc.as_ref(), &tx, &plan)
         .await
@@ -371,7 +423,7 @@ pub async fn offer_paid_here(session: Session, wire: Vec<u8>, flow: u64) -> Opti
     let swap = session.plan_payer_swap(&tx)?;
     let rpc = session.rpc().ok()?;
     let swapped = wallet_flows::adapt::swap_payer_if_it_works(rpc.as_ref(), &tx, &swap).await?;
-    let (wire, adapted, _) = rebuild_quietly(session, swapped.clone()).await.ok()?;
+    let (wire, adapted, _) = rebuild_quietly(session, swapped.clone(), 0).await.ok()?;
     Some(PaidHere {
         from: swap.from,
         to: swap.to,

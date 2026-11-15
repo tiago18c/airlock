@@ -339,7 +339,7 @@ fn a_check_beside_a_submit_pins_no_vote_inside_it() {
     ]);
     // Nor a check that only a stored list carries inside the same `Submit`.
     let stored = Squad::v4(&pk(51))
-        .create_transaction(1, 0, &[cpi(member)], &member, &member)
+        .create_transaction(1, 0, 0, &[cpi(member)], &member, &member)
         .unwrap();
     still_blind(vec![submit(authority, &[stored, vote(member)])]);
 }
@@ -589,14 +589,14 @@ fn only_a_list_that_runs_pins_a_vote() {
     let other = Squad::v4(&pk(51));
     let pair = [check(pk(1)), vote(pk(1))];
     let carrying = other
-        .create_transaction(1, 0, &pair, &pk(1), &pk(1))
+        .create_transaction(1, 0, 0, &pair, &pk(1), &pk(1))
         .unwrap();
     let explained = explained(vec![carrying.clone()]);
     assert!(checked_in(&explained).is_empty());
     assert_eq!(blind_in(&explained).len(), 1);
     // A stored check beside a vote that runs pins nothing either.
     let stored_check = other
-        .create_transaction(1, 0, &[check(pk(1))], &pk(1), &pk(1))
+        .create_transaction(1, 0, 0, &[check(pk(1))], &pk(1), &pk(1))
         .unwrap();
     still_blind(vec![stored_check, vote(pk(1))]);
     // Nor does a list carried for another transaction.
@@ -696,7 +696,7 @@ fn the_shape_says_what_checks_would_join() {
         vec![Squad::smart_account(7).approve(4, &pk(1))],
         vec![execute(pk(1))],
         vec![Squad::v4(&pk(51))
-            .create_transaction(1, 0, &[vote(pk(1))], &pk(1), &pk(1))
+            .create_transaction(1, 0, 0, &[vote(pk(1))], &pk(1), &pk(1))
             .unwrap()],
     ] {
         assert_eq!(shape(other.clone()), ApprovalShape::Other, "{other:?}");

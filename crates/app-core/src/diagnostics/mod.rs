@@ -5,7 +5,7 @@ mod redact;
 mod tx;
 
 pub use redact::redact_url;
-pub use tx::{log_status, next_flow_id, TxLog};
+pub use tx::{held_flow, hold_flow, log_status, next_flow_id, TxLog};
 
 use std::sync::{Mutex, OnceLock};
 

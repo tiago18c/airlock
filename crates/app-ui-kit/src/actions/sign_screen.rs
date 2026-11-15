@@ -191,7 +191,12 @@ pub async fn refresh_blockhash(session: Session, wire: &[u8]) -> Result<Refreshe
     let flow = session.forms.sign.flow.peek().unwrap_or_else(next_flow_id);
     let tx = decode_on_sign(wire, &tables).map_err(sentence)?;
     let created = accounts_created(Some(rpc.as_ref()), &tx, &local).await;
-    let candidates = replaceable_signers(&tx, &local, &created);
+    let mut candidates = replaceable_signers(&tx, &local, &created);
+    // A resolution's notes said what is replaced, and that was done.
+    if let Some(resolved) = session.forms.sign.resolved_on_screen() {
+        let kept = resolved.kept();
+        candidates.retain(|signer| kept.replaceable(signer));
+    }
     let one_time = one_time_signers(rpc.as_ref(), &candidates)
         .await
         .map_err(sentence)?;
@@ -738,6 +743,9 @@ pub enum HandBack {
     Returned { count: usize },
     /// The app is sending it for the site.
     Sending { count: usize },
+    /// It went to the site for the site's own signatures, and the app sends
+    /// it once they are in: a resolution delivered `cosign`.
+    ForSiteSignatures { count: usize },
     /// A site asked to have it sent, and it cannot be.
     Refused(String),
     /// It waits with its batch for the others, and transaction `next` of it
@@ -756,6 +764,12 @@ impl HandBack {
             Self::Nothing => None,
             Self::Sending { count: 1 } => Some("Sending it for the site.".into()),
             Self::Sending { count } => Some(format!("Sending all {count} for the site.")),
+            Self::ForSiteSignatures { count: 1 } => Some(
+                "Handed to the site for its signatures. Airlock sends it once they are in.".into(),
+            ),
+            Self::ForSiteSignatures { count } => Some(format!(
+                "Handed all {count} to the site for its signatures. Airlock sends them once they are in."
+            )),
             Self::Refused(why) => Some(why.clone()),
             Self::Returned { count: 1 } => Some("Returned it to the browser.".into()),
             Self::Returned { count } => Some(format!(
@@ -769,6 +783,30 @@ impl HandBack {
     }
 }
 
+/// Log a signed transaction handed to the site's request: given back, or for
+/// a resolution delivered `cosign`, held for the site's signatures and then
+/// sent by Airlock under the same flow.
+fn log_handed_back(
+    flow: u64,
+    wire: &[u8],
+    cluster: &wallet_core::Cluster,
+    origin: &str,
+    code: &str,
+    cosign: bool,
+) {
+    let log = TxLog {
+        flow,
+        wire,
+        cluster: Some(cluster),
+    };
+    if cosign {
+        app_core::diagnostics::hold_flow(wire, flow);
+        log.log_held(origin, code);
+    } else {
+        log.log_returned(origin, code);
+    }
+}
+
 /// Give a signed transaction back to the site that asked for it, when its
 /// request is still waiting. One of a batch is kept until every transaction
 /// of the batch is signed, and the screen moves on to the next one; the last
@@ -778,9 +816,21 @@ pub fn return_to_browser(session: &Session, wire: &[u8]) -> HandBack {
     let Some(TxSource::Browser { id, origin }) = form.source.peek().clone() else {
         return HandBack::Nothing;
     };
+    let resolved = form.resolved(&id);
     if session.bridge.peek().get(&id).is_none() {
-        return HandBack::Nothing;
+        // Approved here for another device's signature: the request left
+        // the queue, and its resolution waits for this.
+        return match resolved.filter(|resolved| resolved.elsewhere) {
+            Some(resolved) => finish_elsewhere(session, &resolved, wire),
+            None => HandBack::Nothing,
+        };
     }
+    // A resolution's site waits for its signatures, or sends it itself:
+    // nothing here watches for it or offers to send it (see
+    // `app_online::resolutions`).
+    let cosign = resolved
+        .as_ref()
+        .is_some_and(|resolved| resolved.delivery == wallet_core::intent::Delivery::Cosign);
     let code = bridge_protocol::request_code(&id);
     let cluster = session.cluster();
     let batch = form.batch.peek().clone().filter(|batch| batch.id == id);
@@ -794,18 +844,18 @@ pub fn return_to_browser(session: &Session, wire: &[u8]) -> HandBack {
         if sends {
             return send_from_form(session, &id, &origin, vec![(wire.to_vec(), flow)]);
         }
-        TxLog {
-            flow,
-            wire,
-            cluster: Some(&cluster),
-        }
-        .log_returned(&origin, &code);
+        log_handed_back(flow, wire, &cluster, &origin, &code, cosign);
         if !session.bridge_answer(&id, BridgeAnswer::Signed(vec![wire.to_vec()])) {
             return HandBack::Nothing;
         }
         let mut marked = form.returned;
         marked.set(true);
-        watch_site_send(session, origin, vec![(wire.to_vec(), flow)]);
+        if resolved.is_none() {
+            watch_site_send(session, origin, vec![(wire.to_vec(), flow)]);
+        }
+        if cosign {
+            return HandBack::ForSiteSignatures { count: 1 };
+        }
         return HandBack::Returned { count: 1 };
     };
 
@@ -831,12 +881,7 @@ pub fn return_to_browser(session: &Session, wire: &[u8]) -> HandBack {
         return send_from_form(session, &id, &origin, items);
     }
     for item in &batch.items {
-        TxLog {
-            flow: item.flow,
-            wire: &item.wire,
-            cluster: Some(&cluster),
-        }
-        .log_returned(&origin, &code);
+        log_handed_back(item.flow, &item.wire, &cluster, &origin, &code, cosign);
     }
     let wires: Vec<Vec<u8>> = batch.items.iter().map(|item| item.wire.clone()).collect();
     let returned: Vec<(Vec<u8>, u64)> = batch
@@ -852,8 +897,59 @@ pub fn return_to_browser(session: &Session, wire: &[u8]) -> HandBack {
     }
     let mut marked = form.returned;
     marked.set(true);
-    watch_site_send(session, origin, returned);
+    if resolved.is_none() {
+        watch_site_send(session, origin, returned);
+    }
+    if cosign {
+        return HandBack::ForSiteSignatures { count };
+    }
     HandBack::Returned { count }
+}
+
+/// Finish a resolution approved here and signed on another device: once
+/// every transaction of its request is complete, its resolution takes them
+/// and the online service sends them. One of a batch is kept until every
+/// one is, as when a site waits.
+fn finish_elsewhere(
+    session: &Session,
+    resolved: &crate::state::forms::ResolvedRequest,
+    wire: &[u8],
+) -> HandBack {
+    let form = session.forms.sign;
+    // Read apart from the match: the borrow `peek` takes would otherwise
+    // last through it, and loading the next transaction writes the batch.
+    let batch = form
+        .batch
+        .peek()
+        .clone()
+        .filter(|batch| batch.id == resolved.request);
+    let wires = match batch {
+        None => vec![wire.to_vec()],
+        Some(mut batch) => {
+            let current = batch.current;
+            if let Some(item) = batch.items.get_mut(current) {
+                item.wire = wire.to_vec();
+                item.vector = form.vector.peek().clone();
+                item.expiry = *form.clock.expiry.peek();
+                item.signed = true;
+            }
+            if let Some(next) = batch.next_unsigned() {
+                let (signed, of) = (batch.signed(), batch.len());
+                batch.current = next;
+                form.load_batch(batch);
+                return HandBack::Kept { signed, of, next };
+            }
+            batch.items.iter().map(|item| item.wire.clone()).collect()
+        }
+    };
+    let count = wires.len();
+    match super::resolve::finish_signed_elsewhere(session, resolved, &wires) {
+        Ok(()) => {
+            session.forms.sign.clear();
+            HandBack::Sending { count }
+        }
+        Err(why) => HandBack::Refused(why),
+    }
 }
 
 /// Send what the Sign screen finished, for the site that asked. A toast

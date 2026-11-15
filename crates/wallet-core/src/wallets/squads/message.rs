@@ -14,6 +14,8 @@ pub struct StoredTransaction {
     pub vault_index: u8,
     /// The vault that will run the instructions and sign for them.
     pub vault: Pubkey,
+    /// How many ephemeral signers it declares.
+    pub ephemeral_signers: u8,
     pub instructions: Vec<Instruction>,
 }
 
@@ -45,6 +47,7 @@ impl StoredTransaction {
             _ => return None,
         };
         let vault_index: u8 = number(field(stored, index_name)?)?;
+        let ephemeral_signers: u8 = number(field(stored, "ephemeralSigners")?)?;
         let message = VaultMessage::from_bytes(bytes(field(stored, "transactionMessage")?)?)?;
         let squad = Squad {
             program,
@@ -54,6 +57,7 @@ impl StoredTransaction {
             vault: squad.vault(vault_index),
             squad,
             vault_index,
+            ephemeral_signers,
             instructions: message.instructions()?,
         })
     }
@@ -143,15 +147,18 @@ impl VaultMessage {
     }
 
     /// Every account in its order, as an execution lists them. The vault,
-    /// first, signs inside the program. Any other signer of the stored
-    /// message has to sign the transaction that executes it.
-    pub(super) fn execute_accounts(&self) -> Vec<AccountMeta> {
+    /// first, and the transaction's ephemeral signers among `ephemeral`,
+    /// sign inside the program. Any other signer of the stored message has
+    /// to sign the transaction that executes it.
+    pub(super) fn execute_accounts(&self, ephemeral: &[Pubkey]) -> Vec<AccountMeta> {
         self.account_keys
             .iter()
             .enumerate()
             .map(|(position, key)| AccountMeta {
                 pubkey: *key,
-                is_signer: position > 0 && position < usize::from(self.num_signers),
+                is_signer: position > 0
+                    && position < usize::from(self.num_signers)
+                    && !ephemeral.contains(key),
                 is_writable: self.is_writable(position),
             })
             .collect()

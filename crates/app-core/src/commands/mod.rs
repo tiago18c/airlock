@@ -24,19 +24,20 @@ use crate::ports::Ports;
 use crate::public::PublicCore;
 use crate::ranked::{Rank, Ranked, RankedGuard};
 use crate::slices::{
-    book_from, history_from, holdings_from, network_from, notices_from, settings_from,
-    shown_wallets, vault_state_from, wallets_view_from, Reach, Slice, Slices,
+    book_from, history_from, holdings_from, network_from, notices_from, resolutions_from,
+    settings_from, shown_wallets, vault_state_from, wallets_view_from, Reach, Slice, Slices,
 };
 use crate::storage::{
-    open_history_in, open_holdings_in, open_leaf_marks_in, open_notices_in, open_vault_in,
-    open_wallet_list_in, open_workspace_in, AppHistory, AppHoldings, AppLeafMarks, AppNotices,
-    AppVault, AppWalletList, AppWorkspace,
+    open_history_in, open_holdings_in, open_leaf_marks_in, open_notices_in, open_resolutions_in,
+    open_vault_in, open_wallet_list_in, open_workspace_in, AppHistory, AppHoldings, AppLeafMarks,
+    AppNotices, AppResolutions, AppVault, AppWalletList, AppWorkspace,
 };
 use deferred::Deferred;
 use sites::sites_view;
 
 mod deferred;
 mod notices;
+mod resolutions;
 mod saving;
 mod settings;
 mod sites;
@@ -80,12 +81,23 @@ pub(crate) struct Inner {
     holdings: Deferred<AppHoldings>,
     notices: Deferred<AppNotices>,
     history: Deferred<AppHistory>,
+    resolutions: Deferred<AppResolutions>,
     bridge: Ranked<BridgeState>,
     slices: Slices,
     events: broadcast::Sender<Event>,
     visible: watch::Sender<bool>,
     activity: watch::Sender<()>,
     reach: Ranked<Reach>,
+    /// What the Proposals pane last read of each multisig, by its address,
+    /// with the cluster it read it on: a site asking how a Squads vault
+    /// signs gets a profile from the chain once the pane has read it on the
+    /// cluster in use. In memory only.
+    squads: Ranked<
+        std::collections::BTreeMap<
+            solana_pubkey::Pubkey,
+            (wallet_core::Cluster, wallet_core::squads::SquadState),
+        >,
+    >,
 }
 
 fn locked<T>(mutex: &Ranked<T>) -> RankedGuard<'_, T> {
@@ -124,8 +136,14 @@ impl Core {
         if let Some(problem) = notices.load_problem() {
             warn!(target: CORE, store = "notices", problem = %problem.message(), "load problem");
         }
+        let mut resolutions = open_resolutions_in(&*ports.storage);
+        if let Some(problem) = resolutions.load_problem() {
+            warn!(target: CORE, store = "resolutions", problem = %problem.message(), "load problem");
+        }
         let now_secs = (ports.clock.now_ms() / 1000) as i64;
         let notices_pruned = notices.prune_expired(now_secs);
+        // What waited on the queue or on wires held in memory cannot go on.
+        let resolutions_ended = resolutions.data_mut().after_restart(now_secs.max(0) as u64);
 
         let settings = settings_from(&workspace);
         let slices = Slices {
@@ -143,6 +161,7 @@ impl Core {
             notices: Slice::new(notices_from(&notices)),
             history: Slice::new(history_from(&history)),
             sync: Slice::new(Arc::new(crate::slices::SyncStatus::default())),
+            resolutions: Slice::new(resolutions_from(&resolutions)),
         };
         let inner = Arc::new(Inner {
             ports,
@@ -177,15 +196,26 @@ impl Core {
                 Inner::publish_history,
                 |core| &core.history,
             ),
+            resolutions: Deferred::new(
+                Rank::Resolutions,
+                "resolutions",
+                resolutions,
+                Inner::publish_resolutions,
+                |core| &core.resolutions,
+            ),
             bridge: Ranked::new(Rank::Bridge, BridgeState::default()),
             slices,
             events: broadcast::channel(EVENT_BACKLOG).0,
             visible: watch::channel(true).0,
             activity: watch::channel(()).0,
             reach: Ranked::new(Rank::Reach, Reach::default()),
+            squads: Ranked::new(Rank::Squads, Default::default()),
         });
         if notices_pruned {
             inner.notices.mark_dirty(&inner);
+        }
+        if resolutions_ended {
+            inner.resolutions.mark_dirty(&inner);
         }
 
         let policy = LockPolicy::new(
@@ -235,6 +265,9 @@ impl Core {
             out.push(problem.message().to_string());
         }
         if let Some(problem) = self.inner.history.lock().load_problem() {
+            out.push(problem.message().to_string());
+        }
+        if let Some(problem) = self.inner.resolutions.lock().load_problem() {
             out.push(problem.message().to_string());
         }
         out

@@ -12,6 +12,7 @@ pub mod history;
 pub mod lock;
 pub mod notices;
 pub mod ports;
+pub mod resolutions;
 pub mod runtime;
 pub mod slices;
 pub mod storage;

@@ -93,7 +93,7 @@ impl VaultTransaction {
             vault,
             ephemeral_signers: 0,
             instructions: message.instructions().expect("a well-formed message"),
-            execute_accounts: message.execute_accounts(),
+            execute_accounts: message.execute_accounts(&[]),
         }
     }
 }
@@ -220,14 +220,18 @@ impl Squad {
             return Some(StoredAccount::LookupTables);
         }
         let message = VaultMessage::from_account(message)?;
+        let index: u64 = number(field(&stored, "index")?)?;
+        // The program signs for these when it runs the transaction, whoever
+        // stored it.
+        let ephemeral = self.ephemeral_signers(index, ephemeral_signers);
         Some(StoredAccount::Vault(VaultTransaction {
             creator: key(field(&stored, "creator")?)?,
-            index: number(field(&stored, "index")?)?,
+            index,
             vault_index,
             vault: self.vault(vault_index),
             ephemeral_signers,
             instructions: message.instructions()?,
-            execute_accounts: message.execute_accounts(),
+            execute_accounts: message.execute_accounts(&ephemeral),
         }))
     }
 }

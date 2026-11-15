@@ -78,6 +78,13 @@ pub enum AdaptError {
         signer: Pubkey,
         held: HeldBack,
     },
+    #[error("The new accounts of this transaction have the addresses {squad} signs for in proposal {derived_for}, and the next proposal is {index}: another proposal was stored since the request was prepared. Prepare it again.")]
+    CarriedMoved {
+        squad: String,
+        /// The proposal number the addresses were derived for, or "another".
+        derived_for: String,
+        index: u64,
+    },
     #[error("{0} has no nonce account yet. Create one on the Wallets screen and send that transaction first.")]
     NoNonce(String),
     #[error("Choose a hot wallet to pay fees for {0} on the Wallets screen.")]
@@ -220,6 +227,13 @@ struct SquadsPlan {
     /// Keys made here that the stored instructions name as signers. They
     /// sign the transaction that executes the proposal.
     one_time: Vec<Pubkey>,
+    /// Ephemeral signers that the stored instructions name as signers, in
+    /// place of a site's new accounts. The program signs for them when the
+    /// proposal executes, at once or later.
+    carried: Vec<Pubkey>,
+    /// Proposals that transactions before this one, in the same request,
+    /// store in this multisig first: this one takes the number after theirs.
+    ahead: u64,
 }
 
 /// A wallet of this device that may vote for the multisig, as known at plan
@@ -358,6 +372,25 @@ pub struct Adapted {
 }
 
 impl AdaptPlan {
+    /// The multisig this plan stores a proposal in, when it rebuilds for
+    /// one. A smart account that runs it at once stores nothing, but which
+    /// it does is known only once the chain is read.
+    pub fn stores_in(&self) -> Option<Squad> {
+        self.squads.as_ref().map(|plan| plan.squad)
+    }
+
+    /// This plan, after `ahead` proposals that earlier transactions of the
+    /// same request store in its multisig: its proposal takes the number
+    /// after theirs, so that they land in order. Without it every
+    /// transaction of a request would take the same number, and only the
+    /// first could land.
+    pub fn after_proposals(mut self, ahead: u64) -> Self {
+        if let Some(plan) = self.squads.as_mut() {
+            plan.ahead = ahead;
+        }
+        self
+    }
+
     /// This plan, always building a proposal, even for a smart account whose
     /// members here could run it at once. The app never asks for this: it is
     /// how tests reach the proposal a smart account would otherwise skip.

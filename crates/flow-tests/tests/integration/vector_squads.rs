@@ -137,7 +137,7 @@ fn two_vector_members_approve_and_execute_in_one_transaction() {
                 &[&creator],
                 vec![
                     squad
-                        .create_transaction(1, 0, std::slice::from_ref(&payment), &by, &by)
+                        .create_transaction(1, 0, 0, std::slice::from_ref(&payment), &by, &by)
                         .unwrap(),
                     squad.create_proposal(1, &by, &by),
                 ],

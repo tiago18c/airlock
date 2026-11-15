@@ -256,7 +256,12 @@ pub fn SignPanel() -> Element {
                                 button { class: "ghost",
                                     title: "Tell the site no, and close the transaction",
                                     onclick: move |_| {
-                                        session.bridge_answer(&id, BridgeAnswer::Rejected);
+                                        // One approved for another device's
+                                        // signature has left the queue: its
+                                        // resolution hears instead.
+                                        if !session.bridge_answer(&id, BridgeAnswer::Rejected) {
+                                            app_ui_kit::actions::resolve::stop_elsewhere(&session, &id);
+                                        }
                                         form.clear();
                                     },
                                     "Reject"
@@ -407,14 +412,27 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         .collect();
     let refreshes_on_sign = online && wants_fresh_blockhash(tx.as_ref(), &signing_keys);
     let from_browser = matches!(source, Some(TxSource::Browser { .. }));
-    let app_built = matches!(
-        source,
-        Some(TxSource::Build { .. } | TxSource::Wallets | TxSource::Stake)
-    );
+    // A resolution's lifetime is the wallet's, as it is for what this app
+    // builds (`docs/intents.md`), so it moves as this app's own do.
+    let resolved = match &source {
+        Some(TxSource::Browser { id, .. }) => {
+            form.resolved.read();
+            form.resolved(id)
+        }
+        _ => None,
+    };
+    let app_built = resolved.is_some()
+        || matches!(
+            source,
+            Some(TxSource::Build { .. } | TxSource::Wallets | TxSource::Stake)
+        );
     let exact = (form.clock.expiry)().is_some_and(|expiry| expiry.exact);
     // A site's own transaction goes back to it, and it signs for the accounts
-    // it creates, such as a new mint, once this device has signed.
-    let site_signs = if from_browser && tx.format != TxFormat::V1 {
+    // it creates, such as a new mint, once this device has signed. For a
+    // resolution, its notes say whom the site signs for.
+    let site_signs = if let Some(resolved) = &resolved {
+        resolved.app_signs_in(tx.as_ref()).len()
+    } else if from_browser && tx.format != TxFormat::V1 {
         let mut here = session.known_wallet_pubkeys();
         here.extend(local.keys.iter().copied());
         let created = session.forms.sign.created_in(tx.as_ref());
@@ -458,6 +476,24 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         _ => false,
     };
     let returned = (form.returned)();
+    // A resolution delivered `cosign`: once signed here, the site adds its
+    // signatures and Airlock sends it. Nothing goes back to the site.
+    let resolved_here = form.resolved_on_screen();
+    let cosign = resolved_here
+        .as_ref()
+        .is_some_and(|resolved| resolved.delivery == wallet_core::intent::Delivery::Cosign);
+    // Signed and held, and the site has not given its signatures yet: the
+    // last step is not behind until it has.
+    let site_owes = cosign
+        && resolved_here.as_ref().is_some_and(|resolved| {
+            session
+                .resolutions
+                .read()
+                .get(&resolved.origin, &resolved.resolution)
+                .is_some_and(|kept| {
+                    kept.resolution.state == wallet_core::intent::State::AwaitingApp
+                })
+        });
     // The site that has it back may send it itself.
     let site_send = match &source {
         Some(TxSource::Browser { origin, .. }) => {
@@ -490,13 +526,17 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
             rebuilt: (form.rebuilt)(),
             simulation: simulation_stage(&(form.simulation)(), online),
             finish: if !app_sends && (site_waiting || (from_browser && returned)) {
-                SignFinish::ReturnToSite
+                if cosign {
+                    SignFinish::SiteSignsThenSend
+                } else {
+                    SignFinish::ReturnToSite
+                }
             } else if online {
                 SignFinish::Submit
             } else {
                 SignFinish::ShareToSubmit
             },
-            finished: returned,
+            finished: returned && !site_owes,
             expired: clock_expired(),
             // Sign moves the transaction off an expired blockhash, so it
             // holds nothing back.
@@ -575,7 +615,7 @@ fn Loaded(tx: Rc<DecodedTx>, mut inbox_open: Signal<bool>) -> Element {
         // Every transaction shows its steps, however few, so the screen
         // reads the same from one to the next.
         if let Some((states, signed, on_screen, own)) = batch_steps {
-            BatchSteps { states, signed, on_screen, steps: own }
+            BatchSteps { states, signed, on_screen, steps: own, cosign }
         } else {
             SignSteps { steps }
         }
@@ -1257,12 +1297,75 @@ fn SourceLine(source: TxSource) -> Element {
         TxSource::Stake => rsx! { p { class: "page-source", "From Stake" } },
         TxSource::Pasted => rsx! { p { class: "page-source", "Pasted" } },
         TxSource::Scanned => rsx! { p { class: "page-source", "Scanned" } },
-        TxSource::Browser { origin, .. } => rsx! {
+        TxSource::Browser { origin, id } => rsx! {
             p { class: "page-source site", title: "{origin}",
                 Icon { glyph: Glyph::Globe }
                 span { "Requested by " }
                 span { class: "origin", "{origin}" }
             }
+            ResolveLine { id }
         },
+    }
+}
+
+/// What a site's `resolve` asked to have done once this device has signed,
+/// under the source line (`docs/intents.md`). A message signed as a memo is
+/// shown as the request modal shows a message.
+#[component]
+fn ResolveLine(id: String) -> Element {
+    let session = use_context::<Session>();
+    let form = session.forms.sign;
+    form.resolved.read();
+    let Some(resolved) = form.resolved(&id) else {
+        return rsx! {};
+    };
+    let asked = if resolved.elsewhere {
+        "Approved for the site. Once the signature from the other device is in, Airlock sends it, and the site is told when it has run."
+    } else if resolved.message.is_some() {
+        "This signs a message by sending it as a memo. Airlock sends it once you sign, and the site gets the transaction's signature as proof that this account said it."
+    } else {
+        app_ui_kit::actions::resolve::delivery_words(resolved.delivery)
+    };
+    // How long the other device has: the signature covers the lifetime.
+    let lifetime = resolved.elsewhere.then(|| {
+        let wire = (form.wire)();
+        let on_nonce = wire.as_deref().is_some_and(|wire| {
+            app_ui_kit::actions::resolve::on_durable_nonce(wire, &wallet_core::LookupTables::new())
+        });
+        app_ui_kit::actions::resolve::lifetime_words(on_nonce)
+    });
+    let shown = resolved
+        .message
+        .as_deref()
+        .map(|memo| wallet_core::site_message::message_text(memo.as_bytes()));
+    let carried = resolved.carried.clone();
+    rsx! {
+        p { class: "page-source", "{asked}" }
+        if let Some(lifetime) = lifetime {
+            p { class: "page-source", "{lifetime}" }
+        }
+        // A new account the multisig's program signs for has no key, so
+        // nothing below asks for its signature.
+        for (old, new) in carried {
+            p { class: "page-source", key: "carried-{old}",
+                "The new account "
+                Address { pubkey: old }
+                " is created at "
+                Address { pubkey: new }
+                ". The multisig's program signs for that address when the proposal runs. No key exists for it."
+            }
+        }
+        match shown {
+            Some(Some(text)) => rsx! { pre { class: "site-message", "{text}" } },
+            Some(None) => rsx! {
+                p { class: "warn",
+                    "This message holds characters that could hide what it says or put it in another order, so it is shown in hex."
+                }
+                pre { class: "site-message",
+                    code { {resolved.message.as_deref().unwrap_or_default().bytes().map(|byte| format!("{byte:02x}")).collect::<String>()} }
+                }
+            },
+            None => rsx! {},
+        }
     }
 }

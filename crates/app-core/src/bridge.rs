@@ -11,6 +11,7 @@ use std::sync::Arc;
 use bridge_protocol::reply::{SendError, SiteAccount};
 use bridge_protocol::{MAX_PENDING, MAX_PENDING_PER_ORIGIN};
 use solana_pubkey::Pubkey;
+use wallet_core::intent::{Delivery, Notes, Order, Plan, SigningProfile};
 use wallet_core::site_message::SignIn;
 use wallet_core::{ConfirmationLevel, ConnectChoice, SiteGrant, TxFormat};
 
@@ -25,10 +26,12 @@ pub enum BridgeAnswer {
     /// A `connect`, with the accounts the site may see.
     Connect(Vec<SiteAccount>),
     /// A `signTransaction`, with every transaction it asked for, signed, in
-    /// the order the site sent them.
+    /// the order the site sent them. Also a `resolve` delivered `cosign` or
+    /// `return`, whose resolution takes them instead of a reply.
     Signed(Vec<Vec<u8>>),
     /// A `signAndSendTransaction` or `signAndSendAllTransactions`, with what
-    /// became of each transaction, in the order the site sent them.
+    /// became of each transaction, in the order the site sent them. Also a
+    /// `resolve` delivered `send`, through `Core::bridge_begin_send`.
     Sent(Vec<Result<[u8; 64], SendError>>),
     /// A `signMessage`, with the bytes signed and the signature.
     SignedMessage {
@@ -61,6 +64,12 @@ impl BridgeAnswer {
             }
             (Self::Sent(results), SiteCall::Send { transactions, .. }) => {
                 !results.is_empty() && results.len() == transactions.len()
+            }
+            (Self::Signed(wires), SiteCall::Resolve(call)) if call.delivery != Delivery::Send => {
+                !wires.is_empty() && wires.len() == call.transactions.len()
+            }
+            (Self::Sent(results), SiteCall::Resolve(call)) if call.delivery == Delivery::Send => {
+                !results.is_empty() && results.len() == call.transactions.len()
             }
             _ => false,
         }
@@ -124,6 +133,11 @@ impl BridgeAnswer {
 pub const SEND: &str = "signAndSendTransaction";
 /// `signAndSendAllTransactions`: the same, with a result for each transaction.
 pub const SEND_ALL: &str = "signAndSendAllTransactions";
+/// `resolve`: transactions with notes, for the wallet to resolve
+/// (`docs/intents.md`).
+pub const RESOLVE: &str = "resolve";
+/// `resolveMessage`: a message, here signed as a memo.
+pub const RESOLVE_MESSAGE: &str = "resolveMessage";
 
 /// What a `connect` from a site gets before anyone is asked.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -191,6 +205,43 @@ pub enum SiteCall {
         message: Vec<u8>,
     },
     SignIn(Box<SignIn>),
+    /// `resolve`, or `resolveMessage` signed as a memo: the wallet resolves
+    /// these transactions, and what becomes of them goes to their resolution
+    /// rather than to a reply. Delivered `send` it is shown, signed and sent
+    /// as [`SiteCall::Send`] is, otherwise signed as
+    /// [`SiteCall::SignTransactions`] is.
+    Resolve(Box<ResolveCall>),
+}
+
+/// What a site asked to have resolved, as it was read and checked when it
+/// arrived. Its notes are not applied to [`Self::transactions`] yet: that is
+/// for when the request is prepared, after the node half of the checks.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ResolveCall {
+    /// The id of its resolution: the site's own, or one made for it. With
+    /// the request's origin it finds the resolution.
+    pub resolution: String,
+    /// The account acted as.
+    pub account: Pubkey,
+    pub chain: String,
+    /// As the site sent them, each naming `account` and `chain`.
+    pub transactions: Vec<SiteTransaction>,
+    pub notes: Notes,
+    pub order: Order,
+    pub delivery: Delivery,
+    /// How the account signed when the request arrived.
+    pub profile: SigningProfile,
+    /// What the wallet does with the notes. Its `new_keys` still need keys
+    /// made for them when the request is prepared.
+    pub plan: Plan,
+    /// Every check of the notes that needs no node passed. False when a v0
+    /// transaction reads lookup tables, which were not read yet: check the
+    /// notes once they are, and fail the resolution with `bad_notes` when
+    /// one does not hold.
+    pub notes_checked: bool,
+    /// For a message signed as a memo, the message. Its one transaction was
+    /// built here, on no real blockhash yet.
+    pub message: Option<String>,
 }
 
 impl SiteCall {
@@ -206,6 +257,8 @@ impl SiteCall {
             Self::Send { .. } => SEND_ALL,
             Self::SignMessage { .. } => "signMessage",
             Self::SignIn(_) => "signIn",
+            Self::Resolve(call) if call.message.is_some() => RESOLVE_MESSAGE,
+            Self::Resolve(_) => RESOLVE,
         }
     }
 }
@@ -269,13 +322,26 @@ impl BridgeRequest {
             SiteCall::SignTransactions(transactions) | SiteCall::Send { transactions, .. } => {
                 transactions
             }
+            SiteCall::Resolve(call) => &call.transactions,
             _ => &[],
+        }
+    }
+
+    /// What a `resolve` or a `resolveMessage` asks, when this is one.
+    pub fn resolve(&self) -> Option<&ResolveCall> {
+        match &self.call {
+            SiteCall::Resolve(call) => Some(call),
+            _ => None,
         }
     }
 
     /// Whether the app sends what this asks to have signed.
     pub fn sends(&self) -> bool {
-        matches!(self.call, SiteCall::Send { .. })
+        match &self.call {
+            SiteCall::Send { .. } => true,
+            SiteCall::Resolve(call) => call.delivery == Delivery::Send,
+            _ => false,
+        }
     }
 
     /// Whether this takes a connection, so that ending one rejects it. A
@@ -284,16 +350,28 @@ impl BridgeRequest {
         !matches!(self.call, SiteCall::Connect | SiteCall::SignIn(_))
     }
 
-    /// How the transactions of a send go out.
+    /// How the transactions of a send go out. A resolution's `serial` waits
+    /// for each, `any` sends each whatever becomes of the others, and
+    /// `atomic` holds one transaction.
     pub fn send_plan(&self) -> SendPlan {
-        match self.call {
-            SiteCall::Send { plan, .. } => plan,
+        match &self.call {
+            SiteCall::Send { plan, .. } => *plan,
+            SiteCall::Resolve(call) => match call.order {
+                Order::Serial => SendPlan::Serial,
+                Order::Any => SendPlan::Independent,
+                Order::Atomic => SendPlan::InOrder,
+            },
             _ => SendPlan::InOrder,
         }
     }
 
     /// The commitment a site asked each transaction of a send to reach.
     pub fn send_commitments(&self) -> Vec<Option<ConfirmationLevel>> {
+        // A resolution says a transaction ran only once it has: each is
+        // waited for until it is confirmed.
+        if self.resolve().is_some() {
+            return vec![Some(ConfirmationLevel::Confirmed); self.transactions().len()];
+        }
         self.transactions()
             .iter()
             .map(|transaction| transaction.commitment)
@@ -372,6 +450,9 @@ pub enum SendPlan {
 pub struct SendingRequest {
     pub request: Arc<BridgeRequest>,
     pub(crate) reply: Option<BridgeReply>,
+    /// For a `resolve`, the origin and id of its resolution, which hears how
+    /// it went instead of a reply.
+    pub(crate) resolution: Option<(String, String)>,
 }
 
 /// The queue and, beside it, how to reply to each request in it. Only the
@@ -433,6 +514,19 @@ impl BridgeState {
         let request = self.queue.pending.remove(index);
         let reply = self.replies.remove(id);
         Some(Taken { request, reply })
+    }
+
+    /// The id in the queue of the request that waits for resolution `id` of
+    /// `origin`, when one does.
+    pub fn resolve_waiting(&self, origin: &str, id: &str) -> Option<String> {
+        self.queue
+            .pending
+            .iter()
+            .find(|request| {
+                request.origin == origin
+                    && request.resolve().is_some_and(|call| call.resolution == id)
+            })
+            .map(|request| request.id.clone())
     }
 
     /// The ids of the requests waiting from `origin`: all of them, or only

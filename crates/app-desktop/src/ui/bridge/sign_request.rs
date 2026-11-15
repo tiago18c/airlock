@@ -37,12 +37,21 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
     let waits = send_waits_for_network(session, &current);
     let can_sign = prep.can_sign && !left_for_site && !waits;
     let armed = use_armed(can_sign);
-    let title = if sends {
-        "Sign and send a transaction"
-    } else {
-        "Sign a transaction"
+    let call = current.request.resolve().cloned();
+    let title = match &call {
+        Some(call) => resolve_title(call, 1),
+        None if sends => "Sign and send a transaction".to_string(),
+        None => "Sign a transaction".to_string(),
     };
     let label = sign_label(&current, None, prep.on_device);
+    // A resolution's lifetime is the wallet's: it goes onto a fresh
+    // blockhash as Sign is pressed, as this app's own transactions do.
+    let fresh = prep.resolved.is_some() && prep.adapted.is_none();
+    // Another device signs it: approving it here leaves the rest to them.
+    let elsewhere = call.is_some()
+        && prep
+            .verdict
+            .is_some_and(|verdict| verdict.elsewhere > prep.site_signs.len());
 
     rsx! {
         BlockhashCountdown {
@@ -51,9 +60,18 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
             expired: prep.clock_expired,
             label: countdown_label,
         }
-        RequestHead { current: current.clone(), title: title.to_string(), on_close }
+        RequestHead { current: current.clone(), title, on_close }
         div { class: "request-body",
             ChainNotice { current: current.clone() }
+            if let Some(call) = call.clone() {
+                ResolveNotice {
+                    call,
+                    resolved: prep.resolved.clone(),
+                    on_nonce: prep.for_review.as_ref().map(|ready| {
+                        app_ui_kit::actions::resolve::on_durable_nonce(&ready.wire, &ready.tables)
+                    }),
+                }
+            }
             if left_for_site {
                 p { class: "warn",
                     "This site has not signed its part of this transaction, so Airlock cannot send it."
@@ -70,7 +88,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
             } else if prep.locked {
                 LockedNotice {}
             } else {
-                SimulatedDeltas { from: prep.simulation, {prepared_body(&prep)} }
+                SimulatedDeltas { from: prep.simulation, {prepared_body(&prep, sends)} }
             }
             if replacing() {
                 p { class: "warn", role: "alert",
@@ -120,6 +138,9 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                         .with_vector(vector)
                         .with_flow(flow),
                     );
+                    if elsewhere {
+                        approve_elsewhere(session, &review_id);
+                    }
                     on_close.call(());
                 },
                 if replacing() { "Review anyway" } else { "Review" }
@@ -137,7 +158,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                     let (site_signs, taken_for_sign) = (site_signs.clone(), taken_for_sign.clone());
                     let (sign_id, origin_for_sign) = (sign_id.clone(), origin_for_sign.clone());
                     spawn(async move {
-                        match sign_for_site(session, &sign, &site_signs).await {
+                        match sign_for_site(session, &sign, &site_signs, fresh).await {
                             Ok(wire) if sends => {
                                 if let Some(paid) = &taken_for_sign {
                                     paid.log_taken(session);
@@ -257,9 +278,20 @@ fn review_note(rebuilt: bool, replaced_payer: bool, onto_nonce: bool) -> String 
     }
 }
 
+/// The `resolve` request `id` was opened on Review for an account whose
+/// remaining signature comes from another device: the person approved it,
+/// and its resolution waits for that signature (`awaiting-signatures`)
+/// rather than for the request, so it does not expire with it.
+fn approve_elsewhere(session: Session, id: &str) {
+    session.forms.sign.resolved_elsewhere(id);
+    session.bridge_approved_elsewhere(id);
+}
+
 /// Sign a prepared transaction with this device's keys: the vault's, then
 /// each hardware wallet's in the device dialog. Answers the signed wire only
-/// when nothing but the site's own signatures is left in it.
+/// when nothing but the site's own signatures is left in it. With `fresh`,
+/// it is moved onto the node's latest blockhash first, when the node
+/// answers: a resolution's lifetime is the wallet's to choose.
 async fn sign_for_site(
     session: Session,
     SignWire {
@@ -269,7 +301,17 @@ async fn sign_for_site(
         flow,
     }: &SignWire,
     site_signs: &[Pubkey],
+    fresh: bool,
 ) -> Result<Vec<u8>, String> {
+    let moved = if fresh && !app_ui_kit::actions::resolve::on_durable_nonce(wire, tables) {
+        app_ui_kit::actions::resolve::onto_fresh_blockhash(session, wire, *flow)
+            .await
+            .ok()
+            .map(|(moved, _)| moved)
+    } else {
+        None
+    };
+    let wire = moved.as_ref().unwrap_or(wire);
     let devices = session.local_device_keys();
     let only_devices = wallet_core::decode_transaction(wire, tables).is_ok_and(|tx| {
         let local = wallet_core::LocalKeys {
@@ -316,16 +358,29 @@ async fn sign_for_site(
     Ok(signed_wire)
 }
 
-/// Log that `wire` goes back to the site of request `id`.
+/// Log that `wire` goes back to the site of request `id`, or for a
+/// resolution delivered `cosign`, that it is held here for the site's
+/// signatures and then sent under the same flow.
 fn log_returned(session: Session, flow: u64, wire: &[u8], origin: &str, id: &str) {
     let cluster = session.cluster();
     let code = crate::bridge::request_code(id);
-    app_core::diagnostics::TxLog {
+    let log = app_core::diagnostics::TxLog {
         flow,
         wire,
         cluster: Some(&cluster),
+    };
+    let cosign = session
+        .bridge
+        .peek()
+        .get(id)
+        .and_then(|request| request.resolve().map(|call| call.delivery))
+        == Some(wallet_core::intent::Delivery::Cosign);
+    if cosign {
+        app_core::diagnostics::hold_flow(wire, flow);
+        log.log_held(origin, &code);
+    } else {
+        log.log_returned(origin, &code);
     }
-    .log_returned(origin, &code);
 }
 
 /// The vault is locked, and preparing needs its wallets.
@@ -349,7 +404,7 @@ fn LockedNotice() -> Element {
 
 /// What the modal says about one prepared transaction: what was done to it,
 /// what it does, and what signing it here takes.
-fn prepared_body(prep: &PreparedRequest) -> Element {
+fn prepared_body(prep: &PreparedRequest, sends: bool) -> Element {
     let from_tables = prep.shown.as_ref().map_or(0, |tx| {
         tx.accounts
             .iter()
@@ -395,7 +450,7 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
                 p { class: "hint", "{ONTO_NONCE_NOTE}" }
             }
             if let Some(converted) = prep.converted.clone() {
-                ConvertedNotice { converted: converted.clone() }
+                ConvertedNotice { converted: converted.clone(), resolves: prep.resolved.is_some() }
                 if prep.adapted.is_some() && !converted.replaced.is_empty() {
                     p { class: "hint",
                         "Review it: the rebuilt transaction is simulated once its authorization is signed, and that shows whether the key made here works for this site."
@@ -403,7 +458,7 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
                 }
             }
             if let Some(adapted) = prep.adapted.clone() {
-                AdaptedNotice { adapted }
+                AdaptedNotice { adapted, sends }
             }
             if let Some(paid) = prep.offered.clone() {
                 div { class: "callout",
@@ -484,7 +539,8 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
                         "It loads {from_tables} of its accounts from lookup tables, shown as the chain has them now."
                     }
                 }
-                if !prep.site_signs.is_empty() {
+                // A resolution's notice names whom the site signs for.
+                if !prep.site_signs.is_empty() && prep.resolved.is_none() {
                     p { class: "hint",
                         "The site signs for {prep.site_signs.len()} account(s) it creates, such as a new mint, once this device has signed. Its transaction is signed as it sent it."
                     }
@@ -515,6 +571,11 @@ struct BatchReport {
     taken: Option<PaidHere>,
     site_signs: Vec<Pubkey>,
     clock: BlockhashClock,
+    /// Moved onto a fresh blockhash as Sign is pressed: a resolution's.
+    fresh: bool,
+    /// Another device signs what is left of it.
+    elsewhere: bool,
+    resolved: Option<app_ui_kit::state::forms::ResolvedRequest>,
 }
 
 /// A site asking for several transactions in one request. Each is prepared
@@ -556,6 +617,18 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
         SendPlan::InOrder => "A rejected one stops the rest.",
     };
     let label = sign_label(&current, Some(count), None);
+    let call = current.request.resolve().cloned();
+    let resolved = ready
+        .as_ref()
+        .and_then(|ready| ready.iter().find_map(|item| item.resolved.clone()));
+    let elsewhere = ready
+        .as_ref()
+        .is_some_and(|ready| ready.iter().any(|item| item.elsewhere));
+    let title = match &call {
+        Some(call) => resolve_title(call, count),
+        None if sends => format!("Sign and send {count} transactions"),
+        None => format!("Sign {count} transactions"),
+    };
     let cautious_sign = can_sign
         && ready
             .as_ref()
@@ -573,9 +646,12 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
     let for_sign = ready;
 
     rsx! {
-        RequestHead { current: current.clone(), title: if sends { format!("Sign and send {count} transactions") } else { format!("Sign {count} transactions") }, on_close }
+        RequestHead { current: current.clone(), title, on_close }
         div { class: "request-body",
             ChainNotice { current: current.clone() }
+            if let Some(call) = call.clone() {
+                ResolveNotice { call, resolved }
+            }
             if sends {
                 p { class: "muted",
                     "The site sent {count} transactions in one request. Airlock sends them once every one is signed, or none if you reject. {send_note}"
@@ -652,6 +728,9 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                         items,
                         current: 0,
                     });
+                    if elsewhere {
+                        approve_elsewhere(session, &review_id);
+                    }
                     on_close.call(());
                 },
                 if replacing() { "Review anyway" } else { "Review" }
@@ -676,7 +755,7 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                             busy.set(false);
                             return;
                         };
-                        match sign_for_site(session, sign, &report.site_signs).await {
+                        match sign_for_site(session, sign, &report.site_signs, report.fresh).await {
                             Ok(wire) => signed.push((sign.flow, wire)),
                             Err(err) => {
                                 error.set(Some(format!(
@@ -736,6 +815,12 @@ fn BatchCard(
         taken: prep.offered.clone().filter(|_| prep.replaced_payer),
         site_signs: prep.site_signs.clone(),
         clock: prep.clock,
+        fresh: prep.resolved.is_some() && prep.adapted.is_none(),
+        elsewhere: prep.resolved.is_some()
+            && prep
+                .verdict
+                .is_some_and(|verdict| verdict.elsewhere > prep.site_signs.len()),
+        resolved: prep.resolved.clone(),
     };
     use_effect(use_reactive!(|(report)| {
         reports.with_mut(|reports| {
@@ -788,7 +873,7 @@ fn BatchCard(
                     if prep.original.is_none() {
                         p { class: "warn", "{detail}" }
                     } else {
-                        SimulatedDeltas { from: prep.simulation, {prepared_body(&prep)} }
+                        SimulatedDeltas { from: prep.simulation, {prepared_body(&prep, current.sends)} }
                     }
                 }
             }
@@ -844,7 +929,13 @@ fn modal_stage_line(
 
 /// What converting a legacy or v0 request to v1 did.
 #[component]
-pub(in crate::ui) fn ConvertedNotice(converted: wallet_core::Converted) -> Element {
+pub(in crate::ui) fn ConvertedNotice(
+    converted: wallet_core::Converted,
+    /// A `resolve`: the blockhash is the wallet's, and what goes back to the
+    /// site is its resolution, which says what was sent.
+    #[props(default)]
+    resolves: bool,
+) -> Element {
     let format = match converted.from {
         wallet_core::TxFormat::Legacy => "legacy",
         wallet_core::TxFormat::V0 => "v0",
@@ -861,11 +952,18 @@ pub(in crate::ui) fn ConvertedNotice(converted: wallet_core::Converted) -> Eleme
                 if tables > 0 {
                     " that loads {loaded} account(s) from {tables} lookup table(s)"
                 }
-                ". It was rewritten as v1, with every account listed, so the device that signs can read all of it. The blockhash and the price per compute unit are the site's. {limit}"
+                ". It was rewritten as v1, with every account listed, so the device that signs can read all of it."
+                if resolves {
+                    " The price per compute unit is the site's, and the blockhash Airlock's, as for any request it resolves. {limit}"
+                } else {
+                    " The blockhash and the price per compute unit are the site's. {limit}"
+                }
                 if voided > 0 {
                     " {voided} signature(s) the site had added no longer apply."
                 }
-                " The site gets the v1 transaction back."
+                if !resolves {
+                    " The site gets the v1 transaction back."
+                }
             }
             for (old, new) in converted.replaced.iter().copied() {
                 p {
@@ -879,9 +977,10 @@ pub(in crate::ui) fn ConvertedNotice(converted: wallet_core::Converted) -> Eleme
     }
 }
 
-/// What was done to the site's transaction before it was shown.
+/// What was done to the site's transaction before it was shown. `sends` says
+/// Airlock sends it, so the site gets a signature and no transaction back.
 #[component]
-pub(in crate::ui) fn AdaptedNotice(adapted: Adapted) -> Element {
+pub(in crate::ui) fn AdaptedNotice(adapted: Adapted, sends: bool) -> Element {
     rsx! {
         div { class: "callout",
             for (i, step) in adapted.steps.iter().cloned().enumerate() {
@@ -961,7 +1060,11 @@ pub(in crate::ui) fn AdaptedNotice(adapted: Adapted) -> Element {
             }
             p {
                 Address { pubkey: adapted.fee_payer }
-                " pays the fee and signs the transaction. The site gets this transaction back, not the one it sent."
+                if sends {
+                    " pays the fee and signs the transaction. Airlock sends this transaction, not the one the site sent."
+                } else {
+                    " pays the fee and signs the transaction. The site gets this transaction back, not the one it sent."
+                }
             }
             if adapted.voided > 0 {
                 p { class: "warn",

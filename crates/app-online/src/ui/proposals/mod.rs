@@ -89,6 +89,10 @@ pub fn ProposalsModal(
             let page = load_page(session, &squad, from).await;
             match page {
                 Ok((state, entries)) => {
+                    // A proposal a site waits on may have moved too.
+                    if let Some(jobs) = try_consume_context::<crate::Jobs>() {
+                        jobs.scheduler.kick(crate::resolutions::RESOLUTIONS_JOB);
+                    }
                     let mut all = match (from, loaded.peek().clone()) {
                         (Some(_), Some(before)) => before.entries,
                         _ => Vec::new(),

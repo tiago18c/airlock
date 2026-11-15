@@ -35,6 +35,7 @@ use wallet_core::{ConfirmationLevel, TxFormat};
 use wallet_flows::request::wallets_asked;
 
 mod apps;
+mod intents;
 
 pub use apps::{AppAnswer, AppCall, AppClaim, AppIdentity, AppSession, SignedIn};
 
@@ -201,6 +202,20 @@ impl Bridge {
                 told = now;
             }
         }));
+        // Tell each site when one of its resolutions changes, with what it
+        // may see of it.
+        let shared = self.shared.clone();
+        let mut resolutions = core.slices().resolutions.subscribe();
+        spawner.spawn(Box::pin(async move {
+            let mut told = intents::public_views(&resolutions.borrow_and_update());
+            while resolutions.changed().await.is_ok() {
+                let now = intents::public_views(&resolutions.borrow_and_update());
+                for frame in intents::resolution_changes(&told, &now) {
+                    shared.push(&frame);
+                }
+                told = now;
+            }
+        }));
         let _ = self.shared.core.set(core);
         self.shared.report_pages();
     }
@@ -248,7 +263,7 @@ impl Bridge {
         if silent && core.is_none() {
             return Answer::Now(reply::result(&id, json!({ "accounts": [] })));
         }
-        if waits_for_user(method) && core.is_none() {
+        if (waits_for_user(method) || intents::is_intent_method(method)) && core.is_none() {
             return Answer::Now(reply::error(&id, "busy", "Airlock is starting."));
         }
 
@@ -351,6 +366,9 @@ impl Bridge {
                     // site was given.
                     _ => Answer::Now(reply::error(&id, "rejected", NOT_CONNECTED)),
                 }
+            }
+            (method, Some(core)) if intents::is_intent_method(method) => {
+                intents::answer(core, method, id, origin, &params, waiting)
             }
             _ => Answer::Now(reply::error(
                 &id,
@@ -682,7 +700,9 @@ fn listed_pages(params: &Value) -> BTreeSet<String> {
 /// the app gave, `android-app://` among them, and are not checked here.
 fn refuse_origin(frame: &Frame) -> Option<Vec<u8>> {
     let method = frame.method.as_str();
-    if !(waits_for_user(method) || method == "disconnect") || is_site_origin(&frame.origin) {
+    let sites =
+        waits_for_user(method) || intents::is_intent_method(method) || method == "disconnect";
+    if !sites || is_site_origin(&frame.origin) {
         return None;
     }
     tracing::warn!(
@@ -946,7 +966,7 @@ fn read_wire(item: &Value) -> SiteWire {
 fn detail(request: &BridgeRequest) -> String {
     match &request.call {
         SiteCall::Connect => "Choose which accounts this site may see.".into(),
-        SiteCall::SignTransactions(_) | SiteCall::Send { .. } => {
+        SiteCall::SignTransactions(_) | SiteCall::Send { .. } | SiteCall::Resolve(_) => {
             sign_detail(request.transactions().first())
         }
         SiteCall::SignMessage { .. } => "Asks you to sign a message.".into(),

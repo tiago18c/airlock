@@ -5,7 +5,7 @@ import {
   PAGE_SOURCE,
   newRequestId,
   replyWindowMs,
-  type AccountWire,
+  type BridgeErrorBody,
   type BridgeMethod,
 } from "./protocol";
 import { AirlockWallet } from "./wallet";
@@ -15,14 +15,9 @@ registerWallet(wallet);
 
 window.addEventListener("message", (event: MessageEvent) => {
   if (event.source !== window) return;
-  const data = event.data as {
-    source?: string;
-    push?: { method?: string; params?: { accounts?: AccountWire[] } };
-  } | null;
+  const data = event.data as { source?: string; push?: unknown } | null;
   if (!data || data.source !== EXTENSION_SOURCE || !data.push) return;
-  if (data.push.method === "accountsChanged" && Array.isArray(data.push.params?.accounts)) {
-    wallet.setAccounts(data.push.params.accounts);
-  }
+  wallet.receivePush(data.push);
 });
 
 function callDesktop(method: BridgeMethod, params?: unknown): Promise<unknown> {
@@ -39,13 +34,13 @@ function callDesktop(method: BridgeMethod, params?: unknown): Promise<unknown> {
         source?: string;
         id?: string;
         result?: unknown;
-        error?: { code?: string; message?: string };
+        error?: Partial<BridgeErrorBody>;
       } | null;
       if (!data || data.source !== EXTENSION_SOURCE || data.id !== id) return;
       window.clearTimeout(timer);
       window.removeEventListener("message", onMessage);
       if (data.error) {
-        reject(new BridgeError(data.error.code ?? "internal", data.error.message ?? "The request failed."));
+        reject(BridgeError.from(data.error));
       } else {
         resolve(data.result);
       }

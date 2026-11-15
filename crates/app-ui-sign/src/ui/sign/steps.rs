@@ -19,18 +19,24 @@ pub(in crate::ui) fn SignSteps(steps: Vec<SignStep>) -> Element {
 }
 
 /// The steps of a batch a site sent: a step for each transaction, which
-/// opens it, then the return of them all. Under them, the steps of the one on
-/// screen, unless it only simulates and signs.
+/// opens it, then the return of them all, or for a resolution delivered
+/// `cosign` the site's signatures and Airlock's send. Under them, the steps
+/// of the one on screen, unless it only simulates and signs.
 #[component]
 pub(in crate::ui) fn BatchSteps(
     states: Vec<SignStepState>,
     signed: usize,
     on_screen: usize,
     steps: Vec<SignStep>,
+    cosign: bool,
 ) -> Element {
     let count = states.len().saturating_sub(1);
     let returning = SignStep {
-        kind: SignStepKind::ReturnToSite,
+        kind: if cosign {
+            SignStepKind::SiteSignsThenSend
+        } else {
+            SignStepKind::ReturnToSite
+        },
         state: states.last().copied().unwrap_or(SignStepState::Upcoming),
         progress: Some((signed, count)),
     };
@@ -148,6 +154,7 @@ fn label(kind: SignStepKind) -> &'static str {
         SignStepKind::CollectSignatures => "Collect signatures",
         SignStepKind::Submit => "Submit",
         SignStepKind::ReturnToSite => "Return to site",
+        SignStepKind::SiteSignsThenSend => "Site signs, then Airlock sends",
         SignStepKind::ShareToSubmit => "Share to submit",
     }
 }
@@ -174,6 +181,9 @@ fn detail(step: &SignStep) -> Option<String> {
             "cannot be shared".into()
         }
         SignStepState::Skipped => "offline".into(),
+        SignStepState::Current if step.kind == SignStepKind::SiteSignsThenSend => {
+            "waiting for the site".into()
+        }
         SignStepState::Current | SignStepState::Upcoming => match step.progress {
             Some((signed, total)) if collects => format!("{signed} of {total} in"),
             Some((signed, total)) if all_signatures || total > 1 => {

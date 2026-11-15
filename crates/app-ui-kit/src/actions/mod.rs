@@ -13,6 +13,7 @@ pub mod kept_templates;
 pub mod migrate;
 pub mod network;
 pub mod programs;
+pub mod resolve;
 pub mod sign;
 pub mod sign_screen;
 pub mod site_send;

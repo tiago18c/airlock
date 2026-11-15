@@ -161,6 +161,9 @@ pub struct Session {
     pub bridge: ReadSignal<Arc<BridgeQueue>>,
     /// Sites connected, remembered and blocked (desktop shell).
     pub sites: ReadSignal<Arc<app_core::bridge::SitesView>>,
+    /// What became of the requests sites asked to have resolved (desktop
+    /// shell).
+    pub resolutions: ReadSignal<Arc<app_core::resolutions::Resolutions>>,
     /// Whether the vault exists and is unlocked.
     pub vault_state: Memo<VaultState>,
     /// Notification center panel open.
@@ -228,6 +231,7 @@ impl Session {
             sync: pump.sync,
             bridge: pump.bridge,
             sites: pump.sites,
+            resolutions: pump.resolutions,
             vault_state: pump.vault_state,
             notices_open,
             notices_focus,
@@ -265,6 +269,13 @@ impl Session {
     /// it was still waiting and the answer fits it.
     pub fn bridge_answer(&self, id: &str, answer: BridgeAnswer) -> bool {
         self.command(|core| core.bridge_answer(id, &answer))
+    }
+
+    /// The user approved request `id`, a `resolve`, and another device
+    /// signs what is left: it leaves the queue, and its resolution waits for
+    /// that signature. Answers whether it was still waiting.
+    pub fn bridge_approved_elsewhere(&self, id: &str) -> bool {
+        self.command(|core| core.bridge_approved_elsewhere(id))
     }
 
     /// Answer a `connect` with the accounts the user chose. Answers whether

@@ -2,7 +2,8 @@ import { EXTENSION_SOURCE, MAX_REQUEST_BYTES, PAGE_SOURCE, isRequestId, jsonByte
 
 interface PageReply {
   result?: unknown;
-  error?: { code: string; message: string };
+  /** Passed on whole, so a `requirement` beside the code reaches the page. */
+  error?: { code: string; message: string; requirement?: string };
 }
 
 const pending = new Map<string, (reply: PageReply) => void>();

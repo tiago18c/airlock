@@ -40,7 +40,8 @@ pub enum SendPlan {
     Serial,
 }
 
-const NOT_SENT: &str = "Not sent, because an earlier transaction failed.";
+/// What a transaction a failure before it stopped reports.
+pub const NOT_SENT: &str = "Not sent, because an earlier transaction failed.";
 
 /// Send `commitments.len()` transactions by `plan`. `submit` sends one by its
 /// index. `confirm` waits for one to reach a level: the level the site asked
