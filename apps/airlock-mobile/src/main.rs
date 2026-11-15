@@ -68,7 +68,7 @@ fn App() -> Element {
         )
     });
     let core = use_hook(move || CopyValue::new(core));
-    app_mobile::use_lifecycle(core);
+    let mark = app_mobile::use_lifecycle(core);
     // The page's title, what TalkBack and the system read for the window.
     // `document::Title` names a desktop window; a phone has none, and the
     // page would keep the template's "Dioxus app".
@@ -90,9 +90,13 @@ fn App() -> Element {
         );
     });
 
-    match mode {
-        Mode::Online => rsx! { Online { core } },
-        Mode::Offline => rsx! { Offline { core } },
+    rsx! {
+        if mode == Mode::Online {
+            Online { core }
+        } else {
+            Offline { core }
+        }
+        app_mobile::PauseMarker { mark }
     }
 }
 

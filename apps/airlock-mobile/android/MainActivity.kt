@@ -736,9 +736,17 @@ object MwaBridge {
     /// session, which no activity holds (see MwaActivity).
     private class Session(val id: Long, val activity: MwaActivity?, val pkg: String?) {
         var scenario: Scenario? = null
+        /// A request of it got its answer: the user saw it through.
+        @Volatile
+        var answered = false
+        /// Ended from here, with the setting turned off, not by the app or page.
+        @Volatile
+        var stopped = false
     }
 
-    private class Pending(val session: Long, val request: Any)
+    private class Pending(val session: Long, val request: Any) {
+        val asked = android.os.SystemClock.elapsedRealtime()
+    }
 
     private val events = LinkedBlockingQueue<String>()
     private val sessions = ConcurrentHashMap<Long, Session>()
@@ -756,7 +764,10 @@ object MwaBridge {
             state,
             PackageManager.DONT_KILL_APP
         )
-        if (!on) sessions.values.forEach { it.scenario?.close() }
+        if (!on) sessions.values.forEach {
+            it.stopped = true
+            it.scenario?.close()
+        }
     }
 
     /// The next event for Rust, waiting up to `timeoutMs` for one.
@@ -767,11 +778,14 @@ object MwaBridge {
     @JvmStatic
     fun answer(id: Long, json: String) {
         val waiting = pending.remove(id) ?: return
+        val session = sessions[waiting.session]
+        session?.answered = true
         try {
             complete(waiting.request, JSONObject(json))
         } catch (e: Exception) {
             Log.w(TAG, "could not answer", e)
         }
+        if (session != null) answered(session, android.os.SystemClock.elapsedRealtime() - waiting.asked)
     }
 
     /// Start a session for `activity`'s link. An app (`pkg` set) waits on the
@@ -800,6 +814,73 @@ object MwaBridge {
         return id
     }
 
+    /// The page of a browser's session connected, or asked something: Airlock
+    /// comes forward for it. It is in front already as a session starts,
+    /// unless the browser first asked its user whether the site may reach
+    /// apps on this phone (Brave does, for a site whose wallet library did
+    /// not ask beforehand): that question was behind Airlock, and whoever
+    /// went back to answer it left Airlock behind. And it stepped back after
+    /// an answer (see answered), which a page may follow with another
+    /// request. Android may refuse: an app with nothing on screen may put
+    /// itself in front only for some seconds after it last had a screen
+    /// there. Then the request waits in Airlock.
+    private fun comeForward(session: Session) {
+        if (session.activity != null) return
+        val main = SeedVaultBridge.activity ?: return
+        main.runOnUiThread {
+            if (main.hasWindowFocus()) return@runOnUiThread
+            try {
+                main.getSystemService(android.app.ActivityManager::class.java)
+                    ?.appTasks
+                    ?.firstOrNull { it.taskInfo.baseActivity?.className == MainActivity::class.java.name }
+                    ?.moveToFront()
+            } catch (e: Exception) {
+                Log.w(TAG, "could not bring Airlock forward", e)
+            }
+        }
+    }
+
+    /// How long after an answer Airlock stays in front for what the page asks
+    /// next in the same session, before stepping back to the browser: a
+    /// moment after an answer the user gave, longer after one that needed
+    /// nobody (a site connected before, asking to go on), which a page
+    /// follows with what it came for.
+    private const val STEP_BACK_AFTER_MS = 300L
+    private const val STEP_BACK_UNASKED_AFTER_MS = 1500L
+
+    /// Under this long from request to answer, nobody was asked.
+    private const val UNASKED_UNDER_MS = 500L
+
+    /// A request of a browser's session got its answer: back to the page.
+    /// Not only once the page ends the session: a phone may keep a browser
+    /// that is behind from hearing anything (a Galaxy drops its packets, the
+    /// ones from this phone too, within seconds; pages are frozen), so the
+    /// answer reaches the page only with the browser in front, and waiting
+    /// here for the page to end the session would wait for ever. A moment is
+    /// left for a page that asks again at once, which keeps Airlock in front.
+    /// `took` is how long the answer took, in milliseconds.
+    private fun answered(session: Session, took: Long) {
+        if (session.activity != null) return
+        val wait = if (took < UNASKED_UNDER_MS) STEP_BACK_UNASKED_AFTER_MS else STEP_BACK_AFTER_MS
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            // An ended session stepped back already (see ended).
+            if (sessions[session.id] === session) stepBack(session)
+        }, wait)
+    }
+
+    /// Airlock steps back, and the task under it, the browser's, shows: no
+    /// activity is left in the browser's task to finish instead. Only with
+    /// an answer given to the page, Airlock in front still, and nothing else
+    /// waiting on the user here.
+    private fun stepBack(session: Session) {
+        val main = SeedVaultBridge.activity ?: return
+        main.runOnUiThread {
+            if (main.hasWindowFocus() && session.answered && !session.stopped && pending.isEmpty()) {
+                main.moveTaskToBack(true)
+            }
+        }
+    }
+
     /// An app's MwaActivity went away before its session ended: the app gave
     /// up. A browser's session does not end with the activity.
     fun activityGone(id: Long) {
@@ -812,11 +893,16 @@ object MwaBridge {
         pending.entries.removeIf { it.value.session == session.id }
         events.put(JSONObject().put("kind", "closed").put("session", session.id).toString())
         Log.i(TAG, "session ${session.id} ended")
-        val activity = session.activity ?: return
+        val front = SeedVaultBridge.activity?.hasWindowFocus() == true
+        val activity = session.activity
+        if (activity == null) {
+            // A browser, whose page has its answer: back to it now.
+            stepBack(session)
+            return
+        }
         // Back to the app that asked, when Airlock is in front for it: its
         // task, which MwaActivity is in, comes forward, and MwaActivity
         // finishes there, which is the app's sign that the session is over.
-        val front = SeedVaultBridge.activity?.hasWindowFocus() == true
         activity.runOnUiThread {
             if (front) {
                 activity.getSystemService(android.app.ActivityManager::class.java)
@@ -840,6 +926,7 @@ object MwaBridge {
     private fun ask(session: Session, request: Any, name: String?, uri: Uri?, call: JSONObject) {
         val id = ids.getAndIncrement()
         pending[id] = Pending(session.id, request)
+        comeForward(session)
         val identity = JSONObject()
             .put("name", name ?: JSONObject.NULL)
             .put("uri", uri?.toString() ?: JSONObject.NULL)
@@ -931,7 +1018,7 @@ object MwaBridge {
 
     private class Callbacks(private val session: Session) : LocalScenario.Callbacks {
         override fun onScenarioReady() {}
-        override fun onScenarioServingClients() {}
+        override fun onScenarioServingClients() = comeForward(session)
         override fun onScenarioServingComplete() {
             session.scenario?.close()
         }

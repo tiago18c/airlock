@@ -9,6 +9,11 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 ## [Unreleased]
 
+### Fixed
+
+- **On Android, Airlock no longer stops drawing after you come back to it.** Returning to Airlock from another app could leave it taking taps and changing nothing on screen, for seconds or longer. It was not waiting on the node or on prices. On a phone that cuts the network of an app in the background, as a Galaxy does, what Airlock sent its own page meanwhile was lost, and sent again only after a wait, during which the page stayed as it was: Airlock now sends its page nothing while it is in the background. And on any phone, a request to draw that arrived together with Android's notice that the app was in front again could be left waiting.
+- **On Android, answering a site's request takes you back to the site.** After you approved or rejected a connection or a signature a page in the browser asked for, Airlock stayed on screen with nothing to say it had worked, and the page waited behind it. On some phones, a Galaxy among them, a page in a browser that is not in front hears nothing, so it never got the answer and the site stayed unconnected. Airlock now steps back as soon as the request is answered, as it already did for a request from another app.
+
 ## [0.2.0] - 2026-11-14
 
 0.1.0 was tagged on 2026-11-09 and never published, so this is the first release. It has everything listed under 0.1.0 in [the changelog](https://github.com/tiago18c/airlock/blob/main/CHANGELOG.md) as well as what is listed here.

@@ -1,4 +1,5 @@
-//! Calls into Android over JNI, on the activity ndk-context holds.
+//! Calls into Android over JNI, on the activity ndk-context holds, and one
+//! into the NDK, for the event loop's looper.
 
 use std::path::PathBuf;
 
@@ -25,6 +26,14 @@ pub(crate) fn with_activity<R>(
         let _ = env.exception_clear();
     }
     result.map_err(|err| err.to_string())
+}
+
+/// Wake the looper of the calling thread, so its next wait returns at once.
+/// On the event loop's thread, that is the loop's own.
+pub(crate) fn wake_this_looper() {
+    if let Some(looper) = ndk::looper::ForeignLooper::for_thread() {
+        looper.wake();
+    }
 }
 
 pub(crate) fn files_dir() -> Result<PathBuf, String> {

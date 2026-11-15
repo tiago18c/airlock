@@ -27,4 +27,6 @@ zeroize.workspace = true
 [target.'cfg(target_os = "android")'.dependencies]
 hw-transport.workspace = true
 jni = "0.21.1"
+# The event loop's looper, to wake it (`turns`). The version tao uses.
+ndk = "0.9"
 ndk-context = "0.1.1"
