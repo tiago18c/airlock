@@ -120,7 +120,7 @@ export const programmaticSigner = {
     `);
     if (made?.error || !made?.address) await need("adding the programmatic signer", made?.error ?? "no address");
     const opened = await page.run(`
-      const gear = await until(() => document.querySelector('button[aria-label=' + JSON.stringify('Settings of ' + ${JSON.stringify(label)}) + ']'), 10000);
+      const gear = await walletDialogButton(${JSON.stringify(label)}, 'Settings');
       if (!gear) return 'no Settings of ' + ${JSON.stringify(label)};
       gear.click();
       const create = await until(() => [...document.querySelectorAll('.modal button')].find((b) => visible(b) && !b.disabled && b.innerText.trim() === 'Create nonce account'), 10000);

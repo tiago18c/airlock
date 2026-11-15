@@ -3,6 +3,7 @@ import * as esbuild from "esbuild";
 import { cpSync, mkdirSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { mwaErrorDataPlugin } from "./mwa-patch.mjs";
 
 const root = dirname(fileURLToPath(import.meta.url));
 const repo = join(root, "../..");
@@ -24,6 +25,9 @@ await esbuild.build({
   nodePaths: [join(root, "node_modules")],
   loader: { ".png": "dataurl" },
   define: { global: "globalThis", "process.env.NODE_ENV": '"production"' },
+  // Mobile Wallet Adapter's library drops a JSON-RPC error's data, where
+  // Airlock puts its refusal's code. See mwa-patch.mjs.
+  plugins: [mwaErrorDataPlugin()],
   logLevel: "info",
 });
 

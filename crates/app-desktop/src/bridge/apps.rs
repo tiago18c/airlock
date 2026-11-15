@@ -12,19 +12,28 @@
 //! and names the package Android reported where it did. A new authorization
 //! is always asked, even from an origin with a grant: only an app holding
 //! the auth token MWA issued may reconnect without asking.
+//!
+//! An authorized session also takes the intents prototype's methods
+//! (`docs/intents.md`, "Airlock's prototype on Android"), each the bridge
+//! message of the same name. `airlock_resolve` answers once the person has
+//! decided, since MWA has no way for a wallet to speak first.
 
 use std::collections::BTreeSet;
 use std::hash::{BuildHasher, Hasher};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::mpsc::{self, RecvTimeoutError};
 use std::sync::{Mutex, PoisonError};
+use std::time::Duration;
 
 use app_core::bridge::{BridgeRequest, SiteCall, SiteConnect, SiteSign, SEND_ALL};
+use app_core::PublicCore;
 use base64::Engine;
 use bridge_host::relay::Answer;
 use bridge_protocol::Frame;
 use serde::Deserialize;
 use serde_json::{json, Value};
 use solana_pubkey::Pubkey;
+use wallet_core::intent::{Resolution, State};
 
 use super::{wait_for_user, Bridge, Waiting, DECISION_TIMEOUT};
 
@@ -127,6 +136,53 @@ pub enum AppCall {
         addresses: Vec<String>,
         payloads: Vec<String>,
     },
+    /// One of the intents prototype's methods, by its MWA name
+    /// (`airlock_resolve`), with the params the page sent.
+    Intent {
+        name: String,
+        #[serde(default)]
+        params: Value,
+    },
+}
+
+/// The bridge message each intent method of MWA is.
+const INTENT_METHODS: [(&str, &str); 6] = [
+    ("airlock_get_signing_profile", "getSigningProfile"),
+    ("airlock_resolve", "resolve"),
+    ("airlock_get_resolution", "getResolution"),
+    ("airlock_provide_signatures", "provideSignatures"),
+    ("airlock_cancel_resolution", "cancelResolution"),
+    ("airlock_sign_message", "resolveMessage"),
+];
+
+/// The bridge message for MWA method `name`, when it is an intent method.
+pub fn intent_method(name: &str) -> Option<&'static str> {
+    INTENT_METHODS
+        .iter()
+        .find(|(mwa, _)| *mwa == name)
+        .map(|(_, bridge)| *bridge)
+}
+
+/// Why a session that is not authorized is refused an intent method.
+const NOT_AUTHORIZED: &str = "This session is not authorized. Call authorize first.";
+
+/// An intent method's error, as the bridge gave it. MWA answers it as a
+/// JSON-RPC error whose `data` holds the code and the requirement.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct IntentError {
+    pub code: String,
+    pub message: String,
+    pub requirement: Option<String>,
+}
+
+impl IntentError {
+    fn new(code: &str, message: &str) -> Self {
+        Self {
+            code: code.to_owned(),
+            message: message.to_owned(),
+            requirement: None,
+        }
+    }
 }
 
 /// What MWA answers an app. Keys, payloads and signatures are base64.
@@ -150,6 +206,8 @@ pub enum AppAnswer {
     /// Which payloads could be read.
     InvalidPayloads(Vec<bool>),
     Done,
+    /// An intent method's `result`, as the bridge gave it, or its error.
+    Intent(Result<Value, IntentError>),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -189,6 +247,15 @@ impl AppAnswer {
             }
             Self::InvalidPayloads(valid) => json!({ "kind": "invalid", "valid": valid }),
             Self::Done => json!({ "kind": "done" }),
+            Self::Intent(Ok(result)) => json!({ "kind": "result", "result": result }),
+            Self::Intent(Err(error)) => {
+                let mut value =
+                    json!({ "kind": "error", "code": error.code, "message": error.message });
+                if let Some(requirement) = &error.requirement {
+                    value["requirement"] = json!(requirement);
+                }
+                value
+            }
         };
         value.to_string()
     }
@@ -204,6 +271,9 @@ pub struct AppSession {
     /// or not it reached the queue.
     asked: Mutex<BTreeSet<String>>,
     closed: AtomicBool,
+    /// The last `authorize` or `reauthorize` of it was granted, and no
+    /// `deauthorize` came after. Only then does it take intent methods.
+    authorized: AtomicBool,
     /// Its number in [`super::Shared::apps`].
     key: u64,
 }
@@ -254,8 +324,18 @@ impl Bridge {
             waiting: Waiting::default(),
             asked: Mutex::default(),
             closed: AtomicBool::new(false),
+            authorized: AtomicBool::new(false),
             key,
         }
+    }
+
+    /// Forget who the app of request `id` says it is.
+    fn drop_claim(&self, id: &str) {
+        self.shared
+            .claims
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .remove(id);
     }
 }
 
@@ -268,6 +348,33 @@ impl AppSession {
     /// Answer one request. It may wait for the user, up to the same ten
     /// minutes a browser request does.
     pub fn answer(&self, call: AppCall) -> AppAnswer {
+        let authorizing = match &call {
+            AppCall::Intent { name, params } => {
+                return AppAnswer::Intent(self.intent(name, params.clone()));
+            }
+            AppCall::Authorize { .. } | AppCall::Reauthorize { .. } => Some(true),
+            AppCall::Deauthorize => Some(false),
+            _ => None,
+        };
+        // As MWA's library does, a new authorization ends the one before it
+        // until it is granted.
+        if authorizing.is_some() {
+            self.authorized.store(false, Ordering::SeqCst);
+        }
+        let answer = self.answer_mwa(call);
+        if authorizing == Some(true)
+            && matches!(
+                answer,
+                AppAnswer::Authorized { .. } | AppAnswer::Reauthorized
+            )
+        {
+            self.authorized.store(true, Ordering::SeqCst);
+        }
+        answer
+    }
+
+    /// Answer one of MWA's own requests.
+    fn answer_mwa(&self, call: AppCall) -> AppAnswer {
         let Some(origin) = self.origin.clone() else {
             return AppAnswer::Declined;
         };
@@ -347,6 +454,143 @@ impl AppSession {
                     Err(code) => refused(&code),
                 }
             }
+            // Answered before this, by `answer`.
+            AppCall::Intent { .. } => AppAnswer::Declined,
+        }
+    }
+
+    /// An intent method `name`: its bridge message, put through the bridge
+    /// as the extension's frame would be. Its `result` or error is the
+    /// bridge's, unchanged, except that a `resolve`, and a message signed as
+    /// a memo, answer once the person decided.
+    fn intent(&self, name: &str, params: Value) -> Result<Value, IntentError> {
+        let Some(method) = intent_method(name) else {
+            return Err(IntentError::new(
+                "not_implemented",
+                "Airlock does not know this request.",
+            ));
+        };
+        if self.origin.is_none() || !self.authorized.load(Ordering::SeqCst) {
+            return Err(IntentError::new("rejected", NOT_AUTHORIZED));
+        }
+        let Some(core) = self.bridge.shared.core.get().cloned() else {
+            return Err(IntentError::new("busy", "Airlock is starting."));
+        };
+        match method {
+            "resolve" | "resolveMessage" => self.resolve(&core, method, params),
+            _ => self.ask(method, params).outcome(),
+        }
+    }
+
+    /// A `resolve` or a `resolveMessage`. The bridge answers a resolution in
+    /// `awaiting-approval` at once, and the extension waits for its push;
+    /// here the answer waits until the resolution leaves that state, as the
+    /// Wallet Standard `resolve` settles, and leaves `sending` too (see
+    /// [`AppSession::decision`]). Declined, expired and cancelled are
+    /// errors, as the extension makes them.
+    ///
+    /// The session closing meanwhile does not end it, as a page closing does
+    /// not on desktop: the person may still decide, and the site asks for
+    /// the resolution later. A message signed with a key waits in the bridge
+    /// as `signMessage` does, and ends with the session as that does.
+    fn resolve(
+        &self,
+        core: &PublicCore,
+        method: &str,
+        params: Value,
+    ) -> Result<Value, IntentError> {
+        let id = request_id();
+        if !self.claim(&id) {
+            return Err(gone());
+        }
+        let bytes = finish(
+            self.bridge
+                .answer(self.frame(&id, method, params), &self.waiting),
+        );
+        // Out of what the session's closing expires, but still this app's in
+        // the modal while the request waits there.
+        self.asked
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .remove(&id);
+        let mut result = match Reply::read(&bytes).outcome() {
+            Ok(result) => result,
+            Err(error) => {
+                self.unclaim(&id);
+                return Err(error);
+            }
+        };
+        let Some(resolution) = result
+            .get("resolution")
+            .and_then(|resolution| resolution.get("id"))
+            .and_then(Value::as_str)
+            .map(str::to_owned)
+        else {
+            // A message signed with a key: the person decided already.
+            self.unclaim(&id);
+            return Ok(result);
+        };
+        let Some(decided) = self.decision(core, &id, &resolution) else {
+            return Err(gone());
+        };
+        match decided.state {
+            State::Declined => Err(IntentError::new(
+                "rejected",
+                "The request was declined in Airlock.",
+            )),
+            State::Expired => Err(IntentError::new(
+                "expired",
+                "Nobody decided in time, so the request expired.",
+            )),
+            State::Cancelled => Err(IntentError::new("cancelled", "The request was cancelled.")),
+            _ => {
+                result["resolution"] = decided.public();
+                Ok(result)
+            }
+        }
+    }
+
+    /// Wait until resolution `resolution` of this site leaves
+    /// `awaiting-approval`, and `sending` after it, and forget who asked
+    /// request `id` then. The wait goes on in the core after the session
+    /// closes, so the modal still says who the app says it is; this answer
+    /// then stops waiting. `None` once the session closed, or the
+    /// resolution is gone.
+    ///
+    /// Why through `sending`: what the person approved here is sent by the
+    /// screen (`send_for_site`), and a phone stops the screen's tasks while
+    /// Airlock is behind. The answer moves Airlock behind, so it waits
+    /// until the send is out, as a `sign_and_send_transactions` does.
+    fn decision(&self, core: &PublicCore, id: &str, resolution: &str) -> Option<Resolution> {
+        let origin = self.origin.clone()?;
+        let (tx, rx) = mpsc::channel();
+        let watching = core.clone();
+        let bridge = self.bridge.clone();
+        let (id, resolution) = (id.to_owned(), resolution.to_owned());
+        core.ports().spawner.spawn(Box::pin(async move {
+            let mut changes = watching.slices().resolutions.subscribe();
+            let decided = loop {
+                let _ = changes.borrow_and_update();
+                match watching.resolution(&origin, &resolution) {
+                    Some(now) if matches!(now.state, State::AwaitingApproval | State::Sending) => {}
+                    other => break other,
+                }
+                if changes.changed().await.is_err() {
+                    break None;
+                }
+            };
+            bridge.drop_claim(&id);
+            let _ = tx.send(decided);
+        }));
+        loop {
+            match rx.recv_timeout(CLOSED_CHECK) {
+                Ok(decided) => return decided,
+                Err(RecvTimeoutError::Timeout) if self.closed.load(Ordering::SeqCst) => {
+                    return None
+                }
+                Err(RecvTimeoutError::Timeout) => {}
+                Err(RecvTimeoutError::Disconnected) => return None,
+            }
         }
     }
 
@@ -407,20 +651,27 @@ impl AppSession {
     /// for its reply.
     fn ask(&self, method: &str, params: Value) -> Reply {
         let id = request_id();
-        let frame = Frame {
+        if !self.claim(&id) {
+            return Reply(Value::Null);
+        }
+        let bytes = finish(
+            self.bridge
+                .answer(self.frame(&id, method, params), &self.waiting),
+        );
+        self.unclaim(&id);
+        Reply::read(&bytes)
+    }
+
+    /// The extension's frame for request `id`, from this session's site.
+    fn frame(&self, id: &str, method: &str, params: Value) -> Frame {
+        Frame {
             version: Some(1),
-            id: id.clone(),
+            id: id.to_owned(),
             origin: self.origin.clone().unwrap_or_default(),
             expires_at: None,
             method: method.to_owned(),
             params,
-        };
-        if !self.claim(&id) {
-            return Reply(Value::Null);
         }
-        let bytes = finish(self.bridge.answer(frame, &self.waiting));
-        self.unclaim(&id);
-        Reply::read(&bytes)
     }
 
     /// Note request `id` as this session's, and who it comes from. False
@@ -464,7 +715,9 @@ impl AppSession {
 impl AppSession {
     /// The app went away: nobody is left to hear what the user decides, so
     /// nobody is asked, and its site is no longer open. A request still
-    /// being answered returns as declined.
+    /// being answered returns as declined. A `resolve` waiting for the
+    /// person stays, as it does when a page closes on desktop: its
+    /// resolution is what the site asks for later.
     pub fn close(&self) {
         self.closed.store(true, Ordering::SeqCst);
         let shared = &self.bridge.shared;
@@ -521,6 +774,31 @@ impl Reply {
             .unwrap_or("internal")
             .to_owned())
     }
+
+    /// Its result, or its error whole.
+    fn outcome(self) -> Result<Value, IntentError> {
+        let Self(mut value) = self;
+        if let Some(result) = value.get_mut("result") {
+            return Ok(result.take());
+        }
+        let error = &value["error"];
+        let text = |key: &str| error.get(key).and_then(Value::as_str).map(str::to_owned);
+        Err(IntentError {
+            code: text("code").unwrap_or_else(|| "internal".to_owned()),
+            message: text("message")
+                .unwrap_or_else(|| "Airlock could not answer this request.".to_owned()),
+            requirement: text("requirement"),
+        })
+    }
+}
+
+/// How often an answer that waits on a resolution looks whether its
+/// session closed.
+const CLOSED_CHECK: Duration = Duration::from_millis(250);
+
+/// The answer to a request whose session closed: nobody hears it.
+fn gone() -> IntentError {
+    IntentError::new("rejected", "The app's session ended.")
 }
 
 /// What MWA answers for a bridge error.
@@ -670,3 +948,7 @@ pub(super) fn open_origins(apps: &std::collections::BTreeMap<u64, String>) -> BT
 #[cfg(test)]
 #[path = "apps_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "apps_intents_tests.rs"]
+mod intents_tests;

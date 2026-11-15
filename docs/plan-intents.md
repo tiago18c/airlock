@@ -62,7 +62,7 @@ What we take: the id, the status and the capabilities of EIP-5792, with its rule
 | Who sees an account's profile | A connected site only |
 | Timing | Two values, `sync` and `async`. A Squads multisig this device cannot carry past its threshold is `async`, as an offline wallet is. Every other account is `sync`, though it may take longer than a blockhash lives. This replaces the three values in the tables below |
 | Signing a message | A key returns a signature. An account with no key signs the message as a memo in a transaction, and the app gets that transaction's signature |
-| The prototype | Airlock on desktop as the wallet, and a test page for every method, in the manner of the wallet adapter's example. Not on a phone yet |
+| The prototype | Airlock on desktop as the wallet, and a test page for every method, in the manner of the wallet adapter's example. Then the Android app, over Mobile Wallet Adapter, with the same page |
 
 ## The notes
 
@@ -236,7 +236,7 @@ Each phase leaves `cargo fmt --all --check`, CI's Clippy step and the touched cr
 ## Open
 
 - **The endpoint.** What a wallet sends an app's endpoint and gets back, and which addresses it may call at all. A wallet that calls an address a site gave it tells that address when the person acts, so at the least it is `https`, on the site's own origin, and shown. Kora's `signTransaction` is the obvious shape for a sponsor. Nothing is decided, and phase 5 can ship without it.
-- **Mobile Wallet Adapter.** Its methods are fixed by its own protocol, so a phone app reaches none of this until that has an extension of its own.
+- **Mobile Wallet Adapter.** Airlock's Android app answers the six methods as extra JSON-RPC methods in an MWA session (`airlock_*`), by extending Solana Mobile's walletlib. MWA lets a wallet answer only what the page asks, so a page asks again for a resolution that finishes later, in a new session. Solana Mobile's JS client drops a JSON-RPC error's `data`, so the test page patches it. A standard would want MWA to name such extensions, and its client to keep `data`. Tried only on an emulator, not on a real phone, where a browser or app behind another may be cut off.
 - **A wallet that must change an instruction.** A Vector account cannot be the source of a System transfer, so Airlock turns it into `Withdraw`. Rule 2 forbids that. Either such an account says in its profile what it cannot run, or the standard names the substitutions it allows.
 - **Packing.** An app splits what does not fit one transaction, and a carrier leaves less room than the app counted on. Whether a wallet may split one transaction of a `serial` request further is not decided.
 - **The names.** `resolve` and the rest are placeholders.

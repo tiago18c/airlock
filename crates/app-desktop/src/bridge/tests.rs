@@ -1167,7 +1167,7 @@ async fn a_transaction_naming_something_that_is_no_address_is_refused() {
 }
 
 /// Vault with a hot wallet for each seed, and their addresses.
-fn with_hot_wallets(kit: &Kit, seeds: &[u8]) -> Vec<Pubkey> {
+pub(super) fn with_hot_wallets(kit: &Kit, seeds: &[u8]) -> Vec<Pubkey> {
     kit.core.create_vault("pw").unwrap();
     let signers: Vec<wallet_core::NewSigner> = seeds
         .iter()
@@ -1192,7 +1192,7 @@ fn with_hot_wallets(kit: &Kit, seeds: &[u8]) -> Vec<Pubkey> {
 }
 
 /// A legacy transfer out of `from`, with `payer` paying its fee.
-fn paid_by(payer: &Pubkey, from: &Pubkey) -> Vec<u8> {
+pub(super) fn paid_by(payer: &Pubkey, from: &Pubkey) -> Vec<u8> {
     let mut message = solana_message::Message::new(
         &[solana_system_interface::instruction::transfer(
             from,

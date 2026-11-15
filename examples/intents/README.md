@@ -1,6 +1,6 @@
 # Intents test page
 
-A page that tries every method of Airlock's intents proposal ([docs/intents.md](../../docs/intents.md)) against a wallet, one row per method, in the manner of the wallet adapter's example page. It finds wallets through the Wallet Standard and lists those with `airlock:resolve`. A wallet that has only `solana:signAndSendTransaction` is listed too, and then only the last row, the fallback, can run.
+A page that tries every method of Airlock's intents proposal ([docs/intents.md](../../docs/intents.md)) against a wallet, one row per method, in the manner of the wallet adapter's example page. It finds wallets through the Wallet Standard and lists those with `airlock:resolve`. On Android it reaches the Airlock app through Mobile Wallet Adapter instead: see [On Android](#on-android). A wallet that has only `solana:signAndSendTransaction` is listed too, and then only the last row, the fallback, can run.
 
 The rows:
 
@@ -28,7 +28,7 @@ Below the rows, a live table of every resolution the page started (kept in this 
 cd examples/intents
 npm install
 npm run check     # tsc --noEmit
-npm test          # the comparison, the wire reader, the memo check, the instructions, the relay
+npm test          # the comparison, the wire reader, the memo check, the instructions, the relay, the MWA transport, Ed25519 without Web Crypto's
 npm run build     # bundles to dist/, with Airlock's tokens.css beside it
 npm run serve     # http://127.0.0.1:8124/, loopback only; a port as argument or PORT changes it
 ```
@@ -40,6 +40,60 @@ A content script does not run on `file://`, so the page has to be served for the
 Settings has Devnet, Mainnet and Custom RPC. A custom RPC also takes the chain it is named as in requests (`solana:devnet`, `solana:testnet` or `solana:mainnet`): a local validator at `http://127.0.0.1:8899` is usually named `solana:devnet`. The page builds and reads transactions through that URL, and Airlock sends through its own node, so give Airlock the same network in its Settings (the same custom RPC for a local validator). Otherwise a blockhash the page fetched is unknown to the node Airlock sends through.
 
 The **app key** is a throwaway keypair the page makes and keeps in `localStorage` in plain text. It stands for an app's own fee sponsor in row 5 and its own signer in row 6. Fund it with its Airdrop button on devnet or a local validator, and never send it real funds.
+
+## On Android
+
+On a phone the page reaches Airlock through Mobile Wallet Adapter (MWA), not the extension: the same rows, against the Airlock app on the phone. The contract is in [docs/intents.md](../../docs/intents.md#airlocks-prototype-on-android-mobile-wallet-adapter). On an Android browser the page lists **Mobile Wallet Adapter** as a wallet and picks it when no other wallet there speaks intents. `?wallet=mwa` forces it, on any browser.
+
+### Serve it to the phone
+
+MWA's web transport works only on a secure page, and `http://localhost` is one. So serve the page on this machine and forward the port:
+
+```bash
+cd examples/intents && npm run build && npm run serve      # 127.0.0.1:8124
+adb reverse tcp:8124 tcp:8124                               # the phone's localhost:8124 is this machine's
+adb reverse tcp:8899 tcp:8899                               # the same for a local validator, for the page and for Airlock
+```
+
+Then open `http://localhost:8124` in Chrome on the phone or the emulator. `adb reverse` works over USB and over Wi-Fi debugging alike.
+
+A phone on the same network cannot use this machine's address instead: `http://192.168.x.x:8124` is not a secure page, so MWA refuses it and the page says so, and `npm run serve` listens on the loopback only anyway. Without adb, serve `dist/` over https (a tunnel, for instance) and open that.
+
+On the phone, `127.0.0.1` is the phone. With the second `adb reverse`, Settings' Custom RPC `http://127.0.0.1:8899` reaches the validator on this machine, from the page and from Airlock, whose own custom RPC should be the same.
+
+### What differs from desktop
+
+- **Connect** opens a session with Airlock, which comes forward to approve the page. It authorizes for the page's chain (Custom RPC's "Named as", so `solana:devnet` for a local validator), then asks `get_capabilities`. The wallet chips say whether it lists the six `airlock:` features. A wallet that does not is offered only the fallback row. The authorization is kept in this browser, so a reload stays connected. Disconnect only forgets it here: it opens no session.
+- **Every call is a session.** Each later call opens a new session, reauthorizes with the kept token, and makes the call. Airlock comes forward for a moment each time. A browser opens a session only on a tap, so the page opens one only from a button.
+- **No push.** MWA has no way for the wallet to speak first. After a request that resolves at once (`sync`), the page keeps the session open and asks `airlock_get_resolution` every 2 seconds, for up to a minute, until the resolution ends. For one that waits for others (`async`) the session ends at once.
+- **Check.** Each row of Resolutions has a Check button, which asks in a new session (or in the one open), and **Check all open** asks for every open one in one session. A row waiting on a resolution goes on once Check brings its new state.
+- **cosign**: `airlock_resolve` answers with `awaiting-app`, the page checks and signs, and gives its signatures in the session still open, or in a new one after a minute.
+- **The fallback** (row 11) goes through MWA's own `sign_and_send_transactions`, on the chain the page was authorized for.
+- **Refusals**: Airlock sends each as a JSON-RPC error whose `data` is `{ code, requirement? }`, and the rows read it as they read the extension's. The page does not read the JSON-RPC number. MWA's JS library drops `data`, so `build.mjs` puts it back as it bundles the library (`mwa-patch.mjs`), and fails the build if the library changed under it.
+
+`drive-page.mjs` does not drive this transport. `test/fake-mwa.ts` is a fake MWA wallet for the unit tests in `test/mwa.test.ts`.
+
+### All of it on an Android emulator
+
+`scripts/drive-intents-android.mjs` runs every row against the real Android app on an emulator, as `scripts/drive-intents-e2e.mjs` does on desktop, with the same wallet kinds and the same checks of what the node holds afterwards:
+
+```bash
+dx build --android -p airlock-mobile --target x86_64-linux-android
+(cd examples/intents && npm install && npm run build)
+node scripts/drive-intents-android.mjs <outdir> [--wallet <kind>] [--only <ids>] [--keep] [--no-install] [--tap cdp|adb]
+```
+
+It starts the `A16` emulator with no window when it is not up, installs the debug APK, clears the app's data, and gives it a vault, the wallets of the kind and the node on this machine as its custom RPC, with Apps on this phone on. It serves the page here and opens `http://localhost:8124/?wallet=mwa` in the emulator's Chrome, through `adb reverse` for the page and for the node, with Chrome's storage for the page cleared and the node set as the page's Custom RPC. It presses Connect and each row's Run with a touch sent through Chrome's DevTools protocol, which Chrome takes for a person's tap, so the page may open a session (`--tap adb` taps the screen with `adb shell input tap` instead). The approver of `scripts/drive-lib.mjs` plays the person in Airlock's WebView. Bob approves and executes on the phone's Proposals screen, and Olivia's device reads Share and pastes her signature, as on desktop. Since nobody tells the page that a resolution moved on, the script presses the row's Check in Resolutions once the other party is done, or once no session is open and the resolution is still open. Chrome's own notices over the page are declined with uiautomator.
+
+It writes to `<outdir>` what the desktop script does, with the screen at each modal (`modals/`, from `adb screencap`), Airlock as the other parties acted (`others/`), each row as it settled (`rows/`), and `logcat.txt`. A kind takes from about a minute and a half (`multisig-alone`) to 9 minutes (`multisig-waits`). When the emulator's WebView crashes on the app's first launch after an install, which it sometimes does, the app's setup is done once more from a cleared app.
+
+What it showed about the page's guesses, on Android 16's emulator with Chrome 133:
+
+- A touch sent through Chrome's DevTools protocol is a tap to Chrome: `navigator.userActivation.isActive` is true, and Chrome opens the `solana-wallet:` link. No chooser appears there, with one wallet installed.
+- Without a tap, Chrome does not open the link from a tab it opened itself, 15 seconds after loading. It did open it from a tab another app had just opened (an Android intent), a few seconds after loading. So the page's rule, a new session only on a tap, is what Chrome asks of a page someone browses to.
+- Authorizing for `solana:devnet` while Airlock uses a local custom RPC works: Airlock takes the chain the page names.
+- A session stays open after Airlock steps back behind Chrome: the page's poll and a `cosign`'s `airlock_provide_signatures` go through in it, and the send that follows ends `done`.
+- Chrome on Android before 137 has no Ed25519 in Web Crypto, so the page signs and checks with `@noble/curves` there (`src/ed25519.ts`).
 
 ## A dev transport for end-to-end tests
 

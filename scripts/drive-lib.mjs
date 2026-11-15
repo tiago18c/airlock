@@ -376,6 +376,20 @@ export const PAGE_HELPERS = `
   const nav = (text) => [...document.querySelectorAll('button, a')].find((b) => b.innerText.trim() === text && visible(b) && !b.closest('.content'));
   const modalButtons = () => [...document.querySelectorAll('.modal.request .btn-row button')].filter(visible)
     .map((b) => b.innerText.trim() + (b.className ? ' [' + b.className + ']' : '') + (b.disabled ? ' (disabled)' : ''));
+  // The card on Wallets of the wallet labelled so.
+  // Its name is the first text of the card's heading, before its chips.
+  const walletCard = (label) => [...document.querySelectorAll('li.wallet-row')].find((li) => li.querySelector('h3')?.firstChild?.textContent?.trim() === label);
+  // A wallet's Details or Settings: its icon button, or on a phone the item
+  // of the sheet its card's More actions opens. Null when it has none.
+  const walletDialogButton = async (label, which) => {
+    const find = () => document.querySelector('button[aria-label=' + JSON.stringify(which + ' of ' + label) + ']');
+    if (!await until(() => find() || walletCard(label))) return null;
+    if (find()) return find();
+    const more = walletCard(label)?.querySelector('button.wallet-more');
+    if (!more) return null;
+    more.click();
+    return await until(find, 5000);
+  };
 `;
 
 /** Create a vault and add a wallet from `key`'s seed, labelled `label`.
@@ -531,7 +545,10 @@ export const addOfflineWallet = (page, label, address) => page.run(`
   save.click();
   await until(() => !modal(), 10000);
   await w(500);
-  return document.body.innerText.includes(${JSON.stringify(address)}) ? 'ok' : 'not seen: ' + (modal()?.innerText ?? buttons());
+  // A phone shows the address shortened, in its card's title.
+  const card = walletCard(${JSON.stringify(label)});
+  const shown = document.body.innerText.includes(${JSON.stringify(address)}) || card?.querySelector('code')?.title === ${JSON.stringify(address)};
+  return shown ? 'ok' : 'not seen: ' + (modal()?.innerText ?? buttons());
 `);
 
 /** Create a Squads v4 multisig through the app, as a person does: Add
@@ -576,7 +593,7 @@ export const createMultisig = async (page, { label, members, threshold, payer })
 export const readMultisig = async (page, label) => {
   const read = await page.run(`
     ${TO_WALLETS}
-    const details = await until(() => document.querySelector('button[aria-label=' + JSON.stringify('Details of ' + ${JSON.stringify(label)}) + ']'));
+    const details = await walletDialogButton(${JSON.stringify(label)}, 'Details');
     if (!details) return 'no Details of ' + ${JSON.stringify(label)};
     details.click();
     await w(600);
@@ -595,7 +612,7 @@ export const readMultisig = async (page, label) => {
  * stays. Answers "ok" or what went wrong. */
 export const multisigSettings = (page, label, { actingAs, together }) => page.run(`
   ${TO_WALLETS}
-  const gear = await until(() => document.querySelector('button[aria-label=' + JSON.stringify('Settings of ' + ${JSON.stringify(label)}) + ']'));
+  const gear = await walletDialogButton(${JSON.stringify(label)}, 'Settings');
   if (!gear) return 'no Settings of ' + ${JSON.stringify(label)};
   gear.click();
   await w(600);
@@ -626,7 +643,7 @@ export const multisigSettings = (page, label, { actingAs, together }) => page.ru
   if (!await until(() => !modal(), 10000)) return 'Settings stayed open: ' + (modal()?.querySelector('.error')?.innerText ?? modal()?.innerText.slice(0, 300));
   await w(400);
   // Read back from Details what was saved.
-  const details = document.querySelector('button[aria-label=' + JSON.stringify('Details of ' + ${JSON.stringify(label)}) + ']');
+  const details = await walletDialogButton(${JSON.stringify(label)}, 'Details');
   details.click();
   await w(500);
   const text = modal()?.innerText ?? '';
@@ -643,7 +660,8 @@ export const multisigSettings = (page, label, { actingAs, together }) => page.ru
 export const actOnProposal = async (page, label, action, shoot = async () => {}, beforeSubmit = async () => "ok") => {
   const opened = await page.run(`
     ${TO_WALLETS}
-    const card = [...document.querySelectorAll('button[aria-label=' + JSON.stringify('Settings of ' + ${JSON.stringify(label)}) + ']')][0]?.closest('.wallet-end');
+    // Proposals is beside the card's buttons on a desktop, in its foot on a phone.
+    const card = await until(() => walletCard(${JSON.stringify(label)}));
     const open = card && [...card.querySelectorAll('button')].find((b) => b.innerText.trim() === 'Proposals');
     if (!open) return 'no Proposals for ' + ${JSON.stringify(label)};
     open.click();
@@ -830,6 +848,11 @@ export const startApprover = ({ page, dir, scenarios = {}, current = () => "requ
       await sleep(1000);
       return;
     }
+    // A request of an app on a phone shows no code: one is told from the
+    // next by its title, and by the modal going away between them.
+    if (state.where !== "modal") {
+      for (const key of [...seen.keys()]) if (key.startsWith("no code:")) seen.delete(key);
+    }
     if (state.where === "toast") {
       // A request set aside, the modal closed: open it again.
       if (await clickButton(page, ".request-toast", "Open")) await sleep(500);
@@ -838,8 +861,9 @@ export const startApprover = ({ page, dir, scenarios = {}, current = () => "requ
     if (state.where !== "modal") return;
 
     const now = Date.now();
-    const entry = seen.get(state.code) ?? { first: now, acted: 0, reviewed: false, stuckShot: false };
-    seen.set(state.code, entry);
+    const key = state.code || `no code: ${state.title}`;
+    const entry = seen.get(key) ?? { first: now, acted: 0, reviewed: false, stuckShot: false };
+    seen.set(key, entry);
     const run = current();
     const kind = kindOf(state);
     const wanted = { ...APPROVE_ALL, ...(scenarios[run] ?? {}) }[kind];
@@ -916,15 +940,23 @@ export const startApprover = ({ page, dir, scenarios = {}, current = () => "requ
       return;
     }
     await signOnReview(run, state.code);
+    // The next request may be up already, so the modal was never seen gone:
+    // a request with no code is done with here.
+    if (!state.code) seen.delete(key);
   };
 
   /** After Review: sign on Review and Sign, which the request opened. Shot
    * before signing, and once more after, with the steps where they ended. */
   const signOnReview = async (run, code) => {
     let presses = 0;
-    const signButton = `[...(document.querySelector('.content') ?? document).querySelectorAll('button')].find((b) => b.offsetParent !== null && !b.disabled && !b.closest('nav') && /^Sign( transaction)?( and (send|submit))?/.test(b.innerText.trim()))`;
+    // Not a button of a request modal: on a phone the next request's modal
+    // sits inside the page, and its Sign is that request's, not this one's.
+    const signButton = `[...(document.querySelector('.content') ?? document).querySelectorAll('button')].find((b) => b.offsetParent !== null && !b.disabled && !b.closest('nav') && !b.closest('.modal') && /^Sign( transaction)?( and (send|submit))?/.test(b.innerText.trim()))`;
+    const modalUp = `[...document.querySelectorAll('.modal.request')].some((m) => m.offsetParent !== null)`;
     for (let waited = 0; waited < 60_000; waited += 500) {
       await sleep(500);
+      // The next request came: it is the main loop's, by its own name.
+      if (presses > 0 && (await page.evaluate(modalUp))) return;
       const ready = await page.evaluate(`(() => { const b = ${signButton}; return b ? b.innerText.trim() : null; })()`);
       // Wait out the simulation and the button's arming before the shot.
       if (!ready || (await page.evaluate(`document.body.innerText.includes('Simulating')`))) continue;
@@ -939,7 +971,7 @@ export const startApprover = ({ page, dir, scenarios = {}, current = () => "requ
       // next, and a batch moves on to its next transaction: go on while the
       // screen offers another press.
       presses += 1;
-      const more = presses < 32 && (await page.run(`return !!(await until(() => ${signButton}, 5000));`));
+      const more = presses < 32 && (await page.run(`return !!(await until(() => ${signButton} || ${modalUp}, 5000)) && !(${modalUp});`));
       if (more) continue;
       return;
     }

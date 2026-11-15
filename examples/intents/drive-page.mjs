@@ -278,19 +278,19 @@ async function screenshot(cdp, file, selector) {
 
 /* What the page shows. These read the page's own markup. */
 
-const LOG_TEXT = `(document.querySelector("pre.log")?.innerText ?? "")`;
-const ROW = (key) => `document.querySelector(${JSON.stringify(`#row-${key}`)})`;
+export const LOG_TEXT = `(document.querySelector("pre.log")?.innerText ?? "")`;
+export const ROW = (key) => `document.querySelector(${JSON.stringify(`#row-${key}`)})`;
 
-const SETTLED = (key) => `(() => {
+export const SETTLED = (key) => `(() => {
   const row = ${ROW(key)};
   const button = row?.querySelector(".run button");
   return !!button && button.textContent === "Run" && !!row.querySelector(".steps .verdict");
 })()`;
 
 /** The row shows its resolution waiting for other people or another device. */
-const WAITING = (key) => `[...${ROW(key)}.querySelectorAll(".steps > li")].some((li) => li.innerText.includes("awaiting-signatures"))`;
+export const WAITING = (key) => `[...${ROW(key)}.querySelectorAll(".steps > li")].some((li) => li.innerText.includes("awaiting-signatures"))`;
 
-const OUTCOME = (key) => `(() => {
+export const OUTCOME = (key) => `(() => {
   const row = ${ROW(key)};
   const verdict = row.querySelector(".steps .verdict");
   return {
@@ -304,7 +304,7 @@ const OUTCOME = (key) => `(() => {
   };
 })()`;
 
-function setOptions(key, set) {
+export function setOptions(key, set) {
   return `(() => {
     const row = ${ROW(key)};
     for (const [name, value] of Object.entries(${JSON.stringify(set ?? {})})) {

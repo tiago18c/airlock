@@ -4,7 +4,9 @@
 //! `MwaBridge` in the app's `MainActivity.kt` holds each session with Solana
 //! Mobile's wallet library and hands its requests over as JSON. Each goes to
 //! [`Bridge`]'s app sessions (`app_desktop::bridge::AppSession`): the same
-//! checks, queue and request modal as a browser's.
+//! checks, queue and request modal as a browser's. So do the intents
+//! prototype's methods (`airlock_resolve` and the rest), which `MwaBridge`
+//! hands over only for a session that was authorized.
 //!
 //! Only the online app serves them, and only with "Apps on this phone" on in
 //! Settings: otherwise Airlock is not listed as a wallet at all
@@ -14,7 +16,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use app_desktop::bridge::{AppAnswer, AppCall, AppIdentity, AppSession, Bridge};
+use app_desktop::bridge::{AppAnswer, AppCall, AppIdentity, AppSession, Bridge, IntentError};
 use serde::Deserialize;
 
 const FILE: &str = "apps";
@@ -137,22 +139,37 @@ fn run(bridge: Bridge) {
                 identity,
                 call,
             } => {
-                let call = serde_json::from_value::<AppCall>(call);
+                let call = read_call(call);
                 let app = sessions.for_request(&bridge, session, identity);
                 // A request may wait for the user; the rest go on meanwhile.
                 std::thread::spawn(move || {
                     let answer = match call {
                         Ok(call) => app.answer(call),
-                        Err(err) => {
-                            tracing::warn!(target: "airlock::bridge", %err, "unreadable app request");
-                            AppAnswer::Declined
-                        }
+                        Err(refused) => refused,
                     };
                     answer_request(id, &answer.to_json());
                 });
             }
         }
     }
+}
+
+/// The request `call` names, or what to answer when it cannot be read: an
+/// intent method's error for one of those, declined for MWA's own.
+fn read_call(call: serde_json::Value) -> Result<AppCall, AppAnswer> {
+    let intent = call.get("method").and_then(serde_json::Value::as_str) == Some("intent");
+    serde_json::from_value::<AppCall>(call).map_err(|err| {
+        tracing::warn!(target: "airlock::bridge", %err, "unreadable app request");
+        if intent {
+            AppAnswer::Intent(Err(IntentError {
+                code: "bad_request".into(),
+                message: "The request could not be read.".into(),
+                requirement: None,
+            }))
+        } else {
+            AppAnswer::Declined
+        }
+    })
 }
 
 /// The next event, or `None` after a while with none.
@@ -209,6 +226,40 @@ mod tests {
         assert!(matches!(
             serde_json::from_str::<Event>(r#"{"kind":"closed","session":1}"#),
             Ok(Event::Closed { session: 1 })
+        ));
+    }
+
+    #[test]
+    fn an_intent_method_reads_with_the_identity_of_the_authorization() {
+        let event: Event = serde_json::from_str(
+            r#"{"kind":"request","id":9,"session":2,"identity":{"name":"Intents","uri":"https://intents.example","package":null},"call":{"method":"intent","name":"airlock_resolve","params":{"account":"x","transactions":["AQ=="]}}}"#,
+        )
+        .unwrap();
+        let Event::Request { identity, call, .. } = event else {
+            panic!("a request");
+        };
+        assert_eq!(
+            identity.origin().as_deref(),
+            Some("https://intents.example")
+        );
+        let Ok(AppCall::Intent { name, params }) = read_call(call) else {
+            panic!("an intent method");
+        };
+        assert_eq!(name, "airlock_resolve");
+        assert_eq!(params["transactions"][0], "AQ==");
+    }
+
+    #[test]
+    fn an_unreadable_intent_method_gets_an_error_it_can_read() {
+        let Err(answer) = read_call(serde_json::json!({ "method": "intent" })) else {
+            panic!("no name");
+        };
+        let value: serde_json::Value = serde_json::from_str(&answer.to_json()).unwrap();
+        assert_eq!(value["kind"], "error");
+        assert_eq!(value["code"], "bad_request");
+        assert!(matches!(
+            read_call(serde_json::json!({ "method": "signTransactions" })),
+            Err(AppAnswer::Declined)
         ));
     }
 }

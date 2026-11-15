@@ -10,6 +10,8 @@
     "serve": "node serve.mjs"
   },
   "dependencies": {
+    "@noble/curves": "1.9.7",
+    "@solana-mobile/mobile-wallet-adapter-protocol": "3.0.1",
     "@solana/wallet-standard-features": "1.5.0",
     "@solana/web3.js": "1.99.0",
     "@wallet-standard/app": "1.1.1",

@@ -46,3 +46,11 @@ What it does, for driving something else:
 4. Once the app is up, start `target/debug/bridge-host.exe` with the same environment and write to its stdin what the extension would: frames of a 32-bit little-endian length, then the JSON of [a message](docs/browser-bridge.md#messages). Replies come back on stdout the same way. `{"v":1,"id":"status-1","method":"status"}` answers `"role":"desktop"` once it reaches the app. Build the transactions of a `signTransaction` in the script, with the wallet added in step 3 as their fee payer.
 5. A program the app has no IDL for is looked up on chain first, and Sign stays disabled until "Looking for the IDLs of its programs…" is gone. Wait for it before reading the buttons.
 6. Stop the app and `bridge-host` when done. A killed app leaves WebView2 holding the profile, so give every run its own temp folder.
+
+### On Android
+
+`scripts/drive-intents-android.mjs` is the twin of `drive-intents-e2e.mjs` on an Android emulator, with the same `--wallet` kinds and `--only`. It builds nothing: build the debug APK for the emulator (`dx build --android -p airlock-mobile --target x86_64-linux-android`) and the page first. It starts the `A16` emulator headless when it is not up (`--avd`, `--serial`), installs the APK, clears the app's data, starts surfpool on this machine and `adb reverse`s its port and the page's, sets up the app's wallets through its WebView over the DevTools protocol, opens the page in the emulator's Chrome with `?wallet=mwa` and presses each row with a touch sent through Chrome's DevTools protocol (`--tap adb` uses `adb shell input tap` instead). Chrome counts that touch as the person's tap, so the page may open a session. The approver of `scripts/drive-lib.mjs` plays the person in Airlock, and Bob or Olivia's device act in Airlock as on desktop. Over MWA nobody tells the page that a resolution moved on, so the script presses Check once another party is done, or once no session is open. Its helpers for adb, the emulator, the app's WebView, Chrome and taps are in `scripts/drive-android.mjs`.
+
+```bash
+node scripts/drive-intents-android.mjs <outdir> [--wallet <kind>] [--only <ids>] [--keep] [--no-install] [--tap cdp|adb]
+```

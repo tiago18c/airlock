@@ -284,12 +284,33 @@ Errors, beside those of the bridge:
 | `bad_signature` | A signature given does not verify for its signer and transaction, or that signer is not owed |
 | `rejected` | The account is not connected to the site, or the site is blocked |
 
+## Airlock's prototype on Android: Mobile Wallet Adapter
+
+On a phone a page reaches Airlock through Mobile Wallet Adapter (MWA), not the extension. MWA is JSON-RPC over an encrypted local WebSocket, and a wallet may answer methods beyond the standard ones. Airlock answers six more in a session, with the same `params` and `result` as the bridge messages above:
+
+| MWA method | Bridge message | A page's MWA client calls it as |
+| --- | --- | --- |
+| `airlock_get_signing_profile` | `getSigningProfile` | `wallet.airlockGetSigningProfile(params)` |
+| `airlock_resolve` | `resolve` | `wallet.airlockResolve(params)` |
+| `airlock_get_resolution` | `getResolution` | `wallet.airlockGetResolution(params)` |
+| `airlock_provide_signatures` | `provideSignatures` | `wallet.airlockProvideSignatures(params)` |
+| `airlock_cancel_resolution` | `cancelResolution` | `wallet.airlockCancelResolution(params)` |
+| `airlock_sign_message` | `resolveMessage` | `wallet.airlockSignMessage(params)` |
+
+- `get_capabilities` lists them in `features` as `airlock:getSigningProfile`, `airlock:resolve`, `airlock:getResolution`, `airlock:provideSignatures`, `airlock:cancelResolution` and `airlock:signMessage`.
+- They answer only in a session that was authorized (`authorize`, or `reauthorize` with a valid token), and the site is the identity given there. Otherwise the error is `rejected`.
+- An error is a JSON-RPC error with code `-1000`, the bridge's message, and `data` `{ "code": "<the bridge's code>", "requirement"?: "…" }`. An `airlock_` method that is not one of the six is MWA's own `-32601`. Solana Mobile's `@solana-mobile/mobile-wallet-adapter-protocol` (2.2 to 3.0.2) drops a JSON-RPC error's `data` when it throws, so a page that uses it has to put `data` back (one line, where it builds `SolanaMobileWalletAdapterProtocolError`).
+- `airlock_resolve` answers once the resolution leaves `awaiting-approval`, as the Wallet Standard `resolve` settles, so the person decides while the page waits on one request. Declined, expired and cancelled are errors (`rejected`, `expired`, `cancelled`). `airlock_sign_message` waits the same way, for either mode.
+- It waits through `sending` as well, so a resolution delivered `send` comes back `done`, `failed` or `unknown`: Airlock sends what was approved from its screen, and a phone stops that screen once Airlock is behind the browser, which it is a moment after the answer. A `sign_and_send_transactions` waits for its send in the same way.
+- A request still awaiting approval when the session ends stays, as it does when a page closes on desktop: the person may still decide, and the page asks for the resolution in a new session. Airlock stays in front for it.
+- MWA has no way for a wallet to speak first, so there is no `resolutionChanged`. A page asks `airlock_get_resolution`: in the same session while it stays open, or in a new one later. A request that never waits for the person (a profile, a resolution, signatures given, a cancel) does not bring Airlock to the front, and Airlock does not step back after it.
+- A phone may stop a browser that is behind from hearing anything, and stop an app that is behind from answering. So a page that waits on a resolution that finishes later ends the session, and asks again in a new session when it wants to know: Airlock comes to the front for a moment as the session opens.
+
 What the prototype leaves out:
 
 - `order: "atomic"` with more than one transaction is `unsupported`.
 - A note on an account that a v0 transaction reads from a lookup table is `bad_notes`.
 - An endpoint for the app's signatures. They are given from the page, so `cosign` and `return` are offered to `sync` accounts that sign at the top of a transaction, and to no other.
-- Mobile Wallet Adapter. Its methods are fixed by its own protocol.
 - Resolutions are kept in `resolutions.json`, the latest 200. Signed transactions that have not gone out are kept in memory only, so after a restart a resolution that was `awaiting-approval` or `awaiting-app` is `failed`, and one that was `sending` is `unknown`.
 - A Squads multisig's profile is judged from its wallet record until the Proposals pane has read the multisig on the cluster in use: every listed member is taken to hold every permission, and no time lock is assumed. After that it is judged from what the chain said: threshold, permissions and time lock.
 - A proposal a resolution waits on is followed only until Airlock restarts.

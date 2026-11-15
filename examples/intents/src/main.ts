@@ -1,9 +1,11 @@
 /** The intents test page: settings at the top, a row per method, the
  * resolutions this page started, and a log of everything said. */
 
+import { transact } from "@solana-mobile/mobile-wallet-adapter-protocol";
 import { LAMPORTS_PER_SOL, PublicKey, type Connection, type Keypair } from "@solana/web3.js";
 import { getWallets } from "@wallet-standard/app";
 import type { Wallet, WalletAccount } from "@wallet-standard/base";
+import { registerWallet } from "@wallet-standard/wallet";
 import {
   CANCEL_RESOLUTION,
   GET_RESOLUTION,
@@ -34,9 +36,10 @@ import {
 import { loadAppKey, newAppKey } from "./app-key";
 import { registerRelayWallet, relayFromQuery } from "./dev-transport";
 import { EventLog, line } from "./log";
+import { MwaTransport, createMwaWallet, hasUserActivation, isAndroid, type MwaAuth, type MwaStandardWallet, type Transact } from "./mwa";
 import { DEVNET, LOCAL_URL, MAINNET, confirm, connectionFor, explorerUrl, isChain, loadNetwork, saveNetwork, type Network } from "./network";
 import { ResolutionStore, type Tracked } from "./resolutions";
-import { load, save } from "./storage";
+import { forget, load, save } from "./storage";
 import { address, append, chip, copyButton, h, link, replace, short, time, toast, type Tone } from "./ui";
 
 const log = new EventLog();
@@ -52,8 +55,22 @@ const state = {
   profile: null as SigningProfile | null,
   api: null as Api | null,
   relayWallet: null as Wallet | null,
+  /** Airlock on this phone, through Mobile Wallet Adapter. */
+  mwaWallet: null as MwaStandardWallet | null,
   stopListening: [] as (() => void)[],
 };
+
+/** Whether the chosen wallet is the one reached through Mobile Wallet Adapter. */
+function isMwa(): boolean {
+  return state.wallet !== null && state.wallet === state.mwaWallet;
+}
+
+/** Whether a call may go to the wallet now without a tap: always, but over
+ * MWA only while a session is open or a tap is fresh. A browser opens a new
+ * session only on a tap. */
+function canCallNow(): boolean {
+  return !isMwa() || state.mwaWallet!.transport.openSession !== null || hasUserActivation();
+}
 state.connection = connectionFor(state.network);
 
 const rows = allRows();
@@ -130,7 +147,10 @@ function selectWallet(wallet: Wallet | null): void {
   state.profile = null;
   const features = intentsOf(wallet);
   state.api = features ? makeApi(features) : null;
-  store.refresher = state.api ? (id) => state.api!.get(id) : null;
+  // Over MWA the store does not read on its own: each read would open a
+  // session. The transport asks in a session it keeps open, and Check asks in a
+  // new one.
+  store.refresher = state.api && !isMwa() ? (id) => state.api!.get(id) : null;
   if (wallet) {
     save("wallet", wallet.name);
     const events = wallet.features["standard:events"] as { on(event: "change", listener: () => void): () => void } | undefined;
@@ -138,7 +158,8 @@ function selectWallet(wallet: Wallet | null): void {
     if (features) {
       state.stopListening.push(
         features[RESOLVE].onResolution((resolution) => {
-          log.add("push", "resolutionChanged", resolution);
+          // Over MWA the transport logged the reply it came in.
+          if (!isMwa()) log.add("push", "resolutionChanged", resolution);
           store.update(resolution);
         }),
       );
@@ -156,8 +177,11 @@ async function connect(silent: boolean): Promise<void> {
     const { accounts } = await feature.connect({ silent });
     log.add("reply", "standard:connect", accounts.map((account) => account.address));
     if (!silent && accounts.length === 0) toast("The wallet connected no account.", "warn");
+    // Over MWA the airlock: features are known once get_capabilities answered.
+    if (wallet === state.mwaWallet && !!intentsOf(wallet) !== !!state.api) selectWallet(wallet);
     accountsChanged();
-    void refreshOpen();
+    // A silent connect over MWA opened no session, and reading would need one.
+    if (canCallNow()) void refreshOpen();
   } catch (err) {
     log.add("error", `standard:connect: ${describeError(err)}`);
     if (!silent) toast(`Not connected: ${describeError(err)}`, "danger");
@@ -182,7 +206,7 @@ function accountsChanged(): void {
     if (next) save("account", next.address);
   }
   render();
-  if (changed && next && state.api) void runRow(rows[0]);
+  if (changed && next && state.api && canCallNow()) void runRow(rows[0]);
 }
 
 /* Network and the app key */
@@ -427,16 +451,37 @@ function seedText(bytes: string | Uint8Array, names: Record<string, string>): st
 /* Resolutions */
 
 async function refreshOpen(): Promise<void> {
-  if (!state.api) return;
-  // One at a time, well inside the extension's limit of 30 requests in 10 seconds.
-  for (const item of store.open()) {
-    try {
-      await state.api.get(item.id);
-    } catch (err) {
-      store.readFailed(item.id, err, describeError);
+  const api = state.api;
+  if (!api) return;
+  const open = store.open();
+  const readAll = async () => {
+    // One at a time, well inside the extension's limit of 30 requests in 10 seconds.
+    for (const item of open) {
+      try {
+        await api.get(item.id);
+      } catch (err) {
+        store.readFailed(item.id, err, describeError);
+      }
+      if (!isMwa()) await new Promise((resolve) => setTimeout(resolve, 400));
     }
-    await new Promise((resolve) => setTimeout(resolve, 400));
+  };
+  if (!isMwa()) return readAll();
+  // Over MWA, every read in one session, so Airlock comes forward once.
+  if (open.length === 0) return;
+  try {
+    await state.mwaWallet!.transport.batch(readAll);
+  } catch (err) {
+    log.add("error", `Check: ${describeError(err)}`);
+    toast(`Not checked: ${describeError(err)}`, "danger");
   }
+}
+
+/** Over MWA: asks for one resolution in a session of its own, or in the open one. */
+function check(id: string): void {
+  void state.api?.get(id).catch((err) => {
+    store.readFailed(id, err, describeError);
+    toast(`Not checked: ${describeError(err)}`, "danger");
+  });
 }
 
 function resolutionRow(item: Tracked): HTMLTableRowElement {
@@ -446,7 +491,9 @@ function resolutionRow(item: Tracked): HTMLTableRowElement {
   const actions = h("div", { class: "row-buttons" });
   if (state.api && !gone && (r || !item.error)) {
     actions.append(
-      h("button", { class: "sm", type: "button", onclick: () => state.api?.get(item.id).catch((err) => store.readFailed(item.id, err, describeError)) }, "Refresh"),
+      isMwa()
+        ? h("button", { class: "sm", type: "button", title: "Asks Airlock for it in a new session. Airlock comes forward for a moment.", onclick: () => check(item.id) }, "Check")
+        : h("button", { class: "sm", type: "button", onclick: () => state.api?.get(item.id).catch((err) => store.readFailed(item.id, err, describeError)) }, "Refresh"),
     );
     if (cancellable) {
       actions.append(
@@ -514,6 +561,8 @@ function resolutionRow(item: Tracked): HTMLTableRowElement {
 /** For a resolution that waits on someone, who: the members of a multisig
  * whose proposal landed, another device, or this page. Null otherwise. */
 function waitingFor(r: Resolution): HTMLElement | null {
+  // On a phone the wallet cannot tell the page that something changed: the page asks.
+  const then = isMwa() ? " On a phone Airlock cannot tell this page, so press Check to ask." : " This row turns done by itself then.";
   const text = (() => {
     switch (r.state) {
       case "awaiting-approval":
@@ -521,9 +570,9 @@ function waitingFor(r: Resolution): HTMLElement | null {
       case "awaiting-signatures": {
         const proposal = r.transactions?.find((tx) => tx.role === "proposal");
         if (proposal?.state === "landed") {
-          return "Waiting for the multisig's other members: the proposal landed, and its instructions run once enough members approve and one executes it. This row turns done by itself then.";
+          return `Waiting for the multisig's other members: the proposal landed, and its instructions run once enough members approve and one executes it.${then}`;
         }
-        return "Waiting for a signature from another device or other people. Airlock sends it once the signature comes back, and this row turns done by itself then.";
+        return `Waiting for a signature from another device or other people. Airlock sends it once the signature comes back.${then}`;
       }
       case "awaiting-app":
         return "Waiting for this page's signatures (provideSignatures).";
@@ -571,11 +620,22 @@ const els = {
   rows: h("div", { class: "rows" }),
   resolutions: h("tbody"),
   resolutionsEmpty: h("div", { class: "empty" }),
+  // Over MWA only: what the page does instead of hearing pushes, and a button to ask.
+  checkAll: h("button", { class: "sm", type: "button", hidden: true }, "Check all open"),
+  resolutionsMwa: h("p", { class: "hint", hidden: true }),
   log: h("pre", { class: "log", tabindex: "0", "aria-label": "Event log" }),
 };
 
 function shell(): void {
   els.connect.addEventListener("click", () => void connect(false));
+  els.checkAll.addEventListener("click", () => {
+    if (store.open().length === 0) toast("Nothing open to check.", "info");
+    else void refreshOpen();
+  });
+  replace(
+    els.resolutionsMwa,
+    "On a phone, Airlock cannot tell this page when a resolution changes, so the page asks. After a request that resolves at once, it keeps the session open and asks every 2 seconds, for up to a minute. Otherwise press Check on a row, or Check all open. Each opens a new session, and Airlock comes forward for a moment.",
+  );
   els.disconnect.addEventListener("click", () => void disconnect());
   els.autoConnect.checked = load<boolean>("autoConnect") === true;
   els.autoConnect.addEventListener("change", () => save("autoConnect", els.autoConnect.checked));
@@ -744,12 +804,13 @@ function shell(): void {
     h(
       "section",
       { class: "card", "aria-labelledby": "resolutions-title" },
-      h("div", { class: "section-head" }, h("h2", { id: "resolutions-title" }, "Resolutions")),
+      h("div", { class: "section-head" }, h("h2", { id: "resolutions-title" }, "Resolutions"), h("div", { class: "row-buttons" }, els.checkAll)),
       h(
         "p",
         { class: "hint" },
         "Every resolution this page started, kept in this browser so it survives a reload. A multisig's proposal waits here in awaiting-signatures until the others approve and execute it, then turns done.",
       ),
+      els.resolutionsMwa,
       els.resolutionsEmpty,
       h(
         "div",
@@ -788,12 +849,23 @@ function render(): void {
   replace(
     els.walletChips,
     !state.wallet
-      ? h("span", { class: "hint" }, state.wallets.length ? "" : "No wallet found yet. Install the Airlock extension and start Airlock, or open the page with ?wallet=ws://127.0.0.1:<port>.")
-      : intents
-        ? chip("airlock:resolve", "ok")
-        : chip("no airlock:resolve: only row 11 works", "warn"),
+      ? h(
+          "span",
+          { class: "hint" },
+          state.wallets.length
+            ? ""
+            : "No wallet found yet. Install the Airlock extension and start Airlock, or open the page with ?wallet=ws://127.0.0.1:<port>. On a phone with Airlock, open it with ?wallet=mwa.",
+        )
+      : isMwa() && !state.mwaWallet!.transport.auth
+        ? null // Over MWA the features are known once Connect asked get_capabilities.
+        : intents
+          ? chip("airlock:resolve", "ok")
+          : chip("no airlock:resolve: only row 11 works", "warn"),
     state.wallet ? (state.account ? chip("connected", "selected") : chip("not connected", "neutral")) : null,
+    ...(isMwa() ? mwaChips() : []),
   );
+  els.checkAll.hidden = !isMwa() || !state.api || !state.account;
+  els.resolutionsMwa.hidden = !isMwa();
   els.connect.disabled = !state.wallet;
   els.disconnect.hidden = !state.account;
 
@@ -886,6 +958,49 @@ function refreshBalances(force = false): void {
   if (state.account) void balanceOf(new PublicKey(state.account.address), els.accountBalance);
 }
 
+/** Over MWA: whether the wallet listed the airlock: features, the chain the
+ * page is authorized for, and a session open now. */
+function mwaChips(): (HTMLElement | string)[] {
+  const transport = state.mwaWallet!.transport;
+  const auth = transport.auth;
+  const out: (HTMLElement | string)[] = [chip("Mobile Wallet Adapter", "kind")];
+  if (!auth) {
+    out.push(h("span", { class: "hint" }, "Press Connect. Airlock comes forward to approve this page."));
+    return out;
+  }
+  out.push(
+    transport.speaksIntents()
+      ? chip("get_capabilities lists the 6 airlock: features", "ok")
+      : chip(`The wallet does not speak intents: it lists no ${transport.missingFeatures().join(", ")}`, "warn"),
+  );
+  const sameChain = auth.chain === state.network.chain;
+  out.push(chip(`authorized for ${auth.chain}`, sameChain ? "neutral" : "warn"));
+  if (!sameChain) {
+    out.push(h("span", { class: "hint" }, `Requests name ${state.network.chain}, but row 11 goes out on ${auth.chain}. Connect again to change it.`));
+  }
+  const open = transport.openSession;
+  if (open !== null) out.push(chip(`session ${open} open`, "info"));
+  return out;
+}
+
+/** The wallet for Airlock on this phone, through Mobile Wallet Adapter. */
+function makeMwaWallet(): MwaStandardWallet {
+  const transport = new MwaTransport({
+    // The library's MobileWallet answers any method; the page's type names the ones it calls.
+    transact: transact as unknown as Transact,
+    identity: { name: "Airlock intents test page", uri: location.origin, icon: "icon.png" },
+    chain: () => state.network.chain,
+    saved: { load: () => load<MwaAuth>("mwa"), save: (auth) => (auth ? save("mwa", auth) : forget("mwa")) },
+    canOpen: hasUserActivation,
+    events: {
+      log: (kind, text, detail) => log.add(kind, text, detail),
+      notFound: (id, error) => store.readFailed(id, error, describeError),
+      changed: () => render(),
+    },
+  });
+  return createMwaWallet(transport);
+}
+
 /** What a request for the chosen account does: resolves at once, or waits
  * for other people or another device. Empty until its profile is read. */
 function renderAccountProfile(): void {
@@ -894,7 +1009,13 @@ function renderAccountProfile(): void {
     els.accountProfile,
     profile ? chip(profile.timing === "sync" ? "resolves at once" : "waits for others", profile.timing === "sync" ? "ok" : "info") : null,
     profile ? " " : null,
-    profile ? whatHappens(profile) : state.account && state.api ? "Reading how this account signs…" : null,
+    profile
+      ? whatHappens(profile)
+      : state.account && state.api
+        ? canCallNow()
+          ? "Reading how this account signs…"
+          : "Press Run on row 1 to read how this account signs." // Over MWA after a reload: reading needs a tap.
+        : null,
   );
 }
 
@@ -912,7 +1033,27 @@ function renderResolutions(): void {
 
 function start(): void {
   shell();
-  const relay = relayFromQuery(location.search);
+  // ?wallet=mwa forces Mobile Wallet Adapter. On Android it is offered anyway.
+  const forceMwa = new URLSearchParams(location.search).get("wallet") === "mwa";
+  const relay = forceMwa ? null : relayFromQuery(location.search);
+  if (forceMwa || (relay === null && isAndroid(navigator.userAgent))) {
+    state.mwaWallet = makeMwaWallet();
+    registerWallet(state.mwaWallet);
+    replace(
+      els.devBanner,
+      window.isSecureContext
+        ? h(
+            "p",
+            { class: "note banner" },
+            "Mobile Wallet Adapter: this page reaches Airlock on this phone. Each call opens a session, and Airlock comes forward for a moment. Airlock cannot tell the page when something changes, so the page asks (see Resolutions).",
+          )
+        : h(
+            "p",
+            { class: "error banner" },
+            `Mobile Wallet Adapter needs a secure page, and ${location.origin} is not one. Open http://localhost:8124 through adb reverse, or serve the page over https.`,
+          ),
+    );
+  }
   if (relay instanceof Error) {
     replace(els.devBanner, h("p", { class: "error banner" }, relay.message));
   } else if (relay) {
@@ -934,11 +1075,18 @@ function start(): void {
   const refresh = () => {
     state.wallets = get().filter(usable);
     if (!state.wallet) {
-      // The relay's wallet first, when the page was opened for it.
-      const pick = state.wallets.find((w) => w === state.relayWallet) ?? state.wallets.find((w) => w.name === wanted && (!state.relayWallet || w === state.relayWallet));
+      // The relay's wallet first, when the page was opened for it, then MWA when
+      // forced. On a phone with no wallet of its own that speaks intents, MWA.
+      const mwa = state.wallets.find((w) => w === state.mwaWallet);
+      const pick =
+        state.wallets.find((w) => w === state.relayWallet) ??
+        (forceMwa ? mwa : undefined) ??
+        state.wallets.find((w) => w.name === wanted && (!state.relayWallet || w === state.relayWallet)) ??
+        (mwa && !state.wallets.some((w) => w !== mwa && intentsOf(w)) ? mwa : undefined);
       if (pick) {
         selectWallet(pick);
-        if (els.autoConnect.checked || pick === state.relayWallet) void connect(true);
+        // A silent connect over MWA opens no session: it takes up an authorization this browser kept.
+        if (els.autoConnect.checked || pick === state.relayWallet || pick === state.mwaWallet) void connect(true);
         return;
       }
     } else if (!state.wallets.includes(state.wallet)) {

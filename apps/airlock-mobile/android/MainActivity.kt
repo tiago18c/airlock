@@ -52,16 +52,22 @@ import com.solanamobile.seedvault.SigningRequest
 import com.solanamobile.seedvault.Wallet
 import com.solanamobile.seedvault.WalletContractV1
 import com.solana.mobilewalletadapter.common.ProtocolContract
+import com.solana.mobilewalletadapter.common.protocol.MessageReceiver
+import com.solana.mobilewalletadapter.common.protocol.MessageSender
+import com.solana.mobilewalletadapter.common.protocol.MobileWalletAdapterSessionCommon
 import com.solana.mobilewalletadapter.common.signin.SignInWithSolana
 import com.solana.mobilewalletadapter.common.util.Base58
 import com.solana.mobilewalletadapter.walletlib.association.AssociationUri
 import com.solana.mobilewalletadapter.walletlib.association.LocalAssociationUri
 import com.solana.mobilewalletadapter.walletlib.authorization.AuthIssuerConfig
 import com.solana.mobilewalletadapter.walletlib.protocol.MobileWalletAdapterConfig
+import com.solana.mobilewalletadapter.walletlib.protocol.MobileWalletAdapterServer
+import com.solana.mobilewalletadapter.walletlib.protocol.MobileWalletAdapterSession
 import com.solana.mobilewalletadapter.walletlib.scenario.AuthorizeRequest
 import com.solana.mobilewalletadapter.walletlib.scenario.AuthorizedAccount
 import com.solana.mobilewalletadapter.walletlib.scenario.DeauthorizedEvent
 import com.solana.mobilewalletadapter.walletlib.scenario.LocalScenario
+import com.solana.mobilewalletadapter.walletlib.scenario.LocalWebSocketServerScenario
 import com.solana.mobilewalletadapter.walletlib.scenario.ReauthorizeRequest
 import com.solana.mobilewalletadapter.walletlib.scenario.Scenario
 import com.solana.mobilewalletadapter.walletlib.scenario.SignAndSendTransactionsRequest
@@ -728,9 +734,43 @@ object UsbBridge {
 /// MwaActivity is off in the manifest. Rust turns it on only in online mode
 /// with "Apps on this phone" on in Settings, so an offline Airlock is not a
 /// wallet any app can find.
+///
+/// A session also answers the intents prototype's methods (`airlock_resolve`
+/// and the rest, docs/intents.md), which walletlib does not know: its server
+/// is replaced with one that takes them (AirlockScenario, AirlockServer) and
+/// hands them to Rust like any request, once the session is authorized.
 @Keep
 object MwaBridge {
     private const val TAG = "AirlockMwa"
+
+    /// The intents prototype's methods, by their MWA names, and whether each
+    /// waits for the person. One that waits brings Airlock forward, and
+    /// Airlock steps back after its answer, as for a signature. One that
+    /// does not (a profile, a resolution, signatures given, a cancel) does
+    /// neither.
+    private val AIRLOCK_METHODS = mapOf(
+        "airlock_get_signing_profile" to false,
+        "airlock_resolve" to true,
+        "airlock_get_resolution" to false,
+        "airlock_provide_signatures" to false,
+        "airlock_cancel_resolution" to false,
+        "airlock_sign_message" to true,
+    )
+
+    /// What get_capabilities lists for them.
+    private val AIRLOCK_FEATURES = arrayOf(
+        "airlock:getSigningProfile",
+        "airlock:resolve",
+        "airlock:getResolution",
+        "airlock:provideSignatures",
+        "airlock:cancelResolution",
+        "airlock:signMessage",
+    )
+
+    /// The JSON-RPC error code of every refusal of those methods. Which
+    /// refusal it is is in `data.code`, the bridge's code. Outside MWA's own
+    /// codes (-1 to -7, -100) and JSON-RPC's (-32768 to -32000).
+    private const val AIRLOCK_ERROR = -1000
 
     /// `activity` is the MwaActivity an app waits on, or null for a browser's
     /// session, which no activity holds (see MwaActivity).
@@ -744,8 +784,16 @@ object MwaBridge {
         var stopped = false
     }
 
-    private class Pending(val session: Long, val request: Any) {
+    /// `waits`: the request may wait for the person.
+    private class Pending(val session: Long, val request: Any, val waits: Boolean) {
         val asked = android.os.SystemClock.elapsedRealtime()
+    }
+
+    /// One of the intents prototype's methods, waiting for Rust's answer.
+    private class AirlockRequest(val server: AirlockServer, val id: Any) {
+        fun refuse(code: String, message: String) {
+            server.error(id, code, message, null)
+        }
     }
 
     private val events = LinkedBlockingQueue<String>()
@@ -779,13 +827,15 @@ object MwaBridge {
     fun answer(id: Long, json: String) {
         val waiting = pending.remove(id) ?: return
         val session = sessions[waiting.session]
-        session?.answered = true
+        if (waiting.waits) session?.answered = true
         try {
             complete(waiting.request, JSONObject(json))
         } catch (e: Exception) {
             Log.w(TAG, "could not answer", e)
         }
-        if (session != null) answered(session, android.os.SystemClock.elapsedRealtime() - waiting.asked)
+        if (session != null && waiting.waits) {
+            answered(session, android.os.SystemClock.elapsedRealtime() - waiting.asked)
+        }
     }
 
     /// Start a session for `activity`'s link. An app (`pkg` set) waits on the
@@ -794,19 +844,28 @@ object MwaBridge {
         val id = ids.getAndIncrement()
         val session = Session(id, if (pkg != null) activity else null, pkg)
         sessions[id] = session
+        // Without the members AirlockScenario reads, walletlib's own
+        // scenario, which answers none of the intent methods.
+        val intents = WalletlibMembers.found
+        val features = arrayOf(
+            ProtocolContract.FEATURE_ID_SIGN_TRANSACTIONS,
+            ProtocolContract.FEATURE_ID_SIGN_IN_WITH_SOLANA
+        ) + if (intents) AIRLOCK_FEATURES else emptyArray()
         val config = MobileWalletAdapterConfig(
             16, // transactions per request, as for a browser
             1, // messages per request
             arrayOf<Any>(MobileWalletAdapterConfig.LEGACY_TRANSACTION_VERSION, 0),
             3000L,
-            arrayOf(
-                ProtocolContract.FEATURE_ID_SIGN_TRANSACTIONS,
-                ProtocolContract.FEATURE_ID_SIGN_IN_WITH_SOLANA
-            )
+            features
         )
-        val scenario = association.createScenario(
-            activity.applicationContext, config, AuthIssuerConfig("Airlock"), Callbacks(session)
-        )
+        val context = activity.applicationContext
+        val issuer = AuthIssuerConfig("Airlock")
+        val callbacks = Callbacks(session)
+        val scenario = if (intents) {
+            AirlockScenario(context, config, issuer, callbacks, association, session)
+        } else {
+            association.createScenario(context, config, issuer, callbacks)
+        }
         session.scenario = scenario
         events.put(JSONObject().put("kind", "open").put("session", id).toString())
         scenario.startAsync()
@@ -871,11 +930,13 @@ object MwaBridge {
     /// Airlock steps back, and the task under it, the browser's, shows: no
     /// activity is left in the browser's task to finish instead. Only with
     /// an answer given to the page, Airlock in front still, and nothing else
-    /// waiting on the user here.
+    /// waiting on the user here. A request that never waits for the user,
+    /// such as a page asking how its resolution is going, does not count.
     private fun stepBack(session: Session) {
         val main = SeedVaultBridge.activity ?: return
         main.runOnUiThread {
-            if (main.hasWindowFocus() && session.answered && !session.stopped && pending.isEmpty()) {
+            val nobodyAsked = pending.values.none { it.waits }
+            if (main.hasWindowFocus() && session.answered && !session.stopped && nobodyAsked) {
                 main.moveTaskToBack(true)
             }
         }
@@ -890,14 +951,20 @@ object MwaBridge {
 
     private fun ended(session: Session) {
         if (sessions.remove(session.id) == null) return
+        // A resolve still waiting for the user outlives its session, as it
+        // outlives its page on desktop: the user may still decide, and the
+        // page asks for the resolution later. Airlock stays in front for it.
+        val deciding = pending.values.any {
+            it.session == session.id && it.waits && it.request is AirlockRequest
+        }
         pending.entries.removeIf { it.value.session == session.id }
         events.put(JSONObject().put("kind", "closed").put("session", session.id).toString())
         Log.i(TAG, "session ${session.id} ended")
-        val front = SeedVaultBridge.activity?.hasWindowFocus() == true
+        val front = SeedVaultBridge.activity?.hasWindowFocus() == true && !deciding
         val activity = session.activity
         if (activity == null) {
             // A browser, whose page has its answer: back to it now.
-            stepBack(session)
+            if (!deciding) stepBack(session)
             return
         }
         // Back to the app that asked, when Airlock is in front for it: its
@@ -922,11 +989,19 @@ object MwaBridge {
 
     private fun payloads(list: Array<ByteArray>) = strings(list.map { b64(it) })
 
-    /// Hand a request to Rust with who it comes from.
-    private fun ask(session: Session, request: Any, name: String?, uri: Uri?, call: JSONObject) {
+    /// Hand a request to Rust with who it comes from. One that `waits` for
+    /// the user brings Airlock forward.
+    private fun ask(
+        session: Session,
+        request: Any,
+        name: String?,
+        uri: Uri?,
+        call: JSONObject,
+        waits: Boolean = true
+    ) {
         val id = ids.getAndIncrement()
-        pending[id] = Pending(session.id, request)
-        comeForward(session)
+        pending[id] = Pending(session.id, request, waits)
+        if (waits) comeForward(session)
         val identity = JSONObject()
             .put("name", name ?: JSONObject.NULL)
             .put("uri", uri?.toString() ?: JSONObject.NULL)
@@ -1013,6 +1088,188 @@ object MwaBridge {
                 else -> request.completeWithDecline()
             }
             is DeauthorizedEvent -> request.complete()
+            is AirlockRequest -> when (kind) {
+                "result" -> request.server.result(request.id, answer.opt("result") ?: JSONObject())
+                "error" -> request.server.error(
+                    request.id,
+                    answer.optString("code").ifEmpty { "internal" },
+                    answer.optString("message"),
+                    answer.optString("requirement").ifEmpty { null }
+                )
+                else -> request.refuse("rejected", "Airlock declined the request.")
+            }
+        }
+    }
+
+    /// One of the intents prototype's methods, from `server`'s session. It
+    /// goes to Rust with the site of the session's authorization, as
+    /// walletlib checked it, and is refused without one.
+    private fun airlock(
+        session: Session,
+        scenario: AirlockScenario,
+        server: AirlockServer,
+        id: Any,
+        method: String,
+        waits: Boolean,
+        params: Any?
+    ) {
+        val request = AirlockRequest(server, id)
+        if (params != null && params !is JSONObject) {
+            return request.refuse("bad_request", "The params of $method are an object.")
+        }
+        val site = scenario.authorization()
+            ?: return request.refuse("rejected", "This session is not authorized. Call authorize first.")
+        val call = JSONObject()
+            .put("method", "intent")
+            .put("name", method)
+            .put("params", params ?: JSONObject())
+        ask(session, request, site.first, site.second, call, waits)
+    }
+
+    /// walletlib builds a session's server from two members of its scenario
+    /// that a subclass cannot reach: the method handlers (package-private,
+    /// in BaseScenario) and the session's state callbacks (private, in
+    /// LocalScenario). They are found by their types, which R8's renaming
+    /// leaves to match, and read once a page connects.
+    private object WalletlibMembers {
+        private val fields: Pair<java.lang.reflect.Field, java.lang.reflect.Field>? by lazy {
+            try {
+                val all = generateSequence<Class<*>>(LocalWebSocketServerScenario::class.java) { it.superclass }
+                    .flatMap { it.declaredFields.asSequence() }
+                    .filter { !java.lang.reflect.Modifier.isStatic(it.modifiers) }
+                    .toList()
+                fun of(type: Class<*>) = all.single { type.isAssignableFrom(it.type) }.apply { isAccessible = true }
+                Pair(
+                    of(MobileWalletAdapterServer.MethodHandlers::class.java),
+                    of(MobileWalletAdapterSessionCommon.StateCallbacks::class.java)
+                )
+            } catch (e: Exception) {
+                Log.w(TAG, "walletlib is not laid out as expected: no intent methods", e)
+                null
+            }
+        }
+
+        val found: Boolean get() = fields != null
+
+        fun read(scenario: LocalWebSocketServerScenario):
+            Pair<MobileWalletAdapterServer.MethodHandlers, MobileWalletAdapterSessionCommon.StateCallbacks>? {
+            val (handlers, states) = fields ?: return null
+            return try {
+                Pair(
+                    handlers.get(scenario) as MobileWalletAdapterServer.MethodHandlers,
+                    states.get(scenario) as MobileWalletAdapterSessionCommon.StateCallbacks
+                )
+            } catch (e: Exception) {
+                Log.w(TAG, "could not read walletlib's scenario", e)
+                null
+            }
+        }
+    }
+
+    /// walletlib's local scenario, built as `LocalAssociationUri.createScenario`
+    /// builds it, whose sessions' server is an AirlockServer.
+    private class AirlockScenario(
+        context: Context,
+        config: MobileWalletAdapterConfig,
+        issuer: AuthIssuerConfig,
+        callbacks: LocalScenario.Callbacks,
+        association: LocalAssociationUri,
+        private val session: Session
+    ) : LocalWebSocketServerScenario(
+        context,
+        config,
+        issuer,
+        callbacks,
+        association.associationPublicKey,
+        association.associationProtocolVersions,
+        association.port
+    ) {
+        override fun createMessageReceiver(): MessageReceiver {
+            val (handlers, states) = WalletlibMembers.read(this) ?: return super.createMessageReceiver()
+            val server = AirlockServer(mMobileWalletAdapterConfig, mIoLooper, handlers, this)
+            return MobileWalletAdapterSession(this, server, states)
+        }
+
+        /// The name and site of the authorization the session holds, as
+        /// walletlib issued or checked it, or null with none. walletlib's own
+        /// signing requests go by the same record.
+        fun authorization(): Pair<String?, Uri?>? {
+            val record = synchronized(mLock) { mActiveAuthorization } ?: return null
+            if (record.isRevoked) return null
+            val uri = record.identity.uri?.takeIf { it.toString().isNotEmpty() }
+            val name = record.identity.name?.takeIf { it.isNotEmpty() }
+            return Pair(name, uri)
+        }
+
+        fun request(server: AirlockServer, id: Any, method: String, waits: Boolean, params: Any?) =
+            airlock(session, this, server, id, method, waits, params)
+    }
+
+    /// walletlib's server, which also takes the intent methods. Everything
+    /// else is walletlib's. An error goes out with its `data` as an object,
+    /// which walletlib's own error path writes only as a string.
+    private class AirlockServer(
+        config: MobileWalletAdapterConfig,
+        looper: android.os.Looper,
+        handlers: MobileWalletAdapterServer.MethodHandlers,
+        private val scenario: AirlockScenario
+    ) : MobileWalletAdapterServer(config, looper, handlers) {
+        private val io = android.os.Handler(looper)
+
+        /// The session's sender, which walletlib's server keeps to itself.
+        /// Sent on under the server's own lock, as walletlib sends.
+        private var sender: MessageSender? = null
+
+        override fun receiverConnected(messageSender: MessageSender) {
+            super.receiverConnected(messageSender)
+            synchronized(this) { sender = messageSender }
+        }
+
+        override fun receiverDisconnected() {
+            synchronized(this) { sender = null }
+            super.receiverDisconnected()
+        }
+
+        override fun dispatchRpc(id: Any?, method: String, params: Any?) {
+            val waits = AIRLOCK_METHODS[method] ?: return super.dispatchRpc(id, method, params)
+            // A notification gets no answer, so nobody would hear one.
+            if (id == null || id == JSONObject.NULL) return
+            scenario.request(this, id, method, waits, params)
+        }
+
+        /// Answer request `id` with `result`, on walletlib's thread.
+        fun result(id: Any, result: Any) {
+            io.post {
+                try {
+                    handleRpcResult(id, result)
+                } catch (e: java.io.IOException) {
+                    Log.w(TAG, "could not answer $id", e)
+                }
+            }
+        }
+
+        /// Refuse request `id`: the bridge's `code`, and the requirement
+        /// it names, in `data`.
+        fun error(id: Any, code: String, message: String, requirement: String?) {
+            val data = JSONObject().put("code", code)
+            requirement?.let { data.put("requirement", it) }
+            val error = JSONObject().put("code", AIRLOCK_ERROR).put("message", message).put("data", data)
+            val bytes = JSONObject()
+                .put("jsonrpc", "2.0")
+                .put("error", error)
+                .put("id", id)
+                .toString()
+                .toByteArray(Charsets.UTF_8)
+            io.post {
+                try {
+                    synchronized(this) {
+                        val to = sender
+                        if (to == null) Log.w(TAG, "no session to answer $id") else to.send(bytes)
+                    }
+                } catch (e: java.io.IOException) {
+                    Log.w(TAG, "could not answer $id", e)
+                }
+            }
         }
     }
 

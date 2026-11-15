@@ -37,7 +37,9 @@ use wallet_flows::request::wallets_asked;
 mod apps;
 mod intents;
 
-pub use apps::{AppAnswer, AppCall, AppClaim, AppIdentity, AppSession, SignedIn};
+pub use apps::{
+    intent_method, AppAnswer, AppCall, AppClaim, AppIdentity, AppSession, IntentError, SignedIn,
+};
 
 #[cfg(test)]
 mod extension_limits;
