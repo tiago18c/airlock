@@ -339,7 +339,7 @@ programId = "74mXFW7BSAAwc6zQC2uYKuDcWnz17HHXMWqLnEeg9BJv"
 network = "devnet"
 programHash = "7abfe93afc4c630949b1c4258bb3ba18bcf0cef1311017db371adab9e93d0048"
 authority = "3zFrUC2W8ziNmDjhMJ9qdfcVJjGUCg94BrvYXtKA8cqM"
-idlSha256 = "5f921a625e4f444875d8745be53221d5b5ef21bdefc386f16a94a34609eddb9c"
+idlSha256 = "23e433b8d4f61391eaade57dd7a365c1eaefa6b3b097be5d989cf15af8e4f7b9"
 source = { repo = "https://github.com/tiago18c/vector", commit = "6d893b5b7f056b4daf7155637c8574cbb2c7f37e" }
 reviewed = "2026-11-15"
 

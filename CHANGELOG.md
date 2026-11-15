@@ -20,7 +20,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 ### Security
 
-- **A Vector wallet's authorization expires** about an hour after Airlock makes it, so a relay can no longer hold it back to land it later, and one that failed on chain cannot be landed again much later by anyone. The Sign screen shows its last slot as **Valid until slot**. One a Winternitz or XMSS wallet signs never expires, since replacing it would take a second signature from the same key.
+- **A Vector wallet's authorization expires** about an hour after Airlock makes it, so a relay can no longer hold it back to land it later, and one that failed on chain cannot be landed again much later by anyone. The Sign screen says until which slot it holds. One a Winternitz or XMSS wallet signs never expires, since replacing it would take a second signature from the same key.
 - **A Vector key signs `vector:` and then the digest, never a bare 32-byte digest**, so a signature it made for anything else can never authorize a Vector account. Sites can no longer have a message that starts with `vector:` signed, and a 32-byte message may be signed again.
 - **A Vector wallet cannot be made for a key that cannot sign**: an Ed25519 key of small order or written in a second encoding, which anyone could sign for, or a secp256k1 key that is not on the curve. The program refuses them too.
 

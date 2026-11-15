@@ -541,9 +541,15 @@ fn a_vector_passthrough_opens_to_what_it_carries() {
     let explained = explain_transaction(&store, &tx);
     assert_eq!(explained.instructions[0].program_id, PROGRAM_ID);
     let advance = explained.instructions[0].idl.as_ref().unwrap();
+    // The sentence says until when the authorization holds.
+    let intent = advance
+        .interpolated_intent
+        .as_deref()
+        .unwrap()
+        .replace(',', "");
     assert_eq!(
-        advance.interpolated_intent.as_deref(),
-        Some(format!("Vector {account} signs and authorizes the nonce advance").as_str())
+        intent,
+        format!("Vector {account} authorizes this transaction until slot 10000")
     );
     // The signature blob and the sysvar are not shown; the slot it expires
     // after is.

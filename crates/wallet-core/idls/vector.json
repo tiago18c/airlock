@@ -282,7 +282,7 @@
         "display": {
           "kind": "instructionDisplayNode",
           "intent": "Authorize vector",
-          "interpolatedIntent": "Vector ${accounts.vector} signs and authorizes the nonce advance"
+          "interpolatedIntent": "Vector ${accounts.vector} authorizes this transaction until slot ${data.validUntil}"
         }
       },
       {
