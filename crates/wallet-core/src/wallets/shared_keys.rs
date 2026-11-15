@@ -1,16 +1,21 @@
 //! Wallets moved between devices by their public keys alone.
 //!
 //! The device that holds a key exports what another device needs to act for
-//! it: the address of a key, or the scheme and key a Vector account was made
-//! from. The other device adds each one without its secret: an address as an
-//! offline wallet, a Vector account with its key elsewhere. A Vector account
-//! is initialized from there, since initializing needs a fee payer and a
-//! recent blockhash, and the key never signs it.
+//! it: the address of a key, the scheme and key a Vector account was made
+//! from, the authority of a programmatic signer, or a Squads multisig. The
+//! other device adds each one without its secret: an address as an offline
+//! wallet, a Vector account or a programmatic signer with its key elsewhere
+//! (or as the offline wallet of that key, when it has one), and a multisig
+//! as the same multisig. A Vector account is initialized from there, since
+//! initializing needs a fee payer and a recent blockhash, and the key never
+//! signs it.
 
 use crate::ids::WalletId;
 use crate::transport::protocol::{KeyRole, WalletKey};
+use crate::wallets::programmatic::programmatic_signer_address;
 use crate::wallets::record::{Authority, WalletClass, WalletKind, WalletRecord};
 use crate::wallets::roster::{RosterError, WalletSummary};
+use crate::wallets::squads::{Squad, SquadsProgram};
 use crate::wallets::vault::VaultData;
 use crate::wallets::vector::{self, scheme_offered, SchemeId, PROGRAM_ID};
 use solana_pubkey::Pubkey;
@@ -26,8 +31,8 @@ pub struct Exportable {
 
 /// Every wallet of `wallets` that another device can add: a hot, offline or
 /// hardware wallet's key (a Seed Vault's included) as an offline wallet
-/// there, and a Vector wallet of an offered scheme with its key elsewhere. Programmatic signers and multisigs are left out:
-/// the other device sets those up from the key.
+/// there, a Vector wallet of an offered scheme and an Ed25519 programmatic
+/// signer with their key elsewhere, and a Squads multisig as itself.
 pub fn exportable(wallets: &[WalletSummary]) -> Vec<Exportable> {
     wallets.iter().filter_map(exportable_one).collect()
 }
@@ -40,19 +45,39 @@ fn exportable_one(wallet: &WalletSummary) -> Option<Exportable> {
             "Offline wallet".to_string(),
         ),
         (WalletClass::SmartContract, Some(kind)) => {
-            let settings = kind.vector_settings()?;
-            if !scheme_offered(settings.scheme) {
+            if let Some(settings) = kind.vector_settings() {
+                if !scheme_offered(settings.scheme) {
+                    return None;
+                }
+                (
+                    KeyRole::Vector {
+                        scheme: settings.scheme.byte(),
+                    },
+                    settings.key.to_vec(),
+                    format!("Vector wallet · {}", settings.scheme.label()),
+                )
+            } else if let Some(authority) = kind.signer_authority() {
+                (
+                    KeyRole::Programmatic,
+                    authority.to_bytes().to_vec(),
+                    "Programmatic signer".to_string(),
+                )
+            } else if let WalletKind::Squads { vault, .. } = kind {
+                let squad = kind.squad()?;
+                let index = (0..=u8::MAX).find(|index| squad.vault(*index) == *vault)?;
+                (
+                    KeyRole::Squads {
+                        program: program_byte(squad.program),
+                        vault: index,
+                    },
+                    squad.address.to_bytes().to_vec(),
+                    squads_label(squad.program, index),
+                )
+            } else {
                 return None;
             }
-            (
-                KeyRole::Vector {
-                    scheme: settings.scheme.byte(),
-                },
-                settings.key.to_vec(),
-                format!("Vector wallet · {}", settings.scheme.label()),
-            )
         }
-        (WalletClass::SmartContract, _) => return None,
+        (WalletClass::SmartContract, None) => return None,
     };
     Some(Exportable {
         id: wallet.id,
@@ -122,17 +147,76 @@ pub fn arriving(wallets: &[WalletSummary], keys: &[WalletKey]) -> Vec<ArrivingKe
         .collect()
 }
 
+fn program_byte(program: SquadsProgram) -> u8 {
+    match program {
+        SquadsProgram::V4 => 0,
+        SquadsProgram::SmartAccount => 1,
+    }
+}
+
+fn program_from_byte(byte: u8) -> Option<SquadsProgram> {
+    match byte {
+        0 => Some(SquadsProgram::V4),
+        1 => Some(SquadsProgram::SmartAccount),
+        _ => None,
+    }
+}
+
+/// What a multisig spending from vault number `vault` is added as.
+fn squads_label(program: SquadsProgram, vault: u8) -> String {
+    let name = match program {
+        SquadsProgram::V4 => "Squads v4",
+        SquadsProgram::SmartAccount => "Squads smart account",
+    };
+    if vault == 0 {
+        name.to_string()
+    } else {
+        format!("{name} · vault {vault}")
+    }
+}
+
+/// The address `key` holds, or why it holds none.
+fn address_of(key: &WalletKey, becomes: &str) -> Result<Pubkey, (String, String)> {
+    let bytes: [u8; 32] = key
+        .key
+        .as_slice()
+        .try_into()
+        .map_err(|_| (becomes.to_string(), "An address is 32 bytes.".to_string()))?;
+    Ok(Pubkey::new_from_array(bytes))
+}
+
+/// The multisig `key` names, the number of the vault it spends from, and
+/// what it is added as.
+fn squad_of(key: &WalletKey) -> Result<(Squad, u8, String), (String, String)> {
+    let KeyRole::Squads { program, vault } = key.role else {
+        return Err(("Squads multisig".into(), "Not a multisig.".into()));
+    };
+    let Some(program) = program_from_byte(program) else {
+        return Err((
+            "Squads multisig".into(),
+            format!("Squads program {program} is not one this build knows."),
+        ));
+    };
+    let becomes = squads_label(program, vault);
+    let address = address_of(key, &becomes)?;
+    Ok((Squad { program, address }, vault, becomes))
+}
+
 /// The address `key` stands for and what it is added as, or what it would
 /// have been and why it cannot be.
 fn read_key(key: &WalletKey) -> Result<(Pubkey, String), (String, String)> {
     match key.role {
-        KeyRole::Address => {
-            let bytes: [u8; 32] = key
-                .key
-                .as_slice()
-                .try_into()
-                .map_err(|_| ("Offline wallet".into(), "An address is 32 bytes.".into()))?;
-            Ok((Pubkey::new_from_array(bytes), "Offline wallet".into()))
+        KeyRole::Address => Ok((address_of(key, "Offline wallet")?, "Offline wallet".into())),
+        KeyRole::Programmatic => {
+            let authority = address_of(key, "Programmatic signer")?;
+            Ok((
+                programmatic_signer_address(&authority),
+                "Programmatic signer".into(),
+            ))
+        }
+        KeyRole::Squads { .. } => {
+            let (squad, vault, becomes) = squad_of(key)?;
+            Ok((squad.vault(vault), becomes))
         }
         KeyRole::Vector { scheme } => {
             let Some(scheme) = SchemeId::from_byte(scheme) else {
@@ -168,14 +252,17 @@ pub struct AddedKey {
     pub id: WalletId,
     pub address: Pubkey,
     pub label: String,
-    /// An offline wallet, rather than a Vector wallet.
+    /// An offline wallet, rather than a Vector wallet, a programmatic
+    /// signer or a multisig.
     pub offline: bool,
 }
 
 impl VaultData {
     /// Add every key of `keys`, each paid for by `fee_payer`. Addresses go
-    /// in first, so a Vector account of an Ed25519 key added with it signs
-    /// as that offline wallet. One that cannot be added refuses them all.
+    /// in first, so a Vector account or a programmatic signer of an Ed25519
+    /// key added with it signs as that offline wallet. A multisig is added
+    /// without its members, which the chain has. One that cannot be added
+    /// refuses them all.
     pub fn add_wallet_keys(
         &mut self,
         keys: &[KeyToAdd],
@@ -203,6 +290,34 @@ impl VaultData {
                         entry.key.key.clone(),
                         authority,
                     );
+                    wallet.kind.set_fee_payer(fee_payer);
+                    let id = wallet.id;
+                    self.add_contract_wallet(wallet)?;
+                    id
+                }
+                KeyRole::Programmatic => {
+                    let authority_wallet =
+                        match self.authority_for(SchemeId::Ed25519, &entry.key.key) {
+                            Authority::Wallet { wallet } => Some(wallet),
+                            _ => None,
+                        };
+                    let authority = Pubkey::new_from_array(
+                        entry.key.key.as_slice().try_into().expect("read above"),
+                    );
+                    let mut wallet =
+                        WalletRecord::programmatic(label.clone(), authority, authority_wallet);
+                    wallet.kind.set_fee_payer(fee_payer);
+                    let id = wallet.id;
+                    self.add_contract_wallet(wallet)?;
+                    id
+                }
+                KeyRole::Squads { .. } => {
+                    let (squad, vault, _) =
+                        squad_of(&entry.key).map_err(|(_, why)| RosterError::BadKey(why))?;
+                    let mut wallet = WalletRecord::squads(label.clone(), squad, Vec::new(), 0);
+                    if let WalletKind::Squads { vault: spends, .. } = &mut wallet.kind {
+                        *spends = squad.vault(vault);
+                    }
                     wallet.kind.set_fee_payer(fee_payer);
                     let id = wallet.id;
                     self.add_contract_wallet(wallet)?;

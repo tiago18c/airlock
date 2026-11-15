@@ -167,6 +167,39 @@ pub async fn add_existing_squad(
     Ok(())
 }
 
+/// Read the members and threshold of the multisigs among `ids`, added from
+/// another device's export without them, and choose the first local member
+/// to act. A multisig the chain does not answer for keeps none.
+pub async fn read_added_squads(session: Session, ids: Vec<WalletId>) {
+    let rpc = session.rpc().ok();
+    for id in ids {
+        let Some(squad) = session
+            .wallet_summaries()
+            .into_iter()
+            .find(|wallet| wallet.id == id)
+            .and_then(|wallet| wallet.contract.as_ref().and_then(|kind| kind.squad()))
+        else {
+            continue;
+        };
+        let Lookup::Found(state) = wallet_flows::squads::look_up(rpc.as_deref(), &squad).await
+        else {
+            continue;
+        };
+        let read: Vec<Pubkey> = state.members.iter().map(|member| member.key).collect();
+        let member = local_member(&session.wallet_summaries(), &read);
+        let _ = session.update_wallet(id, |kind| {
+            if let wallet_core::WalletKind::Squads {
+                members, threshold, ..
+            } = kind
+            {
+                *members = read;
+                *threshold = state.threshold;
+            }
+            kind.set_member_wallet(member);
+        });
+    }
+}
+
 /// Create a multisig: store its wallet, and open the transaction that
 /// creates it in Sign. `creator` is the hot wallet that pays.
 pub async fn create_squad(

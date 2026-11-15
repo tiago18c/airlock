@@ -135,8 +135,9 @@ struct NonceSignature {
     signature: Vec<u8>,
 }
 
-/// A wallet key: an address in base58, or a Vector account's key in base64
-/// under its scheme.
+/// A wallet key: an address in base58, a Vector account's key in base64
+/// under its scheme, a programmatic signer's authority in base58, or a
+/// Squads multisig account in base58 under its program and vault.
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "role", rename_all = "camelCase", deny_unknown_fields)]
 enum Key {
@@ -152,6 +153,21 @@ enum Key {
         scheme: u8,
         #[serde(with = "b64")]
         key: Vec<u8>,
+    },
+    Programmatic {
+        #[serde(default)]
+        label: String,
+        #[serde(with = "b58")]
+        key: [u8; PUBKEY_BYTES],
+    },
+    Squads {
+        #[serde(default)]
+        label: String,
+        program: u8,
+        #[serde(default)]
+        vault: u8,
+        #[serde(with = "b58")]
+        key: [u8; PUBKEY_BYTES],
     },
 }
 
@@ -223,6 +239,16 @@ impl From<&QrObject> for Object {
                             label: key.label,
                             scheme,
                             key: key.key,
+                        },
+                        KeyRole::Programmatic => Key::Programmatic {
+                            label: key.label,
+                            key: key.key.try_into().unwrap_or_default(),
+                        },
+                        KeyRole::Squads { program, vault } => Key::Squads {
+                            label: key.label,
+                            program,
+                            vault,
+                            key: key.key.try_into().unwrap_or_default(),
                         },
                     })
                     .collect(),
@@ -320,6 +346,21 @@ impl From<Object> for QrObject {
                             role: KeyRole::Vector { scheme },
                             label,
                             key,
+                        },
+                        Key::Programmatic { label, key } => WalletKey {
+                            role: KeyRole::Programmatic,
+                            label,
+                            key: key.to_vec(),
+                        },
+                        Key::Squads {
+                            label,
+                            program,
+                            vault,
+                            key,
+                        } => WalletKey {
+                            role: KeyRole::Squads { program, vault },
+                            label,
+                            key: key.to_vec(),
                         },
                     })
                     .collect(),

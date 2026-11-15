@@ -202,3 +202,119 @@ fn a_key_needs_a_label() {
     );
     assert_eq!(refused, Err(RosterError::NoLabel));
 }
+
+#[test]
+fn programmatic_signers_and_multisigs_are_exported_and_land_as_themselves() {
+    let mut airgap = VaultData::default();
+    let key = KeypairSigner::new_random();
+    let hot = WalletRecord::from_keypair_seed("Cold", key.seed_bytes());
+    let hot_id = hot.id;
+    airgap.wallets.push(hot);
+    airgap.wallets.push(WalletRecord::programmatic(
+        "Signer",
+        key.pubkey(),
+        Some(hot_id),
+    ));
+    let squad = Squad::v4(&KeypairSigner::new_random().pubkey());
+    let members = vec![key.pubkey(), KeypairSigner::new_random().pubkey()];
+    airgap
+        .wallets
+        .push(WalletRecord::squads("Treasury", squad, members.clone(), 2));
+    let mut second = WalletRecord::squads("Payroll", squad, members, 2);
+    if let WalletKind::Squads { vault, .. } = &mut second.kind {
+        *vault = squad.vault(3);
+    }
+    airgap.wallets.push(second);
+
+    let summaries = airgap.summaries();
+    let exported = exportable(&summaries);
+    let roles: Vec<KeyRole> = exported.iter().map(|one| one.key.role).collect();
+    assert_eq!(
+        roles,
+        [
+            KeyRole::Address,
+            KeyRole::Programmatic,
+            KeyRole::Squads {
+                program: 0,
+                vault: 0
+            },
+            KeyRole::Squads {
+                program: 0,
+                vault: 3
+            },
+        ]
+    );
+    assert_eq!(exported[1].key.key, key.pubkey().to_bytes().to_vec());
+    assert_eq!(exported[2].key.key, squad.address.to_bytes().to_vec());
+
+    let keys: Vec<WalletKey> = exported.iter().map(|one| one.key.clone()).collect();
+    let mut online = VaultData::default();
+    let seen = arriving(&online.summaries(), &keys);
+    assert!(seen.iter().all(|key| key.arrival == Arrival::New));
+    assert_eq!(seen[3].becomes, "Squads v4 · vault 3");
+    online.add_wallet_keys(&to_add(&keys), None).unwrap();
+    for (here, there) in online.summaries().iter().zip(&summaries) {
+        assert_eq!(here.address, there.address, "{}", there.label);
+        assert_eq!(here.label, there.label);
+    }
+
+    // The signer acts through the offline wallet of its authority, added
+    // with it.
+    let cold = online.wallets[0].id;
+    assert_eq!(online.wallets[0].kind.class(), WalletClass::Offline);
+    assert!(matches!(
+        &online.wallets[1].kind,
+        WalletKind::Programmatic {
+            authority: Authority::Wallet { wallet },
+            ..
+        } if *wallet == cold
+    ));
+    // A multisig arrives without its members, which the chain has.
+    let WalletKind::Squads {
+        multisig, members, ..
+    } = &online.wallets[2].kind
+    else {
+        panic!("a multisig");
+    };
+    assert_eq!(*multisig, squad.address);
+    assert!(members.is_empty());
+}
+
+#[test]
+fn a_programmatic_signer_alone_has_its_key_elsewhere() {
+    let authority = KeypairSigner::new_random().pubkey();
+    let key = WalletKey {
+        role: KeyRole::Programmatic,
+        label: "Signer".into(),
+        key: authority.to_bytes().to_vec(),
+    };
+    let mut online = VaultData::default();
+    online.add_wallet_keys(&to_add(&[key]), None).unwrap();
+    assert_eq!(
+        online.summaries()[0].address,
+        Some(programmatic_signer_address(&authority))
+    );
+    assert!(matches!(
+        online.wallets[0].kind,
+        WalletKind::Programmatic {
+            authority: Authority::Outside,
+            ..
+        }
+    ));
+}
+
+#[test]
+fn a_multisig_of_an_unknown_program_is_refused() {
+    let key = WalletKey {
+        role: KeyRole::Squads {
+            program: 9,
+            vault: 0,
+        },
+        label: "Treasury".into(),
+        key: vec![7; 32],
+    };
+    let seen = arriving(&[], std::slice::from_ref(&key));
+    assert!(matches!(seen[0].arrival, Arrival::Refused(_)));
+    let mut online = VaultData::default();
+    assert!(online.add_wallet_keys(&to_add(&[key]), None).is_err());
+}
