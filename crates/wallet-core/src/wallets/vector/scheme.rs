@@ -10,7 +10,50 @@ pub const VECTOR_SEED: &[u8] = b"vector";
 
 /// Bytes of the header every Vector account starts with. The scheme's own
 /// bytes follow it.
-pub const HEADER_LEN: usize = 68;
+pub const HEADER_LEN: usize = 76;
+
+/// Where the header keeps the scheme's byte, after the nonce, the seed and
+/// the slot the account was created in.
+pub(super) const SCHEME_OFFSET: usize = 72;
+
+/// The eight Ed25519 points of order dividing 8, in their canonical
+/// encodings, which the program refuses as keys: their signatures never
+/// verify, or for a non-canonical encoding anyone can make one.
+const ED25519_SMALL_ORDER: [[u8; 32]; 8] = {
+    let mut points = [[0u8; 32]; 8];
+    // Order 1: (0, 1).
+    points[0][0] = 1;
+    // Order 2: (0, -1).
+    points[1] = [
+        0xec, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0x7f,
+    ];
+    // Order 4: (+-sqrt(-1), 0). points[2] stays all zeros.
+    points[3][31] = 0x80;
+    // Order 8.
+    points[4] = [
+        0xc7, 0x17, 0x6a, 0x70, 0x3d, 0x4d, 0xd8, 0x4f, 0xba, 0x3c, 0x0b, 0x76, 0x0d, 0x10, 0x67,
+        0x0f, 0x2a, 0x20, 0x53, 0xfa, 0x2c, 0x39, 0xcc, 0xc6, 0x4e, 0xc7, 0xfd, 0x77, 0x92, 0xac,
+        0x03, 0x7a,
+    ];
+    points[5] = points[4];
+    points[5][31] = 0xfa;
+    points[6] = [
+        0x26, 0xe8, 0x95, 0x8f, 0xc2, 0xb2, 0x27, 0xb0, 0x45, 0xc3, 0xf4, 0x89, 0xf2, 0xef, 0x98,
+        0xf0, 0xd5, 0xdf, 0xac, 0x05, 0xd3, 0xc6, 0x33, 0x39, 0xb1, 0x38, 0x02, 0x88, 0x6d, 0x53,
+        0xfc, 0x05,
+    ];
+    points[7] = points[6];
+    points[7][31] = 0x85;
+    points
+};
+
+/// Whether an Ed25519 encoding's y (the low 255 bits) is at least
+/// p = 2^255 - 19: a second encoding of a point with a small y.
+fn ed25519_y_not_reduced(key: &[u8; 32]) -> bool {
+    key[31] & 0x7f == 0x7f && key[1..31].iter().all(|&byte| byte == 0xff) && key[0] >= 0xed
+}
 
 /// A signing scheme this app signs with.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -202,6 +245,38 @@ impl SchemeId {
     pub(super) fn check_key(self, key: &[u8]) -> Result<(), VectorError> {
         if key.len() != self.key_len() {
             return Err(self.wrong_key(key));
+        }
+        Ok(())
+    }
+
+    /// `key` is one the program creates an account for, as its
+    /// `Initialize` checks: an Ed25519 key is a point of large order in its
+    /// one canonical encoding, and a secp256k1 key's x coordinate is on the
+    /// curve. An account made for any other could never sign, or anyone
+    /// could sign for it.
+    pub(super) fn check_creatable(self, key: &[u8]) -> Result<(), VectorError> {
+        self.check_key(key)?;
+        let refused = VectorError::KeyRefused {
+            scheme: self.label(),
+        };
+        match self {
+            Self::Ed25519 => {
+                let key: [u8; 32] = key.try_into().map_err(|_| self.wrong_key(key))?;
+                if !Pubkey::new_from_array(key).is_on_curve()
+                    || ed25519_y_not_reduced(&key)
+                    || ED25519_SMALL_ORDER.contains(&key)
+                {
+                    return Err(refused);
+                }
+            }
+            Self::Secp256k1 => {
+                if !matches!(key[0], 0x02 | 0x03) || k256::PublicKey::from_sec1_bytes(key).is_err()
+                {
+                    return Err(refused);
+                }
+            }
+            Self::Eip191 if key.iter().all(|byte| *byte == 0) => return Err(refused),
+            Self::Eip191 | Self::Falcon512 | Self::MlDsa44 | Self::Winternitz | Self::Xmss => {}
         }
         Ok(())
     }

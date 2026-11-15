@@ -86,6 +86,8 @@ pub enum AdaptError {
     NotOnChain(String),
     #[error("The account of {0} could not be read. It may belong to another program.")]
     Unreadable(String),
+    #[error("The node did not say which slot it is at, which a Vector wallet's authorization needs to set when it expires. Try again.")]
+    NoClock,
     #[error("{member} is not a member of {squad} on this cluster.")]
     NotAMember { squad: String, member: Pubkey },
     #[error("{member} may not create proposals for {squad}.")]

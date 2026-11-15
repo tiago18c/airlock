@@ -20,6 +20,9 @@ fn transfer(from: Pubkey, to: Pubkey) -> Instruction {
     }
 }
 
+/// The `valid_until` of the `Advance`s these tests build.
+const VALID_UNTIL: u64 = 777_000;
+
 /// A transfer out of the account of `key`, wrapped for it, with a zeroed
 /// signature: what the app would hand its authority to sign.
 fn wrapped(key: &[u8], payer: Pubkey) -> Vec<Instruction> {
@@ -27,12 +30,15 @@ fn wrapped(key: &[u8], payer: Pubkey) -> Vec<Instruction> {
     let account = address(&PROGRAM_ID, scheme, key).unwrap();
     vec![
         transfer(payer, pk(8)),
-        advance(&[AdvanceEntry {
-            scheme,
-            key,
-            next_key: &[],
-            signature: &[0; 64],
-        }])
+        advance(
+            VALID_UNTIL,
+            &[AdvanceEntry {
+                scheme,
+                key,
+                next_key: &[],
+                signature: &[0; 64],
+            }],
+        )
         .unwrap(),
         passthrough(scheme, key, &[withdraw(scheme, key, &pk(9), 5).unwrap()]).unwrap(),
         transfer(payer, account),
@@ -61,19 +67,30 @@ fn a_signature_over_the_digest_of_a_decoded_transaction_verifies_where_the_crate
     let account = address(&PROGRAM_ID, SchemeId::Ed25519, &key).unwrap();
     let nonce = [6u8; 32];
     let digest = signer_digest(&message, &nonce, &account, &[]);
-    let signature = authority.try_sign_message(&digest).unwrap();
+    let signature = authority
+        .try_sign_message(&super::signed_message(&digest))
+        .unwrap();
 
-    let next = vector_core::verify_advance_signature(
-        &SchemeId::Ed25519.core(),
-        &key,
-        &nonce,
+    let core = SchemeId::Ed25519.core();
+    let entry = vector_core::AdvanceEntry::new(
+        vector_core::AdvanceSigner::new(&core, &key),
+        vector_core::SignerNonce::Vector(nonce),
+        signature.as_ref(),
+    );
+    let next = vector_core::verify_advance(
+        VALID_UNTIL,
+        &[entry],
         &instructions[..1],
         &instructions[2..],
         Some(&payer),
-        signature.as_ref(),
+        Some(VALID_UNTIL),
     )
     .unwrap();
-    assert_eq!(next, digest);
+    assert_eq!(next, [digest]);
+    // Our own check agrees, and a bare digest is no signature.
+    assert!(super::verify(SchemeId::Ed25519, &key, &digest, signature.as_ref()).is_ok());
+    let bare = authority.try_sign_message(&digest).unwrap();
+    assert!(super::verify(SchemeId::Ed25519, &key, &digest, bare.as_ref()).is_err());
 }
 
 #[test]
@@ -84,8 +101,13 @@ fn the_message_changes_with_any_instruction_and_not_with_the_signatures() {
     let message = advance_message(&instructions, &payer).unwrap();
 
     let mut signed = instructions.clone();
-    signed[1].data[1..].fill(9);
+    signed[1].data[super::ADVANCE_HEADER_LEN..].fill(9);
     assert_eq!(advance_message(&signed, &payer).unwrap(), message);
+
+    // Every signature covers the expiry.
+    let mut later = instructions.clone();
+    later[1].data[1] ^= 1;
+    assert_ne!(advance_message(&later, &payer).unwrap(), message);
 
     let mut changed = instructions.clone();
     changed[3].data[4] = 2;
@@ -163,7 +185,7 @@ fn the_message_is_the_one_the_client_crate_makes_from_every_key() {
         transfer(pk(1), ed_account),
     ];
     let mut instructions = before.clone();
-    instructions.push(advance(&laid).unwrap());
+    instructions.push(advance(VALID_UNTIL, &laid).unwrap());
     instructions.extend(after.clone());
 
     let cores: Vec<_> = signers.iter().map(|(scheme, ..)| scheme.core()).collect();
@@ -171,14 +193,14 @@ fn the_message_is_the_one_the_client_crate_makes_from_every_key() {
         .iter()
         .zip(&signers)
         .map(|(core, (_, key, next_key))| vector_core::AdvanceSigner {
-            scheme: core,
-            identity: key,
             next_key,
+            ..vector_core::AdvanceSigner::new(core, key)
         })
         .collect();
     // A payer the instructions name, and one they do not.
     for payer in [pk(1), pk(2)] {
-        let theirs = vector_core::advance_message(&keyed, &before, &after, Some(&payer));
+        let theirs =
+            vector_core::advance_message(VALID_UNTIL, &keyed, &before, &after, Some(&payer));
         assert_eq!(advance_message(&instructions, &payer).unwrap(), theirs);
     }
 }
@@ -195,12 +217,15 @@ fn a_rotating_digest_covers_the_next_key_as_the_crate_does() {
         vec![passthrough(scheme, &key, &[withdraw(scheme, &key, &pk(9), 5).unwrap()]).unwrap()];
     let mut instructions = before.clone();
     instructions.push(
-        advance(&[AdvanceEntry {
-            scheme,
-            key: &key,
-            next_key: &next,
-            signature: &vec![0; scheme.signature_len()],
-        }])
+        advance(
+            u64::MAX,
+            &[AdvanceEntry {
+                scheme,
+                key: &key,
+                next_key: &next,
+                signature: &vec![0; scheme.signature_len()],
+            }],
+        )
         .unwrap(),
     );
     instructions.extend(after.clone());

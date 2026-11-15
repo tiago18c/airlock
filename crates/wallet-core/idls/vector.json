@@ -6,7 +6,7 @@
     "kind": "programNode",
     "name": "vector",
     "publicKey": "74mXFW7BSAAwc6zQC2uYKuDcWnz17HHXMWqLnEeg9BJv",
-    "version": "0.1.0",
+    "version": "2.0.0",
     "docs": [
       "Vector — one program for every signing scheme."
     ],
@@ -15,7 +15,7 @@
         "kind": "accountNode",
         "name": "vectorAccount",
         "docs": [
-          "68-byte header, then the scheme's stored identity."
+          "76-byte header, then the scheme's stored identity."
         ],
         "data": {
           "kind": "structTypeNode",
@@ -46,6 +46,18 @@
               },
               "docs": [
                 "sha256 of the key the account was created with."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "created",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "docs": [
+                "The slot the account was created in. Close refuses it in that slot, so an account closed and created again never starts from a nonce it held before."
               ]
             },
             {
@@ -114,6 +126,61 @@
           "name": "vector"
         },
         "discriminators": []
+      },
+      {
+        "kind": "accountNode",
+        "name": "nonceAccount",
+        "docs": [
+          "A nonce of a vector kept apart from it: 72 bytes, a keypair account owned by the program. A signature over it is over SHA256(its nonce || the vector's own nonce), and moves only it."
+        ],
+        "data": {
+          "kind": "structTypeNode",
+          "fields": [
+            {
+              "kind": "structFieldTypeNode",
+              "name": "nonce",
+              "type": {
+                "kind": "fixedSizeTypeNode",
+                "size": 32,
+                "type": {
+                  "kind": "bytesTypeNode"
+                }
+              },
+              "docs": [
+                "The chain's current link."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "vector",
+              "type": {
+                "kind": "publicKeyTypeNode"
+              },
+              "docs": [
+                "The vector account whose key signs over it."
+              ]
+            },
+            {
+              "kind": "structFieldTypeNode",
+              "name": "created",
+              "type": {
+                "kind": "numberTypeNode",
+                "format": "u64",
+                "endian": "le"
+              },
+              "docs": [
+                "The slot it was created in. It neither signs nor closes in that slot."
+              ]
+            }
+          ]
+        },
+        "size": 72,
+        "discriminators": [
+          {
+            "kind": "sizeDiscriminatorNode",
+            "size": 72
+          }
+        ]
       }
     ],
     "instructions": [
@@ -122,8 +189,8 @@
         "name": "advance",
         "docs": [
           "Verify that every listed vector signed this transaction, and move each to its next nonce.",
-          "Every signer signs the same message, the transaction with this instruction's data left out; each verifies over SHA256(message || nonce || address || next_key), which becomes its next nonce.",
-          "Accounts are one writable vector per signer, then the instructions sysvar; for more than one signer, insert the extra vectors before the sysvar. A vector listed twice needs a signature for each."
+          "Every signer signs the same message, the transaction with this instruction's next keys and signatures left out: valid_until stays in, so every signature covers the one expiry. Each key signs \"vector:\" || SHA256(message || nonce || address || next_key), and that digest becomes its next nonce.",
+          "Accounts are one writable vector per signer, each optionally followed by one of its nonce accounts (writable), then the instructions sysvar; for more than one signer, insert the extra vectors before the sysvar. A vector listed twice needs a signature for each."
         ],
         "optionalAccountStrategy": "programId",
         "accounts": [
@@ -175,6 +242,22 @@
           },
           {
             "kind": "instructionArgumentNode",
+            "name": "validUntil",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u64",
+              "endian": "le"
+            },
+            "docs": [
+              "The last slot the transaction may land in, for every signer; u64::MAX for none. Past it, Advance fails with Expired."
+            ],
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "label": "Valid until slot"
+            }
+          },
+          {
+            "kind": "instructionArgumentNode",
             "name": "signers",
             "type": {
               "kind": "bytesTypeNode"
@@ -199,7 +282,7 @@
         "display": {
           "kind": "instructionDisplayNode",
           "intent": "Authorize vector",
-          "interpolatedIntent": "Vector ${accounts.vector} signs and authorizes the nonce advance"
+          "interpolatedIntent": "Vector ${accounts.vector} authorizes this transaction until slot ${data.validUntil}"
         }
       },
       {
@@ -424,7 +507,8 @@
         "kind": "instructionNode",
         "name": "withdraw",
         "docs": [
-          "Send lamports to the receiver. The runtime refuses to leave the vector with less than rent-exemption but more than nothing. Only runs inside a Passthrough, which makes the vector a signer."
+          "Send lamports to the receiver. The runtime refuses to leave the vector with less than rent-exemption but more than nothing. Only runs inside a Passthrough, which makes the vector a signer.",
+          "A Winternitz or XMSS vector refuses a withdrawal of every lamport (KeyRotates)."
         ],
         "optionalAccountStrategy": "programId",
         "accounts": [
@@ -512,7 +596,8 @@
         "kind": "instructionNode",
         "name": "close",
         "docs": [
-          "Send all lamports to the receiver. Only runs inside a Passthrough, which makes the vector a signer."
+          "Send all lamports to the receiver: the vector's, or with a nonce account listed, that nonce account's. Only runs inside a Passthrough, which makes the vector a signer.",
+          "The vector itself closes only after the slot it was created in, and never for Winternitz or XMSS (KeyRotates)."
         ],
         "optionalAccountStrategy": "programId",
         "accounts": [
@@ -534,6 +619,20 @@
             "display": {
               "kind": "instructionAccountDisplayNode",
               "label": "Recipient"
+            }
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "nonce",
+            "isWritable": true,
+            "isSigner": false,
+            "isOptional": true,
+            "docs": [
+              "A nonce account of the vector, to close instead of the vector."
+            ],
+            "display": {
+              "kind": "instructionAccountDisplayNode",
+              "label": "Nonce account"
             }
           }
         ],
@@ -568,7 +667,70 @@
         "display": {
           "kind": "instructionDisplayNode",
           "intent": "Close vector",
-          "interpolatedIntent": "Close vector ${accounts.vector} and send its balance to ${accounts.receiver}"
+          "interpolatedIntent": "Close vector ${accounts.vector} (or its nonce account) and send the balance to ${accounts.receiver}"
+        }
+      },
+      {
+        "kind": "instructionNode",
+        "name": "initializeNonce",
+        "docs": [
+          "Make an account a nonce account of a vector. The caller creates it first with the System program, 72 bytes and assigned to this program; the nonce account signs both. Its first nonce is SHA256(\"nonce\" || address || latest slot hash). Refused for a Winternitz or XMSS vector (KeyRotates)."
+        ],
+        "optionalAccountStrategy": "programId",
+        "accounts": [
+          {
+            "kind": "instructionAccountNode",
+            "name": "nonce",
+            "isWritable": true,
+            "isSigner": true,
+            "isOptional": false,
+            "docs": [
+              "The new nonce account."
+            ]
+          },
+          {
+            "kind": "instructionAccountNode",
+            "name": "vector",
+            "isWritable": false,
+            "isSigner": false,
+            "isOptional": false,
+            "docs": [
+              "The vector whose key signs over it."
+            ]
+          }
+        ],
+        "arguments": [
+          {
+            "kind": "instructionArgumentNode",
+            "name": "discriminator",
+            "type": {
+              "kind": "numberTypeNode",
+              "format": "u8",
+              "endian": "le"
+            },
+            "docs": [],
+            "defaultValue": {
+              "kind": "numberValueNode",
+              "number": 5
+            },
+            "defaultValueStrategy": "omitted",
+            "display": {
+              "kind": "structFieldDisplayNode",
+              "skip": "always"
+            }
+          }
+        ],
+        "discriminators": [
+          {
+            "kind": "fieldDiscriminatorNode",
+            "name": "discriminator",
+            "offset": 0
+          }
+        ],
+        "display": {
+          "kind": "instructionDisplayNode",
+          "intent": "Create vector nonce account",
+          "interpolatedIntent": "Make ${accounts.nonce} a nonce account of vector ${accounts.vector}"
         }
       }
     ],
@@ -766,6 +928,41 @@
         "name": "treeExhausted",
         "code": 4,
         "message": "XMSS: the tree's last leaf signed, and the key was not replaced.",
+        "docs": []
+      },
+      {
+        "kind": "errorNode",
+        "name": "foreignNonce",
+        "code": 5,
+        "message": "The nonce account belongs to another vector.",
+        "docs": []
+      },
+      {
+        "kind": "errorNode",
+        "name": "keyRotates",
+        "code": 6,
+        "message": "A Winternitz or XMSS vector: no nonce accounts, and it never closes.",
+        "docs": []
+      },
+      {
+        "kind": "errorNode",
+        "name": "freshNonce",
+        "code": 7,
+        "message": "The nonce account was created in this slot.",
+        "docs": []
+      },
+      {
+        "kind": "errorNode",
+        "name": "freshVector",
+        "code": 8,
+        "message": "The vector account was created in this slot.",
+        "docs": []
+      },
+      {
+        "kind": "errorNode",
+        "name": "expired",
+        "code": 9,
+        "message": "The transaction's valid_until slot has passed.",
         "docs": []
       }
     ]

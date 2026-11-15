@@ -269,6 +269,7 @@ fn a_vector_passthrough_is_written_again_around_its_edit() {
         &[wrap],
         payer,
         Hash::new_from_array([2; 32]),
+        1_000,
     )
     .unwrap();
     let tx = decode_v1_transaction(&wire).unwrap();

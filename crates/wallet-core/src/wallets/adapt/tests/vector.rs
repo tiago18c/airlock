@@ -5,7 +5,14 @@ use super::*;
 use crate::review::signing::{signing_status_in, LocalKeys};
 use crate::wallets::record::Authority;
 use crate::wallets::relay::{advance_next_keys, authority_slots, AuthContext, VectorContext};
-use crate::wallets::vector::{seed, SchemeId, PROGRAM_ID};
+use crate::wallets::vector::{
+    advance_valid_until, seed, SchemeId, AUTHORIZATION_SLOTS, NEVER_EXPIRES, PROGRAM_ID,
+};
+
+/// The `valid_until` of the `Advance` that `wire` starts with.
+fn expiry_of(wire: &[u8]) -> Option<u64> {
+    advance_valid_until(&decode_v1_transaction(wire).unwrap().instructions[0].data)
+}
 
 /// A Vector wallet whose key is on another device, paid for by the desk's
 /// hot wallet.
@@ -27,6 +34,8 @@ fn add_vector(d: &mut Desk, key: &KeypairSigner) -> (WalletId, Pubkey) {
 fn vector_account(key: &[u8], scheme: SchemeId, nonce: [u8; 32]) -> RawAccount {
     let mut data = nonce.to_vec();
     data.extend_from_slice(&seed(key));
+    // The slot it was created in.
+    data.extend_from_slice(&1u64.to_le_bytes());
     data.extend_from_slice(&[scheme.byte(), 255, 1, 0]);
     data.extend_from_slice(key);
     data.resize(scheme.account_len(), 0);
@@ -49,15 +58,18 @@ fn a_transaction_for_a_vector_wallet_is_wrapped_with_the_account_as_read() {
             account,
         }]
     );
-    assert_eq!(plan.accounts_to_read(), vec![account]);
+    assert_eq!(plan.accounts_to_read(), vec![account, clock().0]);
     // The site made the account pay. The hot wallet set for it does.
     assert_eq!(plan.fee_payer, d.payer.pubkey());
 
     let nonce = [6u8; 32];
-    let read = [(
-        account,
-        vector_account(key.pubkey().as_ref(), SchemeId::Ed25519, nonce),
-    )];
+    let read = [
+        clock(),
+        (
+            account,
+            vector_account(key.pubkey().as_ref(), SchemeId::Ed25519, nonce),
+        ),
+    ];
     let adapted = plan.build(&tx, &read, blockhash(2)).unwrap();
     assert_eq!(
         adapted.steps,
@@ -77,6 +89,8 @@ fn a_transaction_for_a_vector_wallet_is_wrapped_with_the_account_as_read() {
     let rebuilt = decode_v1_transaction(&adapted.wire).unwrap();
     assert_eq!(signer_keys(&rebuilt), vec![d.payer.pubkey()]);
     assert_eq!(authority_slots(&rebuilt).len(), 1);
+    // The authorization expires a while after the slot the node is at.
+    assert_eq!(expiry_of(&adapted.wire), Some(SLOT + AUTHORIZATION_SLOTS));
     // The hot wallet waits for the account's key, which is elsewhere.
     let ctx = AuthContext {
         vector: &adapted.context,
@@ -135,6 +149,7 @@ fn a_vector_wallet_and_a_programmatic_signer_share_one_rebuild() {
     let plan = plan_adaptation(&both, &d.wallets, None).unwrap().unwrap();
     assert_eq!(plan.asked().len(), 2, "{:?}", plan.asked());
     let read = [
+        clock(),
         d.nonce_account(),
         (
             account,
@@ -192,6 +207,7 @@ fn an_mldsa_member_refuses_when_even_create_and_propose_do_not_fit() {
     let tx = decode_v1_transaction(&wire).unwrap();
     let plan = plan_adaptation(&tx, &d.wallets, None).unwrap().unwrap();
     let read = [
+        clock(),
         squad_account(&squad, 1, 0, 0, &[(account, PERMISSION_ALL)]),
         (account, vector_account(&public, SchemeId::MlDsa44, [1; 32])),
     ];
@@ -230,6 +246,7 @@ fn an_mldsa_member_still_executes_when_a_stacked_cu_estimate_would_have_exceeded
     let tx = decode_v1_transaction(&wire).unwrap();
     let plan = plan_adaptation(&tx, &d.wallets, None).unwrap().unwrap();
     let read = [
+        clock(),
         squad_account(&squad, 1, 0, 0, &[(account, PERMISSION_ALL)]),
         (account, vector_account(&public, SchemeId::MlDsa44, [1; 32])),
     ];
@@ -260,8 +277,12 @@ fn a_multisig_acted_on_by_a_vector_wallet_proposes_through_its_advance() {
     let plan = plan_adaptation(&site_tx(vault), &d.wallets, None)
         .unwrap()
         .unwrap();
-    assert_eq!(plan.accounts_to_read(), vec![squad.address, account]);
+    assert_eq!(
+        plan.accounts_to_read(),
+        vec![squad.address, account, clock().0]
+    );
     let read = [
+        clock(),
         squad_account(&squad, 1, 0, 0, &[(account, PERMISSION_ALL)]),
         (
             account,
@@ -282,6 +303,7 @@ fn a_multisig_acted_on_by_a_vector_wallet_proposes_through_its_advance() {
 fn xmss_account(first: &[u8], current: &[u8], next_leaf: u32) -> RawAccount {
     let mut data = [7u8; 32].to_vec();
     data.extend_from_slice(&seed(first));
+    data.extend_from_slice(&1u64.to_le_bytes());
     data.extend_from_slice(&[SchemeId::Xmss.byte(), 255, 1, 0]);
     data.extend_from_slice(current);
     data.extend_from_slice(&next_leaf.to_le_bytes());
@@ -322,7 +344,7 @@ fn an_xmss_wallet_rotates_only_when_few_leaves_are_left_and_never_into_the_key_i
     let tx = site_tx(account);
     let plan = plan_adaptation(&tx, &d.wallets, None).unwrap().unwrap();
     let build = |held: &[u8], next_leaf: u32| {
-        let read = [(account, xmss_account(&first, held, next_leaf))];
+        let read = [clock(), (account, xmss_account(&first, held, next_leaf))];
         plan.build(&tx, &read, blockhash(2))
     };
 
@@ -331,6 +353,12 @@ fn an_xmss_wallet_rotates_only_when_few_leaves_are_left_and_never_into_the_key_i
     assert_eq!(
         next_key_in(&build(&first, 10).unwrap().wire, account),
         first
+    );
+    // An XMSS signature that lapsed could only be replaced by a second one
+    // from the same leaf, so it never expires.
+    assert_eq!(
+        expiry_of(&build(&first, 10).unwrap().wire),
+        Some(NEVER_EXPIRES)
     );
     // Past the threshold, the account moves to it.
     assert_eq!(

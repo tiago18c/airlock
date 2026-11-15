@@ -147,6 +147,8 @@ pub enum VectorError {
     },
     #[error("That is not a {scheme} key. Paste an Ed25519 key in base58, and any other as hex.")]
     BadKeyText { scheme: &'static str },
+    #[error("The Vector program refuses this {scheme} key: it is not a point that can sign, or it is one anyone could sign for.")]
+    KeyRefused { scheme: &'static str },
     #[error("No address can be derived for this key.")]
     NoAddress,
     #[error("That is not a recovery phrase: it takes 12, 15, 18, 21 or 24 English words with a valid checksum.")]

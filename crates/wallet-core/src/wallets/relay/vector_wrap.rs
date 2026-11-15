@@ -20,8 +20,8 @@ use crate::ids::SYSTEM_PROGRAM_ID;
 use crate::tx::builder::compile_message;
 use crate::wallets::programmatic::ED25519_SIGNER_PROGRAM_ID;
 use crate::wallets::vector::{
-    advance, demoted_writable, multi_passthrough, passthrough_fits, withdraw, AdvanceEntry,
-    SchemeId, VectorError,
+    advance, demoted_writable, multi_passthrough, passthrough_fits, valid_until, withdraw,
+    AdvanceEntry, SchemeId, VectorError,
 };
 use solana_instruction::Instruction;
 
@@ -57,11 +57,17 @@ pub struct VectorWrap {
 /// lamports. The new transaction is paid for by `relay_payer` and lives on
 /// `blockhash`. Its compute limit is the one `tx` stated, or the default
 /// for its instructions, plus each signature's and each `Passthrough`'s.
+///
+/// `slot` is the cluster's slot now. The `Advance` stays valid for
+/// [`AUTHORIZATION_SLOTS`](crate::wallets::vector::AUTHORIZATION_SLOTS)
+/// after it, or never expires when a Winternitz or XMSS account signs
+/// ([`valid_until`]).
 pub fn wrap_for_vector(
     tx: &DecodedTx,
     accounts: &[VectorWrap],
     relay_payer: Pubkey,
     blockhash: Hash,
+    slot: u64,
 ) -> Result<Vec<u8>, WrapError> {
     if tx.uses_durable_nonce {
         return Err(WrapError::DurableNonce);
@@ -170,7 +176,8 @@ pub fn wrap_for_vector(
             signature,
         })
         .collect();
-    let mut instructions = vec![advance(&signers)?];
+    let expiry = valid_until(slot, used.iter().map(|wrap| wrap.scheme));
+    let mut instructions = vec![advance(expiry, &signers)?];
     let mut passthroughs = 0u32;
     for (signers, run) in runs {
         if signers.is_empty() {

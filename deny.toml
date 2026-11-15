@@ -86,12 +86,9 @@ allow-registry = ["https://github.com/rust-lang/crates.io-index"]
 required-git-spec = "rev"
 allow-git = [
     # vector-core, the Vector program's client crate. Our fork of
-    # blueshift-gg/vector pull request 17, with our program ID compiled in.
-    # It is not on crates.io: the crate there of that name is unrelated.
+    # blueshift-gg/vector 2.0, with our program ID compiled in. It is not on
+    # crates.io: the crate there of that name is unrelated. The verifiers it
+    # links (solana-ml-dsa, solana-winternitz, solana-xmss, solana-shake)
+    # come from crates.io.
     "https://github.com/tiago18c/vector",
-    # Verifiers that vector-core links, pinned by the fork's own manifest.
-    # Not published on crates.io.
-    "https://github.com/blueshift-gg/solana-ml-dsa",
-    "https://github.com/blueshift-gg/solana-winternitz",
-    "https://github.com/blueshift-gg/solana-shake",
 ]

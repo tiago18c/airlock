@@ -49,6 +49,7 @@ impl Press for Device {
             &[wrap],
             pk(1),
             blockhash(2),
+            1_000,
         )
         .unwrap();
         let known = vec![VectorContext {
@@ -170,6 +171,7 @@ fn a_hand_over_to_a_key_not_made_here_records_nothing() {
         &[wrap],
         pk(1),
         blockhash(2),
+        1_000,
     )
     .unwrap();
     let (_, known) = device.wrapped_transfer();

@@ -1,8 +1,9 @@
 //! A signature made by an Ethereum wallet's `personal_sign` over a Vector
-//! digest, pasted back into the app.
+//! digest, pasted back into the app. The wallet signs the 39 bytes
+//! `"vector:" || digest` ([`signed_message`]).
 
 use super::scheme::SchemeId;
-use super::sign::verify;
+use super::sign::{signed_message, verify};
 use super::VectorError;
 use k256::ecdsa::{RecoveryId, Signature as SecpSignature, VerifyingKey as SecpVerifyingKey};
 use sha3::{Digest as _, Keccak256};
@@ -10,9 +11,10 @@ use sha3::{Digest as _, Keccak256};
 /// Read a pasted EIP-191 `personal_sign` result for `address` over `digest`.
 ///
 /// Hex, with or without `0x`. A legacy `v` of 27 or 28 is moved to 0 or 1
-/// before the signature is kept: the chain rejects 27 and 28. When the
-/// signature recovers `address` only over the digest's hex *text*, the error
-/// says the wallet signed the text instead of the 32 bytes.
+/// before the signature is kept, the recovery id the program reads either
+/// way. When the signature recovers `address` only over the hex *text* of
+/// what it should sign, the error says the wallet signed the text instead of
+/// the 39 bytes.
 pub fn parse_personal_sign(
     address: &[u8],
     digest: &[u8; 32],
@@ -50,8 +52,9 @@ fn decode_hex_signature(pasted: &str) -> Result<Vec<u8>, VectorError> {
     hex::decode(hex).map_err(|_| VectorError::BadPersonalSign)
 }
 
+/// The hex the Sign screen shows for the wallet to sign, as text.
 fn digest_hex_text(digest: &[u8; 32]) -> String {
-    format!("0x{}", hex::encode(digest))
+    format!("0x{}", hex::encode(signed_message(digest)))
 }
 
 fn personal_sign_hash(message: &[u8]) -> [u8; 32] {

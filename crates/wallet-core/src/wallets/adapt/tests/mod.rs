@@ -86,6 +86,20 @@ impl Desk {
     }
 }
 
+/// The slot the Clock sysvar says it is in these tests.
+const SLOT: u64 = 1_000;
+
+/// The Clock sysvar as a node returns it, at [`SLOT`]: a Vector wrap sets
+/// its authorization's expiry from it.
+fn clock() -> (Pubkey, RawAccount) {
+    let mut data = vec![0u8; 40];
+    data[..8].copy_from_slice(&SLOT.to_le_bytes());
+    (
+        solana_sdk_ids::sysvar::clock::ID,
+        owned(solana_sdk_ids::sysvar::ID, data),
+    )
+}
+
 fn owned(owner: Pubkey, data: Vec<u8>) -> RawAccount {
     RawAccount {
         lamports: 1,

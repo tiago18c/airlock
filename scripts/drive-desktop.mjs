@@ -248,6 +248,18 @@ const jupiterSwap = () => {
   return legacy(accounts, 6, [[7, order, data]], mainnetBlockhash);
 };
 
+/** A Vector `Advance` for one Ed25519 account, not signed yet, which the
+ * payer relays: it expires after slot 522,400,000. */
+const vectorAdvance = () => {
+  const vector = b58decode("74mXFW7BSAAwc6zQC2uYKuDcWnz17HHXMWqLnEeg9BJv");
+  const instructionsSysvar = b58decode("Sysvar1nstructions1111111111111111111111111");
+  const account = Buffer.alloc(32, 41);
+  const data = Buffer.alloc(1 + 8 + 64);
+  data.writeUInt8(0, 0); // Advance
+  data.writeBigUInt64LE(522_400_000n, 1); // valid_until
+  return legacy([account, instructionsSysvar, vector], 2, [[3, [1, 2], data]]);
+};
+
 // ---- scenarios: the transactions of one signTransaction request each ----
 
 const scenarios = {
@@ -261,6 +273,7 @@ const scenarios = {
   cpPool: () => [cpPool()],
   mintTo: () => [mintTo()],
   jupiter: () => [jupiterSwap()],
+  vector: () => [vectorAdvance()],
 };
 // Scenarios on mainnet. The app is switched to it before each, and stays
 // there for the rest of the run.

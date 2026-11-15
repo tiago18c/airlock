@@ -4,8 +4,8 @@
 use crate::support::{logs, Chain, SOL};
 use solana_pubkey::Pubkey;
 use wallet_core::vector::{
-    address, advance, advance_message, initialize, passthrough, signer_digest, withdraw,
-    AdvanceEntry, SchemeId, VectorAccount, VectorError, PROGRAM_ID,
+    address, advance, advance_message, initialize, passthrough, signed_message, signer_digest,
+    withdraw, AdvanceEntry, SchemeId, VectorAccount, VectorError, NEVER_EXPIRES, PROGRAM_ID,
 };
 use wallet_core::{
     apply_local_signatures, compile_v1_budget, decode_v1_transaction, ComputeBudgetSpec,
@@ -54,15 +54,30 @@ fn signed_wire(
     inner: &[Instruction],
     nonce: [u8; 32],
 ) -> Vec<u8> {
+    signed_wire_until(chain, payer, authority, inner, nonce, NEVER_EXPIRES)
+}
+
+/// [`signed_wire`] with an `Advance` the program refuses past `valid_until`.
+fn signed_wire_until(
+    chain: &Chain,
+    payer: &KeypairSigner,
+    authority: &KeypairSigner,
+    inner: &[Instruction],
+    nonce: [u8; 32],
+    valid_until: u64,
+) -> Vec<u8> {
     let key = authority.pubkey().to_bytes();
     let build = |signature: &[u8]| {
         vec![
-            advance(&[AdvanceEntry {
-                scheme: SCHEME,
-                key: &key,
-                next_key: &[],
-                signature,
-            }])
+            advance(
+                valid_until,
+                &[AdvanceEntry {
+                    scheme: SCHEME,
+                    key: &key,
+                    next_key: &[],
+                    signature,
+                }],
+            )
             .unwrap(),
             passthrough(SCHEME, &key, inner).unwrap(),
         ]
@@ -72,7 +87,9 @@ fn signed_wire(
     let message = advance_message(&unsigned.native_instructions(), &payer.pubkey()).unwrap();
     let account = address(&PROGRAM_ID, SCHEME, &key).unwrap();
     let digest = signer_digest(&message, &nonce, &account, &[]);
-    let signature = authority.try_sign_message(&digest).unwrap();
+    let signature = authority
+        .try_sign_message(&signed_message(&digest))
+        .unwrap();
     compile(chain, payer, build(signature.as_ref()))
 }
 
@@ -178,4 +195,45 @@ fn a_signature_over_other_instructions_or_another_nonce_does_not_land() {
 
     assert_eq!(chain.balance(&receiver), 0);
     assert_eq!(read(&chain, &account).nonce, nonce);
+}
+
+#[test]
+fn an_authorization_lands_until_its_slot_and_no_one_can_extend_it() {
+    let mut chain = Chain::new();
+    let (payer, authority, account) = funded_account(&mut chain);
+    let key = authority.pubkey().to_bytes();
+    let receiver = KeypairSigner::new_random().pubkey();
+    chain.warp(1_000);
+    let nonce = read(&chain, &account).nonce;
+    let inner = [withdraw(SCHEME, &key, &receiver, SOL / 4).unwrap()];
+    let wire = signed_wire_until(&chain, &payer, &authority, &inner, nonce, 1_010);
+
+    // Past its slot the program refuses it: Expired, error 9.
+    chain.warp(1_011);
+    let expired = chain.send_wire(&wire).unwrap_err();
+    assert!(
+        logs(&expired).contains("custom program error: 0x9"),
+        "{}",
+        logs(&expired)
+    );
+
+    // The relay cannot move the slot on: the signature covers it.
+    let mut instructions = decode_v1_transaction(&wire).unwrap().native_instructions();
+    instructions[0].data[1..9].copy_from_slice(&2_000u64.to_le_bytes());
+    let extended = chain
+        .send_wire(&compile(&chain, &payer, instructions))
+        .unwrap_err();
+    assert!(
+        logs(&extended).contains("missing required signature"),
+        "{}",
+        logs(&extended)
+    );
+    assert_eq!(read(&chain, &account).nonce, nonce);
+
+    // Signed again with a later slot, it lands.
+    let again = signed_wire_until(&chain, &payer, &authority, &inner, nonce, 2_000);
+    chain
+        .send_wire(&again)
+        .unwrap_or_else(|failure| panic!("withdraw: {}", logs(&failure)));
+    assert_eq!(chain.balance(&receiver), SOL / 4);
 }

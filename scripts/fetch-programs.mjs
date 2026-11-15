@@ -50,11 +50,11 @@ export const PROGRAMS = [
     sha256: "456e8deeddccabde0d143cf18111fbb17bf00db03074569ade1997f46a25db2c",
   },
   {
-    // Our deployment of the Vector program: github.com/tiago18c/vector,
-    // branch feat/single-program, at e0566fc. See docs/vector-fork.md.
+    // Our deployment of the Vector program (2.0): github.com/tiago18c/vector,
+    // branch airlock/v2, at 6d893b5. See docs/vector-fork.md.
     file: "vector.so",
     address: "74mXFW7BSAAwc6zQC2uYKuDcWnz17HHXMWqLnEeg9BJv",
-    sha256: "3eeea62b1393fd656293044f07d6e473645df7c10bda25e4ebf66043b820dc9d",
+    sha256: "9e30a5c91dc8d9379c83cc16b156920ceee8a2b04a3fc8d99e81b864aa905bb6",
   },
   {
     // The Squads clear signing program: github.com/tiago18c/squads-cs-poc,

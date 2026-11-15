@@ -101,7 +101,7 @@ fn wrapped(wraps: &[VectorWrap], instructions: Vec<Instruction>) -> Vec<u8> {
         .unwrap()
         .wire;
     let site = decode_v1_transaction(&site).unwrap();
-    wrap_for_vector(&site, wraps, pk(1), blockhash(2)).unwrap()
+    wrap_for_vector(&site, wraps, pk(1), blockhash(2), 1_000).unwrap()
 }
 
 #[test]

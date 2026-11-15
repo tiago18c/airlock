@@ -1,11 +1,13 @@
 //! What the accounts of an `Advance` sign, and the one case where the program
 //! would hash something other than what the app can compute.
 //!
-//! The program hashes the instructions sysvar with the `Advance`'s data cut
-//! out after its first byte: one message for every account, then for each
-//! account `sha256(message ‖ nonce ‖ address ‖ next key)`, which is also its
-//! next nonce. The next key is the one the `Advance` names for the account,
-//! and empty for a scheme whose key never changes.
+//! The program hashes the instructions sysvar with the `Advance`'s next keys
+//! and signatures cut out, keeping its discriminator and `valid_until`: one
+//! message for every account, so every signature covers the one expiry. Then
+//! for each account `sha256(message ‖ nonce ‖ address ‖ next key)`, which is
+//! also its next nonce; the key signs `"vector:" ‖` that digest. The next key
+//! is the one the `Advance` names for the account, and empty for a scheme
+//! whose key never changes.
 //!
 //! The program's client crate computes the message too, but it makes the
 //! `Advance` again from every account's key. A device that signs for one
@@ -20,7 +22,7 @@
 //! apply, and such a transaction is refused instead of signed.
 
 use super::instructions::MAX_INSTRUCTION_ACCOUNTS;
-use super::{VectorError, PROGRAM_ID};
+use super::{VectorError, ADVANCE_HEADER_LEN, PROGRAM_ID};
 use sha2::{Digest, Sha256};
 use solana_instruction::{BorrowedAccountMeta, BorrowedInstruction, Instruction};
 use solana_instructions_sysvar::construct_instructions_data;
@@ -44,6 +46,9 @@ pub fn advance_message(
     fee_payer: &Pubkey,
 ) -> Result<[u8; 32], VectorError> {
     let index = advance_index(instructions)?;
+    if instructions[index].data.len() < ADVANCE_HEADER_LEN {
+        return Err(VectorError::AdvanceMismatch);
+    }
     let mut flags: HashMap<Pubkey, (bool, bool)> = HashMap::new();
     flags.insert(*fee_payer, (true, true));
     for meta in instructions
@@ -82,14 +87,15 @@ pub fn advance_message(
 
     // The sysvar starts with a count and one u16 offset per instruction.
     // At the Advance's offset: its account count, 33 bytes per account, the
-    // program, the data's length, then the data, whose first byte is the
-    // discriminator and the rest the next keys and signatures.
+    // program, the data's length, then the data: the discriminator and
+    // `valid_until`, which the message keeps, then the next keys and
+    // signatures, which it does not.
     let at = 2 + 2 * index;
     let offset = usize::from(u16::from_le_bytes([sysvar[at], sysvar[at + 1]]));
     let advance = &instructions[index];
     let data = offset + 2 + 33 * advance.accounts.len() + 32 + 2;
     let mut hasher = Sha256::new();
-    hasher.update(&sysvar[..data + 1]);
+    hasher.update(&sysvar[..data + ADVANCE_HEADER_LEN]);
     hasher.update(&sysvar[data + advance.data.len()..]);
     Ok(hasher.finalize().into())
 }

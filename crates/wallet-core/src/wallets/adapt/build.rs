@@ -81,6 +81,14 @@ impl AdaptPlan {
         }
         accounts.extend(self.nonce.as_ref().map(|nonce| nonce.account));
         accounts.extend(self.vector.iter().map(|plan| plan.account));
+        // The slot now, from which a Vector authorization's expiry is set.
+        let vector_member = self
+            .squads
+            .as_ref()
+            .is_some_and(|plan| plan.members.iter().any(|member| member.vector.is_some()));
+        if !self.vector.is_empty() || vector_member {
+            accounts.push(CLOCK_SYSVAR);
+        }
         accounts
     }
 
@@ -639,6 +647,19 @@ fn shape_error(error: AdaptError) -> Result<AdaptError, ShapeSkip> {
     }
 }
 
+/// The Clock sysvar, whose first eight bytes are the slot.
+const CLOCK_SYSVAR: Pubkey = solana_sdk_ids::sysvar::clock::ID;
+
+/// The slot the Clock sysvar, as read with the plan's accounts, says it is.
+fn slot_now<'a>(read: impl Fn(&Pubkey) -> Option<&'a RawAccount>) -> Result<u64, AdaptError> {
+    read(&CLOCK_SYSVAR)
+        .filter(|clock| clock.owner == solana_sdk_ids::sysvar::ID)
+        .and_then(|clock| clock.data.get(..8))
+        .and_then(|slot| slot.try_into().ok())
+        .map(u64::from_le_bytes)
+        .ok_or(AdaptError::NoClock)
+}
+
 fn wrap_vector_plans<'a>(
     plan: &AdaptPlan,
     vectors: &[VectorPlan],
@@ -653,7 +674,8 @@ fn wrap_vector_plans<'a>(
         context.push(known);
         wraps.push(wrap);
     }
-    let wire = wrap_for_vector(current, &wraps, plan.fee_payer, blockhash)?;
+    let slot = slot_now(&read)?;
+    let wire = wrap_for_vector(current, &wraps, plan.fee_payer, blockhash, slot)?;
     let steps = vectors
         .iter()
         .map(|vector| AdaptedStep::Vector {

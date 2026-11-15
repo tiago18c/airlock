@@ -2,9 +2,12 @@
 //! signature made anywhere. Which key signs for a wallet of this device is
 //! in `vector_wallets`.
 //!
-//! A digest is 32 bytes, shorter than any Solana message, so a digest
-//! signed by a key that also pays fees can never pass for a transaction it
-//! signed.
+//! A key never signs a digest bare: it signs `"vector:" || digest`
+//! ([`signed_message`]), and the schemes that sign a fixed 32 bytes
+//! (secp256k1, Winternitz, XMSS) sign its SHA-256. A message that starts
+//! with `vector:` is never signed for a site (`tx::site_message`), and it is
+//! shorter than any Solana message, so a key that also pays fees can never
+//! be made to sign a transaction with it.
 
 use super::scheme::SchemeId;
 use super::xmss::XMSS_SALT_LEN;
@@ -16,10 +19,22 @@ use fips204::traits::{SerDes, Signer as MlDsaSigner};
 use k256::ecdsa::signature::hazmat::PrehashSigner;
 use k256::ecdsa::SigningKey;
 use rand::RngCore;
+use sha2::{Digest as _, Sha256};
 use solana_pubkey::Pubkey;
-use solana_winternitz::hazmat::winternitz::SecretKey as WinternitzSecret;
-use solana_winternitz::hazmat::xmss::SecretKey as XmssSecret;
 use solana_winternitz::hazmat::OneTime;
+use solana_winternitz::hazmat::SecretKey as WinternitzSecret;
+use solana_xmss::hazmat::SecretKey as XmssSecret;
+
+/// What a key signs for `digest`: `"vector:" || digest`, 39 bytes.
+pub fn signed_message(digest: &[u8; 32]) -> [u8; vector_core::SIGNED_LEN] {
+    vector_core::signed(digest)
+}
+
+/// What a scheme that signs a fixed 32 bytes signs for `digest`: the
+/// SHA-256 of [`signed_message`].
+fn hashed_message(digest: &[u8; 32]) -> [u8; 32] {
+    Sha256::digest(signed_message(digest)).into()
+}
 
 /// Salts tried before a hash-based key gives up, as many as `hazmat` tries.
 const SALT_TRIALS: usize = 4096;
@@ -76,11 +91,13 @@ impl VectorSigner {
         };
         match self {
             Self::Ed25519(signer) => signer
-                .try_sign_message(digest)
+                .try_sign_message(&signed_message(digest))
                 .map(|signature| signature.as_ref().to_vec())
                 .map_err(|_| failed()),
             Self::Secp256k1(key) => {
-                let (signature, _) = key.sign_prehash(digest).map_err(|_| failed())?;
+                let (signature, _) = key
+                    .sign_prehash(&hashed_message(digest))
+                    .map_err(|_| failed())?;
                 Ok(signature.to_bytes().to_vec())
             }
             Self::Eip191(key) => {
@@ -88,17 +105,20 @@ impl VectorSigner {
                 let (signature, recid) = key.sign_prehash(&envelope).map_err(|_| failed())?;
                 let mut out = vec![0u8; 65];
                 out[..64].copy_from_slice(&signature.to_bytes());
-                // Raw recovery id 0 or 1: the chain rejects Ethereum's 27/28.
+                // Raw recovery id 0 or 1, as the program reads it (it also
+                // takes Ethereum's 27/28).
                 out[64] = recid.to_byte();
                 Ok(out)
             }
             Self::MlDsa44(key) => {
                 // Empty NIST context: what solana-ml-dsa verifies.
-                let signature = key.try_sign(digest, &[]).map_err(|_| failed())?;
+                let signature = key
+                    .try_sign(&signed_message(digest), &[])
+                    .map_err(|_| failed())?;
                 Ok(signature.to_vec())
             }
             Self::Falcon512(key) => {
-                let mut signature = falcon512::sign(digest, key).to_bytes();
+                let mut signature = falcon512::sign(&signed_message(digest), key).to_bytes();
                 // falcon-rust writes 0x59; the on-chain verifier wants 0x39.
                 if signature.len() < SchemeId::Falcon512.signature_len() {
                     signature.resize(SchemeId::Falcon512.signature_len(), 0);
@@ -120,11 +140,15 @@ impl VectorSigner {
         };
         match self {
             Self::Winternitz(key) => {
-                let signature = key.sign_at(leaf, digest, os_fill).map_err(|_| failed())?;
+                let signature = key
+                    .sign_at(leaf, &hashed_message(digest), os_fill)
+                    .map_err(|_| failed())?;
                 Ok(signature.to_bytes().to_vec())
             }
             Self::Xmss(key) => {
-                let signature = key.sign_at(leaf, digest, os_fill).map_err(|_| failed())?;
+                let signature = key
+                    .sign_at(leaf, &hashed_message(digest), os_fill)
+                    .map_err(|_| failed())?;
                 Ok(signature.to_bytes().to_vec())
             }
             _ => self.sign(digest),
@@ -208,13 +232,13 @@ impl VectorSigner {
         match self {
             Self::Winternitz(key) => {
                 let signature = key
-                    .sign_at_with_salt(leaf, digest, salt)
+                    .sign_at_with_salt(leaf, &hashed_message(digest), salt)
                     .ok_or_else(failed)?;
                 Ok(signature.to_bytes().to_vec())
             }
             Self::Xmss(key) => {
                 let signature = key
-                    .sign_at_with_salt(leaf, digest, salt)
+                    .sign_at_with_salt(leaf, &hashed_message(digest), salt)
                     .ok_or_else(failed)?;
                 Ok(signature.to_bytes().to_vec())
             }
@@ -251,7 +275,8 @@ fn os_fill(buf: &mut [u8]) -> Result<(), solana_winternitz::SigningError> {
     Ok(())
 }
 
-/// `signature` is `key`'s, of `scheme`, over `digest`.
+/// `signature` is `key`'s, of `scheme`, over `digest`: made over
+/// [`signed_message`] of it, as the program checks.
 pub fn verify(
     scheme: SchemeId,
     key: &[u8],

@@ -72,7 +72,7 @@ pub use phrase::{
     PHRASE_SEARCH_AHEAD,
 };
 pub use scheme::{address, seed, SchemeId, HEADER_LEN, VECTOR_SEED};
-pub use sign::{verify, VectorKey, VectorSigner};
+pub use sign::{signed_message, verify, VectorKey, VectorSigner};
 pub use xmss::{
     leaf_status_note, leaves_left, leaves_used, must_rotate, salt_of_signature, warn_leaves,
     XmssRetry, XmssRetryCache, XMSS_FORCE_ROTATE_USED, XMSS_LEAVES, XMSS_RECOVERY_FROM,
@@ -96,3 +96,40 @@ pub const PROGRAM_ID: Pubkey = vector_core::PROGRAM_ID;
 
 /// The first byte of an `Advance`'s data.
 pub const ADVANCE_DISCRIMINATOR: u8 = vector_core::ADVANCE_DISCRIMINATOR;
+
+/// Bytes of an `Advance`'s data before its next keys and signatures: the
+/// discriminator, then `valid_until` (a slot, u64 little-endian).
+pub const ADVANCE_HEADER_LEN: usize = 1 + vector_core::VALID_UNTIL_LEN;
+
+/// The `valid_until` of an `Advance` that never expires.
+pub const NEVER_EXPIRES: u64 = vector_core::NEVER_EXPIRES;
+
+/// Slots an authorization this app wraps stays valid for: about an hour at
+/// 400 ms a slot. Long enough to carry it to a key on another device and
+/// back, and to refresh the blockhash, which the signature does not cover;
+/// short enough that a relay cannot hold it back for later, and that one
+/// which failed on chain cannot be landed again much later by anyone.
+pub const AUTHORIZATION_SLOTS: u64 = 9_000;
+
+/// The `valid_until` for an `Advance` that `schemes` sign, wrapped at
+/// `slot`. One with a Winternitz or XMSS signer never expires: if it lapsed
+/// before landing, the only way on would be a second signature with the same
+/// key or leaf, which gives the key away.
+pub fn valid_until(slot: u64, schemes: impl IntoIterator<Item = SchemeId>) -> u64 {
+    if schemes.into_iter().any(SchemeId::is_stateful) {
+        NEVER_EXPIRES
+    } else {
+        slot.saturating_add(AUTHORIZATION_SLOTS)
+    }
+}
+
+/// The `valid_until` an `Advance`'s data carries, or `None` when the data is
+/// too short to be one.
+pub fn advance_valid_until(data: &[u8]) -> Option<u64> {
+    match data {
+        [ADVANCE_DISCRIMINATOR, rest @ ..] => {
+            Some(u64::from_le_bytes(rest.get(..8)?.try_into().ok()?))
+        }
+        _ => None,
+    }
+}

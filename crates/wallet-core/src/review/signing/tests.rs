@@ -267,6 +267,7 @@ fn a_vector_authority_row_names_the_key_then_the_account() {
         }],
         payer.pubkey(),
         blockhash(2),
+        1_000,
     )
     .unwrap();
     let tx = decode_v1_transaction(&wire).unwrap();

@@ -19,8 +19,8 @@ use k256::ecdsa::SigningKey;
 use k256::elliptic_curve::Generate;
 use rand::RngCore;
 use solana_pubkey::Pubkey;
-use solana_winternitz::hazmat::winternitz::SecretKey as WinternitzSecret;
-use solana_winternitz::hazmat::xmss::SecretKey as XmssSecret;
+use solana_winternitz::hazmat::SecretKey as WinternitzSecret;
+use solana_xmss::hazmat::SecretKey as XmssSecret;
 use std::str::FromStr;
 
 /// A new secp256k1 key for a Held Vector authority: public identity, then
@@ -169,6 +169,6 @@ pub fn parse_public_key(scheme: SchemeId, text: &str) -> Result<Vec<u8>, VectorE
             hex::decode(hex).map_err(|_| bad())?
         }
     };
-    scheme.check_key(&key)?;
+    scheme.check_creatable(&key)?;
     Ok(key)
 }

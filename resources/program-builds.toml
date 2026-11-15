@@ -334,13 +334,14 @@ idlSha256 = "13cbda7213599f3312e1b7ffd1c7f176f36ebd74dba9feabe6e9a6874dc1d5d2"
 reviewed = "2026-11-09"
 
 [[builds]]
-# vector (core). The IDL the program publishes, which its file matches but for display nodes.
+# vector (core). Vector 2.0. The IDL the program publishes, which its file matches but for display nodes.
 programId = "74mXFW7BSAAwc6zQC2uYKuDcWnz17HHXMWqLnEeg9BJv"
 network = "devnet"
-programHash = "77b67adada54b028347f97ae43ec501760e3207fd49ddffc2a9b17cfe86fd9d3"
+programHash = "7abfe93afc4c630949b1c4258bb3ba18bcf0cef1311017db371adab9e93d0048"
 authority = "3zFrUC2W8ziNmDjhMJ9qdfcVJjGUCg94BrvYXtKA8cqM"
-idlSha256 = "aa8eb1ddb1146384f9a6857a993e6def6a0efada7e4de4071e51f12f873c638d"
-reviewed = "2026-11-09"
+idlSha256 = "23e433b8d4f61391eaade57dd7a365c1eaefa6b3b097be5d989cf15af8e4f7b9"
+source = { repo = "https://github.com/tiago18c/vector", commit = "6d893b5b7f056b4daf7155637c8574cbb2c7f37e" }
+reviewed = "2026-11-15"
 
 [[builds]]
 # whirlpool (pack). Every instruction the IDL lists is in this binary by name.
