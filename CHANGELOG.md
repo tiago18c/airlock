@@ -9,6 +9,8 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-16
+
 ### Added
 
 - **Programmatic signers and Squads multisigs can be exported by their public keys**, from Export public key on their row or Export public keys on Wallets, and added on another device under Add wallet, From another device. A signer arrives as the same signer, acting through its authority's wallet when that device has one, and a multisig as the same multisig, with its members read from the chain. A device on an earlier version refuses an export that holds one.
