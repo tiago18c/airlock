@@ -396,6 +396,19 @@ fn wallet_keys_round_trip_with_their_roles_and_labels() {
             label: String::new(),
             key: vec![4; 1312],
         },
+        WalletKey {
+            role: KeyRole::Programmatic,
+            label: "Signer".into(),
+            key: vec![5; PUBKEY_BYTES],
+        },
+        WalletKey {
+            role: KeyRole::Squads {
+                program: 1,
+                vault: 2,
+            },
+            label: "Treasury".into(),
+            key: vec![6; PUBKEY_BYTES],
+        },
     ]);
     let encoded = encode_object(&object).unwrap();
     assert_eq!(decode_object(&encoded).unwrap(), object);
@@ -424,11 +437,18 @@ fn malformed_wallet_keys_are_refused() {
             key,
         }]))
     };
-    // An address is 32 bytes.
-    assert_eq!(
-        one(KeyRole::Address, "x", vec![1; 31]),
-        Err(ProtocolError::BadObject)
-    );
+    // An address is 32 bytes, and so are a signer's authority and a
+    // multisig account.
+    for role in [
+        KeyRole::Address,
+        KeyRole::Programmatic,
+        KeyRole::Squads {
+            program: 0,
+            vault: 0,
+        },
+    ] {
+        assert_eq!(one(role, "x", vec![1; 31]), Err(ProtocolError::BadObject));
+    }
     // No key at all.
     assert_eq!(
         one(KeyRole::Vector { scheme: 1 }, "x", Vec::new()),
@@ -580,6 +600,19 @@ fn every_kind() -> Vec<QrObject> {
                 role: KeyRole::Vector { scheme: 6 },
                 label: String::new(),
                 key: vec![18; 41],
+            },
+            WalletKey {
+                role: KeyRole::Programmatic,
+                label: "Signer".into(),
+                key: vec![27; PUBKEY_BYTES],
+            },
+            WalletKey {
+                role: KeyRole::Squads {
+                    program: 0,
+                    vault: 1,
+                },
+                label: "Treasury".into(),
+                key: vec![28; PUBKEY_BYTES],
             },
         ]),
         QrObject::KeyRotation(KeyRotation {

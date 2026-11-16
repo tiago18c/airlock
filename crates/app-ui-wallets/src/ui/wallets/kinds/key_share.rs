@@ -212,7 +212,7 @@ pub fn ExportKeysModal(on_close: EventHandler<()>) -> Element {
                 div { class: "stack",
                     h3 { "Export public keys" }
                     p { class: "lede wordy",
-                        "Another device adds each key as an offline wallet, or as a Vector wallet whose key is kept here. Programmatic signers and multisigs are set up there from these."
+                        "Another device adds each key as an offline wallet, a Vector wallet or programmatic signer whose key is kept here, or the same multisig."
                     }
                     if options.is_empty() {
                         p { class: "note", "No wallet here can be added elsewhere by its key." }
@@ -333,9 +333,17 @@ pub fn KeyImportForm(on_done: EventHandler<()>) -> Element {
             return;
         }
         match session.add_wallet_keys(picks, fee_payer()) {
-            Ok(_) => {
+            Ok(added) => {
                 on_done.call(());
                 crate::actions::network::start_refresh(session);
+                let ids = added
+                    .iter()
+                    .filter(|one| !one.offline)
+                    .map(|one| one.id)
+                    .collect();
+                crate::actions::spawn_app_task(crate::actions::wallets::read_added_squads(
+                    session, ids,
+                ));
             }
             Err(err) => error.set(Some(err.to_string())),
         }

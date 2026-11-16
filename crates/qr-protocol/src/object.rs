@@ -202,6 +202,21 @@ pub enum KeyRole {
     /// A Vector account, made from this key under `scheme`.
     #[wincode(tag = 1)]
     Vector { scheme: u8 },
+    /// An Ed25519 programmatic signer: the key is its authority's address.
+    #[wincode(tag = 2)]
+    Programmatic,
+    /// A Squads multisig: the key is its multisig account, or its settings
+    /// account for a smart account. `program` is 0 for Squads v4 and 1 for
+    /// a smart account, and `vault` the number of the vault it spends from.
+    #[wincode(tag = 3)]
+    Squads { program: u8, vault: u8 },
+}
+
+impl KeyRole {
+    /// The key is an address, 32 bytes long.
+    pub fn is_address(&self) -> bool {
+        !matches!(self, KeyRole::Vector { .. })
+    }
 }
 
 /// One wallet of a wallet keys object.
@@ -237,7 +252,7 @@ impl QrObject {
                 keys.iter().try_for_each(|key| {
                     at_most(key.label.len(), MAX_KEY_LABEL)?;
                     bytes(&key.key, false)?;
-                    if key.role == KeyRole::Address && key.key.len() != PUBKEY_BYTES {
+                    if key.role.is_address() && key.key.len() != PUBKEY_BYTES {
                         return Err(ProtocolError::BadObject);
                     }
                     Ok(())
