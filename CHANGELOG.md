@@ -13,6 +13,10 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 - **Programmatic signers and Squads multisigs can be exported by their public keys**, from Export public key on their row or Export public keys on Wallets, and added on another device under Add wallet, From another device. A signer arrives as the same signer, acting through its authority's wallet when that device has one, and a multisig as the same multisig, with its members read from the chain. A device on an earlier version refuses an export that holds one.
 
+### Changed
+
+- **Add wallet is shorter.** The explanations above the offline, from another device, hardware, programmatic signer, Vector and new seed phrase forms are gone, and the dialog is taller on a desktop, so most forms fit without scrolling.
+
 ## [0.3.0] - 2026-11-15
 
 ### Before you update

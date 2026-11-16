@@ -10,9 +10,6 @@ pub(in crate::ui) fn NewSeedFields(state: ModalState) -> Element {
     let mut words = state.words;
 
     rsx! {
-        p { class: "note",
-            "Write these words down in order and keep them somewhere safe. They are the only backup of this wallet, anyone who has them controls it, and the app does not show them again."
-        }
         ol { class: "seed-words",
             for (i, word) in secret().split_whitespace().enumerate() {
                 li { key: "{i}",

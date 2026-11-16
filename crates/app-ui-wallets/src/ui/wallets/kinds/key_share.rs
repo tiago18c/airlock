@@ -350,9 +350,6 @@ pub fn KeyImportForm(on_done: EventHandler<()>) -> Element {
     };
 
     rsx! {
-        p { class: "note wordy",
-            "Wallets whose keys stay on another device, as that device exported them: a key becomes an offline wallet, and a Vector account a Vector wallet whose key is kept there. Initialize a Vector wallet from its row here once it is added."
-        }
         div { class: "segmented", role: "group", aria_label: "How to load it",
             button {
                 class: if scanning() { "tab" } else { "tab on" },

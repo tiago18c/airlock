@@ -35,14 +35,7 @@ pub fn HardwareForm(seed_vault: bool, on_done: EventHandler<()>) -> Element {
     let mut reading = use_signal(|| false);
 
     let Some(&first) = offered.first() else {
-        if seed_vault {
-            return rsx! {};
-        }
-        return rsx! {
-            p { class: "note",
-                "Hardware wallets are offered when Pre-release hardware wallets is on in Settings. Ledger reads v1 transactions from its Solana app 1.18, and Trezor from its next firmware, both only pre-release builds so far. Airlock's support for Keystone has not been checked on a device yet."
-            }
-        };
+        return rsx! {};
     };
     let chosen = vendor()
         .filter(|vendor| offered.contains(vendor))

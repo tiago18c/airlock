@@ -115,9 +115,6 @@ pub fn ProgrammaticForm(creating: bool, on_done: EventHandler<()>) -> Element {
     };
 
     rsx! {
-        p { class: "note",
-            "A programmatic signer is an address controlled by an Ed25519 key that never signs a transaction. The key signs a message, and any funded wallet can submit it later. Use the signer's address, not the key's, as the multisig member or the account owner."
-        }
         label { "Label"
             input {
                 r#type: "text",
