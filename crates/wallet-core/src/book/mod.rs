@@ -7,7 +7,8 @@ pub(crate) mod holdings;
 pub(crate) mod workspace;
 
 pub use crate::cluster::{
-    Cluster, KnownCluster, DEVNET_GENESIS, LOCAL_RPC_URL, MAINNET_BETA_GENESIS, TESTNET_GENESIS,
+    ws_url_for, Cluster, KnownCluster, DEVNET_GENESIS, LOCAL_RPC_URL, MAINNET_BETA_GENESIS,
+    TESTNET_GENESIS,
 };
 pub use address_book::{
     AddressBook, AddressBookFile, AddressEntry, AddressKind, AddressPlace, BookGroupInfo, BookRow,

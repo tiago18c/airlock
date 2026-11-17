@@ -714,6 +714,44 @@ async fn a_read_older_than_a_pushed_balance_does_not_hide_it() {
 }
 
 #[tokio::test]
+async fn a_url_typed_for_the_network_in_use_moves_the_feed_to_its_node() {
+    let rpc = Arc::new(FakeRpc::default());
+    let (kit, _scheduler, _moved, opened) = feed_kit(rpc);
+    settle().await;
+    assert_eq!(opened.lock().unwrap()[0].0, Cluster::Devnet.ws_url());
+
+    kit.core
+        .workspace_checked("rpc", |ws| {
+            ws.set_rpc_url(
+                wallet_core::KnownCluster::Devnet,
+                Some("https://dev.example/?k=1"),
+            )
+            .unwrap();
+        })
+        .unwrap();
+    settle().await;
+    {
+        let opened = opened.lock().unwrap();
+        assert_eq!(opened.len(), 2, "the network is the same, the node is not");
+        assert_eq!(opened[1].0, "wss://dev.example/?k=1");
+    }
+    assert_eq!(kit.core.slices().network.get().cluster, Cluster::Devnet);
+
+    // A URL for another network leaves the feed where it is.
+    kit.core
+        .workspace_checked("rpc", |ws| {
+            ws.set_rpc_url(
+                wallet_core::KnownCluster::MainnetBeta,
+                Some("https://main.example"),
+            )
+            .unwrap();
+        })
+        .unwrap();
+    settle().await;
+    assert_eq!(opened.lock().unwrap().len(), 2);
+}
+
+#[tokio::test]
 async fn a_landed_transaction_reads_the_wallet_in_use_on_its_cluster() {
     let rpc = Arc::new(FakeRpc::default().with_balance(pk(1), 5));
     let (kit, scheduler, moved, _opened) = feed_kit(rpc.clone());

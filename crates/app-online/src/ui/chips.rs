@@ -51,7 +51,7 @@ pub fn NetworkChip() -> Element {
     };
     let kind = network_kind(&network.cluster);
     let cluster = network.cluster.name().to_string();
-    let url = network.cluster.rpc_url().to_string();
+    let url = network.rpc_url.clone();
     let sync_rows = job.map(|job| sync_view(job, unix_now()));
 
     rsx! {

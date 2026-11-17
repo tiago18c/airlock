@@ -11,7 +11,7 @@ pub const TESTNET_GENESIS: &str = "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpja8HXCS"
 /// A public Solana cluster, used when a custom RPC shares its genesis hash so
 /// explorer links can point at that network without putting the RPC URL in the
 /// link.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum KnownCluster {
     MainnetBeta,
@@ -64,6 +64,18 @@ impl Cluster {
     /// A cluster reached through an RPC URL the user typed. The URL has to
     /// be `http://` or `https://` with a host. A blank name becomes "custom".
     pub fn custom(name: &str, rpc_url: &str) -> Result<Self, String> {
+        let rpc_url = Self::check_rpc_url(rpc_url)?;
+        let name = name.trim();
+        Ok(Self::Custom {
+            name: if name.is_empty() { "custom" } else { name }.to_string(),
+            rpc_url: rpc_url.to_string(),
+            known: None,
+        })
+    }
+
+    /// An RPC URL the user typed, trimmed, if it is `http://` or `https://`
+    /// with a host.
+    pub fn check_rpc_url(rpc_url: &str) -> Result<&str, String> {
         let rpc_url = rpc_url.trim();
         let rest = rpc_url
             .strip_prefix("https://")
@@ -73,18 +85,27 @@ impl Cluster {
         if host.is_empty() || rpc_url.chars().any(char::is_whitespace) {
             return Err("The RPC URL needs a host, such as http://127.0.0.1:8899.".into());
         }
-        let name = name.trim();
-        Ok(Self::Custom {
-            name: if name.is_empty() { "custom" } else { name }.to_string(),
-            rpc_url: rpc_url.to_string(),
-            known: None,
-        })
+        Ok(rpc_url)
+    }
+
+    /// The public network this is, when it is one. None for a custom RPC,
+    /// whatever genesis it answered with.
+    pub fn public(&self) -> Option<KnownCluster> {
+        match self {
+            Self::MainnetBeta => Some(KnownCluster::MainnetBeta),
+            Self::Devnet => Some(KnownCluster::Devnet),
+            Self::Testnet => Some(KnownCluster::Testnet),
+            Self::Custom { .. } => None,
+        }
     }
 
     pub fn is_custom(&self) -> bool {
         matches!(self, Self::Custom { .. })
     }
 
+    /// The URL of the cluster's own node: a public cluster's default, or the
+    /// URL of a custom RPC. A public cluster can be given another URL in
+    /// Settings, which [`crate::Workspace::rpc_url`] answers with.
     pub fn rpc_url(&self) -> &str {
         match self {
             Self::MainnetBeta => "https://api.mainnet-beta.solana.com",
@@ -186,7 +207,7 @@ impl Cluster {
 
 /// [`Cluster::ws_url`] for any RPC URL. The path and query stay, so a key
 /// carried in either reaches the WebSocket too.
-fn ws_url_for(rpc_url: &str) -> String {
+pub fn ws_url_for(rpc_url: &str) -> String {
     let (scheme, rest) = if let Some(rest) = rpc_url.strip_prefix("https://") {
         ("wss://", rest)
     } else if let Some(rest) = rpc_url.strip_prefix("http://") {

@@ -1,10 +1,11 @@
 use crate::book::address_book::{AddressBook, ChainState};
 use crate::book::connections::Connections;
-use crate::cluster::Cluster;
+use crate::cluster::{Cluster, KnownCluster};
 use crate::error::VaultError;
 use serde::{Deserialize, Serialize};
 use solana_hash::Hash;
 use std::cell::RefCell;
+use std::collections::BTreeMap;
 use wallet_vault::store::{check_saveable, load_json, LoadProblem, VaultStore};
 
 /// Unencrypted app state: cluster, settings and the address book. Signer
@@ -20,6 +21,12 @@ pub struct Workspace {
     /// it can be chosen again without typing.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub custom_cluster: Option<Cluster>,
+    /// The RPC URL typed for each public network, used instead of its
+    /// default whenever that network is in use. One per network, so moving
+    /// to another network and back keeps it. Stored as typed, including any
+    /// API key in it, like a custom cluster's URL.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub rpc_urls: BTreeMap<KnownCluster, String>,
     /// Offer Vector wallets: to add, to show a site and to rebuild for. Off
     /// until it is turned on in Settings. See `vector::offered`.
     #[serde(default)]
@@ -64,6 +71,7 @@ impl Default for Workspace {
         Self {
             cluster: Cluster::default(),
             custom_cluster: None,
+            rpc_urls: BTreeMap::new(),
             vector_wallets: false,
             prerelease_devices: false,
             auto_lock_secs: DEFAULT_AUTO_LOCK_SECS,
@@ -81,7 +89,7 @@ impl Workspace {
     /// before. If it is, what was read from the old one is dropped, so none
     /// of it is shown as this one's.
     pub fn use_cluster(&mut self, cluster: Cluster) -> bool {
-        let moved = self.cluster.rpc_url() != cluster.rpc_url();
+        let moved = self.rpc_url() != self.rpc_url_for(&cluster);
         if cluster.is_custom() {
             self.custom_cluster = Some(cluster.clone());
         }
@@ -90,6 +98,52 @@ impl Workspace {
             self.book.clear_chain_state();
         }
         moved
+    }
+
+    /// The URL of the node the cluster in use is read from: the one typed
+    /// for it in Settings, or its own.
+    pub fn rpc_url(&self) -> String {
+        self.rpc_url_for(&self.cluster)
+    }
+
+    /// The URL `cluster` is read from: for a public network, the one typed
+    /// for it if any, else its default; for a custom RPC, its own.
+    pub fn rpc_url_for(&self, cluster: &Cluster) -> String {
+        cluster
+            .public()
+            .and_then(|network| self.rpc_urls.get(&network))
+            .cloned()
+            .unwrap_or_else(|| cluster.rpc_url().to_string())
+    }
+
+    /// Read `network` through `rpc_url` from now on, or through its default
+    /// with None. The URLs of the other networks are kept. Answers whether
+    /// the node in use changed; if it did, what was read from the old one is
+    /// dropped, as on a cluster change.
+    pub fn set_rpc_url(
+        &mut self,
+        network: KnownCluster,
+        rpc_url: Option<&str>,
+    ) -> Result<bool, String> {
+        let before = self.rpc_url();
+        match rpc_url {
+            Some(url) => {
+                let url = Cluster::check_rpc_url(url)?;
+                if url == network.cluster().rpc_url() {
+                    self.rpc_urls.remove(&network);
+                } else {
+                    self.rpc_urls.insert(network, url.to_string());
+                }
+            }
+            None => {
+                self.rpc_urls.remove(&network);
+            }
+        }
+        let moved = self.rpc_url() != before;
+        if moved {
+            self.book.clear_chain_state();
+        }
+        Ok(moved)
     }
 
     /// An app with no node (Airlock Offline, the phone's offline mode) reads
@@ -119,8 +173,30 @@ impl Workspace {
 
     /// The node answered with its genesis hash: the cluster is the one that
     /// hash belongs to.
+    ///
+    /// A public network read through a URL typed for it keeps that URL: if
+    /// the node is of another network, the cluster becomes a custom RPC at
+    /// that URL, so the app reads the node it was told to and names its
+    /// network as the node does.
     pub fn node_answered(&mut self, genesis: &Hash) {
-        self.cluster = self.cluster.reconcile_genesis(genesis);
+        let typed = self
+            .cluster
+            .public()
+            .and_then(|network| self.rpc_urls.get(&network).cloned());
+        self.cluster = match typed {
+            Some(rpc_url) => {
+                let known = KnownCluster::from_genesis_hash(genesis);
+                if known == self.cluster.public() {
+                    return;
+                }
+                Cluster::Custom {
+                    name: "custom".into(),
+                    rpc_url,
+                    known,
+                }
+            }
+            None => self.cluster.reconcile_genesis(genesis),
+        };
     }
 }
 
@@ -134,9 +210,9 @@ struct ChainFile {
     read: ChainState,
 }
 
-/// Which node `cluster` is, for [`ChainFile`].
-fn node_mark(cluster: &Cluster) -> String {
-    hex::encode(crate::sha256_bytes(cluster.rpc_url().as_bytes()))
+/// Which node the workspace reads, for [`ChainFile`].
+fn node_mark(workspace: &Workspace) -> String {
+    hex::encode(crate::sha256_bytes(workspace.rpc_url().as_bytes()))
 }
 
 /// What each file was last written with, so that only one that changed is written.
@@ -188,7 +264,7 @@ impl<S: VaultStore> WorkspaceStore<S> {
         // What is read from the chain is worth reading again. Damage to it is
         // not worth saying, and a save writes over it.
         let (read, _): (ChainFile, _) = load_json(&chain, "balances read from the chain");
-        if read.node == node_mark(&data.cluster) {
+        if read.node == node_mark(&data) {
             data.book.restore_chain_state(&read.read);
         }
         Self {
@@ -229,7 +305,7 @@ impl<S: VaultStore> WorkspaceStore<S> {
         let mut written = self.written.borrow_mut();
 
         let chain = json_of(&ChainFile {
-            node: node_mark(&self.data.cluster),
+            node: node_mark(&self.data),
             read: self.data.book.chain_state(),
         })?;
         if written.chain.as_ref() != Some(&chain) && self.chain.save(&chain).is_ok() {
@@ -653,6 +729,87 @@ mod tests {
         data.use_cluster(Cluster::Devnet);
         assert_eq!(data.cluster, Cluster::Devnet);
         assert_eq!(data.custom_cluster, Some(mine));
+    }
+
+    #[test]
+    fn each_public_network_keeps_its_own_rpc_url() {
+        let mut data = Workspace {
+            cluster: Cluster::MainnetBeta,
+            ..Workspace::default()
+        };
+        data.book.insert_contact(pk(1), "Alice");
+        data.book.set_lamports(&pk(1), 7);
+
+        // A URL for mainnet, in use at once: what was read is dropped.
+        assert_eq!(
+            data.set_rpc_url(
+                KnownCluster::MainnetBeta,
+                Some(" https://main.example/?k=1 ")
+            ),
+            Ok(true)
+        );
+        assert_eq!(data.rpc_url(), "https://main.example/?k=1");
+        assert_eq!(data.book.get(&pk(1)).unwrap().lamports, None);
+
+        // Devnet starts on its default, and takes its own URL.
+        assert!(data.use_cluster(Cluster::Devnet));
+        assert_eq!(data.rpc_url(), Cluster::Devnet.rpc_url());
+        assert_eq!(
+            data.set_rpc_url(KnownCluster::Devnet, Some("https://dev.example")),
+            Ok(true)
+        );
+        assert_eq!(data.rpc_url(), "https://dev.example");
+
+        // Back on mainnet, its URL is still there, across a restart.
+        assert!(data.use_cluster(Cluster::MainnetBeta));
+        let json = serde_json::to_string(&data).unwrap();
+        let mut data: Workspace = serde_json::from_str(&json).unwrap();
+        assert_eq!(data.cluster, Cluster::MainnetBeta);
+        assert_eq!(data.rpc_url(), "https://main.example/?k=1");
+
+        // A URL for a network not in use changes nothing read now.
+        data.book.set_lamports(&pk(1), 7);
+        assert_eq!(
+            data.set_rpc_url(KnownCluster::Testnet, Some("https://test.example")),
+            Ok(false)
+        );
+        assert_eq!(data.book.get(&pk(1)).unwrap().lamports, Some(7));
+
+        // Back to the default; devnet's URL stays.
+        assert_eq!(data.set_rpc_url(KnownCluster::MainnetBeta, None), Ok(true));
+        assert_eq!(data.rpc_url(), Cluster::MainnetBeta.rpc_url());
+        assert_eq!(data.rpc_url_for(&Cluster::Devnet), "https://dev.example");
+
+        // The default typed out is the default, and a bad URL is refused.
+        assert_eq!(
+            data.set_rpc_url(KnownCluster::Devnet, Some(Cluster::Devnet.rpc_url())),
+            Ok(false)
+        );
+        assert!(!data.rpc_urls.contains_key(&KnownCluster::Devnet));
+        assert!(data
+            .set_rpc_url(KnownCluster::Devnet, Some("dev.example"))
+            .is_err());
+    }
+
+    #[test]
+    fn a_typed_url_on_another_network_stays_in_use_as_a_custom_rpc() {
+        let mut data = Workspace::default();
+        data.set_rpc_url(KnownCluster::Devnet, Some("https://dev.example"))
+            .unwrap();
+        // The node is devnet: nothing changes.
+        data.node_answered(&crate::DEVNET_GENESIS.parse().unwrap());
+        assert_eq!(data.cluster, Cluster::Devnet);
+        // The node is mainnet: still read, and named as it says.
+        data.node_answered(&crate::MAINNET_BETA_GENESIS.parse().unwrap());
+        assert_eq!(
+            data.cluster,
+            Cluster::Custom {
+                name: "custom".into(),
+                rpc_url: "https://dev.example".into(),
+                known: Some(KnownCluster::MainnetBeta),
+            }
+        );
+        assert_eq!(data.rpc_url(), "https://dev.example");
     }
 
     #[test]

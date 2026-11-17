@@ -191,17 +191,26 @@ impl Feed {
         // happened while it was down.
         let mut catch_up = false;
         loop {
-            let cluster = network.borrow_and_update().cluster.clone();
+            let (cluster, rpc_url) = {
+                let status = network.borrow_and_update();
+                (status.cluster.clone(), status.rpc_url.clone())
+            };
             let addresses = wallet_addresses(&wallets.borrow_and_update());
             let ended = if addresses.is_empty() {
                 self.feed_down();
-                self.until_changed(&mut network, &mut wallets, &cluster, &addresses, None)
-                    .await
+                self.until_changed(
+                    &mut network,
+                    &mut wallets,
+                    (&cluster, &rpc_url),
+                    &addresses,
+                    None,
+                )
+                .await
             } else {
                 self.follow(
                     &mut network,
                     &mut wallets,
-                    &cluster,
+                    (&cluster, &rpc_url),
                     &addresses,
                     &mut catch_up,
                     &mut retry,
@@ -222,7 +231,7 @@ impl Feed {
                         .until_changed(
                             &mut network,
                             &mut wallets,
-                            &cluster,
+                            (&cluster, &rpc_url),
                             &addresses,
                             Some(retry),
                         )
@@ -246,18 +255,19 @@ impl Feed {
         &self,
         network: &mut tokio::sync::watch::Receiver<Arc<app_core::NetworkStatus>>,
         wallets: &mut tokio::sync::watch::Receiver<Arc<app_core::WalletsView>>,
-        cluster: &Cluster,
+        node: (&Cluster, &str),
         addresses: &[Pubkey],
         catch_up: &mut bool,
         retry: &mut Duration,
     ) -> Ended {
-        let url = cluster.ws_url();
+        let (cluster, rpc_url) = node;
+        let url = wallet_core::ws_url_for(rpc_url);
         let redacted = app_core::diagnostics::redact_url(&url);
         let clock = self.core.ports().clock.clone();
         let opened = tokio::select! {
             opened = (self.connect)(url, addresses.to_vec()) => opened,
             _ = clock.sleep(CONNECT_TIMEOUT) => Err(RpcError::Timeout),
-            ended = self.until_changed(network, wallets, cluster, addresses, None) => return ended,
+            ended = self.until_changed(network, wallets, node, addresses, None) => return ended,
         };
         let mut events = match opened {
             Ok(events) => events,
@@ -287,7 +297,7 @@ impl Feed {
                         break Ended::Lost;
                     }
                 },
-                ended = self.until_changed(network, wallets, cluster, addresses, None) => break ended,
+                ended = self.until_changed(network, wallets, node, addresses, None) => break ended,
             }
         };
         self.feed_down();
@@ -331,13 +341,13 @@ impl Feed {
         }
     }
 
-    /// Wait until the cluster or the wallets' addresses change, or `wait`
-    /// passes when one is given.
+    /// Wait until the cluster, its node or the wallets' addresses change, or
+    /// `wait` passes when one is given.
     async fn until_changed(
         &self,
         network: &mut tokio::sync::watch::Receiver<Arc<app_core::NetworkStatus>>,
         wallets: &mut tokio::sync::watch::Receiver<Arc<app_core::WalletsView>>,
-        cluster: &Cluster,
+        (cluster, rpc_url): (&Cluster, &str),
         addresses: &[Pubkey],
         wait: Option<Duration>,
     ) -> Ended {
@@ -356,7 +366,8 @@ impl Feed {
                     if changed.is_err() {
                         return Ended::Closed;
                     }
-                    if network.borrow_and_update().cluster != *cluster {
+                    let status = network.borrow_and_update();
+                    if status.cluster != *cluster || status.rpc_url != rpc_url {
                         return Ended::Changed;
                     }
                 }

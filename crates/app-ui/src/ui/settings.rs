@@ -3,7 +3,7 @@ use crate::state::session::Session;
 use crate::ui::{SelectedChip, ThemeToggle};
 use app_ui_kit::state::slices::VaultState;
 use dioxus::prelude::*;
-use wallet_core::{Cluster, LOCAL_RPC_URL};
+use wallet_core::{Cluster, KnownCluster, LOCAL_RPC_URL};
 use zeroize::{Zeroize, Zeroizing};
 
 /// Auto-lock choices offered in Settings (seconds). Includes 1 minute for the
@@ -58,12 +58,89 @@ fn OfflineNetworkCard(cluster: Cluster) -> Element {
     }
 }
 
+/// The RPC URL of a public network: its default, or one typed for it. Each
+/// network keeps its own, so moving to another and back finds it as it was.
+#[component]
+fn PublicRpcUrl(network: KnownCluster, typed: Option<String>) -> Element {
+    let session = use_context::<Session>();
+    let mut url = use_signal({
+        let typed = typed.clone();
+        move || typed.unwrap_or_default()
+    });
+    let mut error = use_signal(|| None::<String>);
+    let default = network.cluster().rpc_url().to_string();
+    let wanted = url().trim().to_string();
+    // An empty field is the default, and so is the default typed out.
+    let applied = match typed.as_deref() {
+        Some(typed) => wanted == typed,
+        None => wanted.is_empty() || wanted == default,
+    };
+    let words = in_use_name(&network.cluster());
+    let mut apply = move |rpc_url: Option<String>| match crate::actions::network::set_rpc_url(
+        session,
+        network,
+        rpc_url.as_deref(),
+    ) {
+        Ok(()) => {
+            error.set(None);
+            url.set(rpc_url.unwrap_or_default());
+        }
+        Err(problem) => error.set(Some(problem)),
+    };
+    rsx! {
+        label {
+            span { class: "label-line",
+                "RPC URL"
+                if typed.is_some() && applied {
+                    SelectedChip { text: "in use", title: "The RPC the app reads the chain through" }
+                }
+            }
+            input {
+                r#type: "text",
+                placeholder: "{default}",
+                value: "{url}",
+                oninput: move |e| url.set(e.value()),
+            }
+        }
+        if let Some(problem) = error() {
+            p { class: "error", role: "alert", "{problem}" }
+        }
+        if !applied {
+            p { class: "warn", role: "status",
+                "Not in use yet. Press Use this RPC to read {words} through this URL."
+            }
+        }
+        if !applied || typed.is_some() {
+            div { class: "btn-row",
+                if !applied {
+                    button {
+                        onclick: move |_| {
+                            let wanted = url().trim().to_string();
+                            apply((!wanted.is_empty()).then_some(wanted));
+                        },
+                        "Use this RPC"
+                    }
+                }
+                if typed.is_some() {
+                    button {
+                        onclick: move |_| apply(None),
+                        "Use the default"
+                    }
+                }
+            }
+        }
+        p { class: "hint wordy",
+            "Leave it empty for the public node of {words}. A URL typed here is kept for {words} alone: each network keeps its own, and switching back finds it again. It is stored in the workspace file as typed, including any API key in it."
+        }
+    }
+}
+
 #[component]
 pub fn SettingsPanel(extra: Option<Element>) -> Element {
     let session = use_context::<Session>();
     let cluster = session.cluster();
     let online = crate::state::use_network().is_some();
-    let rpc_url = cluster.rpc_url().to_string();
+    let rpc_url = session.rpc_url();
     // The custom cluster in use, or the one typed last.
     let remembered = if cluster.is_custom() {
         Some(cluster.clone())
@@ -158,6 +235,13 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                         " · "
                         code { "{rpc_url}" }
                     }
+                    if let Some(network) = cluster.public().filter(|_| !custom_shown) {
+                        PublicRpcUrl {
+                            key: "{network:?}",
+                            network,
+                            typed: session.typed_rpc_url(network),
+                        }
+                    }
                     if custom_shown {
                         label {
                             // "in use" on the line of what it describes, as
@@ -214,7 +298,7 @@ pub fn SettingsPanel(extra: Option<Element>) -> Element {
                         }
                     }
                     p { class: "hint wordy",
-                        "At launch and on a cluster change the app asks the node for its genesis hash, and may correct the cluster from the reply. A custom RPC is never corrected: it is used as typed, whatever network it reports."
+                        "At launch and on a cluster change the app asks the node for its genesis hash, and may correct the cluster from the reply. A custom RPC is never corrected: it is used as typed, whatever network it reports. Nor is a URL typed for a network: if its node reports another network, the app keeps reading it, as a custom RPC."
                     }
                 }
             } else {

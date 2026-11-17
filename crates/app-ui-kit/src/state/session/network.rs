@@ -9,7 +9,7 @@ impl Session {
 
     /// The URL of the node the current cluster is read from.
     pub fn rpc_url(&self) -> String {
-        (self.network)().cluster.rpc_url().to_string()
+        (self.network)().rpc_url.clone()
     }
 
     /// The client for the current cluster, shared by everything that asks

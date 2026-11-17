@@ -40,6 +40,13 @@ impl Session {
             .with_workspace(|workspace| workspace.custom_cluster.clone())
     }
 
+    /// The RPC URL typed for a public network, used instead of its default.
+    pub fn typed_rpc_url(&self, network: wallet_core::KnownCluster) -> Option<String> {
+        let _ = self.network.read();
+        self.core()
+            .with_workspace(|workspace| workspace.rpc_urls.get(&network).cloned())
+    }
+
     /// The label to show for an address, when something names it.
     pub fn label_of(&self, pubkey: &Pubkey) -> Option<String> {
         (self.directory)().label_of(pubkey)
