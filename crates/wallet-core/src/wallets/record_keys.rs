@@ -55,12 +55,19 @@ impl WalletRecord {
                     program,
                     key,
                     ..
-                } => vector::address(program, *scheme, &key.0).ok(),
+                } => vector::wallet_address(program, *scheme, &key.0).ok(),
             },
             WalletKind::Keypair { pubkey, .. } | WalletKind::Seed { pubkey, .. } => {
                 pubkey.or_else(|| self.signer().ok().map(|signer| signer.pubkey()))
             }
         }
+    }
+
+    /// A Vector wallet's account: the program's account that keeps its key
+    /// and nonce, and that an `Advance` lists. Its funds are not there but at
+    /// [`address`](Self::address), the account's system PDA.
+    pub fn vector_account(&self) -> Option<Pubkey> {
+        self.kind.vector_account()
     }
 
     /// The same record with no secret in it, for the list kept outside the
@@ -170,7 +177,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn a_vector_wallet_is_known_by_its_account_and_holds_no_key_of_that_address() {
+    fn a_vector_wallet_is_known_by_its_system_pda_and_holds_no_key_of_that_address() {
         use crate::wallets::record::Authority;
         use crate::wallets::vector::SchemeId;
         let program = Pubkey::new_from_array([2; 32]);
@@ -181,9 +188,11 @@ mod tests {
             vec![7; 32],
             Authority::Outside,
         );
+        let account = vector::address(&program, SchemeId::Ed25519, &[7; 32]).unwrap();
+        assert_eq!(wallet.vector_account(), Some(account));
         assert_eq!(
             wallet.address(),
-            vector::address(&program, SchemeId::Ed25519, &[7; 32]).ok()
+            Some(vector::system_pda_under(&program, &account))
         );
         assert!(matches!(wallet.signer(), Err(SignError::CannotSign)));
         // A key of the wrong length names no account, so the record has no address.
@@ -195,6 +204,7 @@ mod tests {
             Authority::Outside,
         );
         assert_eq!(broken.address(), None);
+        assert_eq!(broken.vector_account(), None);
     }
 
     #[test]

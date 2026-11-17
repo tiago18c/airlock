@@ -31,7 +31,15 @@ impl Press for Device {
     /// A transfer out of this device's account, wrapped for it, and what
     /// signing it needs to know of the account.
     fn wrapped_transfer(&self) -> (Vec<u8>, Vec<VectorContext>) {
-        let site = compile(pk(1), vec![transfer(self.account, pk(5), 1)]).wire;
+        let site = compile(
+            pk(1),
+            vec![transfer(
+                crate::wallets::vector::system_pda(&self.account),
+                pk(5),
+                1,
+            )],
+        )
+        .wire;
         let current = xmss_from_seed(&[1; 32])
             .unwrap()
             .verifying_key()
@@ -158,7 +166,15 @@ fn a_floor_from_the_chain_does_not_spend_the_leaves_kept_for_rotating() {
 #[test]
 fn a_hand_over_to_a_key_not_made_here_records_nothing() {
     let mut device = Device::new(0);
-    let site = compile(pk(1), vec![transfer(device.account, pk(5), 1)]).wire;
+    let site = compile(
+        pk(1),
+        vec![transfer(
+            crate::wallets::vector::system_pda(&device.account),
+            pk(5),
+            1,
+        )],
+    )
+    .wire;
     let wrap = VectorWrap {
         account: device.account,
         scheme: SchemeId::Xmss,

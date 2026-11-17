@@ -223,7 +223,7 @@ pub fn rebuilt_note(adapted: &Adapted) -> Phrase {
         .steps
         .iter()
         .filter_map(|step| match step {
-            AdaptedStep::Vector { account, .. } => Some(*account),
+            AdaptedStep::Vector { address, .. } => Some(*address),
             AdaptedStep::Squads { .. }
             | AdaptedStep::SquadsSync { .. }
             | AdaptedStep::Programmatic { .. } => None,
@@ -235,13 +235,13 @@ pub fn rebuilt_note(adapted: &Adapted) -> Phrase {
             Phrase::default()
                 .t("Rebuilt for ")
                 .a(*one)
-                .t(": what it signs runs as its account, once its key signs the whole transaction."),
+                .t(": what it signs runs as that address, once its key signs the whole transaction."),
         ),
         many => sentence(
             Phrase::default()
                 .t("Rebuilt for ")
                 .and(listed(many))
-                .t(": what each signs runs as its account, once the key of each signs the whole transaction."),
+                .t(": what each signs runs as that address, once the key of each signs the whole transaction."),
         ),
     }
     sentence(Phrase::text("Read it again before signing."));

@@ -7,8 +7,8 @@ use solana_pubkey::Pubkey;
 use wallet_core::protocol::KeyRotation;
 use wallet_core::relay::{insert_vector_signature, vector_accounts, AuthContext, VectorContext};
 use wallet_core::vector::{
-    address, initialize as build_initialize, rotation as build_rotation, SchemeId, VectorAccount,
-    PROGRAM_ID,
+    address, initialize as build_initialize, rotation as build_rotation, system_pda, SchemeId,
+    VectorAccount, PROGRAM_ID,
 };
 use wallet_core::{compile_v1_budget, ComputeBudgetSpec, DecodedTx, RpcError, SolanaRpc};
 
@@ -106,10 +106,13 @@ pub async fn initialize(
     let (blockhash, _) = rpc.get_latest_blockhash_with_height().await?;
     let compiled = compile_v1_budget(payer, instructions, None, Some(blockhash), budget)
         .map_err(FlowError::refused)?;
+    let wallet = system_pda(&account);
     let note = wallet_core::Phrase::default()
         .t("This creates the Vector account ")
         .a(account)
-        .t(". The fee payer pays the rent; the account can already hold SOL and tokens, and initializing it keeps what it holds.");
+        .t(", which keeps the key and nonce of the wallet at ")
+        .a(wallet)
+        .t(". The fee payer pays its rent. What the wallet already holds stays where it is.");
     Ok(Prepared {
         wire: compiled.wire,
         note,

@@ -34,7 +34,8 @@ pub enum SignerRole {
     FeePayer,
     /// Signs the transaction.
     Signer,
-    /// Signs an authorization, as the programmatic signer at `address`.
+    /// Signs an authorization, as the programmatic signer or the Vector
+    /// wallet at `address`.
     Authority { address: Pubkey },
 }
 
@@ -326,7 +327,14 @@ pub fn signing_status_in(tx: &DecodedTx, local: &LocalKeys, ctx: &AuthContext) -
                 key: SignerKey::Authority(slot.authority),
                 signing_as,
                 role: SignerRole::Authority {
-                    address: slot.address,
+                    // A Vector account acts as its system PDA, the wallet's
+                    // address.
+                    address: match slot.authority {
+                        AuthorityId::Vector(account) => {
+                            crate::wallets::vector::system_pda(&account)
+                        }
+                        AuthorityId::Ed25519(_) => slot.address,
+                    },
                 },
                 state: if slot.verified == Some(false) {
                     SignerState::Invalid

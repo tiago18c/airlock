@@ -26,16 +26,23 @@ pub fn run<T>(flow: impl Future<Output = T>) -> T {
     pollster::block_on(flow)
 }
 
-/// An Ed25519 key whose Vector account exists on the chain and holds one SOL.
+/// An Ed25519 key whose Vector account exists on the chain, and whose
+/// wallet address (the account's system PDA) holds one SOL.
 pub struct Account {
     pub key: KeypairSigner,
+    /// The wallet's address: the account's system PDA.
     pub address: Pubkey,
+    /// The Vector account, which keeps the key and the nonce.
+    pub account: Pubkey,
     pub wallet: WalletId,
 }
 
-/// A secp256k1 or EIP-191 Vector account whose secret is in the desk's vault.
+/// A Vector wallet of another scheme whose secret is in the desk's vault.
 pub struct SecpAccount {
+    /// The wallet's address: the account's system PDA.
     pub address: Pubkey,
+    /// The Vector account, which keeps the key and the nonce.
+    pub account: Pubkey,
     pub wallet: WalletId,
 }
 
@@ -77,12 +84,13 @@ impl Desk {
     pub fn add_vector(&mut self, label: &str, here: bool) -> Account {
         let key = KeypairSigner::new_random();
         let bytes = key.pubkey().to_bytes().to_vec();
-        let address = self.init_vector(SchemeId::Ed25519, &bytes);
+        let (account, address) = self.init_vector(SchemeId::Ed25519, &bytes);
         let authority = if here { held(&key) } else { Authority::Outside };
         let id = self.push_vector(label, SchemeId::Ed25519, bytes, authority);
         Account {
             key,
             address,
+            account,
             wallet: id,
         }
     }
@@ -90,7 +98,7 @@ impl Desk {
     /// A secp256k1 Vector wallet with its secret kept here.
     pub fn add_secp(&mut self, label: &str) -> SecpAccount {
         let (public, secret) = wallet_core::vector::new_secp256k1_authority();
-        let address = self.init_vector(SchemeId::Secp256k1, &public);
+        let (account, address) = self.init_vector(SchemeId::Secp256k1, &public);
         let id = self.push_vector(
             label,
             SchemeId::Secp256k1,
@@ -102,6 +110,7 @@ impl Desk {
         );
         SecpAccount {
             address,
+            account,
             wallet: id,
         }
     }
@@ -109,7 +118,7 @@ impl Desk {
     /// An EIP-191 Vector wallet with its secret kept here.
     pub fn add_eip191(&mut self, label: &str) -> SecpAccount {
         let (public, secret) = wallet_core::vector::new_eip191_authority();
-        let address = self.init_vector(SchemeId::Eip191, &public);
+        let (account, address) = self.init_vector(SchemeId::Eip191, &public);
         let id = self.push_vector(
             label,
             SchemeId::Eip191,
@@ -121,6 +130,7 @@ impl Desk {
         );
         SecpAccount {
             address,
+            account,
             wallet: id,
         }
     }
@@ -128,7 +138,7 @@ impl Desk {
     /// An ML-DSA-44 Vector wallet with its secret kept here, fully grown.
     pub fn add_mldsa(&mut self, label: &str) -> SecpAccount {
         let (public, secret) = wallet_core::vector::new_mldsa44_authority();
-        let address = self.init_vector(SchemeId::MlDsa44, &public);
+        let (account, address) = self.init_vector(SchemeId::MlDsa44, &public);
         let id = self.push_vector(
             label,
             SchemeId::MlDsa44,
@@ -140,6 +150,7 @@ impl Desk {
         );
         SecpAccount {
             address,
+            account,
             wallet: id,
         }
     }
@@ -147,7 +158,7 @@ impl Desk {
     /// A Falcon-512 Vector wallet with its secret kept here.
     pub fn add_falcon(&mut self, label: &str) -> SecpAccount {
         let (public, secret) = wallet_core::vector::new_falcon512_authority();
-        let address = self.init_vector(SchemeId::Falcon512, &public);
+        let (account, address) = self.init_vector(SchemeId::Falcon512, &public);
         let id = self.push_vector(
             label,
             SchemeId::Falcon512,
@@ -159,6 +170,7 @@ impl Desk {
         );
         SecpAccount {
             address,
+            account,
             wallet: id,
         }
     }
@@ -166,7 +178,7 @@ impl Desk {
     /// An XMSS Vector wallet with its seed kept here.
     pub fn add_xmss(&mut self, label: &str) -> SecpAccount {
         let (public, secret) = wallet_core::vector::new_xmss_authority();
-        let address = self.init_vector(SchemeId::Xmss, &public);
+        let (account, address) = self.init_vector(SchemeId::Xmss, &public);
         let id = self.push_vector(
             label,
             SchemeId::Xmss,
@@ -178,6 +190,7 @@ impl Desk {
         );
         SecpAccount {
             address,
+            account,
             wallet: id,
         }
     }
@@ -189,11 +202,12 @@ impl Desk {
                 .unwrap();
         wallet.kind.set_fee_payer(Some(self.wallets[0].id));
         let key = wallet.kind.vector_settings().unwrap().key.to_vec();
-        let address = self.init_vector(SchemeId::Xmss, &key);
+        let (account, address) = self.init_vector(SchemeId::Xmss, &key);
         let id = wallet.id;
         self.wallets.push(wallet);
         SecpAccount {
             address,
+            account,
             wallet: id,
         }
     }
@@ -269,7 +283,7 @@ impl Desk {
     /// A Winternitz Vector wallet with its seed and a prepared next key.
     pub fn add_winternitz(&mut self, label: &str) -> SecpAccount {
         let (public, secret) = wallet_core::vector::new_winternitz_authority();
-        let address = self.init_vector(SchemeId::Winternitz, &public);
+        let (account, address) = self.init_vector(SchemeId::Winternitz, &public);
         let id = self.push_vector(
             label,
             SchemeId::Winternitz,
@@ -287,12 +301,16 @@ impl Desk {
             .unwrap();
         SecpAccount {
             address,
+            account,
             wallet: id,
         }
     }
 
-    fn init_vector(&self, scheme: SchemeId, key: &[u8]) -> Pubkey {
-        let address = address(&PROGRAM_ID, scheme, key).unwrap();
+    /// Initialize the Vector account of `key`, and fund the wallet's
+    /// address, its system PDA. Gives the account, then the address.
+    fn init_vector(&self, scheme: SchemeId, key: &[u8]) -> (Pubkey, Pubkey) {
+        let account = address(&PROGRAM_ID, scheme, key).unwrap();
+        let address = wallet_core::vector::system_pda(&account);
         let instructions = initialize(&self.payer.pubkey(), scheme, key).unwrap();
         let budget = if scheme == SchemeId::MlDsa44 {
             ComputeBudgetSpec {
@@ -307,7 +325,7 @@ impl Desk {
             .send_with(&[&self.payer], instructions, budget)
             .unwrap_or_else(|failure| panic!("initialize: {}", logs(&failure)));
         chain.fund(&address, SOL);
-        address
+        (account, address)
     }
 
     fn push_vector(

@@ -232,7 +232,7 @@ fn read_key(key: &WalletKey) -> Result<(Pubkey, String), (String, String)> {
                     format!("{} wallets are not offered.", scheme.label()),
                 ));
             }
-            vector::address(&PROGRAM_ID, scheme, &key.key)
+            vector::wallet_address(&PROGRAM_ID, scheme, &key.key)
                 .map(|address| (address, becomes.clone()))
                 .map_err(|err| (becomes, err.to_string()))
         }

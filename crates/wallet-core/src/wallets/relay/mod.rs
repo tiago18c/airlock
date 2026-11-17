@@ -81,7 +81,9 @@ pub struct AuthoritySlot {
     pub instruction: usize,
     /// Who signs the authorization.
     pub authority: AuthorityId,
-    /// The address the wrapped instructions see signing.
+    /// A programmatic signer's address, which the wrapped instructions see
+    /// signing, or the Vector account the `Advance` lists. Those instructions
+    /// see the account's system PDA signing.
     pub address: Pubkey,
     /// A Vector account's: where its signature is in the instruction's data,
     /// as start and length. `None` for a `Submit`'s authority, and for an
@@ -280,8 +282,6 @@ pub enum WrapError {
     PayerCannotSign(Pubkey),
     #[error("Instruction {} is a programmatic authorization that {account} would have to sign. A Vector account cannot sign inside another authorization, so sign its instructions outside it.", instruction + 1)]
     VectorInsideSubmit { instruction: usize, account: Pubkey },
-    #[error("Instruction {} asks the System program to take lamports from {account}. A Vector account can only send lamports as a plain transfer.", instruction + 1)]
-    VectorSystemDebit { instruction: usize, account: Pubkey },
     #[error(transparent)]
     Vector(#[from] crate::wallets::vector::VectorError),
     #[error(transparent)]

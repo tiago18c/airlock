@@ -407,10 +407,16 @@ fn InnerBlock(inner: InnerMessage, inspect: bool) -> Element {
                     for signer in signers {
                         div { class: "chip-row inner-head", key: "{signer.account}",
                             span { "Runs as" }
-                            Address { pubkey: signer.account }
+                            // A wallet's address is its account's system
+                            // PDA; the account itself only keeps the key.
                             if let Some(system) = signer.system {
-                                span { "through its system account" }
                                 Address { pubkey: system }
+                                if inspect {
+                                    span { class: "muted", "the wallet of Vector account" }
+                                    Address { pubkey: signer.account }
+                                }
+                            } else {
+                                Address { pubkey: signer.account }
                             }
                         }
                         match signer.next_key {

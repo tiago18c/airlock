@@ -111,8 +111,8 @@ fn a_hash_based_key_waits_until_every_other_account_has_signed() {
     let wire = wrapped(
         &[plain.wrap(None), xmss.wrap(None)],
         vec![
-            transfer(plain.account, pk(5), 1),
-            transfer(xmss.account, pk(6), 2),
+            transfer(crate::wallets::vector::system_pda(&plain.account), pk(5), 1),
+            transfer(crate::wallets::vector::system_pda(&xmss.account), pk(6), 2),
         ],
     );
     let known = [plain.context(1), xmss.context(2)];
@@ -144,7 +144,14 @@ fn a_hash_based_key_waits_until_every_other_account_has_signed() {
 fn only_accounts_that_sign_now_have_a_digest() {
     let plain = Holder::ed25519();
     let other = Holder::ed25519();
-    let wire = wrapped(&[plain.wrap(None)], vec![transfer(plain.account, pk(5), 1)]);
+    let wire = wrapped(
+        &[plain.wrap(None)],
+        vec![transfer(
+            crate::wallets::vector::system_pda(&plain.account),
+            pk(5),
+            1,
+        )],
+    );
     let known = [plain.context(1)];
     // A key for an account the transaction does not list.
     assert!(digests_to_sign(&wire, &[other.account], &known).is_empty());
@@ -167,7 +174,11 @@ fn a_rotation_to_a_key_this_device_did_not_make_is_not_signed() {
     let theirs = next_key(5);
     let wire = wrapped(
         &[once.wrap(Some(theirs.clone()))],
-        vec![transfer(once.account, pk(5), 1)],
+        vec![transfer(
+            crate::wallets::vector::system_pda(&once.account),
+            pk(5),
+            1,
+        )],
     );
     let known = [once.context(1)];
     let ctx = AuthContext { vector: &known };
@@ -193,7 +204,11 @@ fn a_winternitz_key_does_not_sign_an_advance_that_hands_the_account_back_to_it()
     let once = Holder::of(SchemeId::Winternitz, [4; 32]);
     let wire = wrapped(
         &[once.wrap(Some(once.key.clone()))],
-        vec![transfer(once.account, pk(5), 1)],
+        vec![transfer(
+            crate::wallets::vector::system_pda(&once.account),
+            pk(5),
+            1,
+        )],
     );
     let known = [once.context(1)];
     assert_eq!(
@@ -210,7 +225,14 @@ fn a_winternitz_key_does_not_sign_an_advance_that_hands_the_account_back_to_it()
 #[test]
 fn a_hash_based_key_signs_only_as_the_key_the_account_holds_now() {
     let xmss = Holder::of(SchemeId::Xmss, [7; 32]);
-    let wire = wrapped(&[xmss.wrap(None)], vec![transfer(xmss.account, pk(5), 1)]);
+    let wire = wrapped(
+        &[xmss.wrap(None)],
+        vec![transfer(
+            crate::wallets::vector::system_pda(&xmss.account),
+            pk(5),
+            1,
+        )],
+    );
     // The account rotated: it holds another key than this device's.
     let mut moved = xmss.context(1);
     moved.key = Some(next_key(8));
@@ -225,7 +247,14 @@ fn a_hash_based_key_signs_only_as_the_key_the_account_holds_now() {
 #[test]
 fn a_hash_based_key_with_nothing_recorded_does_not_sign() {
     let xmss = Holder::of(SchemeId::Xmss, [9; 32]);
-    let wire = wrapped(&[xmss.wrap(None)], vec![transfer(xmss.account, pk(5), 1)]);
+    let wire = wrapped(
+        &[xmss.wrap(None)],
+        vec![transfer(
+            crate::wallets::vector::system_pda(&xmss.account),
+            pk(5),
+            1,
+        )],
+    );
     let known = [xmss.context(1)];
     let mut key = xmss.signer(None);
     key.leaf = None;
@@ -242,7 +271,11 @@ fn a_hash_based_key_signs_only_the_digest_it_was_recorded_for() {
         let next = (scheme == SchemeId::Winternitz).then(|| next_key(4));
         let wire = wrapped(
             &[holder.wrap(next.clone())],
-            vec![transfer(holder.account, pk(5), 1)],
+            vec![transfer(
+                crate::wallets::vector::system_pda(&holder.account),
+                pk(5),
+                1,
+            )],
         );
         let known = [holder.context(1)];
         let digest = digests_to_sign(&wire, &[holder.account], &known)[&holder.account];
@@ -275,7 +308,14 @@ fn a_hash_based_key_signs_only_the_digest_it_was_recorded_for() {
 #[test]
 fn a_personal_sign_result_is_checked_and_written_at_the_accounts_place() {
     let eth = Holder::of(SchemeId::Eip191, [12; 32]);
-    let wire = wrapped(&[eth.wrap(None)], vec![transfer(eth.account, pk(5), 1)]);
+    let wire = wrapped(
+        &[eth.wrap(None)],
+        vec![transfer(
+            crate::wallets::vector::system_pda(&eth.account),
+            pk(5),
+            1,
+        )],
+    );
     let known = [eth.context(1)];
     let ctx = AuthContext { vector: &known };
     let tx = decode_v1_transaction(&wire).unwrap();
@@ -307,7 +347,14 @@ fn a_personal_sign_result_is_checked_and_written_at_the_accounts_place() {
     assert!(insert_personal_sign(&wire, &eth.account, &hex::encode(other), &ctx, None).is_err());
     // personal_sign is for EIP-191 accounts only.
     let plain = Holder::ed25519();
-    let wire = wrapped(&[plain.wrap(None)], vec![transfer(plain.account, pk(5), 1)]);
+    let wire = wrapped(
+        &[plain.wrap(None)],
+        vec![transfer(
+            crate::wallets::vector::system_pda(&plain.account),
+            pk(5),
+            1,
+        )],
+    );
     let known = [plain.context(1)];
     let tx = decode_v1_transaction(&wire).unwrap();
     assert!(personal_sign_digest(&tx, &plain.account, &AuthContext { vector: &known }).is_err());

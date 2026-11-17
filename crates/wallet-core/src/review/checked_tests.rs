@@ -517,18 +517,25 @@ fn vector_account() -> (Pubkey, Vec<u8>) {
     (address(&PROGRAM_ID, SchemeId::Ed25519, &key).unwrap(), key)
 }
 
+/// The address of a Vector wallet of an Ed25519 key, its account's system
+/// PDA, which a `Passthrough` built here signs as, and that key.
+fn vector_wallet() -> (Pubkey, Vec<u8>) {
+    let (account, key) = vector_account();
+    (crate::wallets::vector::system_pda(&account), key)
+}
+
 /// `instructions` in a `Passthrough` of the account of `key` that signs as
-/// its system PDA.
-fn as_system(key: &[u8], instructions: &[Instruction]) -> Instruction {
+/// the account itself rather than its system PDA.
+fn as_account(key: &[u8], instructions: &[Instruction]) -> Instruction {
     let mut flagged = passthrough(SchemeId::Ed25519, key, &[]).unwrap();
     // Data: tag, signer count, then each signer's flag.
-    flagged.data[2] = 1;
+    flagged.data[2] = 0;
     crate::wallets::vector::rewrite_passthrough(&flagged, instructions).unwrap()
 }
 
 #[test]
 fn a_vote_in_a_passthrough_is_pinned_only_by_a_check_by_cpi_inside_it() {
-    let (account, key) = vector_account();
+    let (account, key) = vector_wallet();
     let inside = passthrough(SchemeId::Ed25519, &key, &[cpi(account), vote(account)]).unwrap();
     let explained = explained(vec![inside.clone()]);
     let found = checked_in(&explained);
@@ -568,7 +575,7 @@ fn a_vote_in_a_passthrough_is_pinned_only_by_a_check_by_cpi_inside_it() {
 fn a_vote_of_a_system_pda_is_pinned_by_a_check_by_cpi_for_it() {
     let (account, key) = vector_account();
     let pda = crate::wallets::vector::system_pda(&account);
-    let inside = as_system(&key, &[cpi(pda), vote(pda)]);
+    let inside = passthrough(SchemeId::Ed25519, &key, &[cpi(pda), vote(pda)]).unwrap();
     let explained = explained(vec![inside]);
     let found = checked_in(&explained);
     assert_eq!(found.len(), 1);
@@ -577,10 +584,14 @@ fn a_vote_of_a_system_pda_is_pinned_by_a_check_by_cpi_for_it() {
     assert!(blind_in(&explained).is_empty());
     // A `Passthrough` that signs as the account itself does not sign as the
     // PDA, so the program could not run the check.
-    let as_account = passthrough(SchemeId::Ed25519, &key, &[cpi(pda), vote(pda)]).unwrap();
-    still_blind(vec![as_account]);
+    still_blind(vec![as_account(&key, &[cpi(pda), vote(pda)])]);
     // And one that signs as the PDA does not sign as the account.
-    still_blind(vec![as_system(&key, &[cpi(account), vote(account)])]);
+    still_blind(vec![passthrough(
+        SchemeId::Ed25519,
+        &key,
+        &[cpi(account), vote(account)],
+    )
+    .unwrap()]);
 }
 
 #[test]
@@ -715,7 +726,7 @@ fn the_shape_says_what_checks_would_join() {
         ApprovalShape::Checked
     );
     let (account, key) = vector_account();
-    let in_passthrough = passthrough(SchemeId::Ed25519, &key, &[vote(account)]).unwrap();
+    let in_passthrough = as_account(&key, &[vote(account)]);
     assert_eq!(
         shape(vec![in_passthrough]),
         ApprovalShape::Open(OpenApproval {
@@ -725,7 +736,9 @@ fn the_shape_says_what_checks_would_join() {
     );
     let pda = crate::wallets::vector::system_pda(&account);
     assert_eq!(
-        shape(vec![as_system(&key, &[vote(pda)])]),
+        shape(vec![
+            passthrough(SchemeId::Ed25519, &key, &[vote(pda)]).unwrap()
+        ]),
         ApprovalShape::Open(OpenApproval {
             in_passthrough: true,
             ..carried(&[pda])
@@ -928,6 +941,8 @@ fn a_programmatic_members_check_ends_up_inside_its_submit() {
 #[test]
 fn a_vector_members_checks_go_inside_its_passthrough() {
     let (account, key) = vector_account();
+    // The wallet votes as its address, the system PDA.
+    let member = crate::wallets::vector::system_pda(&account);
     let hot = pk(8);
     let wrap = |wire: &[u8]| {
         wrap_for_vector(
@@ -944,12 +959,12 @@ fn a_vector_members_checks_go_inside_its_passthrough() {
         )
         .unwrap()
     };
-    let wrapped = wrap(&compile(hot, vec![vote(account)]).wire);
+    let wrapped = wrap(&compile(hot, vec![vote(member)]).wire);
     let (plain, with) = built(&wrapped, hot);
     assert!(plain.shape.in_passthrough && plain.shape.votes[0].carried);
-    assert_eq!(plain.instructions, [vote(account)]);
+    assert_eq!(plain.instructions, [vote(member)]);
     let again = wrap(&with);
-    let approval = all_pinned(&again, &[account], false);
+    let approval = all_pinned(&again, &[member], false);
     assert_eq!(approval.check.0.len(), 2);
     // The `Advance` and one `Passthrough`, which runs the buffer hash, the
     // check by CPI for the account, and the vote: nothing else.
@@ -964,8 +979,8 @@ fn a_vector_members_checks_go_inside_its_passthrough() {
     assert_eq!(runs.len(), 3);
     assert!(BufferHashCheck::from_data(&runs[0].data).is_some());
     let check = ProposalCheck::from_data(&runs[1].data).unwrap();
-    assert_eq!((check.form, check.member), (CheckForm::Cpi, account));
-    assert_eq!(runs[2].data, vote(account).data);
+    assert_eq!((check.form, check.member), (CheckForm::Cpi, member));
+    assert_eq!(runs[2].data, vote(member).data);
     assert!(checked_instructions(&plain, &stored(), &[], ClearSigningAccepts::DEPLOYED).is_ok());
     let top_only = ClearSigningAccepts {
         in_passthrough: false,

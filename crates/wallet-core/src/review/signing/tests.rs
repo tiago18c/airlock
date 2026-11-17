@@ -256,7 +256,15 @@ fn a_vector_authority_row_names_the_key_then_the_account() {
     let payer = KeypairSigner::new_random();
     let authority = KeypairSigner::new_random();
     let account = address(&PROGRAM_ID, SchemeId::Ed25519, authority.pubkey().as_ref()).unwrap();
-    let built = compile(payer.pubkey(), vec![transfer(account, pk(2), 5)]).wire;
+    let built = compile(
+        payer.pubkey(),
+        vec![transfer(
+            crate::wallets::vector::system_pda(&account),
+            pk(2),
+            5,
+        )],
+    )
+    .wire;
     let wire = wrap_for_vector(
         &decode_v1_transaction(&built).unwrap(),
         &[VectorWrap {
@@ -289,7 +297,13 @@ fn a_vector_authority_row_names_the_key_then_the_account() {
     );
     let line = &status.lines[0];
     assert_eq!(line.authority_chip(), authority.pubkey());
-    assert_eq!(line.role, SignerRole::Authority { address: account });
+    // The row names the wallet's address, the account's system PDA.
+    assert_eq!(
+        line.role,
+        SignerRole::Authority {
+            address: crate::wallets::vector::system_pda(&account)
+        }
+    );
     assert_ne!(line.authority_chip(), account);
 }
 

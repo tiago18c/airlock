@@ -951,10 +951,10 @@ pub(in crate::ui) fn AdaptedNotice(adapted: Adapted) -> Element {
                             " signs an authorization for these instructions instead."
                         }
                     },
-                    AdaptedStep::Vector { scheme, account, .. } => rsx! {
+                    AdaptedStep::Vector { scheme, address, .. } => rsx! {
                         p { key: "{i}",
-                            Address { pubkey: account }
-                            " is a Vector wallet, so no key signs as it. What it signs runs as that account, and its {scheme.label()} key signs the whole transaction instead."
+                            Address { pubkey: address }
+                            " is a Vector wallet, so no key signs as it. What it signs runs as that address, and its {scheme.label()} key signs the whole transaction instead."
                         }
                     },
                 }

@@ -1,5 +1,7 @@
-//! Rebuilding a transaction so the Vector accounts it names as signers can
-//! sign it.
+//! Rebuilding a transaction so the Vector wallets it names as signers can
+//! sign it. A wallet's address is its account's system PDA, which the
+//! System program owns, so what it signs runs unchanged: a transfer, rent
+//! for a new account, a token account it owns.
 //!
 //! ```text
 //! before                         after
@@ -16,23 +18,24 @@
 //! reads the instructions sysvar, sees what the site built.
 
 use super::*;
-use crate::ids::SYSTEM_PROGRAM_ID;
 use crate::tx::builder::compile_message;
 use crate::wallets::programmatic::ED25519_SIGNER_PROGRAM_ID;
 use crate::wallets::vector::{
-    advance, demoted_writable, multi_passthrough, passthrough_fits, valid_until, withdraw,
+    advance, demoted_writable, multi_passthrough, passthrough_fits, system_pda, valid_until,
     AdvanceEntry, SchemeId, VectorError,
 };
 use solana_instruction::Instruction;
 
 /// Compute units added for each `Passthrough`: reading what it carries and
-/// the calls it makes. One that runs a `Withdraw` was measured at 2,076.
+/// the calls it makes, and deriving each wallet's system PDA (about 1,500).
 /// What runs inside is counted in the stated limit.
 pub const PASSTHROUGH_CU: u32 = 5_000;
 
 /// A Vector account a transaction may be wrapped for.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct VectorWrap {
+    /// The program's account, which the `Advance` lists. The wallet signs as
+    /// its system PDA ([`VectorWrap::address`]).
     pub account: Pubkey,
     pub scheme: SchemeId,
     /// The key the account was created with. The builders derive the
@@ -45,6 +48,14 @@ pub struct VectorWrap {
     pub next_key: Option<Vec<u8>>,
 }
 
+impl VectorWrap {
+    /// The wallet's address: the account's system PDA, which the
+    /// transaction names as a signer and its `Passthrough` signs as.
+    pub fn address(&self) -> Pubkey {
+        system_pda(&self.account)
+    }
+}
+
 /// Rebuild `tx` so that each of `accounts` it needs as a signer signs
 /// through one `Advance`, listed in the order of `accounts`. A run of
 /// instructions they sign becomes one `Passthrough`, whichever of them signs
@@ -52,9 +63,9 @@ pub struct VectorWrap {
 /// signing instruction they do not sign joins the run after it, so the
 /// checks for a vote run in the same `Passthrough` as the vote.
 ///
-/// A System transfer out of one of them becomes the program's `Withdraw`,
-/// since the account holds data and the System program will not move its
-/// lamports. The new transaction is paid for by `relay_payer` and lives on
+/// Each wallet is named by its address, the account's system PDA, and the
+/// `Passthrough` signs as it, so the instructions run unchanged. The new
+/// transaction is paid for by `relay_payer` and lives on
 /// `blockhash`. Its compute limit is the one `tx` stated, or the default
 /// for its instructions, plus each signature's and each `Passthrough`'s.
 ///
@@ -78,7 +89,10 @@ pub fn wrap_for_vector(
     if !vector_accounts(tx).is_empty() {
         return Err(WrapError::AlreadyWrapped);
     }
-    if accounts.iter().any(|wrap| wrap.account == relay_payer) {
+    if accounts
+        .iter()
+        .any(|wrap| wrap.account == relay_payer || wrap.address() == relay_payer)
+    {
         return Err(WrapError::PayerCannotSign(relay_payer));
     }
 
@@ -93,7 +107,7 @@ pub fn wrap_for_vector(
                     instruction
                         .accounts
                         .iter()
-                        .any(|meta| meta.is_signer && meta.pubkey == wrap.account)
+                        .any(|meta| meta.is_signer && meta.pubkey == wrap.address())
                 })
                 .collect()
         })
@@ -120,7 +134,7 @@ pub fn wrap_for_vector(
             if instruction.program_id == ED25519_SIGNER_PROGRAM_ID {
                 return Err(WrapError::VectorInsideSubmit {
                     instruction: index,
-                    account: wrap.account,
+                    account: wrap.address(),
                 });
             }
         }
@@ -129,11 +143,6 @@ pub fn wrap_for_vector(
                 used.push(wrap);
             }
         }
-        let instruction = if signing.is_empty() {
-            instruction
-        } else {
-            as_account(index, instruction, &signing)?
-        };
         match runs.last_mut() {
             Some((signers, run)) if signers.is_empty() && signing.is_empty() => {
                 run.push(instruction)
@@ -219,32 +228,4 @@ fn joined<'a>(
                 .any(|other| other.account == wrap.account)
         })
         .collect()
-}
-
-/// `instruction` as it runs inside a `Passthrough` of `signing`, the Vector
-/// accounts that sign it. A System transfer out of one of them becomes a
-/// `Withdraw`. Any other System instruction they sign would take lamports
-/// from an account the System program does not own, and is refused.
-fn as_account(
-    index: usize,
-    instruction: Instruction,
-    signing: &[&VectorWrap],
-) -> Result<Instruction, WrapError> {
-    if instruction.program_id != SYSTEM_PROGRAM_ID {
-        return Ok(instruction);
-    }
-    // A transfer: tag 2 as a u32, then the lamports as a u64.
-    let transfer = match (instruction.data.as_slice(), instruction.accounts.as_slice()) {
-        ([2, 0, 0, 0, lamports @ ..], [from, to]) => signing
-            .iter()
-            .find(|wrap| wrap.account == from.pubkey)
-            .zip(<[u8; 8]>::try_from(lamports).ok())
-            .map(|(wrap, lamports)| (*wrap, to.pubkey, u64::from_le_bytes(lamports))),
-        _ => None,
-    };
-    let (wrap, to, lamports) = transfer.ok_or(WrapError::VectorSystemDebit {
-        instruction: index,
-        account: signing[0].account,
-    })?;
-    Ok(withdraw(wrap.scheme, &wrap.key, &to, lamports)?)
 }

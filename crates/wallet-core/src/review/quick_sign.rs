@@ -456,7 +456,15 @@ mod tests {
         let payer = KeypairSigner::new_random();
         let authority = KeypairSigner::new_random();
         let account = address(&PROGRAM_ID, SchemeId::Ed25519, authority.pubkey().as_ref()).unwrap();
-        let built = compile(payer.pubkey(), vec![transfer(account, pk(2), 5)]).wire;
+        let built = compile(
+            payer.pubkey(),
+            vec![transfer(
+                crate::wallets::vector::system_pda(&account),
+                pk(2),
+                5,
+            )],
+        )
+        .wire;
         let wrap = VectorWrap {
             account,
             scheme: SchemeId::Ed25519,
@@ -507,7 +515,10 @@ mod tests {
         // An opaque instruction inside the Passthrough is unread too.
         let opaque = Instruction {
             program_id: pk(200),
-            accounts: vec![AccountMeta::new(account, true)],
+            accounts: vec![AccountMeta::new(
+                crate::wallets::vector::system_pda(&account),
+                true,
+            )],
             data: vec![1, 2, 3],
         };
         let built = compile(payer.pubkey(), vec![opaque]).wire;

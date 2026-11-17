@@ -41,6 +41,12 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
             kind.signer_authority().is_some() && kind.executor_nonce().is_none()
         });
     let vector = vector_facts(&wallet, &wallets);
+    // The program's account, which keeps the key and nonce; the card's
+    // address is its system PDA, where the funds are.
+    let vector_account = wallet
+        .contract
+        .as_ref()
+        .and_then(WalletKind::vector_account);
     let dialogs_of = wallet.clone();
     // A phone shortens the address to one line, puts the balance and the
     // card's buttons on one line under it, and the three dots on the
@@ -51,10 +57,9 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
     // card says. Send stays where it is, disabled, and says why.
     let reads = try_use_context::<super::vector_row::VectorReads>();
     let cannot_send = (is_vector
-        && wallet
-            .address
+        && vector_account
             .zip(reads)
-            .is_some_and(|(address, reads)| reads.uninitialized(&address)))
+            .is_some_and(|(account, reads)| reads.uninitialized(&account)))
     .then_some("This Vector wallet cannot send until its account is initialized on this cluster. Initialize it first.");
     let send_title = "Send SOL or a token from this wallet. Sign rebuilds the transfer around it.";
     let send = move |_| {
@@ -141,7 +146,7 @@ pub fn ContractWalletRow(wallet: WalletSummary, current: bool) -> Element {
             }
             // A Vector wallet's account is watched from the card, where only
             // what needs attention shows. The rest is in its settings.
-            if let (Some((scheme, key, held_by, held_here)), Some(address)) = (vector, wallet.address) {
+            if let (Some((scheme, key, held_by, held_here)), Some(address)) = (vector, vector_account) {
                 div { class: "wallet-status",
                     VectorFacts { id, address, scheme, shown_key: key, held_by, held_here }
                 }

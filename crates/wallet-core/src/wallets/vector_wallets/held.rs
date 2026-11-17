@@ -110,7 +110,7 @@ pub fn local_vector_keys(wallets: &[WalletRecord]) -> Vec<VectorKey> {
         .filter(|wallet| wallet.kind.vector_settings().is_some())
         .filter_map(|wallet| {
             Some(VectorKey {
-                account: wallet.address()?,
+                account: wallet.vector_account()?,
                 signer: VectorSigner::from_record(wallets, wallet.id).ok()?,
                 leaf: None,
                 salt: None,
@@ -143,7 +143,7 @@ pub fn held_vector_accounts(wallets: &[WalletRecord]) -> Vec<Pubkey> {
                 }
                 Authority::Outside => false,
             };
-            holds.then(|| wallet.address()).flatten()
+            holds.then(|| wallet.vector_account()).flatten()
         })
         .collect()
 }

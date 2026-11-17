@@ -249,7 +249,10 @@ struct VectorPlan {
     scheme: SchemeId,
     /// The key the account was created with.
     key: Vec<u8>,
+    /// The program's account, which the `Advance` lists.
     account: Pubkey,
+    /// Its system PDA, the wallet's address, which signs what it runs.
+    address: Pubkey,
     /// Pending next XMSS public key for a rotating wrap.
     next_key: Option<Vec<u8>>,
 }
@@ -296,7 +299,8 @@ pub enum AskedWallet {
     Vector {
         wallet: String,
         scheme: SchemeId,
-        account: Pubkey,
+        /// The wallet's address: its account's system PDA.
+        address: Pubkey,
     },
 }
 
@@ -335,11 +339,13 @@ pub enum AdaptedStep {
         authority: Pubkey,
         address: Pubkey,
     },
-    /// The instructions the account signs run in its `Passthrough`.
+    /// The instructions the wallet signs run in its `Passthrough`.
     Vector {
         wallet: String,
         scheme: SchemeId,
-        account: Pubkey,
+        /// The wallet's address: its account's system PDA, which the
+        /// instructions run as.
+        address: Pubkey,
     },
 }
 
@@ -418,7 +424,8 @@ fn vector_plan(wallet: &WalletRecord) -> Result<Option<VectorPlan>, AdaptError> 
         label: wallet.label.clone(),
         scheme: *scheme,
         key: key.0.clone(),
-        account: wallet.address().unwrap_or_default(),
+        account: wallet.vector_account().unwrap_or_default(),
+        address: wallet.address().unwrap_or_default(),
         next_key: wallet.vector_next_pubkey().map(<[u8]>::to_vec),
     }))
 }

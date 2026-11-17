@@ -43,7 +43,7 @@ pub enum RouteStep {
         nonce: Option<Pubkey>,
     },
     /// A Vector account: the key that controls it signs a digest of the
-    /// transaction, and `account` acts.
+    /// transaction, and the wallet acts as `account`'s system PDA.
     Vector {
         wallet: WalletId,
         scheme: SchemeId,
@@ -197,7 +197,7 @@ pub fn signing_route(wallets: &[WalletRecord], id: WalletId) -> Result<SigningRo
                 steps.push(RouteStep::Vector {
                     wallet: current.id,
                     scheme: *scheme,
-                    account: current.address().ok_or(RouteError::UnknownWallet)?,
+                    account: current.vector_account().ok_or(RouteError::UnknownWallet)?,
                 });
                 match held_by {
                     Authority::Wallet { wallet } => current = find(*wallet)?,

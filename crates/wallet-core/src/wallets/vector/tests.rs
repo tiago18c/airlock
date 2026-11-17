@@ -312,7 +312,8 @@ fn a_passthrough_reads_the_same_whatever_the_scheme_of_its_account() {
     for scheme in SchemeId::ALL {
         let key = vec![7; scheme.key_len()];
         let built = passthrough(scheme, &key, &runs).unwrap();
-        assert_eq!(built.data, hex("0101000101010005"), "{scheme:?}");
+        // It signs as the account's system PDA: flag 1.
+        assert_eq!(built.data, hex("0101010101010005"), "{scheme:?}");
         assert_eq!(parse_passthrough(&built).unwrap().instructions, runs);
     }
 }

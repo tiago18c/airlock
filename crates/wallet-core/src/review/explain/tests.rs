@@ -518,7 +518,9 @@ fn a_vector_passthrough_opens_to_what_it_carries() {
     let payer = pk(1);
     let key = KeypairSigner::new_random();
     let account = address(&PROGRAM_ID, SchemeId::Ed25519, key.pubkey().as_ref()).unwrap();
-    let payment = transfer(&account, &pk(2), 1_000_000_000);
+    // The wallet pays from its address, the account's system PDA.
+    let wallet = crate::wallets::vector::system_pda(&account);
+    let payment = transfer(&wallet, &pk(2), 1_000_000_000);
     let built = compile_v1(
         payer,
         vec![payment],
@@ -570,7 +572,7 @@ fn a_vector_passthrough_opens_to_what_it_carries() {
         InnerKind::Passthrough {
             signers: vec![RunsAs {
                 account,
-                system: None,
+                system: Some(wallet),
                 next_key: None,
             }],
         }
@@ -657,7 +659,11 @@ fn the_key_an_advance_hands_a_hash_based_account_to_is_shown_on_its_passthrough(
         let account = address(&PROGRAM_ID, scheme, &first).unwrap();
         let built = compile_v1(
             payer,
-            vec![transfer(&account, &pk(2), 1_000)],
+            vec![transfer(
+                &crate::wallets::vector::system_pda(&account),
+                &pk(2),
+                1_000,
+            )],
             None,
             Some(Hash::new_from_array([9; 32])),
         )

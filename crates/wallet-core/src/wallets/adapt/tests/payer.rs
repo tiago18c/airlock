@@ -167,7 +167,10 @@ fn a_filled_advance_refuses_a_swap_to_a_payer_an_instruction_names() {
     let site = decode_v1_transaction(
         &compile_v1(
             sponsor,
-            vec![transfer(account, pk(2), 5), peek],
+            vec![
+                transfer(crate::wallets::vector::system_pda(&account), pk(2), 5),
+                peek,
+            ],
             None,
             Some(blockhash(1)),
         )
