@@ -499,7 +499,7 @@ impl Session {
             data?
                 .wallets
                 .iter()
-                .find(|wallet| wallet.address() == Some(account))
+                .find(|wallet| wallet.vector_account() == Some(account))
                 .and_then(|wallet| wallet.kind.vector_settings())
                 .map(|settings| settings.key.to_vec())
         })

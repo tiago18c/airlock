@@ -6,23 +6,30 @@ use crate::fixtures::{blockhash, pk, transfer};
 use crate::keys::signer::{KeypairSigner, WalletSigner};
 use crate::tx::builder::{compile_v1, NonceSpec};
 use crate::wallets::vector::{
-    address, parse_passthrough, signer_digest, verify, SchemeId, VectorError, VectorKey,
-    VectorSigner, PROGRAM_ID,
+    address, parse_passthrough, signer_digest, system_pda, verify, PassthroughSigner, SchemeId,
+    VectorError, VectorKey, VectorSigner, PROGRAM_ID,
 };
 use solana_instruction::{AccountMeta, Instruction};
 use solana_sdk_ids::sysvar;
 
-/// An Ed25519 key and the account it controls.
+/// An Ed25519 key, the account it controls and that account's system PDA,
+/// the wallet's address.
 struct Owner {
     key: KeypairSigner,
     account: Pubkey,
+    address: Pubkey,
 }
 
 impl Owner {
     fn new() -> Self {
         let key = KeypairSigner::new_random();
         let account = address(&PROGRAM_ID, SchemeId::Ed25519, key.pubkey().as_ref()).unwrap();
-        Self { key, account }
+        let address = system_pda(&account);
+        Self {
+            key,
+            account,
+            address,
+        }
     }
 
     fn wrap(&self) -> VectorWrap {
@@ -84,11 +91,11 @@ fn each_run_of_vector_instructions_becomes_one_passthrough_in_place() {
     let site = decoded(
         pk(1),
         vec![
-            transfer(a.account, pk(5), 1),
-            transfer(a.account, pk(6), 2),
+            transfer(a.address, pk(5), 1),
+            transfer(a.address, pk(6), 2),
             transfer(pk(1), pk(7), 3),
-            transfer(b.account, pk(8), 4),
-            transfer(a.account, pk(9), 5),
+            transfer(b.address, pk(8), 4),
+            transfer(a.address, pk(9), 5),
         ],
     );
     let wire = wrap_for_vector(&site, &[b.wrap(), a.wrap()], pk(1), blockhash(2), 1_000).unwrap();
@@ -122,26 +129,25 @@ fn each_run_of_vector_instructions_becomes_one_passthrough_in_place() {
 }
 
 #[test]
-fn a_transfer_out_becomes_a_withdraw_and_any_other_system_debit_is_refused() {
+fn system_instructions_run_unchanged_as_the_system_pda() {
     let owner = Owner::new();
-    let tx = wrapped(&[&owner], vec![transfer(owner.account, pk(5), 42)]);
+    // A transfer, and rent for a new account: the wallet's address belongs to
+    // the System program, so neither is rewritten.
+    let site = vec![
+        transfer(owner.address, pk(5), 42),
+        solana_system_interface::instruction::create_account(&owner.address, &pk(7), 1, 0, &pk(6)),
+    ];
+    let tx = wrapped(&[&owner], site.clone());
     let inner = parse_passthrough(&tx.native_instructions()[1]).unwrap();
-    let key = owner.key.pubkey().to_bytes();
-    let mut expected =
-        crate::wallets::vector::withdraw(SchemeId::Ed25519, &key, &pk(5), 42).unwrap();
-    expected.accounts[0].is_signer = true;
-    assert_eq!(inner.instructions, vec![expected]);
-
-    let create =
-        solana_system_interface::instruction::create_account(&owner.account, &pk(5), 1, 0, &pk(6));
-    let tx = decoded(pk(1), vec![transfer(pk(1), pk(2), 1), create]);
+    assert_eq!(inner.instructions, site);
     assert_eq!(
-        wrap_for_vector(&tx, &[owner.wrap()], pk(1), blockhash(2), 1_000).unwrap_err(),
-        WrapError::VectorSystemDebit {
-            instruction: 1,
-            account: owner.account
-        }
+        inner.signers,
+        vec![PassthroughSigner {
+            account: owner.account,
+            system: true,
+        }]
     );
+    assert_eq!(vector_accounts(&tx), vec![owner.account]);
 }
 
 #[test]
@@ -153,16 +159,21 @@ fn what_one_advance_cannot_sign_is_refused() {
     let plain = decoded(pk(1), vec![transfer(pk(1), pk(2), 1)]);
     assert_eq!(wrap(&plain).unwrap_err(), WrapError::NothingToWrap);
 
-    let pays = decoded(pk(1), vec![transfer(a.account, pk(2), 1)]);
+    let pays = decoded(pk(1), vec![transfer(a.address, pk(2), 1)]);
     assert_eq!(
         wrap_for_vector(&pays, &both, a.account, blockhash(2), 1_000).unwrap_err(),
         WrapError::PayerCannotSign(a.account)
+    );
+    // Nor can its system PDA pay: no key signs for it.
+    assert_eq!(
+        wrap_for_vector(&pays, &both, a.address, blockhash(2), 1_000).unwrap_err(),
+        WrapError::PayerCannotSign(a.address)
     );
 
     let on_nonce = decode_v1_transaction(
         &compile_v1(
             pk(1),
-            vec![transfer(a.account, pk(2), 1)],
+            vec![transfer(a.address, pk(2), 1)],
             Some(NonceSpec {
                 account: pk(30),
                 authority: pk(1),
@@ -176,14 +187,14 @@ fn what_one_advance_cannot_sign_is_refused() {
     .unwrap();
     assert_eq!(wrap(&on_nonce).unwrap_err(), WrapError::DurableNonce);
 
-    let once = wrapped(&[&a], vec![transfer(a.account, pk(2), 1)]);
+    let once = wrapped(&[&a], vec![transfer(a.address, pk(2), 1)]);
     assert_eq!(wrap(&once).unwrap_err(), WrapError::AlreadyWrapped);
 
     // Another program, asked to write a sysvar.
     let clock = Instruction {
         program_id: pk(40),
         accounts: vec![
-            AccountMeta::new(a.account, true),
+            AccountMeta::new(a.address, true),
             AccountMeta::new(sysvar::clock::ID, false),
         ],
         data: vec![],
@@ -204,7 +215,10 @@ fn two_mldsa44_signatures_do_not_fit_in_a_v1_transaction() {
     );
     let site = decoded(
         pk(1),
-        vec![transfer(a_account, pk(5), 1), transfer(b_account, pk(6), 2)],
+        vec![
+            transfer(system_pda(&a_account), pk(5), 1),
+            transfer(system_pda(&b_account), pk(6), 2),
+        ],
     );
     let wraps = [
         VectorWrap {
@@ -281,7 +295,7 @@ fn a_signature_goes_where_the_context_or_the_length_alone_puts_it() {
 #[test]
 fn a_signature_made_here_verifies_over_the_digest_and_needs_the_nonce() {
     let owner = Owner::new();
-    let tx = wrapped(&[&owner], vec![transfer(owner.account, pk(5), 42)]);
+    let tx = wrapped(&[&owner], vec![transfer(owner.address, pk(5), 42)]);
     let keys = [owner.signer()];
 
     let unknown = sign_vector_authorizations(&tx.wire, &keys, &AuthContext::default());
@@ -316,7 +330,7 @@ fn a_signature_made_here_verifies_over_the_digest_and_needs_the_nonce() {
 #[test]
 fn a_signature_from_another_device_is_checked_against_the_nonce_and_the_key() {
     let owner = Owner::new();
-    let tx = wrapped(&[&owner], vec![transfer(owner.account, pk(5), 42)]);
+    let tx = wrapped(&[&owner], vec![transfer(owner.address, pk(5), 42)]);
     let nonce = [4u8; 32];
     let known = [owner.context(nonce)];
     let ctx = AuthContext { vector: &known };
@@ -372,17 +386,17 @@ fn adjacent_vector_instructions_share_one_passthrough() {
     let both = [a.wrap(), b.wrap()];
     let mut shared = Instruction::new_with_bytes(pk(40), &[1], vec![]);
     shared.accounts = vec![
-        AccountMeta::new_readonly(a.account, true),
-        AccountMeta::new_readonly(b.account, true),
+        AccountMeta::new_readonly(a.address, true),
+        AccountMeta::new_readonly(b.address, true),
     ];
     let tx = decoded(
         pk(1),
         vec![
-            transfer(a.account, pk(2), 1),
-            transfer(b.account, pk(3), 2),
+            transfer(a.address, pk(2), 1),
+            transfer(b.address, pk(3), 2),
             shared,
             transfer(pk(1), pk(4), 3),
-            transfer(b.account, pk(5), 4),
+            transfer(b.address, pk(5), 4),
         ],
     );
     let wire = wrap_for_vector(&tx, &both, pk(1), blockhash(2), 1_000).unwrap();

@@ -136,9 +136,9 @@ fn check_signers<'a>(
     Ok(accounts)
 }
 
-/// Run `instructions` as the account of `key`, which signs each of them. The
-/// transaction's `Advance` has to list the account, and is where a
-/// hash-based key moves on.
+/// Run `instructions` as the wallet of `key`: the system PDA of its account,
+/// which signs each of them. The transaction's `Advance` has to list the
+/// account, and is where a hash-based key moves on.
 pub fn passthrough(
     scheme: SchemeId,
     key: &[u8],
@@ -147,10 +147,13 @@ pub fn passthrough(
     multi_passthrough(&[(scheme, key)], instructions)
 }
 
-/// Run `instructions` as every account of `signers`, given as scheme and the
-/// key each was created with. Each instruction is signed by whichever of
-/// them it names, so instructions of several accounts share one
-/// `Passthrough`. The transaction's `Advance` has to list every account.
+/// Run `instructions` as every wallet of `signers`, given as scheme and the
+/// key each account was created with. Each signs as its account's system
+/// PDA, the wallet's address, which the System program owns: it can pay rent
+/// and send SOL like any wallet, which the account, holding data, cannot.
+/// Each instruction is signed by whichever of them it names, so
+/// instructions of several wallets share one `Passthrough`. The
+/// transaction's `Advance` has to list every account.
 pub fn multi_passthrough(
     signers: &[(SchemeId, &[u8])],
     instructions: &[Instruction],
@@ -174,7 +177,7 @@ pub fn multi_passthrough(
     let listed: Vec<_> = schemes
         .iter()
         .zip(signers)
-        .map(|(core, (_, key))| vector_core::PassthroughSigner::vector(core, key))
+        .map(|(core, (_, key))| vector_core::PassthroughSigner::system(core, key))
         .collect();
     Ok(vector_core::create_multi_passthrough_instruction(
         &listed,

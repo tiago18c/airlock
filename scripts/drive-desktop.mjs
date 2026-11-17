@@ -260,6 +260,30 @@ const vectorAdvance = () => {
   return legacy([account, instructionsSysvar, vector], 2, [[3, [1, 2], data]]);
 };
 
+/** The `Advance` of `vectorAdvance`, then a `Passthrough` that runs a SOL
+ * transfer as the account's system PDA, the wallet's address. */
+const vectorPassthrough = () => {
+  const vector = b58decode("74mXFW7BSAAwc6zQC2uYKuDcWnz17HHXMWqLnEeg9BJv");
+  const instructionsSysvar = b58decode("Sysvar1nstructions1111111111111111111111111");
+  const account = Buffer.alloc(32, 41);
+  // The system PDA of `account`: seeds [account] under the program.
+  const wallet = b58decode("AwtqT8JSTBDQy7wAfwibWSNAeUkVfAT4A6EoM99Q9ka5");
+  const advance = Buffer.alloc(1 + 8 + 64);
+  advance.writeUInt8(0, 0); // Advance
+  advance.writeBigUInt64LE(522_400_000n, 1); // valid_until
+  const inner = transferData(5_000_000);
+  const length = Buffer.alloc(2);
+  length.writeUInt16LE(inner.length);
+  // Passthrough, one signer that signs as its system PDA, one instruction
+  // with two accounts.
+  const passthrough = Buffer.concat([Buffer.from([1, 1, 1, 1, 2]), length, inner]);
+  // 1 account, 2 wallet, 3 recipient, 4 sysvar, 5 program, 6 System
+  return legacy([account, wallet, recipient, instructionsSysvar, vector, systemProgram], 3, [
+    [5, [1, 4], advance],
+    [5, [4, 1, 6, 2, 3], passthrough],
+  ]);
+};
+
 // ---- scenarios: the transactions of one signTransaction request each ----
 
 const scenarios = {
@@ -274,6 +298,7 @@ const scenarios = {
   mintTo: () => [mintTo()],
   jupiter: () => [jupiterSwap()],
   vector: () => [vectorAdvance()],
+  vectorPassthrough: () => [vectorPassthrough()],
 };
 // Scenarios on mainnet. The app is switched to it before each, and stays
 // there for the rest of the run.

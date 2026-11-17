@@ -262,8 +262,11 @@ fn a_passthrough_built_here_reads_back_into_what_it_was_built_from() {
     ] {
         let key = key_of(scheme);
         let account = address(&PROGRAM_ID, scheme, &key).unwrap();
+        let wallet = system_pda(&account);
         let inner = vec![
-            transfer(account, pk(2)),
+            transfer(wallet, pk(2)),
+            // The account itself, named without a signer flag: the
+            // `Passthrough` signs as the wallet, not as the account.
             withdraw(scheme, &key, &pk(3), 5).unwrap(),
             Instruction {
                 program_id: pk(4),
@@ -273,7 +276,7 @@ fn a_passthrough_built_here_reads_back_into_what_it_was_built_from() {
         ];
         let built = passthrough(scheme, &key, &inner).unwrap();
         assert_eq!(built.program_id, PROGRAM_ID);
-        // The program grants the account its signature inside the call.
+        // The program grants the wallet its signature inside the call.
         assert!(built.accounts.iter().all(|meta| !meta.is_signer));
 
         let read = parse_passthrough(&built).unwrap();
@@ -281,15 +284,12 @@ fn a_passthrough_built_here_reads_back_into_what_it_was_built_from() {
             read.signers,
             vec![PassthroughSigner {
                 account,
-                system: false
+                system: true
             }],
             "{scheme:?}"
         );
-        // Withdraw names the account without a signer flag; reading it back
-        // gives it one, as the program does.
-        let mut expected = inner.clone();
-        expected[1].accounts[0].is_signer = true;
-        assert_eq!(read.instructions, expected, "{scheme:?}");
+        assert_eq!(read.signers[0].address(), wallet);
+        assert_eq!(read.instructions, inner, "{scheme:?}");
     }
 }
 

@@ -179,7 +179,9 @@ pub fn plan_adaptation_with(
     // chosen for it.
     let keyless = |payer: Pubkey| {
         programmatic.iter().any(|plan| plan.address == payer)
-            || vector.iter().any(|plan| plan.account == payer)
+            || vector
+                .iter()
+                .any(|plan| plan.address == payer || plan.account == payer)
     };
     let fee_payer = match tx.fee_payer() {
         Some(payer) if !keyless(payer) => payer,

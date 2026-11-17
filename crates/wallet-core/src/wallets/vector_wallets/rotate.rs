@@ -51,7 +51,7 @@ pub fn sign_rotation<V: VaultStore, M: VaultStore>(
         .find(|record| record.id == wallet)
         .ok_or(LeafError::NoWallet)?;
     let label = record.label.clone();
-    let account = record.address().ok_or(LeafError::NoWallet)?;
+    let account = record.vector_account().ok_or(LeafError::NoWallet)?;
     let settings = record
         .kind
         .vector_settings()
@@ -201,7 +201,7 @@ pub fn adopt_account_state<V: VaultStore, M: VaultStore>(
     let record = data
         .wallets
         .iter()
-        .find(|record| record.address() == Some(account))
+        .find(|record| record.vector_account() == Some(account))
         .ok_or(LeafError::NoWallet)?;
     let (wallet, label) = (record.id, record.label.clone());
     let scheme = record

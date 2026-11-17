@@ -416,6 +416,7 @@ fn scheme_by_shape_sizes_for_one_system_transfer() {
             let a = d.add_vector(l, true);
             SecpAccount {
                 address: a.address,
+                account: a.account,
                 wallet: a.wallet,
             }
         }),

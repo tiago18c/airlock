@@ -333,8 +333,13 @@ pub async fn initialize_vector(session: Session, id: WalletId) -> Result<(), Str
         .ok_or_else(|| "That wallet is not a Vector wallet.".to_string())?;
     let key = settings.key.to_vec();
     let scheme = settings.scheme;
+    let account = wallet
+        .contract
+        .as_ref()
+        .and_then(WalletKind::vector_account)
+        .ok_or_else(|| "That Vector wallet's key names no account.".to_string())?;
     let rpc = session.rpc().map_err(|err| err.to_string())?;
-    if wallet_flows::vector::read_account(rpc.as_ref(), &route.address)
+    if wallet_flows::vector::read_account(rpc.as_ref(), &account)
         .await
         .map_err(|err| err.to_string())?
         .is_some()

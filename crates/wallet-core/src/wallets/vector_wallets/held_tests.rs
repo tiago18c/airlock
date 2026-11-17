@@ -49,7 +49,7 @@ fn the_key_kept_in_the_record_or_a_hot_wallet_signs_and_nothing_else_does() {
     assert_eq!(signer.key(), public.to_vec());
     let keys = local_vector_keys(&wallets);
     assert_eq!(keys.len(), 1);
-    assert_eq!(keys[0].account, wallets[0].address().unwrap());
+    assert_eq!(keys[0].account, wallets[0].vector_account().unwrap());
 
     let hot = WalletRecord::from_keypair_seed("Hot", key.seed_bytes());
     let through = vector(

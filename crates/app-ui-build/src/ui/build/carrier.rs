@@ -49,12 +49,12 @@ pub(in crate::ui) fn CarrierEditor(draft: IxDraft) -> Element {
                 },
                 CarrierKind::Passthrough { signers } => rsx! {
                     p { class: "hint",
-                        "What runs as these Vector accounts. The Advance that lists them stays as it is."
+                        "What runs as these Vector wallets. The Advance that lists their accounts stays as it is."
                     }
                     for signer in signers {
                         div { class: "chip-row",
                             span { class: "chip",
-                                if signer.system { "runs as its system address" } else { "runs as" }
+                                "runs as"
                             }
                             Address { pubkey: signer.address() }
                         }

@@ -411,7 +411,7 @@ pub(in crate::ui) fn WalletSettingsDialog(
                             }
                         }
                     }
-                    if let (Some((scheme, key, held_by, held_here)), Some(address)) = (vector, pubkey) {
+                    if let (Some((scheme, key, held_by, held_here)), Some(address)) = (vector, kind.as_ref().and_then(WalletKind::vector_account)) {
                         h4 { class: "eyebrow", "Account on chain" }
                         VectorFacts { id, address, scheme, shown_key: key, held_by, held_here, state_only: true }
                     }

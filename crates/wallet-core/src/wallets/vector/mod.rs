@@ -63,15 +63,15 @@ pub use keys::{
 };
 pub use offer::{scheme_offered, signs_here};
 pub use passthrough::{
-    parse_passthrough, rewrite_passthrough, system_pda, Passthrough, PassthroughSigner,
-    PASSTHROUGH_DISCRIMINATOR,
+    parse_passthrough, rewrite_passthrough, system_pda, system_pda_under, Passthrough,
+    PassthroughSigner, PASSTHROUGH_DISCRIMINATOR,
 };
 pub use personal_sign::parse_personal_sign;
 pub use phrase::{
     find_phrase_key, new_key_phrase, normalize_key_phrase, phrase_key, phrase_seed,
     PHRASE_SEARCH_AHEAD,
 };
-pub use scheme::{address, seed, SchemeId, HEADER_LEN, VECTOR_SEED};
+pub use scheme::{address, seed, wallet_address, SchemeId, HEADER_LEN, VECTOR_SEED};
 pub use sign::{signed_message, verify, VectorKey, VectorSigner};
 pub use xmss::{
     leaf_status_note, leaves_left, leaves_used, must_rotate, salt_of_signature, warn_leaves,

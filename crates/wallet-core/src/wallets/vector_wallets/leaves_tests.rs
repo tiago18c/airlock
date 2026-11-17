@@ -54,7 +54,7 @@ impl Device {
                 next_leaf,
             },
         );
-        let (wallet, account) = (record.id, record.address().unwrap());
+        let (wallet, account) = (record.id, record.vector_account().unwrap());
         vault.change(|data| data.wallets.push(record)).unwrap();
         Self {
             marks: LeafMarks::open(marks_file.clone()),
@@ -531,7 +531,7 @@ fn restored_device() -> (Device, Vec<u8>) {
     let record =
         WalletRecord::vector_from_phrase("Tree", SchemeId::Xmss, PROGRAM_ID, PHRASE, true).unwrap();
     device.wallet = record.id;
-    device.account = record.address().unwrap();
+    device.account = record.vector_account().unwrap();
     device
         .vault
         .change(|data| data.wallets = vec![record])

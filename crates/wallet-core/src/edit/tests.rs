@@ -251,9 +251,10 @@ fn a_vector_passthrough_is_written_again_around_its_edit() {
     let payer = pk(1);
     let key = KeypairSigner::new_random();
     let account = address(&PROGRAM_ID, SchemeId::Ed25519, key.pubkey().as_ref()).unwrap();
+    let wallet = crate::wallets::vector::system_pda(&account);
     let built = compile_v1(
         payer,
-        vec![transfer(&account, &pk(2), 1_000)],
+        vec![transfer(&wallet, &pk(2), 1_000)],
         None,
         Some(Hash::new_from_array([9; 32])),
     )
@@ -278,16 +279,15 @@ fn a_vector_passthrough_is_written_again_around_its_edit() {
 
     let (carrier, inner) = carried(&opened.instructions[1]);
     assert!(matches!(carrier.kind, CarrierKind::Passthrough { .. }));
-    // A transfer from the account runs as the program's `withdraw`.
-    assert_eq!(idl(&inner[0]).instruction, "withdraw");
-    assert_eq!(idl(&inner[0]).argument("lamports"), "0.000001");
+    // A transfer from the wallet runs as it is.
+    assert_eq!(idl(&inner[0]).instruction, "transferSol");
     assert_eq!(build(&store, &opened.instructions[1]), original);
 
     let OpenedIx::Carried { inner, .. } = &mut opened.instructions[1] else {
         unreachable!()
     };
     inner.push(OpenedIx::Raw(RawDraft::from_instruction(&transfer(
-        &account,
+        &wallet,
         &pk(3),
         7,
     ))));
@@ -296,7 +296,7 @@ fn a_vector_passthrough_is_written_again_around_its_edit() {
     let before = parse_passthrough(&original).unwrap();
     assert_eq!(parsed.signers, before.signers);
     assert_eq!(parsed.instructions[0], before.instructions[0]);
-    assert_eq!(parsed.instructions[1], transfer(&account, &pk(3), 7));
+    assert_eq!(parsed.instructions[1], transfer(&wallet, &pk(3), 7));
     assert_eq!(parsed.instructions.len(), 2);
 }
 

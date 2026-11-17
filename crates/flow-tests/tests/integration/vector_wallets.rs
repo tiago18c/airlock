@@ -35,7 +35,7 @@ fn a_transfer_a_site_asked_of_a_vector_wallet_is_rebuilt_signed_here_and_lands()
     let mut desk = Desk::new();
     let account = desk.add_vector("Quantum", true);
     let receiver = KeypairSigner::new_random().pubkey();
-    let before = nonce_of(&desk, &account.address);
+    let before = nonce_of(&desk, &account.account);
 
     // The site made the account pay, as it would for any wallet.
     let adapted = desk.rebuild(
@@ -46,13 +46,16 @@ fn a_transfer_a_site_asked_of_a_vector_wallet_is_rebuilt_signed_here_and_lands()
     let tx = decode_v1_transaction(&adapted.wire).unwrap();
     let signers: Vec<Pubkey> = tx.signers.iter().map(|slot| slot.pubkey).collect();
     assert_eq!(signers, vec![desk.payer.pubkey()]);
-    // The Advance, then the transfer as a Withdraw inside the account's
-    // Passthrough.
+    // The Advance, then the transfer as the site built it, inside a
+    // Passthrough that signs as the wallet's address, its system PDA.
     assert_eq!(tx.instructions.len(), 2);
     assert_eq!(tx.instructions[0].data[0], ADVANCE_DISCRIMINATOR);
     let inner = parse_passthrough(&tx.native_instructions()[1]).unwrap();
-    assert_eq!(inner.instructions.len(), 1);
-    assert_eq!(inner.instructions[0].program_id, PROGRAM_ID);
+    assert_eq!(
+        inner.instructions,
+        vec![transfer(&account.address, &receiver, SOL / 4)]
+    );
+    assert_eq!(inner.signers[0].address(), account.address);
 
     let signed = desk.sign(&adapted.wire, &adapted.context).unwrap();
     assert_eq!((signed.authorizations, signed.signatures), (1, 1));
@@ -67,7 +70,7 @@ fn a_transfer_a_site_asked_of_a_vector_wallet_is_rebuilt_signed_here_and_lands()
     let added = SchemeId::Ed25519.advance_cu() + PASSTHROUGH_CU;
     assert!(landed.compute_units < u64::from(added), "{landed:?}");
     assert_eq!(desk.chain().balance(&receiver), SOL / 4);
-    assert_ne!(nonce_of(&desk, &account.address), before);
+    assert_ne!(nonce_of(&desk, &account.account), before);
     // The key holds no lamports and signed no transaction.
     assert_eq!(desk.chain().balance(&account.key.pubkey()), 0);
 }
@@ -189,6 +192,62 @@ fn a_token_transfer_owned_by_a_vector_wallet_lands() {
     assert_eq!((amount(&source), amount(&destination)), (600, 400));
 }
 
+/// A Vector wallet's address is its account's system PDA, which the System
+/// program owns, so it pays rent like any wallet: here for a token account
+/// another program creates, and for a new account sent its first SOL. The
+/// hot wallet pays the fee only.
+#[test]
+fn a_vector_wallet_pays_rent_for_the_accounts_it_creates() {
+    let mut desk = Desk::new();
+    let account = desk.add_vector("Quantum", true);
+    let mint = KeypairSigner::new_random().pubkey();
+    desk.chain().plant(mint, TOKEN_PROGRAM_ID, mint_data(6));
+    let ata =
+        wallet_core::spl::associated_token_address(&account.address, &mint, &TOKEN_PROGRAM_ID);
+    let fresh = KeypairSigner::new_random().pubkey();
+    let token_rent = desk.chain().rent(165);
+    let empty_rent = desk.chain().rent(0);
+
+    let adapted = desk.rebuild(
+        desk.payer.pubkey(),
+        vec![
+            wallet_core::spl::create_ata_idempotent(
+                account.address,
+                account.address,
+                mint,
+                TOKEN_PROGRAM_ID,
+            ),
+            transfer(&account.address, &fresh, empty_rent),
+        ],
+    );
+    // Both run as the site built them, inside one Passthrough.
+    let inner = parse_passthrough(
+        &decode_v1_transaction(&adapted.wire)
+            .unwrap()
+            .native_instructions()[1],
+    )
+    .unwrap();
+    assert_eq!(inner.instructions.len(), 2);
+    assert!(inner.signers[0].system);
+
+    // One lock at a time: the chain's guard lives to the end of a statement.
+    let wallet_before = desk.chain().balance(&account.address);
+    let payer_before = desk.chain().balance(&desk.payer.pubkey());
+    let signed = desk.sign(&adapted.wire, &adapted.context).unwrap();
+    desk.land(&signed.wire);
+
+    let chain = desk.chain();
+    assert_eq!(chain.data(&ata).len(), 165, "the token account is made");
+    assert_eq!(chain.balance(&ata), token_rent);
+    assert_eq!(chain.balance(&fresh), empty_rent);
+    assert_eq!(
+        wallet_before - chain.balance(&account.address),
+        token_rent + empty_rent
+    );
+    // The hot wallet paid the fee, and no rent.
+    assert!(payer_before - chain.balance(&desk.payer.pubkey()) < empty_rent);
+}
+
 #[test]
 fn instructions_around_the_accounts_own_stay_where_the_site_put_them() {
     let mut desk = Desk::new();
@@ -239,7 +298,7 @@ fn two_vector_wallets_on_two_devices_sign_one_advance_in_either_order() {
         assert_eq!(slots.len(), 2);
         assert_eq!(
             slots.iter().map(|slot| slot.address).collect::<Vec<_>>(),
-            vec![a.address, b.address]
+            vec![a.account, b.account]
         );
         // Both are Ed25519, so the length of the data tells where each goes
         // without any context.
@@ -414,7 +473,7 @@ fn a_secp256k1_vector_wallet_signs_a_transfer_that_lands() {
     let mut desk = Desk::new();
     let account = desk.add_secp("Secp");
     let receiver = KeypairSigner::new_random().pubkey();
-    let before = nonce_of(&desk, &account.address);
+    let before = nonce_of(&desk, &account.account);
 
     let adapted = desk.rebuild(
         account.address,
@@ -430,7 +489,7 @@ fn a_secp256k1_vector_wallet_signs_a_transfer_that_lands() {
     let added = SchemeId::Secp256k1.advance_cu() + PASSTHROUGH_CU;
     assert!(landed.compute_units < u64::from(added), "{landed:?}");
     assert_eq!(desk.chain().balance(&receiver), SOL / 4);
-    assert_ne!(nonce_of(&desk, &account.address), before);
+    assert_ne!(nonce_of(&desk, &account.account), before);
 }
 
 #[test]
@@ -438,7 +497,7 @@ fn an_eip191_vector_wallet_signs_a_transfer_that_lands() {
     let mut desk = Desk::new();
     let account = desk.add_eip191("Eth");
     let receiver = KeypairSigner::new_random().pubkey();
-    let before = nonce_of(&desk, &account.address);
+    let before = nonce_of(&desk, &account.account);
 
     let adapted = desk.rebuild(
         account.address,
@@ -454,7 +513,7 @@ fn an_eip191_vector_wallet_signs_a_transfer_that_lands() {
     let added = SchemeId::Eip191.advance_cu() + PASSTHROUGH_CU;
     assert!(landed.compute_units < u64::from(added), "{landed:?}");
     assert_eq!(desk.chain().balance(&receiver), SOL / 4);
-    assert_ne!(nonce_of(&desk, &account.address), before);
+    assert_ne!(nonce_of(&desk, &account.account), before);
 }
 
 #[test]
@@ -462,7 +521,7 @@ fn an_mldsa44_vector_wallet_signs_a_transfer_that_lands() {
     let mut desk = Desk::new();
     let account = desk.add_mldsa("Dilithium");
     let receiver = KeypairSigner::new_random().pubkey();
-    let before = nonce_of(&desk, &account.address);
+    let before = nonce_of(&desk, &account.account);
 
     let adapted = desk.rebuild(
         account.address,
@@ -478,7 +537,7 @@ fn an_mldsa44_vector_wallet_signs_a_transfer_that_lands() {
     let added = SchemeId::MlDsa44.advance_cu() + PASSTHROUGH_CU;
     assert!(landed.compute_units < u64::from(added), "{landed:?}");
     assert_eq!(desk.chain().balance(&receiver), SOL / 4);
-    assert_ne!(nonce_of(&desk, &account.address), before);
+    assert_ne!(nonce_of(&desk, &account.account), before);
 }
 
 #[test]
@@ -486,7 +545,7 @@ fn a_falcon512_vector_wallet_signs_a_transfer_that_lands() {
     let mut desk = Desk::new();
     let account = desk.add_falcon("Falcon");
     let receiver = KeypairSigner::new_random().pubkey();
-    let before = nonce_of(&desk, &account.address);
+    let before = nonce_of(&desk, &account.account);
 
     let adapted = desk.rebuild(
         account.address,
@@ -502,7 +561,7 @@ fn a_falcon512_vector_wallet_signs_a_transfer_that_lands() {
     let added = SchemeId::Falcon512.advance_cu() + PASSTHROUGH_CU;
     assert!(landed.compute_units < u64::from(added), "{landed:?}");
     assert_eq!(desk.chain().balance(&receiver), SOL / 4);
-    assert_ne!(nonce_of(&desk, &account.address), before);
+    assert_ne!(nonce_of(&desk, &account.account), before);
 }
 
 #[test]
@@ -510,7 +569,7 @@ fn an_xmss_vector_wallet_signs_a_transfer_that_lands() {
     let mut desk = Desk::new();
     let account = desk.add_xmss("Tree");
     let receiver = KeypairSigner::new_random().pubkey();
-    let before = nonce_of(&desk, &account.address);
+    let before = nonce_of(&desk, &account.account);
 
     let adapted = desk.rebuild(
         account.address,
@@ -529,11 +588,11 @@ fn an_xmss_vector_wallet_signs_a_transfer_that_lands() {
     let added = SchemeId::Xmss.advance_cu() + PASSTHROUGH_CU;
     assert!(landed.compute_units < u64::from(added), "{landed:?}");
     assert_eq!(desk.chain().balance(&receiver), SOL / 4);
-    assert_ne!(nonce_of(&desk, &account.address), before);
+    assert_ne!(nonce_of(&desk, &account.account), before);
     assert_eq!(
         VectorAccount::parse(
             &PROGRAM_ID,
-            &desk.chain().account(&account.address).unwrap()
+            &desk.chain().account(&account.account).unwrap()
         )
         .unwrap()
         .next_leaf(),
@@ -610,7 +669,7 @@ fn the_key_device_rotates_an_xmss_account_without_a_node_and_signs_with_the_next
     );
     let held = VectorAccount::parse(
         &PROGRAM_ID,
-        &desk.chain().account(&account.address).unwrap(),
+        &desk.chain().account(&account.account).unwrap(),
     )
     .unwrap();
     assert_eq!(held.current_key(), Some(rotation.next_key.as_slice()));
@@ -774,7 +833,7 @@ fn a_wallet_restored_from_its_phrase_finds_its_key_and_rotates_at_the_last_leaf(
 
     // The online device shows the account's state; the key it holds is the
     // phrase's key 1.
-    let adopted = desk.adopt_state(account.wallet, &account.address);
+    let adopted = desk.adopt_state(account.wallet, &account.account);
     assert_eq!(adopted.index, Some(1));
 
     // One signature, at the last leaf of key 1, moves it to key 2. It is
@@ -834,7 +893,7 @@ fn a_restored_wallet_beaten_to_the_nonce_signs_again_with_the_leaf_below() {
     let held_back = signed_transfer(&mut desk);
 
     desk.restore_from_phrase(account.wallet, PHRASE);
-    desk.adopt_state(account.wallet, &account.address);
+    desk.adopt_state(account.wallet, &account.account);
     assert_eq!(
         desk.recovery_left(account.wallet),
         Some(XMSS_RECOVERY_LEAVES)
@@ -874,7 +933,7 @@ fn a_restored_wallet_beaten_to_the_nonce_signs_again_with_the_leaf_below() {
     );
 
     // With it, the second attempt signs at the new nonce, one leaf down.
-    desk.adopt_state(account.wallet, &account.address);
+    desk.adopt_state(account.wallet, &account.account);
     let second_try = desk.sign_rotation(account.wallet);
     assert_eq!(second_try.signed.len(), 1);
     assert_ne!(second_try.signed[0].nonce, first_try.signed[0].nonce);
@@ -903,10 +962,10 @@ fn a_phrase_typed_in_twice_signs_the_same_rotation_and_not_a_second_one() {
     // Two devices restored from one phrase, neither knowing of the other,
     // shown the same state.
     desk.restore_from_phrase(account.wallet, PHRASE);
-    desk.adopt_state(account.wallet, &account.address);
+    desk.adopt_state(account.wallet, &account.account);
     let one = desk.sign_rotation(account.wallet);
     desk.restore_from_phrase(account.wallet, PHRASE);
-    desk.adopt_state(account.wallet, &account.address);
+    desk.adopt_state(account.wallet, &account.account);
     let other = desk.sign_rotation(account.wallet);
 
     // One leaf, one digest, one salt: the same bytes, so nobody who holds
@@ -929,13 +988,13 @@ fn a_restored_wallet_signs_no_more_than_the_leaves_kept_for_it() {
     desk.restore_from_phrase(account.wallet, PHRASE);
     let mut leaves = Vec::new();
     for attempt in 0..XMSS_RECOVERY_LEAVES {
-        desk.adopt_told_state(account.wallet, &account.address, [attempt as u8 + 1; 32]);
+        desk.adopt_told_state(account.wallet, &account.account, [attempt as u8 + 1; 32]);
         let rotation = desk.sign_rotation(account.wallet);
         leaves.push(leaf_of(&rotation.signed[0]));
     }
     assert_eq!(leaves, [255, 254, 253, 252]);
     assert_eq!(desk.recovery_left(account.wallet), Some(0));
-    desk.adopt_told_state(account.wallet, &account.address, [9; 32]);
+    desk.adopt_told_state(account.wallet, &account.account, [9; 32]);
     let refused = desk.try_sign_rotation(account.wallet).unwrap_err();
     assert!(
         refused.contains("every leaf kept for recovering"),
@@ -950,7 +1009,7 @@ fn an_account_state_that_claims_more_leaves_than_a_key_has_is_not_taken() {
     let mut desk = Desk::new();
     let account = desk.add_xmss_phrase("Tree", PHRASE);
     let refused = desk
-        .try_adopt(account.wallet, &account.address, |state| {
+        .try_adopt(account.wallet, &account.account, |state| {
             state.leaf_floor = wallet_core::vector::XMSS_LEAVES + 1;
         })
         .unwrap_err();
@@ -970,7 +1029,7 @@ fn a_winternitz_vector_wallet_signs_rotates_and_signs_again() {
     let mut desk = Desk::new();
     let account = desk.add_winternitz("Once");
     let receiver = KeypairSigner::new_random().pubkey();
-    let before = nonce_of(&desk, &account.address);
+    let before = nonce_of(&desk, &account.account);
 
     // Without a next key, rebuild refuses.
     desk.wallets
@@ -1012,11 +1071,11 @@ fn a_winternitz_vector_wallet_signs_rotates_and_signs_again() {
     let added = SchemeId::Winternitz.advance_cu() + PASSTHROUGH_CU;
     assert!(landed.compute_units < u64::from(added), "{landed:?}");
     assert_eq!(desk.chain().balance(&receiver), SOL / 4);
-    assert_ne!(nonce_of(&desk, &account.address), before);
+    assert_ne!(nonce_of(&desk, &account.account), before);
 
     // The account moved to the next key: it is installed, and the key after
     // it is made with it.
-    desk.install_rotation(account.wallet, &account.address);
+    desk.install_rotation(account.wallet, &account.account);
 
     let second = desk.rebuild(
         account.address,
@@ -1053,11 +1112,11 @@ fn a_winternitz_key_device_moves_on_from_the_account_state_it_is_shown() {
     // The key device never reads the chain: the state the online device
     // shows tells it the transaction landed, and it moves to the next key
     // and makes the one after it.
-    let adopted = desk.adopt_state(account.wallet, &account.address);
+    let adopted = desk.adopt_state(account.wallet, &account.account);
     assert_eq!(adopted.index, None);
     let read = VectorAccount::parse(
         &PROGRAM_ID,
-        &desk.chain().account(&account.address).unwrap(),
+        &desk.chain().account(&account.account).unwrap(),
     )
     .unwrap();
     assert_eq!(read.current_key(), Some(first_next.as_slice()));
@@ -1077,7 +1136,7 @@ fn a_winternitz_key_device_moves_on_from_the_account_state_it_is_shown() {
 fn an_xmss_wallet_may_skip_a_leaf_and_cannot_reuse_a_lower_one() {
     let mut desk = Desk::new();
     let account = desk.add_xmss("Skip");
-    desk.set_xmss_leaf(&account.address, 3);
+    desk.set_xmss_leaf(&account.account, 3);
     let receiver = KeypairSigner::new_random().pubkey();
 
     let adapted = desk.rebuild(
@@ -1091,7 +1150,7 @@ fn an_xmss_wallet_may_skip_a_leaf_and_cannot_reuse_a_lower_one() {
     assert_eq!(
         VectorAccount::parse(
             &PROGRAM_ID,
-            &desk.chain().account(&account.address).unwrap()
+            &desk.chain().account(&account.account).unwrap()
         )
         .unwrap()
         .next_leaf(),
@@ -1099,7 +1158,7 @@ fn an_xmss_wallet_may_skip_a_leaf_and_cannot_reuse_a_lower_one() {
     );
 
     // A signature made at leaf 0 while the chain wants 4 cannot land.
-    desk.set_xmss_leaf(&account.address, 4);
+    desk.set_xmss_leaf(&account.account, 4);
     let stale = desk.rebuild(
         account.address,
         vec![transfer(&account.address, &receiver, SOL / 16)],
@@ -1134,7 +1193,7 @@ fn the_last_xmss_leaf_must_rotate_and_rotation_resets_the_chain() {
     // The last leaf a device that kept its key signs with: those after it
     // are kept for a wallet restored from its recovery phrase.
     desk.set_xmss_leaf(
-        &account.address,
+        &account.account,
         wallet_core::vector::XMSS_RECOVERY_FROM - 1,
     );
     let receiver = KeypairSigner::new_random().pubkey();
@@ -1158,7 +1217,7 @@ fn the_last_xmss_leaf_must_rotate_and_rotation_resets_the_chain() {
     desk.land(&signed.wire);
     let read = VectorAccount::parse(
         &PROGRAM_ID,
-        &desk.chain().account(&account.address).unwrap(),
+        &desk.chain().account(&account.account).unwrap(),
     )
     .unwrap();
     assert_eq!(read.next_leaf(), Some(0));
@@ -1167,7 +1226,7 @@ fn the_last_xmss_leaf_must_rotate_and_rotation_resets_the_chain() {
     // The new seed is installed once the chain holds its key, and the new
     // key signs from its own first leaf: the old key's marks do not carry
     // over.
-    desk.install_rotation(account.wallet, &account.address);
+    desk.install_rotation(account.wallet, &account.account);
     let wallet = desk
         .wallets
         .iter()
@@ -1182,7 +1241,7 @@ fn the_last_xmss_leaf_must_rotate_and_rotation_resets_the_chain() {
     desk.land(&signed.wire);
     let read = VectorAccount::parse(
         &PROGRAM_ID,
-        &desk.chain().account(&account.address).unwrap(),
+        &desk.chain().account(&account.account).unwrap(),
     )
     .unwrap();
     assert_eq!(read.next_leaf(), Some(1));

@@ -2,8 +2,8 @@
 
 use super::*;
 use wallet_core::vector::{
-    address, new_held_key, new_key_phrase, normalize_key_phrase, parse_public_key, phrase_key,
-    scheme_offered, signs_here, SchemeId, PROGRAM_ID,
+    new_held_key, new_key_phrase, normalize_key_phrase, parse_public_key, phrase_key,
+    scheme_offered, signs_here, wallet_address, SchemeId, PROGRAM_ID,
 };
 use wallet_core::{format_sol, Authority, SecretBytes};
 use zeroize::Zeroize;
@@ -104,7 +104,7 @@ pub fn VectorForm(creating: bool, on_done: EventHandler<()>) -> Element {
     };
     let address_preview = key_preview
         .as_ref()
-        .and_then(|key| address(&PROGRAM_ID, scheme(), key).ok());
+        .and_then(|key| wallet_address(&PROGRAM_ID, scheme(), key).ok());
 
     let paste_placeholder = match scheme() {
         SchemeId::Ed25519 => "Base58 Ed25519 address",
@@ -424,7 +424,7 @@ pub fn VectorForm(creating: bool, on_done: EventHandler<()>) -> Element {
         }
         if let Some(address) = address_preview {
             p { class: "wallet-fact",
-                span { class: "muted", "Account address" }
+                span { class: "muted", "Wallet address" }
                 span { class: "addr-full",
                     code { class: "mono", "{address}" }
                     CopyButton { text: address.to_string() }

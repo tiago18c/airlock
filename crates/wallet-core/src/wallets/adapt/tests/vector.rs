@@ -15,8 +15,8 @@ fn expiry_of(wire: &[u8]) -> Option<u64> {
 }
 
 /// A Vector wallet whose key is on another device, paid for by the desk's
-/// hot wallet.
-fn add_vector(d: &mut Desk, key: &KeypairSigner) -> (WalletId, Pubkey) {
+/// hot wallet: its id, its address (the system PDA) and its account.
+fn add_vector(d: &mut Desk, key: &KeypairSigner) -> (WalletId, Pubkey, Pubkey) {
     let mut wallet = WalletRecord::vector(
         "Quantum",
         SchemeId::Ed25519,
@@ -25,7 +25,11 @@ fn add_vector(d: &mut Desk, key: &KeypairSigner) -> (WalletId, Pubkey) {
         Authority::Outside,
     );
     wallet.kind.set_fee_payer(Some(d.payer_id));
-    let found = (wallet.id, wallet.address().unwrap());
+    let found = (
+        wallet.id,
+        wallet.address().unwrap(),
+        wallet.vector_account().unwrap(),
+    );
     d.wallets.push(wallet);
     found
 }
@@ -46,8 +50,8 @@ fn vector_account(key: &[u8], scheme: SchemeId, nonce: [u8; 32]) -> RawAccount {
 fn a_transaction_for_a_vector_wallet_is_wrapped_with_the_account_as_read() {
     let mut d = desk();
     let key = KeypairSigner::new_random();
-    let (_, account) = add_vector(&mut d, &key);
-    let tx = site_tx(account);
+    let (_, address, account) = add_vector(&mut d, &key);
+    let tx = site_tx(address);
 
     let plan = plan_adaptation(&tx, &d.wallets, None).unwrap().unwrap();
     assert_eq!(
@@ -55,11 +59,11 @@ fn a_transaction_for_a_vector_wallet_is_wrapped_with_the_account_as_read() {
         vec![AskedWallet::Vector {
             wallet: "Quantum".into(),
             scheme: SchemeId::Ed25519,
-            account,
+            address,
         }]
     );
     assert_eq!(plan.accounts_to_read(), vec![account, clock().0]);
-    // The site made the account pay. The hot wallet set for it does.
+    // The site made the wallet pay. The hot wallet set for it does.
     assert_eq!(plan.fee_payer, d.payer.pubkey());
 
     let nonce = [6u8; 32];
@@ -76,7 +80,7 @@ fn a_transaction_for_a_vector_wallet_is_wrapped_with_the_account_as_read() {
         vec![AdaptedStep::Vector {
             wallet: "Quantum".into(),
             scheme: SchemeId::Ed25519,
-            account,
+            address,
         }]
     );
     assert_eq!(adapted.context.len(), 1);
@@ -110,8 +114,8 @@ fn a_transaction_for_a_vector_wallet_is_wrapped_with_the_account_as_read() {
 fn an_account_that_cannot_sign_as_its_wallet_says_is_refused_before_wrapping() {
     let mut d = desk();
     let key = KeypairSigner::new_random();
-    let (_, account) = add_vector(&mut d, &key);
-    let tx = site_tx(account);
+    let (_, address, account) = add_vector(&mut d, &key);
+    let tx = site_tx(address);
     let plan = plan_adaptation(&tx, &d.wallets, None).unwrap().unwrap();
     let build = |read: &[(Pubkey, RawAccount)]| plan.build(&tx, read, blockhash(2)).unwrap_err();
     let ours = key.pubkey().to_bytes();
@@ -134,11 +138,11 @@ fn an_account_that_cannot_sign_as_its_wallet_says_is_refused_before_wrapping() {
 fn a_vector_wallet_and_a_programmatic_signer_share_one_rebuild() {
     let mut d = desk();
     let key = KeypairSigner::new_random();
-    let (_, account) = add_vector(&mut d, &key);
+    let (_, address, account) = add_vector(&mut d, &key);
     let both = decode_v1_transaction(
         &compile_v1(
             d.payer.pubkey(),
-            vec![transfer(account, pk(2), 5), transfer(d.address, pk(3), 5)],
+            vec![transfer(address, pk(2), 5), transfer(d.address, pk(3), 5)],
             None,
             Some(blockhash(1)),
         )
@@ -168,7 +172,7 @@ fn a_vector_wallet_and_a_programmatic_signer_share_one_rebuild() {
     let rebuilt = decode_v1_transaction(&adapted.wire).unwrap();
     assert_eq!(authority_slots(&rebuilt).len(), 2);
 
-    let plan = plan_adaptation(&site_tx(account), &d.wallets, None)
+    let plan = plan_adaptation(&site_tx(address), &d.wallets, None)
         .unwrap()
         .unwrap();
     assert_eq!(
@@ -195,7 +199,8 @@ fn an_mldsa_member_refuses_when_even_create_and_propose_do_not_fit() {
         Authority::Outside,
     );
     wallet.kind.set_fee_payer(Some(d.payer_id));
-    let account = wallet.address().unwrap();
+    let address = wallet.address().unwrap();
+    let account = wallet.vector_account().unwrap();
     let vector_id = wallet.id;
     d.wallets.push(wallet);
     let squad = d.add_squad(SquadsProgram::V4, vector_id);
@@ -208,7 +213,7 @@ fn an_mldsa_member_refuses_when_even_create_and_propose_do_not_fit() {
     let plan = plan_adaptation(&tx, &d.wallets, None).unwrap().unwrap();
     let read = [
         clock(),
-        squad_account(&squad, 1, 0, 0, &[(account, PERMISSION_ALL)]),
+        squad_account(&squad, 1, 0, 0, &[(address, PERMISSION_ALL)]),
         (account, vector_account(&public, SchemeId::MlDsa44, [1; 32])),
     ];
     let error = plan.build(&tx, &read, blockhash(2)).unwrap_err();
@@ -231,7 +236,8 @@ fn an_mldsa_member_still_executes_when_a_stacked_cu_estimate_would_have_exceeded
         Authority::Outside,
     );
     wallet.kind.set_fee_payer(Some(d.payer_id));
-    let account = wallet.address().unwrap();
+    let address = wallet.address().unwrap();
+    let account = wallet.vector_account().unwrap();
     let vector_id = wallet.id;
     d.wallets.push(wallet);
     let squad = d.add_squad(SquadsProgram::V4, vector_id);
@@ -247,7 +253,7 @@ fn an_mldsa_member_still_executes_when_a_stacked_cu_estimate_would_have_exceeded
     let plan = plan_adaptation(&tx, &d.wallets, None).unwrap().unwrap();
     let read = [
         clock(),
-        squad_account(&squad, 1, 0, 0, &[(account, PERMISSION_ALL)]),
+        squad_account(&squad, 1, 0, 0, &[(address, PERMISSION_ALL)]),
         (account, vector_account(&public, SchemeId::MlDsa44, [1; 32])),
     ];
     let adapted = plan.build(&tx, &read, blockhash(2)).unwrap();
@@ -259,7 +265,7 @@ fn an_mldsa_member_still_executes_when_a_stacked_cu_estimate_would_have_exceeded
                 executor: Some(exec),
                 held_back: None,
                 ..
-            } if voters == &[account] && exec == &account
+            } if voters == &[address] && exec == &address
         ),
         "{:?}",
         adapted.steps[0]
@@ -271,7 +277,7 @@ fn an_mldsa_member_still_executes_when_a_stacked_cu_estimate_would_have_exceeded
 fn a_multisig_acted_on_by_a_vector_wallet_proposes_through_its_advance() {
     let mut d = desk();
     let key = KeypairSigner::new_random();
-    let (vector_id, account) = add_vector(&mut d, &key);
+    let (vector_id, address, account) = add_vector(&mut d, &key);
     let squad = d.add_squad(SquadsProgram::V4, vector_id);
     let vault = squad.vault(0);
     let plan = plan_adaptation(&site_tx(vault), &d.wallets, None)
@@ -283,7 +289,7 @@ fn a_multisig_acted_on_by_a_vector_wallet_proposes_through_its_advance() {
     );
     let read = [
         clock(),
-        squad_account(&squad, 1, 0, 0, &[(account, PERMISSION_ALL)]),
+        squad_account(&squad, 1, 0, 0, &[(address, PERMISSION_ALL)]),
         (
             account,
             vector_account(key.pubkey().as_ref(), SchemeId::Ed25519, [1; 32]),
@@ -339,9 +345,10 @@ fn an_xmss_wallet_rotates_only_when_few_leaves_are_left_and_never_into_the_key_i
     );
     wallet.kind.set_fee_payer(Some(d.payer_id));
     wallet.accept_vector_next_pubkey(next.clone()).unwrap();
-    let account = wallet.address().unwrap();
+    let address = wallet.address().unwrap();
+    let account = wallet.vector_account().unwrap();
     d.wallets.push(wallet);
-    let tx = site_tx(account);
+    let tx = site_tx(address);
     let plan = plan_adaptation(&tx, &d.wallets, None).unwrap().unwrap();
     let build = |held: &[u8], next_leaf: u32| {
         let read = [clock(), (account, xmss_account(&first, held, next_leaf))];

@@ -331,3 +331,17 @@ pub fn address(program: &Pubkey, scheme: SchemeId, key: &[u8]) -> Result<Pubkey,
         .map(|(address, _)| address)
         .ok_or(VectorError::NoAddress)
 }
+
+/// The address a Vector wallet of `key` under `scheme` is known by: the
+/// system PDA of its account. It belongs to the System program, so it holds
+/// the wallet's SOL, pays rent and owns its token accounts like any wallet,
+/// and every `Passthrough` the app builds signs as it. The account itself
+/// keeps only the key and the nonce.
+pub fn wallet_address(
+    program: &Pubkey,
+    scheme: SchemeId,
+    key: &[u8],
+) -> Result<Pubkey, VectorError> {
+    let account = address(program, scheme, key)?;
+    Ok(super::passthrough::system_pda_under(program, &account))
+}

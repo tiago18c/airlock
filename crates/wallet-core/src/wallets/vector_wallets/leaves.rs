@@ -588,7 +588,7 @@ pub fn reserve<V: VaultStore, M: VaultStore>(
         Some(SchemeId::Xmss) => reserve_leaf(vault, marks, wallet, &key, chain_floor, purpose),
         Some(SchemeId::Winternitz) => {
             let label = record.label.clone();
-            let account = record.address().ok_or(LeafError::NoWallet)?;
+            let account = record.vector_account().ok_or(LeafError::NoWallet)?;
             let salt = marks
                 .spend_once(&account, &key, digest, || {
                     signer
@@ -630,7 +630,7 @@ pub fn reserve_leaf<V: VaultStore, M: VaultStore>(
         .find(|record| record.id == wallet)
         .ok_or(LeafError::NoWallet)?;
     let label = record.label.clone();
-    let account = record.address();
+    let account = record.vector_account();
     let (
         Some(account),
         WalletKind::Programmatic {
@@ -694,7 +694,7 @@ pub fn recovery_attempts_left<V: VaultStore, M: VaultStore>(
     if !record.vector_phrase().is_some_and(|phrase| phrase.restored) {
         return None;
     }
-    let account = record.address()?;
+    let account = record.vector_account()?;
     let key = VectorSigner::from_record(&data.wallets, wallet).ok()?.key();
     let used = marks.recovery_used(&account, &key);
     let floor = own_count(record, marks, &account, &key);
@@ -732,7 +732,7 @@ pub fn reserve_recovery_leaf<V: VaultStore, M: VaultStore>(
         .kind
         .vector_settings()
         .is_some_and(|settings| settings.scheme == SchemeId::Xmss);
-    let (Some(account), true, true) = (record.address(), restored, xmss) else {
+    let (Some(account), true, true) = (record.vector_account(), restored, xmss) else {
         return Err(LeafError::NotStateful(label));
     };
     let used = marks.recovery_used(&account, key);
@@ -811,7 +811,7 @@ pub fn keys_to_sign_with<V: VaultStore, M: VaultStore>(
             .map_err(|_| LeafError::Locked)?
             .wallets
             .iter()
-            .find(|wallet| wallet.address() == Some(key.account))
+            .find(|wallet| wallet.vector_account() == Some(key.account))
             .ok_or(LeafError::NoWallet)?;
         if record.vector_phrase().is_some_and(|phrase| phrase.restored) {
             return Err(LeafError::RestoredMustRotate(record.label.clone()));
@@ -906,7 +906,7 @@ pub fn install_landed_rotations<V: VaultStore, M: VaultStore>(
         let Some(id) = data
             .wallets
             .iter()
-            .find(|wallet| wallet.address() == Some(context.account))
+            .find(|wallet| wallet.vector_account() == Some(context.account))
             .map(|wallet| wallet.id)
         else {
             continue;

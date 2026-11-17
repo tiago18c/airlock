@@ -46,7 +46,13 @@ impl PassthroughSigner {
 /// The system PDA of the Vector account `account`: owned by the System
 /// program, and signed for by a `Passthrough` that asks for it.
 pub fn system_pda(account: &Pubkey) -> Pubkey {
-    Pubkey::find_program_address(&[account.as_ref()], &PROGRAM_ID).0
+    system_pda_under(&PROGRAM_ID, account)
+}
+
+/// The system PDA of the Vector account `account` of the program at
+/// `program`.
+pub fn system_pda_under(program: &Pubkey, account: &Pubkey) -> Pubkey {
+    Pubkey::find_program_address(&[account.as_ref()], program).0
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

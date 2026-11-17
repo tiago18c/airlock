@@ -43,10 +43,10 @@ pub(in crate::ui) fn RebuildBanner(plan: Result<AdaptPlan, String>, online: bool
                             " signs an authorization instead, and a hot wallet relays it."
                         }
                     },
-                    AskedWallet::Vector { scheme, account, .. } => rsx! {
+                    AskedWallet::Vector { scheme, address, .. } => rsx! {
                         p { key: "{i}",
-                            Address { pubkey: account }
-                            " is a Vector wallet. No key signs a transaction as that account: its {scheme.label()} key signs the whole transaction instead, and a hot wallet relays it."
+                            Address { pubkey: address }
+                            " is a Vector wallet. No key signs a transaction as that address: its {scheme.label()} key signs the whole transaction instead, and a hot wallet relays it."
                         }
                     },
                 }
@@ -144,8 +144,7 @@ fn SignerRow(
                 AddressRow { pubkey: line.authority_chip(), full: inspect, no_copy: true,
                     CopyButton { text: line.authority_chip().to_string() }
                     if let SignerRole::Authority { address } = line.role {
-                        // A Vector row without the controlling key only knows the
-                        // account; do not print it twice around "for".
+                        // Do not print one address twice around "for".
                         if line.authority_chip() != address {
                             span { class: "muted", "for" }
                             Address { pubkey: address }

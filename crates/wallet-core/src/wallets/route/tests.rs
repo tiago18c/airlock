@@ -223,10 +223,12 @@ fn a_vector_account_is_signed_for_by_a_wallet_or_by_the_key_in_its_record() {
     // An Ed25519 key that is a hot wallet here.
     let mut through = vector("Through", SchemeId::Ed25519, Authority::of(Some(key.id)));
     through.kind.set_fee_payer(Some(payer.id));
-    let account = through.address().unwrap();
+    let account = through.vector_account().unwrap();
     let wallets = vec![payer.clone(), key.clone(), through.clone()];
     let route = signing_route(&wallets, through.id).unwrap();
-    assert_eq!(route.address, account);
+    // The wallet acts as its account's system PDA.
+    assert_eq!(route.address, through.address().unwrap());
+    assert_ne!(route.address, account);
     assert_eq!(
         route.steps[0],
         RouteStep::Vector {

@@ -258,6 +258,26 @@ impl WalletKind {
         }
     }
 
+    /// A Vector wallet's account: the program's account that keeps its key
+    /// and nonce, and that an `Advance` lists. The wallet's funds are not
+    /// there but at its address, the account's system PDA
+    /// ([`WalletRecord::address`](crate::wallets::record::WalletRecord::address)).
+    pub fn vector_account(&self) -> Option<Pubkey> {
+        match self {
+            Self::Programmatic {
+                protocol:
+                    Protocol::Vector {
+                        scheme,
+                        program,
+                        key,
+                        ..
+                    },
+                ..
+            } => crate::wallets::vector::address(program, *scheme, &key.0).ok(),
+            _ => None,
+        }
+    }
+
     /// The recovery phrase a Vector wallet's keys are made from, when they
     /// are. In a summary its words are empty: only the number of the key
     /// and whether it was restored are shown.

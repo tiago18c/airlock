@@ -86,7 +86,7 @@ pub fn use_vector_reads(wallets: &[WalletSummary]) {
                 .and_then(WalletKind::vector_settings)
                 .is_some()
         })
-        .filter_map(|wallet| wallet.address)
+        .filter_map(|wallet| wallet.contract.as_ref()?.vector_account())
         .collect();
     let mut read = use_signal(|| None);
     let turn = use_signal(|| 0u32);

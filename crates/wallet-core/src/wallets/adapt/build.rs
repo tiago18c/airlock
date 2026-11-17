@@ -36,7 +36,7 @@ impl AdaptPlan {
                     asked.push(AskedWallet::Vector {
                         wallet: vector.label.clone(),
                         scheme: vector.scheme,
-                        account: vector.account,
+                        address: vector.address,
                     });
                 }
                 if let Some(programmatic) = &member.programmatic {
@@ -60,7 +60,7 @@ impl AdaptPlan {
         asked.extend(self.vector.iter().map(|plan| AskedWallet::Vector {
             wallet: plan.label.clone(),
             scheme: plan.scheme,
-            account: plan.account,
+            address: plan.address,
         }));
         asked
     }
@@ -681,7 +681,7 @@ fn wrap_vector_plans<'a>(
         .map(|vector| AdaptedStep::Vector {
             wallet: vector.label.clone(),
             scheme: vector.scheme,
-            account: vector.account,
+            address: vector.address,
         })
         .collect();
     Ok((wire, steps))

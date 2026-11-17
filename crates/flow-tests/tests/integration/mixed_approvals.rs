@@ -431,7 +431,7 @@ fn two_programmatic_and_two_vector_members_share_one_submit_and_one_passthrough(
         .map(|signer| signer.account)
         .collect();
     assert_eq!(runs_as.len(), 2);
-    assert!(runs_as.contains(&v1.address) && runs_as.contains(&v2.address));
+    assert!(runs_as.contains(&v1.account) && runs_as.contains(&v2.account));
     let authorities = wallet_core::relay::authority_slots(&tx);
     assert_eq!(authorities.len(), 4, "{authorities:?}");
 

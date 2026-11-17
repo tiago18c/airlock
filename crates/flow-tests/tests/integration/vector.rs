@@ -5,7 +5,7 @@ use crate::support::{logs, Chain, SOL};
 use solana_pubkey::Pubkey;
 use wallet_core::vector::{
     address, advance, advance_message, initialize, passthrough, signed_message, signer_digest,
-    withdraw, AdvanceEntry, SchemeId, VectorAccount, VectorError, NEVER_EXPIRES, PROGRAM_ID,
+    system_pda, AdvanceEntry, SchemeId, VectorAccount, VectorError, NEVER_EXPIRES, PROGRAM_ID,
 };
 use wallet_core::{
     apply_local_signatures, compile_v1_budget, decode_v1_transaction, ComputeBudgetSpec,
@@ -14,8 +14,8 @@ use wallet_core::{
 
 const SCHEME: SchemeId = SchemeId::Ed25519;
 
-/// An initialized Ed25519 account holding one SOL, the key that signs for
-/// it, and who pays.
+/// An initialized Ed25519 account whose system PDA, the wallet's address,
+/// holds one SOL, the key that signs for it, and who pays.
 fn funded_account(chain: &mut Chain) -> (KeypairSigner, KeypairSigner, Pubkey) {
     let payer = KeypairSigner::new_random();
     chain.fund(&payer.pubkey(), 10 * SOL);
@@ -28,8 +28,14 @@ fn funded_account(chain: &mut Chain) -> (KeypairSigner, KeypairSigner, Pubkey) {
         )
         .unwrap_or_else(|failure| panic!("initialize: {}", logs(&failure)));
     let account = address(&PROGRAM_ID, SCHEME, &key).unwrap();
-    chain.fund(&account, SOL);
+    chain.fund(&system_pda(&account), SOL);
     (payer, authority, account)
+}
+
+/// A System transfer of `lamports` out of the wallet of `account`: its
+/// system PDA, which a `Passthrough` built here signs as.
+fn pay(account: &Pubkey, to: &Pubkey, lamports: u64) -> Instruction {
+    solana_system_interface::instruction::transfer(&system_pda(account), to, lamports)
 }
 
 fn compile(chain: &Chain, payer: &KeypairSigner, instructions: Vec<Instruction>) -> Vec<u8> {
@@ -148,20 +154,19 @@ fn an_ml_dsa_account_is_complete_only_once_grown_twice() {
 }
 
 #[test]
-fn a_withdrawal_signed_over_the_digest_lands_and_moves_the_nonce() {
+fn a_transfer_signed_over_the_digest_lands_and_moves_the_nonce() {
     let mut chain = Chain::new();
     let (payer, authority, account) = funded_account(&mut chain);
-    let key = authority.pubkey().to_bytes();
     let receiver = KeypairSigner::new_random().pubkey();
     let before = read(&chain, &account);
 
     let lamports = SOL / 4;
-    let inner = [withdraw(SCHEME, &key, &receiver, lamports).unwrap()];
+    let inner = [pay(&account, &receiver, lamports)];
     let wire = signed_wire(&chain, &payer, &authority, &inner, before.nonce);
     let landed = chain
         .send_wire(&wire)
-        .unwrap_or_else(|failure| panic!("withdraw: {}", logs(&failure)));
-    println!("Ed25519 Advance and Withdraw: {} CU", landed.compute_units);
+        .unwrap_or_else(|failure| panic!("transfer: {}", logs(&failure)));
+    println!("Ed25519 Advance and transfer: {} CU", landed.compute_units);
     assert_eq!(chain.balance(&receiver), lamports);
 
     // The nonce moved, so the same signature does not land twice.
@@ -177,7 +182,7 @@ fn a_signature_over_other_instructions_or_another_nonce_does_not_land() {
     let key = authority.pubkey().to_bytes();
     let receiver = KeypairSigner::new_random().pubkey();
     let nonce = read(&chain, &account).nonce;
-    let small = [withdraw(SCHEME, &key, &receiver, 1_000).unwrap()];
+    let small = [pay(&account, &receiver, 1_000)];
 
     let stale = signed_wire(&chain, &payer, &authority, &small, [9; 32]);
     assert!(chain.send_wire(&stale).is_err());
@@ -187,7 +192,7 @@ fn a_signature_over_other_instructions_or_another_nonce_does_not_land() {
     let mut instructions = decode_v1_transaction(&signed)
         .unwrap()
         .native_instructions();
-    let large = [withdraw(SCHEME, &key, &receiver, 2_000).unwrap()];
+    let large = [pay(&account, &receiver, 2_000)];
     instructions[1] = passthrough(SCHEME, &key, &large).unwrap();
     assert!(chain
         .send_wire(&compile(&chain, &payer, instructions))
@@ -201,11 +206,10 @@ fn a_signature_over_other_instructions_or_another_nonce_does_not_land() {
 fn an_authorization_lands_until_its_slot_and_no_one_can_extend_it() {
     let mut chain = Chain::new();
     let (payer, authority, account) = funded_account(&mut chain);
-    let key = authority.pubkey().to_bytes();
     let receiver = KeypairSigner::new_random().pubkey();
     chain.warp(1_000);
     let nonce = read(&chain, &account).nonce;
-    let inner = [withdraw(SCHEME, &key, &receiver, SOL / 4).unwrap()];
+    let inner = [pay(&account, &receiver, SOL / 4)];
     let wire = signed_wire_until(&chain, &payer, &authority, &inner, nonce, 1_010);
 
     // Past its slot the program refuses it: Expired, error 9.
@@ -234,6 +238,6 @@ fn an_authorization_lands_until_its_slot_and_no_one_can_extend_it() {
     let again = signed_wire_until(&chain, &payer, &authority, &inner, nonce, 2_000);
     chain
         .send_wire(&again)
-        .unwrap_or_else(|failure| panic!("withdraw: {}", logs(&failure)));
+        .unwrap_or_else(|failure| panic!("transfer: {}", logs(&failure)));
     assert_eq!(chain.balance(&receiver), SOL / 4);
 }

@@ -68,6 +68,7 @@ Taken on 2026-10-14 unless noted.
 - **No backwards compatibility** while the app has no released users: a stored format carries a version number and is refused whole when it is not the build's.
 - **Moving to Vector 2.0 in place** (2026-11-14): the devnet program was upgraded at the same ID, and accounts made before it are left behind, since they were devnet only and held nothing of value.
 - **D7: every authorization the app wraps expires** about an hour after it is made (`vector::AUTHORIZATION_SLOTS`, 9,000 slots), except when a Winternitz or XMSS account signs, which never expires (2026-11-14). An hour carries it to a key on another device and back, and outlives a blockhash refresh, which its signature does not cover.
+- **D8: a Vector wallet's address is its account's system PDA** (2026-11-17). The account belongs to the Vector program and holds data, so the System program will not take lamports from it: it could not pay rent, fund a `CreateAccount` or be the payer of a token account, and its SOL left only through a `Withdraw` the app rewrote transfers into. The system PDA is owned by the System program, so it does all of that unchanged, and every `Passthrough` the app builds signs as it (`PassthroughSigner::system`). Whether an instruction will take rent depends on chain state when it lands (an idempotent create, an `init_if_needed`), so it cannot be decided per transaction: the address the wallet hands out decides it. The account keeps the key and the nonce, and the `Advance` lists it. Neither address can pay the transaction fee, which needs a signature no PDA has. Wallets made before are at a new address; the decision on no backwards compatibility covers it.
 
 ## Rules for the code
 
@@ -98,7 +99,7 @@ Both schemes sign through `hazmat`: `solana-winternitz`'s for Winternitz, `solan
 - **A Winternitz or XMSS authorization never expires.** It stays valid until the nonce moves, so a relay can hold it back; one of any other scheme lapses at its `valid_until` (D7). The Ed25519 programmatic signer's authorizations have no expiry either.
 - **A digest that is wrong by one flag fails only on chain.** That is why demotion cases are refused instead of modelled, and why the flow tests in LiteSVM are the proof.
 - **Transaction size with ML-DSA.** One signature is 2,420 of 4,096 bytes. Two ML-DSA signers do not fit in one transaction, and a Squads proposal behind one often will not.
-- **An account asked to pay inside another program fails.** The `Withdraw` rewrite covers a plain transfer; the simulation before wrapping tells the user before they sign.
+- **SOL sent to a Vector account itself is not the wallet's.** Since 2026-11-17 the wallet's address is the account's system PDA. Anything sent to the account's own address before then, or by someone who derives it, is moved out only by a `Withdraw` the account signs, which the app does not build.
 - **One level less of CPI depth** for what runs inside a `Passthrough`.
 
 ## Origins and credits
