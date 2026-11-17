@@ -432,13 +432,16 @@ pub struct ClearSigningAccepts {
 
 impl ClearSigningAccepts {
     /// The program at [`SQUADS_CLEAR_SIGNING_PROGRAM_ID`] on devnet, the
-    /// build of squads-cs-poc 0922251: a vote inside a `Submit` or a
-    /// `Passthrough`, by CPI, and nothing else of this list.
+    /// build of squads-cs-poc 0922251: a vote inside a `Passthrough`, by
+    /// CPI, and nothing else of this list. It takes a `Submit` only from
+    /// upstream's signer program (`EdSig…`), and refuses ours
+    /// ([`crate::idl::builtin::ED25519_SIGNER_PROGRAM_ID`]) with 6050,
+    /// `UnsupportedSignerDriver`, until it is rebuilt with our program ID.
     pub const DEPLOYED: Self = Self {
         execute: false,
         several_votes: false,
         durable_nonce: false,
-        in_submit: true,
+        in_submit: false,
         in_passthrough: true,
     };
 
@@ -992,13 +995,10 @@ mod tests {
             votes: 1,
             ..ShapeFacts::default()
         };
-        // A lone vote, at the top, in a `Submit`, or in a `Passthrough`.
+        // A lone vote, at the top or in a `Passthrough`. Not in a `Submit`:
+        // the deployed program takes upstream's signer program only.
         for taken in [
             lone,
-            ShapeFacts {
-                in_submit: true,
-                ..lone
-            },
             ShapeFacts {
                 in_passthrough: true,
                 ..lone
@@ -1006,6 +1006,13 @@ mod tests {
         ] {
             assert_eq!(ClearSigningAccepts::DEPLOYED.refuses(taken), None);
         }
+        assert_eq!(
+            ClearSigningAccepts::DEPLOYED.refuses(ShapeFacts {
+                in_submit: true,
+                ..lone
+            }),
+            Some(ShapeRefused::InSubmit)
+        );
         for carried in [
             ShapeFacts::default(),
             ShapeFacts {

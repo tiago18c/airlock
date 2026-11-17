@@ -140,7 +140,7 @@ Each embedded IDL, core or pack, lists the networks it is read on, its source (`
 | File | Networks | Source |
 | --- | --- | --- |
 | System, Stake, Token, Token-2022, compute budget | all | the program's repository; display nodes added |
-| Ed25519 signer | devnet | the program-metadata IDL devnet publishes, brought to the repository's IDL at `2b2cc7f`: devnet's predates the transition signer the executor and nonce program take since 2026-11-09 |
+| Ed25519 signer | mainnet, devnet | our fork's `idl.json` byte for byte ([tiago18c/ed25519-programmatic-signer](https://github.com/tiago18c/ed25519-programmatic-signer)), which its program-metadata account on mainnet holds: upstream's programs under our own program IDs, see [programmatic-signer-fork.md](programmatic-signer-fork.md) |
 | Vector | devnet | the program-metadata IDL devnet publishes |
 | Squads v4 | mainnet, devnet | the 2.1.0 Anchor IDL devnet publishes (mainnet still publishes 2.0.0) |
 | Squads clear signing | devnet | the repository's Anchor IDL at `0922251`: devnet's program-metadata account publishes an earlier build's, without `assertAccountHash`, `assertProgramRevision` and `verifyProposalCpi` |

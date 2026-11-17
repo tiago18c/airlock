@@ -243,6 +243,7 @@ QRS1 carries a payload of one to 64 typed objects, written with wincode, as one 
 | [docs/signing.md](docs/signing.md) | How each wallet kind signs, starting in the app or from a site |
 | [docs/browser-bridge.md](docs/browser-bridge.md) | The extension, `bridge-host` and the desktop listener, the message format and the threat model |
 | [docs/architecture.md](docs/architecture.md) | The two builds, the core that outlives the window, logging, and where new work goes |
+| [docs/programmatic-signer-fork.md](docs/programmatic-signer-fork.md) | Our deployment of the programmatic signer programs under our own program IDs, and how to redeploy and rebase it |
 | [docs/vector-fork.md](docs/vector-fork.md) | The Vector program fork and deployment, how to rebase it, and the decisions and risks behind Vector wallets |
 | [docs/idls.md](docs/idls.md) | How IDLs read and build instructions, the IDLs that ship with the app, and the rules that tie what is shown to what is signed |
 | [docs/templates.md](docs/templates.md) | Templates on Build: the TOML format, how one is checked and expanded, and the templates that ship |

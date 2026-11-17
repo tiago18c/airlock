@@ -5,8 +5,8 @@
   "program": {
     "kind": "programNode",
     "name": "ed25519Signer",
-    "publicKey": "EdSigVfK1DkeMrjFNDMjwfQaJPhPTtX7jW8uPv3oKEgN",
-    "version": "0.1.0",
+    "publicKey": "Sig8PHhDifGhptyvrxGRoNNHJSvKYBfSjbxBchTay9E",
+    "version": "1.0.0",
     "instructions": [
       {
         "kind": "instructionNode",
@@ -205,8 +205,8 @@
     {
       "kind": "programNode",
       "name": "messageExecutor",
-      "publicKey": "ExecxgyHYsAXB4c5dZodV1zJZ9hqfsDCYkRDRATrpkFR",
-      "version": "0.1.0",
+      "publicKey": "ExeXHWU2yrgUrKQg4QcjqnniW6rWYvqBVP36cq5uwTSp",
+      "version": "1.0.0",
       "instructions": [
         {
           "kind": "instructionNode",
@@ -252,7 +252,7 @@
               ],
               "defaultValue": {
                 "kind": "publicKeyValueNode",
-                "publicKey": "Noncediea1fH12usShuQAz28UhgAeuE5Maf32LsMUQB"
+                "publicKey": "NoncFMHL3z7njAbTPMQfscuyg2efjVADwfrhffgBv2h"
               },
               "display": {
                 "kind": "instructionAccountDisplayNode",
@@ -270,7 +270,7 @@
               ],
               "defaultValue": {
                 "kind": "publicKeyValueNode",
-                "publicKey": "EjCSGNbrrM7YJBwR9iqnrb87L1TYHfUtZ5L4gwQjWLFg"
+                "publicKey": "8foN7sp8oHRj51Zq8t2ctrU2SjxYETjsYTnBn2AFVMBF"
               },
               "display": {
                 "kind": "instructionAccountDisplayNode",
@@ -416,8 +416,8 @@
     {
       "kind": "programNode",
       "name": "nonce",
-      "publicKey": "Noncediea1fH12usShuQAz28UhgAeuE5Maf32LsMUQB",
-      "version": "0.1.0",
+      "publicKey": "NoncFMHL3z7njAbTPMQfscuyg2efjVADwfrhffgBv2h",
+      "version": "1.0.0",
       "accounts": [
         {
           "kind": "accountNode",
