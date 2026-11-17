@@ -19,7 +19,7 @@ These files are not under Airlock's MIT licence. Each remains under its source's
 | File | Program | Taken from | Licence of the source |
 | --- | --- | --- | --- |
 | `compute-budget.json` | Compute budget | [solana-program/compute-budget](https://github.com/solana-program/compute-budget) (no commit recorded) | Apache-2.0 |
-| `ed25519-programmatic-signer.json` | Ed25519 programmatic signer | Published on chain by the program's author, in its program-metadata account on mainnet | On chain: none stated. Program's repository, [tiago18c/ed25519-programmatic-signer](https://github.com/tiago18c/ed25519-programmatic-signer): Apache-2.0 |
+| `ed25519-programmatic-signer.json` | Ed25519 programmatic signer | `idl.json` in [tiago18c/ed25519-programmatic-signer](https://github.com/tiago18c/ed25519-programmatic-signer/blob/8964545091e4018d3a6988b33525305c214b0be4/idl.json) at `8964545` | Apache-2.0 |
 | `squads-clear-signing.json` | Squads clear signing | `idl/squads_clear_signing.json` in [tiago18c/squads-cs-poc](https://github.com/tiago18c/squads-cs-poc/blob/09222511693f38b81ff81b2f0340ebb30407b184/idl/squads_clear_signing.json) at `0922251` | None stated |
 | `squads-multisig.json` | Squads v4 multisig | Published on chain by the program's author, in its Anchor IDL account on devnet | On chain: none stated. Program's repository, [Squads-Protocol/v4](https://github.com/Squads-Protocol/v4): AGPL-3.0 |
 | `squads-smart-account.json` | Squads smart account | [Squads-Protocol/smart-account-program](https://github.com/Squads-Protocol/smart-account-program) (no commit recorded) | AGPL-3.0 |
