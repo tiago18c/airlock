@@ -629,9 +629,8 @@ fn each_network_reads_the_embedded_files_of_the_programs_that_run_there() {
     assert!(has(&store, RAYDIUM_CLMM_MAINNET_PROGRAM_ID));
     assert!(has(&store, ORCA_WHIRLPOOL_PROGRAM_ID));
     assert!(has(&store, REALMS_GOVERNANCE_PROGRAM_ID));
-    assert!(!has(&store, crate::idl::builtin::ED25519_SIGNER_PROGRAM_ID));
-    // Its companions go with it.
-    assert!(!has(
+    assert!(has(&store, crate::idl::builtin::ED25519_SIGNER_PROGRAM_ID));
+    assert!(has(
         &store,
         crate::wallets::programmatic::EXECUTOR_NONCE_PROGRAM_ID
     ));
@@ -644,6 +643,12 @@ fn each_network_reads_the_embedded_files_of_the_programs_that_run_there() {
     assert!(has(&store, crate::ids::SYSTEM_PROGRAM_ID));
     assert!(!has(&store, ORCA_WHIRLPOOL_PROGRAM_ID));
     assert!(!has(&store, REALMS_GOVERNANCE_PROGRAM_ID));
+    assert!(!has(&store, crate::idl::builtin::ED25519_SIGNER_PROGRAM_ID));
+    // Its companions go with it.
+    assert!(!has(
+        &store,
+        crate::wallets::programmatic::EXECUTOR_NONCE_PROGRAM_ID
+    ));
 }
 
 #[test]
@@ -769,7 +774,7 @@ fn embedded_files_made_from_the_chain_carry_their_source() {
     .unwrap();
     let signer = record(&store, crate::idl::builtin::ED25519_SIGNER_PROGRAM_ID).unwrap();
     assert_eq!(nonce.source, signer.source);
-    assert!(signer.source.is_some());
+    assert_eq!(nonce.compared_account(), signer.compared_account());
 }
 
 #[test]

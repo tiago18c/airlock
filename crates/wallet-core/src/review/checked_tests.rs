@@ -912,15 +912,16 @@ fn a_programmatic_members_check_ends_up_inside_its_submit() {
     assert_eq!((check.form, check.member), (CheckForm::Cpi, member));
     assert_eq!(runs[1].accounts[3], member);
     assert_eq!(runs[2].data, vote(member).data);
-    // The deployed program takes it.
-    assert!(checked_instructions(&plain, &stored(), &[], ClearSigningAccepts::DEPLOYED).is_ok());
-    // A program that took no check in a `Submit` would be told apart.
-    let top_only = ClearSigningAccepts {
-        in_submit: false,
+    // A program that takes a check in a `Submit` takes it.
+    let in_submit = ClearSigningAccepts {
+        in_submit: true,
         ..ClearSigningAccepts::DEPLOYED
     };
+    assert!(checked_instructions(&plain, &stored(), &[], in_submit).is_ok());
+    // The deployed one takes it from upstream's signer program only, so it
+    // is told apart.
     assert_eq!(
-        checked_instructions(&plain, &stored(), &[], top_only),
+        checked_instructions(&plain, &stored(), &[], ClearSigningAccepts::DEPLOYED),
         Err(ShapeRefused::InSubmit)
     );
 }

@@ -562,13 +562,19 @@ mod tests {
                 shape: ApprovalShape::Open(open.clone()),
                 ..lone()
             };
-            for accepts in [DEPLOYED, EVERYTHING] {
-                assert_eq!(
-                    check_offer(facts.clone(), accepts),
-                    CheckOffer::Add { voids: 0 },
-                    "{open:?}"
-                );
-            }
+            assert_eq!(
+                check_offer(facts.clone(), EVERYTHING),
+                CheckOffer::Add { voids: 0 },
+                "{open:?}"
+            );
+            // The deployed program takes a `Submit` from upstream's signer
+            // program only, so a programmatic signer's vote is blocked there.
+            let deployed = if open.in_submit {
+                CheckOffer::CannotAdd(CheckBlock::Authorization)
+            } else {
+                CheckOffer::Add { voids: 0 }
+            };
+            assert_eq!(check_offer(facts.clone(), DEPLOYED), deployed, "{open:?}");
             // A program that took neither carrier would block it, saying why.
             let top_only = ClearSigningAccepts {
                 in_submit: false,

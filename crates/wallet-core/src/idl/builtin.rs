@@ -47,7 +47,7 @@ use std::borrow::Cow;
 use std::sync::Arc;
 
 pub const ED25519_SIGNER_PROGRAM_ID: Pubkey =
-    Pubkey::from_str_const("EdSigVfK1DkeMrjFNDMjwfQaJPhPTtX7jW8uPv3oKEgN");
+    Pubkey::from_str_const("Sig8PHhDifGhptyvrxGRoNNHJSvKYBfSjbxBchTay9E");
 
 /// What an embedded file was made from.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -211,19 +211,17 @@ pub static BUILTIN_IDLS: [BuiltinIdl; 10] = [
         program_id: ED25519_SIGNER_PROGRAM_ID,
         name: "ed25519Signer",
         json: include_str!("../../idls/ed25519-programmatic-signer.json"),
-        networks: DEVNET,
-        source: on_chain(
-            IdlNetwork::Devnet,
-            IdlOrigin::ProgramMetadata,
-            "4f46c00d60e55bc29ee34157d7fb976f5e5dce3701cbc29b765d573b9ae24dde",
+        networks: MAINNET_AND_DEVNET,
+        // Our deployment of upstream's programs under our own program IDs:
+        // github.com/tiago18c/ed25519-programmatic-signer, branch
+        // `mainnet-program-ids`. The file is that repository's `idl.json`
+        // byte for byte, which is also what goes in the signer program's
+        // program-metadata account. See docs/programmatic-signer-fork.md.
+        source: repository(
+            "https://github.com/tiago18c/ed25519-programmatic-signer/blob/8964545091e4018d3a6988b33525305c214b0be4/idl.json",
         ),
-        // Devnet's published IDL predates the transition signer (upstream
-        // #127 and #128, deployed on devnet 2026-11-09), so the file is the
-        // repository's `idl.json` at 2b2cc7f. It carries the additional
-        // programs and the display nodes this file used to add by hand.
-        changes: "The message executor and its nonce program added to `additionalPrograms`, \
-                  and display nodes added. Then brought to the repository's IDL at 2b2cc7f, \
-                  which adds the transition signer the executor and nonce program now take.",
+        changes: "None: the repository's `idl.json`, which carries the message executor and \
+                  its nonce program in `additionalPrograms` and its own display nodes.",
     },
     BuiltinIdl {
         program_id: SQUADS_V4_PROGRAM_ID,

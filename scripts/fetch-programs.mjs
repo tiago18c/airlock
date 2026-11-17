@@ -4,7 +4,8 @@
 //   node scripts/fetch-programs.mjs --print    download from the cluster and print the hashes found
 //
 // The binaries are read from devnet, or from mainnet for a program whose
-// devnet build differs from the one its IDL describes, and are not kept in
+// devnet build differs from the one its IDL describes or that we deploy on
+// mainnet (the programmatic signer programs), and are not kept in
 // this repository: the Squads programs are AGPL-3.0, and the signer programs
 // are still changing. Each is pinned by SHA-256 below. A program that was
 // upgraded on its network fails the check until its hash is updated here on
@@ -25,19 +26,26 @@ const PROGRAM_DATA_HEADER = 45;
 
 export const PROGRAMS = [
   {
+    // Our deployment of the programmatic signer programs under our own
+    // program IDs: github.com/tiago18c/ed25519-programmatic-signer, branch
+    // mainnet-program-ids, at 8964545, built with solana-verify. See
+    // docs/programmatic-signer-fork.md.
     file: "ed25519_signer.so",
-    address: "EdSigVfK1DkeMrjFNDMjwfQaJPhPTtX7jW8uPv3oKEgN",
-    sha256: "4824c901ee53e6658024a6cc89aec92e8d29608f315f835a640e11039637c80b",
+    address: "Sig8PHhDifGhptyvrxGRoNNHJSvKYBfSjbxBchTay9E",
+    network: "mainnet",
+    sha256: "bd541ad39f32464cd924a068de45548f293e0332bc74d60a60c753f89a29c3bd",
   },
   {
     file: "message_executor.so",
-    address: "ExecxgyHYsAXB4c5dZodV1zJZ9hqfsDCYkRDRATrpkFR",
-    sha256: "276692a010a2f04aa4d540cf8c0f0f74d64d821d72f826f9964782ec2d190344",
+    address: "ExeXHWU2yrgUrKQg4QcjqnniW6rWYvqBVP36cq5uwTSp",
+    network: "mainnet",
+    sha256: "762b446529ac50254230d33dbf68e5cb85502f3c7539040967012c55204185aa",
   },
   {
     file: "nonce.so",
-    address: "Noncediea1fH12usShuQAz28UhgAeuE5Maf32LsMUQB",
-    sha256: "095be5b6bcdf10003db710558a765221dd442a3a13aa7d62747d82871f60d3f7",
+    address: "NoncFMHL3z7njAbTPMQfscuyg2efjVADwfrhffgBv2h",
+    network: "mainnet",
+    sha256: "bdb3d70d542580f81a095322d50bf738f2ec39baf9b887970c4093f00653c4e2",
   },
   {
     file: "squads_multisig.so",

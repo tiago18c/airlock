@@ -9,6 +9,15 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 ## [Unreleased]
 
+### Before you update
+
+- **Programmatic signers made before this release are no longer recognised.** Airlock now uses its own deployment of the programmatic signer programs, under new program IDs, so a signer's address changes with them. Anything still held by an old programmatic signer on devnet must be moved out with an earlier version first.
+
+### Changed
+
+- **Programmatic signers work on mainnet.** They use Airlock's own deployment of the Ed25519 programmatic signer programs (Ed25519 Signer `Sig8PHhDifGhptyvrxGRoNNHJSvKYBfSjbxBchTay9E`, Message Executor `ExeXHWU2yrgUrKQg4QcjqnniW6rWYvqBVP36cq5uwTSp`, Nonce `NoncFMHL3z7njAbTPMQfscuyg2efjVADwfrhffgBv2h`), and Review and Sign reads their instructions on mainnet as well as devnet.
+- **A programmatic signer's Squads vote can no longer carry what the proposal holds.** The clear signing program on devnet takes that vote only from the old programmatic signer program, so Review and Sign no longer offers it for a programmatic member. A member's own key and a Vector wallet still can.
+
 ## [0.3.1] - 2026-11-16
 
 ### Added

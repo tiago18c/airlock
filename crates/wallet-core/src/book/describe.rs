@@ -490,11 +490,11 @@ const PROGRAM_DISPLAY_NAMES: &[(Pubkey, &str)] = &[
     (COMPUTE_BUDGET_PROGRAM_ID, "Compute Budget Program"),
     (ED25519_SIGNER_PROGRAM_ID, "Programmatic Signer Program"),
     (
-        Pubkey::from_str_const("ExecxgyHYsAXB4c5dZodV1zJZ9hqfsDCYkRDRATrpkFR"),
+        Pubkey::from_str_const("ExeXHWU2yrgUrKQg4QcjqnniW6rWYvqBVP36cq5uwTSp"),
         "Message Executor Program",
     ),
     (
-        Pubkey::from_str_const("Noncediea1fH12usShuQAz28UhgAeuE5Maf32LsMUQB"),
+        Pubkey::from_str_const("NoncFMHL3z7njAbTPMQfscuyg2efjVADwfrhffgBv2h"),
         "Message Executor Nonce Program",
     ),
     (SQUADS_V4_PROGRAM_ID, "Squads Multisig Program"),

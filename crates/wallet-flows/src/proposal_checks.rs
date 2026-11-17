@@ -863,18 +863,14 @@ mod tests {
         .unwrap();
         let tx = decode_v1_transaction(&wrapped).unwrap();
         let rpc = node(&[payment()]);
-        // A program that took no check inside a `Submit` would say so.
-        let top_only = ClearSigningAccepts {
-            in_submit: false,
-            ..DEPLOYED
-        };
+        // The deployed program takes no check inside our signer program's
+        // `Submit`, and says so.
         assert_eq!(
-            refusal(add_with(&rpc, &tx, top_only)),
+            refusal(add_with(&rpc, &tx, DEPLOYED)),
             refused_shape(ShapeRefused::InSubmit)
         );
-        // The deployed program takes it, but without a plan for the wallet,
-        // nothing is built.
-        assert_eq!(refusal(add_with(&rpc, &tx, DEPLOYED)), NOT_REBUILT);
+        // A program that takes it still builds nothing without a plan for
+        // the wallet.
         assert_eq!(refusal(add_with(&rpc, &tx, EVERYTHING)), NOT_REBUILT);
         // What it is rebuilt from is the vote as first written.
         let plan = pollster::block_on(read_for_checks(&rpc, &tx, None)).unwrap();
