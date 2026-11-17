@@ -3,7 +3,7 @@
 
 use crate::state::session::Session;
 use dioxus::prelude::WritableExt;
-use wallet_core::Cluster;
+use wallet_core::{Cluster, KnownCluster};
 
 pub fn start_detect(session: Session) {
     session.start_detect();
@@ -33,15 +33,38 @@ pub fn use_cluster(session: Session, cluster: Cluster) {
     let mut moved = false;
     session.edit_workspace(|ws| moved = ws.use_cluster(cluster));
     if moved {
-        let stake = session.forms.stake;
-        let (mut snapshot, mut loaded_for, mut error) =
-            (stake.snapshot, stake.loaded_for, stake.error);
-        snapshot.set(None);
-        loaded_for.set(None);
-        error.set(None);
-        stake.clear_rewards();
+        forget_the_old_node(session);
     }
     start_detect(session);
+}
+
+/// Read `network` through `rpc_url` from now on, or through its default
+/// with None. The URL is kept for that network alone: the others keep
+/// theirs. When `network` is in use the app moves to the new node at once,
+/// as on a cluster change. A URL that is not one is refused, and nothing
+/// changes.
+pub fn set_rpc_url(
+    session: Session,
+    network: KnownCluster,
+    rpc_url: Option<&str>,
+) -> Result<(), String> {
+    let mut answer = Ok(false);
+    session.edit_workspace(|ws| answer = ws.set_rpc_url(network, rpc_url));
+    if answer? {
+        forget_the_old_node(session);
+        start_detect(session);
+    }
+    Ok(())
+}
+
+/// What a screen read from the node it no longer reads.
+fn forget_the_old_node(session: Session) {
+    let stake = session.forms.stake;
+    let (mut snapshot, mut loaded_for, mut error) = (stake.snapshot, stake.loaded_for, stake.error);
+    snapshot.set(None);
+    loaded_for.set(None);
+    error.set(None);
+    stake.clear_rewards();
 }
 
 #[cfg(test)]

@@ -8,7 +8,7 @@ pub mod sync;
 pub mod tx;
 pub mod ui;
 
-pub use network::{rpc_for_cluster, Monitor};
+pub use network::{rpc_for_url, Monitor};
 pub use sync::{
     kick_after_probe, refresh_from_chain_fn, register_balances, register_prices, register_tokens,
     Scheduler, BALANCES_JOB, PRICES_JOB,
@@ -68,7 +68,9 @@ pub fn use_online(core: CopyValue<Core>) -> (OnlineHooks, SubmitHandle) {
             scheduler.clone(),
             moved,
         ));
-        tracker.resume(rpc_for_cluster);
+        // Each transaction is followed on the node its network is read from.
+        let workspace = core.peek().with_workspace(Clone::clone);
+        tracker.resume(move |cluster| rpc_for_url(&workspace.rpc_url_for(cluster)));
         let submitter = SubmitHandle::new(Submitter::new(public.clone(), tracker));
 
         let hooks = OnlineHooks::new(

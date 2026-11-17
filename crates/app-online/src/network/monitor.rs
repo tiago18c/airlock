@@ -80,14 +80,7 @@ impl Monitor {
     /// The client for the current cluster, shared by everything that asks
     /// the node. A node that is down answers each call with its own error.
     pub fn rpc(&self) -> Result<Arc<dyn SolanaRpc>, RpcError> {
-        let url = self
-            .core
-            .slices()
-            .network
-            .get()
-            .cluster
-            .rpc_url()
-            .to_string();
+        let url = self.core.slices().network.get().rpc_url.clone();
         let mut kept = self
             .rpc
             .lock()
@@ -102,8 +95,9 @@ impl Monitor {
 
     async fn detect_and_sync(&self, seq: u64) {
         self.core.set_reach(Reach::Probing);
-        let current = self.core.slices().network.get().cluster.clone();
-        let url = current.rpc_url().to_string();
+        let status = self.core.slices().network.get();
+        let current = status.cluster.clone();
+        let url = status.rpc_url.clone();
         let redacted = app_core::diagnostics::redact_url(&url);
         let span = tracing::info_span!(
             target: "airlock::network",
@@ -127,7 +121,10 @@ impl Monitor {
         );
         let answer = wallet_rpc::Rpc::probe(&url).await;
         let latest = self.core.slices().network.get();
-        if self.probe_seq.load(Ordering::SeqCst) != seq || latest.cluster != current {
+        if self.probe_seq.load(Ordering::SeqCst) != seq
+            || latest.cluster != current
+            || latest.rpc_url != url
+        {
             tracing::debug!(
                 target: "airlock::network",
                 cluster = %current.name(),
@@ -162,7 +159,7 @@ impl Monitor {
     }
 }
 
-/// Build an RPC client for a cluster URL (tracker resume path).
-pub fn rpc_for_cluster(cluster: &Cluster) -> Option<Arc<dyn SolanaRpc>> {
-    Some(Arc::new(wallet_rpc::Rpc::connect(cluster.rpc_url())))
+/// Build an RPC client for a node's URL (tracker resume path).
+pub fn rpc_for_url(rpc_url: &str) -> Option<Arc<dyn SolanaRpc>> {
+    Some(Arc::new(wallet_rpc::Rpc::connect(rpc_url)))
 }

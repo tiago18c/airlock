@@ -102,10 +102,14 @@ pub struct WalletsView {
     pub kept_rotations: Vec<wallet_core::protocol::KeyRotation>,
 }
 
-/// The cluster in use, and whether its node answered.
+/// The cluster in use, the node it is read from, and whether that node
+/// answered.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct NetworkStatus {
     pub cluster: Cluster,
+    /// The node's URL: the one typed for the cluster in Settings, or its
+    /// default. See [`wallet_core::Workspace::rpc_url`].
+    pub rpc_url: String,
     pub reach: Reach,
 }
 
@@ -250,8 +254,10 @@ pub fn book_from(workspace: &AppWorkspace) -> Arc<AddressBook> {
 }
 
 pub fn network_from(workspace: &AppWorkspace, reach: Reach) -> Arc<NetworkStatus> {
+    let data = wallet_core::WorkspaceStore::data(workspace);
     Arc::new(NetworkStatus {
-        cluster: wallet_core::WorkspaceStore::data(workspace).cluster.clone(),
+        cluster: data.cluster.clone(),
+        rpc_url: data.rpc_url(),
         reach,
     })
 }

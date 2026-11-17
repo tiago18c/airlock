@@ -276,13 +276,16 @@ impl Scheduler {
 
     async fn watch_network(&self) {
         let mut net = self.core.slices().network.subscribe();
-        let mut last = net.borrow().cluster.clone();
+        let node =
+            |status: &app_core::NetworkStatus| (status.cluster.clone(), status.rpc_url.clone());
+        let mut last = node(&net.borrow());
         loop {
             if net.changed().await.is_err() {
                 return;
             }
-            let cluster = net.borrow_and_update().cluster.clone();
-            if cluster != last {
+            let now = node(&net.borrow_and_update());
+            if now != last {
+                let cluster = &now.0;
                 debug!(
                     target: SYNC,
                     cluster = %cluster.name(),
@@ -290,7 +293,7 @@ impl Scheduler {
                 );
                 let next = self.inner.epoch.borrow().saturating_add(1);
                 self.inner.epoch.send_replace(next);
-                last = cluster;
+                last = now;
             }
         }
     }

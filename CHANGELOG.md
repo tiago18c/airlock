@@ -9,6 +9,10 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 ## [Unreleased]
 
+### Added
+
+- **Each network keeps its own RPC URL.** With Mainnet Beta, Devnet or Testnet chosen in Settings, an RPC URL field under the cluster takes a provider's URL for that network, or stays empty for the public node. Switching to another network shows that network's URL, and switching back finds the one typed before. **Use the default** goes back to the public node. A node that reports another network than the one it was typed for is still read, as a custom RPC.
+
 ## [0.3.1] - 2026-11-16
 
 ### Added

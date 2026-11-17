@@ -2,4 +2,4 @@
 
 mod monitor;
 
-pub use monitor::{rpc_for_cluster, Monitor};
+pub use monitor::{rpc_for_url, Monitor};
