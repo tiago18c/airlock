@@ -6,7 +6,9 @@ use crate::wallets::hardware::{DeviceSeen, HardwareVendor};
 use crate::wallets::record::{
     KeyPhrase, OfflinePath, Protocol, VectorSettings, WalletClass, WalletKind,
 };
-use crate::wallets::squads::{Squad, SquadChanges, SquadConfig};
+use crate::wallets::squads::{
+    Squad, SquadChanges, SquadConfig, SquadState, SquadsMember, PERMISSION_ALL,
+};
 use solana_pubkey::Pubkey;
 
 impl WalletKind {
@@ -402,6 +404,44 @@ impl WalletKind {
         *config_authority = read.config_authority;
         *rent_collector = read.rent_collector;
         changes
+    }
+
+    /// The multisig as its record keeps it, for deciding what a change to
+    /// it would leave: `None` when its members were never read. A member
+    /// whose permissions a record from before they were kept does not know
+    /// counts as one that may do everything. The transaction numbers are
+    /// not kept, so they read 0.
+    pub fn squad_state(&self) -> Option<SquadState> {
+        let Self::Squads {
+            threshold,
+            time_lock,
+            config_authority,
+            rent_collector,
+            members,
+            ..
+        } = self
+        else {
+            return None;
+        };
+        if members.is_empty() {
+            return None;
+        }
+        Some(SquadState {
+            threshold: *threshold,
+            time_lock: *time_lock,
+            transaction_index: 0,
+            stale_transaction_index: 0,
+            members: self
+                .squad_members()
+                .into_iter()
+                .map(|(key, permissions)| SquadsMember {
+                    key,
+                    permissions: permissions.unwrap_or(PERMISSION_ALL),
+                })
+                .collect(),
+            config_authority: *config_authority,
+            rent_collector: *rent_collector,
+        })
     }
 
     pub fn squad(&self) -> Option<Squad> {

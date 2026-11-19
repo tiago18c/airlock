@@ -275,6 +275,31 @@ impl Squad {
     }
 }
 
+/// The actions an instruction that stores a change to a multisig carries
+/// (`configTransactionCreate` / `createSettingsTransaction`), in order, read
+/// from its own bytes with the IDL the app ships, so Review and Sign can say
+/// them in words. `None` for any other instruction, and for one holding an
+/// action this app cannot read.
+pub fn stored_change_actions(program_id: &Pubkey, data: &[u8]) -> Option<Vec<ConfigAction>> {
+    let program = SquadsProgram::from_program_id(program_id)?;
+    let parsed = program.client().parse_instruction_data(data).ok()??;
+    let name = match parsed.path.last()? {
+        codama_nodes::Node::Instruction(node) => node.name.to_string(),
+        _ => return None,
+    };
+    let stores = match program {
+        SquadsProgram::V4 => "configTransactionCreate",
+        SquadsProgram::SmartAccount => "createSettingsTransaction",
+    };
+    if name != stores {
+        return None;
+    }
+    list(field(field(&parsed.data, "args")?, "actions")?)?
+        .iter()
+        .map(|action| action_of(program, action))
+        .collect()
+}
+
 fn keys(value: &Value) -> Option<Vec<Pubkey>> {
     list(value)?.iter().map(key).collect()
 }

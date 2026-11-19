@@ -1,7 +1,8 @@
 //! A transaction on screen. Summary says what it does in sentences. Inspect
 //! adds everything it is made of: limits, accounts, programs, each field and
 //! the raw bytes. Instructions carried inside other instructions are opened
-//! in both.
+//! in both. A change a Squads instruction stores for the multisig lists its
+//! actions in Summary, in the words the Proposals modal uses.
 
 use crate::actions::programs::check_many;
 use crate::state::forms::SimState;
@@ -300,12 +301,24 @@ fn InstructionBody(ix: ExplainedIx, inspect: bool) -> Element {
         )
     );
     let inner = ix.inner.clone();
+    // A change to a Squads multisig stored here: its actions, in the words
+    // the Proposals modal uses. Inspect shows its fields.
+    let change = (!inspect)
+        .then(|| wallet_core::squads::stored_change_actions(&ix.program_id, &ix.data))
+        .flatten();
     rsx! {
         if inspect || !envelope {
             if let Some(idl) = ix.idl.clone() {
                 IdlInstruction { idl, data: ix.data.clone(), inspect }
             } else {
                 UnknownInstruction { ix: ix.clone(), inspect }
+            }
+        }
+        if let Some(actions) = change {
+            ol { class: "change-actions",
+                for (at, said) in wallet_core::squads::change_lines(None, &actions).into_iter().enumerate() {
+                    li { key: "{at}", crate::ui::SaidLine { said } }
+                }
             }
         }
         if let Some(inner) = inner {

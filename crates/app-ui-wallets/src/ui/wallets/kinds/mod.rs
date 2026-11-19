@@ -19,6 +19,7 @@ use wallet_core::{
     WalletRecord, WalletSigner,
 };
 
+mod change_form;
 mod checklist;
 mod contract_row;
 mod hardware_form;
@@ -31,6 +32,7 @@ mod switcher;
 mod vector_form;
 mod vector_row;
 
+use change_form::ChangeSection;
 pub(in crate::ui) use checklist::*;
 pub use contract_row::*;
 pub use hardware_form::*;

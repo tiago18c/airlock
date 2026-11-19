@@ -1,5 +1,5 @@
-//! Squads multisigs: reading one, creating one, and paging through its
-//! proposals.
+//! Squads multisigs: reading one, creating one, paging through its
+//! proposals, and proposing a change to it.
 
 use crate::compile::{compile_fresh, compile_on_nonce};
 use crate::error::FlowError;
@@ -7,11 +7,13 @@ use crate::offline_nonce::move_onto;
 use solana_pubkey::Pubkey;
 use std::collections::HashMap;
 use wallet_core::proposals::{
-    page_accounts, page_indexes, page_tables, read_page, ProposalEntry, ProposalRequest,
+    page_accounts, page_indexes, page_tables, read_page, ChangeProposal, ProposalEntry,
+    ProposalRequest,
 };
 use wallet_core::relay::{with_heap_size, MAX_HEAP_SIZE};
 use wallet_core::squads::{
-    Squad, SquadState, SquadsMember, SquadsProgram, SquadsSetup, StoredAccount, PERMISSION_ALL,
+    ConfigAction, Squad, SquadState, SquadsMember, SquadsProgram, SquadsSetup, StoredAccount,
+    PERMISSION_ALL,
 };
 use wallet_core::{
     apply_local_signatures, compile_v1, decode_v1_transaction, stored_content_in, BuildError,
@@ -235,6 +237,65 @@ pub async fn compile_request(
         }
     };
     let wire = if request.executes() {
+        with_heap_size(&wire, MAX_HEAP_SIZE).map_err(FlowError::refused)?
+    } else {
+        wire
+    };
+    Ok((wire, height))
+}
+
+/// Compile the transaction that proposes `actions` to `squad` as `proposal`
+/// says, paid by `payer`, which also pays the rent of the new accounts and
+/// what executing the change costs. Returns the wire and the height at
+/// which its blockhash expires, `None` on a durable nonce.
+///
+/// Like [`compile_request`]: what would not fit one transaction is refused,
+/// one that executes asks for the most heap, and one an offline wallet signs
+/// goes on a durable nonce when there is one: that key's own, which
+/// `own_nonce` finds when it is the only key that signs elsewhere, or else
+/// `row_nonce`, the multisig row's. A member without a key is rebuilt for
+/// on Review and Sign, as for any transaction it signs.
+pub async fn propose_change(
+    rpc: &dyn SolanaRpc,
+    squad: &Squad,
+    actions: &[ConfigAction],
+    proposal: &ChangeProposal,
+    payer: Pubkey,
+    own_nonce: impl Fn(&DecodedTx) -> Option<(Pubkey, Pubkey)>,
+    row_nonce: Option<Pubkey>,
+) -> Result<(Vec<u8>, Option<u64>), FlowError> {
+    let instructions = proposal
+        .instructions(squad, actions, &payer)
+        .ok_or_else(|| FlowError::refused("This program cannot store that change."))?;
+    if let Err(BuildError::TooLarge { len }) =
+        compile_v1(payer, instructions.clone(), None, Some(Default::default()))
+    {
+        return Err(FlowError::refused(format!(
+            "This would take a transaction of {len} bytes, more than the {MAX_TRANSACTION_SIZE} one transaction holds."
+        )));
+    }
+    let (wire, height) = compile_fresh(rpc, payer, instructions.clone()).await?;
+    let (wire, height) = if proposal.offline {
+        let tx = decode_v1_transaction(&wire).map_err(FlowError::refused)?;
+        let moved = match (own_nonce(&tx), row_nonce) {
+            (Some((key, nonce)), _) => move_onto(rpc, &tx, key, nonce).await.ok(),
+            (None, Some(nonce)) => {
+                let signers: Vec<Pubkey> =
+                    std::iter::once(payer).chain(proposal.signers()).collect();
+                compile_on_nonce(rpc, payer, instructions, nonce, &signers)
+                    .await
+                    .ok()
+            }
+            (None, None) => None,
+        };
+        match moved {
+            Some(moved) => (moved, None),
+            None => (wire, Some(height)),
+        }
+    } else {
+        (wire, Some(height))
+    };
+    let wire = if proposal.executor.is_some() {
         with_heap_size(&wire, MAX_HEAP_SIZE).map_err(FlowError::refused)?
     } else {
         wire

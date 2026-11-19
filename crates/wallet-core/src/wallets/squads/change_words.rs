@@ -34,11 +34,11 @@ pub enum Piece {
 pub struct Said(pub Vec<Piece>);
 
 impl Said {
-    fn new(text: impl Into<String>) -> Self {
+    pub(crate) fn new(text: impl Into<String>) -> Self {
         Self(vec![Piece::Text(text.into())])
     }
 
-    fn t(mut self, text: impl Into<String>) -> Self {
+    pub(crate) fn t(mut self, text: impl Into<String>) -> Self {
         let text = text.into();
         match self.0.last_mut() {
             Some(Piece::Text(last)) => last.push_str(&text),
@@ -47,7 +47,7 @@ impl Said {
         self
     }
 
-    fn k(mut self, key: Pubkey) -> Self {
+    pub(crate) fn k(mut self, key: Pubkey) -> Self {
         self.0.push(Piece::Key(key));
         self
     }

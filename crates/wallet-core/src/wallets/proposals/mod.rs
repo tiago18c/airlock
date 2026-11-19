@@ -46,6 +46,10 @@
 //! Once a proposal is finished, or can no longer be voted on, its two
 //! accounts can be closed and their rent returned (see `close`): anyone may
 //! send that, no member signs it, and it needs no reading.
+//!
+//! A change to the multisig is also proposed from this device (see
+//! `propose`): stored, opened, and approved and executed as far as the
+//! members here reach, after it is vetted on the multisig as read.
 
 use crate::chain::RawAccount;
 use crate::ids::ADDRESS_LOOKUP_TABLE_PROGRAM_ID;
@@ -61,6 +65,7 @@ use thiserror::Error;
 
 mod close;
 mod combined;
+mod propose;
 mod shape;
 mod votes;
 
@@ -69,6 +74,7 @@ mod tests;
 
 pub use close::*;
 pub use combined::*;
+pub use propose::*;
 pub use shape::*;
 pub use votes::*;
 

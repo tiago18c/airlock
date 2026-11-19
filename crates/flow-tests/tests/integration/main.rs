@@ -15,6 +15,7 @@ mod proposal_close;
 mod proposal_config;
 mod proposal_execute;
 mod proposal_fit;
+mod proposal_propose;
 mod proposal_reject;
 mod proposal_votes;
 mod proposals;
