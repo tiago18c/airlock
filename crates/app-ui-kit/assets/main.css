@@ -4071,6 +4071,11 @@ textarea.editor-input:focus { box-shadow: none; }
 .wallet-facts > .setting-row { align-items: baseline; min-height: 0; }
 .wallet-facts { row-gap: var(--space-3); }
 .wallet-fact-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-1); }
+/* A multisig's Settings: proposing a change to the multisig itself is
+   apart from what this device keeps, under a line of its own. */
+.change-section { border-top: 1px solid var(--border); padding-top: var(--space-3); margin-top: var(--space-2); }
+.change-section .change-threshold { max-width: 6rem; }
+.change-section > .btn-row { justify-content: flex-start; }
 /* A multisig's co-approvers grow with their rows; the pane scrolls. */
 .approves-together .derive-list { max-height: none; overflow: visible; }
 .checklist-head { display: grid; gap: var(--space-1); }

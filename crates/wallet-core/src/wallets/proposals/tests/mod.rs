@@ -6,6 +6,7 @@ mod activate_cancel;
 mod close;
 mod combined;
 mod config;
+mod propose;
 mod reject;
 mod shape;
 mod votes;

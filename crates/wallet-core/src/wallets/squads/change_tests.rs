@@ -141,6 +141,31 @@ fn every_typed_action_reads_back_as_it_was_stored_on_either_program() {
 }
 
 #[test]
+fn the_instruction_that_stores_a_change_reads_back_as_its_actions_on_either_program() {
+    for program in BOTH {
+        let squad = match program {
+            SquadsProgram::V4 => Squad::v4(&pk(1)),
+            SquadsProgram::SmartAccount => Squad::smart_account(7),
+        };
+        let actions = every_action(program);
+        let store = squad.create_change(4, &actions, &pk(2), &pk(3)).unwrap();
+        assert_eq!(
+            stored_change_actions(&store.program_id, &store.data),
+            Some(actions),
+            "{program:?}"
+        );
+        // Any other instruction of the program, or of another, is none.
+        let open = squad.create_proposal(4, &pk(2), &pk(3));
+        assert_eq!(stored_change_actions(&open.program_id, &open.data), None);
+        assert_eq!(stored_change_actions(&pk(9), &store.data), None);
+        assert_eq!(
+            stored_change_actions(&store.program_id, &store.data[..12]),
+            None
+        );
+    }
+}
+
+#[test]
 fn smart_account_policy_actions_are_read_by_name_and_fields() {
     let squad = Squad::smart_account(7);
     let mut actions = vec![3u8, 0, 0, 0];

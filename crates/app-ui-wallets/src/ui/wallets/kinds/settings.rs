@@ -4,7 +4,9 @@
 //! offline key's programmatic signer and durable nonce; a
 //! multisig's acting member and who approves together with it) and writes
 //! nothing until Save. What starts a transaction or adds a wallet (Set up,
-//! Create nonce account, a Vector wallet's steps) acts at once.
+//! Create nonce account, a Vector wallet's steps) acts at once. A
+//! multisig's Settings also proposes a change to the multisig itself, in a
+//! section of its own (see `change_form`), in the online app.
 //!
 //! Details shows what a smart contract wallet is: its addresses, its
 //! members and threshold, and its settings as they are stored. Nothing in
@@ -452,6 +454,9 @@ pub(in crate::ui) fn WalletSettingsDialog(
                     if let (Some((scheme, key, held_by, held_here)), Some(address)) = (vector, kind.as_ref().and_then(WalletKind::vector_account)) {
                         h4 { class: "eyebrow", "Account on chain" }
                         VectorFacts { id, address, scheme, shown_key: key, held_by, held_here, state_only: true }
+                    }
+                    if is_squads {
+                        ChangeSection { id, on_done: move |_| on_close.call(()) }
                     }
                     if let Some(err) = error() {
                         p { class: "error", "{err}" }

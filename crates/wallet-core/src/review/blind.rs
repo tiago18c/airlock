@@ -626,6 +626,39 @@ mod tests {
     }
 
     #[test]
+    fn a_change_the_same_list_stores_and_opens_is_not_blind_on_either_program() {
+        use crate::wallets::squads::{ConfigAction, SquadsMember, PERMISSION_ALL};
+        for squad in squads() {
+            let actions = [
+                ConfigAction::AddMember(SquadsMember {
+                    key: pk(9),
+                    permissions: PERMISSION_ALL,
+                }),
+                ConfigAction::ChangeThreshold(3),
+            ];
+            let store = squad.create_change(4, &actions, &pk(1), &pk(2)).unwrap();
+            let open = squad.create_proposal(4, &pk(1), &pk(2));
+            let vote = squad.approve(4, &pk(1));
+            let change = ConfigTransaction {
+                program: squad.program,
+                creator: pk(1),
+                index: 4,
+                actions: actions.to_vec(),
+            };
+            let run = squad.execute_change(&change, &pk(1), &pk(2)).unwrap();
+            let all = vec![store.clone(), open.clone(), vote.clone(), run.clone()];
+            assert!(whats(all).is_empty(), "{:?}", squad.program);
+            // Opened but stored elsewhere: the approval and the run are blind.
+            assert_eq!(
+                whats(vec![open, vote, run]),
+                [SQUADS_APPROVAL, SQUADS_RUN],
+                "{:?}",
+                squad.program
+            );
+        }
+    }
+
+    #[test]
     fn a_list_only_stored_for_later_does_not_vouch_for_the_one_around_it() {
         // A stored transaction whose own list stores and opens number 4, beside
         // an approval of number 4 that takes effect now, whatever number 4 is.
