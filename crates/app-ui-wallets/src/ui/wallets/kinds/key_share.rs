@@ -69,8 +69,8 @@ pub(in crate::ui) fn KeyExportModal(keys: Vec<WalletKey>, on_close: EventHandler
 /// The end of a wallet card's buttons: its dialogs and its less used actions.
 ///
 /// On a wider screen, the Details and Settings icon buttons where `dialogs`
-/// (see [`WalletDialogButtons`]), then a three-dot menu with Export public key,
-/// when another device can add the wallet by its key, and Remove.
+/// (see [`WalletDialogButtons`]), then a three-dot menu with Rename, Export
+/// public key, when another device can add the wallet by its key, and Remove.
 ///
 /// On a phone a menu under the button would cover the card it acts on, and
 /// five buttons do not fit one row. The three dots open a bottom sheet
@@ -96,6 +96,13 @@ pub(in crate::ui) fn WalletRowMenu(
     let mut sheet_open = use_signal(|| false);
     let mut settings_open = use_signal(|| false);
     let mut details_open = use_signal(|| false);
+    let mut rename_open = use_signal(|| false);
+    // The name is kept in the vault.
+    let rename = move |_| {
+        session.when_unlocked("Unlock the vault to rename a wallet.", move || {
+            rename_open.set(true)
+        });
+    };
     let id = wallet.id;
     let label = wallet.label.clone();
     let has_details = dialogs && wallet.contract.is_some();
@@ -122,6 +129,13 @@ pub(in crate::ui) fn WalletRowMenu(
                 WalletDialogButtons { wallet: wallet.clone() }
             }
             PaneMenu { label: "More actions", glyph: Glyph::More, small: true,
+                button { class: "pane-menu-item",
+                    role: "menuitem",
+                    aria_haspopup: "dialog",
+                    onclick: rename,
+                    Icon { glyph: Glyph::Pencil }
+                    "Rename"
+                }
                 if let Some(title) = export_title.clone() {
                     button { class: "pane-menu-item",
                         role: "menuitem",
@@ -161,6 +175,12 @@ pub(in crate::ui) fn WalletRowMenu(
                     span { "Settings" }
                 }
             }
+            button { class: "more-item",
+                aria_haspopup: "dialog",
+                onclick: rename,
+                Icon { glyph: Glyph::Pencil }
+                span { "Rename" }
+            }
             if let Some(title) = export_title {
                 button { class: "more-item",
                     title,
@@ -176,6 +196,7 @@ pub(in crate::ui) fn WalletRowMenu(
                 span { "Remove" }
             }
         }
+        crate::ui::wallets::RenameWalletModal { open: rename_open, id, label: label.clone() }
         if dialogs {
             WalletDialogs { wallet, settings_open, details_open }
         }
