@@ -22,7 +22,9 @@
 //!   carry;
 //! - the layout of the stored message, which the IDL passes as plain `bytes`;
 //! - the accounts an execution lists after its own, which are the accounts
-//!   of the stored message and so differ for every transaction.
+//!   of the stored message and so differ for every transaction: the lookup
+//!   tables it reads, its own accounts, then the addresses read from those
+//!   tables (see `TableBound`).
 
 use std::sync::OnceLock;
 

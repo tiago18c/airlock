@@ -45,7 +45,7 @@ pub const NOT_VOTES: &str = "Only a transaction of Squads v4 approvals of one pr
 pub const PROPOSAL_UNREAD: &str =
     "The proposal could not be read on this cluster, so what it holds cannot be added.";
 pub const STORED_UNREAD: &str = "The transaction this proposal stores could not be read on this cluster, so what it holds cannot be added.";
-pub const STORED_LOOKUP_TABLES: &str = "The transaction this proposal stores reads accounts from lookup tables, which this app does not read, so what it holds cannot be added.";
+pub const STORED_LOOKUP_TABLES: &str = "The transaction this proposal stores reads accounts from lookup tables, which the checks this app adds do not carry yet, so what it holds cannot be added.";
 pub const STORED_OTHER: &str = "This proposal stores a change to the multisig or a batch, not a vault transaction, so what it holds cannot be added.";
 pub const STORED_CHANGED: &str = "What the proposal stores is not what this screen shows, so nothing was added. Load the transaction again to read it anew.";
 pub const NOT_REBUILT: &str = "A member votes through a wallet without a key, and this transaction could not be rebuilt for that wallet around what the proposal holds, so nothing was added.";
@@ -183,7 +183,7 @@ pub async fn read_for_checks(
         .ok_or_else(|| refused(STORED_UNREAD))?;
     let stored = match squad.parse_transaction(&account.data) {
         Some(StoredAccount::Vault(stored)) if stored.index == proposal.index => stored,
-        Some(StoredAccount::LookupTables) => return Err(refused(STORED_LOOKUP_TABLES)),
+        Some(StoredAccount::LookupTables(_)) => return Err(refused(STORED_LOOKUP_TABLES)),
         Some(StoredAccount::Other) => return Err(refused(STORED_OTHER)),
         _ => return Err(refused(STORED_UNREAD)),
     };

@@ -90,7 +90,14 @@ impl Desk {
             .iter()
             .map(|address| self.chain.account(address))
             .collect();
-        let entries = read_page(&self.squad, &state, &indexes, &accounts);
+        // These store no transaction that reads lookup tables.
+        let entries = read_page(
+            &self.squad,
+            &state,
+            &indexes,
+            &accounts,
+            &Default::default(),
+        );
         (state, entries)
     }
 

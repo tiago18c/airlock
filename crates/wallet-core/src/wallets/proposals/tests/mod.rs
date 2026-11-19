@@ -118,6 +118,14 @@ fn a_time_lock_or_a_missing_permission_splits_approval_from_execution() {
         available_action(&locked, &approved, &me, 1_060),
         Ok(ProposalAction::Execute)
     );
+    assert_eq!(
+        NoAction::TimeLock {
+            until: 1_060,
+            now: 1_030
+        }
+        .to_string(),
+        "It is approved. The multisig's time lock holds it for 30 seconds more, then it can be executed."
+    );
 
     let voter = state(2, 0, &[(me, PERMISSION_VOTE), (pk(3), PERMISSION_ALL)]);
     assert_eq!(
@@ -150,7 +158,7 @@ fn what_cannot_be_read_or_is_over_offers_nothing() {
         available_action(&alone, &unread, &me, 0),
         Err(NoAction::Unreadable)
     );
-    unread.stored = Stored::LookupTables;
+    unread.stored = Stored::LookupTables(TableProblem::Missing { table: pk(40) });
     assert_eq!(
         available_action(&alone, &unread, &me, 0),
         Err(NoAction::Unreadable)
@@ -183,6 +191,16 @@ fn what_cannot_be_read_or_is_over_offers_nothing() {
             Err(NoAction::Finished)
         );
     }
+    // A state the programs no longer set, and never leave.
+    assert_eq!(
+        available_action(
+            &alone,
+            &entry(&squad, ProposalStatus::Executing, &[me]),
+            &me,
+            0
+        ),
+        Err(NoAction::Executing)
+    );
     let mut none = entry(&squad, ProposalStatus::Active, &[]);
     none.proposal = None;
     assert_eq!(

@@ -121,9 +121,9 @@ pub use error::{
     BookFileError, BuildError, DecodeError, DeriveError, RpcError, SignError, VaultError,
 };
 pub use ids::{
-    short_pubkey, WalletId, ASSOCIATED_TOKEN_PROGRAM_ID, COMPUTE_BUDGET_PROGRAM_ID,
-    MEMO_PROGRAM_ID, NATIVE_MINT, NATIVE_MINT_2022, STAKE_PROGRAM_ID, SYSTEM_PROGRAM_ID,
-    TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID,
+    short_pubkey, WalletId, ADDRESS_LOOKUP_TABLE_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID,
+    COMPUTE_BUDGET_PROGRAM_ID, MEMO_PROGRAM_ID, NATIVE_MINT, NATIVE_MINT_2022, STAKE_PROGRAM_ID,
+    SYSTEM_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID,
 };
 pub use solana_instruction::Instruction;
 /// Limits and sizes of a Solana v1 transaction, from the crates that define them.

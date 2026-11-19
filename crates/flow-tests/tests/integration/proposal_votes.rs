@@ -134,10 +134,16 @@ impl Desk {
             .iter()
             .map(|address| self.chain.account(address))
             .collect();
-        let entry = read_page(&self.squad, &state, &indexes, &accounts)
-            .into_iter()
-            .find(|entry| entry.index == index)
-            .unwrap();
+        let entry = read_page(
+            &self.squad,
+            &state,
+            &indexes,
+            &accounts,
+            &Default::default(),
+        )
+        .into_iter()
+        .find(|entry| entry.index == index)
+        .unwrap();
         (state, entry)
     }
 

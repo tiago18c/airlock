@@ -1,17 +1,22 @@
 //! Squads multisigs: reading one, creating one, and paging through its
 //! proposals.
 
-use crate::compile::compile_fresh;
+use crate::compile::{compile_fresh, compile_on_nonce};
 use crate::error::FlowError;
+use crate::offline_nonce::move_onto;
 use solana_pubkey::Pubkey;
 use std::collections::HashMap;
-use wallet_core::proposals::{page_accounts, page_indexes, read_page, ProposalEntry};
+use wallet_core::proposals::{
+    page_accounts, page_indexes, page_tables, read_page, ProposalEntry, ProposalRequest,
+};
+use wallet_core::relay::{with_heap_size, MAX_HEAP_SIZE};
 use wallet_core::squads::{
-    Squad, SquadState, SquadsMember, SquadsProgram, SquadsSetup, PERMISSION_ALL,
+    Squad, SquadState, SquadsMember, SquadsProgram, SquadsSetup, StoredAccount, PERMISSION_ALL,
 };
 use wallet_core::{
-    apply_local_signatures, stored_in, KeypairSigner, RawAccount, SolanaRpc, StoredTarget,
-    WalletSigner,
+    apply_local_signatures, compile_v1, decode_v1_transaction, stored_in, BuildError, DecodedTx,
+    KeypairSigner, RawAccount, SolanaRpc, StoredTarget, WalletSigner,
+    ADDRESS_LOOKUP_TABLE_PROGRAM_ID, MAX_TRANSACTION_SIZE,
 };
 
 /// What a node says about an address that should be a multisig.
@@ -146,12 +151,113 @@ pub async fn load_page(
         })?;
     let indexes = page_indexes(from.unwrap_or(state.transaction_index));
     let accounts = rpc.get_accounts(&page_accounts(squad, &indexes)).await?;
-    let entries = read_page(squad, &state, &indexes, &accounts);
+    // A third request only when a stored transaction reads accounts from
+    // lookup tables: every table the page names, at once.
+    let tables = read_tables(rpc, &page_tables(squad, &accounts)).await?;
+    let entries = read_page(squad, &state, &indexes, &accounts, &tables);
     Ok((state, entries))
 }
 
+/// Why the transaction of `len` bytes that would carry a proposal's action
+/// is not built.
+pub fn too_large(len: usize) -> String {
+    format!(
+        "This would take a transaction of {len} bytes, more than the {MAX_TRANSACTION_SIZE} one transaction holds: the stored transaction names too many accounts to be executed in one transaction from this app."
+    )
+}
+
+/// Compile what `request` asks of `entry`, paid by `payer`, as the
+/// Proposals modal hands it to the Sign screen. Returns the wire and the
+/// height at which its blockhash expires, `None` on a durable nonce.
+///
+/// - What would not fit one transaction is refused in those words.
+/// - What executes the stored transaction asks for the most heap, which a
+///   long stored transaction needs and which costs nothing in fees (see
+///   `relay::with_heap_size`).
+/// - A combined approval goes on the durable nonce it names. Anything else
+///   goes on a fresh blockhash, unless it waits on one offline key alone:
+///   then on that key's own durable nonce, which `own_nonce` finds for a
+///   transaction, or else on `row_nonce`, the multisig row's, which the
+///   caller passes when the member acting alone signs through QR codes.
+pub async fn compile_request(
+    rpc: &dyn SolanaRpc,
+    squad: &Squad,
+    entry: &ProposalEntry,
+    request: &ProposalRequest,
+    payer: Pubkey,
+    own_nonce: impl Fn(&DecodedTx) -> Option<(Pubkey, Pubkey)>,
+    row_nonce: Option<Pubkey>,
+) -> Result<(Vec<u8>, Option<u64>), FlowError> {
+    let instructions = request.instructions(squad, entry).ok_or_else(|| {
+        FlowError::refused(
+            "The stored transaction could not be read, so there is nothing to build.",
+        )
+    })?;
+    // Asked before anything is asked of the node.
+    if let Err(BuildError::TooLarge { len }) =
+        compile_v1(payer, instructions.clone(), None, Some(Default::default()))
+    {
+        return Err(FlowError::refused(too_large(len)));
+    }
+    let durable = match request {
+        ProposalRequest::Combined(combined) => combined
+            .durable_nonce
+            .map(|nonce| (nonce, combined.signers())),
+        ProposalRequest::Single { .. } => None,
+    };
+    let (wire, height) = match durable {
+        Some((nonce, members)) => {
+            let signers: Vec<Pubkey> = std::iter::once(payer).chain(members).collect();
+            let wire = compile_on_nonce(rpc, payer, instructions, nonce, &signers).await?;
+            (wire, None)
+        }
+        None => {
+            let (wire, height) = compile_fresh(rpc, payer, instructions.clone()).await?;
+            let tx = decode_v1_transaction(&wire).map_err(FlowError::refused)?;
+            let moved = match (own_nonce(&tx), request, row_nonce) {
+                (Some((key, nonce)), _, _) => move_onto(rpc, &tx, key, nonce).await.ok(),
+                (None, ProposalRequest::Single { member, .. }, Some(nonce)) => {
+                    compile_on_nonce(rpc, payer, instructions, nonce, &[payer, *member])
+                        .await
+                        .ok()
+                }
+                _ => None,
+            };
+            match moved {
+                Some(moved) => (moved, None),
+                None => (wire, Some(height)),
+            }
+        }
+    };
+    let wire = if request.executes() {
+        with_heap_size(&wire, MAX_HEAP_SIZE).map_err(FlowError::refused)?
+    } else {
+        wire
+    };
+    Ok((wire, height))
+}
+
+/// The accounts at `tables` that exist, by address, in one request. None for
+/// none.
+async fn read_tables(
+    rpc: &dyn SolanaRpc,
+    tables: &[Pubkey],
+) -> Result<HashMap<Pubkey, RawAccount>, FlowError> {
+    if tables.is_empty() {
+        return Ok(HashMap::new());
+    }
+    let read = rpc.get_accounts(tables).await?;
+    Ok(tables
+        .iter()
+        .zip(read)
+        .filter_map(|(table, account)| Some((*table, account?)))
+        .collect())
+}
+
 /// What the node says is stored behind `targets`, by address: the raw bytes, to
-/// show and to pass on, of what fits what each acts on.
+/// show and to pass on, of what fits what each acts on. A stored transaction
+/// that reads accounts from lookup tables comes with those tables, read in
+/// one more request, so it reads from these bytes alone.
 pub async fn read_stored(
     rpc: &dyn SolanaRpc,
     targets: &[StoredTarget],
@@ -171,16 +277,43 @@ pub async fn read_stored(
         .collect();
     let addresses: Vec<Pubkey> = asked.iter().map(|(_, address)| *address).collect();
     let read = rpc.get_accounts(&addresses).await?;
+    let held: Vec<(StoredTarget, Pubkey, Vec<u8>)> = asked
+        .into_iter()
+        .zip(read)
+        .filter_map(|((target, address), account)| {
+            let account =
+                account.filter(|account| account.owner == target.squad.program.program_id())?;
+            Some((target, address, account.data))
+        })
+        .collect();
+    let mut wanted: Vec<Pubkey> = Vec::new();
+    for (target, _, data) in &held {
+        if let Some(StoredAccount::LookupTables(bound)) = target.squad.parse_transaction(data) {
+            for table in bound.tables() {
+                if !wanted.contains(&table) {
+                    wanted.push(table);
+                }
+            }
+        }
+    }
+    // Only what the lookup table program owns is a table.
+    let tables: HashMap<Pubkey, Vec<u8>> = read_tables(rpc, &wanted)
+        .await?
+        .into_iter()
+        .filter(|(_, account)| account.owner == ADDRESS_LOOKUP_TABLE_PROGRAM_ID)
+        .map(|(table, account)| (table, account.data))
+        .collect();
     let mut found = HashMap::new();
-    for ((target, address), account) in asked.into_iter().zip(read) {
-        let Some(account) =
-            account.filter(|account| account.owner == target.squad.program.program_id())
-        else {
-            continue;
-        };
-        let one = HashMap::from([(address, account.data)]);
-        if stored_in(&target, &one).is_some() {
-            found.extend(one);
+    for (target, address, data) in held {
+        let mut one = tables.clone();
+        one.insert(address, data);
+        if let Some(stored) = stored_in(&target, &one) {
+            found.insert(address, one.remove(&address).unwrap_or_default());
+            for table in stored.lookup_tables {
+                if let Some(data) = one.remove(&table) {
+                    found.insert(table, data);
+                }
+            }
         }
     }
     Ok(found)
@@ -420,6 +553,97 @@ mod tests {
         ))
         .unwrap_err();
         assert!(err.to_string().contains("not set up on this cluster"));
+    }
+
+    /// The stored transaction of [`written`], reading accounts from one
+    /// lookup table, `table`, which it names no entry of.
+    fn with_table(stored: &[u8], table: Pubkey) -> Vec<u8> {
+        let mut data = stored.to_vec();
+        let at = data.len() - 4;
+        data[at] = 1;
+        data.extend_from_slice(table.as_ref());
+        data.extend_from_slice(&[0u8; 8]);
+        data
+    }
+
+    fn table_account(addresses: &[Pubkey]) -> RawAccount {
+        let mut data = 1u32.to_le_bytes().to_vec();
+        data.extend_from_slice(&u64::MAX.to_le_bytes());
+        data.extend_from_slice(&[0u8; 44]);
+        for address in addresses {
+            data.extend_from_slice(address.as_ref());
+        }
+        owned_by(ADDRESS_LOOKUP_TABLE_PROGRAM_ID, data)
+    }
+
+    #[test]
+    fn a_page_reads_the_lookup_tables_its_transactions_name_in_one_more_request() {
+        use wallet_core::proposals::Stored;
+        use wallet_core::squads::TableProblem;
+        let (squad, target, stored, proposal) = written();
+        let program = squad.program.program_id();
+        let table = pk(40);
+        let mut on_chain = state(&[(pk(10), PERMISSION_ALL)], 1);
+        on_chain.transaction_index = 1;
+        on_chain.stale_transaction_index = 0;
+        let mut accounts = vec![
+            (squad.address, multisig_account(squad.program, &on_chain)),
+            (squad.proposal(1), owned_by(program, proposal)),
+            (
+                squad.transaction(1),
+                owned_by(program, with_table(&stored, table)),
+            ),
+        ];
+
+        // The table is gone: the transaction cannot be read, and says why.
+        let rpc = node(accounts.clone());
+        let (_, entries) = pollster::block_on(load_page(&rpc, &squad, None)).unwrap();
+        assert_eq!(rpc.asked(), 3);
+        assert_eq!(
+            entries[0].stored,
+            Stored::LookupTables(TableProblem::Missing { table })
+        );
+        // The same bytes under another program are no table.
+        let mut foreign = table_account(&[]);
+        foreign.owner = pk(9);
+        let rpc = node([accounts.clone(), vec![(table, foreign)]].concat());
+        let (_, entries) = pollster::block_on(load_page(&rpc, &squad, None)).unwrap();
+        assert!(matches!(entries[0].stored, Stored::LookupTables(_)));
+
+        accounts.push((table, table_account(&[pk(41)])));
+        let rpc = node(accounts);
+        let (_, entries) = pollster::block_on(load_page(&rpc, &squad, None)).unwrap();
+        let Stored::Vault(resolved) = &entries[0].stored else {
+            panic!("{:?}", entries[0].stored);
+        };
+        assert_eq!(resolved.lookup_tables, vec![table]);
+
+        // Review and Sign reads it the same way, and keeps the table's bytes
+        // with the transaction's, to show and to pass on.
+        let found = read(&rpc, target).unwrap();
+        assert_eq!(
+            found
+                .keys()
+                .copied()
+                .collect::<std::collections::BTreeSet<_>>(),
+            [squad.transaction(1), table].into_iter().collect()
+        );
+        assert!(stored_in(&target, &found).is_some());
+    }
+
+    #[test]
+    fn a_page_without_lookup_tables_takes_two_requests() {
+        let (squad, _, stored, proposal) = written();
+        let program = squad.program.program_id();
+        let mut on_chain = state(&[(pk(10), PERMISSION_ALL)], 1);
+        on_chain.transaction_index = 1;
+        let rpc = node(vec![
+            (squad.address, multisig_account(squad.program, &on_chain)),
+            (squad.proposal(1), owned_by(program, proposal)),
+            (squad.transaction(1), owned_by(program, stored)),
+        ]);
+        pollster::block_on(load_page(&rpc, &squad, None)).unwrap();
+        assert_eq!(rpc.asked(), 2);
     }
 
     #[test]

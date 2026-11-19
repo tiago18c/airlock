@@ -93,7 +93,12 @@ pub(super) fn checks_on_screen(
     let program = wallet_core::squads::SQUADS_CLEAR_SIGNING_PROGRAM_ID;
     let facts = CheckFacts {
         online,
-        stored_read: shown.is_some(),
+        // A transaction that reads accounts from lookup tables is read here,
+        // but this app builds no check for one (`proposal_checks` refuses
+        // it), so none is offered.
+        stored_read: shown
+            .as_ref()
+            .is_some_and(|shown| shown.lookup_tables.is_empty()),
         signs_elsewhere,
         program_on_cluster: clear_signing_on(
             session.idl_network(),

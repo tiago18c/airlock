@@ -45,12 +45,17 @@ pub(in crate::ui) fn ProposalRow(
     let verdict = acting.map(|(member, _)| available_action(&state, &entry, &member, now));
     // Every vote the proposal still needs, cast by the wallets the row names.
     let combined = acting.and_then(|_| combined_approval(&state, &entry, &chosen, approval_nonce));
+    // Another wallet of this device that executes it when the acting member
+    // may not.
+    let instead = acting
+        .and_then(|_| executor_instead(&state, &entry, &chosen, now))
+        .map(|member| member.address);
     let summary = match &entry.stored {
         Stored::Vault(tx) => match tx.instructions.len() {
             1 => "1 instruction".to_string(),
             count => format!("{count} instructions"),
         },
-        Stored::LookupTables => "uses lookup tables".to_string(),
+        Stored::LookupTables(_) => "lookup tables not read".to_string(),
         Stored::Other => "not a vault transaction".to_string(),
         Stored::Missing => "transaction account closed".to_string(),
     };
@@ -83,13 +88,47 @@ pub(in crate::ui) fn ProposalRow(
                                 span { class: "muted", "stored by" }
                                 Address { pubkey: tx.creator }
                             }
+                            if !tx.lookup_tables.is_empty() {
+                                p { class: "chip-row",
+                                    span { class: "muted",
+                                        if tx.lookup_tables.len() == 1 { "Reads accounts from lookup table" } else { "Reads accounts from lookup tables" }
+                                    }
+                                    for table in tx.lookup_tables.iter().copied() {
+                                        Address { key: "{table}", pubkey: table, warn: tx.deactivated_tables.contains(&table) }
+                                    }
+                                }
+                                if tx.deactivated_tables.is_empty() {
+                                    p { class: "hint", "A lookup table's entries never change once written, so what is shown here is what runs." }
+                                } else {
+                                    p { class: "warn", "A table marked here was deactivated by its authority. It still works until it is closed, and once it is, this transaction can never be executed." }
+                                }
+                            }
                             ReadInstructions {
                                 instructions: tx.instructions.clone(),
                                 inspect: false,
                             }
+                            if !tx.other_signers.is_empty() {
+                                p { class: "chip-row hint",
+                                    span { "Executing it also needs a signature from" }
+                                    for key in tx.other_signers.iter().copied() {
+                                        Address { key: "{key}", pubkey: key }
+                                    }
+                                }
+                            }
                         },
-                        Stored::LookupTables => rsx! {
-                            p { class: "warn", "This transaction names accounts through address lookup tables. This app cannot resolve those yet, so it cannot show or execute it." }
+                        Stored::LookupTables(TableProblem::Missing { table }) => rsx! {
+                            p { class: "warn chip-row",
+                                span { "This transaction reads accounts from lookup table" }
+                                Address { pubkey: *table }
+                                span { ", which does not exist on this cluster: it was closed, or never made. It cannot be read or executed." }
+                            }
+                        },
+                        Stored::LookupTables(TableProblem::Short { table, index, holds }) => rsx! {
+                            p { class: "warn chip-row",
+                                span { "This transaction reads entry {index} of lookup table" }
+                                Address { pubkey: *table }
+                                span { ", which holds only {holds} addresses. What that entry will hold is not known yet, so it cannot be read, approved or executed." }
+                            }
                         },
                         Stored::Other => rsx! {
                             p { class: "warn", "This is a change to the multisig itself, a batch or a policy payload. This app cannot read those yet." }
@@ -166,6 +205,26 @@ pub(in crate::ui) fn ProposalRow(
                                 p { class: "hint", "This approval is the last one {label} needs, so the same transaction executes it." }
                             }
                         },
+                        (Some(Err(NoAction::MayNotExecute)), Some((_, Some(payer))), None) if instead.is_some() => {
+                            let member = instead.unwrap_or_default();
+                            rsx! {
+                                div { class: "btn-row",
+                                    button { class: "primary sm", disabled: busy,
+                                        onclick: move |_| on_act.call((
+                                            for_action.clone(),
+                                            ProposalRequest::Single { member, action: ProposalAction::Execute },
+                                            payer,
+                                        )),
+                                        "Execute"
+                                    }
+                                }
+                                p { class: "chip-row hint",
+                                    span { "The acting member may not execute, so" }
+                                    Address { pubkey: member }
+                                    span { "does: another wallet of this device that this multisig lets execute." }
+                                }
+                            }
+                        }
                         (Some(Ok(_)), _, _) => rsx! {
                             p { class: "hint", "Pick a hot wallet to pay fees for this wallet first." }
                         },

@@ -70,6 +70,10 @@ pub const SOL: u64 = 1_000_000_000;
 const ADDRESS_LOOKUP_TABLE_PROGRAM_ID: Pubkey =
     Pubkey::from_str_const("AddressLookupTab1e1111111111111111111111111");
 
+/// The clock sysvar: slot, epoch start, epoch, leader schedule epoch, then
+/// the Unix time, eight bytes each.
+const CLOCK_SYSVAR: Pubkey = Pubkey::from_str_const("SysvarC1ock11111111111111111111111111111111");
+
 /// The smart account program numbers accounts from a counter. Start it
 /// somewhere other than zero so a wrong number cannot pass by accident.
 pub const SMART_ACCOUNTS_ALREADY_CREATED: u128 = 41;
@@ -228,6 +232,25 @@ impl Chain {
     /// Move the clock to `slot`.
     pub fn warp(&mut self, slot: u64) {
         self.svm.warp_to_slot(slot);
+    }
+
+    /// The clock's Unix time, as a program reads it.
+    pub fn now(&self) -> i64 {
+        let clock = self.data(&CLOCK_SYSVAR);
+        i64::from_le_bytes(clock[32..40].try_into().expect("the clock's layout"))
+    }
+
+    /// Let `seconds` of Unix time pass on the clock programs read.
+    pub fn pass_seconds(&mut self, seconds: i64) {
+        let later = self.now() + seconds;
+        self.patch_data(&CLOCK_SYSVAR, |clock| {
+            clock[32..40].copy_from_slice(&later.to_le_bytes());
+        });
+    }
+
+    /// Take the account at `address` off the chain, as closing it does.
+    pub fn remove(&mut self, address: &Pubkey) {
+        self.svm.set_account(*address, Account::default()).unwrap();
     }
 
     /// Put an active address lookup table holding `addresses` on the chain,

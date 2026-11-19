@@ -258,6 +258,29 @@ pub fn fit_compute_units(wire: &[u8], units: u64) -> Result<Vec<u8>, SignError> 
     Ok(wire)
 }
 
+/// The most heap a transaction may ask its programs to get, in bytes. They
+/// get 32 KiB when it asks for none.
+pub const MAX_HEAP_SIZE: u32 = 256 * 1024;
+
+/// The same transaction asking for `bytes` of heap for its programs, at
+/// most [`MAX_HEAP_SIZE`], in whole KiB. Signatures over the transaction are
+/// removed. Authorization signatures are untouched: they do not cover it.
+///
+/// A Squads execution runs every instruction of the stored transaction in
+/// one call, and the programs build all of them on the heap first: past
+/// about fifty instructions the default 32 KiB runs out, and the execution
+/// fails with an access violation however much compute it is given. More
+/// heap costs a few compute units and nothing in fees.
+pub fn with_heap_size(wire: &[u8], bytes: u32) -> Result<Vec<u8>, SignError> {
+    let tx = decode(wire)?;
+    let heap = bytes.min(MAX_HEAP_SIZE) / 1024 * 1024;
+    let (wire, _) = rebuild(&tx, |message| {
+        message.config.heap_size = Some(heap);
+        Ok(())
+    })?;
+    Ok(wire)
+}
+
 /// The same transaction with its compute unit limit set to `limit`.
 /// Signatures over the transaction are removed. Authorization signatures are
 /// untouched: they do not cover the limit.

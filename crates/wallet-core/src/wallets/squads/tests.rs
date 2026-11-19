@@ -1,5 +1,6 @@
 use super::*;
 use crate::fixtures::{pk, transfer};
+use std::collections::HashMap;
 
 #[test]
 fn the_vault_is_a_different_address_from_the_multisig() {
@@ -213,8 +214,20 @@ fn accounts_the_programs_wrote_read_back() {
     }
 }
 
+/// A lookup table account as the lookup table program writes it.
+fn table_data(addresses: &[Pubkey], deactivated: bool) -> Vec<u8> {
+    let mut data = 1u32.to_le_bytes().to_vec();
+    let slot = if deactivated { 7 } else { u64::MAX };
+    data.extend_from_slice(&slot.to_le_bytes());
+    data.extend_from_slice(&[0u8; 44]);
+    for address in addresses {
+        data.extend_from_slice(address.as_ref());
+    }
+    data
+}
+
 #[test]
-fn a_stored_transaction_that_names_lookup_tables_is_not_resolved() {
+fn a_stored_transaction_that_names_lookup_tables_is_read_with_them() {
     let w = &written()[0];
     let mut data = unhex(w.transaction);
     // One table: its address, and no index into it either way.
@@ -222,10 +235,119 @@ fn a_stored_transaction_that_names_lookup_tables_is_not_resolved() {
     data[at] = 1;
     data.extend_from_slice(&[9u8; 32]);
     data.extend_from_slice(&[0u8; 8]);
+    let Some(StoredAccount::LookupTables(bound)) = w.squad.parse_transaction(&data) else {
+        panic!("not read as a transaction that needs its tables");
+    };
+    let table = Pubkey::new_from_array([9; 32]);
+    assert_eq!(bound.tables(), vec![table]);
     assert_eq!(
-        w.squad.parse_transaction(&data),
-        Some(StoredAccount::LookupTables)
+        bound.resolve(&HashMap::new()),
+        Err(TableProblem::Missing { table })
     );
+    // Not a table: an account of another kind at that address.
+    let wrong = HashMap::from([(table, vec![0u8; 56])]);
+    assert_eq!(bound.resolve(&wrong), Err(TableProblem::Missing { table }));
+
+    let tables = HashMap::from([(table, table_data(&[pk(5)], true))]);
+    let stored = bound.resolve(&tables).unwrap();
+    assert_eq!(stored.lookup_tables, vec![table]);
+    assert_eq!(stored.deactivated_tables, vec![table]);
+    // The table is listed before the message's own accounts.
+    let execute = w.squad.execute_stored(&stored, &pk(3));
+    assert_eq!(execute.accounts[4], AccountMeta::new_readonly(table, false));
+    assert_eq!(execute.accounts[5].pubkey, stored.vault);
+}
+
+#[test]
+fn addresses_from_lookup_tables_resolve_and_are_listed_as_the_programs_read_them() {
+    for squad in [Squad::v4(&pk(1)), Squad::smart_account(7)] {
+        let vault = squad.vault(0);
+        let (first, second) = (pk(30), pk(31));
+        let instructions = [
+            // A writable address from each table, and a read-only one.
+            transfer(vault, pk(20), 1),
+            transfer(vault, pk(22), 2),
+            Instruction::new_with_bytes(
+                pk(40),
+                &[1],
+                vec![AccountMeta::new_readonly(pk(21), false)],
+            ),
+        ];
+        let tables = [(first, vec![pk(20), pk(21)]), (second, vec![pk(9), pk(22)])];
+        let message = vault_message_with_tables(&vault, &instructions, &tables).unwrap();
+        assert_eq!(message.tables(), vec![first, second]);
+        // The message's own accounts: the vault, and the programs it calls.
+        assert_eq!(message.account_keys, vec![vault, SYSTEM_PROGRAM_ID, pk(40)]);
+        let held: HashMap<Pubkey, Vec<Pubkey>> = tables.iter().cloned().collect();
+        let loaded = message.load(&held).unwrap();
+        assert_eq!(message.instructions_with(&loaded).unwrap(), instructions);
+        // Tables, own accounts, then each table's writable then read-only.
+        let listing = message.execute_listing(&loaded, &[vault]);
+        let keys: Vec<Pubkey> = listing.iter().map(|meta| meta.pubkey).collect();
+        assert_eq!(
+            keys,
+            vec![
+                first,
+                second,
+                vault,
+                SYSTEM_PROGRAM_ID,
+                pk(40),
+                pk(20),
+                pk(21),
+                pk(22)
+            ]
+        );
+        assert!(listing.iter().all(|meta| !meta.is_signer));
+        assert_eq!(
+            listing
+                .iter()
+                .map(|meta| meta.is_writable)
+                .collect::<Vec<_>>(),
+            vec![false, false, true, false, false, true, false, true]
+        );
+
+        // A table that holds fewer entries than the message asks for.
+        let short = HashMap::from([(first, vec![pk(20), pk(21)]), (second, vec![pk(9)])]);
+        assert_eq!(
+            message.load(&short),
+            Err(TableProblem::Short {
+                table: second,
+                index: 1,
+                holds: 1
+            })
+        );
+    }
+}
+
+#[test]
+fn ephemeral_signers_and_the_vault_sign_inside_the_program_and_nothing_else_does() {
+    for squad in [Squad::v4(&pk(1)), Squad::smart_account(7)] {
+        let vault = squad.vault(0);
+        let ephemeral = squad.ephemeral_signer(4, 0);
+        assert_ne!(ephemeral, squad.ephemeral_signer(4, 1));
+        assert_ne!(ephemeral, squad.ephemeral_signer(5, 0));
+        assert!(!ephemeral.is_on_curve());
+        let message = vault_message(
+            &vault,
+            &[solana_system_interface::instruction::create_account(
+                &vault,
+                &ephemeral,
+                1,
+                0,
+                &pk(40),
+            )],
+        );
+        let listing = message.execute_listing(&Loaded::default(), &[vault, ephemeral]);
+        assert!(listing.iter().all(|meta| !meta.is_signer));
+        // A key that is not the program's to sign for has to sign itself.
+        let listing = message.execute_listing(&Loaded::default(), &[vault]);
+        let signing: Vec<Pubkey> = listing
+            .iter()
+            .filter(|meta| meta.is_signer)
+            .map(|meta| meta.pubkey)
+            .collect();
+        assert_eq!(signing, vec![ephemeral]);
+    }
 }
 
 #[test]

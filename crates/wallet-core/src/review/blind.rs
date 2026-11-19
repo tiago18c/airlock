@@ -234,14 +234,18 @@ fn blind_one(
 
 /// The transaction `target` acts on, if `accounts` holds one that fits it.
 /// Fitting says it could be that transaction: anyone can write bytes for an
-/// address, so where they came from decides what they are worth.
+/// address, so where they came from decides what they are worth. One that
+/// reads accounts from lookup tables is read with the tables `accounts`
+/// holds too, by their addresses.
 pub fn stored_in(
     target: &StoredTarget,
     accounts: &HashMap<Pubkey, Vec<u8>>,
 ) -> Option<VaultTransaction> {
     accounts.iter().find_map(|(address, data)| {
-        let StoredAccount::Vault(stored) = target.squad.parse_transaction(data)? else {
-            return None;
+        let stored = match target.squad.parse_transaction(data)? {
+            StoredAccount::Vault(stored) => stored,
+            StoredAccount::LookupTables(bound) => bound.resolve(accounts).ok()?,
+            StoredAccount::Other => return None,
         };
         let fits = target.squad.transaction(stored.index) == *address
             && target.squad.proposal(stored.index) == target.proposal

@@ -5,18 +5,26 @@
 //! derived from the number, so a page of them is read by address, newest
 //! first, without any index of the chain.
 //!
+//! A stored transaction may read some of its accounts from address lookup
+//! tables, as other apps store swaps and other large transactions. Those
+//! tables are read with the page ([`page_tables`]), and such a transaction
+//! reads like any other once they are (see `squads::TableProblem` for when
+//! it cannot be).
+//!
 //! What a member may do to a proposal follows from its status, the member's
 //! permissions, the threshold and the time lock. This module decides that and
 //! builds the instructions. Signing happens elsewhere. Who voted how, and how
 //! the programs count those votes, is in `votes`.
 
 use crate::chain::RawAccount;
+use crate::ids::ADDRESS_LOOKUP_TABLE_PROGRAM_ID;
 use crate::wallets::squads::{
-    ProposalState, ProposalStatus, Squad, SquadState, StoredAccount, VaultTransaction,
-    PERMISSION_EXECUTE, PERMISSION_VOTE,
+    ProposalState, ProposalStatus, Squad, SquadState, StoredAccount, TableProblem,
+    VaultTransaction, PERMISSION_EXECUTE, PERMISSION_VOTE,
 };
 use solana_instruction::Instruction;
 use solana_pubkey::Pubkey;
+use std::collections::HashMap;
 use thiserror::Error;
 
 mod combined;
@@ -36,10 +44,12 @@ pub const PROPOSALS_PER_PAGE: u64 = 10;
 /// What is stored under one transaction number.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Stored {
-    /// Instructions a vault runs.
+    /// Instructions a vault runs. Those that read accounts from lookup
+    /// tables are here once the tables were read.
     Vault(VaultTransaction),
-    /// A vault transaction that names accounts through address lookup tables.
-    LookupTables,
+    /// A vault transaction that reads accounts from lookup tables, which
+    /// could not all be read, and why.
+    LookupTables(TableProblem),
     /// A change to the multisig itself, a batch, or a policy payload.
     Other,
     /// No account. It was closed, or never created.
@@ -73,13 +83,36 @@ pub fn page_accounts(squad: &Squad, indexes: &[u64]) -> Vec<Pubkey> {
         .collect()
 }
 
+/// The address lookup tables the stored transactions in `accounts` read
+/// from, each once: what [`read_page`] needs besides. `accounts` is as
+/// [`read_page`] takes it.
+pub fn page_tables(squad: &Squad, accounts: &[Option<RawAccount>]) -> Vec<Pubkey> {
+    let mut tables = Vec::new();
+    for account in accounts.iter().skip(1).step_by(2).flatten() {
+        if account.owner != squad.program.program_id() {
+            continue;
+        }
+        if let Some(StoredAccount::LookupTables(bound)) = squad.parse_transaction(&account.data) {
+            for table in bound.tables() {
+                if !tables.contains(&table) {
+                    tables.push(table);
+                }
+            }
+        }
+    }
+    tables
+}
+
 /// Read a page. `accounts` holds what [`page_accounts`] asked for, in that
-/// order, with `None` for an account that does not exist.
+/// order, with `None` for an account that does not exist. `tables` holds
+/// the lookup tables [`page_tables`] named, by address, as the node has
+/// them: a table not there does not exist.
 pub fn read_page(
     squad: &Squad,
     state: &SquadState,
     indexes: &[u64],
     accounts: &[Option<RawAccount>],
+    tables: &HashMap<Pubkey, RawAccount>,
 ) -> Vec<ProposalEntry> {
     let owned = |position: usize| {
         accounts
@@ -87,6 +120,12 @@ pub fn read_page(
             .and_then(Option::as_ref)
             .filter(|account| account.owner == squad.program.program_id())
     };
+    // Only what the lookup table program owns is a table.
+    let tables: HashMap<Pubkey, Vec<u8>> = tables
+        .iter()
+        .filter(|(_, account)| account.owner == ADDRESS_LOOKUP_TABLE_PROGRAM_ID)
+        .map(|(address, account)| (*address, account.data.clone()))
+        .collect();
     indexes
         .iter()
         .enumerate()
@@ -98,7 +137,12 @@ pub fn read_page(
                 None => Stored::Missing,
                 Some(account) => match squad.parse_transaction(&account.data) {
                     Some(StoredAccount::Vault(tx)) if tx.index == *index => Stored::Vault(tx),
-                    Some(StoredAccount::LookupTables) => Stored::LookupTables,
+                    Some(StoredAccount::LookupTables(bound)) if bound.index == *index => {
+                        match bound.resolve(&tables) {
+                            Ok(tx) => Stored::Vault(tx),
+                            Err(problem) => Stored::LookupTables(problem),
+                        }
+                    }
                     _ => Stored::Other,
                 },
             };
@@ -142,8 +186,10 @@ pub enum NoAction {
     #[error("It is approved. The acting member may not execute.")]
     MayNotExecute,
     /// `until` is in Unix seconds.
-    #[error("It is approved. The multisig's time lock holds it for {} more second(s).", .until - .now)]
+    #[error("It is approved. The multisig's time lock holds it for {} more, then it can be executed.", wait_words(.until - .now))]
     TimeLock { until: i64, now: i64 },
+    #[error("This proposal was left marked as being executed, a state the program no longer uses and never moves on from, so it cannot be executed.")]
+    Executing,
     #[error(
         "This transaction cannot be read here, so it cannot be approved or executed from this app."
     )]
@@ -174,7 +220,7 @@ pub fn available_action(
     let readable = match &entry.stored {
         Stored::Vault(_) => Ok(()),
         Stored::Missing => Err(NoAction::Gone),
-        Stored::LookupTables | Stored::Other => Err(NoAction::Unreadable),
+        Stored::LookupTables(_) | Stored::Other => Err(NoAction::Unreadable),
     };
     let may_execute = permissions & PERMISSION_EXECUTE != 0;
     match proposal.status {
@@ -200,22 +246,72 @@ pub fn available_action(
                 ProposalAction::Approve
             })
         }
+        // Both programs execute an approved vault transaction that became
+        // stale since: it was approved under the rules of its day.
         ProposalStatus::Approved => {
             readable?;
             if !may_execute {
                 return Err(NoAction::MayNotExecute);
             }
-            let until = proposal.since.saturating_add(i64::from(state.time_lock));
+            let until = time_lock_ends(state, proposal);
             if now < until {
                 return Err(NoAction::TimeLock { until, now });
             }
             Ok(ProposalAction::Execute)
         }
-        ProposalStatus::Rejected
-        | ProposalStatus::Executing
-        | ProposalStatus::Executed
-        | ProposalStatus::Cancelled => Err(NoAction::Finished),
+        ProposalStatus::Executing => Err(NoAction::Executing),
+        ProposalStatus::Rejected | ProposalStatus::Executed | ProposalStatus::Cancelled => {
+            Err(NoAction::Finished)
+        }
     }
+}
+
+/// When the time lock lets an approved `proposal` be executed, in Unix
+/// seconds: the programs count from the moment it was approved.
+pub fn time_lock_ends(state: &SquadState, proposal: &ProposalState) -> i64 {
+    proposal.since.saturating_add(i64::from(state.time_lock))
+}
+
+/// A wait of `seconds`, in words, rounded up: "45 seconds", "3 minutes",
+/// "2 hours", "4 days".
+pub fn wait_words(seconds: i64) -> String {
+    let seconds = seconds.max(1);
+    let unit = |count: i64, one: &str| {
+        if count == 1 {
+            format!("1 {one}")
+        } else {
+            format!("{count} {one}s")
+        }
+    };
+    let up = |of: i64| (seconds + of - 1) / of;
+    match seconds {
+        s if s < 120 => unit(s, "second"),
+        s if s < 2 * 3_600 => unit(up(60), "minute"),
+        s if s < 2 * 86_400 => unit(up(3_600), "hour"),
+        _ => unit(up(86_400), "day"),
+    }
+}
+
+/// Another wallet of this device that can execute `entry` when the acting
+/// member cannot: the first of `chosen` (the acting member first, then
+/// those it approves with) that is a member with the execute permission and
+/// signs in time, which an offline key does not. `None` when the acting
+/// member can execute it itself, or when it is not ready to be executed.
+pub fn executor_instead<'a>(
+    state: &SquadState,
+    entry: &ProposalEntry,
+    chosen: &'a [ChosenMember],
+    now: i64,
+) -> Option<&'a ChosenMember> {
+    let acting = chosen.first()?;
+    if available_action(state, entry, &acting.address, now) != Err(NoAction::MayNotExecute) {
+        return None;
+    }
+    chosen.iter().skip(1).find(|member| {
+        member.kind != MemberKind::Offline
+            && member.permissions & PERMISSION_EXECUTE != 0
+            && available_action(state, entry, &member.address, now) == Ok(ProposalAction::Execute)
+    })
 }
 
 /// The instructions of `action` on `entry`, which `member` signs. `None` when

@@ -71,16 +71,55 @@ impl Squad {
         rent_payer: &Pubkey,
     ) -> Option<Instruction> {
         let message = vault_message(&self.vault(vault_index), instructions).to_bytes()?;
+        Some(self.store(index, vault_index, message, 0, creator, rent_payer))
+    }
+
+    /// [`Self::create_transaction`], reading every address `tables` hold
+    /// from them, and with `ephemeral_signers` addresses the program derives
+    /// for the transaction and signs as (see [`Self::ephemeral_signer`]).
+    /// This is how other apps store a transaction too large to list every
+    /// account itself. `None` when the instructions do not compile so.
+    #[allow(clippy::too_many_arguments)]
+    pub fn create_transaction_with_tables(
+        &self,
+        index: u64,
+        vault_index: u8,
+        instructions: &[Instruction],
+        tables: &[(Pubkey, Vec<Pubkey>)],
+        ephemeral_signers: u8,
+        creator: &Pubkey,
+        rent_payer: &Pubkey,
+    ) -> Option<Instruction> {
+        let message = vault_message_with_tables(&self.vault(vault_index), instructions, tables)?
+            .to_bytes()?;
+        Some(self.store(
+            index,
+            vault_index,
+            message,
+            ephemeral_signers,
+            creator,
+            rent_payer,
+        ))
+    }
+
+    fn store(
+        &self,
+        index: u64,
+        vault_index: u8,
+        message: Vec<u8>,
+        ephemeral_signers: u8,
+        creator: &Pubkey,
+        rent_payer: &Pubkey,
+    ) -> Instruction {
         let stored = |index_name: &str| {
             record([
                 (index_name, vault_index.into()),
-                // No extra program-derived signers.
-                ("ephemeralSigners", 0u8.into()),
+                ("ephemeralSigners", ephemeral_signers.into()),
                 ("transactionMessage", Value::Bytes(message.clone())),
                 ("memo", Value::Option(None)),
             ])
         };
-        Some(match self.program {
+        match self.program {
             SquadsProgram::V4 => self.program.instruction(
                 "vaultTransactionCreate",
                 &[
@@ -110,7 +149,7 @@ impl Squad {
                     )])),
                 }),
             ),
-        })
+        }
     }
 
     /// Open voting on transaction `index`.

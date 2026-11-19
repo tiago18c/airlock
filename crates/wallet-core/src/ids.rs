@@ -151,6 +151,10 @@ pub const NATIVE_MINT_2022: Pubkey =
 pub const COMPUTE_BUDGET_PROGRAM_ID: Pubkey =
     solana_pubkey::Pubkey::from_str_const("ComputeBudget111111111111111111111111111111");
 
+/// The program that owns every address lookup table.
+pub const ADDRESS_LOOKUP_TABLE_PROGRAM_ID: Pubkey =
+    solana_pubkey::Pubkey::from_str_const("AddressLookupTab1e1111111111111111111111111");
+
 pub const SQUADS_V4_PROGRAM_ID: Pubkey =
     Pubkey::from_str_const("SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf");
 pub const SQUADS_SMART_ACCOUNT_PROGRAM_ID: Pubkey =
