@@ -43,11 +43,11 @@ const BOTH: [SquadsProgram; 2] = [SquadsProgram::V4, SquadsProgram::SmartAccount
 /// store a transaction with.
 const PAYMENTS: u64 = 60;
 
-fn run<T>(flow: impl std::future::Future<Output = T>) -> T {
+pub(crate) fn run<T>(flow: impl std::future::Future<Output = T>) -> T {
     pollster::block_on(flow)
 }
 
-fn funded(chain: &mut Chain) -> KeypairSigner {
+pub(crate) fn funded(chain: &mut Chain) -> KeypairSigner {
     let key = KeypairSigner::new_random();
     chain.fund(&key.pubkey(), 10 * SOL);
     key
@@ -55,7 +55,7 @@ fn funded(chain: &mut Chain) -> KeypairSigner {
 
 /// Sign on a device that holds `keys`, as the Sign screen does: one press,
 /// and a second when the first signed an authorization.
-fn press_sign(node: Option<&Node>, wire: &[u8], keys: &[&KeypairSigner]) -> Signed {
+pub(crate) fn press_sign(node: Option<&Node>, wire: &[u8], keys: &[&KeypairSigner]) -> Signed {
     let signers: Vec<&dyn WalletSigner> =
         keys.iter().map(|key| *key as &dyn WalletSigner).collect();
     crate::support::sign_through(
@@ -69,7 +69,7 @@ fn press_sign(node: Option<&Node>, wire: &[u8], keys: &[&KeypairSigner]) -> Sign
 
 /// Create a multisig of `members`, paid by `creator`, with three SOL in
 /// its vault.
-fn create(
+pub(crate) fn create(
     chain: &mut Chain,
     program: SquadsProgram,
     creator: &KeypairSigner,
@@ -118,18 +118,18 @@ fn create(
 
 /// A multisig on the chain, a proposer that may only propose, members that
 /// vote, and a hot wallet that pays fees and is no member.
-struct Team {
-    node: Node,
-    squad: Squad,
-    vault: Pubkey,
-    proposer: KeypairSigner,
-    fees: KeypairSigner,
-    recipient: Pubkey,
+pub(crate) struct Team {
+    pub(crate) node: Node,
+    pub(crate) squad: Squad,
+    pub(crate) vault: Pubkey,
+    pub(crate) proposer: KeypairSigner,
+    pub(crate) fees: KeypairSigner,
+    pub(crate) recipient: Pubkey,
 }
 
 impl Team {
     /// `members` besides the proposer, on `chain`.
-    fn on(
+    pub(crate) fn on(
         mut chain: Chain,
         program: SquadsProgram,
         members: &[(Pubkey, u8)],
@@ -163,13 +163,13 @@ impl Team {
         }
     }
 
-    fn payment(&self, lamports: u64) -> Instruction {
+    pub(crate) fn payment(&self, lamports: u64) -> Instruction {
         solana_system_interface::instruction::transfer(&self.vault, &self.recipient, lamports)
     }
 
     /// The proposer stores `instructions` as transaction `index` and opens
     /// voting on it.
-    fn propose(&self, index: u64, instructions: &[Instruction]) {
+    pub(crate) fn propose(&self, index: u64, instructions: &[Instruction]) {
         let by = self.proposer.pubkey();
         let store = self
             .squad
@@ -179,7 +179,7 @@ impl Team {
     }
 
     /// [`Self::propose`] with the instruction that stores it already made.
-    fn propose_with(&self, index: u64, store: Instruction) {
+    pub(crate) fn propose_with(&self, index: u64, store: Instruction) {
         let by = self.proposer.pubkey();
         let open = self.squad.create_proposal(index, &by, &by);
         let sent = self.node.chain().send(&[&self.proposer], vec![store, open]);
@@ -187,14 +187,14 @@ impl Team {
     }
 
     /// `member` approves transaction `index` in a transaction of its own.
-    fn approve(&self, index: u64, member: &KeypairSigner) {
+    pub(crate) fn approve(&self, index: u64, member: &KeypairSigner) {
         let approve = self.squad.approve(index, &member.pubkey());
         let sent = self.node.chain().send(&[&self.fees, member], vec![approve]);
         sent.unwrap_or_else(|failure| panic!("{}", logs(&failure)));
     }
 
     /// What the modal reads when it opens: the multisig and entry `index`.
-    fn modal(&self, index: u64) -> (SquadState, ProposalEntry) {
+    pub(crate) fn modal(&self, index: u64) -> (SquadState, ProposalEntry) {
         let (state, entries) = run(wallet_flows::squads::load_page(
             &self.node,
             &self.squad,
@@ -210,7 +210,7 @@ impl Team {
 
     /// What pressing the row's button does: the instructions of `request`,
     /// compiled on a fresh blockhash with `payer` paying.
-    fn build(&self, index: u64, request: &ProposalRequest, payer: &Pubkey) -> Vec<u8> {
+    pub(crate) fn build(&self, index: u64, request: &ProposalRequest, payer: &Pubkey) -> Vec<u8> {
         let (_, entry) = self.modal(index);
         let (wire, _) = run(wallet_flows::squads::compile_request(
             &self.node,
@@ -228,7 +228,7 @@ impl Team {
     /// Review and Sign: simulated at the highest limit, then fitted to what
     /// it used. (The screen also asks for balances after, which the test
     /// chain does not serve; the limits are fitted the same way.)
-    fn review(&self, wire: &[u8]) -> Vec<u8> {
+    pub(crate) fn review(&self, wire: &[u8]) -> Vec<u8> {
         let probe = wallet_core::relay::with_compute_unit_limit(wire, u32::MAX).unwrap();
         let simulated = self.node.chain().simulate_wire(&probe);
         if let Err(failure) = simulated {
@@ -240,12 +240,12 @@ impl Team {
         .unwrap()
     }
 
-    fn submit(&self, wire: &[u8]) {
+    pub(crate) fn submit(&self, wire: &[u8]) {
         run(wallet_flows::send::submit(&self.node, wire)).unwrap_or_else(|err| panic!("{err}"));
     }
 
     /// Execute `index` as `member`, alone, all the way, with `keys` signing.
-    fn execute_as(&self, index: u64, member: &Pubkey, keys: &[&KeypairSigner]) {
+    pub(crate) fn execute_as(&self, index: u64, member: &Pubkey, keys: &[&KeypairSigner]) {
         let (state, entry) = self.modal(index);
         let now = self.node.chain().now();
         assert_eq!(
@@ -263,7 +263,7 @@ impl Team {
 
     /// The modal, opened again, reads `index` as executed, with nothing left
     /// to do for `member`.
-    fn assert_executed(&self, index: u64, member: &Pubkey) {
+    pub(crate) fn assert_executed(&self, index: u64, member: &Pubkey) {
         let (state, entry) = self.modal(index);
         let proposal = entry.proposal.as_ref().unwrap();
         assert_eq!(proposal.status, ProposalStatus::Executed);

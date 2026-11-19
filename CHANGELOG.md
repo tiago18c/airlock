@@ -15,6 +15,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 - **A Squads proposal shows who approved it, who rejected it and who has yet to vote.** Open a proposal under Proposals to see each member by name, with the member you act as marked "you" and your other wallets marked "on this device", and who voted to cancel an approved one. Its row says how many rejections it has against the number that rejects it, and whether you approved, rejected or voted to cancel.
 - **Squads proposals that read accounts from lookup tables can be read, approved and executed.** Proposals made in the Squads app for swaps and other large transactions used to show only "cannot resolve"; Proposals now reads their tables and shows their instructions like any other. A proposal whose table was closed, or does not hold what it names yet, says so and offers nothing, and one whose table was deactivated warns that it can stop working.
 - **A proposal your member may not execute can be executed by another wallet of this device that may**, from the same Execute button, when that wallet is one of those that approve together with it.
+- **Reject a Squads proposal.** An open proposal offers Reject beside Approve, also when Airlock cannot read what it holds, and also after you approved it, which takes your approval back. The row says before you press it whether your rejection is the one that rejects the proposal for good. Like Approve, it opens the transaction in Review and Sign, and works for programmatic signers, Vector wallets and offline wallets.
 
 ### Changed
 

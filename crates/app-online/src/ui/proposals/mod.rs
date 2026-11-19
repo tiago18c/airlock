@@ -10,9 +10,12 @@
 //! What it reads of the multisig itself is kept on the wallet's record, so
 //! the members and threshold shown elsewhere follow the chain.
 //!
-//! Nothing is signed here. Approve and Execute build a transaction and hand
-//! it to the Sign screen, where it is read, signed and submitted like any
-//! other. When a member in it is a programmatic signer, Sign rebuilds it
+//! The acting member may also reject an open proposal, whether or not its
+//! stored transaction could be read: saying no needs no reading.
+//!
+//! Nothing is signed here. Approve, Reject and Execute build a transaction
+//! and hand it to the Sign screen, where it is read, signed and submitted
+//! like any other. When a member in it is a programmatic signer, Sign rebuilds it
 //! around the authorization its authority signs.
 
 use crate::actions::proposals::{load_page, open_request};
@@ -23,8 +26,8 @@ use app_ui_kit::{Address, Session};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use wallet_core::proposals::{
-    available_action, combined_approval, executor_instead, time_lock_ends, ChosenMember,
-    MemberKind, NoAction, ProposalAction, ProposalEntry, ProposalRequest, Stored,
+    combined_approval, executor_instead, member_choices, time_lock_ends, ChosenMember, MemberKind,
+    NoAction, ProposalAction, ProposalEntry, ProposalRequest, Stored,
 };
 use wallet_core::squads::{time_lock_words, ProposalStatus, Squad, SquadState, TableProblem};
 use wallet_core::{RouteStep, WalletId};
@@ -259,6 +262,11 @@ pub fn ProposalsModal(
                                             },
                                             on_act: move |(entry, request, payer): (ProposalEntry, ProposalRequest, Pubkey)| {
                                                 let label = label_for_note();
+                                                // The note says what a rejection does, from the
+                                                // multisig as it was read.
+                                                let Some(state) = loaded.peek().as_ref().map(|current| current.state.clone()) else {
+                                                    return;
+                                                };
                                                 // A member alone that signs through QR codes
                                                 // can use the row's durable nonce.
                                                 let offline_nonce = match &request {
@@ -277,7 +285,7 @@ pub fn ProposalsModal(
                                                 busy.set(true);
                                                 error.set(None);
                                                 spawn(async move {
-                                                    match open_request(session, &squad, &entry, &request, payer, &label, offline_nonce).await {
+                                                    match open_request(session, &squad, &state, &entry, &request, payer, &label, offline_nonce).await {
                                                         Ok(()) => on_close.call(()),
                                                         Err(err) => error.set(Some(err)),
                                                     }
@@ -299,7 +307,7 @@ pub fn ProposalsModal(
                         }
                     }
                     p { class: "hint",
-                        "Approve, Execute and Together open a transaction in Review and Sign. Nothing is signed here. Stored instructions are read with the IDLs on this device, which are not vetted yet."
+                        "Approve, Reject, Execute and Together open a transaction in Review and Sign. Nothing is signed here. Stored instructions are read with the IDLs on this device, which are not vetted yet."
                     }
                 }
             }

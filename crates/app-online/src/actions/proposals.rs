@@ -3,7 +3,7 @@
 use app_ui_kit::actions::sentence;
 use app_ui_kit::{Session, SignLoad, TxSource};
 use solana_pubkey::Pubkey;
-use wallet_core::proposals::{ProposalAction, ProposalEntry, ProposalRequest};
+use wallet_core::proposals::{available_rejection, ProposalAction, ProposalEntry, ProposalRequest};
 use wallet_core::squads::{Squad, SquadState};
 
 /// Read the multisig, and one page of its transactions starting at `from`,
@@ -28,9 +28,11 @@ pub async fn load_page(
 /// nonce when its wallet has one, and otherwise on `offline_nonce`, the
 /// multisig row's durable nonce, which the caller passes when the member
 /// acting alone is such a key.
+#[allow(clippy::too_many_arguments)]
 pub async fn open_request(
     session: Session,
     squad: &Squad,
+    state: &SquadState,
     entry: &ProposalEntry,
     request: &ProposalRequest,
     payer: Pubkey,
@@ -51,21 +53,46 @@ pub async fn open_request(
     .map_err(sentence)?;
     session.open_in_sign(
         SignLoad::new(wire, TxSource::Wallets)
-            .with_note(request_note(request, entry.index, label))
+            .with_note(request_note(request, state, entry, label))
             .expiring_at(last_valid_height),
     );
     Ok(())
 }
 
-/// What `request` does to proposal `index` of the multisig `label`, for the
-/// note above the transaction.
-pub fn request_note(request: &ProposalRequest, index: u64, label: &str) -> String {
+/// What `request` does to `entry` of the multisig `label`, whose state is
+/// `state`, for the note above the transaction. A rejection says what it
+/// changes, as the row's hint did before it was pressed.
+pub fn request_note(
+    request: &ProposalRequest,
+    state: &SquadState,
+    entry: &ProposalEntry,
+    label: &str,
+) -> String {
+    let index = entry.index;
     match request {
+        ProposalRequest::Single {
+            member,
+            action: ProposalAction::Reject,
+        } => {
+            let mut note = format!("This rejects proposal {index} of {label}.");
+            if let Some(rejection) = available_rejection(state, entry, member) {
+                if rejection.replaces_approval {
+                    note.push_str(" It takes back the member's approval.");
+                }
+                if rejection.last() {
+                    note.push_str(
+                        " It is the last rejection needed: the proposal is rejected for good and cannot be reopened.",
+                    );
+                }
+            }
+            note
+        }
         ProposalRequest::Single { action, .. } => {
             let what = match action {
                 ProposalAction::Approve => "approves",
                 ProposalAction::Execute => "executes",
                 ProposalAction::ApproveAndExecute => "approves and executes",
+                ProposalAction::Reject => "rejects",
             };
             format!("This {what} proposal {index} of {label}.")
         }
@@ -87,10 +114,50 @@ pub fn request_note(request: &ProposalRequest, index: u64, label: &str) -> Strin
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wallet_core::proposals::CombinedApproval;
+    use wallet_core::proposals::{CombinedApproval, Stored};
+    use wallet_core::squads::{ProposalState, ProposalStatus, SquadsMember, PERMISSION_ALL};
 
     fn pk(n: u8) -> Pubkey {
         Pubkey::new_from_array([n; 32])
+    }
+
+    /// Three members, 2 of 3: two rejections reject a proposal.
+    fn team() -> SquadState {
+        SquadState {
+            threshold: 2,
+            time_lock: 0,
+            transaction_index: 4,
+            stale_transaction_index: 0,
+            members: (1..=3)
+                .map(|n| SquadsMember {
+                    key: pk(n),
+                    permissions: PERMISSION_ALL,
+                })
+                .collect(),
+            config_authority: None,
+            rent_collector: None,
+        }
+    }
+
+    /// Proposal 4, open, with these votes. What it stores does not matter.
+    fn open(approved: &[Pubkey], rejected: &[Pubkey]) -> ProposalEntry {
+        ProposalEntry {
+            index: 4,
+            proposal: Some(ProposalState {
+                index: 4,
+                status: ProposalStatus::Active,
+                since: 0,
+                approved: approved.to_vec(),
+                rejected: rejected.to_vec(),
+                cancelled: Vec::new(),
+            }),
+            stored: Stored::Other,
+            stale: false,
+        }
+    }
+
+    fn note(request: &ProposalRequest, entry: &ProposalEntry) -> String {
+        request_note(request, &team(), entry, "Treasury")
     }
 
     #[test]
@@ -99,17 +166,42 @@ mod tests {
             member: pk(1),
             action,
         };
+        let entry = open(&[], &[]);
         assert_eq!(
-            request_note(&single(ProposalAction::Approve), 4, "Treasury"),
+            note(&single(ProposalAction::Approve), &entry),
             "This approves proposal 4 of Treasury."
         );
         assert_eq!(
-            request_note(&single(ProposalAction::Execute), 4, "Treasury"),
+            note(&single(ProposalAction::Execute), &entry),
             "This executes proposal 4 of Treasury."
         );
         assert_eq!(
-            request_note(&single(ProposalAction::ApproveAndExecute), 4, "Treasury"),
+            note(&single(ProposalAction::ApproveAndExecute), &entry),
             "This approves and executes proposal 4 of Treasury."
+        );
+    }
+
+    #[test]
+    fn the_note_of_a_rejection_says_what_it_takes_back_and_whether_it_is_final() {
+        let reject = ProposalRequest::Single {
+            member: pk(1),
+            action: ProposalAction::Reject,
+        };
+        assert_eq!(
+            note(&reject, &open(&[], &[])),
+            "This rejects proposal 4 of Treasury."
+        );
+        assert_eq!(
+            note(&reject, &open(&[pk(1)], &[])),
+            "This rejects proposal 4 of Treasury. It takes back the member's approval."
+        );
+        assert_eq!(
+            note(&reject, &open(&[], &[pk(2)])),
+            "This rejects proposal 4 of Treasury. It is the last rejection needed: the proposal is rejected for good and cannot be reopened."
+        );
+        assert_eq!(
+            note(&reject, &open(&[pk(1)], &[pk(2)])),
+            "This rejects proposal 4 of Treasury. It takes back the member's approval. It is the last rejection needed: the proposal is rejected for good and cannot be reopened."
         );
     }
 
@@ -120,13 +212,14 @@ mod tests {
             executor: pk(1),
             durable_nonce: None,
         };
+        let entry = open(&[], &[]);
         assert_eq!(
-            request_note(&ProposalRequest::Combined(combined.clone()), 4, "Treasury"),
+            note(&ProposalRequest::Combined(combined.clone()), &entry),
             "This approves proposal 4 of Treasury as 2 members and executes it."
         );
         combined.durable_nonce = Some(pk(7));
         assert_eq!(
-            request_note(&ProposalRequest::Combined(combined), 4, "Treasury"),
+            note(&ProposalRequest::Combined(combined), &entry),
             format!(
                 "This approves proposal 4 of Treasury as 2 members and executes it. It uses the durable nonce {}, so the offline wallets can sign it at any time.",
                 pk(7)

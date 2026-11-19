@@ -42,6 +42,12 @@
 //!
 //! Every vote is judged on its own, so one transaction can hold votes that
 //! are pinned and votes that stay blind ([`super::blind`]).
+//!
+//! Only approvals are votes here. The clear signing program also takes a
+//! check that expects a rejection, but a rejection needs no reading: saying
+//! no to a proposal is safe whatever it holds, so the app never builds such a
+//! check, a transaction of rejections is no [`ApprovalShape::Open`], and a
+//! rejecting check pins nothing.
 
 use super::blind::{squads_call, SquadsCall};
 use crate::edit::{Carrier, CarrierKind};
