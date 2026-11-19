@@ -7,6 +7,9 @@
 //! needs more than one of their votes, as all of them in one transaction
 //! that also executes it.
 //!
+//! What it reads of the multisig itself is kept on the wallet's record, so
+//! the members and threshold shown elsewhere follow the chain.
+//!
 //! Nothing is signed here. Approve and Execute build a transaction and hand
 //! it to the Sign screen, where it is read, signed and submitted like any
 //! other. When a member in it is a programmatic signer, Sign rebuilds it
@@ -89,6 +92,8 @@ pub fn ProposalsModal(
             let page = load_page(session, &squad, from).await;
             match page {
                 Ok((state, entries)) => {
+                    // The wallet's record follows what was just read.
+                    app_ui_kit::actions::squads::keep_reading(session, wallet, &state);
                     let mut all = match (from, loaded.peek().clone()) {
                         (Some(_), Some(before)) => before.entries,
                         _ => Vec::new(),

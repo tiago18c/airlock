@@ -16,6 +16,12 @@ pub struct SquadsSetup {
     pub threshold: u16,
     /// Seconds between approval and execution.
     pub time_lock: u32,
+    /// A key that changes the members, threshold and time lock by itself,
+    /// without a vote. `None` for a multisig whose members decide.
+    pub config_authority: Option<Pubkey>,
+    /// v4 only: where the rent of closed transaction accounts goes. `None`
+    /// leaves them open for good.
+    pub rent_collector: Option<Pubkey>,
 }
 
 /// What a multisig account says about itself on chain.
@@ -30,6 +36,17 @@ pub struct SquadState {
     /// or time lock last changed, and can no longer be voted on.
     pub stale_transaction_index: u64,
     pub members: Vec<SquadsMember>,
+    /// The config authority (v4) or settings authority (smart account): a
+    /// key that changes the members, threshold and time lock by itself. Such
+    /// a multisig is "controlled", and its members cannot change it by
+    /// proposal. `None` when it is the members who decide (the program
+    /// keeps the default address then).
+    pub config_authority: Option<Pubkey>,
+    /// v4: the address the rent of an executed, rejected or cancelled
+    /// transaction's accounts can be closed to. `None` turns closing off.
+    /// The smart account program keeps no such setting: it returns the rent
+    /// to whoever paid it, as each account records.
+    pub rent_collector: Option<Pubkey>,
 }
 
 /// Where a proposal stands.
@@ -112,9 +129,9 @@ pub enum StoredAccount {
 impl Squad {
     /// Read the multisig (v4) or settings (smart account) account's data.
     pub fn parse_state(&self, data: &[u8]) -> Option<SquadState> {
-        let (account, members) = match self.program {
-            SquadsProgram::V4 => ("multisig", "members"),
-            SquadsProgram::SmartAccount => ("settings", "signers"),
+        let (account, members, authority) = match self.program {
+            SquadsProgram::V4 => ("multisig", "members", "configAuthority"),
+            SquadsProgram::SmartAccount => ("settings", "signers", "settingsAuthority"),
         };
         let state = self.program.account(account, data)?;
         let members = list(field(&state, members)?)?
@@ -126,12 +143,24 @@ impl Squad {
                 })
             })
             .collect::<Option<Vec<_>>>()?;
+        let config_authority =
+            Some(key(field(&state, authority)?)?).filter(|key| *key != Pubkey::default());
+        let rent_collector = match self.program {
+            SquadsProgram::V4 => match field(&state, "rentCollector")? {
+                Value::Option(None) => None,
+                Value::Option(Some(collector)) => Some(key(collector)?),
+                _ => return None,
+            },
+            SquadsProgram::SmartAccount => None,
+        };
         Some(SquadState {
             threshold: number(field(&state, "threshold")?)?,
             time_lock: number(field(&state, "timeLock")?)?,
             transaction_index: number(field(&state, "transactionIndex")?)?,
             stale_transaction_index: number(field(&state, "staleTransactionIndex")?)?,
             members,
+            config_authority,
+            rent_collector,
         })
     }
 

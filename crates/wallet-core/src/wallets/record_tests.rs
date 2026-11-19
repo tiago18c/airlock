@@ -1,7 +1,9 @@
 //! Tests of the wallet record and how it is stored.
 
 use super::record::*;
-use super::squads::{Squad, SquadsProgram};
+use super::squads::{
+    Squad, SquadChanges, SquadConfig, SquadsMember, SquadsProgram, PERMISSION_ALL, PERMISSION_VOTE,
+};
 use super::vector::SchemeId;
 use crate::ids::WalletId;
 use solana_pubkey::Pubkey;
@@ -200,4 +202,126 @@ fn a_durable_nonce_is_used_on_the_network_it_was_made_on() {
         .kind
         .set_durable_nonce_on(None, Some("devnet".into()));
     assert_eq!(wallet.kind.nonce_network(), None);
+}
+
+fn read(members: &[(u8, u8)], threshold: u16, time_lock: u32) -> SquadConfig {
+    SquadConfig {
+        members: members
+            .iter()
+            .map(|(n, permissions)| SquadsMember {
+                key: Pubkey::new_from_array([*n; 32]),
+                permissions: *permissions,
+            })
+            .collect(),
+        threshold,
+        time_lock,
+        config_authority: None,
+        rent_collector: None,
+    }
+}
+
+fn key(n: u8) -> Pubkey {
+    Pubkey::new_from_array([n; 32])
+}
+
+#[test]
+fn a_reading_of_the_chain_is_kept_and_what_changed_is_told() {
+    let mut wallet = multisig();
+    let acting = WalletId::new();
+    wallet.kind.set_member_wallet(Some(acting));
+
+    // The first reading: nothing to compare with.
+    let first = read(&[(1, PERMISSION_ALL), (2, PERMISSION_ALL)], 2, 0);
+    let changes = wallet.kind.set_squad_config(&first);
+    assert_eq!(
+        changes,
+        SquadChanges {
+            first_read: true,
+            ..SquadChanges::default()
+        }
+    );
+    assert_eq!(
+        wallet.kind.squad_members(),
+        vec![
+            (key(1), Some(PERMISSION_ALL)),
+            (key(2), Some(PERMISSION_ALL))
+        ]
+    );
+    assert_eq!(wallet.summary(), "Squads v4 · 2 of 2");
+
+    // The same again changes nothing, and leaves the record as it was.
+    let before = wallet.clone();
+    assert!(wallet.kind.set_squad_config(&first).is_empty());
+    assert_eq!(wallet, before);
+
+    // A member left, one joined, one may only vote now, the threshold and
+    // time lock moved, and an authority took over.
+    let mut later = read(&[(2, PERMISSION_VOTE), (3, PERMISSION_ALL)], 1, 60);
+    later.config_authority = Some(key(9));
+    let changes = wallet.kind.set_squad_config(&later);
+    assert_eq!(
+        changes,
+        SquadChanges {
+            first_read: false,
+            added: vec![key(3)],
+            removed: vec![key(1)],
+            permissions: vec![key(2)],
+            threshold: Some((2, 1)),
+            time_lock: Some((0, 60)),
+            config_authority: Some((None, Some(key(9)))),
+            rent_collector: None,
+        }
+    );
+    // Whoever was chosen to act stays chosen.
+    assert_eq!(approvers(&wallet).0, Some(acting));
+    let saved = serde_json::to_value(&wallet).unwrap();
+    assert_eq!(saved["kind"]["time_lock"], 60);
+    let loaded: WalletRecord = serde_json::from_value(saved).unwrap();
+    assert_eq!(loaded, wallet);
+}
+
+#[test]
+fn a_multisig_saved_before_the_rest_of_its_config_was_kept_loads_and_is_filled_in_quietly() {
+    let mut wallet = multisig();
+    if let WalletKind::Squads { members, .. } = &mut wallet.kind {
+        *members = vec![key(1), key(2)];
+    }
+    // What an earlier version wrote: members and threshold only.
+    let saved = serde_json::to_value(&wallet).unwrap();
+    for absent in [
+        "permissions",
+        "time_lock",
+        "config_authority",
+        "rent_collector",
+    ] {
+        assert!(saved["kind"].get(absent).is_none(), "{absent}");
+    }
+    let mut loaded: WalletRecord = serde_json::from_value(saved).unwrap();
+    assert_eq!(
+        loaded.kind.squad_members(),
+        vec![(key(1), None), (key(2), None)]
+    );
+
+    // Read again: the members and threshold are what they were, so nothing
+    // is reported, though the time lock and permissions are new to it.
+    let mut now = read(&[(1, PERMISSION_ALL), (2, PERMISSION_VOTE)], 2, 3_600);
+    now.rent_collector = Some(key(7));
+    assert!(loaded.kind.set_squad_config(&now).is_empty());
+    assert_ne!(loaded, wallet, "the record is filled in all the same");
+    let WalletKind::Squads {
+        time_lock,
+        rent_collector,
+        ..
+    } = &loaded.kind
+    else {
+        panic!("a multisig");
+    };
+    assert_eq!((*time_lock, *rent_collector), (3_600, Some(key(7))));
+
+    // Other wallets have no such config.
+    let mut cold = WalletRecord::offline("Cold", key(1));
+    let before = cold.clone();
+    assert!(cold.kind.set_squad_config(&now).is_empty());
+    assert_eq!(cold, before);
+    assert!(cold.kind.squad_members().is_empty());
 }

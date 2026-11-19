@@ -160,6 +160,8 @@ fn accounts_the_programs_wrote_read_back() {
                         permissions: PERMISSION_ALL
                     })
                     .to_vec(),
+                config_authority: None,
+                rent_collector: None,
             }),
             "{:?}",
             squad.program
@@ -342,5 +344,116 @@ fn the_mainnet_smart_account_config_reads() {
         Some(address(
             "0ab482e5c90a9d95bf7edc0d49a413de6939ed6f69ad52069a876563c8ac47d1"
         ))
+    );
+}
+
+#[test]
+fn the_config_authority_and_the_rent_collector_are_read_where_the_program_keeps_them() {
+    let [v4, smart] = written();
+    // v4: the authority follows the create key, and the rent collector is
+    // an option after the two transaction numbers.
+    let mut data = unhex(v4.settings);
+    data[40..72].copy_from_slice(&[5u8; 32]);
+    let at = 8 + 32 + 32 + 2 + 4 + 8 + 8;
+    assert_eq!(data[at], 0, "no rent collector in what the program wrote");
+    data[at] = 1;
+    data.splice(at + 1..at + 1, [6u8; 32]);
+    let state = v4.squad.parse_state(&data).unwrap();
+    assert_eq!(
+        (state.config_authority, state.rent_collector),
+        (Some(pk(5)), Some(pk(6)))
+    );
+    assert_eq!((state.threshold, state.members.len()), (2, 2));
+
+    // The smart account program keeps its authority after the seed, and no
+    // rent collector at all.
+    let mut data = unhex(smart.settings);
+    data[24..56].copy_from_slice(&[5u8; 32]);
+    let state = smart.squad.parse_state(&data).unwrap();
+    assert_eq!(
+        (state.config_authority, state.rent_collector),
+        (Some(pk(5)), None)
+    );
+
+    // The default address is no authority: the members decide.
+    for w in written() {
+        let state = w.squad.parse_state(&unhex(w.settings)).unwrap();
+        assert_eq!(state.config_authority, None, "{:?}", w.squad.program);
+    }
+}
+
+#[test]
+fn time_locks_and_permissions_read_as_words() {
+    assert_eq!(time_lock_words(0), "none");
+    assert_eq!(time_lock_words(1), "1 second");
+    assert_eq!(time_lock_words(90), "90 seconds");
+    assert_eq!(time_lock_words(120), "2 minutes");
+    assert_eq!(time_lock_words(3_600), "1 hour");
+    assert_eq!(time_lock_words(172_800), "2 days");
+    assert_eq!(
+        permission_words(PERMISSION_ALL),
+        "propose, vote and execute"
+    );
+    assert_eq!(permission_words(PERMISSION_VOTE), "vote");
+    assert_eq!(
+        permission_words(PERMISSION_INITIATE | PERMISSION_EXECUTE),
+        "propose and execute"
+    );
+    assert_eq!(permission_words(0), "nothing");
+}
+
+#[test]
+fn what_changed_is_said_in_sentences() {
+    let config = SquadConfig {
+        members: vec![SquadsMember {
+            key: pk(1),
+            permissions: PERMISSION_ALL,
+        }],
+        threshold: 1,
+        time_lock: 0,
+        config_authority: None,
+        rent_collector: None,
+    };
+    let program = SquadsProgram::V4;
+    assert!(SquadChanges::default().is_empty());
+    let name = |key: &Pubkey| crate::ids::short_pubkey(key);
+    assert!(SquadChanges::default()
+        .sentences(program, &config, &name)
+        .is_empty());
+    let first = SquadChanges {
+        first_read: true,
+        ..SquadChanges::default()
+    };
+    assert_eq!(
+        first.sentences(program, &config, &name),
+        vec!["Read from the chain: 1 of 1 members."]
+    );
+    let changed = SquadChanges {
+        added: vec![pk(2)],
+        removed: vec![pk(3), pk(4)],
+        threshold: Some((2, 3)),
+        time_lock: Some((0, 3_600)),
+        config_authority: Some((None, Some(pk(5)))),
+        rent_collector: Some((Some(pk(6)), None)),
+        ..SquadChanges::default()
+    };
+    let said = changed.sentences(SquadsProgram::SmartAccount, &config, &|key| {
+        if *key == pk(2) {
+            "Erin".into()
+        } else {
+            name(key)
+        }
+    });
+    assert_eq!(said[0], "The threshold went from 2 to 3.");
+    assert_eq!(said[1], "Erin became a member.");
+    assert!(said[2].ends_with("are no longer members."), "{said:?}");
+    assert_eq!(said[3], "The time lock went from none to 1 hour.");
+    assert!(
+        said[4].starts_with("Its settings authority is now"),
+        "{said:?}"
+    );
+    assert_eq!(
+        said[5],
+        "Its transactions' accounts can no longer be closed."
     );
 }

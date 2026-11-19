@@ -71,6 +71,8 @@ impl World {
             members,
             threshold,
             time_lock: 0,
+            config_authority: None,
+            rent_collector: None,
         };
         let squad = create_squad(&mut chain, program, &hot, &setup);
 
@@ -422,6 +424,8 @@ fn a_fee_payer_relays_both_programmatic_members_approving_and_executing() {
                 ],
                 threshold: 2,
                 time_lock: 0,
+                config_authority: None,
+                rent_collector: None,
             },
         );
         let vault = squad.vault(0);

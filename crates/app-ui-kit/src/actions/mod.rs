@@ -16,6 +16,7 @@ pub mod programs;
 pub mod sign;
 pub mod sign_screen;
 pub mod site_send;
+pub mod squads;
 pub mod template;
 pub mod template_browser;
 pub mod template_text;

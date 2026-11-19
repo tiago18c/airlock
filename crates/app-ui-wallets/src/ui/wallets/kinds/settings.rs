@@ -8,11 +8,12 @@
 //!
 //! Details shows what a smart contract wallet is: its addresses, its
 //! members and threshold, and its settings as they are stored. Nothing in
-//! it can be changed.
+//! it can be changed, but a multisig's configuration can be read again from
+//! the chain there, in the online app.
 
 use super::*;
 use crate::actions::wallets::{together_candidates, together_choice, TogetherNote};
-use crate::ui::{Glyph, Icon};
+use crate::ui::{Glyph, Icon, RefreshButton};
 use wallet_core::vector::SchemeId;
 use wallet_core::AddressKind;
 
@@ -235,8 +236,35 @@ pub(in crate::ui) fn WalletSettingsDialog(
         .filter(|other| other.id != id)
         .collect();
 
-    // A multisig's approvers, from the choices as they stand.
-    let together_options = together_candidates(&wallets, member(), &members);
+    // A multisig's approvers, from the choices as they stand. One ticked
+    // before the chain said it is not a member stays listed, to be unticked.
+    let mut together_options = together_candidates(&wallets, member(), &members);
+    for kept in with() {
+        if !together_options.iter().any(|other| other.id == kept) {
+            if let Some(other) = wallets.iter().find(|other| other.id == kept) {
+                together_options.push(other.clone());
+            }
+        }
+    }
+    // Chosen wallets that, as the chain last said, are not members.
+    let not_member = |id: WalletId| {
+        !members.is_empty()
+            && wallets
+                .iter()
+                .find(|other| other.id == id)
+                .and_then(|other| other.address)
+                .is_none_or(|address| !members.contains(&address))
+    };
+    let acting_outside = member()
+        .filter(|id| not_member(*id))
+        .and_then(|id| wallets.iter().find(|other| other.id == id))
+        .map(|other| other.label.clone());
+    let together_outside: Vec<String> = with()
+        .into_iter()
+        .filter(|id| not_member(*id))
+        .filter_map(|id| wallets.iter().find(|other| other.id == id))
+        .map(|other| other.label.clone())
+        .collect();
     let together = together_choice(&wallets, member(), &with(), approval_nonce());
     let nonce_accounts: Vec<_> = (session.book)()
         .iter()
@@ -367,6 +395,11 @@ pub(in crate::ui) fn WalletSettingsDialog(
                     if is_squads && members.is_empty() {
                         p { class: "note", "Members were not read from the chain yet, so the member choice is not checked." }
                     }
+                    if let Some(label) = acting_outside {
+                        p { class: "warn",
+                            "{label} is not a member of this multisig on {network_words}, so it cannot propose or vote for it."
+                        }
+                    }
                     if is_squads && member().is_some() && !together_options.is_empty() {
                         div { class: "stack approves-together",
                             WalletChecklist {
@@ -375,6 +408,11 @@ pub(in crate::ui) fn WalletSettingsDialog(
                                 options: together_options,
                                 selected: with(),
                                 on_change: move |chosen: Vec<WalletId>| with.set(chosen),
+                            }
+                            match together_outside.as_slice() {
+                                [] => rsx! {},
+                                [one] => rsx! { p { class: "warn", "{one} is not a member of this multisig on {network_words}, so it does not vote." } },
+                                _ => rsx! { p { class: "warn", "{together_outside.join(\", \")} are not members of this multisig on {network_words}, so they do not vote." } },
                             }
                             if together.members > 1 {
                                 p { class: "hint",
@@ -471,8 +509,11 @@ fn FactGroup(name: &'static str) -> Element {
 /// drawn as a wallet row, icon, name, short address and copy, as the
 /// members are, so a wallet looks the same wherever the dialog names it.
 /// A wider screen names it.
+///
+/// `outside` marks a wallet that is not a member of the multisig it is
+/// named for, as the chain last said.
 #[component]
-fn FactWallet(id: WalletId) -> Element {
+fn FactWallet(id: WalletId, #[props(default)] outside: bool) -> Element {
     let session = use_context::<Session>();
     let phone = app_ui_kit::ui::use_phone_layout();
     let found = (session.wallets)()
@@ -480,12 +521,25 @@ fn FactWallet(id: WalletId) -> Element {
         .iter()
         .find(|other| other.id == id)
         .map(|other| (other.label.clone(), other.address));
+    let mark = rsx! {
+        if outside {
+            span { class: "chip warn", "not a member" }
+        }
+    };
     match found {
-        Some((_, Some(pubkey))) if phone => rsx! { AddressRow { pubkey } },
-        Some((label, _)) => rsx! { span { "{label}" } },
+        Some((_, Some(pubkey))) if phone => rsx! {
+            AddressRow { pubkey, {mark} }
+        },
+        Some((label, _)) => rsx! {
+            span { "{label}" }
+            {mark}
+        },
         None => rsx! { span { "A wallet no longer on this device" } },
     }
 }
+
+/// Why the vault has to be open to read a multisig again by hand.
+const KEEP_READING: &str = "Unlock the vault to keep what is read of this multisig.";
 
 /// What a smart contract wallet is and how it is set up, to read. Nothing
 /// here can be changed: Settings does that.
@@ -498,6 +552,33 @@ pub(in crate::ui) fn WalletDetailsDialog(
 ) -> Element {
     let session = use_context::<Session>();
     let wallets = (session.wallets)().summaries.clone();
+    // As the vault has it now: a refresh shows here without reopening.
+    let wallet = wallets
+        .iter()
+        .find(|other| other.id == wallet.id)
+        .cloned()
+        .unwrap_or(wallet);
+    let id = wallet.id;
+    let online = crate::state::use_network().is_some();
+    let mut reading = use_signal(|| false);
+    let mut read_said = use_signal(|| None::<Result<String, String>>);
+    let read_again = move |_| {
+        read_said.set(None);
+        session.when_unlocked(KEEP_READING, move || {
+            reading.set(true);
+            spawn(async move {
+                let said = crate::actions::squads::refresh_by_hand(session, id).await;
+                reading.set(false);
+                read_said.set(Some(said));
+            });
+        });
+    };
+    let address_of = |id: WalletId| {
+        wallets
+            .iter()
+            .find(|other| other.id == id)
+            .and_then(|other| other.address)
+    };
     let label_of = |id: WalletId| {
         wallets
             .iter()
@@ -524,6 +605,39 @@ pub(in crate::ui) fn WalletDetailsDialog(
     let authority = kind.as_ref().and_then(WalletKind::signer_authority);
     let executor_nonce = kind.as_ref().and_then(WalletKind::executor_nonce);
     let kind_name = kind.as_ref().and_then(kind_chip);
+    let squad_members = kind
+        .as_ref()
+        .map(WalletKind::squad_members)
+        .unwrap_or_default();
+    // A wallet of this device chosen for a multisig that, as the chain last
+    // said, is not one of its members. Unknown until the members are read.
+    let outside = |id: WalletId| {
+        !squad_members.is_empty()
+            && address_of(id)
+                .is_none_or(|address| !squad_members.iter().any(|(member, _)| *member == address))
+    };
+    let acting_outside = match &kind {
+        Some(WalletKind::Squads {
+            member_wallet: Some(member),
+            ..
+        }) => outside(*member).then(|| label_of(*member)),
+        _ => None,
+    };
+    let together_outside = match &kind {
+        Some(WalletKind::Squads { approves_with, .. }) => {
+            approves_with.iter().any(|other| outside(*other))
+        }
+        _ => false,
+    };
+    let network_words = wallet_core::Cluster::network_words(&session.cluster().network_key());
+    let controlled = match &kind {
+        Some(WalletKind::Squads {
+            program,
+            config_authority: Some(_),
+            ..
+        }) => Some(wallet_core::squads::authority_name(*program)),
+        _ => None,
+    };
     // A phone has no room for a name and a whole address on one line: it
     // shortens the address, as the Members rows do, and copy still copies
     // all of it.
@@ -554,6 +668,9 @@ pub(in crate::ui) fn WalletDetailsDialog(
                                 vault,
                                 members,
                                 threshold,
+                                time_lock,
+                                config_authority,
+                                rent_collector,
                                 member_wallet,
                                 approves_with,
                                 approval_nonce,
@@ -573,16 +690,44 @@ pub(in crate::ui) fn WalletDetailsDialog(
                                 if !members.is_empty() {
                                     Fact { name: "Members",
                                         ul { class: "wallet-fact-list",
-                                            for member in members {
-                                                li { key: "{member}", AddressRow { pubkey: member } }
+                                            for (member, permissions) in squad_members.clone() {
+                                                li { key: "{member}",
+                                                    AddressRow { pubkey: member,
+                                                        if let Some(may) = permissions.filter(|may| *may != wallet_core::squads::PERMISSION_ALL) {
+                                                            span { class: "chip",
+                                                                title: "What the program lets this member do in the multisig",
+                                                                "may {wallet_core::squads::permission_words(may)}"
+                                                            }
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }
+                                    Fact { name: "Time lock",
+                                        if time_lock == 0 {
+                                            span { "None" }
+                                        } else {
+                                            span { "{wallet_core::squads::time_lock_words(time_lock)} between approval and execution" }
+                                        }
+                                    }
+                                }
+                                if let Some(authority) = config_authority {
+                                    Fact {
+                                        name: match program {
+                                            SquadsProgram::V4 => "Config authority",
+                                            SquadsProgram::SmartAccount => "Settings authority",
+                                        },
+                                        AddressRow { pubkey: authority }
+                                    }
+                                }
+                                if let Some(collector) = rent_collector {
+                                    Fact { name: "Rent of closed accounts goes to", AddressRow { pubkey: collector } }
                                 }
                                 FactGroup { name: "On this device" }
                                 Fact { name: "Proposes and votes as",
                                     match member_wallet {
-                                        Some(member) => rsx! { FactWallet { id: member } },
+                                        Some(member) => rsx! { FactWallet { id: member, outside: outside(member) } },
                                         None => rsx! { span { class: "muted", "No wallet chosen" } },
                                     }
                                 }
@@ -592,12 +737,15 @@ pub(in crate::ui) fn WalletDetailsDialog(
                                     } else if phone {
                                         ul { class: "wallet-fact-list",
                                             for other in approves_with {
-                                                li { key: "{other}", FactWallet { id: other } }
+                                                li { key: "{other}", FactWallet { id: other, outside: outside(other) } }
                                             }
                                         }
                                     } else {
                                         span {
                                             {approves_with.iter().map(|other| label_of(*other)).collect::<Vec<_>>().join(", ")}
+                                        }
+                                        for other in approves_with.iter().copied().filter(|other| outside(*other)) {
+                                            span { key: "{other}", class: "chip warn", "{label_of(other)}: not a member" }
                                         }
                                     }
                                 }
@@ -640,7 +788,35 @@ pub(in crate::ui) fn WalletDetailsDialog(
                             }
                         }
                     }
+                    if let Some(authority) = controlled {
+                        p { class: "hint",
+                            "This multisig is controlled: its {authority} changes its members, threshold and time lock by itself, without a vote."
+                        }
+                    }
+                    if let Some(label) = acting_outside {
+                        p { class: "warn",
+                            "{label} is not a member of this multisig on {network_words}, so it cannot propose or vote for it. Choose a member in Settings."
+                        }
+                    }
+                    if together_outside {
+                        p { class: "hint", "A wallet marked here is not a member of this multisig on this cluster, so it does not vote." }
+                    }
+                    match read_said() {
+                        Some(Ok(said)) => rsx! { p { class: "note", role: "status", "{said}" } },
+                        Some(Err(why)) => rsx! { p { class: "warn", role: "status", "{why}" } },
+                        None => rsx! {},
+                    }
                     div { class: "btn-row",
+                        if online && kind.as_ref().and_then(WalletKind::squad).is_some() {
+                            RefreshButton {
+                                class: "ghost",
+                                labelled: true,
+                                busy: reading(),
+                                busy_text: "Reading…",
+                                title: "Read its members, threshold and settings again from the chain",
+                                onclick: read_again,
+                            }
+                        }
                         button { class: "ghost",
                             r#type: "button",
                             onclick: move |_| on_close.call(()),

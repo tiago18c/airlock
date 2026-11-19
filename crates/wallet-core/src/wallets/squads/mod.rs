@@ -41,6 +41,7 @@ pub use crate::ids::{
 };
 
 mod clear_sign;
+mod config;
 mod instructions;
 mod message;
 mod program;
@@ -52,6 +53,7 @@ mod values;
 pub(crate) mod tests;
 
 pub use clear_sign::*;
+pub use config::*;
 pub use message::*;
 pub use program::*;
 pub use state::*;

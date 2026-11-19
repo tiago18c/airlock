@@ -145,6 +145,8 @@ impl Team {
                 .collect(),
             threshold: 2,
             time_lock: 0,
+            config_authority: None,
+            rent_collector: None,
         };
         let squad = match program {
             SquadsProgram::V4 => {

@@ -3,7 +3,7 @@
 use crate::state::forms::{SendAsset, SignLoad, TxSource};
 use crate::state::session::{Session, WalletSummary};
 use solana_pubkey::Pubkey;
-use wallet_core::squads::{Squad, SquadsProgram};
+use wallet_core::squads::{Squad, SquadConfig, SquadsProgram};
 use wallet_core::{WalletClass, WalletId, WalletRecord};
 use wallet_flows::squads::Lookup;
 
@@ -109,36 +109,26 @@ pub fn together_choice(
     }
 }
 
-/// The first of this device's wallets that is one of `members`.
-fn local_member(wallets: &[WalletSummary], members: &[Pubkey]) -> Option<WalletId> {
-    member_candidates(wallets)
-        .into_iter()
-        .find(|wallet| {
-            wallet
-                .address
-                .is_some_and(|address| members.contains(&address))
-        })
-        .map(|wallet| wallet.id)
-}
-
-/// A Squads wallet record for `squad`, acted on by the first local member.
+/// A Squads wallet record for `squad`, with what was read of it when it was,
+/// acted on by the first local member.
 fn squads_record(
     session: Session,
     label: String,
     squad: Squad,
-    members: Vec<Pubkey>,
-    threshold: u16,
+    read: Option<&SquadConfig>,
     fee_payer: Option<WalletId>,
 ) -> WalletRecord {
-    let member = local_member(&session.wallet_summaries(), &members);
-    let mut wallet = WalletRecord::squads(label, squad, members, threshold);
-    wallet.kind.set_member_wallet(member);
+    let mut wallet = WalletRecord::squads(label, squad, Vec::new(), 0);
+    if let Some(read) = read {
+        super::squads::apply_reading(&mut wallet.kind, read, &session.wallet_summaries());
+    }
     wallet.kind.set_fee_payer(fee_payer);
     wallet
 }
 
-/// Add a multisig that already exists. Members and threshold come from the
-/// chain when it can be reached. The new wallet becomes the current one.
+/// Add a multisig that already exists. Its members, threshold and the rest of
+/// its configuration come from the chain when it can be reached. The new
+/// wallet becomes the current one.
 pub async fn add_existing_squad(
     session: Session,
     label: String,
@@ -147,17 +137,14 @@ pub async fn add_existing_squad(
 ) -> Result<(), String> {
     let rpc = session.rpc().ok();
     let found = wallet_flows::squads::look_up(rpc.as_deref(), &squad).await;
-    let (members, threshold) = match found {
-        Lookup::Found(state) => (
-            state.members.iter().map(|member| member.key).collect(),
-            state.threshold,
-        ),
+    let read = match found {
+        Lookup::Found(state) => Some(SquadConfig::from(&state)),
         Lookup::NotAMultisig => {
             return Err("That address is not a multisig of the chosen program on this cluster. If you meant the vault address, enter the multisig account instead.".into());
         }
-        Lookup::Unreachable => (Vec::new(), 0),
+        Lookup::Unreadable | Lookup::Unreachable => None,
     };
-    let wallet = squads_record(session, label, squad, members, threshold, fee_payer);
+    let wallet = squads_record(session, label, squad, read.as_ref(), fee_payer);
     let id = wallet.id;
     session
         .add_contract_wallet(wallet)
@@ -167,37 +154,11 @@ pub async fn add_existing_squad(
     Ok(())
 }
 
-/// Read the members and threshold of the multisigs among `ids`, added from
-/// another device's export without them, and choose the first local member
-/// to act. A multisig the chain does not answer for keeps none.
+/// Read the configuration of the multisigs among `ids`, added from another
+/// device's export without it, and choose the first local member to act. A
+/// multisig the chain does not answer for keeps none.
 pub async fn read_added_squads(session: Session, ids: Vec<WalletId>) {
-    let rpc = session.rpc().ok();
-    for id in ids {
-        let Some(squad) = session
-            .wallet_summaries()
-            .into_iter()
-            .find(|wallet| wallet.id == id)
-            .and_then(|wallet| wallet.contract.as_ref().and_then(|kind| kind.squad()))
-        else {
-            continue;
-        };
-        let Lookup::Found(state) = wallet_flows::squads::look_up(rpc.as_deref(), &squad).await
-        else {
-            continue;
-        };
-        let read: Vec<Pubkey> = state.members.iter().map(|member| member.key).collect();
-        let member = local_member(&session.wallet_summaries(), &read);
-        let _ = session.update_wallet(id, |kind| {
-            if let wallet_core::WalletKind::Squads {
-                members, threshold, ..
-            } = kind
-            {
-                *members = read;
-                *threshold = state.threshold;
-            }
-            kind.set_member_wallet(member);
-        });
-    }
+    super::squads::refresh_quietly(session, Some(ids)).await;
 }
 
 /// Create a multisig: store its wallet, and open the transaction that
@@ -214,14 +175,9 @@ pub async fn create_squad(
     let made = wallet_flows::squads::create(rpc.as_ref(), program, &members, threshold, creator.1)
         .await
         .map_err(|err| err.to_string())?;
-    let wallet = squads_record(
-        session,
-        label,
-        made.squad,
-        members,
-        threshold,
-        Some(creator.0),
-    );
+    // What it is made with, as the chain will hold it once it lands.
+    let read = SquadConfig::from(&made.setup);
+    let wallet = squads_record(session, label, made.squad, Some(&read), Some(creator.0));
     session
         .add_contract_wallet(wallet)
         .map_err(|err| err.to_string())?;

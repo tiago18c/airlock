@@ -18,6 +18,8 @@ fn state(threshold: u16, time_lock: u32, members: &[(Pubkey, u8)]) -> SquadState
                 permissions: *permissions,
             })
             .collect(),
+        config_authority: None,
+        rent_collector: None,
     }
 }
 
