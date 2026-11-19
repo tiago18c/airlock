@@ -179,6 +179,7 @@ pub fn too_large(len: usize) -> String {
 ///   then on that key's own durable nonce, which `own_nonce` finds for a
 ///   transaction, or else on `row_nonce`, the multisig row's, which the
 ///   caller passes when the member acting alone signs through QR codes.
+/// - A close is signed by the fee payer alone: no member is in it.
 pub async fn compile_request(
     rpc: &dyn SolanaRpc,
     squad: &Squad,
@@ -207,7 +208,7 @@ pub async fn compile_request(
         ProposalRequest::Combined(combined) => combined
             .durable_nonce
             .map(|nonce| (nonce, combined.signers())),
-        ProposalRequest::Single { .. } => None,
+        ProposalRequest::Single { .. } | ProposalRequest::Close(_) => None,
     };
     let (wire, height) = match durable {
         Some((nonce, members)) => {

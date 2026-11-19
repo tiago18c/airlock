@@ -91,6 +91,17 @@ pub(crate) fn create(
         config_authority,
         rent_collector: None,
     };
+    create_from(chain, program, creator, &setup)
+}
+
+/// Create a multisig as `setup` says, paid by `creator`, with three SOL in
+/// its vault.
+pub(crate) fn create_from(
+    chain: &mut Chain,
+    program: SquadsProgram,
+    creator: &KeypairSigner,
+    setup: &SquadsSetup,
+) -> Squad {
     let squad = match program {
         SquadsProgram::V4 => {
             let create_key = KeypairSigner::new_random();
@@ -98,7 +109,7 @@ pub(crate) fn create(
                 &create_key.pubkey(),
                 &creator.pubkey(),
                 &chain.treasury,
-                &setup,
+                setup,
             );
             chain.send(&[creator, &create_key], vec![create]).unwrap();
             squad
@@ -107,7 +118,7 @@ pub(crate) fn create(
             let config = chain.data(&program.program_config());
             let count = SquadsProgram::smart_account_count(&config).unwrap();
             let (squad, create) =
-                Squad::create_smart_account(count + 1, &creator.pubkey(), &chain.treasury, &setup);
+                Squad::create_smart_account(count + 1, &creator.pubkey(), &chain.treasury, setup);
             chain.send(&[creator], vec![create]).unwrap();
             squad
         }
@@ -130,29 +141,44 @@ pub(crate) struct Team {
 impl Team {
     /// `members` besides the proposer, on `chain`.
     pub(crate) fn on(
-        mut chain: Chain,
+        chain: Chain,
         program: SquadsProgram,
         members: &[(Pubkey, u8)],
         threshold: u16,
         time_lock: u32,
         config_authority: Option<Pubkey>,
     ) -> Self {
+        Self::with(chain, program, members, threshold, |setup| {
+            setup.time_lock = time_lock;
+            setup.config_authority = config_authority;
+        })
+    }
+
+    /// [`Self::on`], with no time lock and no authority, and `tune`
+    /// changing the setup before the multisig is created.
+    pub(crate) fn with(
+        mut chain: Chain,
+        program: SquadsProgram,
+        members: &[(Pubkey, u8)],
+        threshold: u16,
+        tune: impl FnOnce(&mut SquadsSetup),
+    ) -> Self {
         let fees = funded(&mut chain);
         let proposer = funded(&mut chain);
-        let all: Vec<(Pubkey, u8)> = members
-            .iter()
-            .copied()
-            .chain([(proposer.pubkey(), PERMISSION_INITIATE)])
-            .collect();
-        let squad = create(
-            &mut chain,
-            program,
-            &fees,
-            &all,
+        let mut setup = SquadsSetup {
+            members: members
+                .iter()
+                .copied()
+                .chain([(proposer.pubkey(), PERMISSION_INITIATE)])
+                .map(|(key, permissions)| SquadsMember { key, permissions })
+                .collect(),
             threshold,
-            time_lock,
-            config_authority,
-        );
+            time_lock: 0,
+            config_authority: None,
+            rent_collector: None,
+        };
+        tune(&mut setup);
+        let squad = create_from(&mut chain, program, &fees, &setup);
         Self {
             node: Node(Mutex::new(chain)),
             vault: squad.vault(0),

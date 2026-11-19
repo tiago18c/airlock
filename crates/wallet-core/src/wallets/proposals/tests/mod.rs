@@ -3,6 +3,7 @@ use crate::fixtures::{pk, transfer};
 use crate::wallets::squads::{SquadsMember, PERMISSION_ALL, PERMISSION_INITIATE};
 
 mod activate_cancel;
+mod close;
 mod combined;
 mod config;
 mod reject;
@@ -46,6 +47,7 @@ fn entry(squad: &Squad, status: ProposalStatus, approved: &[Pubkey]) -> Proposal
             &[transfer(vault, pk(9), 5)],
         )),
         stale: false,
+        accounts: Default::default(),
     }
 }
 

@@ -3723,6 +3723,8 @@ textarea.editor-input:focus { box-shadow: none; }
   color: inherit;
   cursor: pointer;
 }
+/* A run of transactions whose accounts were closed: one line, nothing to open. */
+.proposal-head.still { cursor: default; }
 .proposal-number { font-weight: var(--weight-semibold); min-width: 2.5rem; }
 .proposal-body { padding: 0 var(--space-3) var(--space-3); }
 /* Who voted how: one line per kind of vote, only the lines with someone on

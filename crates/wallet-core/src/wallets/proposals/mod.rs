@@ -42,6 +42,10 @@
 //! approval, since it can never be executed. And an approved change that
 //! went stale can never be executed, where an approved vault transaction
 //! still can.
+//!
+//! Once a proposal is finished, or can no longer be voted on, its two
+//! accounts can be closed and their rent returned (see `close`): anyone may
+//! send that, no member signs it, and it needs no reading.
 
 use crate::chain::RawAccount;
 use crate::ids::ADDRESS_LOOKUP_TABLE_PROGRAM_ID;
@@ -55,6 +59,7 @@ use solana_pubkey::Pubkey;
 use std::collections::HashMap;
 use thiserror::Error;
 
+mod close;
 mod combined;
 mod shape;
 mod votes;
@@ -62,6 +67,7 @@ mod votes;
 #[cfg(test)]
 mod tests;
 
+pub use close::*;
 pub use combined::*;
 pub use shape::*;
 pub use votes::*;
@@ -118,6 +124,9 @@ pub struct ProposalEntry {
     /// The multisig's members, threshold or time lock changed after this was
     /// created. It can no longer be voted on.
     pub stale: bool,
+    /// What its two accounts hold that closing them needs: their rent, how
+    /// the stored transaction is closed, and who paid for each.
+    pub accounts: EntryAccounts,
 }
 
 /// The transaction numbers of the page that starts at `newest`, newest first.
@@ -201,11 +210,24 @@ pub fn read_page(
                     _ => Stored::Other,
                 },
             };
+            let proposal_account = owned(2 * at);
+            let transaction_account = owned(2 * at + 1);
+            let closing = transaction_account
+                .and_then(|account| squad.transaction_closing(&account.data))
+                .filter(|closing| closing.index == *index);
             ProposalEntry {
                 index: *index,
                 proposal,
                 stored,
                 stale: *index <= state.stale_transaction_index,
+                accounts: EntryAccounts {
+                    proposal_lamports: proposal_account.map_or(0, |account| account.lamports),
+                    transaction_lamports: transaction_account.map_or(0, |account| account.lamports),
+                    close_kind: closing.map(|closing| closing.kind),
+                    proposal_rent_collector: proposal_account
+                        .and_then(|account| squad.proposal_rent_collector(&account.data)),
+                    transaction_rent_collector: closing.and_then(|closing| closing.rent_collector),
+                },
             }
         })
         .collect()

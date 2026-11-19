@@ -675,6 +675,57 @@ fn squads_activations_and_cancel_votes_say_what_they_do() {
     }
 }
 
+/// Closing a proposal's accounts reads as a close on both programs, of a
+/// vault transaction and of a change, naming the multisig and where the
+/// rent goes: no one votes, nothing runs.
+#[test]
+fn squads_closes_say_what_they_close_and_where_the_rent_goes() {
+    use crate::wallets::squads::{CloseKind, Squad};
+
+    let payer = pk(1);
+    let store = builtins();
+    let (one, two) = (pk(5), pk(6));
+    let sentence = |instruction| {
+        explain_one_ix(&store, payer, instruction)
+            .interpolated_intent
+            .expect("a close reads in words")
+    };
+    let v4 = Squad::v4(&pk(3));
+    assert_eq!(
+        sentence(v4.close(4, CloseKind::Vault, &one, &one)),
+        format!(
+            "Close proposal {} of multisig {} and its stored transaction, returning their rent to {one}",
+            v4.proposal(4),
+            v4.address
+        )
+    );
+    assert_eq!(
+        sentence(v4.close(4, CloseKind::Config, &one, &one)),
+        format!(
+            "Close proposal {} of multisig {} and its stored change to the multisig, returning their rent to {one}",
+            v4.proposal(4),
+            v4.address
+        )
+    );
+    let smart = Squad::smart_account(7);
+    assert_eq!(
+        sentence(smart.close(4, CloseKind::Vault, &one, &two)),
+        format!(
+            "Close proposal {} of smart account settings {} and its stored transaction, returning the proposal's rent to {one} and the transaction's to {two}",
+            smart.proposal(4),
+            smart.address
+        )
+    );
+    assert_eq!(
+        sentence(smart.close(4, CloseKind::Config, &one, &two)),
+        format!(
+            "Close proposal {} of smart account settings {} and its stored settings change, returning the proposal's rent to {one} and the change's to {two}",
+            smart.proposal(4),
+            smart.address
+        )
+    );
+}
+
 /// What an `Advance` does to a hash-based key is read from its layout: by
 /// length alone for one account, or with the schemes a wallet record gives.
 /// An XMSS account that names the key it holds keeps it.

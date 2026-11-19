@@ -1,10 +1,12 @@
 //! Reading one page of a multisig's proposals, and acting on one of them.
 
 use app_ui_kit::actions::sentence;
+use app_ui_kit::format_sol;
 use app_ui_kit::{Session, SignLoad, TxSource};
 use solana_pubkey::Pubkey;
 use wallet_core::proposals::{
-    available_cancel, available_rejection, ProposalAction, ProposalEntry, ProposalRequest,
+    available_cancel, available_rejection, rent_returned, ProposalAction, ProposalEntry,
+    ProposalRequest,
 };
 use wallet_core::squads::{Squad, SquadState};
 
@@ -116,6 +118,27 @@ pub fn request_note(
             };
             format!("This {what} proposal {index} of {label}.")
         }
+        ProposalRequest::Close(closings) => {
+            let what = match closings.as_slice() {
+                [one] => format!("proposal {} of {label}", one.index),
+                many => format!(
+                    "{} proposals of {label} ({})",
+                    many.len(),
+                    many.iter()
+                        .map(|closing| format!("#{}", closing.index))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                ),
+            };
+            let to = rent_returned(closings)
+                .into_iter()
+                .map(|(collector, lamports)| format!("{} to {collector}", format_sol(lamports)))
+                .collect::<Vec<_>>()
+                .join(" and ");
+            format!(
+                "This closes the accounts of {what} and returns their rent, {to}. What they proposed and who voted leave the chain."
+            )
+        }
         ProposalRequest::Combined(combined) => {
             let mut note = format!(
                 "This approves proposal {index} of {label} as {} members and executes it.",
@@ -173,6 +196,7 @@ mod tests {
             }),
             stored: Stored::Other,
             stale: false,
+            accounts: Default::default(),
         }
     }
 
@@ -259,6 +283,44 @@ mod tests {
         assert_eq!(
             note(&cancel, &approved(&[pk(2)])),
             "This votes to cancel proposal 4 of Treasury. It is the last vote to cancel needed: the proposal is cancelled for good and can never be executed."
+        );
+    }
+
+    #[test]
+    fn the_note_of_a_close_says_what_it_closes_and_where_the_rent_goes() {
+        use wallet_core::proposals::Closing;
+        use wallet_core::squads::CloseKind;
+        let closing = |index, returns: Vec<(Pubkey, u64)>| Closing {
+            index,
+            kind: CloseKind::Vault,
+            proposal_collector: pk(8),
+            transaction_collector: pk(8),
+            returns,
+        };
+        let entry = open(&[], &[]);
+        assert_eq!(
+            note(
+                &ProposalRequest::Close(vec![closing(4, vec![(pk(8), 3_000_000)])]),
+                &entry
+            ),
+            format!(
+                "This closes the accounts of proposal 4 of Treasury and returns their rent, 0.003 SOL to {}. What they proposed and who voted leave the chain.",
+                pk(8)
+            )
+        );
+        assert_eq!(
+            note(
+                &ProposalRequest::Close(vec![
+                    closing(4, vec![(pk(8), 1_000_000)]),
+                    closing(2, vec![(pk(8), 1_000_000), (pk(9), 500_000_000)]),
+                ]),
+                &entry
+            ),
+            format!(
+                "This closes the accounts of 2 proposals of Treasury (#4, #2) and returns their rent, 0.002 SOL to {} and 0.5 SOL to {}. What they proposed and who voted leave the chain.",
+                pk(8),
+                pk(9)
+            )
         );
     }
 

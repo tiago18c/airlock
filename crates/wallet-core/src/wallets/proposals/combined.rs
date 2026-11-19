@@ -269,6 +269,9 @@ pub enum ProposalRequest {
         action: ProposalAction,
     },
     Combined(CombinedApproval),
+    /// Close the accounts of these transactions, returning their rent. No
+    /// member signs: the fee payer alone does.
+    Close(Vec<Closing>),
 }
 
 impl ProposalRequest {
@@ -281,6 +284,7 @@ impl ProposalRequest {
                 ProposalAction::Execute | ProposalAction::ApproveAndExecute
             ),
             Self::Combined(_) => true,
+            Self::Close(_) => false,
         }
     }
 
@@ -290,6 +294,7 @@ impl ProposalRequest {
         match self {
             Self::Single { member, action } => action_instructions(squad, entry, member, *action),
             Self::Combined(combined) => combined_instructions(squad, entry, combined),
+            Self::Close(closings) => close_instructions(squad, closings),
         }
     }
 
@@ -309,6 +314,17 @@ impl ProposalRequest {
                 action_instructions_paid(squad, entry, member, *action, payer)
             }
             Self::Combined(combined) => combined_instructions_paid(squad, entry, combined, payer),
+            Self::Close(closings) => close_instructions(squad, closings),
         }
     }
+}
+
+/// The close of each of `closings`. `None` for none.
+fn close_instructions(squad: &Squad, closings: &[Closing]) -> Option<Vec<Instruction>> {
+    (!closings.is_empty()).then(|| {
+        closings
+            .iter()
+            .map(|closing| closing.instruction(squad))
+            .collect()
+    })
 }
