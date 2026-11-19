@@ -13,10 +13,18 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 - **A Squads multisig's members and threshold follow the chain.** Airlock reads every multisig again once each time you unlock it, and whenever you open its proposals, so its card, its Details and its Settings show who is in it now. Refresh in its Details reads it again at once and says what changed. Details also shows each member's permissions when they are not all three, the time lock, and the config authority or rent collector when the multisig has one. A wallet you chose to act for it, or to approve together, that is no longer a member stays chosen and is marked "not a member", until you choose another in Settings.
 - **A Squads proposal shows who approved it, who rejected it and who has yet to vote.** Open a proposal under Proposals to see each member by name, with the member you act as marked "you" and your other wallets marked "on this device", and who voted to cancel an approved one. Its row says how many rejections it has against the number that rejects it, and whether you approved, rejected or voted to cancel.
+- **Squads proposals that read accounts from lookup tables can be read, approved and executed.** Proposals made in the Squads app for swaps and other large transactions used to show only "cannot resolve"; Proposals now reads their tables and shows their instructions like any other. A proposal whose table was closed, or does not hold what it names yet, says so and offers nothing, and one whose table was deactivated warns that it can stop working.
+- **A proposal your member may not execute can be executed by another wallet of this device that may**, from the same Execute button, when that wallet is one of those that approve together with it.
 
 ### Changed
 
 - **A Vector wallet's address is now its account's system address**, which works like any other wallet's: it can pay rent for the accounts it creates (its own token accounts, a new account it sends its first SOL to, an account a site or another program makes with it as payer), and its transfers run as the site built them. The account the key controls keeps only the key and its nonce. Fees are still paid by the wallet chosen to pay them. Vector wallets now show a new address: send their SOL and tokens there. Anything already held at the old address stays there, and Airlock does not move it out.
+
+### Fixed
+
+- **Executing a long Squads proposal no longer fails.** An execution now asks for the memory a proposal of fifty or more instructions needs, and one that uses ephemeral signers, which the program signs for itself, no longer waits for their signatures. A proposal that names too many accounts for one transaction says so before anything is signed.
+- **A time lock tells how long it holds a proposal, in minutes or hours, and Execute appears when it ends**, without reopening Proposals.
+- **An offline wallet executing or approving a proposal alone gets its durable nonce**, so the trip through QR codes no longer outlives the transaction.
 
 ## [0.3.1] - 2026-11-16
 

@@ -109,7 +109,12 @@ fn change_threshold(squad: &Squad, authority: &Pubkey, threshold: u16) -> Instru
     as_authority(squad, authority, discriminator, &threshold.to_le_bytes())
 }
 
-fn add_member(squad: &Squad, authority: &Pubkey, member: &Pubkey, permissions: u8) -> Instruction {
+pub(crate) fn add_member(
+    squad: &Squad,
+    authority: &Pubkey,
+    member: &Pubkey,
+    permissions: u8,
+) -> Instruction {
     let discriminator = match squad.program {
         SquadsProgram::V4 => "01dbd76cb8e5d608",
         SquadsProgram::SmartAccount => "50c6e49a07ea6338",

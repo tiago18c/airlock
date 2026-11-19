@@ -259,6 +259,15 @@ pub enum ProposalRequest {
 }
 
 impl ProposalRequest {
+    /// It runs the stored transaction, so the transaction carrying it asks
+    /// for the most heap (see `relay::with_heap_size`).
+    pub fn executes(&self) -> bool {
+        match self {
+            Self::Single { action, .. } => *action != ProposalAction::Approve,
+            Self::Combined(_) => true,
+        }
+    }
+
     /// The instructions of the request on `entry`. `None` when it needs the
     /// stored transaction and it could not be read.
     pub fn instructions(&self, squad: &Squad, entry: &ProposalEntry) -> Option<Vec<Instruction>> {

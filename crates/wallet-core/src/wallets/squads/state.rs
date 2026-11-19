@@ -88,8 +88,18 @@ pub struct VaultTransaction {
     /// program derives for it and signs as when it runs.
     pub ephemeral_signers: u8,
     pub instructions: Vec<Instruction>,
-    /// Every account of the stored message in its order, as the execution
-    /// has to list them.
+    /// The address lookup tables its message reads accounts from, in its
+    /// order. Empty for most.
+    pub lookup_tables: Vec<Pubkey>,
+    /// Those of [`Self::lookup_tables`] their authority has deactivated. The
+    /// programs still read such a table, but once it is closed this
+    /// transaction can never be executed.
+    pub deactivated_tables: Vec<Pubkey>,
+    /// Keys other than the vault and the ephemeral signers that the stored
+    /// message has sign: each has to sign the transaction that executes it.
+    pub other_signers: Vec<Pubkey>,
+    /// Every account the execution has to list after its own, in the order
+    /// the program reads them.
     pub(super) execute_accounts: Vec<AccountMeta>,
 }
 
@@ -110,6 +120,9 @@ impl VaultTransaction {
             vault,
             ephemeral_signers: 0,
             instructions: message.instructions().expect("a well-formed message"),
+            lookup_tables: Vec::new(),
+            deactivated_tables: Vec::new(),
+            other_signers: Vec::new(),
             execute_accounts: message.execute_accounts(),
         }
     }
@@ -120,10 +133,124 @@ impl VaultTransaction {
 pub enum StoredAccount {
     Vault(VaultTransaction),
     /// A vault transaction whose accounts come partly from address lookup
-    /// tables. Its instructions cannot be resolved from the account alone.
-    LookupTables,
+    /// tables. It is read once those tables are: see [`TableBound::resolve`].
+    LookupTables(TableBound),
     /// A change to the multisig itself, a batch, or a policy payload.
     Other,
+}
+
+/// A stored vault transaction that reads accounts from address lookup
+/// tables, before those are read.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct TableBound {
+    pub index: u64,
+    creator: Pubkey,
+    vault_index: u8,
+    vault: Pubkey,
+    /// The ephemeral signers' addresses, which the program signs for.
+    ephemeral: Vec<Pubkey>,
+    message: VaultMessage,
+}
+
+/// Why a stored transaction that reads accounts from lookup tables cannot
+/// be read.
+///
+/// A table's entries never change once written, and its address cannot be
+/// used again once it is closed. So a transaction whose tables all exist and
+/// hold every entry it names reads now as it will run. One whose table is
+/// gone can never run. One that names an entry its table does not hold yet
+/// cannot be known: the table's authority may still add any address there.
+#[derive(Clone, Debug, thiserror::Error, PartialEq, Eq)]
+pub enum TableProblem {
+    #[error("It reads accounts from lookup table {table}, which does not exist on this cluster: it was closed, or never made. It cannot be read or executed.")]
+    Missing { table: Pubkey },
+    #[error("It reads entry {index} of lookup table {table}, which holds {holds} addresses. What that entry will hold is not known yet, so it cannot be read, approved or executed.")]
+    Short {
+        table: Pubkey,
+        index: u8,
+        holds: usize,
+    },
+}
+
+/// What a lookup table account holds, from its data as the lookup table
+/// program writes it: its addresses, and whether its authority deactivated
+/// it. `None` when it is not a table.
+pub fn lookup_table_of(data: &[u8]) -> Option<(Vec<Pubkey>, bool)> {
+    // `ProgramState::LookupTable` is 1, then the deactivation slot, which is
+    // the largest number while the table is active.
+    if data.get(..4)? != 1u32.to_le_bytes() {
+        return None;
+    }
+    let deactivation = u64::from_le_bytes(data.get(4..12)?.try_into().ok()?);
+    let addresses = crate::tx::parse_lookup_table_addresses(data).ok()?;
+    Some((addresses, deactivation != u64::MAX))
+}
+
+impl TableBound {
+    /// The tables it reads from, in its order.
+    pub fn tables(&self) -> Vec<Pubkey> {
+        self.message.tables()
+    }
+
+    /// Read it with the lookup tables in `accounts`: the data of each
+    /// table's account, by address, from accounts the lookup table program
+    /// owns. Whether they come from a node or another device decides what
+    /// the result is worth.
+    pub fn resolve(
+        &self,
+        accounts: &std::collections::HashMap<Pubkey, Vec<u8>>,
+    ) -> Result<VaultTransaction, TableProblem> {
+        let mut tables = std::collections::HashMap::new();
+        let mut deactivated = Vec::new();
+        for table in self.tables() {
+            if let Some((addresses, off)) =
+                accounts.get(&table).and_then(|data| lookup_table_of(data))
+            {
+                if off && !deactivated.contains(&table) {
+                    deactivated.push(table);
+                }
+                tables.insert(table, addresses);
+            }
+        }
+        let loaded = self.message.load(&tables)?;
+        let instructions =
+            self.message
+                .instructions_with(&loaded)
+                .ok_or(TableProblem::Missing {
+                    table: self.tables().first().copied().unwrap_or_default(),
+                })?;
+        Ok(self.finish(instructions, &loaded, deactivated))
+    }
+
+    fn finish(
+        &self,
+        instructions: Vec<Instruction>,
+        loaded: &super::message::Loaded,
+        deactivated_tables: Vec<Pubkey>,
+    ) -> VaultTransaction {
+        let program_signs: Vec<Pubkey> = std::iter::once(self.vault)
+            .chain(self.ephemeral.iter().copied())
+            .collect();
+        let signers = usize::from(self.message.num_signers);
+        let other_signers = self.message.account_keys
+            [..signers.min(self.message.account_keys.len())]
+            .iter()
+            .copied()
+            .filter(|key| !program_signs.contains(key))
+            .collect();
+        VaultTransaction {
+            creator: self.creator,
+            index: self.index,
+            vault_index: self.vault_index,
+            vault: self.vault,
+            ephemeral_signers: u8::try_from(self.ephemeral.len()).unwrap_or(u8::MAX),
+            instructions,
+            lookup_tables: self.tables(),
+            deactivated_tables,
+            other_signers,
+            execute_accounts: self.message.execute_listing(loaded, &program_signs),
+        }
+    }
 }
 
 impl Squad {
@@ -244,19 +371,37 @@ impl Squad {
         let vault_index: u8 = number(field(details, index_name)?)?;
         let ephemeral_signers =
             u8::try_from(bytes(field(details, "ephemeralSignerBumps")?)?.len()).ok()?;
-        let message = field(details, "message")?;
-        if !list(field(message, "addressTableLookups")?)?.is_empty() {
-            return Some(StoredAccount::LookupTables);
-        }
-        let message = VaultMessage::from_account(message)?;
-        Some(StoredAccount::Vault(VaultTransaction {
+        let message = VaultMessage::from_account(field(details, "message")?)?;
+        let index: u64 = number(field(&stored, "index")?)?;
+        let bound = TableBound {
+            index,
             creator: key(field(&stored, "creator")?)?,
-            index: number(field(&stored, "index")?)?,
             vault_index,
             vault: self.vault(vault_index),
-            ephemeral_signers,
-            instructions: message.instructions()?,
-            execute_accounts: message.execute_accounts(),
-        }))
+            ephemeral: (0..ephemeral_signers)
+                .map(|at| self.ephemeral_signer(index, at))
+                .collect(),
+            message,
+        };
+        if !bound.message.lookups.is_empty() {
+            return Some(StoredAccount::LookupTables(bound));
+        }
+        let instructions = bound.message.instructions()?;
+        Some(StoredAccount::Vault(bound.finish(
+            instructions,
+            &Loaded::default(),
+            Vec::new(),
+        )))
+    }
+
+    /// Ephemeral signer `at` of transaction `index`: an address the program
+    /// derives for that transaction and signs as when it runs it.
+    pub fn ephemeral_signer(&self, index: u64, at: u8) -> Pubkey {
+        self.program.address(&[
+            self.program.prefix(),
+            self.transaction(index).as_ref(),
+            b"ephemeral_signer",
+            &[at],
+        ])
     }
 }

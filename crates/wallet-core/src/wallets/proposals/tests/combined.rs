@@ -373,7 +373,8 @@ fn nothing_is_offered_when_the_chosen_members_cannot_finish_the_proposal() {
     unopened.proposal = None;
     assert_eq!(combined_approval(&on_chain, &unopened, &two, None), None);
     // What was not read is not voted on.
-    for stored in [Stored::LookupTables, Stored::Other, Stored::Missing] {
+    let gone = TableProblem::Missing { table: pk(40) };
+    for stored in [Stored::LookupTables(gone), Stored::Other, Stored::Missing] {
         let mut unreadable = active.clone();
         unreadable.stored = stored;
         assert_eq!(combined_approval(&on_chain, &unreadable, &two, None), None);
@@ -418,4 +419,49 @@ fn the_instructions_are_one_approval_for_each_voter_and_then_the_execution() {
     let mut gone = entry.clone();
     gone.stored = Stored::Missing;
     assert_eq!(combined_instructions(&squad, &gone, &combined), None);
+}
+
+#[test]
+fn another_wallet_executes_when_the_acting_member_may_not() {
+    let squad = Squad::v4(&pk(1));
+    let approved = entry(&squad, ProposalStatus::Approved, &[pk(10), pk(11)]);
+    let voter = with_permissions(10, HOT, PERMISSION_VOTE);
+    let executor = with_permissions(11, SIGNER, PERMISSION_EXECUTE);
+    let cold = with_permissions(12, OFFLINE, PERMISSION_ALL);
+    let on_chain = state(
+        2,
+        60,
+        &[
+            (pk(10), PERMISSION_VOTE),
+            (pk(11), PERMISSION_EXECUTE),
+            (pk(12), PERMISSION_ALL),
+        ],
+    );
+    let chosen = [voter.clone(), cold.clone(), executor.clone()];
+    // The offline key cannot sign in time; the programmatic signer can.
+    assert_eq!(
+        executor_instead(&on_chain, &approved, &chosen, 2_000),
+        Some(&executor)
+    );
+    // Not while the time lock holds it, nor when nobody else can.
+    assert_eq!(executor_instead(&on_chain, &approved, &chosen, 1_030), None);
+    assert_eq!(
+        executor_instead(&on_chain, &approved, &[voter.clone(), cold], 2_000),
+        None
+    );
+    // An acting member that may execute does it itself.
+    let mine = [executor.clone(), voter];
+    assert_eq!(executor_instead(&on_chain, &approved, &mine, 2_000), None);
+    let open = entry(&squad, ProposalStatus::Active, &[]);
+    assert_eq!(executor_instead(&on_chain, &open, &chosen, 2_000), None);
+}
+
+#[test]
+fn a_wait_is_told_in_the_largest_unit_that_reads_well() {
+    assert_eq!(wait_words(1), "1 second");
+    assert_eq!(wait_words(90), "90 seconds");
+    assert_eq!(wait_words(121), "3 minutes");
+    assert_eq!(wait_words(3 * 3_600), "3 hours");
+    assert_eq!(wait_words(3 * 86_400 + 1), "4 days");
+    assert_eq!(wait_words(-5), "1 second");
 }

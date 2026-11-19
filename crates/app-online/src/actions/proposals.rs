@@ -22,6 +22,12 @@ pub async fn load_page(
 /// Compile what `request` asks for, on a fresh blockhash or on the combined
 /// approval's durable nonce, and open it on the Sign screen. `payer` pays
 /// the fee, and `label` is the multisig's name for the note.
+///
+/// A member that signs on another device, through QR codes, takes longer
+/// than a blockhash lives. Its transaction goes on that key's own durable
+/// nonce when its wallet has one, and otherwise on `offline_nonce`, the
+/// multisig row's durable nonce, which the caller passes when the member
+/// acting alone is such a key.
 pub async fn open_request(
     session: Session,
     squad: &Squad,
@@ -29,40 +35,20 @@ pub async fn open_request(
     request: &ProposalRequest,
     payer: Pubkey,
     label: &str,
+    offline_nonce: Option<Pubkey>,
 ) -> Result<(), String> {
-    let instructions = request.instructions(squad, entry).ok_or_else(|| {
-        "The stored transaction could not be read, so there is nothing to build.".to_string()
-    })?;
     let rpc = session.rpc().map_err(sentence)?;
-    let durable = match request {
-        ProposalRequest::Combined(combined) => combined
-            .durable_nonce
-            .map(|nonce| (nonce, combined.signers())),
-        ProposalRequest::Single { .. } => None,
-    };
-    // A durable nonce has no height at which it expires.
-    let (wire, last_valid_height) = match durable {
-        Some((nonce, members)) => {
-            let signers: Vec<Pubkey> = std::iter::once(payer).chain(members).collect();
-            let wire = wallet_flows::compile::compile_on_nonce(
-                rpc.as_ref(),
-                payer,
-                instructions,
-                nonce,
-                &signers,
-            )
-            .await
-            .map_err(sentence)?;
-            (wire, None)
-        }
-        None => {
-            let (wire, height) =
-                wallet_flows::compile::compile_fresh(rpc.as_ref(), payer, instructions)
-                    .await
-                    .map_err(sentence)?;
-            (wire, Some(height))
-        }
-    };
+    let (wire, last_valid_height) = wallet_flows::squads::compile_request(
+        rpc.as_ref(),
+        squad,
+        entry,
+        request,
+        payer,
+        |tx| session.offline_nonce_for(tx),
+        offline_nonce,
+    )
+    .await
+    .map_err(sentence)?;
     session.open_in_sign(
         SignLoad::new(wire, TxSource::Wallets)
             .with_note(request_note(request, entry.index, label))

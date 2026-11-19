@@ -23,10 +23,10 @@ use app_ui_kit::{Address, Session};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use wallet_core::proposals::{
-    available_action, combined_approval, ChosenMember, ProposalAction, ProposalEntry,
-    ProposalRequest, Stored,
+    available_action, combined_approval, executor_instead, time_lock_ends, ChosenMember,
+    MemberKind, NoAction, ProposalAction, ProposalEntry, ProposalRequest, Stored,
 };
-use wallet_core::squads::{ProposalStatus, Squad, SquadState};
+use wallet_core::squads::{time_lock_words, ProposalStatus, Squad, SquadState, TableProblem};
 use wallet_core::{RouteStep, WalletId};
 
 mod host;
@@ -79,6 +79,7 @@ pub fn ProposalsModal(
     let mut loading = use_signal(|| false);
     let mut opened = use_signal(|| None::<u64>);
     let mut busy = use_signal(|| false);
+    let mut tick = use_signal(|| 0u64);
     // A copy the action handler of every row can take.
     let label_for_note = use_signal(|| label.clone());
 
@@ -122,8 +123,35 @@ pub fn ProposalsModal(
         Some((member, route.fee_payer.map(|(_, pubkey)| pubkey)))
     });
     let route_problem = route.as_ref().err().map(|err| err.to_string());
+    // Read on each render, which a time lock ending also brings about.
+    let ticks = tick();
     let now = unix_now();
     let current = loaded();
+    // The soonest time lock still holding an approved proposal. The modal
+    // renders again when it ends, and now and then before, so the wait a row
+    // tells stays true and Execute appears without a refresh.
+    let wake_in = current.as_ref().and_then(|current| {
+        current
+            .entries
+            .iter()
+            .filter_map(|entry| {
+                let proposal = entry.proposal.as_ref()?;
+                (proposal.status == ProposalStatus::Approved)
+                    .then(|| time_lock_ends(&current.state, proposal))
+            })
+            .filter(|until| *until > now)
+            .min()
+            .map(|until| u64::try_from((until - now).clamp(1, 30)).unwrap_or(1))
+    });
+    use_effect(use_reactive!(|(wake_in, ticks)| {
+        let _ = ticks;
+        if let Some(seconds) = wake_in {
+            spawn(async move {
+                app_ui_kit::rt::sleep(std::time::Duration::from_secs(seconds)).await;
+                tick += 1;
+            });
+        }
+    }));
     // The wallets the row names to approve together, as the chain knows them.
     let (chosen, approval_nonce) = current
         .as_ref()
@@ -142,7 +170,7 @@ pub fn ProposalsModal(
                                 p { class: "muted",
                                     "{current.state.threshold} of {current.state.members.len()} approvals needed"
                                     if current.state.time_lock > 0 {
-                                        " · {current.state.time_lock} s time lock"
+                                        " · {time_lock_words(current.state.time_lock)} time lock"
                                     }
                                     " · {current.state.transaction_index} transaction(s)"
                                 }
@@ -231,10 +259,25 @@ pub fn ProposalsModal(
                                             },
                                             on_act: move |(entry, request, payer): (ProposalEntry, ProposalRequest, Pubkey)| {
                                                 let label = label_for_note();
+                                                // A member alone that signs through QR codes
+                                                // can use the row's durable nonce.
+                                                let offline_nonce = match &request {
+                                                    ProposalRequest::Single { member, .. } => {
+                                                        loaded.peek().as_ref().and_then(|current| {
+                                                            let (chosen, nonce) = session.chosen_members(wallet, &current.state);
+                                                            chosen
+                                                                .iter()
+                                                                .any(|one| one.address == *member && one.kind == MemberKind::Offline)
+                                                                .then_some(nonce)
+                                                                .flatten()
+                                                        })
+                                                    }
+                                                    ProposalRequest::Combined(_) => None,
+                                                };
                                                 busy.set(true);
                                                 error.set(None);
                                                 spawn(async move {
-                                                    match open_request(session, &squad, &entry, &request, payer, &label).await {
+                                                    match open_request(session, &squad, &entry, &request, payer, &label, offline_nonce).await {
                                                         Ok(()) => on_close.call(()),
                                                         Err(err) => error.set(Some(err)),
                                                     }

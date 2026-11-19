@@ -109,12 +109,44 @@ fn field_mut<'a>(value: &'a mut Value, name: &str) -> Option<&'a mut Value> {
 
 /// Instructions compiled the way Squads stores them: accounts ordered writable
 /// signers, read-only signers, writable, read-only, with the vault first.
+/// Then, like a v0 message, addresses read from lookup tables, which an
+/// instruction numbers after the accounts the message lists itself: every
+/// table's writable ones, then every table's read-only ones.
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct VaultMessage {
     pub(super) num_signers: u8,
     pub(super) num_writable_signers: u8,
     pub(super) num_writable_non_signers: u8,
     pub(super) account_keys: Vec<Pubkey>,
     pub(super) instructions: Vec<solana_message::compiled_instruction::CompiledInstruction>,
+    pub(super) lookups: Vec<MessageLookup>,
+}
+
+/// One lookup table a stored message reads addresses from, and which of its
+/// entries, by position in the table.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct MessageLookup {
+    pub(super) table: Pubkey,
+    pub(super) writable: Vec<u8>,
+    pub(super) readonly: Vec<u8>,
+}
+
+/// The addresses a message's lookups name, read from the tables.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub(super) struct Loaded {
+    /// For each lookup, in the message's order: its writable addresses, then
+    /// its read-only ones.
+    per_table: Vec<(Vec<Pubkey>, Vec<Pubkey>)>,
+}
+
+impl Loaded {
+    fn writable(&self) -> impl Iterator<Item = &Pubkey> {
+        self.per_table.iter().flat_map(|(writable, _)| writable)
+    }
+
+    fn readonly(&self) -> impl Iterator<Item = &Pubkey> {
+        self.per_table.iter().flat_map(|(_, readonly)| readonly)
+    }
 }
 
 pub(super) fn vault_message(vault: &Pubkey, instructions: &[Instruction]) -> VaultMessage {
@@ -129,10 +161,116 @@ pub(super) fn vault_message(vault: &Pubkey, instructions: &[Instruction]) -> Vau
             - header.num_readonly_unsigned_accounts,
         account_keys: message.account_keys,
         instructions: message.instructions,
+        lookups: Vec::new(),
     }
 }
 
+/// `instructions` compiled the way Squads stores them, with every address
+/// `tables` hold read from them where a v0 message would: anything that
+/// signs or is a program an instruction calls stays in the message itself.
+/// `None` when they do not compile.
+pub(super) fn vault_message_with_tables(
+    vault: &Pubkey,
+    instructions: &[Instruction],
+    tables: &[(Pubkey, Vec<Pubkey>)],
+) -> Option<VaultMessage> {
+    let tables: Vec<solana_message::AddressLookupTableAccount> = tables
+        .iter()
+        .map(
+            |(key, addresses)| solana_message::AddressLookupTableAccount {
+                key: *key,
+                addresses: addresses.clone(),
+            },
+        )
+        .collect();
+    let message = solana_message::v0::Message::try_compile(
+        vault,
+        instructions,
+        &tables,
+        solana_hash::Hash::default(),
+    )
+    .ok()?;
+    let header = message.header;
+    let num_signers = header.num_required_signatures;
+    VaultMessage {
+        num_signers,
+        num_writable_signers: num_signers.checked_sub(header.num_readonly_signed_accounts)?,
+        num_writable_non_signers: u8::try_from(message.account_keys.len())
+            .ok()?
+            .checked_sub(num_signers)?
+            .checked_sub(header.num_readonly_unsigned_accounts)?,
+        account_keys: message.account_keys,
+        instructions: message.instructions,
+        lookups: message
+            .address_table_lookups
+            .into_iter()
+            .map(|lookup| MessageLookup {
+                table: lookup.account_key,
+                writable: lookup.writable_indexes,
+                readonly: lookup.readonly_indexes,
+            })
+            .collect(),
+    }
+    .checked()
+}
+
 impl VaultMessage {
+    /// The lookup tables it reads from, in its order.
+    pub(super) fn tables(&self) -> Vec<Pubkey> {
+        self.lookups.iter().map(|lookup| lookup.table).collect()
+    }
+
+    /// Read every address the lookups name from `tables`, the addresses each
+    /// table holds by its address. `Err` names the first lookup that cannot
+    /// be read: its table is not there, or holds fewer entries than it asks
+    /// for.
+    pub(super) fn load(
+        &self,
+        tables: &std::collections::HashMap<Pubkey, Vec<Pubkey>>,
+    ) -> Result<Loaded, TableProblem> {
+        let mut per_table = Vec::new();
+        for lookup in &self.lookups {
+            let Some(addresses) = tables.get(&lookup.table) else {
+                return Err(TableProblem::Missing {
+                    table: lookup.table,
+                });
+            };
+            let pick = |indexes: &[u8]| {
+                indexes
+                    .iter()
+                    .map(|index| {
+                        addresses
+                            .get(usize::from(*index))
+                            .copied()
+                            .ok_or(TableProblem::Short {
+                                table: lookup.table,
+                                index: *index,
+                                holds: addresses.len(),
+                            })
+                    })
+                    .collect::<Result<Vec<_>, _>>()
+            };
+            per_table.push((pick(&lookup.writable)?, pick(&lookup.readonly)?));
+        }
+        Ok(Loaded { per_table })
+    }
+
+    /// The address at `position` as an instruction numbers it, and whether
+    /// the message asks for it writable.
+    fn resolve(&self, position: usize, loaded: &Loaded) -> Option<(Pubkey, bool)> {
+        if let Some(key) = self.account_keys.get(position) {
+            return Some((*key, self.is_writable(position)));
+        }
+        let position = position - self.account_keys.len();
+        let writable: Vec<&Pubkey> = loaded.writable().collect();
+        if let Some(key) = writable.get(position) {
+            return Some((**key, true));
+        }
+        loaded
+            .readonly()
+            .nth(position - writable.len())
+            .map(|key| (*key, false))
+    }
     pub(super) fn is_writable(&self, position: usize) -> bool {
         let signers = usize::from(self.num_signers);
         if position < signers {
@@ -146,15 +284,44 @@ impl VaultMessage {
     /// first, signs inside the program. Any other signer of the stored
     /// message has to sign the transaction that executes it.
     pub(super) fn execute_accounts(&self) -> Vec<AccountMeta> {
-        self.account_keys
+        let vault = self.account_keys.first().copied().unwrap_or_default();
+        self.execute_listing(&Loaded::default(), &[vault])
+    }
+
+    /// What an execution lists after its own accounts, in the order both
+    /// programs read them: the lookup tables, then the message's own
+    /// accounts, then for each table the addresses read from it, writable
+    /// ones first. Of the message's signers, those in `program_signs` (the
+    /// vault and the ephemeral signers, which the program signs for) are
+    /// listed as not signing; any other has to sign the transaction.
+    pub(super) fn execute_listing(
+        &self,
+        loaded: &Loaded,
+        program_signs: &[Pubkey],
+    ) -> Vec<AccountMeta> {
+        let tables = self
+            .lookups
             .iter()
-            .enumerate()
-            .map(|(position, key)| AccountMeta {
+            .map(|lookup| AccountMeta::new_readonly(lookup.table, false));
+        let own = self.account_keys.iter().enumerate().map(|(position, key)| {
+            let signs = position < usize::from(self.num_signers);
+            AccountMeta {
                 pubkey: *key,
-                is_signer: position > 0 && position < usize::from(self.num_signers),
+                is_signer: signs && !program_signs.contains(key),
                 is_writable: self.is_writable(position),
-            })
-            .collect()
+            }
+        });
+        let read = loaded.per_table.iter().flat_map(|(writable, readonly)| {
+            writable
+                .iter()
+                .map(|key| AccountMeta::new(*key, false))
+                .chain(
+                    readonly
+                        .iter()
+                        .map(|key| AccountMeta::new_readonly(*key, false)),
+                )
+        });
+        tables.chain(own).chain(read).collect()
     }
 
     pub(super) fn checked(self) -> Option<Self> {
@@ -176,6 +343,16 @@ impl VaultMessage {
                 })
             })
             .collect::<Option<Vec<_>>>()?;
+        let lookups = list(field(message, "addressTableLookups")?)?
+            .iter()
+            .map(|lookup| {
+                Some(MessageLookup {
+                    table: key(field(lookup, "accountKey")?)?,
+                    writable: bytes(field(lookup, "writableIndexes")?)?.to_vec(),
+                    readonly: bytes(field(lookup, "readonlyIndexes")?)?.to_vec(),
+                })
+            })
+            .collect::<Option<Vec<_>>>()?;
         Self {
             num_signers: number(field(message, "numSigners")?)?,
             num_writable_signers: number(field(message, "numWritableSigners")?)?,
@@ -185,6 +362,7 @@ impl VaultMessage {
                 .map(key)
                 .collect::<Option<Vec<_>>>()?,
             instructions,
+            lookups,
         }
         .checked()
     }
@@ -217,28 +395,37 @@ impl VaultMessage {
                     },
                 )
                 .collect(),
+            lookups: Vec::new(),
         }
         .checked()
     }
 
-    /// Each instruction with its accounts resolved and flagged.
+    /// Each instruction with its accounts resolved and flagged. `None` when
+    /// one names an account the message does not have.
     pub(super) fn instructions(&self) -> Option<Vec<Instruction>> {
+        self.instructions_with(&Loaded::default())
+    }
+
+    /// [`Self::instructions`], with the addresses its lookups name read
+    /// from `loaded`.
+    pub(super) fn instructions_with(&self, loaded: &Loaded) -> Option<Vec<Instruction>> {
         self.instructions
             .iter()
             .map(|compiled| {
                 Some(Instruction {
-                    program_id: *self
-                        .account_keys
-                        .get(usize::from(compiled.program_id_index))?,
+                    program_id: self
+                        .resolve(usize::from(compiled.program_id_index), loaded)?
+                        .0,
                     accounts: compiled
                         .accounts
                         .iter()
                         .map(|index| {
                             let position = usize::from(*index);
+                            let (pubkey, is_writable) = self.resolve(position, loaded)?;
                             Some(AccountMeta {
-                                pubkey: *self.account_keys.get(position)?,
+                                pubkey,
                                 is_signer: position < usize::from(self.num_signers),
-                                is_writable: self.is_writable(position),
+                                is_writable,
                             })
                         })
                         .collect::<Option<Vec<_>>>()?,
@@ -266,7 +453,15 @@ impl VaultMessage {
                     data: instruction.data.clone(),
                 })
                 .collect(),
-            address_table_lookups: Vec::new(),
+            address_table_lookups: self
+                .lookups
+                .iter()
+                .map(|lookup| WireLookup {
+                    account_key: lookup.table.to_bytes(),
+                    writable_indexes: lookup.writable.clone(),
+                    readonly_indexes: lookup.readonly.clone(),
+                })
+                .collect(),
         })
         .ok()
     }
@@ -366,6 +561,7 @@ mod wire_tests {
                 accounts: vec![0, 1],
                 data: vec![9; 300],
             }],
+            lookups: Vec::new(),
         }
     }
 
