@@ -25,6 +25,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 ### Changed
 
 - **A Vector wallet's address is now its account's system address**, which works like any other wallet's: it can pay rent for the accounts it creates (its own token accounts, a new account it sends its first SOL to, an account a site or another program makes with it as payer), and its transfers run as the site built them. The account the key controls keeps only the key and its nonce. Fees are still paid by the wallet chosen to pay them. Vector wallets now show a new address: send their SOL and tokens there. Anything already held at the old address stays there, and Airlock does not move it out.
+- **An address's card opens after the pointer has rested on the address for a second**, and stays for a second after the pointer leaves, so passing over addresses no longer opens cards along the way. Moving on to another address starts the wait again. A click still opens the card at once.
 
 ### Fixed
 

@@ -2,7 +2,8 @@
 
 use super::*;
 
-/// Icon, label and short address. Hover, focus or a click opens the card.
+/// Icon, label and short address. A click opens the card at once; resting
+/// the pointer or the focus on it opens the card after [`CARD_DELAY`].
 #[component]
 pub fn Address(
     pubkey: Pubkey,
@@ -133,12 +134,19 @@ pub(crate) fn close_open_card() {
     }
 }
 
+/// How long the pointer rests on an address before its card opens, and how
+/// long the card stays once the pointer has left both. Passing over an
+/// address opens nothing, and moving on to another address starts its wait
+/// from the beginning.
+const CARD_DELAY: std::time::Duration = std::time::Duration::from_secs(1);
+
 /// The open state of a card, shared by the chip and the row.
 #[derive(Clone, Copy)]
 pub struct CardState {
     open: Signal<Option<CardAt>>,
     mounted: Signal<Option<std::rc::Rc<MountedData>>>,
-    /// Bumped on every enter, so a close that was waiting knows it is stale.
+    /// Bumped on every enter and leave, so an open or a close that was
+    /// waiting knows it is stale.
     generation: Signal<u64>,
     beside: Option<CardBeside>,
 }
@@ -161,7 +169,13 @@ impl CardState {
         self.mounted.set(Some(e.data()));
     }
 
-    pub fn enter(mut self) {
+    /// Open after [`CARD_DELAY`], unless the pointer leaves first. A card
+    /// that is open and was about to close stays.
+    pub fn enter(self) {
+        self.open_after(CARD_DELAY);
+    }
+
+    fn open_after(mut self, delay: std::time::Duration) {
         self.generation += 1;
         if self.open.peek().is_some() {
             return;
@@ -174,6 +188,12 @@ impl CardState {
         let current = self.generation;
         let list = self.beside.and_then(|beside| beside.0.peek().clone());
         spawn(async move {
+            if !delay.is_zero() {
+                crate::rt::sleep(delay).await;
+                if *current.peek() != generation {
+                    return;
+                }
+            }
             let Ok(rect) = node.get_client_rect().await else {
                 return;
             };
@@ -210,14 +230,15 @@ impl CardState {
         });
     }
 
-    /// Close after a moment, so the pointer can cross to the card.
+    /// Close after [`CARD_DELAY`], unless the pointer comes back to the
+    /// address or its card first.
     pub fn leave(mut self) {
         self.generation += 1;
         let generation = *self.generation.peek();
         let mut open = self.open;
         let current = self.generation;
         spawn(async move {
-            crate::rt::sleep(std::time::Duration::from_millis(180)).await;
+            crate::rt::sleep(CARD_DELAY).await;
             if *current.peek() == generation {
                 open.set(None);
             }
@@ -228,7 +249,7 @@ impl CardState {
         if self.open.peek().is_some() {
             self.close();
         } else {
-            self.enter();
+            self.open_after(std::time::Duration::ZERO);
         }
     }
 
