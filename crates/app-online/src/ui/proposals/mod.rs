@@ -19,10 +19,10 @@
 //!
 //! Finished proposals, and those no one can vote on any more, can have their
 //! accounts closed to return the rent: one row at a time, or all those read
-//! so far at once, [`CLOSES_PER_TRANSACTION`] to a transaction. No member
-//! signs a close, only the wallet paying the fee. A run of transactions
-//! whose accounts were closed reads as one line, and Older still goes
-//! further back past it.
+//! so far at once from one button with a count, [`CLOSES_PER_TRANSACTION`]
+//! to a transaction, newest first. No member signs a close, only the wallet
+//! paying the fee. A run of transactions whose accounts were closed reads as
+//! one line, and Older still goes further back past it.
 //!
 //! Nothing is signed here. Each button builds a transaction and hands it
 //! to the Sign screen, where it is read, signed and submitted
@@ -293,8 +293,7 @@ pub fn ProposalsModal(
                         },
                     }
                     if let (Some(payer), Some(entry), true) = (payer, close_entry.clone(), close_total >= 2) {
-                        div { class: "stack proposals-close",
-                            div { class: "btn-row",
+                        div { class: "btn-row",
                                 button { class: "sm", disabled: busy(),
                                     onclick: move |_| {
                                         let label = label_for_note();
@@ -312,21 +311,8 @@ pub fn ProposalsModal(
                                             busy.set(false);
                                         });
                                     },
-                                    if close_count == close_total {
-                                        "Close accounts of all {close_total}"
-                                    } else {
-                                        "Close accounts of {close_count} of {close_total}"
-                                    }
+                                    "Close accounts of {close_count}"
                                 }
-                            }
-                            p { class: "hint",
-                                if close_count == close_total {
-                                    "{close_total} of the proposals read so far can be closed, all in one transaction."
-                                } else {
-                                    "{close_total} of the proposals read so far can be closed. One transaction closes up to {CLOSES_PER_TRANSACTION}, the newest first."
-                                }
-                            }
-                            RentReturned { closings: close_now.clone(), payer, one: false }
                         }
                     }
                     if let Some(text) = error() {
@@ -355,7 +341,6 @@ pub fn ProposalsModal(
                                                 div { class: "proposal-head still",
                                                     span { class: "proposal-number", "#{newest}–{oldest}" }
                                                     span { class: "chip", "closed" }
-                                                    span { class: "muted", "Their accounts were closed and their rent returned." }
                                                 }
                                             }
                                         }

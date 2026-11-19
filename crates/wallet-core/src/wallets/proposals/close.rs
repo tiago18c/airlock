@@ -85,7 +85,7 @@ impl Closing {
 #[derive(Debug, Error, Clone, Copy, PartialEq, Eq)]
 pub enum NoClose {
     /// v4, on a multisig that would otherwise allow it.
-    #[error("This multisig has no rent collector, so the program does not let its transactions' accounts be closed. Setting one is a change to the multisig that its members can propose.")]
+    #[error("This multisig has no rent collector, so its accounts cannot be closed.")]
     NoRentCollector,
     #[error("An approved proposal cannot be closed while it can still be executed: it can be executed, or its members can vote to cancel it.")]
     Approved,
@@ -109,15 +109,18 @@ pub enum NoClose {
 }
 
 impl NoClose {
-    /// Worth a line on the row of `entry`: someone looking at it would
-    /// wonder why it cannot be closed. An open proposal has Reject beside
-    /// it, and a fresh approved one Execute, so neither says it.
+    /// Worth a line on the row of `entry`: only where a person would look
+    /// for Close and not find it, a finished proposal of a v4 multisig
+    /// without a rent collector. The other reasons are for the code and
+    /// the tests, not the screen.
     pub fn worth_saying(&self, entry: &ProposalEntry) -> bool {
-        match self {
-            Self::Open | Self::Closed => false,
-            Self::Approved => entry.stale,
-            _ => true,
-        }
+        let finished = entry.proposal.as_ref().is_some_and(|proposal| {
+            matches!(
+                proposal.status,
+                ProposalStatus::Executed | ProposalStatus::Rejected | ProposalStatus::Cancelled
+            )
+        });
+        *self == Self::NoRentCollector && finished
     }
 }
 

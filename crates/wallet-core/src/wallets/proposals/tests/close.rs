@@ -233,23 +233,37 @@ fn what_is_gone_or_not_closed_here_is_said() {
     }
 }
 
+/// Only a finished proposal of a v4 multisig without a rent collector says
+/// why it cannot be closed: nothing else does.
 #[test]
-fn only_what_someone_would_wonder_about_is_said() {
-    let fresh = case(
-        SquadsProgram::V4,
-        Some(ProposalStatus::Approved),
-        CloseKind::Vault,
-        false,
-    );
-    let stale = ProposalEntry {
-        stale: true,
-        ..fresh.clone()
-    };
-    assert!(!NoClose::Open.worth_saying(&fresh));
-    assert!(!NoClose::Approved.worth_saying(&fresh));
-    assert!(NoClose::Approved.worth_saying(&stale));
-    assert!(NoClose::NoRentCollector.worth_saying(&fresh));
-    assert!(NoClose::Draft.worth_saying(&fresh));
+fn only_a_missing_rent_collector_on_a_finished_proposal_is_said() {
+    let program = SquadsProgram::V4;
+    for status in STATUSES {
+        for stale in [false, true] {
+            let entry = case(program, Some(status), CloseKind::Vault, stale);
+            let finished = matches!(
+                status,
+                ProposalStatus::Executed | ProposalStatus::Rejected | ProposalStatus::Cancelled
+            );
+            assert_eq!(
+                NoClose::NoRentCollector.worth_saying(&entry),
+                finished,
+                "{status:?} stale {stale}"
+            );
+            for other in [
+                NoClose::Approved,
+                NoClose::Open,
+                NoClose::Draft,
+                NoClose::NoProposal,
+                NoClose::Executing,
+                NoClose::Gone,
+                NoClose::NotClosedHere,
+                NoClose::Closed,
+            ] {
+                assert!(!other.worth_saying(&entry), "{other:?} {status:?}");
+            }
+        }
+    }
 }
 
 #[test]

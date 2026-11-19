@@ -289,7 +289,7 @@ fn an_approved_vault_transaction_is_refused_also_when_stale() {
                 Err(NoClose::Approved),
                 "{program:?} stale {stale}"
             );
-            assert_eq!(NoClose::Approved.worth_saying(entry), stale);
+            assert!(!NoClose::Approved.worth_saying(entry));
             let close = team
                 .squad
                 .close(1, CloseKind::Vault, &collector, &collector);
