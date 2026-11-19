@@ -11,15 +11,19 @@
 //! address derived from the multisig. Spending from it takes four steps:
 //! store the transaction, open a proposal for it, approve until the threshold
 //! is met, execute. The smart account program can also run instructions at
-//! once, when the members that sign together are enough (see `sync`).
+//! once, when the members that sign together are enough (see `sync`). The
+//! multisig changes itself (its members, threshold, time lock, spending
+//! limits) through the same four steps, with a list of actions stored in
+//! place of the instructions (see `change`, and `change_words` for what a
+//! change says and leaves).
 //!
 //! Every instruction here is built, and every account read, from the
 //! program's own public IDL, converted to Codama (`idls/squads-multisig.json`
 //! and `idls/squads-smart-account.json`, see `builtin`), through the dynamic
 //! client. Three things are not in those IDLs and are written out here:
 //!
-//! - the seeds of the derived addresses, which an Anchor 0.29 IDL does not
-//!   carry;
+//! - the seeds of the derived addresses (spending limits' too), which an
+//!   Anchor 0.29 IDL does not carry;
 //! - the layout of the stored message, which the IDL passes as plain `bytes`;
 //! - the accounts an execution lists after its own, which are the accounts
 //!   of the stored message and so differ for every transaction: the lookup
@@ -42,6 +46,8 @@ pub use crate::ids::{
     SQUADS_CLEAR_SIGNING_PROGRAM_ID, SQUADS_SMART_ACCOUNT_PROGRAM_ID, SQUADS_V4_PROGRAM_ID,
 };
 
+mod change;
+mod change_words;
 mod clear_sign;
 mod config;
 mod instructions;
@@ -52,8 +58,12 @@ mod sync;
 mod values;
 
 #[cfg(test)]
+pub(crate) mod change_tests;
+#[cfg(test)]
 pub(crate) mod tests;
 
+pub use change::*;
+pub use change_words::*;
 pub use clear_sign::*;
 pub use config::*;
 pub use message::*;

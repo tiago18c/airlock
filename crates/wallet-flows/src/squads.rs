@@ -14,8 +14,8 @@ use wallet_core::squads::{
     Squad, SquadState, SquadsMember, SquadsProgram, SquadsSetup, StoredAccount, PERMISSION_ALL,
 };
 use wallet_core::{
-    apply_local_signatures, compile_v1, decode_v1_transaction, stored_in, BuildError, DecodedTx,
-    KeypairSigner, RawAccount, SolanaRpc, StoredTarget, WalletSigner,
+    apply_local_signatures, compile_v1, decode_v1_transaction, stored_content_in, BuildError,
+    DecodedTx, KeypairSigner, RawAccount, SolanaRpc, StoredContent, StoredTarget, WalletSigner,
     ADDRESS_LOOKUP_TABLE_PROGRAM_ID, MAX_TRANSACTION_SIZE,
 };
 
@@ -188,11 +188,15 @@ pub async fn compile_request(
     own_nonce: impl Fn(&DecodedTx) -> Option<(Pubkey, Pubkey)>,
     row_nonce: Option<Pubkey>,
 ) -> Result<(Vec<u8>, Option<u64>), FlowError> {
-    let instructions = request.instructions(squad, entry).ok_or_else(|| {
-        FlowError::refused(
-            "The stored transaction could not be read, so there is nothing to build.",
-        )
-    })?;
+    // The fee payer signs anyway, so it also pays for what executing a
+    // change to the multisig costs.
+    let instructions = request
+        .instructions_paid_by(squad, entry, &payer)
+        .ok_or_else(|| {
+            FlowError::refused(
+                "The stored transaction could not be read, so there is nothing to build.",
+            )
+        })?;
     // Asked before anything is asked of the node.
     if let Err(BuildError::TooLarge { len }) =
         compile_v1(payer, instructions.clone(), None, Some(Default::default()))
@@ -256,8 +260,10 @@ async fn read_tables(
 
 /// What the node says is stored behind `targets`, by address: the raw bytes, to
 /// show and to pass on, of what fits what each acts on. A stored transaction
-/// that reads accounts from lookup tables comes with those tables, read in
-/// one more request, so it reads from these bytes alone.
+/// that reads accounts from lookup tables comes with those tables, and a
+/// change to the multisig with the multisig's own account, which says what
+/// the change starts from, read in one more request, so it reads from these
+/// bytes alone.
 pub async fn read_stored(
     rpc: &dyn SolanaRpc,
     targets: &[StoredTarget],
@@ -287,33 +293,59 @@ pub async fn read_stored(
         })
         .collect();
     let mut wanted: Vec<Pubkey> = Vec::new();
+    let mut squads: Vec<Squad> = Vec::new();
     for (target, _, data) in &held {
-        if let Some(StoredAccount::LookupTables(bound)) = target.squad.parse_transaction(data) {
-            for table in bound.tables() {
-                if !wanted.contains(&table) {
-                    wanted.push(table);
+        match target.squad.parse_transaction(data) {
+            Some(StoredAccount::LookupTables(bound)) => {
+                for table in bound.tables() {
+                    if !wanted.contains(&table) {
+                        wanted.push(table);
+                    }
                 }
             }
+            Some(StoredAccount::Config(_)) if !squads.contains(&target.squad) => {
+                squads.push(target.squad)
+            }
+            _ => {}
         }
     }
-    // Only what the lookup table program owns is a table.
-    let tables: HashMap<Pubkey, Vec<u8>> = read_tables(rpc, &wanted)
-        .await?
-        .into_iter()
+    let addresses: Vec<Pubkey> = wanted
+        .iter()
+        .copied()
+        .chain(squads.iter().map(|squad| squad.address))
+        .collect();
+    let read = read_tables(rpc, &addresses).await?;
+    // Only what the lookup table program owns is a table, and only what the
+    // multisig's program owns is the multisig.
+    let tables: HashMap<Pubkey, Vec<u8>> = read
+        .iter()
         .filter(|(_, account)| account.owner == ADDRESS_LOOKUP_TABLE_PROGRAM_ID)
-        .map(|(table, account)| (table, account.data))
+        .map(|(table, account)| (*table, account.data.clone()))
         .collect();
     let mut found = HashMap::new();
     for (target, address, data) in held {
         let mut one = tables.clone();
         one.insert(address, data);
-        if let Some(stored) = stored_in(&target, &one) {
-            found.insert(address, one.remove(&address).unwrap_or_default());
-            for table in stored.lookup_tables {
-                if let Some(data) = one.remove(&table) {
-                    found.insert(table, data);
+        match stored_content_in(&target, &one) {
+            Some(StoredContent::Vault(stored)) => {
+                found.insert(address, one.remove(&address).unwrap_or_default());
+                for table in stored.lookup_tables {
+                    if let Some(data) = one.remove(&table) {
+                        found.insert(table, data);
+                    }
                 }
             }
+            Some(StoredContent::Change(_)) => {
+                found.insert(address, one.remove(&address).unwrap_or_default());
+                let multisig = read.get(&target.squad.address).filter(|account| {
+                    account.owner == target.squad.program.program_id()
+                        && target.squad.parse_state(&account.data).is_some()
+                });
+                if let Some(account) = multisig {
+                    found.insert(target.squad.address, account.data.clone());
+                }
+            }
+            None => {}
         }
     }
     Ok(found)
@@ -628,7 +660,7 @@ mod tests {
                 .collect::<std::collections::BTreeSet<_>>(),
             [squad.transaction(1), table].into_iter().collect()
         );
-        assert!(stored_in(&target, &found).is_some());
+        assert!(wallet_core::stored_in(&target, &found).is_some());
     }
 
     #[test]

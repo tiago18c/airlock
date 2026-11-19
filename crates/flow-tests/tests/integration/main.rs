@@ -11,6 +11,7 @@ mod mixed_approvals;
 mod offline_nonce;
 mod programmatic_squads;
 mod proposal_activate_cancel;
+mod proposal_config;
 mod proposal_execute;
 mod proposal_fit;
 mod proposal_reject;

@@ -1,6 +1,10 @@
 //! What came of pressing Submit, over the transaction that was sent: sending,
 //! waiting for it to land, then where to go from there. One that landed moves
 //! to History, or off the screen. One that did not stays, to be looked at again.
+//!
+//! Once one lands, the Squads multisigs it names are read again, quietly: an
+//! executed change to a multisig's members or threshold shows on its card at
+//! once.
 
 use crate::state::forms::Submission;
 use crate::state::session::Session;
@@ -70,6 +74,21 @@ pub(in crate::ui) fn SubmitProgress() -> Element {
                 .map(|step| (step, "moving this wallet", true))
         });
     let mut continuing = use_signal(|| false);
+    let landed = match &stage {
+        Stage::Landed(signature) => Some(*signature),
+        _ => None,
+    };
+    use_effect(use_reactive!(|landed| {
+        if landed.is_none() {
+            return;
+        }
+        let wire = form.wire.peek().clone().unwrap_or_default();
+        let tables = form.tables.peek().clone();
+        let keys: Vec<solana_pubkey::Pubkey> = wallet_core::decode_transaction(&wire, &tables)
+            .map(|tx| tx.accounts.iter().map(|account| account.pubkey).collect())
+            .unwrap_or_default();
+        spawn(crate::actions::squads::refresh_after_landing(session, keys));
+    }));
     let next_step = move |_| {
         let moving = run_step.is_some_and(|(_, _, moving)| moving);
         continuing.set(true);

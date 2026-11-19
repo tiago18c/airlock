@@ -46,7 +46,12 @@ pub const PROPOSAL_UNREAD: &str =
     "The proposal could not be read on this cluster, so what it holds cannot be added.";
 pub const STORED_UNREAD: &str = "The transaction this proposal stores could not be read on this cluster, so what it holds cannot be added.";
 pub const STORED_LOOKUP_TABLES: &str = "The transaction this proposal stores reads accounts from lookup tables, which the checks this app adds do not carry yet, so what it holds cannot be added.";
-pub const STORED_OTHER: &str = "This proposal stores a change to the multisig or a batch, not a vault transaction, so what it holds cannot be added.";
+/// The clear signing program's `verifyProposal` reads only a v4 vault
+/// transaction (it refuses any other account with `notAVaultTransaction`),
+/// so a change to the multisig cannot be carried. Its `assertAccountHash`
+/// could pin the change's account by hash, which this app does not build.
+pub const STORED_CONFIG: &str = "This proposal changes the multisig itself. The clear signing program checks only vault transactions, so what it holds cannot be added. A device that is online can send the change in the context note instead.";
+pub const STORED_OTHER: &str = "This proposal stores a batch or a policy payload, not a vault transaction, so what it holds cannot be added.";
 pub const STORED_CHANGED: &str = "What the proposal stores is not what this screen shows, so nothing was added. Load the transaction again to read it anew.";
 pub const NOT_REBUILT: &str = "A member votes through a wallet without a key, and this transaction could not be rebuilt for that wallet around what the proposal holds, so nothing was added.";
 pub const NOT_CHECKED: &str =
@@ -184,6 +189,7 @@ pub async fn read_for_checks(
     let stored = match squad.parse_transaction(&account.data) {
         Some(StoredAccount::Vault(stored)) if stored.index == proposal.index => stored,
         Some(StoredAccount::LookupTables(_)) => return Err(refused(STORED_LOOKUP_TABLES)),
+        Some(StoredAccount::Config(_)) => return Err(refused(STORED_CONFIG)),
         Some(StoredAccount::Other) => return Err(refused(STORED_OTHER)),
         _ => return Err(refused(STORED_UNREAD)),
     };

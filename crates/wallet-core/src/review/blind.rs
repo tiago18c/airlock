@@ -18,6 +18,12 @@
 //! nothing, and a vote to cancel an approved proposal ("votes to cancel
 //! proposal ..."), which can only stop it from running.
 //!
+//! What a Squads approval or execution acts on is read the same way when it
+//! is a change to the multisig itself (a config transaction on v4, a
+//! settings transaction on the smart account program): [`stored_content_in`]
+//! reads either, and the multisig's own account beside it says what the
+//! change leaves ([`squad_state_in`]). A batch is not read.
+//!
 //! A v4 vote, or execution, is not blind either when a Squads clear signing
 //! check pins it ([`super::checked`]): the check carries what the proposal
 //! must hold, and the chain refuses the whole transaction unless the proposal
@@ -27,7 +33,9 @@
 use super::checked::{pinned_places, IxPlace};
 use crate::ids::REALMS_GOVERNANCE_PROGRAM_ID;
 use crate::review::explain::{ExplainedIx, ExplainedTx};
-use crate::wallets::squads::{Squad, SquadsProgram, StoredAccount, VaultTransaction};
+use crate::wallets::squads::{
+    ConfigTransaction, Squad, SquadState, SquadsProgram, StoredAccount, VaultTransaction,
+};
 use solana_pubkey::Pubkey;
 use std::collections::HashMap;
 
@@ -74,8 +82,7 @@ pub(super) enum SquadsCall {
     Approves {
         proposal: usize,
     },
-    /// `transaction` is `None` when what it runs is not a vault transaction,
-    /// which this app does not read.
+    /// `transaction` is `None` for a batch, which this app does not read.
     Runs {
         proposal: usize,
         transaction: Option<usize>,
@@ -102,10 +109,12 @@ pub(super) fn squads_call(program: SquadsProgram, data: &[u8]) -> Option<SquadsC
             Some(SquadsCall::Approves { proposal: 2 })
         }
         (SquadsProgram::V4, V4_RUN) | (SquadsProgram::SmartAccount, SMART_RUN) => runs(1, Some(2)),
-        (SquadsProgram::V4, V4_RUN_CONFIG)
-        | (SquadsProgram::SmartAccount, SMART_RUN_SETTINGS)
-        | (SquadsProgram::V4, V4_RUN_BATCH)
-        | (SquadsProgram::SmartAccount, SMART_RUN_BATCH) => runs(2, None),
+        (SquadsProgram::V4, V4_RUN_CONFIG) | (SquadsProgram::SmartAccount, SMART_RUN_SETTINGS) => {
+            runs(2, Some(3))
+        }
+        (SquadsProgram::V4, V4_RUN_BATCH) | (SquadsProgram::SmartAccount, SMART_RUN_BATCH) => {
+            runs(2, None)
+        }
         _ => None,
     }
 }
@@ -237,26 +246,71 @@ fn blind_one(
     Some(BlindApproval { what, target })
 }
 
-/// The transaction `target` acts on, if `accounts` holds one that fits it.
-/// Fitting says it could be that transaction: anyone can write bytes for an
-/// address, so where they came from decides what they are worth. One that
-/// reads accounts from lookup tables is read with the tables `accounts`
-/// holds too, by their addresses.
+/// What a stored transaction account holds, read.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum StoredContent {
+    Vault(VaultTransaction),
+    /// A change to the multisig itself.
+    Change(ConfigTransaction),
+}
+
+impl StoredContent {
+    pub fn index(&self) -> u64 {
+        match self {
+            Self::Vault(stored) => stored.index,
+            Self::Change(change) => change.index,
+        }
+    }
+}
+
+/// The vault transaction `target` acts on, if `accounts` holds one that fits
+/// it. See [`stored_content_in`], which reads a change to the multisig too.
 pub fn stored_in(
     target: &StoredTarget,
     accounts: &HashMap<Pubkey, Vec<u8>>,
 ) -> Option<VaultTransaction> {
+    match stored_content_in(target, accounts)? {
+        StoredContent::Vault(stored) => Some(stored),
+        StoredContent::Change(_) => None,
+    }
+}
+
+/// What `target` acts on, if `accounts` holds a transaction account that
+/// fits it: a vault transaction or a change to the multisig. Fitting says
+/// it could be that transaction: anyone can write bytes for an address, so
+/// where they came from decides what they are worth. One that reads
+/// accounts from lookup tables is read with the tables `accounts` holds
+/// too, by their addresses.
+pub fn stored_content_in(
+    target: &StoredTarget,
+    accounts: &HashMap<Pubkey, Vec<u8>>,
+) -> Option<StoredContent> {
     accounts.iter().find_map(|(address, data)| {
         let stored = match target.squad.parse_transaction(data)? {
-            StoredAccount::Vault(stored) => stored,
-            StoredAccount::LookupTables(bound) => bound.resolve(accounts).ok()?,
+            StoredAccount::Vault(stored) => StoredContent::Vault(stored),
+            StoredAccount::LookupTables(bound) => {
+                StoredContent::Vault(bound.resolve(accounts).ok()?)
+            }
+            StoredAccount::Config(change) => StoredContent::Change(change),
             StoredAccount::Other => return None,
         };
-        let fits = target.squad.transaction(stored.index) == *address
-            && target.squad.proposal(stored.index) == target.proposal
+        let index = stored.index();
+        let fits = target.squad.transaction(index) == *address
+            && target.squad.proposal(index) == target.proposal
             && target.transaction.is_none_or(|named| named == *address);
         fits.then_some(stored)
     })
+}
+
+/// The multisig `target` belongs to, as `accounts` holds its account: what
+/// a change to it starts from. As much worth as where it came from.
+pub fn squad_state_in(
+    target: &StoredTarget,
+    accounts: &HashMap<Pubkey, Vec<u8>>,
+) -> Option<SquadState> {
+    target
+        .squad
+        .parse_state(accounts.get(&target.squad.address)?)
 }
 
 #[cfg(test)]
@@ -473,11 +527,37 @@ mod tests {
     }
 
     #[test]
-    fn what_only_config_and_batch_runs_hold_is_told_with_nothing_to_read() {
+    fn a_config_run_names_the_change_it_runs_on_either_program() {
         for (program, tag) in [
             (SquadsProgram::V4, V4_RUN_CONFIG),
-            (SquadsProgram::V4, V4_RUN_BATCH),
             (SquadsProgram::SmartAccount, SMART_RUN_SETTINGS),
+        ] {
+            let accounts = (1..7).map(pk).collect();
+            let found = blind_in(&ExplainedTx {
+                programs: Vec::new(),
+                instructions: vec![raw(program.program_id(), tag.to_vec(), accounts)],
+            });
+            assert_eq!(
+                found,
+                [BlindApproval {
+                    what: SQUADS_RUN,
+                    target: Some(StoredTarget {
+                        squad: Squad {
+                            program,
+                            address: pk(1),
+                        },
+                        proposal: pk(3),
+                        transaction: Some(pk(4)),
+                    }),
+                }]
+            );
+        }
+    }
+
+    #[test]
+    fn what_only_batch_runs_hold_is_told_with_nothing_to_read() {
+        for (program, tag) in [
+            (SquadsProgram::V4, V4_RUN_BATCH),
             (SquadsProgram::SmartAccount, SMART_RUN_BATCH),
         ] {
             let accounts = (1..6).map(pk).collect();
@@ -668,6 +748,48 @@ mod tests {
         assert_eq!(want["number"], f64::from(LOADER_UPGRADE));
         assert_eq!(accounts[UPGRADE_PROGRAM], "programAccount");
         assert_eq!(accounts[UPGRADE_BUFFER], "bufferAccount");
+    }
+
+    #[test]
+    fn a_change_and_its_multisig_carried_in_a_note_read_on_another_device() {
+        use crate::review::context::{carrying_stored, context_note, display_note};
+        use crate::wallets::squads::change_tests::{change_account, encoded};
+        use crate::wallets::squads::{ConfigAction, SquadsMember, PERMISSION_VOTE};
+        for w in written() {
+            let squad = w.squad;
+            let actions = vec![
+                ConfigAction::AddMember(SquadsMember {
+                    key: pk(40),
+                    permissions: PERMISSION_VOTE,
+                }),
+                ConfigAction::ChangeThreshold(2),
+            ];
+            let change = change_account(&squad, 2, pk(3), &encoded(&squad, &actions));
+            let behind = HashMap::from([
+                (squad.transaction(2), change),
+                (squad.address, unhex(w.settings)),
+            ]);
+            // The online device approves change 2 and carries what it read.
+            let vote = explained(vec![squad.approve(2, &pk(1))]);
+            let target = blind_in(&vote)[0].target.unwrap();
+            let wire = compile(pk(1), vec![squad.approve(2, &pk(1))]).wire;
+            let tx = decode_v1_transaction(&wire).unwrap();
+            let catalog = IdlStore::open(MemoryStore::new(), MemoryBodies::new());
+            let note = carrying_stored(context_note(&catalog, &tx).unwrap(), &behind);
+            // The device with no network reads it from the note alone.
+            let from_note = display_note(&tx, Some(&note)).accounts;
+            let Some(StoredContent::Change(read)) = stored_content_in(&target, &from_note) else {
+                panic!("{:?}: the change is read", squad.program);
+            };
+            assert_eq!(read.actions, actions);
+            assert_eq!(
+                squad_state_in(&target, &from_note),
+                squad.parse_state(&unhex(w.settings))
+            );
+            assert!(squad_state_in(&target, &from_note).is_some());
+            // It is not a vault transaction, which is all the checks carry.
+            assert_eq!(stored_in(&target, &from_note), None);
+        }
     }
 
     #[test]

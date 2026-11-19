@@ -329,3 +329,32 @@ async fn a_refresh_by_hand_says_what_changed_or_that_nothing_did() {
         .unwrap_err();
     assert!(said.starts_with("This multisig is not on Devnet"), "{said}");
 }
+
+#[tokio::test]
+async fn a_landed_transaction_that_names_a_multisig_reads_it_again_and_no_other() {
+    let squad = Squad::v4(&pk(40));
+    let other = Squad::v4(&pk(41));
+    let changed = on_chain(&[(pk(1), PERMISSION_ALL), (pk(2), PERMISSION_ALL)], 2);
+    let rpc = FakeRpc::default()
+        .with_account(squad.address, multisig_account(SquadsProgram::V4, &changed))
+        .with_account(other.address, multisig_account(SquadsProgram::V4, &changed));
+    let mut screen = Screen::new(rpc).await;
+    let named = screen.add(WalletRecord::squads("Team", squad, vec![pk(1)], 1));
+    let unnamed = screen.add(WalletRecord::squads("Ops", other, vec![pk(1)], 1));
+    let before = screen.kind(unnamed);
+    screen.settle().await;
+
+    // An executed change to Team lands: its card follows at once.
+    let keys = vec![pk(9), squad.address, squad.proposal(3)];
+    screen
+        .run(|session| refresh_after_landing(session, keys))
+        .await;
+    screen.settle().await;
+    let WalletKind::Squads { threshold, .. } = screen.kind(named) else {
+        panic!("a multisig");
+    };
+    assert_eq!(threshold, 2);
+    assert_eq!(screen.kind(named).squad_members().len(), 2);
+    // A multisig the transaction does not name is left alone.
+    assert_eq!(screen.kind(unnamed), before);
+}

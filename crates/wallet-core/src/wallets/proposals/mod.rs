@@ -34,12 +34,21 @@
 //! Approving and executing need the stored transaction read. Activating,
 //! rejecting and cancelling do not: opening a vote approves nothing, and
 //! saying no to what one cannot read is the safe answer.
+//!
+//! What is stored may also be a change to the multisig itself (its members,
+//! threshold, time lock, spending limits): read, it is approved and executed
+//! like a vault transaction, with two differences the programs make. A
+//! change whose result the program would refuse is never offered for
+//! approval, since it can never be executed. And an approved change that
+//! went stale can never be executed, where an approved vault transaction
+//! still can.
 
 use crate::chain::RawAccount;
 use crate::ids::ADDRESS_LOOKUP_TABLE_PROGRAM_ID;
 use crate::wallets::squads::{
-    ProposalState, ProposalStatus, Squad, SquadState, StoredAccount, TableProblem,
-    VaultTransaction, PERMISSION_EXECUTE, PERMISSION_INITIATE, PERMISSION_VOTE,
+    change_outcome, ChangeRefusal, ConfigTransaction, ProposalState, ProposalStatus, Squad,
+    SquadState, StoredAccount, TableProblem, VaultTransaction, PERMISSION_EXECUTE,
+    PERMISSION_INITIATE, PERMISSION_VOTE,
 };
 use solana_instruction::Instruction;
 use solana_pubkey::Pubkey;
@@ -69,10 +78,34 @@ pub enum Stored {
     /// A vault transaction that reads accounts from lookup tables, which
     /// could not all be read, and why.
     LookupTables(TableProblem),
-    /// A change to the multisig itself, a batch, or a policy payload.
+    /// A change to the multisig itself.
+    Config(ConfigTransaction),
+    /// A batch, a policy payload, or a change to the multisig holding an
+    /// action this app cannot read.
     Other,
     /// No account. It was closed, or never created.
     Missing,
+}
+
+impl Stored {
+    /// It was read: what it does is known.
+    pub fn is_read(&self) -> bool {
+        matches!(self, Self::Vault(_) | Self::Config(_))
+    }
+
+    /// This app builds its execution, and the program would take it as far
+    /// as can be told at time `now`: a vault transaction, or a change to
+    /// `state` this app executes whose result the program keeps.
+    pub fn executes_here(&self, state: &SquadState, now: i64) -> bool {
+        match self {
+            Self::Vault(_) => true,
+            Self::Config(change) => {
+                change.not_executed_here().is_none()
+                    && change_outcome(change.program, state, &change.actions, now).is_ok()
+            }
+            _ => false,
+        }
+    }
 }
 
 /// One transaction number of a multisig.
@@ -162,6 +195,9 @@ pub fn read_page(
                             Err(problem) => Stored::LookupTables(problem),
                         }
                     }
+                    Some(StoredAccount::Config(change)) if change.index == *index => {
+                        Stored::Config(change)
+                    }
                     _ => Stored::Other,
                 },
             };
@@ -229,6 +265,17 @@ pub enum NoAction {
         "This transaction cannot be read here, so it cannot be approved or executed from this app."
     )]
     Unreadable,
+    /// A change to the multisig the program would refuse to execute, so a
+    /// vote for it could never come to anything.
+    #[error("The program refuses to execute this change, so it can never be executed and is not offered for approval or execution. {0}")]
+    Refused(ChangeRefusal),
+    /// An approved change to the multisig made stale since: both programs
+    /// refuse to execute it.
+    #[error("The multisig changed after this change to it was made, so it can never be executed: both programs refuse a stale change to the multisig, even an approved one.")]
+    StaleChange,
+    /// A change this app reads but does not execute.
+    #[error("{0}")]
+    NotExecutedHere(&'static str),
     #[error("The stored transaction is gone, so it cannot be executed.")]
     Gone,
     #[error("It was rejected for good. A rejected proposal cannot be reopened: to do what it holds, the transaction would have to be proposed again.")]
@@ -261,9 +308,19 @@ pub fn available_action(
         .ok_or(NoAction::NotAMember)?;
     let proposal = entry.proposal.as_ref().ok_or(NoAction::NoProposal)?;
     let readable = match &entry.stored {
-        Stored::Vault(_) => Ok(()),
+        Stored::Vault(_) | Stored::Config(_) => Ok(()),
         Stored::Missing => Err(NoAction::Gone),
         Stored::LookupTables(_) | Stored::Other => Err(NoAction::Unreadable),
+    };
+    let change = match &entry.stored {
+        Stored::Config(change) => Some(change),
+        _ => None,
+    };
+    // A change the program would refuse can never be executed.
+    let refused = |change: &ConfigTransaction| {
+        change_outcome(change.program, state, &change.actions, now)
+            .err()
+            .map(NoAction::Refused)
     };
     let may_execute = permissions & PERMISSION_EXECUTE != 0;
     match proposal.status {
@@ -288,6 +345,9 @@ pub fn available_action(
                 return Err(NoAction::MayNotVote);
             }
             readable?;
+            if let Some(refusal) = change.and_then(refused) {
+                return Err(refusal);
+            }
             let threshold = usize::from(state.threshold);
             if proposal.approved.contains(member) {
                 return Err(NoAction::WaitingForOthers {
@@ -295,16 +355,31 @@ pub fn available_action(
                 });
             }
             let completes = proposal.approved.len() + 1 >= threshold;
-            Ok(if completes && state.time_lock == 0 && may_execute {
-                ProposalAction::ApproveAndExecute
-            } else {
-                ProposalAction::Approve
-            })
+            let executes_here = change.is_none_or(|change| change.not_executed_here().is_none());
+            Ok(
+                if completes && state.time_lock == 0 && may_execute && executes_here {
+                    ProposalAction::ApproveAndExecute
+                } else {
+                    ProposalAction::Approve
+                },
+            )
         }
         // Both programs execute an approved vault transaction that became
-        // stale since: it was approved under the rules of its day.
+        // stale since: it was approved under the rules of its day. Not an
+        // approved change to the multisig: that one has to be current.
         ProposalStatus::Approved => {
             readable?;
+            if let Some(change) = change {
+                if entry.stale {
+                    return Err(NoAction::StaleChange);
+                }
+                if let Some(refusal) = refused(change) {
+                    return Err(refusal);
+                }
+                if let Some(why) = change.not_executed_here() {
+                    return Err(NoAction::NotExecutedHere(why));
+                }
+            }
             if !may_execute {
                 return Err(NoAction::MayNotExecute);
             }
@@ -326,7 +401,7 @@ pub fn available_action(
 pub fn activation_hint(entry: &ProposalEntry) -> String {
     let mut hint = "Opening it lets the members vote on it. It approves nothing.".to_string();
     match &entry.stored {
-        Stored::Vault(_) => {}
+        Stored::Vault(_) | Stored::Config(_) => {}
         Stored::Missing => hint.push_str(
             " Its stored transaction is gone, so once open it can be rejected but never executed.",
         ),
@@ -557,18 +632,47 @@ pub fn executor_instead<'a>(
 
 /// The instructions of `action` on `entry`, which `member` signs. `None` when
 /// the action needs the stored transaction and it could not be read.
-/// Activating, rejecting and cancelling never do.
+/// Activating, rejecting and cancelling never do. Executing a change to the
+/// multisig names `member` as the one that pays when an account grows:
+/// [`action_instructions_paid`] names another.
 pub fn action_instructions(
     squad: &Squad,
     entry: &ProposalEntry,
     member: &Pubkey,
     action: ProposalAction,
 ) -> Option<Vec<Instruction>> {
-    let approve = || squad.approve(entry.index, member);
-    let execute = || match &entry.stored {
+    action_instructions_paid(squad, entry, member, action, member)
+}
+
+/// The execution by `member` of what `entry` stores, with `rent_payer`
+/// signing for what a change to the multisig costs (see
+/// [`Squad::execute_change`]). `None` when it was not read, or is a change
+/// this app does not execute.
+pub fn execute_instruction(
+    squad: &Squad,
+    entry: &ProposalEntry,
+    member: &Pubkey,
+    rent_payer: &Pubkey,
+) -> Option<Instruction> {
+    match &entry.stored {
         Stored::Vault(tx) => Some(squad.execute_stored(tx, member)),
+        Stored::Config(change) => squad.execute_change(change, member, rent_payer),
         _ => None,
-    };
+    }
+}
+
+/// [`action_instructions`], with `rent_payer` paying for what executing a
+/// change to the multisig costs. It signs too, so the fee payer is the one
+/// to name: it signs anyway.
+pub fn action_instructions_paid(
+    squad: &Squad,
+    entry: &ProposalEntry,
+    member: &Pubkey,
+    action: ProposalAction,
+    rent_payer: &Pubkey,
+) -> Option<Vec<Instruction>> {
+    let approve = || squad.approve(entry.index, member);
+    let execute = || execute_instruction(squad, entry, member, rent_payer);
     Some(match action {
         ProposalAction::Approve => vec![approve()],
         ProposalAction::Execute => vec![execute()?],

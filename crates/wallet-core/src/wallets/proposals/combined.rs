@@ -170,9 +170,11 @@ pub fn combined_approval(
     approval_nonce: Option<Pubkey>,
 ) -> Option<CombinedApproval> {
     let proposal = entry.proposal.as_ref()?;
+    // The clock only decides whether a smart account spending limit has
+    // expired; the simulation tells that too, so any time does here.
     let votable = proposal.status == ProposalStatus::Active
         && !entry.stale
-        && matches!(entry.stored, Stored::Vault(_));
+        && entry.stored.executes_here(state, i64::MIN);
     if !votable || state.time_lock != 0 {
         return None;
     }
@@ -230,21 +232,32 @@ pub fn combined_approval(
 }
 
 /// `approve` for each voter, then `execute`. `None` when the stored
-/// transaction could not be read.
+/// transaction could not be read, or is a change this app does not
+/// execute. A change to the multisig names the executor as the one that
+/// pays when an account grows: [`combined_instructions_paid`] names another.
 pub fn combined_instructions(
     squad: &Squad,
     entry: &ProposalEntry,
     combined: &CombinedApproval,
 ) -> Option<Vec<Instruction>> {
-    let Stored::Vault(stored) = &entry.stored else {
-        return None;
-    };
+    combined_instructions_paid(squad, entry, combined, &combined.executor)
+}
+
+/// [`combined_instructions`], with `rent_payer` paying for what executing a
+/// change to the multisig costs.
+pub fn combined_instructions_paid(
+    squad: &Squad,
+    entry: &ProposalEntry,
+    combined: &CombinedApproval,
+    rent_payer: &Pubkey,
+) -> Option<Vec<Instruction>> {
+    let execute = execute_instruction(squad, entry, &combined.executor, rent_payer)?;
     let mut instructions: Vec<Instruction> = combined
         .voters
         .iter()
         .map(|voter| squad.approve(entry.index, voter))
         .collect();
-    instructions.push(squad.execute_stored(stored, &combined.executor));
+    instructions.push(execute);
     Some(instructions)
 }
 
@@ -277,6 +290,25 @@ impl ProposalRequest {
         match self {
             Self::Single { member, action } => action_instructions(squad, entry, member, *action),
             Self::Combined(combined) => combined_instructions(squad, entry, combined),
+        }
+    }
+
+    /// [`Self::instructions`], with `payer`, which pays the fee and so signs
+    /// anyway, also paying for what executing a change to the multisig
+    /// costs: the growth of its account when a member is added, a spending
+    /// limit's account. A member without a key can then execute one with
+    /// nothing at its own address.
+    pub fn instructions_paid_by(
+        &self,
+        squad: &Squad,
+        entry: &ProposalEntry,
+        payer: &Pubkey,
+    ) -> Option<Vec<Instruction>> {
+        match self {
+            Self::Single { member, action } => {
+                action_instructions_paid(squad, entry, member, *action, payer)
+            }
+            Self::Combined(combined) => combined_instructions_paid(squad, entry, combined, payer),
         }
     }
 }

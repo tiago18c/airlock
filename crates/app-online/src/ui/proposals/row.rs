@@ -11,10 +11,17 @@
 //! pressed. A draft has no such choice, since neither program rejects or
 //! cancels one, and its row says so. Every button opens a transaction in
 //! Review and Sign.
+//!
+//! A change to the multisig itself reads as its actions in words, with what
+//! the multisig looks like after it and what to look out for
+//! (`app_ui_kit::ui::MultisigChange`), where a vault transaction lists its
+//! instructions. It is approved and executed the same way.
 
 use super::votes::{vote_chips, ProposalVotes};
 use super::*;
+use app_ui_kit::ui::MultisigChange;
 use wallet_core::proposals::{activation_hint, standing, DRAFT_CANNOT_BE_CANCELLED};
+use wallet_core::squads::change_summary;
 
 /// The button of what one member does to a proposal.
 fn action_label(action: ProposalAction) -> &'static str {
@@ -95,7 +102,8 @@ pub(in crate::ui) fn ProposalRow(
             count => format!("{count} instructions"),
         },
         Stored::LookupTables(_) => "lookup tables not read".to_string(),
-        Stored::Other => "not a vault transaction".to_string(),
+        Stored::Config(change) => change_summary(&change.actions),
+        Stored::Other => "not read".to_string(),
         Stored::Missing => "transaction account closed".to_string(),
     };
     let for_action = entry.clone();
@@ -169,8 +177,27 @@ pub(in crate::ui) fn ProposalRow(
                                 span { ", which holds only {holds} addresses. What that entry will hold is not known yet, so it cannot be read, approved or executed." }
                             }
                         },
+                        Stored::Config(change) => rsx! {
+                            p { class: "chip-row",
+                                span { class: "muted", "Changes multisig" }
+                                Address { pubkey: squad.address }
+                                span { class: "muted", "stored by" }
+                                Address { pubkey: change.creator }
+                            }
+                            MultisigChange {
+                                change: change.clone(),
+                                state: Some(state.clone()),
+                                acting: member,
+                                now,
+                                settled: entry.stale
+                                    || matches!(
+                                        status,
+                                        Some(ProposalStatus::Executed | ProposalStatus::Rejected | ProposalStatus::Cancelled)
+                                    ),
+                            }
+                        },
                         Stored::Other => rsx! {
-                            p { class: "warn", "This is a change to the multisig itself, a batch or a policy payload. This app cannot read those yet." }
+                            p { class: "warn", "This is a batch or a policy payload. This app cannot read those yet." }
                         },
                         Stored::Missing => rsx! {
                             p { class: "muted", "The account that held this transaction no longer exists." }
@@ -287,15 +314,19 @@ pub(in crate::ui) fn ProposalRow(
                         // what a time lock holds.
                         (Some(Err(reason)), _, _) if turn_down.is_some() => {
                             let unread = matches!(reason, NoAction::Unreadable | NoAction::Gone);
+                            // A refused change says why above, with its addresses.
+                            let said_above = matches!(reason, NoAction::Refused(_));
                             let needs_no_reading = match turn_down.as_ref().map(|(action, _)| *action) {
                                 Some(ProposalAction::Cancel) => " Voting to cancel it needs no reading.",
                                 _ => " Rejecting it needs no reading.",
                             };
                             rsx! {
                                 div { class: "btn-row", {turn_down_button.clone()} }
-                                p { class: "hint",
-                                    "{reason}"
-                                    if unread { "{needs_no_reading}" }
+                                if !said_above {
+                                    p { class: "hint",
+                                        "{reason}"
+                                        if unread { "{needs_no_reading}" }
+                                    }
                                 }
                                 if let Some(hint) = turn_down_hint.clone() {
                                     p { class: "hint", "{hint}" }
@@ -303,7 +334,9 @@ pub(in crate::ui) fn ProposalRow(
                             }
                         }
                         (Some(Err(reason)), _, _) => rsx! {
-                            p { class: "hint", "{reason}" }
+                            if !matches!(reason, NoAction::Refused(_)) {
+                                p { class: "hint", "{reason}" }
+                            }
                             // For someone looking for a way to cancel a draft.
                             if draft && reason == NoAction::Draft {
                                 p { class: "hint", "{DRAFT_CANNOT_BE_CANCELLED}" }

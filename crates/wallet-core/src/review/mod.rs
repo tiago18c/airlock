@@ -10,7 +10,10 @@ pub(crate) mod quick_sign;
 pub(crate) mod risk;
 pub(crate) mod signing;
 
-pub use blind::{blind_in, blind_in_carried, stored_in, BlindApproval, StoredTarget};
+pub use blind::{
+    blind_in, blind_in_carried, squad_state_in, stored_content_in, stored_in, BlindApproval,
+    StoredContent, StoredTarget,
+};
 pub use checked::{
     approval_shape, checked_in, checked_instructions, plain_approval, ApprovalShape,
     CheckedApproval, CheckedUpgrade, IxPlace, OpenApproval, PinnedVote, PlainApproval, V4Vote,
