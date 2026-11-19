@@ -209,6 +209,8 @@ fn squad_of(desk: &mut Desk, program: SquadsProgram) -> (Squad, WalletId) {
         }],
         threshold: 1,
         time_lock: 0,
+        config_authority: None,
+        rent_collector: None,
     };
     let squad = {
         let mut chain = desk.chain();

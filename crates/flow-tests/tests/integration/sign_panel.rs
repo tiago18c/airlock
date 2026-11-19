@@ -176,6 +176,8 @@ fn a_built_squads_proposal_by_a_programmatic_member_is_wrapped_and_lands() {
             }],
             threshold: 1,
             time_lock: 0,
+            config_authority: None,
+            rent_collector: None,
         };
         let squad = match program {
             SquadsProgram::V4 => {

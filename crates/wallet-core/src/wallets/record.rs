@@ -110,10 +110,29 @@ pub enum WalletKind {
         multisig: Pubkey,
         /// Where the funds are.
         vault: Pubkey,
+        /// As the chain had them when the multisig was last read, by the
+        /// cluster the app was on. Empty when it never was.
         #[serde(default)]
         members: Vec<Pubkey>,
         #[serde(default)]
         threshold: u16,
+        /// What each of `members` may do, in the same order: a sum of the
+        /// `PERMISSION_*` values. Empty in a record from before it was kept,
+        /// until the multisig is read again.
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        permissions: Vec<u8>,
+        /// Seconds an approved proposal waits before it can be executed.
+        #[serde(default, skip_serializing_if = "is_zero")]
+        time_lock: u32,
+        /// The key that changes the members and threshold without a vote,
+        /// when the multisig has one. See
+        /// [`SquadState::config_authority`](crate::wallets::squads::SquadState::config_authority).
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        config_authority: Option<Pubkey>,
+        /// v4: where closed transaction accounts' rent goes, when closing is
+        /// on.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        rent_collector: Option<Pubkey>,
         /// The wallet on this device that acts as a member.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         member_wallet: Option<WalletId>,
@@ -129,6 +148,10 @@ pub enum WalletKind {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         fee_payer: Option<WalletId>,
     },
+}
+
+fn is_zero(value: &u32) -> bool {
+    *value == 0
 }
 
 /// The program behind a programmatic signer.
@@ -444,6 +467,10 @@ impl WalletRecord {
                 vault: squad.vault(0),
                 members,
                 threshold,
+                permissions: Vec::new(),
+                time_lock: 0,
+                config_authority: None,
+                rent_collector: None,
                 member_wallet: None,
                 approves_with: Vec::new(),
                 approval_nonce: None,

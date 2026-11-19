@@ -104,6 +104,7 @@ fn App() -> Element {
 fn Online(core: CopyValue<app_core::Core>) -> Element {
     let (online, submitter) = app_online::use_online(core);
     let session = app_ui::use_session(core, online, submitter);
+    app_online::use_squads_refresh(session);
     use_context_provider(|| Some(Network::new(session)));
     use_hook(|| session.start_detect());
 

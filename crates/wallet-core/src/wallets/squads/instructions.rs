@@ -216,9 +216,12 @@ impl Squad {
 }
 
 /// Creation arguments. The two programs name two of the fields differently:
-/// no authority over the configuration, threshold, members, time lock, no
+/// the authority over the configuration, threshold, members, time lock, the
 /// rent collector, no memo.
 pub(super) fn setup_args(setup: &SquadsSetup, authority: &str, members: &str) -> Value {
+    let maybe_key = |key: Option<Pubkey>| {
+        Value::Option(key.map(|key| Box::new(Value::PublicKey(key.to_bytes()))))
+    };
     let list = setup
         .members
         .iter()
@@ -230,11 +233,11 @@ pub(super) fn setup_args(setup: &SquadsSetup, authority: &str, members: &str) ->
         })
         .collect();
     record([
-        (authority, Value::Option(None)),
+        (authority, maybe_key(setup.config_authority)),
         ("threshold", setup.threshold.into()),
         (members, Value::Array(list)),
         ("timeLock", setup.time_lock.into()),
-        ("rentCollector", Value::Option(None)),
+        ("rentCollector", maybe_key(setup.rent_collector)),
         ("memo", Value::Option(None)),
     ])
 }

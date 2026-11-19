@@ -16,6 +16,7 @@ mod raydium_pool_template;
 mod sign_panel;
 mod site_request;
 mod squads_checks;
+mod squads_config;
 mod stake;
 mod stream_template;
 mod templates;

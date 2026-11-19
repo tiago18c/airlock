@@ -10,17 +10,31 @@ use wallet_core::squads::{
     Squad, SquadState, SquadsMember, SquadsProgram, SquadsSetup, PERMISSION_ALL,
 };
 use wallet_core::{
-    apply_local_signatures, stored_in, KeypairSigner, SolanaRpc, StoredTarget, WalletSigner,
+    apply_local_signatures, stored_in, KeypairSigner, RawAccount, SolanaRpc, StoredTarget,
+    WalletSigner,
 };
 
 /// What a node says about an address that should be a multisig.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Lookup {
     Found(SquadState),
-    /// The node answered, and the address is not a multisig of that program.
+    /// The node answered, and the address is not a multisig of that program:
+    /// there is no account there on this cluster, or another program owns it.
     NotAMultisig,
+    /// The program owns the account, and it does not read as a multisig.
+    Unreadable,
     /// The node could not be asked. Members and threshold stay unknown.
     Unreachable,
+}
+
+/// What `account`, as a node answered for `squad`'s address, says.
+fn lookup_of(squad: &Squad, account: Option<RawAccount>) -> Lookup {
+    match account {
+        Some(account) if account.owner == squad.program.program_id() => squad
+            .parse_state(&account.data)
+            .map_or(Lookup::Unreadable, Lookup::Found),
+        _ => Lookup::NotAMultisig,
+    }
 }
 
 /// Read the members and threshold of `squad`. An unreachable node is not an
@@ -30,11 +44,27 @@ pub async fn look_up(rpc: Option<&dyn SolanaRpc>, squad: &Squad) -> Lookup {
         return Lookup::Unreachable;
     };
     match rpc.get_account(&squad.address).await {
-        Ok(Some(account)) if account.owner == squad.program.program_id() => squad
-            .parse_state(&account.data)
-            .map_or(Lookup::Unreachable, Lookup::Found),
-        Ok(_) => Lookup::NotAMultisig,
+        Ok(account) => lookup_of(squad, account),
         Err(_) => Lookup::Unreachable,
+    }
+}
+
+/// [`look_up`] for each of `squads`, in that order, asking the node for all
+/// of them at once. A node that does not answer leaves every one
+/// unreachable.
+pub async fn look_up_all(rpc: Option<&dyn SolanaRpc>, squads: &[Squad]) -> Vec<Lookup> {
+    let unreachable = || vec![Lookup::Unreachable; squads.len()];
+    let Some(rpc) = rpc.filter(|_| !squads.is_empty()) else {
+        return unreachable();
+    };
+    let addresses: Vec<Pubkey> = squads.iter().map(|squad| squad.address).collect();
+    match rpc.get_accounts(&addresses).await {
+        Ok(accounts) if accounts.len() == squads.len() => squads
+            .iter()
+            .zip(accounts)
+            .map(|(squad, account)| lookup_of(squad, account))
+            .collect(),
+        _ => unreachable(),
     }
 }
 
@@ -45,6 +75,8 @@ pub struct NewSquad {
     /// Paid by the creator, who still has to sign it. Anything else that has
     /// to sign has signed already.
     pub wire: Vec<u8>,
+    /// What it is created with.
+    pub setup: SquadsSetup,
 }
 
 /// Build the transaction that creates a multisig of `members`, each of whom
@@ -72,6 +104,8 @@ pub async fn create(
             .collect(),
         threshold,
         time_lock: 0,
+        config_authority: None,
+        rent_collector: None,
     };
 
     match program {
@@ -83,14 +117,14 @@ pub async fn create(
             let (wire, _) = compile_fresh(rpc, creator, vec![instruction]).await?;
             let wire = apply_local_signatures(&wire, &[&create_key as &dyn WalletSigner])
                 .map_err(FlowError::refused)?;
-            Ok(NewSquad { squad, wire })
+            Ok(NewSquad { squad, wire, setup })
         }
         SquadsProgram::SmartAccount => {
             let count = SquadsProgram::smart_account_count(&config.data).ok_or_else(unreadable)?;
             let (squad, instruction) =
                 Squad::create_smart_account(count + 1, &creator, &treasury, &setup);
             let (wire, _) = compile_fresh(rpc, creator, vec![instruction]).await?;
-            Ok(NewSquad { squad, wire })
+            Ok(NewSquad { squad, wire, setup })
         }
     }
 }
@@ -155,7 +189,7 @@ pub async fn read_stored(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::testing::{pk, FakeRpc};
+    use crate::testing::{multisig_account, pk, FakeRpc};
     use wallet_core::RawAccount;
 
     /// A v4 multisig on a local chain, as wallet-core's tests read it: what the
@@ -282,6 +316,97 @@ mod tests {
             pollster::block_on(look_up(Some(&offline), &squad)),
             Lookup::Unreachable
         );
+    }
+
+    fn state(members: &[(Pubkey, u8)], threshold: u16) -> SquadState {
+        SquadState {
+            threshold,
+            time_lock: 60,
+            transaction_index: 4,
+            stale_transaction_index: 1,
+            members: members
+                .iter()
+                .map(|(key, permissions)| SquadsMember {
+                    key: *key,
+                    permissions: *permissions,
+                })
+                .collect(),
+            config_authority: None,
+            rent_collector: None,
+        }
+    }
+
+    #[test]
+    fn several_multisigs_are_read_in_one_request() {
+        let v4 = Squad::v4(&pk(1));
+        let smart = Squad::smart_account(7);
+        let missing = Squad::v4(&pk(2));
+        let elsewhere = Squad::v4(&pk(3));
+        let unreadable = Squad::smart_account(8);
+        let members = [(pk(10), PERMISSION_ALL), (pk(11), 2)];
+        let mut on_v4 = state(&members, 2);
+        on_v4.rent_collector = Some(pk(31));
+        let mut on_smart = state(&members, 1);
+        on_smart.config_authority = Some(pk(32));
+        let mut foreign = multisig_account(SquadsProgram::V4, &on_v4);
+        foreign.owner = pk(9);
+        let mut garbled = multisig_account(SquadsProgram::SmartAccount, &on_smart);
+        garbled.data.truncate(20);
+        let rpc = node(vec![
+            (v4.address, multisig_account(SquadsProgram::V4, &on_v4)),
+            (
+                smart.address,
+                multisig_account(SquadsProgram::SmartAccount, &on_smart),
+            ),
+            // The same bytes under another program are not its multisig.
+            (elsewhere.address, foreign),
+            (unreadable.address, garbled),
+        ]);
+        let all = [v4, smart, missing, elsewhere, unreadable];
+        let found = pollster::block_on(look_up_all(Some(&rpc), &all));
+        assert_eq!(rpc.asked(), 1, "one request for all of them");
+        let Lookup::Found(read) = &found[0] else {
+            panic!("{:?}", found[0]);
+        };
+        assert_eq!((read.threshold, read.time_lock), (2, 60));
+        assert_eq!(read.members[1].permissions, 2);
+        assert_eq!(
+            (read.config_authority, read.rent_collector),
+            (None, Some(pk(31)))
+        );
+        let Lookup::Found(read) = &found[1] else {
+            panic!("{:?}", found[1]);
+        };
+        assert_eq!(read.threshold, 1);
+        assert_eq!(
+            (read.config_authority, read.rent_collector),
+            (Some(pk(32)), None)
+        );
+        assert_eq!(
+            found[2..],
+            [
+                Lookup::NotAMultisig,
+                Lookup::NotAMultisig,
+                Lookup::Unreadable
+            ]
+        );
+
+        // A node that does not answer leaves each as it was; none asks nothing.
+        let down = FakeRpc {
+            offline: true,
+            ..FakeRpc::default()
+        };
+        assert_eq!(
+            pollster::block_on(look_up_all(Some(&down), &all)),
+            vec![Lookup::Unreachable; 5]
+        );
+        assert_eq!(
+            pollster::block_on(look_up_all(None, &all[..2])),
+            vec![Lookup::Unreachable; 2]
+        );
+        let idle = FakeRpc::default();
+        assert!(pollster::block_on(look_up_all(Some(&idle), &[])).is_empty());
+        assert_eq!(idle.asked(), 0);
     }
 
     #[test]

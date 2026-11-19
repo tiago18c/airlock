@@ -6,7 +6,7 @@ use crate::wallets::hardware::{DeviceSeen, HardwareVendor};
 use crate::wallets::record::{
     KeyPhrase, OfflinePath, Protocol, VectorSettings, WalletClass, WalletKind,
 };
-use crate::wallets::squads::Squad;
+use crate::wallets::squads::{Squad, SquadChanges, SquadConfig};
 use solana_pubkey::Pubkey;
 
 impl WalletKind {
@@ -304,6 +304,104 @@ impl WalletKind {
             } => Some(*authority),
             _ => None,
         }
+    }
+
+    /// The members a multisig's record keeps, each with what it may do when
+    /// that was read. Empty for any other wallet, or a multisig never read.
+    pub fn squad_members(&self) -> Vec<(Pubkey, Option<u8>)> {
+        match self {
+            Self::Squads {
+                members,
+                permissions,
+                ..
+            } => {
+                let known = permissions.len() == members.len();
+                members
+                    .iter()
+                    .enumerate()
+                    .map(|(at, key)| (*key, known.then(|| permissions[at])))
+                    .collect()
+            }
+            _ => Vec::new(),
+        }
+    }
+
+    /// Keep what was read of a multisig's account: its members, what each
+    /// may do, its threshold, time lock, config authority and rent
+    /// collector. Answers what changed that anyone would notice. Does
+    /// nothing for any other wallet.
+    ///
+    /// This is the one place a reading turns into the record, whether the
+    /// multisig was just added, imported, or read again. Who acts for it on
+    /// this device is not chosen here: a wallet that is no longer a member
+    /// stays chosen, to be shown as such.
+    pub fn set_squad_config(&mut self, read: &SquadConfig) -> SquadChanges {
+        let Self::Squads {
+            members,
+            permissions,
+            threshold,
+            time_lock,
+            config_authority,
+            rent_collector,
+            ..
+        } = self
+        else {
+            return SquadChanges::default();
+        };
+        let keys: Vec<Pubkey> = read.members.iter().map(|member| member.key).collect();
+        let mut changes = SquadChanges::default();
+        if members.is_empty() {
+            changes.first_read = true;
+        } else {
+            changes.added = keys
+                .iter()
+                .filter(|key| !members.contains(key))
+                .copied()
+                .collect();
+            changes.removed = members
+                .iter()
+                .filter(|key| !keys.contains(key))
+                .copied()
+                .collect();
+            if *threshold != read.threshold {
+                changes.threshold = Some((*threshold, read.threshold));
+            }
+            // A record from before the rest was kept has nothing to compare
+            // it with: it is filled in, and not reported as a change.
+            if permissions.len() == members.len() {
+                changes.permissions = read
+                    .members
+                    .iter()
+                    .filter(|member| {
+                        members
+                            .iter()
+                            .position(|key| *key == member.key)
+                            .is_some_and(|at| permissions[at] != member.permissions)
+                    })
+                    .map(|member| member.key)
+                    .collect();
+                if *time_lock != read.time_lock {
+                    changes.time_lock = Some((*time_lock, read.time_lock));
+                }
+                if *config_authority != read.config_authority {
+                    changes.config_authority = Some((*config_authority, read.config_authority));
+                }
+                if *rent_collector != read.rent_collector {
+                    changes.rent_collector = Some((*rent_collector, read.rent_collector));
+                }
+            }
+        }
+        *members = keys;
+        *permissions = read
+            .members
+            .iter()
+            .map(|member| member.permissions)
+            .collect();
+        *threshold = read.threshold;
+        *time_lock = read.time_lock;
+        *config_authority = read.config_authority;
+        *rent_collector = read.rent_collector;
+        changes
     }
 
     pub fn squad(&self) -> Option<Squad> {

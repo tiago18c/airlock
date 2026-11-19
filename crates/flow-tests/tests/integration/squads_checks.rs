@@ -103,6 +103,8 @@ impl Desk {
                 .collect(),
             threshold,
             time_lock: 0,
+            config_authority: None,
+            rent_collector: None,
         };
         let create_key = KeypairSigner::new_random();
         let (squad, create) =
@@ -783,6 +785,8 @@ impl VectorDesk {
                     .to_vec(),
                 threshold: 2,
                 time_lock: 0,
+                config_authority: None,
+                rent_collector: None,
             };
             let create_key = KeypairSigner::new_random();
             let (squad, create) =

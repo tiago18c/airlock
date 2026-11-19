@@ -14,6 +14,7 @@ use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Mutex, PoisonError};
 use std::task::{Poll, Waker};
 use wallet_core::simulate::{SimulationReply, SimulationRequest};
+use wallet_core::squads::{SquadState, SquadsProgram};
 use wallet_core::stake::{EpochInfo, StakeReward};
 use wallet_core::{
     compile_v1, decode_v1_transaction, AddressSignature, DecodedTx, DiscoveredTokenAccount,
@@ -23,6 +24,66 @@ use wallet_core::{
 
 pub fn pk(byte: u8) -> Pubkey {
     Pubkey::new_from_array([byte; 32])
+}
+
+/// A multisig account as `program` lays it out, holding `state`, owned by
+/// the program: what a node answers for a multisig's address.
+pub fn multisig_account(program: SquadsProgram, state: &SquadState) -> RawAccount {
+    let key = |key: Option<Pubkey>| key.unwrap_or_default().to_bytes();
+    let mut data = Vec::new();
+    let numbers = |data: &mut Vec<u8>| {
+        data.extend_from_slice(&state.threshold.to_le_bytes());
+        data.extend_from_slice(&state.time_lock.to_le_bytes());
+        data.extend_from_slice(&state.transaction_index.to_le_bytes());
+        data.extend_from_slice(&state.stale_transaction_index.to_le_bytes());
+    };
+    let members = |data: &mut Vec<u8>| {
+        data.extend_from_slice(&(state.members.len() as u32).to_le_bytes());
+        for member in &state.members {
+            data.extend_from_slice(member.key.as_ref());
+            data.push(member.permissions);
+        }
+    };
+    match program {
+        SquadsProgram::V4 => {
+            data.extend_from_slice(&[0xe0, 0x74, 0x79, 0xba, 0x44, 0xa1, 0x4f, 0xec]);
+            // The create key.
+            data.extend_from_slice(&[1; 32]);
+            data.extend_from_slice(&key(state.config_authority));
+            numbers(&mut data);
+            match state.rent_collector {
+                Some(collector) => {
+                    data.push(1);
+                    data.extend_from_slice(collector.as_ref());
+                }
+                None => data.push(0),
+            }
+            // The bump.
+            data.push(255);
+            members(&mut data);
+        }
+        SquadsProgram::SmartAccount => {
+            data.extend_from_slice(&[0xdf, 0xb3, 0xa3, 0xbe, 0xb1, 0xe0, 0x43, 0xad]);
+            // The seed.
+            data.extend_from_slice(&1u128.to_le_bytes());
+            data.extend_from_slice(&key(state.config_authority));
+            numbers(&mut data);
+            // No archival authority, archivable after zero, the bump.
+            data.push(0);
+            data.extend_from_slice(&0u64.to_le_bytes());
+            data.push(255);
+            members(&mut data);
+            // Account utilization, no policy seed, reserved.
+            data.extend_from_slice(&[0, 0, 0]);
+        }
+    }
+    RawAccount {
+        lamports: 1_000_000,
+        data,
+        owner: program.program_id(),
+        executable: false,
+        rent_epoch: 0,
+    }
 }
 
 /// Holds answers back until a test lets them go, so that it can do something

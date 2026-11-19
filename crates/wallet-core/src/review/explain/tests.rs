@@ -602,6 +602,8 @@ fn squads_sentences_name_values_from_inside_their_args() {
         ],
         threshold: 2,
         time_lock: 0,
+        config_authority: None,
+        rent_collector: None,
     };
     let (squad, create) = Squad::create_v4(&pk(3), &creator, &treasury, &setup);
     let store = builtins();

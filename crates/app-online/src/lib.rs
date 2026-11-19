@@ -1,14 +1,17 @@
 //! Online-only UI and services: the network monitor over `wallet-rpc`,
-//! submitter/tracker, sync scheduler, Stake, and Proposals. The airgap shell
+//! submitter/tracker, sync scheduler, the reading of every multisig after an
+//! unlock, Stake, and Proposals. The airgap shell
 //! does not link this.
 
 pub mod actions;
 pub mod network;
+pub mod squads;
 pub mod sync;
 pub mod tx;
 pub mod ui;
 
 pub use network::{rpc_for_cluster, Monitor};
+pub use squads::use_squads_refresh;
 pub use sync::{
     kick_after_probe, refresh_from_chain_fn, register_balances, register_prices, register_tokens,
     Scheduler, BALANCES_JOB, PRICES_JOB,
