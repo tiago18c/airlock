@@ -9,6 +9,10 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 ## [Unreleased]
 
+### Changed
+
+- **Subscriptions instructions carry the titles their program gives them.** The Solana Foundation's subscriptions program now names its own instructions for clear signing, and Review and Sign uses those names: "Create recurring delegation" where it said "Allow a recurring pull", "Grant spending authority" where it said "Enable delegations for a token", "Collect subscription payment" where it said "Charge a subscription". The sentence under each title, with the amount, the period and the dates, reads as before.
+
 ## [0.4.0] - 2026-11-19
 
 ### Added

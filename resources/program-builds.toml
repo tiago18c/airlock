@@ -415,7 +415,7 @@ programId = "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44"
 network = "mainnet"
 programHash = "056ca97cf3ee6586650275ce819d026f7369de0172dc54010fa6dc58180e0318"
 authority = "DXtFpbPjcn2hxPnw79x1Pfoj35vXh5AsWBkS37YnXMVv"
-idlSha256 = "b6c684394d80eccd478ab0a9a3966c976fae8583dd67bded8ba84716eb028f34"
+idlSha256 = "30b2cb7fa62c4a7907dbda8d8822dce9f0bfc736884d66ee28557d58803371dc"
 source = { repo = "https://github.com/solana-foundation/subscriptions", commit = "364a41976c33347d092902443bbec2def9227e75" }
 verified = "DXtFpbPjcn2hxPnw79x1Pfoj35vXh5AsWBkS37YnXMVv"
 reviewed = "2026-11-12"
@@ -426,7 +426,7 @@ programId = "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44"
 network = "devnet"
 programHash = "e705f5a309f84f849b402f20de4bea5f2cc1d1d4f691ba7caabcb07c8b46af51"
 authority = "4AVYqLW61CkqMPurJ3z4aaneVA2kZGyrJo7d3Ls5ZYGe"
-idlSha256 = "59e6bd28801686aa48587f5592460622b0b31a035dce8bab778bfa11b0da3c19"
+idlSha256 = "b4b5bf9c354083eb9ab076f0b6251d6ccb6990ff27a97939a09fb95a1e27864e"
 reviewed = "2026-11-12"
 
 [[builds]]

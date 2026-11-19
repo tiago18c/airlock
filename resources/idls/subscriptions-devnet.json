@@ -2593,7 +2593,7 @@
         "optionalAccountStrategy": "omitted",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Enable delegations for a token",
+          "intent": "Grant spending authority",
           "interpolatedIntent": "${accounts.owner} makes the program's subscription authority ${accounts.subscriptionAuthority} the delegate of their token account ${accounts.userAta} for an unlimited amount of ${accounts.tokenMint}: the delegations and subscriptions they sign pull their tokens through it"
         }
       },
@@ -2727,7 +2727,7 @@
         "optionalAccountStrategy": "omitted",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Allow a fixed pull",
+          "intent": "Create fixed delegation",
           "interpolatedIntent": "${accounts.delegator} lets ${accounts.delegatee} pull up to ${data.fixedDelegation.amount} in total from them, in the token of their subscription authority ${accounts.subscriptionAuthority}, until ${data.fixedDelegation.expiryTs} (1970-01-01 means it never expires)"
         }
       },
@@ -2861,7 +2861,7 @@
         "optionalAccountStrategy": "omitted",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Allow a recurring pull",
+          "intent": "Create recurring delegation",
           "interpolatedIntent": "${accounts.delegator} lets ${accounts.delegatee} pull up to ${data.recurringDelegation.amountPerPeriod} from them in each period of ${data.recurringDelegation.periodLengthS} (hours:minutes:seconds), in the token of their subscription authority ${accounts.subscriptionAuthority}, from ${data.recurringDelegation.startTs} (1970-01-01 means when this lands) until ${data.recurringDelegation.expiryTs} (1970-01-01 means it never expires)"
         }
       },
@@ -2925,7 +2925,7 @@
         "name": "revokeDelegation",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Revoke a delegation",
+          "intent": "Revoke delegation",
           "interpolatedIntent": "${accounts.authority} closes the delegation or subscription ${accounts.delegationAccount}, ending the permission to pull it gives; its rent goes back to the account that paid it"
         },
         "remainingAccounts": [
@@ -3128,7 +3128,7 @@
         "name": "transferFixed",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Pull under a fixed delegation",
+          "intent": "Transfer (fixed delegation)",
           "interpolatedIntent": "${accounts.delegatee} pulls ${data.transferData.amount} of ${accounts.tokenMint} from the token account ${accounts.delegatorAta} of ${data.transferData.delegator} to ${accounts.receiverAta}, under the fixed delegation ${accounts.delegationPda}"
         },
         "remainingAccounts": [
@@ -3342,7 +3342,7 @@
         "name": "transferRecurring",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Pull under a recurring delegation",
+          "intent": "Transfer (recurring delegation)",
           "interpolatedIntent": "${accounts.delegatee} pulls ${data.transferData.amount} of ${accounts.tokenMint} from the token account ${accounts.delegatorAta} of ${data.transferData.delegator} to ${accounts.receiverAta}, under the recurring delegation ${accounts.delegationPda}"
         },
         "remainingAccounts": [
@@ -3452,7 +3452,7 @@
         "optionalAccountStrategy": "omitted",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Close a subscription authority",
+          "intent": "Close spending authority",
           "interpolatedIntent": "${accounts.user} closes their subscription authority ${accounts.subscriptionAuthority}; its rent goes back to the account that paid it"
         }
       },
@@ -3594,7 +3594,7 @@
         "optionalAccountStrategy": "omitted",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Create a subscription plan",
+          "intent": "Create plan",
           "interpolatedIntent": "${accounts.merchant} creates the plan ${accounts.planPda}: its subscribers can be charged up to ${data.planData.terms.amount} of ${accounts.tokenMint} every ${data.planData.terms.periodHours} hour(s), until ${data.planData.endTs} (1970-01-01 means no end)"
         },
         "provides": [
@@ -3719,7 +3719,7 @@
         "name": "updatePlan",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Update a subscription plan",
+          "intent": "Update plan",
           "interpolatedIntent": "${accounts.owner} sets the plan ${accounts.planPda} to status ${data.updatePlanData.status} (1 active, 0 sunset: no new subscribers), its end to ${data.updatePlanData.endTs} (1970-01-01 means no end), and its pullers and metadata to those below"
         }
       },
@@ -3783,7 +3783,7 @@
         "name": "deletePlan",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Delete a subscription plan",
+          "intent": "Delete plan",
           "interpolatedIntent": "${accounts.owner} deletes their ended plan ${accounts.planPda} and takes back its rent"
         }
       },
@@ -3979,7 +3979,7 @@
         "name": "transferSubscription",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Charge a subscription",
+          "intent": "Collect subscription payment",
           "interpolatedIntent": "${accounts.caller} pulls ${data.transferData.amount} of ${accounts.tokenMint} from the token account ${accounts.delegatorAta} of subscriber ${data.transferData.delegator} to ${accounts.receiverAta}, under the subscription ${accounts.subscriptionPda} to the plan ${accounts.planPda}"
         },
         "remainingAccounts": [
@@ -4220,7 +4220,7 @@
         "optionalAccountStrategy": "omitted",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Subscribe to a plan",
+          "intent": "Subscribe",
           "interpolatedIntent": "${accounts.subscriber} subscribes to the plan ${accounts.planPda} of ${accounts.merchant}: the merchant and the plan's pullers can pull up to ${data.subscribeData.expectedAmount} of ${data.subscribeData.expectedMint} from them every ${data.subscribeData.expectedPeriodHours} hour(s), until the end of the period in which they cancel, or until the plan ends"
         }
       },
@@ -4360,7 +4360,7 @@
         "name": "cancelSubscription",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Cancel a subscription",
+          "intent": "Cancel subscription",
           "interpolatedIntent": "${accounts.subscriber} cancels their subscription ${accounts.subscriptionPda} to the plan ${accounts.planPda}; the plan can still pull until the end of the current period"
         }
       },
@@ -4525,7 +4525,7 @@
         "name": "resumeSubscription",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Resume a subscription",
+          "intent": "Resume subscription",
           "interpolatedIntent": "${accounts.subscriber} resumes their cancelled subscription ${accounts.subscriptionPda} to the plan ${accounts.planPda}, so the plan can pull every period again"
         }
       },
@@ -4668,7 +4668,7 @@
         "optionalAccountStrategy": "omitted",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Stop all pulls of a token",
+          "intent": "Revoke spending authority",
           "interpolatedIntent": "${accounts.user} removes the program's subscription authority as delegate of their token account ${accounts.userAta} for ${accounts.tokenMint} and closes ${accounts.subscriptionAuthority}, so no delegation or subscription can pull from it"
         }
       },
@@ -4745,7 +4745,7 @@
         "name": "revokeAbandonedDelegation",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Close an abandoned delegation",
+          "intent": "Revoke abandoned delegation",
           "interpolatedIntent": "${accounts.payer}, who paid its rent, closes the delegation ${accounts.delegationAccount}, which can no longer pull because its subscription authority was closed or replaced, and takes back the rent"
         }
       },
@@ -4835,7 +4835,7 @@
         "name": "revokeAbandonedSubscription",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Close an abandoned subscription",
+          "intent": "Revoke abandoned subscription",
           "interpolatedIntent": "${accounts.payer}, who paid its rent, closes the subscription ${accounts.subscriptionAccount} to the plan ${accounts.planPda}, which can no longer pull because its subscription authority was closed or replaced, and takes back the rent"
         }
       },
@@ -5000,7 +5000,7 @@
         "name": "cancelSubscriptionNow",
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "End a subscription now",
+          "intent": "Cancel subscription now",
           "interpolatedIntent": "${accounts.subscriber} and the plan owner ${accounts.merchant} end the subscription ${accounts.subscriptionPda} to the plan ${accounts.planPda} now: no further pulls"
         }
       },

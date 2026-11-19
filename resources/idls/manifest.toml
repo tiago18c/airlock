@@ -274,7 +274,9 @@ remaining-accounts group, since what they are depends on the kind of delegation;
 three transfers declare the Token-2022 transfer-hook accounts they forward as a hidden \
 remaining-accounts group. The Token program's mint account is added, so the amounts of \
 transfers and plans read their mint's decimals; delegation and subscribe amounts, whose \
-mint is not among the accounts, are in base units. Display nodes added by hand."""
+mint is not among the accounts, are in base units. Display nodes added by hand; the \
+instruction titles are the ones the program's repository gives them \
+(solana-foundation/subscriptions at efb735d)."""
 
 # The Solana Foundation's subscriptions program as devnet runs it: another
 # build than mainnet's at the same address, publishing its own Codama IDL in
@@ -293,7 +295,9 @@ plan, then a rent receiver) as one remaining-accounts group; the three transfers
 the transfer-hook accounts they forward, and this build's TransferContext PDA and System \
 program, as a hidden remaining-accounts group. The Token program's mint account is \
 added, so the amounts of transfers and plans read their mint's decimals; delegation and \
-subscribe amounts are in base units. Display nodes added by hand."""
+subscribe amounts are in base units. Display nodes added by hand; the instruction titles \
+are the ones the program's repository gives them (solana-foundation/subscriptions at \
+efb735d)."""
 
 # PumpSwap, pump.fun's constant-product AMM. The file is the IDL in pump.fun's
 # public docs repository, not the one the program publishes: its Anchor IDL
