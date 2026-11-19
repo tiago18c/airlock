@@ -57,7 +57,7 @@ pub enum Submission {
 pub enum SimState {
     /// Not asked: offline, or nothing loaded.
     Idle,
-    /// Not asked yet, for the reason given.
+    /// Not asked, or not yet, for the reason given.
     Waiting(String),
     Running,
     Done(wallet_core::simulate::Simulation),
@@ -267,6 +267,10 @@ pub struct SignForm {
     pub simulation: Signal<SimState>,
     /// Checksum of the message `simulation` is about.
     pub simulated_for: Signal<Option<[u8; 32]>>,
+    /// What the vault would do if it ran the transaction this one stores
+    /// for a Squads proposal without executing it. Idle when it stores none,
+    /// and simulated whenever `simulation` is.
+    pub proposal_simulation: Signal<SimState>,
     /// Lookup tables for a loaded v0 wire. Empty for legacy and v1.
     pub tables: Signal<wallet_core::LookupTables>,
     pub clock: BlockhashClock,
@@ -697,6 +701,7 @@ impl SignForm {
         this.note.set(None);
         this.simulation.set(SimState::Idle);
         this.simulated_for.set(None);
+        this.proposal_simulation.set(SimState::Idle);
         this.tables.set(wallet_core::LookupTables::new());
         this.clock.reset(None);
         this.rebuilt.set(false);

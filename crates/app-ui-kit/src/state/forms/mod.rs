@@ -155,6 +155,7 @@ pub fn use_forms() -> Forms {
             share: use_signal(|| ShareTab::Everything),
             simulation: use_signal(|| SimState::Idle),
             simulated_for: use_signal(|| None::<[u8; 32]>),
+            proposal_simulation: use_signal(|| SimState::Idle),
             tables: use_signal(wallet_core::LookupTables::new),
             clock: use_blockhash_clock_state(),
             last_signature: use_signal(|| None::<String>),

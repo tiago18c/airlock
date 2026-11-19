@@ -367,6 +367,23 @@ impl Chain {
             .map_err(Box::new)
     }
 
+    /// [`Self::simulate_wire`], with the accounts as they would be after,
+    /// and the blockhash left unchecked when `replace_blockhash`, as a node
+    /// asked to replace it does.
+    pub fn simulate_wire_as_node(
+        &self,
+        wire: &[u8],
+        replace_blockhash: bool,
+    ) -> Result<litesvm::types::SimulatedTransactionInfo, Box<FailedTransactionMetadata>> {
+        let transaction: VersionedTransaction =
+            wincode::deserialize(wire).expect("the wire is a transaction");
+        let mut svm = self.svm.clone().with_sigverify(false);
+        if replace_blockhash {
+            svm = svm.with_blockhash_check(false);
+        }
+        svm.simulate_transaction(transaction).map_err(Box::new)
+    }
+
     /// Run wire bytes exactly as given, the way the app submits them.
     pub fn send_wire(&mut self, wire: &[u8]) -> Result<Landed, Box<FailedTransactionMetadata>> {
         assert!(wire.len() <= MAX_TRANSACTION_SIZE);

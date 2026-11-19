@@ -101,6 +101,9 @@ pub struct VaultTransaction {
     /// Every account the execution has to list after its own, in the order
     /// the program reads them.
     pub(super) execute_accounts: Vec<AccountMeta>,
+    /// What each of [`Self::lookup_tables`] held when it was read, so it can
+    /// be simulated reading the same tables (`simulate.rs`).
+    pub(super) tables: Vec<(Pubkey, Vec<Pubkey>)>,
 }
 
 impl VaultTransaction {
@@ -124,6 +127,7 @@ impl VaultTransaction {
             deactivated_tables: Vec::new(),
             other_signers: Vec::new(),
             execute_accounts: message.execute_accounts(),
+            tables: Vec::new(),
         }
     }
 }
@@ -223,7 +227,12 @@ impl TableBound {
                 .ok_or(TableProblem::Missing {
                     table: self.tables().first().copied().unwrap_or_default(),
                 })?;
-        Ok(self.finish(instructions, &loaded, deactivated))
+        let held = self
+            .tables()
+            .into_iter()
+            .filter_map(|table| Some((table, tables.get(&table)?.clone())))
+            .collect();
+        Ok(self.finish(instructions, &loaded, deactivated, held))
     }
 
     fn finish(
@@ -231,6 +240,7 @@ impl TableBound {
         instructions: Vec<Instruction>,
         loaded: &super::message::Loaded,
         deactivated_tables: Vec<Pubkey>,
+        tables: Vec<(Pubkey, Vec<Pubkey>)>,
     ) -> VaultTransaction {
         let program_signs: Vec<Pubkey> = std::iter::once(self.vault)
             .chain(self.ephemeral.iter().copied())
@@ -253,6 +263,7 @@ impl TableBound {
             deactivated_tables,
             other_signers,
             execute_accounts: self.message.execute_listing(loaded, &program_signs),
+            tables,
         }
     }
 }
@@ -408,6 +419,7 @@ impl Squad {
         Some(StoredAccount::Vault(bound.finish(
             instructions,
             &Loaded::default(),
+            Vec::new(),
             Vec::new(),
         )))
     }
