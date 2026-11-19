@@ -21,6 +21,27 @@ impl Node {
     }
 }
 
+/// A transaction's error as a node's JSON has it: an instruction's error as
+/// `{"InstructionError": [index, detail]}`, a program's own code as
+/// `{"Custom": code}`, anything else by its name.
+fn as_node_words(err: &solana_transaction::TransactionError) -> serde_json::Value {
+    match err {
+        solana_transaction::TransactionError::InstructionError(index, detail) => {
+            let named = format!("{detail:?}");
+            let code = named
+                .strip_prefix("Custom(")
+                .and_then(|rest| rest.strip_suffix(')'))
+                .and_then(|code| code.parse::<u32>().ok());
+            let detail = match code {
+                Some(code) => serde_json::json!({ "Custom": code }),
+                None => serde_json::Value::String(named),
+            };
+            serde_json::json!({ "InstructionError": [index, detail] })
+        }
+        other => serde_json::Value::String(format!("{other:?}")),
+    }
+}
+
 fn not_served<T>(what: &str) -> Result<T, RpcError> {
     Err(RpcError::Message(format!(
         "The test chain does not serve {what}."
@@ -107,22 +128,45 @@ impl SolanaRpc for Node {
         })
     }
 
+    /// As a node does with `sigVerify` off: a blockhash it is told to replace
+    /// is not checked, the watched accounts' balances after are answered, and
+    /// a failure is the runtime's error as a node words it in JSON.
     async fn simulate(&self, request: &SimulationRequest) -> Result<SimulationReply, RpcError> {
-        if !request.watched.is_empty() {
-            return not_served("balances after a simulation");
-        }
-        let (meta, err) = match self.chain().simulate_wire(&request.wire) {
-            Ok(meta) => (meta, None),
-            Err(failure) => (
-                failure.meta,
-                Some(serde_json::Value::String(format!("{:?}", failure.err))),
-            ),
+        let chain = self.chain();
+        let (meta, err, balances) = match chain
+            .simulate_wire_as_node(&request.wire, request.replace_recent_blockhash)
+        {
+            Ok(simulated) => {
+                let balances = request
+                    .watched
+                    .iter()
+                    .map(|watched| {
+                        simulated
+                            .post_accounts
+                            .iter()
+                            .find(|(address, _)| address == watched)
+                            .map(|(_, account)| solana_account::ReadableAccount::lamports(account))
+                            .unwrap_or_else(|| chain.balance(watched))
+                    })
+                    .collect();
+                (simulated.meta, None, balances)
+            }
+            Err(failure) => {
+                let err = as_node_words(&failure.err);
+                let balances = request
+                    .watched
+                    .iter()
+                    .map(|watched| chain.balance(watched))
+                    .collect();
+                (failure.meta, Some(err), balances)
+            }
         };
         Ok(SimulationReply {
             err,
             logs: meta.logs,
             units_consumed: Some(meta.compute_units_consumed),
             loaded_accounts_data_size: Some(meta.loaded_accounts_data_size),
+            balances,
             ..SimulationReply::default()
         })
     }

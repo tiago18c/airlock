@@ -644,11 +644,13 @@ pub fn start_simulation(session: Session, tx: DecodedTx) {
     let generation = form.generation();
     marked.set(Some(digest));
 
+    let mut proposal = form.proposal_simulation;
     if !matches!(session.plan_adaptation(&tx), Ok(None)) {
         state.set(SimState::Waiting(
             "Simulation runs once the transaction is rebuilt for the wallet it asks to sign."
                 .into(),
         ));
+        proposal.set(SimState::Idle);
         return;
     }
     let known = form.vector.peek().clone();
@@ -660,9 +662,11 @@ pub fn start_simulation(session: Session, tx: DecodedTx) {
         state.set(SimState::Waiting(
             "Simulation runs once the authorization is signed.".into(),
         ));
+        proposal.set(SimState::Idle);
         return;
     }
     state.set(SimState::Running);
+    start_proposal_simulation(session, &tx, generation);
     let rpc = session.rpc();
     // Only v1 states its limits in a header that fitting can rewrite. Legacy
     // and v0 are signed as they came, and a v0 wire needs the tables the
@@ -726,6 +730,45 @@ pub fn start_simulation(session: Session, tx: DecodedTx) {
             Ok(simulation) => SimState::Done(simulation),
             Err(err) => SimState::Failed(err),
         });
+    });
+}
+
+/// Ask the node what the vault would do, for a transaction that stores one
+/// Squads vault transaction and does not execute it
+/// (`wallet_core::stored_for_later`): the stored instructions run as the
+/// vault, the transaction's fee payer paying (`wallet_core::squads::VaultRun`).
+/// Idle for any other transaction, and for one that stores more than one.
+fn start_proposal_simulation(session: Session, tx: &DecodedTx, generation: u64) {
+    let form = session.forms.sign;
+    let mut state = form.proposal_simulation;
+    let stored = wallet_core::stored_for_later(tx);
+    let (Some(fee_payer), [stored]) = (tx.fee_payer(), stored.as_slice()) else {
+        state.set(SimState::Idle);
+        return;
+    };
+    let run = match stored.run_now(fee_payer) {
+        Ok(run) => run,
+        Err(why) => {
+            state.set(SimState::Waiting(why.to_string()));
+            return;
+        }
+    };
+    let rpc = match session.rpc() {
+        Ok(rpc) => rpc,
+        Err(err) => {
+            state.set(SimState::Failed(err.to_string()));
+            return;
+        }
+    };
+    state.set(SimState::Running);
+    spawn(async move {
+        let result = wallet_flows::simulate::simulate_vault_run(rpc.as_ref(), &run).await;
+        if form.still_on_screen(generation) {
+            state.set(match result {
+                Ok(simulation) => SimState::Done(simulation),
+                Err(err) => SimState::Failed(err.to_string()),
+            });
+        }
     });
 }
 

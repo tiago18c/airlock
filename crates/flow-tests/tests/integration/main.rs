@@ -17,6 +17,7 @@ mod proposal_execute;
 mod proposal_fit;
 mod proposal_propose;
 mod proposal_reject;
+mod proposal_simulate;
 mod proposal_votes;
 mod proposals;
 mod raydium_pool_template;

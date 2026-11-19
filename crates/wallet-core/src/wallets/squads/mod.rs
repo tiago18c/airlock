@@ -16,7 +16,9 @@
 //! limits) through the same four steps, with a list of actions stored in
 //! place of the instructions (see `change`, and `change_words` for what a
 //! change says and leaves). A finished transaction's accounts can be closed
-//! to return their rent (see `close`).
+//! to return their rent (see `close`). What a stored vault transaction would
+//! do if it ran now is asked of a node by simulating its instructions as a
+//! transaction of their own (see `simulate`).
 //!
 //! Every instruction here is built, and every account read, from the
 //! program's own public IDL, converted to Codama (`idls/squads-multisig.json`
@@ -55,6 +57,7 @@ mod config;
 mod instructions;
 mod message;
 mod program;
+mod simulate;
 mod state;
 mod sync;
 mod values;
@@ -71,6 +74,7 @@ pub use close::*;
 pub use config::*;
 pub use message::*;
 pub use program::*;
+pub use simulate::*;
 pub use state::*;
 pub use sync::*;
 use values::*;

@@ -13,6 +13,7 @@ pub mod lock;
 mod multisig_change;
 mod pane_menu;
 pub mod phone;
+mod simulation;
 mod theme;
 pub mod transfer;
 pub mod tx_view;
@@ -30,6 +31,7 @@ pub use lock::{FingerprintOffer, LockScreen, UnlockPrompt, VaultUnlock};
 pub use multisig_change::{MultisigChange, SaidLine};
 pub use pane_menu::PaneMenu;
 pub use phone::{use_phone_layout, ActionSheet, PhoneLayout, PhoneSheet};
+pub use simulation::{SimulationDetails, SimulationStrip};
 pub use theme::ThemeToggle;
 pub use wallet_picker::WalletPicker;
 

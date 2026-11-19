@@ -252,8 +252,7 @@ impl Team {
     }
 
     /// Review and Sign: simulated at the highest limit, then fitted to what
-    /// it used. (The screen also asks for balances after, which the test
-    /// chain does not serve; the limits are fitted the same way.)
+    /// it used.
     pub(crate) fn review(&self, wire: &[u8]) -> Vec<u8> {
         let probe = wallet_core::relay::with_compute_unit_limit(wire, u32::MAX).unwrap();
         let simulated = self.node.chain().simulate_wire(&probe);

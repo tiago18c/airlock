@@ -16,6 +16,12 @@
 //! not said again in a sentence, and a reason is shown only where a person
 //! would otherwise not know why a button is missing.
 //!
+//! A vault transaction that can still run (a draft or an open proposal not
+//! made stale, or an approved one) has a quiet Simulate button under its
+//! instructions: it asks the node what the vault would do if it ran them now
+//! (`wallet_core::squads::VaultRun`) and shows the answer under the button,
+//! the way Review and Sign shows a simulation. It signs nothing.
+//!
 //! A change to the multisig itself reads as its actions in words, one card
 //! each (`app_ui_kit::ui::MultisigChange`), where a vault transaction lists
 //! its instructions. It is approved and executed the same way.
@@ -30,9 +36,11 @@
 
 use super::votes::{vote_chips, ProposalVotes};
 use super::*;
-use app_ui_kit::ui::MultisigChange;
+use app_ui_kit::state::forms::SimState;
+use app_ui_kit::ui::{MultisigChange, SimulationStrip};
 use wallet_core::proposals::{available_close, standing};
 use wallet_core::squads::change_summary;
+use wallet_flows::simulate::simulate_vault_run;
 
 /// What a disabled Close says when the multisig has no rent collector.
 const SET_RENT_COLLECTOR: &str = "Set a rent collector for this multisig to close accounts.";
@@ -144,6 +152,65 @@ pub(in crate::ui) fn ProposalRow(
     // with someone to pay, whoever the acting member is.
     let closing = available_close(squad.program, &state, &entry);
     let for_close = entry.clone();
+    // What the vault would do if it ran the stored transaction now: for one
+    // that can still run. The wallet that pays the row's fees pays the
+    // simulation's, else the vault itself; either way the fee is not
+    // counted (`VaultRun::read`).
+    let session = use_context::<Session>();
+    let mut simulated = use_signal(|| SimState::Idle);
+    let runnable = match (&entry.stored, status) {
+        (Stored::Vault(tx), Some(ProposalStatus::Approved)) => Some(tx.clone()),
+        (Stored::Vault(tx), Some(ProposalStatus::Draft | ProposalStatus::Active))
+            if !entry.stale =>
+        {
+            Some(tx.clone())
+        }
+        _ => None,
+    };
+    let simulating = matches!(simulated(), SimState::Running);
+    let simulate_block = match runnable {
+        Some(tx) => {
+            let fee_payer = payer.unwrap_or(tx.vault);
+            let simulate = move |_| {
+                let run = match tx.run_now(fee_payer) {
+                    Ok(run) => run,
+                    Err(why) => {
+                        simulated.set(SimState::Waiting(why.to_string()));
+                        return;
+                    }
+                };
+                let rpc = match session.rpc() {
+                    Ok(rpc) => rpc,
+                    Err(err) => {
+                        simulated.set(SimState::Failed(err.to_string()));
+                        return;
+                    }
+                };
+                simulated.set(SimState::Running);
+                spawn(async move {
+                    let result = simulate_vault_run(rpc.as_ref(), &run).await;
+                    simulated.set(match result {
+                        Ok(simulation) => SimState::Done(simulation),
+                        Err(err) => SimState::Failed(err.to_string()),
+                    });
+                });
+            };
+            rsx! {
+                div { class: "btn-row",
+                    button { class: "sm", r#type: "button",
+                        disabled: simulating,
+                        aria_busy: "{simulating}",
+                        onclick: simulate,
+                        if simulating { "Simulating…" } else { "Simulate" }
+                    }
+                }
+                if !matches!(simulated(), SimState::Idle | SimState::Running) {
+                    SimulationStrip { state: simulated, limit: None, inspect: false, changes: true }
+                }
+            }
+        }
+        None => rsx! {},
+    };
     let for_action = entry.clone();
     let for_together = entry.clone();
 
@@ -229,6 +296,7 @@ pub(in crate::ui) fn ProposalRow(
                             p { class: "muted", "The account that held this transaction no longer exists." }
                         },
                     }
+                    {simulate_block}
                     if let Some(standing) = standing.clone() {
                         ProposalVotes { standing, acting: member }
                     }

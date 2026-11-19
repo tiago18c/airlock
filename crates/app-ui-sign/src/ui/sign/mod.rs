@@ -37,7 +37,6 @@ use wallet_core::protocol::{decode_payload, parse_payload_text, QrObject, Signed
 use wallet_core::relay::{
     authority_signature_objects, authority_slots_in, vector_signature_objects, AuthContext,
 };
-use wallet_core::simulate::Simulation;
 use wallet_core::{
     context_note_for, missing_catalog_programs, next_step, sha256_bytes, sign_steps,
     signature_objects, signing_status_in, tx_lifetime, DecodedTx, LocalKeys, NextSignature,
@@ -163,6 +162,10 @@ pub fn SignPanel() -> Element {
         let Some(tx) = tx else {
             if *state.peek() != SimState::Idle {
                 state.set(SimState::Idle);
+            }
+            let mut proposal = form.proposal_simulation;
+            if *proposal.peek() != SimState::Idle {
+                proposal.set(SimState::Idle);
             }
             if marked.peek().is_some() {
                 marked.set(None);
