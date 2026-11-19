@@ -94,7 +94,7 @@ pub(crate) struct Written {
     creator: &'static str,
     other: &'static str,
     to: &'static str,
-    settings: &'static str,
+    pub(crate) settings: &'static str,
     pub(crate) transaction: &'static str,
     pub(crate) proposal: &'static str,
 }

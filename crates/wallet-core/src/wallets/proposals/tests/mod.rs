@@ -4,6 +4,7 @@ use crate::wallets::squads::{SquadsMember, PERMISSION_ALL, PERMISSION_INITIATE};
 
 mod activate_cancel;
 mod combined;
+mod config;
 mod reject;
 mod shape;
 mod votes;

@@ -6,7 +6,9 @@
 //! all read. They change on chain when the members vote a change, so they are
 //! read again: for every multisig once the vault is unlocked and the node
 //! answers (the online shell starts that), whenever the Proposals modal reads
-//! one, and by hand from the wallet's Details.
+//! one, after a transaction that names one lands from Review and Sign (an
+//! executed change to the multisig takes effect at once), and by hand from
+//! the wallet's Details.
 //!
 //! What the chain says is about the cluster the app is on. A multisig that is
 //! not there keeps what its record has, and so does one the node could not be
@@ -105,6 +107,26 @@ pub async fn refresh_quietly(session: Session, only: Option<Vec<WalletId>>) {
         if let Lookup::Found(state) = lookup {
             keep_reading(session, id, &state);
         }
+    }
+}
+
+/// The multisigs among this device's wallets that `keys` name.
+pub fn squads_named(session: Session, keys: &[Pubkey]) -> Vec<WalletId> {
+    squads_of(session, None)
+        .into_iter()
+        .filter(|(_, squad)| keys.contains(&squad.address))
+        .map(|(id, _)| id)
+        .collect()
+}
+
+/// After a transaction that names `keys` landed: read again the multisigs
+/// among them, quietly. A change to a multisig executes at once, so its
+/// card, Details and Proposals follow without a refresh by hand. Reading
+/// one that did not change writes nothing.
+pub async fn refresh_after_landing(session: Session, keys: Vec<Pubkey>) {
+    let ids = squads_named(session, &keys);
+    if !ids.is_empty() {
+        refresh_quietly(session, Some(ids)).await;
     }
 }
 

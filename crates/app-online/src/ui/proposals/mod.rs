@@ -10,6 +10,9 @@
 //! What it reads of the multisig itself is kept on the wallet's record, so
 //! the members and threshold shown elsewhere follow the chain.
 //!
+//! What a proposal stores may be a change to the multisig itself, which its
+//! row reads as actions in words with what the multisig would be after it.
+//!
 //! The acting member may also open a draft for votes, reject an open
 //! proposal and vote to cancel an approved one, whether or not its stored
 //! transaction could be read: none of those approves anything.

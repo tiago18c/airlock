@@ -2,15 +2,23 @@
 //! and the user's word that they have checked it when nothing here can say.
 //! And a vote the chain checks against what the transaction carries, which
 //! needs neither.
+//!
+//! What an approval acts on may be a change to the multisig itself. It reads
+//! in the same words as in the Proposals modal, with what the multisig would
+//! be after it when the multisig's account came along (from the node, or in
+//! the other device's context note, which carries any account as bytes).
 
 use super::*;
+use crate::actions::unix_now;
+use crate::ui::MultisigChange;
 use std::collections::HashMap;
 use wallet_core::squads::{
     clear_signing_on, upgrade_buffers, ClearSigningAccepts, VaultTransaction,
 };
 use wallet_core::{
-    approval_shape, display_note, stored_in, ApprovalShape, BlindApproval, CheckedApproval,
-    CheckedUpgrade, ExplainedTx, SignerKey, StoredTarget,
+    approval_shape, display_note, squad_state_in, stored_content_in, stored_in, ApprovalShape,
+    BlindApproval, CheckedApproval, CheckedUpgrade, ExplainedTx, SignerKey, StoredContent,
+    StoredTarget,
 };
 use wallet_flows::offer::{
     blind_offer, check_offer, BlindFacts, BlindOffer, CheckBlock, CheckFacts, CheckOffer,
@@ -47,7 +55,7 @@ pub(super) fn offer_on_screen(
             .iter()
             .filter(|one| {
                 one.target
-                    .is_some_and(|target| stored_in(&target, &behind).is_some())
+                    .is_some_and(|target| stored_content_in(&target, &behind).is_some())
             })
             .count(),
         reading,
@@ -216,6 +224,8 @@ pub(super) fn BlindApprovals(
         }
     }
     let unreadable = approvals.iter().any(|one| one.target.is_none());
+    // Who signs it: a member among them is the one a change is voted on by.
+    let signers: Vec<Pubkey> = tx.signers.iter().map(|slot| slot.pubkey).collect();
     rsx! {
         div { class: "card",
             h3 { "Stored on chain" }
@@ -228,6 +238,7 @@ pub(super) fn BlindApprovals(
                     reading,
                     online,
                     inspect,
+                    signers: signers.clone(),
                 }
             }
             if unreadable {
@@ -260,24 +271,36 @@ fn StoredBehind(
     reading: bool,
     online: bool,
     inspect: bool,
+    signers: Vec<Pubkey>,
 ) -> Element {
-    if let Some(stored) = stored_in(&target, &from_node) {
-        return rsx! {
-            StoredInstructions {
-                stored,
-                said: "The node says it holds this.",
-                inspect,
+    for (accounts, said) in [
+        (&from_node, "The node says it holds this."),
+        (
+            &from_note,
+            "The other device says it holds this. This device cannot check that.",
+        ),
+    ] {
+        match stored_content_in(&target, accounts) {
+            Some(StoredContent::Vault(stored)) => {
+                return rsx! {
+                    StoredInstructions { stored, said, inspect }
+                };
             }
-        };
-    }
-    if let Some(stored) = stored_in(&target, &from_note) {
-        return rsx! {
-            StoredInstructions {
-                stored,
-                said: "The other device says it holds this. This device cannot check that.",
-                inspect,
+            Some(StoredContent::Change(change)) => {
+                let state = squad_state_in(&target, accounts);
+                let acting = state.as_ref().and_then(|state| {
+                    signers
+                        .iter()
+                        .copied()
+                        .find(|key| state.members.iter().any(|member| member.key == *key))
+                });
+                return rsx! {
+                    p { class: "hint", "{said}" }
+                    MultisigChange { change, state, acting, now: unix_now() }
+                };
             }
-        };
+            None => {}
+        }
     }
     let said = if reading {
         "Asking the node what it holds…"

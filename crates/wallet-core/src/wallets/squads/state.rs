@@ -135,7 +135,11 @@ pub enum StoredAccount {
     /// A vault transaction whose accounts come partly from address lookup
     /// tables. It is read once those tables are: see [`TableBound::resolve`].
     LookupTables(TableBound),
-    /// A change to the multisig itself, a batch, or a policy payload.
+    /// A change to the multisig itself: its members, threshold, time lock,
+    /// spending limits and the like.
+    Config(ConfigTransaction),
+    /// A batch, a policy payload, or a change to the multisig holding an
+    /// action this app cannot read.
     Other,
 }
 
@@ -344,6 +348,20 @@ impl Squad {
             SquadsProgram::SmartAccount => ("transaction", "consensusAccount"),
         };
         let Some(stored) = self.program.account(account, data) else {
+            let (change, change_owner) = match self.program {
+                SquadsProgram::V4 => ("configTransaction", "multisig"),
+                SquadsProgram::SmartAccount => ("settingsTransaction", "settings"),
+            };
+            if let Some(change) = self.program.account(change, data) {
+                if key(field(&change, change_owner)?)? != self.address {
+                    return None;
+                }
+                // One action this app cannot read leaves it all unread.
+                return Some(
+                    self.parse_change(data)
+                        .map_or(StoredAccount::Other, StoredAccount::Config),
+                );
+            }
             // Some other account of the program, or nothing it knows.
             let known = self.program.client().parse_account_data(data).ok()?;
             return known.map(|_| StoredAccount::Other);
