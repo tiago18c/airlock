@@ -2,6 +2,7 @@ use super::*;
 use crate::fixtures::{pk, transfer};
 use crate::wallets::squads::{SquadsMember, PERMISSION_ALL, PERMISSION_INITIATE};
 
+mod activate_cancel;
 mod combined;
 mod reject;
 mod shape;
@@ -182,12 +183,24 @@ fn what_cannot_be_read_or_is_over_offers_nothing() {
         Ok(ProposalAction::Execute)
     );
 
-    for status in [ProposalStatus::Executed, ProposalStatus::Cancelled] {
-        assert_eq!(
-            available_action(&alone, &entry(&squad, status, &[me]), &me, 0),
-            Err(NoAction::Finished)
-        );
-    }
+    assert_eq!(
+        available_action(
+            &alone,
+            &entry(&squad, ProposalStatus::Executed, &[me]),
+            &me,
+            0
+        ),
+        Err(NoAction::Finished)
+    );
+    assert_eq!(
+        available_action(
+            &alone,
+            &entry(&squad, ProposalStatus::Cancelled, &[me]),
+            &me,
+            0
+        ),
+        Err(NoAction::Cancelled)
+    );
     assert_eq!(
         available_action(
             &alone,

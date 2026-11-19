@@ -3,14 +3,18 @@
 //!
 //! What the acting member may do comes from `wallet_core::proposals`
 //! (`member_choices`): the action that moves the proposal forward, which is
-//! the primary button, and a rejection beside it. Reject is the careful
-//! choice, never the primary: a danger-outlined button whose hint says what
-//! the rejection does, such as rejecting the proposal for good, before it is
-//! pressed. It opens the transaction in Review and Sign like the others.
+//! the primary button (Open for votes on a draft, Approve on an open
+//! proposal, Execute on an approved one), and the careful choice beside it:
+//! Reject on an open proposal, Vote to cancel on an approved one. That one is
+//! never the primary: a danger-outlined button whose hint says what it does,
+//! such as rejecting or cancelling the proposal for good, before it is
+//! pressed. A draft has no such choice, since neither program rejects or
+//! cancels one, and its row says so. Every button opens a transaction in
+//! Review and Sign.
 
 use super::votes::{vote_chips, ProposalVotes};
 use super::*;
-use wallet_core::proposals::standing;
+use wallet_core::proposals::{activation_hint, standing, DRAFT_CANNOT_BE_CANCELLED};
 
 /// The button of what one member does to a proposal.
 fn action_label(action: ProposalAction) -> &'static str {
@@ -18,7 +22,9 @@ fn action_label(action: ProposalAction) -> &'static str {
         ProposalAction::Approve => "Approve",
         ProposalAction::Execute => "Execute",
         ProposalAction::ApproveAndExecute => "Approve and execute",
+        ProposalAction::Activate => "Open for votes",
         ProposalAction::Reject => "Reject",
+        ProposalAction::Cancel => "Vote to cancel",
     }
 }
 
@@ -53,29 +59,29 @@ pub(in crate::ui) fn ProposalRow(
     let choices = acting.map(|(member, _)| member_choices(&state, &entry, &member, now));
     let verdict = choices.as_ref().map(|choices| choices.forward.clone());
     let payer = acting.and_then(|(_, payer)| payer);
-    // Offered only with someone to pay for it, like every other action.
-    let rejection = choices
+    // The careful choice: Reject on an open proposal, Vote to cancel on an
+    // approved one. Offered only with someone to pay for it, like every
+    // other action.
+    let turn_down = choices
         .as_ref()
-        .and_then(|choices| choices.reject)
+        .and_then(|choices| choices.turn_down())
         .filter(|_| payer.is_some());
-    let reject_hint = rejection.map(|rejection| rejection.hint());
-    let for_reject = entry.clone();
-    let reject_button = match (acting, payer, rejection) {
-        (Some((member, _)), Some(payer), Some(_)) => {
-            let title = reject_hint.clone().unwrap_or_default();
-            rsx! {
-                button { class: "danger sm", disabled: busy, title: "{title}",
-                    onclick: move |_| on_act.call((
-                        for_reject.clone(),
-                        ProposalRequest::Single { member, action: ProposalAction::Reject },
-                        payer,
-                    )),
-                    {action_label(ProposalAction::Reject)}
-                }
+    let turn_down_hint = turn_down.as_ref().map(|(_, hint)| hint.clone());
+    let for_turn_down = entry.clone();
+    let turn_down_button = match (acting, payer, turn_down.clone()) {
+        (Some((member, _)), Some(payer), Some((action, hint))) => rsx! {
+            button { class: "danger sm", disabled: busy, title: "{hint}",
+                onclick: move |_| on_act.call((
+                    for_turn_down.clone(),
+                    ProposalRequest::Single { member, action },
+                    payer,
+                )),
+                {action_label(action)}
             }
-        }
+        },
         _ => rsx! {},
     };
+    let draft = status == Some(ProposalStatus::Draft);
     // Every vote the proposal still needs, cast by the wallets the row names.
     let combined = acting.and_then(|_| combined_approval(&state, &entry, &chosen, approval_nonce));
     // Another wallet of this device that executes it when the acting member
@@ -199,7 +205,7 @@ pub(in crate::ui) fn ProposalRow(
                                             {action_label(action)}
                                         }
                                     }
-                                    {reject_button.clone()}
+                                    {turn_down_button.clone()}
                                 }
                                 p { class: "chip-row hint",
                                     span { "Together casts the {votes} approvals this proposal still needs in one transaction and executes it:" }
@@ -222,7 +228,7 @@ pub(in crate::ui) fn ProposalRow(
                                         p { class: "hint", "{reason}" }
                                     },
                                 }
-                                if let Some(hint) = reject_hint.clone() {
+                                if let Some(hint) = turn_down_hint.clone() {
                                     p { class: "hint", "{hint}" }
                                 }
                             }
@@ -237,12 +243,15 @@ pub(in crate::ui) fn ProposalRow(
                                     )),
                                     {action_label(action)}
                                 }
-                                {reject_button.clone()}
+                                {turn_down_button.clone()}
                             }
                             if action == ProposalAction::ApproveAndExecute {
                                 p { class: "hint", "This approval is the last one {label} needs, so the same transaction executes it." }
                             }
-                            if let Some(hint) = reject_hint.clone() {
+                            if action == ProposalAction::Activate {
+                                p { class: "hint", {activation_hint(&entry)} }
+                            }
+                            if let Some(hint) = turn_down_hint.clone() {
                                 p { class: "hint", "{hint}" }
                             }
                         },
@@ -258,34 +267,47 @@ pub(in crate::ui) fn ProposalRow(
                                         )),
                                         "Execute"
                                     }
+                                    {turn_down_button.clone()}
                                 }
                                 p { class: "chip-row hint",
                                     span { "The acting member may not execute, so" }
                                     Address { pubkey: member }
                                     span { "does: another wallet of this device that this multisig lets execute." }
                                 }
+                                if let Some(hint) = turn_down_hint.clone() {
+                                    p { class: "hint", "{hint}" }
+                                }
                             }
                         }
                         (Some(Ok(_)), _, _) => rsx! {
                             p { class: "hint", "Pick a hot wallet to pay fees for this wallet first." }
                         },
-                        // Nothing moves it forward, but it can be rejected: what
-                        // could not be read, or what the member approved.
-                        (Some(Err(reason)), _, _) if rejection.is_some() => {
+                        // Nothing moves it forward, but it can be turned down:
+                        // what could not be read, what the member approved, or
+                        // what a time lock holds.
+                        (Some(Err(reason)), _, _) if turn_down.is_some() => {
                             let unread = matches!(reason, NoAction::Unreadable | NoAction::Gone);
+                            let needs_no_reading = match turn_down.as_ref().map(|(action, _)| *action) {
+                                Some(ProposalAction::Cancel) => " Voting to cancel it needs no reading.",
+                                _ => " Rejecting it needs no reading.",
+                            };
                             rsx! {
-                                div { class: "btn-row", {reject_button.clone()} }
+                                div { class: "btn-row", {turn_down_button.clone()} }
                                 p { class: "hint",
                                     "{reason}"
-                                    if unread { " Rejecting it needs no reading." }
+                                    if unread { "{needs_no_reading}" }
                                 }
-                                if let Some(hint) = reject_hint.clone() {
+                                if let Some(hint) = turn_down_hint.clone() {
                                     p { class: "hint", "{hint}" }
                                 }
                             }
                         }
                         (Some(Err(reason)), _, _) => rsx! {
                             p { class: "hint", "{reason}" }
+                            // For someone looking for a way to cancel a draft.
+                            if draft && reason == NoAction::Draft {
+                                p { class: "hint", "{DRAFT_CANNOT_BE_CANCELLED}" }
+                            }
                         },
                         (None, _, _) => rsx! {},
                     }

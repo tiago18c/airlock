@@ -35,10 +35,7 @@ pub(super) fn vote_chips(
                 "{} of {} voted to cancel",
                 counts.cancelled.count, counts.cancelled.needed
             ),
-            Some(format!(
-                "It is cancelled once {} members vote to cancel it.",
-                counts.cancelled.needed
-            )),
+            Some(cancel_words(counts)),
         ));
     }
     match acting.and_then(|member| vote_of(proposal, &member)) {
@@ -48,6 +45,14 @@ pub(super) fn vote_chips(
         None => {}
     }
     chips
+}
+
+/// How many cancel votes cancel an approved proposal.
+fn cancel_words(counts: &VoteCounts) -> String {
+    format!(
+        "It is cancelled for good once {} members vote to cancel it. Until then it stays approved.",
+        counts.cancelled.needed
+    )
 }
 
 /// How many rejections reject a proposal, and why that many.
@@ -97,6 +102,8 @@ pub(super) fn ProposalVotes(
         ("Yet to vote", waiting),
     ];
     let open_with_rejections = status == ProposalStatus::Active && !standing.rejected.is_empty();
+    let approved_with_cancels =
+        status == ProposalStatus::Approved && standing.counts.cancelled.count > 0;
 
     rsx! {
         div { class: "proposal-votes",
@@ -120,6 +127,9 @@ pub(super) fn ProposalVotes(
             }
             if open_with_rejections {
                 p { class: "hint", "{cutoff_words(&standing.counts)}" }
+            }
+            if approved_with_cancels {
+                p { class: "hint", "{cancel_words(&standing.counts)}" }
             }
             if gone {
                 p { class: "hint", "A member marked here left the multisig after voting. Its vote stays on the proposal, though a former member's vote to cancel no longer counts." }

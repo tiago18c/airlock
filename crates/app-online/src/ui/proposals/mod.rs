@@ -10,11 +10,12 @@
 //! What it reads of the multisig itself is kept on the wallet's record, so
 //! the members and threshold shown elsewhere follow the chain.
 //!
-//! The acting member may also reject an open proposal, whether or not its
-//! stored transaction could be read: saying no needs no reading.
+//! The acting member may also open a draft for votes, reject an open
+//! proposal and vote to cancel an approved one, whether or not its stored
+//! transaction could be read: none of those approves anything.
 //!
-//! Nothing is signed here. Approve, Reject and Execute build a transaction
-//! and hand it to the Sign screen, where it is read, signed and submitted
+//! Nothing is signed here. Each button builds a transaction and hands it
+//! to the Sign screen, where it is read, signed and submitted
 //! like any other. When a member in it is a programmatic signer, Sign rebuilds it
 //! around the authorization its authority signs.
 
@@ -307,7 +308,7 @@ pub fn ProposalsModal(
                         }
                     }
                     p { class: "hint",
-                        "Approve, Reject, Execute and Together open a transaction in Review and Sign. Nothing is signed here. Stored instructions are read with the IDLs on this device, which are not vetted yet."
+                        "Every button here opens a transaction in Review and Sign. Nothing is signed here. Stored instructions are read with the IDLs on this device, which are not vetted yet."
                     }
                 }
             }

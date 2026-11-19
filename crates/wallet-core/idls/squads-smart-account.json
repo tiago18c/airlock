@@ -4511,8 +4511,8 @@
         ],
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Cancel proposal",
-          "interpolatedIntent": "${accounts.signer} cancels proposal ${accounts.proposal} of smart account settings ${accounts.consensusAccount}"
+          "intent": "Vote to cancel proposal",
+          "interpolatedIntent": "${accounts.signer} votes to cancel proposal ${accounts.proposal} of smart account settings ${accounts.consensusAccount}"
         }
       },
       {

@@ -638,6 +638,43 @@ fn squads_sentences_name_values_from_inside_their_args() {
     );
 }
 
+/// Opening a draft and voting to cancel read as what they are on both
+/// programs: neither is an approval, and a cancel vote is a vote, which
+/// cancels only once enough members cast one.
+#[test]
+fn squads_activations_and_cancel_votes_say_what_they_do() {
+    use crate::wallets::squads::Squad;
+
+    let member = pk(1);
+    let store = builtins();
+    for (squad, of) in [
+        (Squad::v4(&pk(3)), "multisig"),
+        (Squad::smart_account(7), "smart account settings"),
+    ] {
+        let sentence = |instruction| {
+            explain_one_ix(&store, member, instruction)
+                .interpolated_intent
+                .unwrap_or_else(|| panic!("{:?} reads in words", squad.program))
+        };
+        assert_eq!(
+            sentence(squad.activate(4, &member)),
+            format!(
+                "{member} activates proposal {} of {of} {}",
+                squad.proposal(4),
+                squad.address
+            )
+        );
+        assert_eq!(
+            sentence(squad.cancel(4, &member)),
+            format!(
+                "{member} votes to cancel proposal {} of {of} {}",
+                squad.proposal(4),
+                squad.address
+            )
+        );
+    }
+}
+
 /// What an `Advance` does to a hash-based key is read from its layout: by
 /// length alone for one account, or with the schemes a wallet record gives.
 /// An XMSS account that names the key it holds keeps it.

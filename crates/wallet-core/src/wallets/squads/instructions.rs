@@ -159,11 +159,25 @@ impl Squad {
         creator: &Pubkey,
         rent_payer: &Pubkey,
     ) -> Instruction {
-        let args = record([
-            ("transactionIndex", index.into()),
-            // Not a draft: open for votes at once.
-            ("draft", false.into()),
-        ]);
+        // Not a draft: open for votes at once.
+        self.proposal_of(index, creator, rent_payer, false)
+    }
+
+    /// A proposal for transaction `index` that is a draft: no one can vote on
+    /// it until a member that may propose opens it ([`Self::activate`]). The
+    /// app makes none of its own; other apps do, and the tests need them.
+    pub fn create_draft(&self, index: u64, creator: &Pubkey, rent_payer: &Pubkey) -> Instruction {
+        self.proposal_of(index, creator, rent_payer, true)
+    }
+
+    fn proposal_of(
+        &self,
+        index: u64,
+        creator: &Pubkey,
+        rent_payer: &Pubkey,
+        draft: bool,
+    ) -> Instruction {
+        let args = record([("transactionIndex", index.into()), ("draft", draft.into())]);
         let mut accounts = vec![
             (self.owner_account(), self.address),
             ("proposal", self.proposal(index)),
@@ -192,6 +206,63 @@ impl Squad {
     /// `proposals::rejection_cutoff`).
     pub fn reject(&self, index: u64, member: &Pubkey) -> Instruction {
         self.vote(index, member, ["proposalReject", "rejectProposal"])
+    }
+
+    /// Open draft proposal `index` for votes. `member` signs. Both programs
+    /// take it from any member that may propose (not only the draft's
+    /// creator), on a draft that is not stale.
+    pub fn activate(&self, index: u64, member: &Pubkey) -> Instruction {
+        let proposal = ("proposal", self.proposal(index));
+        match self.program {
+            SquadsProgram::V4 => self.program.instruction(
+                "proposalActivate",
+                &[("multisig", self.address), ("member", *member), proposal],
+                None,
+            ),
+            SquadsProgram::SmartAccount => self.program.instruction(
+                "activateProposal",
+                &[("settings", self.address), ("signer", *member), proposal],
+                None,
+            ),
+        }
+    }
+
+    /// Vote to cancel approved proposal `index`. `member` signs. The proposal
+    /// is cancelled once the cancel votes of members reach the threshold.
+    ///
+    /// Both programs grow the proposal account when the multisig has more
+    /// members now than when it was made, and the member pays the rent of
+    /// the growth, through the system program both are given. On v4 that is
+    /// `proposalCancelV2`: `proposalCancel` cannot grow the account, so it
+    /// fails once the cancel votes no longer fit.
+    pub fn cancel(&self, index: u64, member: &Pubkey) -> Instruction {
+        let args = record([("memo", Value::Option(None))]);
+        let proposal = ("proposal", self.proposal(index));
+        match self.program {
+            SquadsProgram::V4 => self.program.instruction(
+                "proposalCancelV2",
+                &[
+                    ("multisig", self.address),
+                    ("member", *member),
+                    proposal,
+                    ("systemProgram", SYSTEM_PROGRAM_ID),
+                ],
+                Some(args),
+            ),
+            // Its system program is optional in the IDL, and the program
+            // refuses a cancel without it.
+            SquadsProgram::SmartAccount => self.program.instruction(
+                "cancelProposal",
+                &[
+                    ("consensusAccount", self.address),
+                    ("signer", *member),
+                    proposal,
+                    ("systemProgram", SYSTEM_PROGRAM_ID),
+                    ("program", self.program.program_id()),
+                ],
+                Some(args),
+            ),
+        }
     }
 
     /// A vote on proposal `index`: both programs take the same accounts for

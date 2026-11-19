@@ -13,7 +13,10 @@
 //! approved. Only the programs named here are known: another program can keep
 //! what it approves elsewhere too, and reads as whatever its IDL says. A
 //! Squads rejection is not among them: it says no to what the proposal holds,
-//! whatever that is, and reads as its IDL says ("rejects proposal ...").
+//! whatever that is, and reads as its IDL says ("rejects proposal ..."). Nor
+//! are opening a draft for votes ("activates proposal ..."), which approves
+//! nothing, and a vote to cancel an approved proposal ("votes to cancel
+//! proposal ..."), which can only stop it from running.
 //!
 //! A v4 vote, or execution, is not blind either when a Squads clear signing
 //! check pins it ([`super::checked`]): the check carries what the proposal
@@ -569,6 +572,24 @@ mod tests {
             .unwrap();
         let again = squad.approve(4, &pk(9));
         assert_eq!(whats(vec![carrying, again]), [SQUADS_APPROVAL]);
+    }
+
+    #[test]
+    fn opening_a_draft_or_voting_to_cancel_says_yes_to_nothing_on_either_program() {
+        for squad in squads() {
+            for instruction in [squad.activate(3, &pk(1)), squad.cancel(3, &pk(1))] {
+                assert!(
+                    whats(vec![instruction.clone()]).is_empty(),
+                    "{:?}",
+                    squad.program
+                );
+                assert!(
+                    crate::review::risk::risks_in(&explained(vec![instruction])).is_empty(),
+                    "{:?}",
+                    squad.program
+                );
+            }
+        }
     }
 
     #[test]

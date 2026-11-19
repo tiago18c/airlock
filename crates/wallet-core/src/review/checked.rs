@@ -47,7 +47,8 @@
 //! check that expects a rejection, but a rejection needs no reading: saying
 //! no to a proposal is safe whatever it holds, so the app never builds such a
 //! check, a transaction of rejections is no [`ApprovalShape::Open`], and a
-//! rejecting check pins nothing.
+//! rejecting check pins nothing. The same goes for a vote to cancel (both of
+//! the program's cancel kinds) and for opening a draft for votes.
 
 use super::blind::{squads_call, SquadsCall};
 use crate::edit::{Carrier, CarrierKind};
