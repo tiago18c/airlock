@@ -3886,8 +3886,8 @@
         ],
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Cancel proposal",
-          "interpolatedIntent": "${accounts.member} cancels proposal ${accounts.proposal} of multisig ${accounts.multisig}"
+          "intent": "Vote to cancel proposal",
+          "interpolatedIntent": "${accounts.member} votes to cancel proposal ${accounts.proposal} of multisig ${accounts.multisig}"
         }
       },
       {
@@ -3981,8 +3981,8 @@
         ],
         "display": {
           "kind": "instructionDisplayNode",
-          "intent": "Cancel proposal",
-          "interpolatedIntent": "${accounts.member} cancels proposal ${accounts.proposal} of multisig ${accounts.multisig}"
+          "intent": "Vote to cancel proposal",
+          "interpolatedIntent": "${accounts.member} votes to cancel proposal ${accounts.proposal} of multisig ${accounts.multisig}"
         }
       },
       {

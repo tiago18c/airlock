@@ -109,6 +109,15 @@ fn change_threshold(squad: &Squad, authority: &Pubkey, threshold: u16) -> Instru
     as_authority(squad, authority, discriminator, &threshold.to_le_bytes())
 }
 
+/// The authority of a controlled multisig takes `member` out.
+pub(crate) fn remove_member(squad: &Squad, authority: &Pubkey, member: &Pubkey) -> Instruction {
+    let discriminator = match squad.program {
+        SquadsProgram::V4 => "d975b1d2b691da48",
+        SquadsProgram::SmartAccount => "3a139510b5107d94",
+    };
+    as_authority(squad, authority, discriminator, &member.to_bytes())
+}
+
 pub(crate) fn add_member(
     squad: &Squad,
     authority: &Pubkey,

@@ -3,7 +3,9 @@
 use app_ui_kit::actions::sentence;
 use app_ui_kit::{Session, SignLoad, TxSource};
 use solana_pubkey::Pubkey;
-use wallet_core::proposals::{available_rejection, ProposalAction, ProposalEntry, ProposalRequest};
+use wallet_core::proposals::{
+    available_cancel, available_rejection, ProposalAction, ProposalEntry, ProposalRequest,
+};
 use wallet_core::squads::{Squad, SquadState};
 
 /// Read the multisig, and one page of its transactions starting at `from`,
@@ -60,8 +62,8 @@ pub async fn open_request(
 }
 
 /// What `request` does to `entry` of the multisig `label`, whose state is
-/// `state`, for the note above the transaction. A rejection says what it
-/// changes, as the row's hint did before it was pressed.
+/// `state`, for the note above the transaction. A rejection or a vote to
+/// cancel says what it changes, as the row's hint did before it was pressed.
 pub fn request_note(
     request: &ProposalRequest,
     state: &SquadState,
@@ -87,12 +89,30 @@ pub fn request_note(
             }
             note
         }
+        ProposalRequest::Single {
+            member,
+            action: ProposalAction::Cancel,
+        } => {
+            let mut note = format!("This votes to cancel proposal {index} of {label}.");
+            if available_cancel(state, entry, member).is_some_and(|cancel| cancel.last()) {
+                note.push_str(
+                    " It is the last vote to cancel needed: the proposal is cancelled for good and can never be executed.",
+                );
+            }
+            note
+        }
+        ProposalRequest::Single {
+            action: ProposalAction::Activate,
+            ..
+        } => format!("This opens proposal {index} of {label} for votes. It approves nothing."),
         ProposalRequest::Single { action, .. } => {
             let what = match action {
                 ProposalAction::Approve => "approves",
                 ProposalAction::Execute => "executes",
                 ProposalAction::ApproveAndExecute => "approves and executes",
+                ProposalAction::Activate => "opens",
                 ProposalAction::Reject => "rejects",
+                ProposalAction::Cancel => "votes to cancel",
             };
             format!("This {what} proposal {index} of {label}.")
         }
@@ -202,6 +222,43 @@ mod tests {
         assert_eq!(
             note(&reject, &open(&[pk(1)], &[pk(2)])),
             "This rejects proposal 4 of Treasury. It takes back the member's approval. It is the last rejection needed: the proposal is rejected for good and cannot be reopened."
+        );
+    }
+
+    #[test]
+    fn the_note_of_an_activation_says_it_approves_nothing() {
+        let mut draft = open(&[], &[]);
+        draft.proposal.as_mut().unwrap().status = ProposalStatus::Draft;
+        let activate = ProposalRequest::Single {
+            member: pk(1),
+            action: ProposalAction::Activate,
+        };
+        assert_eq!(
+            note(&activate, &draft),
+            "This opens proposal 4 of Treasury for votes. It approves nothing."
+        );
+    }
+
+    #[test]
+    fn the_note_of_a_cancel_vote_says_whether_it_is_final() {
+        let approved = |cancelled: &[Pubkey]| {
+            let mut entry = open(&[pk(2), pk(3)], &[]);
+            let proposal = entry.proposal.as_mut().unwrap();
+            proposal.status = ProposalStatus::Approved;
+            proposal.cancelled = cancelled.to_vec();
+            entry
+        };
+        let cancel = ProposalRequest::Single {
+            member: pk(1),
+            action: ProposalAction::Cancel,
+        };
+        assert_eq!(
+            note(&cancel, &approved(&[])),
+            "This votes to cancel proposal 4 of Treasury."
+        );
+        assert_eq!(
+            note(&cancel, &approved(&[pk(2)])),
+            "This votes to cancel proposal 4 of Treasury. It is the last vote to cancel needed: the proposal is cancelled for good and can never be executed."
         );
     }
 

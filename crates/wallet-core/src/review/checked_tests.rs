@@ -651,6 +651,27 @@ fn a_rejection_is_no_vote_to_check() {
     still_blind(vec![rejecting, vote(pk(1))]);
 }
 
+/// A cancel vote needs no reading either: a check that expects one, of
+/// either kind, pins nothing, and a cancel or an activation is no
+/// approval to check.
+#[test]
+fn a_cancel_vote_or_an_activation_is_no_vote_to_check() {
+    let cancel = squad().cancel(4, &pk(1));
+    let activate = squad().activate(4, &pk(1));
+    assert_eq!(shape(vec![cancel.clone()]), ApprovalShape::Other);
+    assert_eq!(shape(vec![activate.clone()]), ApprovalShape::Other);
+    for action in [VoteAction::Cancel, VoteAction::CancelV2] {
+        let cancelling = ProposalCheck {
+            action,
+            ..check_of(pk(1))
+        }
+        .instruction(&[]);
+        assert!(checks(vec![cancelling.clone(), cancel.clone()]).is_empty());
+        assert!(blind_in(&explained(vec![cancelling.clone(), cancel.clone()])).is_empty());
+        still_blind(vec![cancelling, vote(pk(1))]);
+    }
+}
+
 fn open(votes: &[Pubkey]) -> OpenApproval {
     OpenApproval {
         squad: squad(),

@@ -16,17 +16,30 @@
 //! builds the instructions. Signing happens elsewhere. Who voted how, and how
 //! the programs count those votes, is in `votes`.
 //!
-//! A member may do two things at once to an open proposal: move it forward
-//! (approve, and execute when that approval completes it) and reject it.
-//! [`member_choices`] gives both. Moving it forward needs the stored
-//! transaction read; rejecting does not, since saying no to what one cannot
-//! read is the safe answer.
+//! A member may do two things at once to a proposal: move it forward and
+//! turn it down. [`member_choices`] gives both.
+//!
+//! - A draft is moved forward by opening it for votes (activating it), which
+//!   any member that may propose can do while it is not stale. Activating
+//!   approves nothing, so it needs no reading. A draft cannot be turned down:
+//!   neither program rejects or cancels one. Left as it is, no one can vote
+//!   on it or execute it.
+//! - An open proposal is moved forward by approving it, and executing it
+//!   when that approval completes it, and turned down by rejecting it.
+//! - An approved proposal is moved forward by executing it, and turned down
+//!   by voting to cancel it, also while its time lock holds it, and also once
+//!   it is stale. It is cancelled for good once the cancel votes reach the
+//!   threshold.
+//!
+//! Approving and executing need the stored transaction read. Activating,
+//! rejecting and cancelling do not: opening a vote approves nothing, and
+//! saying no to what one cannot read is the safe answer.
 
 use crate::chain::RawAccount;
 use crate::ids::ADDRESS_LOOKUP_TABLE_PROGRAM_ID;
 use crate::wallets::squads::{
     ProposalState, ProposalStatus, Squad, SquadState, StoredAccount, TableProblem,
-    VaultTransaction, PERMISSION_EXECUTE, PERMISSION_VOTE,
+    VaultTransaction, PERMISSION_EXECUTE, PERMISSION_INITIATE, PERMISSION_VOTE,
 };
 use solana_instruction::Instruction;
 use solana_pubkey::Pubkey;
@@ -170,10 +183,16 @@ pub enum ProposalAction {
     /// This approval is the last one needed and nothing delays execution, so
     /// both go in one transaction.
     ApproveAndExecute,
+    /// Open a draft for votes. It approves nothing, so it needs no reading.
+    Activate,
     /// A vote against it. [`available_action`] never gives it: whether a
     /// member may reject is [`available_rejection`], beside the action that
     /// moves the proposal forward.
     Reject,
+    /// A vote to cancel an approved proposal. [`available_action`] never
+    /// gives it: whether a member may cast it is [`available_cancel`],
+    /// beside Execute.
+    Cancel,
 }
 
 /// Why a member can do nothing to a proposal right now.
@@ -183,8 +202,14 @@ pub enum NoAction {
     NotAMember,
     #[error("No proposal was opened for this transaction, so there is nothing to vote on.")]
     NoProposal,
-    #[error("This proposal is a draft. Its creator has to open it for votes.")]
+    /// A draft the acting member may not open: only a member that may
+    /// propose can.
+    #[error("This proposal is a draft, not open for votes yet. Only a member that may propose can open it, and the acting member may not.")]
     Draft,
+    #[error(
+        "The multisig changed after this draft was made, so it can no longer be opened for votes."
+    )]
+    StaleDraft,
     #[error(
         "The multisig changed after this proposal was created, so it can no longer be voted on."
     )]
@@ -208,17 +233,20 @@ pub enum NoAction {
     Gone,
     #[error("It was rejected for good. A rejected proposal cannot be reopened: to do what it holds, the transaction would have to be proposed again.")]
     Rejected,
+    #[error("It was cancelled for good. A cancelled proposal cannot be executed or reopened: to do what it holds, the transaction would have to be proposed again.")]
+    Cancelled,
     #[error("Nothing is left to do.")]
     Finished,
 }
 
 /// What `member` can do to move `entry` forward at time `now` (Unix
-/// seconds): approve it, execute it, or both.
+/// seconds): open a draft for votes, approve it, execute it, or both.
 ///
 /// A transaction this app cannot read is never offered for approval: a vote
-/// for something that was not read is not a vote. A member that rejected may
-/// still approve while the proposal is open: the programs take its rejection
-/// back.
+/// for something that was not read is not a vote. Opening a draft for votes
+/// approves nothing, so it is offered whatever the draft holds. A member that
+/// rejected may still approve while the proposal is open: the programs take
+/// its rejection back.
 pub fn available_action(
     state: &SquadState,
     entry: &ProposalEntry,
@@ -239,7 +267,17 @@ pub fn available_action(
     };
     let may_execute = permissions & PERMISSION_EXECUTE != 0;
     match proposal.status {
-        ProposalStatus::Draft => Err(NoAction::Draft),
+        // Both programs: a member with the initiate permission, whoever made
+        // the draft, while it is not stale.
+        ProposalStatus::Draft => {
+            if entry.stale {
+                Err(NoAction::StaleDraft)
+            } else if permissions & PERMISSION_INITIATE == 0 {
+                Err(NoAction::Draft)
+            } else {
+                Ok(ProposalAction::Activate)
+            }
+        }
         ProposalStatus::Active => {
             if entry.stale {
                 return Err(NoAction::Stale);
@@ -278,9 +316,33 @@ pub fn available_action(
         }
         ProposalStatus::Executing => Err(NoAction::Executing),
         ProposalStatus::Rejected => Err(NoAction::Rejected),
-        ProposalStatus::Executed | ProposalStatus::Cancelled => Err(NoAction::Finished),
+        ProposalStatus::Cancelled => Err(NoAction::Cancelled),
+        ProposalStatus::Executed => Err(NoAction::Finished),
     }
 }
+
+/// What opening draft `entry` for votes does, said before it is pressed, and
+/// what else can be done to a draft.
+pub fn activation_hint(entry: &ProposalEntry) -> String {
+    let mut hint = "Opening it lets the members vote on it. It approves nothing.".to_string();
+    match &entry.stored {
+        Stored::Vault(_) => {}
+        Stored::Missing => hint.push_str(
+            " Its stored transaction is gone, so once open it can be rejected but never executed.",
+        ),
+        Stored::LookupTables(_) | Stored::Other => hint.push_str(
+            " This app cannot read what it holds, so once open it can be rejected here but not approved.",
+        ),
+    }
+    hint.push(' ');
+    hint.push_str(DRAFT_CANNOT_BE_CANCELLED);
+    hint
+}
+
+/// What a person looking for a way to cancel a draft is told: neither
+/// program rejects or cancels a draft.
+pub const DRAFT_CANNOT_BE_CANCELLED: &str =
+    "A draft cannot be cancelled: left as it is, no one can vote on it or execute it.";
 
 /// A rejection a member may cast, and what it does.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -344,6 +406,65 @@ pub fn available_rejection(
     })
 }
 
+/// A vote to cancel an approved proposal that a member may cast, and what it
+/// does.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct CancelVote {
+    /// How many more members' cancel votes cancel the proposal once this one
+    /// is in. Zero when this one does: the proposal is then cancelled for
+    /// good.
+    pub missing_after: usize,
+}
+
+impl CancelVote {
+    /// This vote reaches the threshold, and the proposal is cancelled for
+    /// good.
+    pub fn last(&self) -> bool {
+        self.missing_after == 0
+    }
+
+    /// What it does, said before it is cast.
+    pub fn hint(&self) -> String {
+        match self.missing_after {
+            0 => "This vote to cancel is the last one needed: the proposal is cancelled for good and can never be executed.".to_string(),
+            1 => "After this vote, 1 more member's vote to cancel cancels the proposal for good. Until then it stays approved.".to_string(),
+            more => format!("After this vote, {more} more members' votes to cancel cancel the proposal for good. Until then it stays approved."),
+        }
+    }
+}
+
+/// Whether `member` may vote to cancel `entry`, and what its vote would do.
+/// `None` when it may not.
+///
+/// Both programs take a cancel vote from a member with the vote permission
+/// on an approved proposal, whether or not it is stale, whether or not its
+/// time lock still holds it, and whether or not the member approved it:
+/// they read only the proposal. A member that already voted to cancel cannot
+/// vote again (`AlreadyCancelled`). The cancel votes of keys that left the
+/// multisig are dropped before counting, as [`vote_counts`] counts them.
+pub fn available_cancel(
+    state: &SquadState,
+    entry: &ProposalEntry,
+    member: &Pubkey,
+) -> Option<CancelVote> {
+    let permissions = state
+        .members
+        .iter()
+        .find(|known| known.key == *member)?
+        .permissions;
+    let proposal = entry.proposal.as_ref()?;
+    if proposal.status != ProposalStatus::Approved
+        || permissions & PERMISSION_VOTE == 0
+        || proposal.cancelled.contains(member)
+    {
+        return None;
+    }
+    let cancelled = vote_counts(state, proposal).cancelled;
+    Some(CancelVote {
+        missing_after: cancelled.missing().saturating_sub(1),
+    })
+}
+
 /// Everything `member` may do to `entry` at time `now`.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct MemberChoices {
@@ -351,10 +472,28 @@ pub struct MemberChoices {
     pub forward: Result<ProposalAction, NoAction>,
     /// Its rejection, when it may cast one: [`available_rejection`].
     pub reject: Option<Rejection>,
+    /// Its vote to cancel, when it may cast one: [`available_cancel`]. Never
+    /// beside a rejection: one needs an open proposal, the other an
+    /// approved one.
+    pub cancel: Option<CancelVote>,
+}
+
+impl MemberChoices {
+    /// The careful choice beside the one that moves the proposal forward:
+    /// Reject on an open proposal, Cancel on an approved one, with what it
+    /// does in words.
+    pub fn turn_down(&self) -> Option<(ProposalAction, String)> {
+        match (self.reject, self.cancel) {
+            (Some(rejection), _) => Some((ProposalAction::Reject, rejection.hint())),
+            (None, Some(cancel)) => Some((ProposalAction::Cancel, cancel.hint())),
+            (None, None) => None,
+        }
+    }
 }
 
 /// What `member` may do to `entry` at time `now` (Unix seconds): the action
-/// that moves it forward and the rejection, each when the programs take it.
+/// that moves it forward, and the rejection or the cancel vote, each when
+/// the programs take it.
 pub fn member_choices(
     state: &SquadState,
     entry: &ProposalEntry,
@@ -364,6 +503,7 @@ pub fn member_choices(
     MemberChoices {
         forward: available_action(state, entry, member, now),
         reject: available_rejection(state, entry, member),
+        cancel: available_cancel(state, entry, member),
     }
 }
 
@@ -416,8 +556,8 @@ pub fn executor_instead<'a>(
 }
 
 /// The instructions of `action` on `entry`, which `member` signs. `None` when
-/// the action needs the stored transaction and it could not be read. A
-/// rejection never does.
+/// the action needs the stored transaction and it could not be read.
+/// Activating, rejecting and cancelling never do.
 pub fn action_instructions(
     squad: &Squad,
     entry: &ProposalEntry,
@@ -433,6 +573,8 @@ pub fn action_instructions(
         ProposalAction::Approve => vec![approve()],
         ProposalAction::Execute => vec![execute()?],
         ProposalAction::ApproveAndExecute => vec![approve(), execute()?],
+        ProposalAction::Activate => vec![squad.activate(entry.index, member)],
         ProposalAction::Reject => vec![squad.reject(entry.index, member)],
+        ProposalAction::Cancel => vec![squad.cancel(entry.index, member)],
     })
 }
