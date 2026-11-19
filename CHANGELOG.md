@@ -12,6 +12,7 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 ### Added
 
 - **A Squads multisig's members and threshold follow the chain.** Airlock reads every multisig again once each time you unlock it, and whenever you open its proposals, so its card, its Details and its Settings show who is in it now. Refresh in its Details reads it again at once and says what changed. Details also shows each member's permissions when they are not all three, the time lock, and the config authority or rent collector when the multisig has one. A wallet you chose to act for it, or to approve together, that is no longer a member stays chosen and is marked "not a member", until you choose another in Settings.
+- **A Squads proposal shows who approved it, who rejected it and who has yet to vote.** Open a proposal under Proposals to see each member by name, with the member you act as marked "you" and your other wallets marked "on this device", and who voted to cancel an approved one. Its row says how many rejections it has against the number that rejects it, and whether you approved, rejected or voted to cancel.
 
 ### Changed
 

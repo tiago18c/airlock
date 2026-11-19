@@ -1,6 +1,6 @@
 //! The proposals of one Squads multisig: what is stored under each
-//! transaction number, how far its approval has come, and what the member
-//! this device acts as can do about it.
+//! transaction number, who approved, rejected or voted to cancel it and who
+//! has yet to vote, and what the member this device acts as can do about it.
 //!
 //! A proposal is acted on as that one member, or, when the multisig's row
 //! names other wallets that approve together with it and the proposal still
@@ -31,6 +31,7 @@ use wallet_core::{RouteStep, WalletId};
 
 mod host;
 mod row;
+mod votes;
 
 pub use host::ProposalsHost;
 pub(in crate::ui) use row::*;

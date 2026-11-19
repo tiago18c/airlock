@@ -4,6 +4,7 @@ use crate::wallets::squads::{SquadsMember, PERMISSION_ALL, PERMISSION_INITIATE};
 
 mod combined;
 mod shape;
+mod votes;
 
 fn state(threshold: u16, time_lock: u32, members: &[(Pubkey, u8)]) -> SquadState {
     SquadState {

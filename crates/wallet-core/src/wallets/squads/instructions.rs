@@ -144,17 +144,32 @@ impl Squad {
 
     /// Vote yes on proposal `index`. `member` signs.
     pub fn approve(&self, index: u64, member: &Pubkey) -> Instruction {
+        self.vote(index, member, ["proposalApprove", "approveProposal"])
+    }
+
+    /// Vote no on proposal `index`, which must be open for votes. `member`
+    /// signs. A rejection takes back the member's approval, if it gave one.
+    /// The proposal is rejected once the rejections reach the cutoff (see
+    /// `proposals::rejection_cutoff`).
+    pub fn reject(&self, index: u64, member: &Pubkey) -> Instruction {
+        self.vote(index, member, ["proposalReject", "rejectProposal"])
+    }
+
+    /// A vote on proposal `index`: both programs take the same accounts for
+    /// approving and rejecting. `names` is the instruction's name in v4 and
+    /// in the smart account program.
+    fn vote(&self, index: u64, member: &Pubkey, names: [&str; 2]) -> Instruction {
         let args = record([("memo", Value::Option(None))]);
         let proposal = ("proposal", self.proposal(index));
         match self.program {
             SquadsProgram::V4 => self.program.instruction(
-                "proposalApprove",
+                names[0],
                 &[("multisig", self.address), ("member", *member), proposal],
                 Some(args),
             ),
             // The optional system program is left out.
             SquadsProgram::SmartAccount => self.program.instruction(
-                "approveProposal",
+                names[1],
                 &[
                     ("consensusAccount", self.address),
                     ("signer", *member),

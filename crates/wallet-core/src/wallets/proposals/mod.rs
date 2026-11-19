@@ -7,7 +7,8 @@
 //!
 //! What a member may do to a proposal follows from its status, the member's
 //! permissions, the threshold and the time lock. This module decides that and
-//! builds the instructions. Signing happens elsewhere.
+//! builds the instructions. Signing happens elsewhere. Who voted how, and how
+//! the programs count those votes, is in `votes`.
 
 use crate::chain::RawAccount;
 use crate::wallets::squads::{
@@ -20,12 +21,14 @@ use thiserror::Error;
 
 mod combined;
 mod shape;
+mod votes;
 
 #[cfg(test)]
 mod tests;
 
 pub use combined::*;
 pub use shape::*;
+pub use votes::*;
 
 /// How many transaction numbers one page covers.
 pub const PROPOSALS_PER_PAGE: u64 = 10;
