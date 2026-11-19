@@ -1,8 +1,10 @@
-//! A change to a Squads multisig itself, in words: one line per action, in
-//! order, what the multisig looks like after it, and what a careful member
-//! would want pointed out. The Proposals modal shows it in a proposal's
-//! row, and Review and Sign under "Stored on chain", so a change reads the
-//! same wherever it is voted on.
+//! A change to a Squads multisig itself, in words: one card per action, in
+//! order. The cards carry the colour of a warning, since a change to who
+//! controls the multisig is the most serious thing a member approves; they
+//! stand in for separate warnings, which would say the same thing twice. A
+//! change the program would refuse says so after them. The Proposals modal
+//! shows it in a proposal's row, and Review and Sign under "Stored on
+//! chain", so a change reads the same wherever it is voted on.
 //!
 //! Each address is named as everywhere else, through [`Address`], and the
 //! member this device acts as is marked "you", as the votes of a proposal
@@ -12,8 +14,7 @@ use super::Address;
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use wallet_core::squads::{
-    change_lines, change_outcome, change_warnings, outcome_line, ConfigTransaction, Piece, Said,
-    SquadState, STALES_OTHERS,
+    change_lines, change_outcome, ConfigTransaction, Piece, Said, SquadState,
 };
 
 /// One sentence, with its addresses named.
@@ -63,53 +64,28 @@ pub fn MultisigChange(
 ) -> Element {
     let state = state.filter(|_| !settled);
     let lines = change_lines(state.as_ref(), &change.actions);
-    let outcome = state
+    let refusal = state
         .as_ref()
-        .map(|state| change_outcome(change.program, state, &change.actions, now));
-    let (after, warnings, refusal, stales) = match (&state, &outcome) {
-        (Some(state), Some(Ok(outcome))) => (
-            outcome_line(state, outcome),
-            change_warnings(state, &change.actions, outcome, acting.as_ref()),
-            None,
-            outcome.stales,
-        ),
-        (_, Some(Err(refusal))) => (None, Vec::new(), Some(refusal.said()), false),
-        _ => (None, Vec::new(), None, false),
-    };
+        .and_then(|state| change_outcome(change.program, state, &change.actions, now).err())
+        .map(|refusal| refusal.said());
     let count = lines.len();
     rsx! {
         div { class: "multisig-change stack",
-            p { class: "muted",
-                if count == 1 {
-                    "A change to the multisig itself, with one action:"
-                } else {
-                    "A change to the multisig itself, with {count} actions, in this order:"
-                }
-            }
             ol { class: "change-actions",
                 for (at, said) in lines.into_iter().enumerate() {
-                    li { key: "{at}", SaidLine { said, acting } }
+                    li { key: "{at}", class: "change-card",
+                        if count > 1 {
+                            span { class: "change-number", "{at + 1}" }
+                        }
+                        SaidLine { said, acting }
+                    }
                 }
             }
-            if let Some(said) = after {
-                SaidLine { said, acting }
-            }
             if let Some(said) = refusal {
-                SaidLine { said, acting, class: "warn" }
-            }
-            for (at, said) in warnings.into_iter().enumerate() {
-                SaidLine { key: "{at}", said, acting, class: "warn" }
-            }
-            if stales {
-                p { class: "hint", "{STALES_OTHERS}" }
+                SaidLine { said, acting, class: "error" }
             }
             if let Some(why) = change.not_executed_here().filter(|_| !settled) {
                 p { class: "hint", "{why}" }
-            }
-            if state.is_none() && !settled {
-                p { class: "hint",
-                    "What the multisig is now is not known here, so what it would be after this cannot be said."
-                }
             }
         }
     }

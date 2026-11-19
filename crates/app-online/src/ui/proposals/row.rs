@@ -6,32 +6,52 @@
 //! the primary button (Open for votes on a draft, Approve on an open
 //! proposal, Execute on an approved one), and the careful choice beside it:
 //! Reject on an open proposal, Vote to cancel on an approved one. That one is
-//! never the primary: a danger-outlined button whose hint says what it does,
-//! such as rejecting or cancelling the proposal for good, before it is
-//! pressed. A draft has no such choice, since neither program rejects or
-//! cancels one, and its row says so. Every button opens a transaction in
-//! Review and Sign.
+//! never the primary: a danger-outlined button whose tooltip says what it
+//! does, such as rejecting or cancelling the proposal for good. A draft has
+//! no such choice, since neither program rejects or cancels one. Every
+//! button opens a transaction in Review and Sign.
 //!
-//! A change to the multisig itself reads as its actions in words, with what
-//! the multisig looks like after it and what to look out for
-//! (`app_ui_kit::ui::MultisigChange`), where a vault transaction lists its
-//! instructions. It is approved and executed the same way.
+//! The row says little beside its buttons, on purpose: what the chips of
+//! its head already tell (how many approved, that nothing is left to do) is
+//! not said again in a sentence, and a reason is shown only where a person
+//! would otherwise not know why a button is missing.
+//!
+//! A change to the multisig itself reads as its actions in words, one card
+//! each (`app_ui_kit::ui::MultisigChange`), where a vault transaction lists
+//! its instructions. It is approved and executed the same way.
 //!
 //! Once the program allows it (`available_close`), a row also offers to
-//! close the proposal's accounts: a quiet button, since it is housekeeping,
-//! with one line saying where the rent goes and how much. No member signs
-//! it, only the wallet paying the fee. A row that cannot be closed says
-//! nothing of closing, except a finished one of a v4 multisig without a
-//! rent collector. A transaction whose accounts were closed reads as closed.
+//! close the proposal's accounts: a quiet button, since it is housekeeping.
+//! No member signs it, only the wallet paying the fee. A row that cannot be
+//! closed says nothing of closing, except a finished one of a v4 multisig
+//! without a rent collector, whose button is there, disabled, and says in
+//! its tooltip what is missing. A transaction whose accounts were closed
+//! reads as closed.
 
 use super::votes::{vote_chips, ProposalVotes};
 use super::*;
-use app_ui_kit::format_sol;
 use app_ui_kit::ui::MultisigChange;
-use wallet_core::proposals::{
-    activation_hint, available_close, standing, Closing, DRAFT_CANNOT_BE_CANCELLED,
-};
+use wallet_core::proposals::{available_close, standing};
 use wallet_core::squads::change_summary;
+
+/// What a disabled Close says when the multisig has no rent collector.
+const SET_RENT_COLLECTOR: &str = "Set a rent collector for this multisig to close accounts.";
+
+/// Whether `reason` is worth a line under the row's buttons. What the head's
+/// chips already tell is not: how many approvals are missing, and that a
+/// proposal was executed, rejected or cancelled. Nor is what the row says
+/// above: why a change is refused, and that a transaction cannot be read.
+fn worth_a_line(reason: &NoAction) -> bool {
+    !matches!(
+        reason,
+        NoAction::WaitingForOthers { .. }
+            | NoAction::Finished
+            | NoAction::Rejected
+            | NoAction::Cancelled
+            | NoAction::Refused(_)
+            | NoAction::Unreadable
+    )
+}
 
 /// The button of what one member does to a proposal.
 fn action_label(action: ProposalAction) -> &'static str {
@@ -47,7 +67,6 @@ fn action_label(action: ProposalAction) -> &'static str {
 
 #[component]
 pub(in crate::ui) fn ProposalRow(
-    label: String,
     squad: Squad,
     state: SquadState,
     entry: ProposalEntry,
@@ -89,7 +108,6 @@ pub(in crate::ui) fn ProposalRow(
         .as_ref()
         .and_then(|choices| choices.turn_down())
         .filter(|_| payer.is_some());
-    let turn_down_hint = turn_down.as_ref().map(|(_, hint)| hint.clone());
     let for_turn_down = entry.clone();
     let turn_down_button = match (acting, payer, turn_down.clone()) {
         (Some((member, _)), Some(payer), Some((action, hint))) => rsx! {
@@ -104,7 +122,6 @@ pub(in crate::ui) fn ProposalRow(
         },
         _ => rsx! {},
     };
-    let draft = status == Some(ProposalStatus::Draft);
     // Every vote the proposal still needs, cast by the wallets the row names.
     let combined = acting.and_then(|_| combined_approval(&state, &entry, &chosen, approval_nonce));
     // Another wallet of this device that executes it when the acting member
@@ -127,7 +144,6 @@ pub(in crate::ui) fn ProposalRow(
     // with someone to pay, whoever the acting member is.
     let closing = available_close(squad.program, &state, &entry);
     let for_close = entry.clone();
-    let finished = matches!(verdict, Some(Err(NoAction::Finished)));
     let for_action = entry.clone();
     let for_together = entry.clone();
 
@@ -156,21 +172,6 @@ pub(in crate::ui) fn ProposalRow(
                                 Address { pubkey: tx.vault }
                                 span { class: "muted", "stored by" }
                                 Address { pubkey: tx.creator }
-                            }
-                            if !tx.lookup_tables.is_empty() {
-                                p { class: "chip-row",
-                                    span { class: "muted",
-                                        if tx.lookup_tables.len() == 1 { "Reads accounts from lookup table" } else { "Reads accounts from lookup tables" }
-                                    }
-                                    for table in tx.lookup_tables.iter().copied() {
-                                        Address { key: "{table}", pubkey: table, warn: tx.deactivated_tables.contains(&table) }
-                                    }
-                                }
-                                if tx.deactivated_tables.is_empty() {
-                                    p { class: "hint", "A lookup table's entries never change once written, so what is shown here is what runs." }
-                                } else {
-                                    p { class: "warn", "A table marked here was deactivated by its authority. It still works until it is closed, and once it is, this transaction can never be executed." }
-                                }
                             }
                             ReadInstructions {
                                 instructions: tx.instructions.clone(),
@@ -228,8 +229,8 @@ pub(in crate::ui) fn ProposalRow(
                             p { class: "muted", "The account that held this transaction no longer exists." }
                         },
                     }
-                    if let (Some(standing), Some(status)) = (standing.clone(), status) {
-                        ProposalVotes { standing, status, acting: member }
+                    if let Some(standing) = standing.clone() {
+                        ProposalVotes { standing, acting: member }
                     }
                     match (verdict, acting, combined) {
                         (Some(_), Some((_, None)), Some(_)) => rsx! {
@@ -237,9 +238,6 @@ pub(in crate::ui) fn ProposalRow(
                         },
                         (Some(verdict), Some((member, Some(payer))), Some(combined)) => {
                             let votes = combined.voters.len();
-                            let voters = combined.voters.clone();
-                            let executor = Some(combined.executor).filter(|key| !voters.contains(key));
-                            let offline = combined.durable_nonce.is_some();
                             let together = ProposalRequest::Combined(combined);
                             rsx! {
                                 div { class: "btn-row",
@@ -259,29 +257,10 @@ pub(in crate::ui) fn ProposalRow(
                                     }
                                     {turn_down_button.clone()}
                                 }
-                                p { class: "chip-row hint",
-                                    span { "Together casts the {votes} approvals this proposal still needs in one transaction and executes it:" }
-                                    for key in voters.iter().copied() {
-                                        Address { key: "{key}", pubkey: key }
-                                    }
-                                    if let Some(executor) = executor {
-                                        span { "It is executed by" }
-                                        Address { pubkey: executor }
-                                    }
-                                }
-                                if offline {
-                                    p { class: "hint", "Each offline wallet signs the same transaction on its own device." }
-                                }
-                                match verdict {
-                                    Ok(_) => rsx! {
-                                        p { class: "hint", "Separate approves as the acting member only." }
-                                    },
-                                    Err(reason) => rsx! {
+                                if let Err(reason) = verdict {
+                                    if worth_a_line(&reason) {
                                         p { class: "hint", "{reason}" }
-                                    },
-                                }
-                                if let Some(hint) = turn_down_hint.clone() {
-                                    p { class: "hint", "{hint}" }
+                                    }
                                 }
                             }
                         }
@@ -296,15 +275,6 @@ pub(in crate::ui) fn ProposalRow(
                                     {action_label(action)}
                                 }
                                 {turn_down_button.clone()}
-                            }
-                            if action == ProposalAction::ApproveAndExecute {
-                                p { class: "hint", "This approval is the last one {label} needs, so the same transaction executes it." }
-                            }
-                            if action == ProposalAction::Activate {
-                                p { class: "hint", {activation_hint(&entry)} }
-                            }
-                            if let Some(hint) = turn_down_hint.clone() {
-                                p { class: "hint", "{hint}" }
                             }
                         },
                         (Some(Err(NoAction::MayNotExecute)), Some((_, Some(payer))), None) if instead.is_some() => {
@@ -322,12 +292,8 @@ pub(in crate::ui) fn ProposalRow(
                                     {turn_down_button.clone()}
                                 }
                                 p { class: "chip-row hint",
-                                    span { "The acting member may not execute, so" }
+                                    span { "Executed by" }
                                     Address { pubkey: member }
-                                    span { "does: another wallet of this device that this multisig lets execute." }
-                                }
-                                if let Some(hint) = turn_down_hint.clone() {
-                                    p { class: "hint", "{hint}" }
                                 }
                             }
                         }
@@ -337,35 +303,15 @@ pub(in crate::ui) fn ProposalRow(
                         // Nothing moves it forward, but it can be turned down:
                         // what could not be read, what the member approved, or
                         // what a time lock holds.
-                        (Some(Err(reason)), _, _) if turn_down.is_some() => {
-                            let unread = matches!(reason, NoAction::Unreadable | NoAction::Gone);
-                            // A refused change says why above, with its addresses.
-                            let said_above = matches!(reason, NoAction::Refused(_));
-                            let needs_no_reading = match turn_down.as_ref().map(|(action, _)| *action) {
-                                Some(ProposalAction::Cancel) => " Voting to cancel it needs no reading.",
-                                _ => " Rejecting it needs no reading.",
-                            };
-                            rsx! {
-                                div { class: "btn-row", {turn_down_button.clone()} }
-                                if !said_above {
-                                    p { class: "hint",
-                                        "{reason}"
-                                        if unread { "{needs_no_reading}" }
-                                    }
-                                }
-                                if let Some(hint) = turn_down_hint.clone() {
-                                    p { class: "hint", "{hint}" }
-                                }
-                            }
-                        }
-                        (Some(Err(reason)), _, _) => rsx! {
-                            // "Nothing is left to do" is not so beside Close.
-                            if !matches!(reason, NoAction::Refused(_)) && !(finished && closing.is_ok() && payer.is_some()) {
+                        (Some(Err(reason)), _, _) if turn_down.is_some() => rsx! {
+                            div { class: "btn-row", {turn_down_button.clone()} }
+                            if worth_a_line(&reason) {
                                 p { class: "hint", "{reason}" }
                             }
-                            // For someone looking for a way to cancel a draft.
-                            if draft && reason == NoAction::Draft {
-                                p { class: "hint", "{DRAFT_CANNOT_BE_CANCELLED}" }
+                        },
+                        (Some(Err(reason)), _, _) => rsx! {
+                            if worth_a_line(&reason) {
+                                p { class: "hint", "{reason}" }
                             }
                         },
                         (None, _, _) => rsx! {},
@@ -380,33 +326,19 @@ pub(in crate::ui) fn ProposalRow(
                                         "Close accounts"
                                     }
                                 }
-                                RentReturned { closings: vec![closing.clone()] }
                             }
                         }
+                        // Where a person would look for Close and not find
+                        // it: the button is there, and says what is missing.
                         (Err(why), _) if why.worth_saying(&entry) => rsx! {
-                            p { class: "hint", "{why}" }
+                            div { class: "btn-row",
+                                button { class: "sm", disabled: true, title: SET_RENT_COLLECTOR,
+                                    "Close accounts"
+                                }
+                            }
                         },
                         _ => rsx! {},
                     }
-                }
-            }
-        }
-    }
-}
-
-/// Where the rent of `closings` goes and how much: one short line beside
-/// Close.
-#[component]
-pub(in crate::ui) fn RentReturned(closings: Vec<Closing>) -> Element {
-    let returns = wallet_core::proposals::rent_returned(&closings);
-    rsx! {
-        p { class: "chip-row hint",
-            for (at, (collector, lamports)) in returns.into_iter().enumerate() {
-                span { key: "{collector}", class: "proposal-voter",
-                    span {
-                        if at == 0 { "Returns {format_sol(lamports)} to" } else { "and {format_sol(lamports)} to" }
-                    }
-                    Address { pubkey: collector }
                 }
             }
         }

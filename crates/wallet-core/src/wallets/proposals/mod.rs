@@ -299,7 +299,7 @@ pub enum NoAction {
     Refused(ChangeRefusal),
     /// An approved change to the multisig made stale since: both programs
     /// refuse to execute it.
-    #[error("The multisig changed after this change to it was made, so it can never be executed: both programs refuse a stale change to the multisig, even an approved one.")]
+    #[error("The multisig changed after this change to it was made, so it can never be executed.")]
     StaleChange,
     /// A change this app reads but does not execute.
     #[error("{0}")]
@@ -423,29 +423,6 @@ pub fn available_action(
         ProposalStatus::Executed => Err(NoAction::Finished),
     }
 }
-
-/// What opening draft `entry` for votes does, said before it is pressed, and
-/// what else can be done to a draft.
-pub fn activation_hint(entry: &ProposalEntry) -> String {
-    let mut hint = "Opening it lets the members vote on it. It approves nothing.".to_string();
-    match &entry.stored {
-        Stored::Vault(_) | Stored::Config(_) => {}
-        Stored::Missing => hint.push_str(
-            " Its stored transaction is gone, so once open it can be rejected but never executed.",
-        ),
-        Stored::LookupTables(_) | Stored::Other => hint.push_str(
-            " This app cannot read what it holds, so once open it can be rejected here but not approved.",
-        ),
-    }
-    hint.push(' ');
-    hint.push_str(DRAFT_CANNOT_BE_CANCELLED);
-    hint
-}
-
-/// What a person looking for a way to cancel a draft is told: neither
-/// program rejects or cancels a draft.
-pub const DRAFT_CANNOT_BE_CANCELLED: &str =
-    "A draft cannot be cancelled: left as it is, no one can vote on it or execute it.";
 
 /// A rejection a member may cast, and what it does.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

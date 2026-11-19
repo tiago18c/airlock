@@ -126,7 +126,7 @@ fn a_member_is_added_and_the_threshold_raised_by_proposal() {
             said,
             [
                 "Add Erin as a member that may vote",
-                "Change the threshold from 2 to 3"
+                "Change the threshold from 2 to 3 out of 4 voting members"
             ]
         );
         assert_eq!(
