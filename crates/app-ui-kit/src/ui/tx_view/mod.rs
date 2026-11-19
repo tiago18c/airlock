@@ -226,9 +226,8 @@ fn summary_addresses(instructions: &[ExplainedIx], named: &mut HashSet<Pubkey>) 
                         named.insert(key.address);
                     }
                 }
-                InnerKind::Execution { nonce_account, .. } => {
-                    named.insert(*nonce_account);
-                }
+                // Summary leaves the nonce to Inspect.
+                InnerKind::Execution { .. } => {}
                 InnerKind::SquadsTransaction { vault, .. } => {
                     named.insert(*vault);
                 }
@@ -360,21 +359,22 @@ fn InnerBlock(inner: InnerMessage, inspect: bool) -> Element {
                         }
                     }
                 },
+                // Summary says who authorized and what runs. The nonce that
+                // lets it run once is Inspect's.
+                InnerKind::Execution { .. } if !inspect => rsx! {},
                 InnerKind::Execution { nonce_account, nonce_authority, nonce_value } => rsx! {
                     div { class: "chip-row inner-head",
                         span { "Runs once, when nonce" }
                         Address { pubkey: nonce_account }
                         span { "is next in line" }
                     }
-                    if inspect {
-                        div { class: "chip-row",
-                            span { class: "muted", "nonce authority" }
-                            Address { pubkey: nonce_authority }
-                        }
-                        p { class: "muted",
-                            "signed against nonce value "
-                            code { class: "mono", "{nonce_value}" }
-                        }
+                    div { class: "chip-row",
+                        span { class: "muted", "nonce authority" }
+                        Address { pubkey: nonce_authority }
+                    }
+                    p { class: "muted",
+                        "signed against nonce value "
+                        code { class: "mono", "{nonce_value}" }
                     }
                 },
                 InnerKind::SquadsTransaction { vault, vault_index } => rsx! {
@@ -478,9 +478,28 @@ fn InnerBlock(inner: InnerMessage, inspect: bool) -> Element {
                     }
                 },
             }
-            InstructionList { instructions: inner.instructions.clone(), inspect }
+            InstructionList { instructions: carried(&inner.instructions, inspect), inspect }
         }
     }
+}
+
+/// The instructions a block lists. In Summary the executor's `Execute` is
+/// left out and what it runs is listed in its place, right under who
+/// authorized it. Inspect keeps the `Execute`, with its nonce.
+fn carried(instructions: &[ExplainedIx], inspect: bool) -> Vec<ExplainedIx> {
+    if inspect {
+        return instructions.to_vec();
+    }
+    let mut listed = Vec::new();
+    for ix in instructions {
+        match &ix.inner {
+            Some(inner) if matches!(inner.kind, InnerKind::Execution { .. }) => {
+                listed.extend(carried(&inner.instructions, inspect));
+            }
+            _ => listed.push(ix.clone()),
+        }
+    }
+    listed
 }
 
 /// No stored IDL reads this instruction, so nothing is claimed about it.
