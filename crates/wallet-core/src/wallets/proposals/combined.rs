@@ -263,7 +263,10 @@ impl ProposalRequest {
     /// for the most heap (see `relay::with_heap_size`).
     pub fn executes(&self) -> bool {
         match self {
-            Self::Single { action, .. } => *action != ProposalAction::Approve,
+            Self::Single { action, .. } => matches!(
+                action,
+                ProposalAction::Execute | ProposalAction::ApproveAndExecute
+            ),
             Self::Combined(_) => true,
         }
     }

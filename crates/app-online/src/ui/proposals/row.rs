@@ -1,5 +1,12 @@
 //! One proposal: its status, how its votes stand, what it stores, and what
 //! this device may do with it.
+//!
+//! What the acting member may do comes from `wallet_core::proposals`
+//! (`member_choices`): the action that moves the proposal forward, which is
+//! the primary button, and a rejection beside it. Reject is the careful
+//! choice, never the primary: a danger-outlined button whose hint says what
+//! the rejection does, such as rejecting the proposal for good, before it is
+//! pressed. It opens the transaction in Review and Sign like the others.
 
 use super::votes::{vote_chips, ProposalVotes};
 use super::*;
@@ -11,6 +18,7 @@ fn action_label(action: ProposalAction) -> &'static str {
         ProposalAction::Approve => "Approve",
         ProposalAction::Execute => "Execute",
         ProposalAction::ApproveAndExecute => "Approve and execute",
+        ProposalAction::Reject => "Reject",
     }
 }
 
@@ -42,7 +50,32 @@ pub(in crate::ui) fn ProposalRow(
         (Some(proposal), Some(standing)) => vote_chips(proposal, &standing.counts, member),
         _ => Vec::new(),
     };
-    let verdict = acting.map(|(member, _)| available_action(&state, &entry, &member, now));
+    let choices = acting.map(|(member, _)| member_choices(&state, &entry, &member, now));
+    let verdict = choices.as_ref().map(|choices| choices.forward.clone());
+    let payer = acting.and_then(|(_, payer)| payer);
+    // Offered only with someone to pay for it, like every other action.
+    let rejection = choices
+        .as_ref()
+        .and_then(|choices| choices.reject)
+        .filter(|_| payer.is_some());
+    let reject_hint = rejection.map(|rejection| rejection.hint());
+    let for_reject = entry.clone();
+    let reject_button = match (acting, payer, rejection) {
+        (Some((member, _)), Some(payer), Some(_)) => {
+            let title = reject_hint.clone().unwrap_or_default();
+            rsx! {
+                button { class: "danger sm", disabled: busy, title: "{title}",
+                    onclick: move |_| on_act.call((
+                        for_reject.clone(),
+                        ProposalRequest::Single { member, action: ProposalAction::Reject },
+                        payer,
+                    )),
+                    {action_label(ProposalAction::Reject)}
+                }
+            }
+        }
+        _ => rsx! {},
+    };
     // Every vote the proposal still needs, cast by the wallets the row names.
     let combined = acting.and_then(|_| combined_approval(&state, &entry, &chosen, approval_nonce));
     // Another wallet of this device that executes it when the acting member
@@ -166,6 +199,7 @@ pub(in crate::ui) fn ProposalRow(
                                             {action_label(action)}
                                         }
                                     }
+                                    {reject_button.clone()}
                                 }
                                 p { class: "chip-row hint",
                                     span { "Together casts the {votes} approvals this proposal still needs in one transaction and executes it:" }
@@ -188,6 +222,9 @@ pub(in crate::ui) fn ProposalRow(
                                         p { class: "hint", "{reason}" }
                                     },
                                 }
+                                if let Some(hint) = reject_hint.clone() {
+                                    p { class: "hint", "{hint}" }
+                                }
                             }
                         }
                         (Some(Ok(action)), Some((member, Some(payer))), None) => rsx! {
@@ -200,9 +237,13 @@ pub(in crate::ui) fn ProposalRow(
                                     )),
                                     {action_label(action)}
                                 }
+                                {reject_button.clone()}
                             }
                             if action == ProposalAction::ApproveAndExecute {
                                 p { class: "hint", "This approval is the last one {label} needs, so the same transaction executes it." }
+                            }
+                            if let Some(hint) = reject_hint.clone() {
+                                p { class: "hint", "{hint}" }
                             }
                         },
                         (Some(Err(NoAction::MayNotExecute)), Some((_, Some(payer))), None) if instead.is_some() => {
@@ -228,6 +269,21 @@ pub(in crate::ui) fn ProposalRow(
                         (Some(Ok(_)), _, _) => rsx! {
                             p { class: "hint", "Pick a hot wallet to pay fees for this wallet first." }
                         },
+                        // Nothing moves it forward, but it can be rejected: what
+                        // could not be read, or what the member approved.
+                        (Some(Err(reason)), _, _) if rejection.is_some() => {
+                            let unread = matches!(reason, NoAction::Unreadable | NoAction::Gone);
+                            rsx! {
+                                div { class: "btn-row", {reject_button.clone()} }
+                                p { class: "hint",
+                                    "{reason}"
+                                    if unread { " Rejecting it needs no reading." }
+                                }
+                                if let Some(hint) = reject_hint.clone() {
+                                    p { class: "hint", "{hint}" }
+                                }
+                            }
+                        }
                         (Some(Err(reason)), _, _) => rsx! {
                             p { class: "hint", "{reason}" }
                         },

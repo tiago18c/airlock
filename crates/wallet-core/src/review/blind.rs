@@ -11,7 +11,9 @@
 //! the bytes the program will read. A proposal the same list of instructions
 //! stores and opens is not blind, since the transaction then holds what is
 //! approved. Only the programs named here are known: another program can keep
-//! what it approves elsewhere too, and reads as whatever its IDL says.
+//! what it approves elsewhere too, and reads as whatever its IDL says. A
+//! Squads rejection is not among them: it says no to what the proposal holds,
+//! whatever that is, and reads as its IDL says ("rejects proposal ...").
 //!
 //! A v4 vote, or execution, is not blind either when a Squads clear signing
 //! check pins it ([`super::checked`]): the check carries what the proposal
@@ -567,6 +569,26 @@ mod tests {
             .unwrap();
         let again = squad.approve(4, &pk(9));
         assert_eq!(whats(vec![carrying, again]), [SQUADS_APPROVAL]);
+    }
+
+    #[test]
+    fn a_rejection_says_yes_to_nothing_on_either_program() {
+        for squad in squads() {
+            let reject = squad.reject(3, &pk(1));
+            assert!(
+                whats(vec![reject.clone()]).is_empty(),
+                "{:?}",
+                squad.program
+            );
+            assert!(
+                crate::review::risk::risks_in(&explained(vec![reject.clone()])).is_empty(),
+                "{:?}",
+                squad.program
+            );
+            // Beside an approval of another proposal, only that one is told.
+            let both = vec![reject, squad.approve(4, &pk(1))];
+            assert_eq!(whats(both), [SQUADS_APPROVAL], "{:?}", squad.program);
+        }
     }
 
     #[test]

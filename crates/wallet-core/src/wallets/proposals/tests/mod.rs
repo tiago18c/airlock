@@ -3,6 +3,7 @@ use crate::fixtures::{pk, transfer};
 use crate::wallets::squads::{SquadsMember, PERMISSION_ALL, PERMISSION_INITIATE};
 
 mod combined;
+mod reject;
 mod shape;
 mod votes;
 
@@ -181,16 +182,21 @@ fn what_cannot_be_read_or_is_over_offers_nothing() {
         Ok(ProposalAction::Execute)
     );
 
-    for status in [
-        ProposalStatus::Executed,
-        ProposalStatus::Rejected,
-        ProposalStatus::Cancelled,
-    ] {
+    for status in [ProposalStatus::Executed, ProposalStatus::Cancelled] {
         assert_eq!(
             available_action(&alone, &entry(&squad, status, &[me]), &me, 0),
             Err(NoAction::Finished)
         );
     }
+    assert_eq!(
+        available_action(
+            &alone,
+            &entry(&squad, ProposalStatus::Rejected, &[]),
+            &me,
+            0
+        ),
+        Err(NoAction::Rejected)
+    );
     // A state the programs no longer set, and never leave.
     assert_eq!(
         available_action(

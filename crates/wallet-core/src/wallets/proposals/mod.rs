@@ -15,6 +15,12 @@
 //! permissions, the threshold and the time lock. This module decides that and
 //! builds the instructions. Signing happens elsewhere. Who voted how, and how
 //! the programs count those votes, is in `votes`.
+//!
+//! A member may do two things at once to an open proposal: move it forward
+//! (approve, and execute when that approval completes it) and reject it.
+//! [`member_choices`] gives both. Moving it forward needs the stored
+//! transaction read; rejecting does not, since saying no to what one cannot
+//! read is the safe answer.
 
 use crate::chain::RawAccount;
 use crate::ids::ADDRESS_LOOKUP_TABLE_PROGRAM_ID;
@@ -164,6 +170,10 @@ pub enum ProposalAction {
     /// This approval is the last one needed and nothing delays execution, so
     /// both go in one transaction.
     ApproveAndExecute,
+    /// A vote against it. [`available_action`] never gives it: whether a
+    /// member may reject is [`available_rejection`], beside the action that
+    /// moves the proposal forward.
+    Reject,
 }
 
 /// Why a member can do nothing to a proposal right now.
@@ -196,14 +206,19 @@ pub enum NoAction {
     Unreadable,
     #[error("The stored transaction is gone, so it cannot be executed.")]
     Gone,
+    #[error("It was rejected for good. A rejected proposal cannot be reopened: to do what it holds, the transaction would have to be proposed again.")]
+    Rejected,
     #[error("Nothing is left to do.")]
     Finished,
 }
 
-/// What `member` can do to `entry` at time `now` (Unix seconds).
+/// What `member` can do to move `entry` forward at time `now` (Unix
+/// seconds): approve it, execute it, or both.
 ///
 /// A transaction this app cannot read is never offered for approval: a vote
-/// for something that was not read is not a vote.
+/// for something that was not read is not a vote. A member that rejected may
+/// still approve while the proposal is open: the programs take its rejection
+/// back.
 pub fn available_action(
     state: &SquadState,
     entry: &ProposalEntry,
@@ -229,15 +244,17 @@ pub fn available_action(
             if entry.stale {
                 return Err(NoAction::Stale);
             }
+            // Before reading: a member that may not vote could not approve
+            // what it read either.
+            if permissions & PERMISSION_VOTE == 0 {
+                return Err(NoAction::MayNotVote);
+            }
             readable?;
             let threshold = usize::from(state.threshold);
             if proposal.approved.contains(member) {
                 return Err(NoAction::WaitingForOthers {
                     missing: threshold.saturating_sub(proposal.approved.len()),
                 });
-            }
-            if permissions & PERMISSION_VOTE == 0 {
-                return Err(NoAction::MayNotVote);
             }
             let completes = proposal.approved.len() + 1 >= threshold;
             Ok(if completes && state.time_lock == 0 && may_execute {
@@ -260,9 +277,93 @@ pub fn available_action(
             Ok(ProposalAction::Execute)
         }
         ProposalStatus::Executing => Err(NoAction::Executing),
-        ProposalStatus::Rejected | ProposalStatus::Executed | ProposalStatus::Cancelled => {
-            Err(NoAction::Finished)
+        ProposalStatus::Rejected => Err(NoAction::Rejected),
+        ProposalStatus::Executed | ProposalStatus::Cancelled => Err(NoAction::Finished),
+    }
+}
+
+/// A rejection a member may cast, and what it does.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Rejection {
+    /// How many more rejections reject the proposal once this one is in.
+    /// Zero when this one does: the proposal is then rejected for good.
+    pub missing_after: usize,
+    /// The member had approved. The programs take that approval back.
+    pub replaces_approval: bool,
+}
+
+impl Rejection {
+    /// This rejection reaches the cutoff, and the proposal is rejected for
+    /// good.
+    pub fn last(&self) -> bool {
+        self.missing_after == 0
+    }
+
+    /// What it does, said before it is cast.
+    pub fn hint(&self) -> String {
+        let mut hint = String::new();
+        if self.replaces_approval {
+            hint.push_str("Rejecting takes back the acting member's approval. ");
         }
+        hint.push_str(&match self.missing_after {
+            0 => "This rejection is the last one needed: the proposal is rejected for good, and its transaction would have to be proposed again.".to_string(),
+            1 => "After this rejection, 1 more rejects the proposal for good.".to_string(),
+            more => format!("After this rejection, {more} more reject the proposal for good."),
+        });
+        hint
+    }
+}
+
+/// Whether `member` may reject `entry`, and what its rejection would do.
+/// `None` when it may not.
+///
+/// Both programs take a rejection from a member with the vote permission on
+/// an open proposal that is not stale, whatever the stored transaction is
+/// and whether or not it still exists: they read only the proposal. A
+/// member's rejection takes back its approval, and a member that already
+/// rejected cannot reject again.
+pub fn available_rejection(
+    state: &SquadState,
+    entry: &ProposalEntry,
+    member: &Pubkey,
+) -> Option<Rejection> {
+    let permissions = state
+        .members
+        .iter()
+        .find(|known| known.key == *member)?
+        .permissions;
+    let proposal = entry.proposal.as_ref()?;
+    let open = proposal.status == ProposalStatus::Active && !entry.stale;
+    if !open || permissions & PERMISSION_VOTE == 0 || proposal.rejected.contains(member) {
+        return None;
+    }
+    let rejected = vote_counts(state, proposal).rejected;
+    Some(Rejection {
+        missing_after: rejected.missing().saturating_sub(1),
+        replaces_approval: proposal.approved.contains(member),
+    })
+}
+
+/// Everything `member` may do to `entry` at time `now`.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct MemberChoices {
+    /// What moves it forward, or why nothing does: [`available_action`].
+    pub forward: Result<ProposalAction, NoAction>,
+    /// Its rejection, when it may cast one: [`available_rejection`].
+    pub reject: Option<Rejection>,
+}
+
+/// What `member` may do to `entry` at time `now` (Unix seconds): the action
+/// that moves it forward and the rejection, each when the programs take it.
+pub fn member_choices(
+    state: &SquadState,
+    entry: &ProposalEntry,
+    member: &Pubkey,
+    now: i64,
+) -> MemberChoices {
+    MemberChoices {
+        forward: available_action(state, entry, member, now),
+        reject: available_rejection(state, entry, member),
     }
 }
 
@@ -315,7 +416,8 @@ pub fn executor_instead<'a>(
 }
 
 /// The instructions of `action` on `entry`, which `member` signs. `None` when
-/// the action needs the stored transaction and it could not be read.
+/// the action needs the stored transaction and it could not be read. A
+/// rejection never does.
 pub fn action_instructions(
     squad: &Squad,
     entry: &ProposalEntry,
@@ -331,5 +433,6 @@ pub fn action_instructions(
         ProposalAction::Approve => vec![approve()],
         ProposalAction::Execute => vec![execute()?],
         ProposalAction::ApproveAndExecute => vec![approve(), execute()?],
+        ProposalAction::Reject => vec![squad.reject(entry.index, member)],
     })
 }

@@ -635,6 +635,22 @@ fn shape(instructions: Vec<Instruction>) -> ApprovalShape {
     approval_shape(&explained(instructions))
 }
 
+/// A rejection needs no reading: no check is offered for it, and a check
+/// that expects one pins nothing, a rejection or an approval.
+#[test]
+fn a_rejection_is_no_vote_to_check() {
+    let reject = squad().reject(4, &pk(1));
+    assert_eq!(shape(vec![reject.clone()]), ApprovalShape::Other);
+    let rejecting = ProposalCheck {
+        action: VoteAction::Reject,
+        ..check_of(pk(1))
+    }
+    .instruction(&[]);
+    assert!(checks(vec![rejecting.clone(), reject.clone()]).is_empty());
+    assert!(blind_in(&explained(vec![rejecting.clone(), reject])).is_empty());
+    still_blind(vec![rejecting, vote(pk(1))]);
+}
+
 fn open(votes: &[Pubkey]) -> OpenApproval {
     OpenApproval {
         squad: squad(),
