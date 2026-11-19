@@ -3,7 +3,10 @@
 //! Each member is named as everywhere else, through [`Address`]: a wallet of
 //! this device by its label, an address book entry by its name, else its
 //! address. The acting member is marked "you", the other wallets of this
-//! device "on this device". A line shows only when someone is on it.
+//! device "on this device". Each kind of vote is a list with one member to
+//! a line, so a mark is never taken for the next member. A list shows only
+//! when someone is on it. How many votes decide it is on the chips of the
+//! row's head, and in their tooltips, not said again here.
 
 use super::*;
 use wallet_core::proposals::{vote_of, Standing, Vote, VoteCounts, Voter};
@@ -70,11 +73,7 @@ fn cutoff_words(counts: &VoteCounts) -> String {
 }
 
 #[component]
-pub(super) fn ProposalVotes(
-    standing: Standing,
-    status: ProposalStatus,
-    acting: Option<Pubkey>,
-) -> Element {
+pub(super) fn ProposalVotes(standing: Standing, acting: Option<Pubkey>) -> Element {
     let session = use_context::<Session>();
     let device: Vec<Pubkey> = (session.wallets)()
         .summaries
@@ -101,35 +100,28 @@ pub(super) fn ProposalVotes(
         ("Voted to cancel", standing.cancelled.clone()),
         ("Yet to vote", waiting),
     ];
-    let open_with_rejections = status == ProposalStatus::Active && !standing.rejected.is_empty();
-    let approved_with_cancels =
-        status == ProposalStatus::Approved && standing.counts.cancelled.count > 0;
 
     rsx! {
         div { class: "proposal-votes",
             for (name, voters) in lines.into_iter().filter(|(_, voters)| !voters.is_empty()) {
-                p { key: "{name}", class: "chip-row",
+                div { key: "{name}", class: "proposal-vote-group",
                     span { class: "muted", "{name}" }
-                    for voter in voters {
-                        span { key: "{voter.key}", class: "proposal-voter",
-                            Address { pubkey: voter.key, warn: !voter.member }
-                            if acting == Some(voter.key) {
-                                span { class: "chip", "you" }
-                            } else if device.contains(&voter.key) {
-                                span { class: "chip", "on this device" }
-                            }
-                            if !voter.member {
-                                span { class: "chip warn", "no longer a member" }
+                    ul { class: "proposal-vote-list",
+                        for voter in voters {
+                            li { key: "{voter.key}", class: "proposal-voter",
+                                Address { pubkey: voter.key, warn: !voter.member }
+                                if acting == Some(voter.key) {
+                                    span { class: "chip", "you" }
+                                } else if device.contains(&voter.key) {
+                                    span { class: "chip", "on this device" }
+                                }
+                                if !voter.member {
+                                    span { class: "chip warn", "no longer a member" }
+                                }
                             }
                         }
                     }
                 }
-            }
-            if open_with_rejections {
-                p { class: "hint", "{cutoff_words(&standing.counts)}" }
-            }
-            if approved_with_cancels {
-                p { class: "hint", "{cancel_words(&standing.counts)}" }
             }
             if gone {
                 p { class: "hint", "A member marked here left the multisig after voting. Its vote stays on the proposal, though a former member's vote to cancel no longer counts." }

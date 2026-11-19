@@ -136,7 +136,7 @@ pub(in crate::ui) fn ChangeSection(id: WalletId, on_done: EventHandler<()>) -> E
                 }
                 if add().is_some() {
                     div { class: "setting-row",
-                        span { class: "setting-label", "May" }
+                        span { class: "setting-label", "Permissions" }
                         div { class: "setting-value",
                             {permission(PERMISSION_INITIATE, "propose")}
                             {permission(PERMISSION_VOTE, "vote")}

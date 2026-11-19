@@ -1,5 +1,5 @@
-//! A change to the multisig in words, what the multisig looks like after it,
-//! and what a careful member would want pointed out.
+//! A change to the multisig in words, and what the multisig looks like
+//! after it.
 //!
 //! The actions run in order on the multisig as it is when the change is
 //! executed. Executing a change needs it not stale, and every change to the
@@ -11,8 +11,7 @@
 //! least one member that may propose, one that may vote and one that may
 //! execute, a threshold from 1 to the number of voters, no member twice, a
 //! time lock of at most three months. A change whose result fails that can
-//! never be executed, so it is said as such ([`ChangeRefusal`]) and not
-//! warned about as if it could happen.
+//! never be executed, and is said as such ([`ChangeRefusal`]).
 
 use super::*;
 use crate::units::format_sol;
@@ -127,6 +126,7 @@ fn day_words(seconds: i64) -> String {
 /// from, as the actions before them left it, when `state` is known.
 pub fn change_lines(state: Option<&SquadState>, actions: &[ConfigAction]) -> Vec<Said> {
     let mut threshold = state.map(|state| state.threshold);
+    let out_of = state.map(|state| voters_after(state, actions));
     let mut time_lock = state.map(|state| state.time_lock);
     actions
         .iter()
@@ -144,9 +144,10 @@ pub fn change_lines(state: Option<&SquadState>, actions: &[ConfigAction]) -> Vec
                     Some(before) if before == *new => {
                         Said::new(format!("Set the threshold to {new}, as it is already"))
                     }
-                    Some(before) => {
-                        Said::new(format!("Change the threshold from {before} to {new}"))
-                    }
+                    Some(before) => Said::new(format!(
+                        "Change the threshold from {before} to {new}{}",
+                        out_of.as_deref().unwrap_or_default()
+                    )),
                 };
                 threshold = Some(*new);
                 said
@@ -241,6 +242,39 @@ pub fn change_lines(state: Option<&SquadState>, actions: &[ConfigAction]) -> Vec
         .collect()
 }
 
+/// " out of 5 members": how many members may vote once every action of the
+/// change has run, which is what its threshold is counted against. It says
+/// "voting members" when some member may not vote.
+fn voters_after(state: &SquadState, actions: &[ConfigAction]) -> String {
+    let mut members: Vec<(Pubkey, u8)> = state
+        .members
+        .iter()
+        .map(|member| (member.key, member.permissions))
+        .collect();
+    for action in actions {
+        match action {
+            ConfigAction::AddMember(member) => {
+                if !members.iter().any(|(key, _)| *key == member.key) {
+                    members.push((member.key, member.permissions));
+                }
+            }
+            ConfigAction::RemoveMember(key) => members.retain(|(known, _)| known != key),
+            _ => {}
+        }
+    }
+    let voters = members
+        .iter()
+        .filter(|(_, permissions)| permissions & PERMISSION_VOTE != 0)
+        .count();
+    let noun = match (voters == members.len(), voters) {
+        (true, 1) => "member",
+        (true, _) => "members",
+        (false, 1) => "voting member",
+        (false, _) => "voting members",
+    };
+    format!(" out of {voters} {noun}")
+}
+
 /// What the multisig would be after a change.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ChangeOutcome {
@@ -261,13 +295,6 @@ impl ChangeOutcome {
             .iter()
             .filter(|member| member.permissions & PERMISSION_VOTE != 0)
             .count()
-    }
-
-    fn permissions_of(&self, key: &Pubkey) -> Option<u8> {
-        self.members
-            .iter()
-            .find(|member| member.key == *key)
-            .map(|member| member.permissions)
     }
 }
 
@@ -489,69 +516,6 @@ pub fn outcome_line(state: &SquadState, outcome: &ChangeOutcome) -> Option<Said>
     }
     Some(said)
 }
-
-/// What a careful member would want pointed out about a change from
-/// `state` to `outcome`, when `acting` votes for it: the acting member
-/// leaving or losing a permission, a threshold that drops to one or that
-/// needs every voter, a member added with every permission.
-pub fn change_warnings(
-    state: &SquadState,
-    actions: &[ConfigAction],
-    outcome: &ChangeOutcome,
-    acting: Option<&Pubkey>,
-) -> Vec<Said> {
-    let mut warnings = Vec::new();
-    if let Some(acting) = acting {
-        let before = state
-            .members
-            .iter()
-            .find(|member| member.key == *acting)
-            .map(|member| member.permissions);
-        match (before, outcome.permissions_of(acting)) {
-            (Some(_), None) => warnings.push(
-                Said::new("It removes ").k(*acting).t(
-                    " from the members: this device acts as that member, and could no longer propose, vote or execute for the multisig.",
-                ),
-            ),
-            (Some(before), Some(after)) if before & !after != 0 => warnings.push(
-                Said::new("After it, ").k(*acting).t(format!(
-                    " may only {}, where it may {} now. This device acts as that member.",
-                    may(after),
-                    may(before)
-                )),
-            ),
-            _ => {}
-        }
-    }
-    let voters = outcome.voters();
-    if outcome.threshold == 1 && state.threshold > 1 {
-        warnings.push(Said::new(
-            "After it, one approval is enough: any single member that may vote can pass a proposal, including one that moves the vault's funds or changes the members.",
-        ));
-    } else if voters > 1
-        && usize::from(outcome.threshold) == voters
-        && (state.threshold != outcome.threshold || state.members.len() != outcome.members.len())
-    {
-        warnings.push(Said::new(format!(
-            "After it, all {voters} members that may vote have to approve every proposal: if one of them loses their key, nothing can pass any more, not even a change to the members."
-        )));
-    }
-    for action in actions {
-        if let ConfigAction::AddMember(member) = action {
-            if member.permissions == PERMISSION_ALL {
-                warnings.push(
-                    Said::new("It adds ")
-                        .k(member.key)
-                        .t(" with every permission: it may propose, vote and execute."),
-                );
-            }
-        }
-    }
-    warnings
-}
-
-/// What executing a change that makes earlier proposals stale does to them.
-pub const STALES_OTHERS: &str = "Once it is executed, every other proposal made so far can no longer be voted on, and approved changes to the multisig among them can no longer be executed.";
 
 /// A change's actions in a few words, for a closed row: "adds a member and
 /// changes the threshold", or "3 changes to the multisig".

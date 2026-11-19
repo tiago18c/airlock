@@ -317,7 +317,12 @@ fn InstructionBody(ix: ExplainedIx, inspect: bool) -> Element {
         if let Some(actions) = change {
             ol { class: "change-actions",
                 for (at, said) in wallet_core::squads::change_lines(None, &actions).into_iter().enumerate() {
-                    li { key: "{at}", crate::ui::SaidLine { said } }
+                    li { key: "{at}", class: "change-card",
+                        if actions.len() > 1 {
+                            span { class: "change-number", "{at + 1}" }
+                        }
+                        crate::ui::SaidLine { said }
+                    }
                 }
             }
         }

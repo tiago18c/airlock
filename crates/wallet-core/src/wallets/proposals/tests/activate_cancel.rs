@@ -83,14 +83,10 @@ fn a_stale_draft_can_no_longer_be_opened() {
 }
 
 #[test]
-fn opening_a_draft_needs_no_reading_and_says_what_it_does() {
+fn opening_a_draft_needs_no_reading() {
     let squad = Squad::smart_account(7);
     let (team, [me, _, _], _) = team();
     let mut draft = entry(&squad, ProposalStatus::Draft, &[]);
-    assert_eq!(
-        activation_hint(&draft),
-        "Opening it lets the members vote on it. It approves nothing. A draft cannot be cancelled: left as it is, no one can vote on it or execute it."
-    );
     draft.stored = Stored::Other;
     assert_eq!(
         available_action(&team, &draft, &me, 0),
@@ -100,14 +96,11 @@ fn opening_a_draft_needs_no_reading_and_says_what_it_does() {
         action_instructions(&squad, &draft, &me, ProposalAction::Activate),
         Some(vec![squad.activate(5, &me)])
     );
-    assert!(activation_hint(&draft)
-        .contains("This app cannot read what it holds, so once open it can be rejected here but not approved."));
     draft.stored = Stored::Missing;
     assert_eq!(
         available_action(&team, &draft, &me, 0),
         Ok(ProposalAction::Activate)
     );
-    assert!(activation_hint(&draft).contains("Its stored transaction is gone"));
 }
 
 #[test]

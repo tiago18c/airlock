@@ -385,7 +385,7 @@ fn each_action_reads_as_a_person_would_say_it_in_order() {
             "Add <5> as a member that may vote",
             "Add <6> as a member that may do nothing",
             "Remove Bob from the members",
-            "Change the threshold from 2 to 3",
+            "Change the threshold from 2 to 3 out of 4 voting members",
             "Set the threshold to 3, as it is already",
             "Set a time lock of 1 day: an approved proposal waits that long before it can be executed",
             "Change the time lock from 1 day to 1 hour",
@@ -604,7 +604,7 @@ fn what_the_program_refuses_is_said_as_never_executable() {
 }
 
 #[test]
-fn a_careful_member_is_warned_of_what_it_would_regret() {
+fn a_threshold_is_said_against_the_members_that_vote_after_the_whole_change() {
     let state = team(
         2,
         &[
@@ -613,56 +613,40 @@ fn a_careful_member_is_warned_of_what_it_would_regret() {
             (3, PERMISSION_ALL),
         ],
     );
-    let warn = |actions: &[ConfigAction], acting: Option<u8>| {
-        let outcome = change_outcome(SquadsProgram::V4, &state, actions, 0).unwrap();
-        let acting = acting.map(pk);
-        texts(&change_warnings(&state, actions, &outcome, acting.as_ref()))
+    let add = |n: u8, permissions: u8| {
+        ConfigAction::AddMember(SquadsMember {
+            key: pk(n),
+            permissions,
+        })
     };
-    // Nothing to say about an ordinary change.
-    assert!(warn(
-        &[ConfigAction::AddMember(SquadsMember {
-            key: pk(4),
-            permissions: PERMISSION_VOTE
-        })],
-        Some(1)
-    )
-    .is_empty());
+    let said = |actions: &[ConfigAction]| texts(&change_lines(Some(&state), actions)).join("; ");
     assert_eq!(
-        warn(&[ConfigAction::RemoveMember(pk(1))], Some(1)),
-        [
-            "It removes Alice from the members: this device acts as that member, and could no longer propose, vote or execute for the multisig.",
-            "After it, all 2 members that may vote have to approve every proposal: if one of them loses their key, nothing can pass any more, not even a change to the members.",
-        ]
+        said(&[ConfigAction::ChangeThreshold(3)]),
+        "Change the threshold from 2 to 3 out of 3 members"
     );
+    // The members the change itself adds count, wherever they come in it.
+    assert!(said(&[
+        ConfigAction::ChangeThreshold(4),
+        add(4, PERMISSION_ALL),
+        add(5, PERMISSION_ALL)
+    ])
+    .starts_with("Change the threshold from 2 to 4 out of 5 members"));
+    // A member that may not vote is not counted, and the words say so.
+    assert!(said(&[add(4, 0), ConfigAction::ChangeThreshold(3)])
+        .ends_with("Change the threshold from 2 to 3 out of 3 voting members"));
     assert_eq!(
-        warn(
-            &[
-                ConfigAction::RemoveMember(pk(1)),
-                ConfigAction::AddMember(SquadsMember {
-                    key: pk(1),
-                    permissions: PERMISSION_VOTE
-                })
-            ],
-            Some(1)
-        ),
-        ["After it, Alice may only vote, where it may propose, vote and execute now. This device acts as that member."]
+        said(&[
+            ConfigAction::RemoveMember(pk(2)),
+            ConfigAction::RemoveMember(pk(3)),
+            ConfigAction::ChangeThreshold(1)
+        ])
+        .rsplit("; ")
+        .next(),
+        Some("Change the threshold from 2 to 1 out of 1 member")
     );
+    // Without the multisig as it is, nothing is known to count.
     assert_eq!(
-        warn(&[ConfigAction::ChangeThreshold(1)], None),
-        ["After it, one approval is enough: any single member that may vote can pass a proposal, including one that moves the vault's funds or changes the members."]
-    );
-    assert_eq!(
-        warn(&[ConfigAction::ChangeThreshold(3)], None),
-        ["After it, all 3 members that may vote have to approve every proposal: if one of them loses their key, nothing can pass any more, not even a change to the members."]
-    );
-    assert_eq!(
-        warn(
-            &[ConfigAction::AddMember(SquadsMember {
-                key: pk(4),
-                permissions: PERMISSION_ALL
-            })],
-            None
-        ),
-        ["It adds Dave with every permission: it may propose, vote and execute."]
+        texts(&change_lines(None, &[ConfigAction::ChangeThreshold(3)])),
+        ["Set the threshold to 3"]
     );
 }
