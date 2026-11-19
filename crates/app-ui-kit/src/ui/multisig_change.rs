@@ -71,13 +71,6 @@ pub fn MultisigChange(
     let count = lines.len();
     rsx! {
         div { class: "multisig-change stack",
-            p { class: "muted",
-                if count == 1 {
-                    "A change to the multisig itself, with one action:"
-                } else {
-                    "A change to the multisig itself, with {count} actions, in this order:"
-                }
-            }
             ol { class: "change-actions",
                 for (at, said) in lines.into_iter().enumerate() {
                     li { key: "{at}", class: "change-card",

@@ -299,7 +299,7 @@ pub enum NoAction {
     Refused(ChangeRefusal),
     /// An approved change to the multisig made stale since: both programs
     /// refuse to execute it.
-    #[error("The multisig changed after this change to it was made, so it can never be executed: both programs refuse a stale change to the multisig, even an approved one.")]
+    #[error("The multisig changed after this change to it was made, so it can never be executed.")]
     StaleChange,
     /// A change this app reads but does not execute.
     #[error("{0}")]

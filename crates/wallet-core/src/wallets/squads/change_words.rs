@@ -1,5 +1,5 @@
-//! A change to the multisig in words, and what the multisig looks like
-//! after it.
+//! A change to the multisig in words, and what the multisig would be after
+//! it, for deciding whether the program would take it.
 //!
 //! The actions run in order on the multisig as it is when the change is
 //! executed. Executing a change needs it not stale, and every change to the
@@ -360,7 +360,6 @@ impl ChangeRefusal {
                 Said::new(format!("{head}{lower}"))
             }
         }
-        .t(" It can never be executed, so it is not offered for approval.")
     }
 }
 
@@ -488,33 +487,6 @@ pub fn change_outcome(
         return Err(ChangeRefusal::TimeLockTooLong(out.time_lock));
     }
     Ok(out)
-}
-
-/// "After this: 3 of 4 approvals needed · 1 day time lock", when the change
-/// moves the members, threshold or time lock. `None` when it does not.
-pub fn outcome_line(state: &SquadState, outcome: &ChangeOutcome) -> Option<Said> {
-    let mut before = state.members.clone();
-    before.sort_by_key(|member| member.key);
-    let same = before == outcome.members
-        && state.threshold == outcome.threshold
-        && state.time_lock == outcome.time_lock;
-    if same {
-        return None;
-    }
-    let mut said = Said::new(format!(
-        "After this: {} of {} approvals needed",
-        outcome.threshold,
-        outcome.members.len()
-    ));
-    if outcome.time_lock > 0 {
-        said = said.t(format!(
-            " · {} time lock",
-            time_lock_words(outcome.time_lock)
-        ));
-    } else if state.time_lock > 0 {
-        said = said.t(" · no time lock");
-    }
-    Some(said)
 }
 
 /// A change's actions in a few words, for a closed row: "adds a member and

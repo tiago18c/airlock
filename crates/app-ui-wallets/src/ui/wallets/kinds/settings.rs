@@ -635,14 +635,6 @@ pub(in crate::ui) fn WalletDetailsDialog(
         _ => false,
     };
     let network_words = wallet_core::Cluster::network_words(&session.cluster().network_key());
-    let controlled = match &kind {
-        Some(WalletKind::Squads {
-            program,
-            config_authority: Some(_),
-            ..
-        }) => Some(wallet_core::squads::authority_name(*program)),
-        _ => None,
-    };
     // A phone has no room for a name and a whole address on one line: it
     // shortens the address, as the Members rows do, and copy still copies
     // all of it.
@@ -791,11 +783,6 @@ pub(in crate::ui) fn WalletDetailsDialog(
                                 Some(payer) => rsx! { FactWallet { id: payer } },
                                 None => rsx! { span { class: "muted", "Nothing on this device" } },
                             }
-                        }
-                    }
-                    if let Some(authority) = controlled {
-                        p { class: "hint",
-                            "This multisig is controlled: its {authority} changes its members, threshold and time lock by itself, without a vote."
                         }
                     }
                     if let Some(label) = acting_outside {

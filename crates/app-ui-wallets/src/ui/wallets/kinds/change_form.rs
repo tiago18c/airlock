@@ -15,8 +15,7 @@ use super::*;
 use crate::ui::{AddressPicker, SaidLine};
 use wallet_core::proposals::{change_proposal, vet_change, CannotPropose, ChangeDraft};
 use wallet_core::squads::{
-    outcome_line, SquadsMember, PERMISSION_ALL, PERMISSION_EXECUTE, PERMISSION_INITIATE,
-    PERMISSION_VOTE,
+    SquadsMember, PERMISSION_ALL, PERMISSION_EXECUTE, PERMISSION_INITIATE, PERMISSION_VOTE,
 };
 
 /// The section of a multisig's Settings that proposes a change to it.
@@ -79,10 +78,6 @@ pub(in crate::ui) fn ChangeSection(id: WalletId, on_done: EventHandler<()>) -> E
     };
     let actions = draft.actions(&state);
     let vetted = vet_change(squad.program, &state, &actions, crate::actions::unix_now());
-    let after = vetted
-        .as_ref()
-        .ok()
-        .and_then(|outcome| outcome_line(&state, outcome));
     let refusal = match &vetted {
         Err(CannotPropose::NoActions) | Ok(_) => None,
         Err(why) => Some(why.said()),
@@ -172,9 +167,6 @@ pub(in crate::ui) fn ChangeSection(id: WalletId, on_done: EventHandler<()>) -> E
                         on_change: move |picked| collector.set(Some(picked)),
                     }
                 }
-            }
-            if let Some(said) = after {
-                SaidLine { said, class: "muted" }
             }
             if let Some(said) = refusal {
                 SaidLine { said, class: "warn" }

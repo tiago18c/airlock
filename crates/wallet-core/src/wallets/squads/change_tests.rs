@@ -441,10 +441,6 @@ fn the_outcome_is_the_multisig_after_every_action_in_order() {
     assert_eq!(outcome.members.len(), 4);
     assert_eq!(outcome.threshold, 3);
     assert!(outcome.stales);
-    assert_eq!(
-        outcome_line(&state, &outcome).unwrap().text(&name),
-        "After this: 3 of 4 approvals needed"
-    );
 
     // A removal, then a lower threshold, with a time lock.
     let outcome = change_outcome(
@@ -461,10 +457,7 @@ fn the_outcome_is_the_multisig_after_every_action_in_order() {
         outcome.members.iter().map(|m| m.key).collect::<Vec<_>>(),
         [pk(1), pk(2)]
     );
-    assert_eq!(
-        outcome_line(&state, &outcome).unwrap().text(&name),
-        "After this: 2 of 2 approvals needed · 2 hours time lock"
-    );
+    assert_eq!(outcome.time_lock, 7_200);
 
     // Spending limits and the rent collector leave the members alone, and
     // nothing goes stale.
@@ -477,7 +470,6 @@ fn the_outcome_is_the_multisig_after_every_action_in_order() {
     .unwrap();
     assert!(!outcome.stales);
     assert_eq!(outcome.rent_collector, Some(pk(1)));
-    assert_eq!(outcome_line(&state, &outcome), None);
 
     // Order matters: the threshold first would need more voters than there
     // are.
@@ -595,11 +587,11 @@ fn what_the_program_refuses_is_said_as_never_executable() {
     );
     assert_eq!(
         ChangeRefusal::NotAMember(pk(9)).said().text(&name),
-        "The program refuses to execute this change: it removes <9>, which is not a member. It can never be executed, so it is not offered for approval."
+        "The program refuses to execute this change: it removes <9>, which is not a member."
     );
     assert_eq!(
         ChangeRefusal::NoExecutors.said().text(&name),
-        "The program refuses to execute this change: it would leave no member that may execute. It can never be executed, so it is not offered for approval."
+        "The program refuses to execute this change: it would leave no member that may execute."
     );
 }
 

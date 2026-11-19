@@ -347,7 +347,6 @@ pub fn ProposalsModal(
                                         if let Line::Entry(entry) = line {
                                         ProposalRow {
                                             key: "{entry.index}",
-                                            label: label.clone(),
                                             squad,
                                             state: state.clone(),
                                             entry: (*entry).clone(),
@@ -406,9 +405,6 @@ pub fn ProposalsModal(
                                 }
                             }
                         }
-                    }
-                    p { class: "hint",
-                        "Every button here opens a transaction in Review and Sign. Nothing is signed here. Stored instructions are read with the IDLs on this device, which are not vetted yet."
                     }
                 }
             }

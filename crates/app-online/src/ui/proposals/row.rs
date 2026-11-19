@@ -38,12 +38,18 @@ use wallet_core::squads::change_summary;
 const SET_RENT_COLLECTOR: &str = "Set a rent collector for this multisig to close accounts.";
 
 /// Whether `reason` is worth a line under the row's buttons. What the head's
-/// chips already tell is not: how many approvals are missing, and that an
-/// executed proposal is finished. A refused change says why above.
+/// chips already tell is not: how many approvals are missing, and that a
+/// proposal was executed, rejected or cancelled. Nor is what the row says
+/// above: why a change is refused, and that a transaction cannot be read.
 fn worth_a_line(reason: &NoAction) -> bool {
     !matches!(
         reason,
-        NoAction::WaitingForOthers { .. } | NoAction::Finished | NoAction::Refused(_)
+        NoAction::WaitingForOthers { .. }
+            | NoAction::Finished
+            | NoAction::Rejected
+            | NoAction::Cancelled
+            | NoAction::Refused(_)
+            | NoAction::Unreadable
     )
 }
 
@@ -61,7 +67,6 @@ fn action_label(action: ProposalAction) -> &'static str {
 
 #[component]
 pub(in crate::ui) fn ProposalRow(
-    label: String,
     squad: Squad,
     state: SquadState,
     entry: ProposalEntry,
@@ -233,9 +238,6 @@ pub(in crate::ui) fn ProposalRow(
                         },
                         (Some(verdict), Some((member, Some(payer))), Some(combined)) => {
                             let votes = combined.voters.len();
-                            let voters = combined.voters.clone();
-                            let executor = Some(combined.executor).filter(|key| !voters.contains(key));
-                            let offline = combined.durable_nonce.is_some();
                             let together = ProposalRequest::Combined(combined);
                             rsx! {
                                 div { class: "btn-row",
@@ -255,27 +257,10 @@ pub(in crate::ui) fn ProposalRow(
                                     }
                                     {turn_down_button.clone()}
                                 }
-                                p { class: "chip-row hint",
-                                    span { "Together casts the {votes} approvals this proposal still needs in one transaction and executes it:" }
-                                    for key in voters.iter().copied() {
-                                        Address { key: "{key}", pubkey: key }
-                                    }
-                                    if let Some(executor) = executor {
-                                        span { "It is executed by" }
-                                        Address { pubkey: executor }
-                                    }
-                                }
-                                if offline {
-                                    p { class: "hint", "Each offline wallet signs the same transaction on its own device." }
-                                }
-                                match verdict {
-                                    Ok(_) => rsx! {
-                                        p { class: "hint", "Separate approves as the acting member only." }
-                                    },
-                                    Err(reason) if worth_a_line(&reason) => rsx! {
+                                if let Err(reason) = verdict {
+                                    if worth_a_line(&reason) {
                                         p { class: "hint", "{reason}" }
-                                    },
-                                    Err(_) => rsx! {},
+                                    }
                                 }
                             }
                         }
@@ -290,9 +275,6 @@ pub(in crate::ui) fn ProposalRow(
                                     {action_label(action)}
                                 }
                                 {turn_down_button.clone()}
-                            }
-                            if action == ProposalAction::ApproveAndExecute {
-                                p { class: "hint", "This approval is the last one {label} needs, so the same transaction executes it." }
                             }
                         },
                         (Some(Err(NoAction::MayNotExecute)), Some((_, Some(payer))), None) if instead.is_some() => {
@@ -310,9 +292,8 @@ pub(in crate::ui) fn ProposalRow(
                                     {turn_down_button.clone()}
                                 }
                                 p { class: "chip-row hint",
-                                    span { "The acting member may not execute, so" }
+                                    span { "Executed by" }
                                     Address { pubkey: member }
-                                    span { "does: another wallet of this device that this multisig lets execute." }
                                 }
                             }
                         }

@@ -80,12 +80,6 @@ pub(super) fn ProposalVotes(standing: Standing, acting: Option<Pubkey>) -> Eleme
         .iter()
         .filter_map(|wallet| wallet.address)
         .collect();
-    let gone = standing
-        .approved
-        .iter()
-        .chain(&standing.rejected)
-        .chain(&standing.cancelled)
-        .any(|voter| !voter.member);
     let waiting: Vec<Voter> = standing
         .waiting
         .iter()
@@ -122,9 +116,6 @@ pub(super) fn ProposalVotes(standing: Standing, acting: Option<Pubkey>) -> Eleme
                         }
                     }
                 }
-            }
-            if gone {
-                p { class: "hint", "A member marked here left the multisig after voting. Its vote stays on the proposal, though a former member's vote to cancel no longer counts." }
             }
         }
     }
