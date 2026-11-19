@@ -1,6 +1,9 @@
-//! One proposal: its status, what it stores, and what this device may do with it.
+//! One proposal: its status, how its votes stand, what it stores, and what
+//! this device may do with it.
 
+use super::votes::{vote_chips, ProposalVotes};
 use super::*;
+use wallet_core::proposals::standing;
 
 /// The button of what one member does to a proposal.
 fn action_label(action: ProposalAction) -> &'static str {
@@ -28,16 +31,17 @@ pub(in crate::ui) fn ProposalRow(
 ) -> Element {
     let index = entry.index;
     let (chip_class, chip_text) = status_chip(&entry);
-    let approved = entry
-        .proposal
-        .as_ref()
-        .map(|proposal| proposal.approved.clone())
-        .unwrap_or_default();
+    let status = entry.proposal.as_ref().map(|proposal| proposal.status);
     let voting = matches!(
-        entry.proposal.as_ref().map(|proposal| proposal.status),
+        status,
         Some(ProposalStatus::Active | ProposalStatus::Approved)
     );
-    let mine = acting.is_some_and(|(member, _)| approved.contains(&member));
+    let standing = standing(&state, &entry);
+    let member = acting.map(|(member, _)| member);
+    let chips = match (&entry.proposal, &standing) {
+        (Some(proposal), Some(standing)) => vote_chips(proposal, &standing.counts, member),
+        _ => Vec::new(),
+    };
     let verdict = acting.map(|(member, _)| available_action(&state, &entry, &member, now));
     // Every vote the proposal still needs, cast by the wallets the row names.
     let combined = acting.and_then(|_| combined_approval(&state, &entry, &chosen, approval_nonce));
@@ -59,11 +63,13 @@ pub(in crate::ui) fn ProposalRow(
                 onclick: move |_| on_toggle.call(index),
                 span { class: "proposal-number", "#{index}" }
                 span { class: "{chip_class}", "{chip_text}" }
-                if voting {
-                    span { class: "chip", "{approved.len()} of {state.threshold} approved" }
+                if let (true, Some(standing)) = (voting, &standing) {
+                    span { class: "chip",
+                        "{standing.counts.approved.count} of {standing.counts.approved.needed} approved"
+                    }
                 }
-                if mine {
-                    span { class: "chip ok", "you approved" }
+                for (class, text, title) in chips {
+                    span { key: "{text}", class: "{class}", title: title.unwrap_or_default(), "{text}" }
                 }
                 span { class: "muted", "{summary}" }
             }
@@ -92,13 +98,8 @@ pub(in crate::ui) fn ProposalRow(
                             p { class: "muted", "The account that held this transaction no longer exists." }
                         },
                     }
-                    if !approved.is_empty() {
-                        p { class: "chip-row",
-                            span { class: "muted", "Approved by" }
-                            for key in approved.iter().copied() {
-                                Address { key: "{key}", pubkey: key }
-                            }
-                        }
+                    if let (Some(standing), Some(status)) = (standing.clone(), status) {
+                        ProposalVotes { standing, status, acting: member }
                     }
                     match (verdict, acting, combined) {
                         (Some(_), Some((_, None)), Some(_)) => rsx! {

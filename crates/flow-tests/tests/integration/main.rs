@@ -11,6 +11,7 @@ mod mixed_approvals;
 mod offline_nonce;
 mod programmatic_squads;
 mod proposal_fit;
+mod proposal_votes;
 mod proposals;
 mod raydium_pool_template;
 mod sign_panel;
