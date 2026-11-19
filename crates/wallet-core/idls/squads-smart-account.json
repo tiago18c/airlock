@@ -4801,7 +4801,7 @@
         "display": {
           "kind": "instructionDisplayNode",
           "intent": "Close settings transaction",
-          "interpolatedIntent": "Close settings transaction ${accounts.transaction} and its proposal ${accounts.proposal}"
+          "interpolatedIntent": "Close proposal ${accounts.proposal} of smart account settings ${accounts.settings} and its stored settings change, returning the proposal's rent to ${accounts.proposalRentCollector} and the change's to ${accounts.transactionRentCollector}"
         }
       },
       {
@@ -4918,7 +4918,7 @@
         "display": {
           "kind": "instructionDisplayNode",
           "intent": "Close transaction",
-          "interpolatedIntent": "Close transaction ${accounts.transaction} and its proposal ${accounts.proposal}"
+          "interpolatedIntent": "Close proposal ${accounts.proposal} of smart account settings ${accounts.consensusAccount} and its stored transaction, returning the proposal's rent to ${accounts.proposalRentCollector} and the transaction's to ${accounts.transactionRentCollector}"
         }
       },
       {

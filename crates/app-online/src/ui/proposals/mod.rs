@@ -17,6 +17,13 @@
 //! proposal and vote to cancel an approved one, whether or not its stored
 //! transaction could be read: none of those approves anything.
 //!
+//! Finished proposals, and those no one can vote on any more, can have their
+//! accounts closed to return the rent: one row at a time, or all those read
+//! so far at once, [`CLOSES_PER_TRANSACTION`] to a transaction. No member
+//! signs a close, only the wallet paying the fee. A run of transactions
+//! whose accounts were closed reads as one line, and Older still goes
+//! further back past it.
+//!
 //! Nothing is signed here. Each button builds a transaction and hands it
 //! to the Sign screen, where it is read, signed and submitted
 //! like any other. When a member in it is a programmatic signer, Sign rebuilds it
@@ -30,8 +37,9 @@ use app_ui_kit::{Address, Session};
 use dioxus::prelude::*;
 use solana_pubkey::Pubkey;
 use wallet_core::proposals::{
-    combined_approval, executor_instead, member_choices, time_lock_ends, ChosenMember, MemberKind,
-    NoAction, ProposalAction, ProposalEntry, ProposalRequest, Stored,
+    closable, combined_approval, executor_instead, member_choices, time_lock_ends, ChosenMember,
+    MemberKind, NoAction, ProposalAction, ProposalEntry, ProposalRequest, Stored,
+    CLOSES_PER_TRANSACTION,
 };
 use wallet_core::squads::{time_lock_words, ProposalStatus, Squad, SquadState, TableProblem};
 use wallet_core::{RouteStep, WalletId};
@@ -59,8 +67,46 @@ impl Loaded {
     }
 }
 
+/// One line of the list: a transaction, or a run of transactions whose
+/// accounts were all closed.
+#[derive(Clone, PartialEq)]
+enum Line {
+    Entry(Box<ProposalEntry>),
+    Closed { newest: u64, oldest: u64 },
+}
+
+/// Its accounts were closed: neither is left.
+fn closed(entry: &ProposalEntry) -> bool {
+    entry.stored == Stored::Missing && entry.proposal.is_none()
+}
+
+/// `entries`, newest first, with each run of two or more closed ones as one
+/// line.
+fn lines(entries: &[ProposalEntry]) -> Vec<Line> {
+    let mut lines = Vec::new();
+    let mut at = 0;
+    while at < entries.len() {
+        let run = entries[at..]
+            .iter()
+            .take_while(|entry| closed(entry))
+            .count();
+        if run >= 2 {
+            lines.push(Line::Closed {
+                newest: entries[at].index,
+                oldest: entries[at + run - 1].index,
+            });
+            at += run;
+        } else {
+            lines.push(Line::Entry(Box::new(entries[at].clone())));
+            at += 1;
+        }
+    }
+    lines
+}
+
 fn status_chip(entry: &ProposalEntry) -> (&'static str, &'static str) {
     match entry.proposal.as_ref().map(|proposal| proposal.status) {
+        None if closed(entry) => ("chip", "closed"),
         None => ("chip", "no proposal"),
         Some(ProposalStatus::Draft) => ("chip", "draft"),
         Some(ProposalStatus::Active) if entry.stale => ("chip warn", "stale"),
@@ -165,6 +211,24 @@ pub fn ProposalsModal(
         .map(|current| session.chosen_members(wallet, &current.state))
         .unwrap_or_default();
     let together: Vec<ChosenMember> = chosen.iter().skip(1).cloned().collect();
+    // Every close the program takes among what was read, and the first
+    // transaction's worth of them.
+    let payer = acting.and_then(|(_, payer)| payer);
+    let all_closable = current
+        .as_ref()
+        .map(|current| closable(squad.program, &current.state, &current.entries))
+        .unwrap_or_default();
+    let close_now: Vec<_> = all_closable
+        .iter()
+        .take(CLOSES_PER_TRANSACTION)
+        .cloned()
+        .collect();
+    let close_entry = current
+        .as_ref()
+        .and_then(|current| current.entries.first().cloned());
+    let close_count = close_now.len();
+    let close_total = all_closable.len();
+    let close_request = ProposalRequest::Close(close_now.clone());
 
     rsx! {
         div { class: "modal-backdrop", onclick: move |_| on_close.call(()),
@@ -228,6 +292,43 @@ pub fn ProposalsModal(
                             }
                         },
                     }
+                    if let (Some(payer), Some(entry), true) = (payer, close_entry.clone(), close_total >= 2) {
+                        div { class: "stack proposals-close",
+                            div { class: "btn-row",
+                                button { class: "sm", disabled: busy(),
+                                    onclick: move |_| {
+                                        let label = label_for_note();
+                                        let Some(state) = loaded.peek().as_ref().map(|current| current.state.clone()) else {
+                                            return;
+                                        };
+                                        let (entry, request) = (entry.clone(), close_request.clone());
+                                        busy.set(true);
+                                        error.set(None);
+                                        spawn(async move {
+                                            match open_request(session, &squad, &state, &entry, &request, payer, &label, None).await {
+                                                Ok(()) => on_close.call(()),
+                                                Err(err) => error.set(Some(err)),
+                                            }
+                                            busy.set(false);
+                                        });
+                                    },
+                                    if close_count == close_total {
+                                        "Close accounts of all {close_total}"
+                                    } else {
+                                        "Close accounts of {close_count} of {close_total}"
+                                    }
+                                }
+                            }
+                            p { class: "hint",
+                                if close_count == close_total {
+                                    "{close_total} of the proposals read so far can be closed, all in one transaction."
+                                } else {
+                                    "{close_total} of the proposals read so far can be closed. One transaction closes up to {CLOSES_PER_TRANSACTION}, the newest first."
+                                }
+                            }
+                            RentReturned { closings: close_now.clone(), payer, one: false }
+                        }
+                    }
                     if let Some(text) = error() {
                         p { class: "error", role: "alert", "{text}" }
                     }
@@ -248,13 +349,23 @@ pub fn ProposalsModal(
                             let state = current.state.clone();
                             rsx! {
                                 ul { class: "book-list",
-                                    for entry in current.entries.iter().cloned() {
+                                    for line in lines(&current.entries) {
+                                        if let Line::Closed { newest, oldest } = line {
+                                            li { key: "{newest}-{oldest}", class: "book-row proposal-row",
+                                                div { class: "proposal-head still",
+                                                    span { class: "proposal-number", "#{newest}–{oldest}" }
+                                                    span { class: "chip", "closed" }
+                                                    span { class: "muted", "Their accounts were closed and their rent returned." }
+                                                }
+                                            }
+                                        }
+                                        if let Line::Entry(entry) = line {
                                         ProposalRow {
                                             key: "{entry.index}",
                                             label: label.clone(),
                                             squad,
                                             state: state.clone(),
-                                            entry: entry.clone(),
+                                            entry: (*entry).clone(),
                                             acting,
                                             chosen: chosen.clone(),
                                             approval_nonce,
@@ -284,7 +395,7 @@ pub fn ProposalsModal(
                                                                 .flatten()
                                                         })
                                                     }
-                                                    ProposalRequest::Combined(_) => None,
+                                                    ProposalRequest::Combined(_) | ProposalRequest::Close(_) => None,
                                                 };
                                                 busy.set(true);
                                                 error.set(None);
@@ -296,6 +407,7 @@ pub fn ProposalsModal(
                                                     busy.set(false);
                                                 });
                                             },
+                                        }
                                         }
                                     }
                                 }

@@ -16,11 +16,21 @@
 //! the multisig looks like after it and what to look out for
 //! (`app_ui_kit::ui::MultisigChange`), where a vault transaction lists its
 //! instructions. It is approved and executed the same way.
+//!
+//! Once the program allows it (`available_close`), a row also offers to
+//! close the proposal's accounts: a quiet button, since it is housekeeping,
+//! whose hint says where the rent goes, how much, and that the proposal's
+//! record leaves the chain. No member signs it, only the wallet paying the
+//! fee. Where someone would wonder why a row cannot be closed, it says why.
+//! A transaction whose accounts were closed reads as closed.
 
 use super::votes::{vote_chips, ProposalVotes};
 use super::*;
+use app_ui_kit::format_sol;
 use app_ui_kit::ui::MultisigChange;
-use wallet_core::proposals::{activation_hint, standing, DRAFT_CANNOT_BE_CANCELLED};
+use wallet_core::proposals::{
+    activation_hint, available_close, standing, Closing, NoClose, DRAFT_CANNOT_BE_CANCELLED,
+};
 use wallet_core::squads::change_summary;
 
 /// The button of what one member does to a proposal.
@@ -64,7 +74,13 @@ pub(in crate::ui) fn ProposalRow(
         _ => Vec::new(),
     };
     let choices = acting.map(|(member, _)| member_choices(&state, &entry, &member, now));
-    let verdict = choices.as_ref().map(|choices| choices.forward.clone());
+    // Nothing is said of what can be done to a transaction whose accounts
+    // were closed: it reads as closed, and nothing can.
+    let closed = entry.stored == Stored::Missing && entry.proposal.is_none();
+    let verdict = choices
+        .as_ref()
+        .map(|choices| choices.forward.clone())
+        .filter(|_| !closed);
     let payer = acting.and_then(|(_, payer)| payer);
     // The careful choice: Reject on an open proposal, Vote to cancel on an
     // approved one. Offered only with someone to pay for it, like every
@@ -104,8 +120,14 @@ pub(in crate::ui) fn ProposalRow(
         Stored::LookupTables(_) => "lookup tables not read".to_string(),
         Stored::Config(change) => change_summary(&change.actions),
         Stored::Other => "not read".to_string(),
+        Stored::Missing if entry.proposal.is_none() => "accounts closed".to_string(),
         Stored::Missing => "transaction account closed".to_string(),
     };
+    // Closing its accounts: the fee payer alone signs, so it is offered
+    // with someone to pay, whoever the acting member is.
+    let closing = available_close(squad.program, &state, &entry);
+    let for_close = entry.clone();
+    let finished = matches!(verdict, Some(Err(NoAction::Finished)));
     let for_action = entry.clone();
     let for_together = entry.clone();
 
@@ -198,6 +220,9 @@ pub(in crate::ui) fn ProposalRow(
                         },
                         Stored::Other => rsx! {
                             p { class: "warn", "This is a batch or a policy payload. This app cannot read those yet." }
+                        },
+                        Stored::Missing if entry.proposal.is_none() => rsx! {
+                            p { class: "muted", "Its accounts were closed and their rent returned. What it proposed and who voted on it are no longer on chain." }
                         },
                         Stored::Missing => rsx! {
                             p { class: "muted", "The account that held this transaction no longer exists." }
@@ -334,7 +359,8 @@ pub(in crate::ui) fn ProposalRow(
                             }
                         }
                         (Some(Err(reason)), _, _) => rsx! {
-                            if !matches!(reason, NoAction::Refused(_)) {
+                            // "Nothing is left to do" is not so beside Close.
+                            if !matches!(reason, NoAction::Refused(_)) && !(finished && closing.is_ok() && payer.is_some()) {
                                 p { class: "hint", "{reason}" }
                             }
                             // For someone looking for a way to cancel a draft.
@@ -344,8 +370,63 @@ pub(in crate::ui) fn ProposalRow(
                         },
                         (None, _, _) => rsx! {},
                     }
+                    match (&closing, payer) {
+                        (Ok(closing), Some(payer)) => {
+                            let request = ProposalRequest::Close(vec![closing.clone()]);
+                            rsx! {
+                                div { class: "btn-row",
+                                    button { class: "sm", disabled: busy,
+                                        title: "Removes this proposal's record from the chain and returns its rent",
+                                        onclick: move |_| on_act.call((for_close.clone(), request.clone(), payer)),
+                                        "Close accounts"
+                                    }
+                                }
+                                RentReturned { closings: vec![closing.clone()], payer, one: true }
+                            }
+                        }
+                        (Err(why), _) if why.worth_saying(&entry) && !matches!(why, NoClose::Gone) => rsx! {
+                            p { class: "hint", "{why}" }
+                        },
+                        _ => rsx! {},
+                    }
                 }
             }
         }
+    }
+}
+
+/// Where the rent of `closings` goes and how much, said before Close is
+/// pressed, and what closing costs: the record of what was proposed. `one`
+/// for a single proposal's accounts.
+#[component]
+pub(in crate::ui) fn RentReturned(closings: Vec<Closing>, payer: Pubkey, one: bool) -> Element {
+    let returns = wallet_core::proposals::rent_returned(&closings);
+    let to_payer = returns.iter().any(|(collector, _)| *collector == payer);
+    let only_payer = to_payer && returns.len() == 1;
+    let record = if one {
+        "It removes this proposal's record from the chain: what it proposed and who voted."
+    } else {
+        "It removes these proposals' records from the chain: what they proposed and who voted."
+    };
+    let payer_words = if only_payer {
+        "That is the wallet paying the fee. No member signs a close."
+    } else if to_payer {
+        "No member signs a close."
+    } else {
+        "The rent does not go to the wallet paying the fee, and no member signs a close."
+    };
+    rsx! {
+        p { class: "chip-row hint",
+            span { "Closing returns" }
+            for (at, (collector, lamports)) in returns.into_iter().enumerate() {
+                span { key: "{collector}", class: "proposal-voter",
+                    span {
+                        if at == 0 { "{format_sol(lamports)} of rent to" } else { "and {format_sol(lamports)} to" }
+                    }
+                    Address { pubkey: collector }
+                }
+            }
+        }
+        p { class: "hint", "{record} {payer_words}" }
     }
 }

@@ -721,8 +721,23 @@ pub(in crate::ui) fn WalletDetailsDialog(
                                         AddressRow { pubkey: authority }
                                     }
                                 }
-                                if let Some(collector) = rent_collector {
-                                    Fact { name: "Rent of closed accounts goes to", AddressRow { pubkey: collector } }
+                                // Agrees with what the Proposals modal says
+                                // about closing a proposal's accounts.
+                                match (program, rent_collector) {
+                                    (_, Some(collector)) => rsx! {
+                                        Fact { name: "Rent of closed accounts goes to", AddressRow { pubkey: collector } }
+                                    },
+                                    (SquadsProgram::V4, None) if !members.is_empty() => rsx! {
+                                        Fact { name: "Rent of closed accounts",
+                                            span { class: "muted", "No rent collector, so finished proposals' accounts cannot be closed" }
+                                        }
+                                    },
+                                    (SquadsProgram::SmartAccount, None) if !members.is_empty() => rsx! {
+                                        Fact { name: "Rent of closed accounts",
+                                            span { class: "muted", "Returns to whoever paid it" }
+                                        }
+                                    },
+                                    _ => rsx! {},
                                 }
                                 FactGroup { name: "On this device" }
                                 Fact { name: "Proposes and votes as",

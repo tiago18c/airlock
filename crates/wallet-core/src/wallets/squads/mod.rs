@@ -15,7 +15,8 @@
 //! multisig changes itself (its members, threshold, time lock, spending
 //! limits) through the same four steps, with a list of actions stored in
 //! place of the instructions (see `change`, and `change_words` for what a
-//! change says and leaves).
+//! change says and leaves). A finished transaction's accounts can be closed
+//! to return their rent (see `close`).
 //!
 //! Every instruction here is built, and every account read, from the
 //! program's own public IDL, converted to Codama (`idls/squads-multisig.json`
@@ -49,6 +50,7 @@ pub use crate::ids::{
 mod change;
 mod change_words;
 mod clear_sign;
+mod close;
 mod config;
 mod instructions;
 mod message;
@@ -65,6 +67,7 @@ pub(crate) mod tests;
 pub use change::*;
 pub use change_words::*;
 pub use clear_sign::*;
+pub use close::*;
 pub use config::*;
 pub use message::*;
 pub use program::*;

@@ -4238,7 +4238,7 @@
         "display": {
           "kind": "instructionDisplayNode",
           "intent": "Close config transaction",
-          "interpolatedIntent": "Close config transaction ${accounts.transaction} and its proposal, refunding rent to ${accounts.rentCollector}"
+          "interpolatedIntent": "Close proposal ${accounts.proposal} of multisig ${accounts.multisig} and its stored change to the multisig, returning their rent to ${accounts.rentCollector}"
         }
       },
       {
@@ -4329,7 +4329,7 @@
         "display": {
           "kind": "instructionDisplayNode",
           "intent": "Close vault transaction",
-          "interpolatedIntent": "Close vault transaction ${accounts.transaction} and its proposal, refunding rent to ${accounts.rentCollector}"
+          "interpolatedIntent": "Close proposal ${accounts.proposal} of multisig ${accounts.multisig} and its stored transaction, returning their rent to ${accounts.rentCollector}"
         }
       },
       {

@@ -16,7 +16,9 @@
 //! whatever that is, and reads as its IDL says ("rejects proposal ..."). Nor
 //! are opening a draft for votes ("activates proposal ..."), which approves
 //! nothing, and a vote to cancel an approved proposal ("votes to cancel
-//! proposal ..."), which can only stop it from running.
+//! proposal ..."), which can only stop it from running. Nor is closing a
+//! finished proposal's accounts ("Close proposal ... returning their rent
+//! to ..."), which only removes its record and returns the rent.
 //!
 //! What a Squads approval or execution acts on is read the same way when it
 //! is a change to the multisig itself (a config transaction on v4, a
@@ -665,6 +667,24 @@ mod tests {
                 );
                 assert!(
                     crate::review::risk::risks_in(&explained(vec![instruction])).is_empty(),
+                    "{:?}",
+                    squad.program
+                );
+            }
+        }
+    }
+
+    /// Closing a finished proposal's accounts says yes to nothing either,
+    /// of either kind, on either program.
+    #[test]
+    fn closing_a_proposals_accounts_says_yes_to_nothing_on_either_program() {
+        use crate::wallets::squads::CloseKind;
+        for squad in squads() {
+            for kind in [CloseKind::Vault, CloseKind::Config] {
+                let close = squad.close(3, kind, &pk(5), &pk(6));
+                assert!(whats(vec![close.clone()]).is_empty(), "{:?}", squad.program);
+                assert!(
+                    crate::review::risk::risks_in(&explained(vec![close])).is_empty(),
                     "{:?}",
                     squad.program
                 );
