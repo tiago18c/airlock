@@ -153,8 +153,7 @@ fn label(kind: SignStepKind) -> &'static str {
 }
 
 /// The word under a step, so its color is never the only thing that says
-/// where it stands. Collecting signatures counts them as the badge beside
-/// "Signatures" does.
+/// where it stands. Collecting signatures counts them.
 fn detail(step: &SignStep) -> Option<String> {
     let collects = step.kind == SignStepKind::CollectAuthorizations;
     let all_signatures = step.kind == SignStepKind::CollectSignatures;

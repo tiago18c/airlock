@@ -44,7 +44,8 @@ pub struct PreparedRequest {
 }
 
 /// What to say of a transaction moved onto a durable nonce on the way here.
-pub const ONTO_NONCE_NOTE: &str = "It was moved onto the durable nonce of the offline key that signs it, so it stays valid until that key has signed.";
+pub const ONTO_NONCE_NOTE: &str =
+    "Moved onto the durable nonce of the offline key that signs it, so it does not expire.";
 
 /// Prepare a browser (or paste) request: v1 as today; legacy/v0 signed as-is
 /// when every missing signature is a hot key here and no keyless wallet is

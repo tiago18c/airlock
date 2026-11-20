@@ -15,9 +15,7 @@ pub(in crate::ui) fn RebuildBanner(plan: Result<AdaptPlan, String>, online: bool
             return rsx! {
                 div { class: "callout",
                     p { class: "error", role: "alert", "{problem}" }
-                    p { class: "muted",
-                        "This transaction asks a wallet without a key to sign, and it cannot be rebuilt for it. It cannot be signed as it stands."
-                    }
+                    p { class: "muted", "It cannot be signed as it stands." }
                 }
             }
         }
@@ -29,32 +27,34 @@ pub(in crate::ui) fn RebuildBanner(plan: Result<AdaptPlan, String>, online: bool
                 match asked {
                     AskedWallet::Squads { vault, member, .. } => rsx! {
                         p { key: "{i}",
+                            "No key signs as "
                             Address { pubkey: vault }
-                            " is the vault of a Squads multisig. No key signs a transaction as a vault: its member "
+                            ". Rebuilt, this is a proposal of its multisig, made by "
                             Address { pubkey: member }
-                            " stores these instructions as a proposal instead, then approves and executes it as far as the multisig allows."
+                            "."
                         }
                     },
                     AskedWallet::Programmatic { authority, address, .. } => rsx! {
                         p { key: "{i}",
+                            "No key signs as "
                             Address { pubkey: address }
-                            " is a programmatic signer. No key signs a transaction as that address: its authority "
+                            ". Rebuilt, this runs as it, authorized by "
                             Address { pubkey: authority }
-                            " signs an authorization instead, and a hot wallet relays it."
+                            "."
                         }
                     },
                     AskedWallet::Vector { scheme, address, .. } => rsx! {
                         p { key: "{i}",
+                            "No key signs as "
                             Address { pubkey: address }
-                            " is a Vector wallet. No key signs a transaction as that address: its {scheme.label()} key signs the whole transaction instead, and a hot wallet relays it."
+                            ". Rebuilt, this runs as it, authorized by its {scheme.label()} key."
                         }
                     },
                 }
             }
             p { class: "muted",
-                "Rebuilding moves these instructions, unchanged, inside that proposal or authorization. "
                 Address { pubkey: fee_payer }
-                " pays the fee. This is the only change this screen makes to a transaction."
+                " pays the fee."
             }
             div { class: "btn-row",
                 // Not a second brand primary beside the action bar's: Sign
@@ -67,9 +67,7 @@ pub(in crate::ui) fn RebuildBanner(plan: Result<AdaptPlan, String>, online: bool
                     if busy() { "Rebuilding…" } else { "Rebuild the transaction" }
                 }
                 if !online {
-                    span { class: "hint",
-                        "Needs a connection, to read the multisig or the signer's nonce, and a blockhash."
-                    }
+                    span { class: "hint", "Needs a connection." }
                 }
             }
         }

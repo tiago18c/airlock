@@ -31,6 +31,7 @@
 
 use crate::actions::proposals::{load_page, open_request};
 use app_ui_kit::actions::unix_now;
+use app_ui_kit::state::ProposalsOpen;
 use app_ui_kit::ui::tx_view::ReadInstructions;
 use app_ui_kit::ui::{Empty, Glyph, RefreshButton};
 use app_ui_kit::{Address, Session};
@@ -305,7 +306,10 @@ pub fn ProposalsModal(
                                         error.set(None);
                                         spawn(async move {
                                             match open_request(session, &squad, &state, &entry, &request, payer, &label, None).await {
-                                                Ok(()) => on_close.call(()),
+                                                Ok(()) => {
+                                                    session.forms.sign.from_proposals(ProposalsOpen { wallet, label, squad });
+                                                    on_close.call(());
+                                                }
                                                 Err(err) => error.set(Some(err)),
                                             }
                                             busy.set(false);
@@ -385,7 +389,10 @@ pub fn ProposalsModal(
                                                 error.set(None);
                                                 spawn(async move {
                                                     match open_request(session, &squad, &state, &entry, &request, payer, &label, offline_nonce).await {
-                                                        Ok(()) => on_close.call(()),
+                                                        Ok(()) => {
+                                                            session.forms.sign.from_proposals(ProposalsOpen { wallet, label, squad });
+                                                            on_close.call(());
+                                                        }
                                                         Err(err) => error.set(Some(err)),
                                                     }
                                                     busy.set(false);
