@@ -7,7 +7,7 @@
 //! once.
 
 use crate::state::forms::Submission;
-use crate::state::session::Session;
+use crate::state::session::{Session, Tab};
 use crate::ui::{Glyph, Icon};
 use app_core::TxStatus;
 use dioxus::prelude::*;
@@ -73,6 +73,9 @@ pub(in crate::ui) fn SubmitProgress() -> Element {
             crate::actions::migrate::step_on_screen(&session)
                 .map(|step| (step, "moving this wallet", true))
         });
+    // A vote, an execution or a close made in a multisig's Proposals: the
+    // way back there, for the next one.
+    let proposals = (form.proposals)();
     let mut continuing = use_signal(|| false);
     let landed = match &stage {
         Stage::Landed(signature) => Some(*signature),
@@ -139,9 +142,19 @@ pub(in crate::ui) fn SubmitProgress() -> Element {
                                     onclick: move |_| form.clear(),
                                     "Clear"
                                 }
-                                button { class: if run_step.is_some() { "" } else { "primary" },
+                                button { class: if run_step.is_some() || proposals.is_some() { "" } else { "primary" },
                                     onclick: move |_| view(signature),
                                     "View transaction"
+                                }
+                                if let Some(open) = proposals.clone() {
+                                    button { class: "primary",
+                                        onclick: move |_| {
+                                            form.clear();
+                                            session.goto(Tab::Wallets);
+                                            session.open_proposals(open.wallet, open.label.clone(), open.squad);
+                                        },
+                                        "Back to proposals"
+                                    }
                                 }
                                 if run_step.is_some() {
                                     button { class: "primary",

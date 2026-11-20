@@ -9,9 +9,21 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 ## [Unreleased]
 
+### Added
+
+- **Back to proposals after a Squads vote lands.** Once an approval, rejection, execution or close made from Proposals has landed, the dialog offers Back to proposals, which opens the same multisig's Proposals again for the next one.
+
 ### Changed
 
+- **A site's request says less.** The request dialog now says in one line what was done to a transaction that asks a wallet without a key to sign: "Rebuilt as proposal #7 of Team, which Alice creates and approves", or "Rebuilt to run as Cold, authorized by Main" for a programmatic signer or a Vector wallet. The paragraphs on why no key signs as such a wallet, on the rewrite as v1 and on lookup tables are gone, and so are "Next: sign the transaction" and "Read with IDLs that ship with the app or that you imported": the dialog says only when an IDL came from the chain, or when an instruction could not be put in words. Why Sign is not offered is in its tooltip. Connect no longer explains how a smart contract wallet signs.
+- **Review and Sign says less.** The count beside Signatures is gone, as each row and the Collect signatures step say it. So are the sentences under the signatures and the buttons that repeated a step: that a signature is needed from another device, that the transaction has to be rebuilt, and that it is being simulated. The rebuild banner is one line a wallet.
+- **Load another transaction is gone from Review and Sign.** It opened the same box as Add a signature, which still takes another transaction. Clear empties the screen for a new one.
 - **Subscriptions instructions carry the titles their program gives them.** The Solana Foundation's subscriptions program now names its own instructions for clear signing, and Review and Sign uses those names: "Create recurring delegation" where it said "Allow a recurring pull", "Grant spending authority" where it said "Enable delegations for a token", "Collect subscription payment" where it said "Charge a subscription". The sentence under each title, with the amount, the period and the dates, reads as before.
+
+### Fixed
+
+- **Signatures from a hardware wallet of this device now count as local when you share them.** On Share, the Signatures tab's Local list used to leave out what a Ledger or other hardware wallet of your vault had signed, so you had to send them from All or Individual.
+- **Proposals says once that nothing can pay a multisig's fees**, at the top, and no longer under every opened proposal as well.
 
 ## [0.4.0] - 2026-11-19
 

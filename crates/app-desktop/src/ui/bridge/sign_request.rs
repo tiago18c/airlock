@@ -43,6 +43,16 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
         "Sign a transaction"
     };
     let label = sign_label(&current, None, prep.on_device);
+    let risky = prep.verdict.is_some_and(|verdict| verdict.risky > 0);
+    let sign_title = if prep.cautious_sign {
+        CAUTIOUS_SIGN
+    } else if prep.can_sign {
+        ""
+    } else if risky {
+        "A transaction like this is signed in Review and Sign, not from here."
+    } else {
+        "Sign is offered when this device holds every missing signature and none of them is an authorization. Review signs an authorization first, then the transaction."
+    };
 
     rsx! {
         BlockhashCountdown {
@@ -73,9 +83,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
                 SimulatedDeltas { from: prep.simulation, {prepared_body(&prep)} }
             }
             if replacing() {
-                p { class: "warn", role: "alert",
-                    "Review and Sign holds a transaction with signatures on it. Reviewing this request puts it there in its place, and those signatures are lost."
-                }
+                p { class: "warn", role: "alert", "{REPLACES_SIGNED}" }
             }
             if let Some(text) = error() {
                 p { class: "error", role: "alert", "{text}" }
@@ -127,7 +135,7 @@ pub(in crate::ui) fn SignRequest(current: BridgePrompt, on_close: EventHandler<(
             button {
                 class: sign_class(can_sign, prep.cautious_sign),
                 disabled: !armed || busy(),
-                title: if prep.cautious_sign { CAUTIOUS_SIGN } else if prep.can_sign { "" } else { "Sign is offered when this device holds every missing signature and none of them is an authorization. Review signs an authorization first, then the transaction." },
+                title: sign_title,
                 onclick: move |_| {
                     let Some(sign) = for_sign.clone() else {
                         return;
@@ -181,9 +189,7 @@ fn ModalSimulation(simulation: Signal<SimState>) -> Element {
                 let worded = wallet_core::word_simulation_error(&error, &*session.idls.read());
                 let why = worded.trim_end_matches('.');
                 rsx! {
-                    p { class: "warn", role: "alert",
-                        "In simulation this fails: {why}. If it were sent, it would still cost the fee."
-                    }
+                    p { class: "warn", role: "alert", "Simulation fails: {why}." }
                 }
             }
             None => {
@@ -195,7 +201,7 @@ fn ModalSimulation(simulation: Signal<SimState>) -> Element {
                     .collect();
                 rsx! {
                     p { class: "hint",
-                        "In simulation this succeeds."
+                        "Simulation succeeds."
                         if !changes.is_empty() {
                             " It changes "
                             for (i, pubkey) in changes.into_iter().enumerate() {
@@ -213,7 +219,7 @@ fn ModalSimulation(simulation: Signal<SimState>) -> Element {
             }
         },
         SimState::Failed(why) => rsx! {
-            p { class: "warn", "It could not be simulated: {why}" }
+            p { class: "warn", "Could not simulate: {why}" }
         },
         _ => rsx! {},
     }
@@ -221,6 +227,10 @@ fn ModalSimulation(simulation: Signal<SimState>) -> Element {
 
 /// Why Sign is amber: it signs more than the modal could vouch for.
 const CAUTIOUS_SIGN: &str = "Look at what this says first. Not every instruction was put in words by an IDL that ships with the app or that you imported. Sign signs it anyway. Review shows everything in it.";
+
+/// Said once before Review takes the Sign screen from a signed transaction.
+const REPLACES_SIGNED: &str =
+    "Review and Sign holds a signed transaction. Reviewing this one replaces it, and its signatures are lost.";
 
 /// The Sign button's look: amber when it signs without a trusted summary.
 fn sign_class(can_sign: bool, unread: bool) -> &'static str {
@@ -333,9 +343,7 @@ fn log_returned(session: Session, flow: u64, wire: &[u8], origin: &str, id: &str
 fn LockedNotice() -> Element {
     let session = use_context::<Session>();
     rsx! {
-        p { class: "warn",
-            "The vault is locked. Unlock it to prepare and sign this request."
-        }
+        p { class: "warn", "The vault is locked." }
         div { class: "btn-row",
             button {
                 onclick: move |_| {
@@ -350,12 +358,6 @@ fn LockedNotice() -> Element {
 /// What the modal says about one prepared transaction: what was done to it,
 /// what it does, and what signing it here takes.
 fn prepared_body(prep: &PreparedRequest) -> Element {
-    let from_tables = prep.shown.as_ref().map_or(0, |tx| {
-        tx.accounts
-            .iter()
-            .filter(|account| account.lookup.is_some())
-            .count()
-    });
     let mut attempt = prep.attempt;
     let mut paid_here = prep.paid_here;
     let fetching = prep.fetching;
@@ -366,9 +368,6 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
         },
         Prepared::Failed(problem) => rsx! {
             p { class: "error", role: "alert", "{problem}" }
-            p { class: "hint",
-                "This transaction asks a wallet without a key to sign, and it could not be rebuilt for it. It cannot be reviewed or signed as the site sent it."
-            }
             div { class: "btn-row",
                 button {
                     onclick: move |_| attempt.set(attempt() + 1),
@@ -383,7 +382,10 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
             if let Some(note) = prep.shown.as_ref().and_then(|tx| tx.too_large_note(true)) {
                 p { class: "error", role: "alert", "{note}" }
             }
-            if !prep.signs_with.is_empty() {
+            // Not said again when it is the one wallet the site asked.
+            if !prep.signs_with.is_empty()
+                && prep.signs_with.as_slice() != prep.account.as_slice()
+            {
                 div { class: "chip-row",
                     span { class: "muted", "signs with" }
                     for key in prep.signs_with.clone() {
@@ -394,16 +396,13 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
             if prep.onto_nonce {
                 p { class: "hint", "{ONTO_NONCE_NOTE}" }
             }
-            if let Some(converted) = prep.converted.clone() {
-                ConvertedNotice { converted: converted.clone() }
-                if prep.adapted.is_some() && !converted.replaced.is_empty() {
-                    p { class: "hint",
-                        "Review it: the rebuilt transaction is simulated once its authorization is signed, and that shows whether the key made here works for this site."
-                    }
-                }
-            }
+            // A rebuild says what became of the transaction. Without one,
+            // the rewrite as v1 is all that was done to it.
             if let Some(adapted) = prep.adapted.clone() {
                 AdaptedNotice { adapted }
+            }
+            if let Some(converted) = prep.converted.clone() {
+                ConvertedNotice { converted, rebuilt: prep.adapted.is_some() }
             }
             if let Some(paid) = prep.offered.clone() {
                 div { class: "callout",
@@ -412,7 +411,7 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
                             Address { pubkey: paid.to }
                             " pays the fee in place of "
                             Address { pubkey: paid.from }
-                            ", which is no longer in the transaction and no longer has to sign. The site gets this transaction back, not the one it sent, and may refuse it."
+                            ". The site may refuse the changed transaction."
                         }
                         div { class: "btn-row",
                             button {
@@ -422,11 +421,11 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
                         }
                     } else {
                         p {
-                            "The site named "
+                            "The key of the fee payer, "
                             Address { pubkey: paid.from }
-                            " to pay the fee, and its key is not on this device. Simulated with "
+                            ", is not on this device. "
                             Address { pubkey: paid.to }
-                            " paying instead, the transaction would succeed."
+                            " can pay instead."
                         }
                         div { class: "btn-row",
                             button {
@@ -439,15 +438,9 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
             }
             ReadingNote { waiting: prep.reading, gave_up: prep.gave_up }
             if let (Some(tx), Some(explained), Some(verdict)) = (prep.shown.clone(), prep.explained.clone(), prep.verdict) {
+                // Why Sign is not offered for it is Sign's tooltip.
                 if verdict.risky > 0 {
                     RiskNotice { explained: explained.clone() }
-                    // What its rows already say, such as a program upgrade,
-                    // has no strip above to point back to.
-                    if wallet_core::risks_told(&explained).is_empty() {
-                        p { class: "hint", "A transaction like this is signed in Review and Sign, not from here." }
-                    } else {
-                        p { class: "hint", "So it is signed in Review and Sign, not from here." }
-                    }
                 }
                 if fetching() {
                     p { class: "muted", role: "status", "Looking for the IDLs of its programs…" }
@@ -461,32 +454,24 @@ fn prepared_body(prep: &PreparedRequest) -> Element {
                         expired: prep.modal_expired,
                         label: countdown_label,
                     }
-                    // The summary is only as good as the IDLs it
-                    // was read with. One read from the chain was
-                    // written by whoever controls the program.
-                    if verdict.vetted() {
-                        p { class: "hint",
-                            "Read with IDLs that ship with the app or that you imported."
-                        }
-                    } else {
+                    // The summary is only as good as the IDLs it was read
+                    // with. One read from the chain was written by whoever
+                    // controls the program: only that is said, not the
+                    // usual case.
+                    if !verdict.vetted() {
                         p { class: "warn",
-                            "{verdict.unvetted} instruction(s) above were put in words by an IDL read from the chain, which whoever controls the program wrote. Review the transaction before signing it."
+                            "{verdict.unvetted} instruction(s) above were put in words by an IDL read from the chain, which whoever controls the program wrote. Review before signing."
                         }
                     }
                 } else {
                     p { class: "warn",
-                        "{verdict.unread} instruction(s) could not be put in words with the IDLs on this device, so there is no summary of what Sign signs. Review the transaction to see everything in it."
+                        "{verdict.unread} instruction(s) could not be put in words, so there is no summary here. Review shows everything in it."
                     }
                 }
                 ModalSimulation { simulation: prep.simulation }
-                if prep.converted.is_none() && from_tables > 0 {
-                    p { class: "hint",
-                        "It loads {from_tables} of its accounts from lookup tables, shown as the chain has them now."
-                    }
-                }
                 if !prep.site_signs.is_empty() {
                     p { class: "hint",
-                        "The site signs for {prep.site_signs.len()} account(s) it creates, such as a new mint, once this device has signed. Its transaction is signed as it sent it."
+                        "The site signs for {prep.site_signs.len()} account(s) it creates, once this device has signed."
                     }
                 }
                 if verdict.elsewhere > prep.site_signs.len() {
@@ -576,13 +561,11 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
         RequestHead { current: current.clone(), title: if sends { format!("Sign and send {count} transactions") } else { format!("Sign {count} transactions") }, on_close }
         div { class: "request-body",
             ChainNotice { current: current.clone() }
-            if sends {
-                p { class: "muted",
-                    "The site sent {count} transactions in one request. Airlock sends them once every one is signed, or none if you reject. {send_note}"
-                }
-            } else {
-                p { class: "muted",
-                    "The site sent {count} transactions in one request. It gets them all back once every one is signed, or none if you reject."
+            p { class: "muted",
+                if sends {
+                    "Sent once every one is signed, or none. {send_note}"
+                } else {
+                    "The site gets them back once every one is signed, or none."
                 }
             }
             if locked {
@@ -596,15 +579,8 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
                 p { class: "error", role: "alert", "{text}" }
             }
         }
-        if !locked && !can_sign && to_sign < count {
-            p { class: "hint",
-                "Sign is offered when this device can finish every transaction. Review opens them in Review and Sign one at a time, and returns them together after the last."
-            }
-        }
         if replacing() {
-            p { class: "warn", role: "alert",
-                "Review and Sign holds a transaction with signatures on it. Reviewing this request puts it there in its place, and those signatures are lost."
-            }
+            p { class: "warn", role: "alert", "{REPLACES_SIGNED}" }
         }
         div { class: "btn-row",
             button {
@@ -659,7 +635,13 @@ pub(in crate::ui) fn SignBatch(current: BridgePrompt, on_close: EventHandler<()>
             button {
                 class: sign_class(can_sign, cautious_sign),
                 disabled: !armed || busy(),
-                title: if cautious_sign { CAUTIOUS_SIGN } else { "" },
+                title: if cautious_sign {
+                    CAUTIOUS_SIGN
+                } else if !locked && !can_sign && to_sign < count {
+                    "Sign is offered when this device can finish every transaction. Review opens them in Review and Sign one at a time, and returns them together after the last."
+                } else {
+                    ""
+                },
                 onclick: move |_| {
                     let Some(reports) = for_sign.clone() else {
                         return;
@@ -796,8 +778,9 @@ fn BatchCard(
     }
 }
 
-/// The next step under the summary. A leaf, because it reads the countdown
-/// label that changes every second; the modal above it does not.
+/// How long the blockhash has left, under the summary. A leaf, because it
+/// reads the countdown label that changes every second; the modal above it
+/// does not.
 #[component]
 fn StageLine(
     step: Option<wallet_core::NextSignature>,
@@ -819,60 +802,51 @@ fn modal_stage_line(
     expired: bool,
     countdown: Option<String>,
 ) -> Option<String> {
-    match step? {
-        wallet_core::NextSignature::Authorization => {
-            Some("Next: sign the authorization (intent).".into())
-        }
-        wallet_core::NextSignature::Nothing => Some("Nothing left to sign here.".into()),
-        wallet_core::NextSignature::Transaction => match lifetime {
-            Some(wallet_core::TxLifetime::DurableNonce { .. }) => {
-                Some("Next: sign the transaction (durable nonce).".into())
-            }
-            Some(wallet_core::TxLifetime::Blockhash(_)) if expired => {
-                Some("The blockhash has expired. Ask the site to send it again.".into())
-            }
-            Some(wallet_core::TxLifetime::Blockhash(_)) => {
+    // An authorization does not expire, and a transaction with nothing left
+    // to sign here says so further down.
+    match (step?, lifetime?) {
+        (wallet_core::NextSignature::Transaction, wallet_core::TxLifetime::Blockhash(_)) => {
+            Some(if expired {
+                "The blockhash has expired. Ask the site to send it again.".into()
+            } else {
                 let when = countdown.unwrap_or_else(|| "…".into());
-                Some(format!(
-                    "Next: sign the transaction. Blockhash expires in {when}."
-                ))
-            }
-            _ => Some("Next: sign the transaction.".into()),
-        },
+                format!("Blockhash expires in {when}.")
+            })
+        }
+        _ => None,
     }
 }
 
-/// What converting a legacy or v0 request to v1 did.
+/// What converting a legacy or v0 request to v1 did, that a person signing
+/// has to know: that the site gets another transaction back than it sent,
+/// which a rebuild's own notice says already (`rebuilt`), the signatures of
+/// the site's that no longer apply, and each account that is created at
+/// another address than the site shows. Nothing when there is none of these.
 #[component]
-pub(in crate::ui) fn ConvertedNotice(converted: wallet_core::Converted) -> Element {
+pub(in crate::ui) fn ConvertedNotice(converted: wallet_core::Converted, rebuilt: bool) -> Element {
     let format = match converted.from {
         wallet_core::TxFormat::Legacy => "legacy",
         wallet_core::TxFormat::V0 => "v0",
         wallet_core::TxFormat::V1 => "v1",
     };
-    let loaded = converted.loaded;
-    let tables = converted.tables;
     let voided = converted.voided;
-    let limit = converted.limit_from.describe(converted.cu_limit);
+    if rebuilt && voided == 0 && converted.replaced.is_empty() {
+        return rsx! {};
+    }
     rsx! {
         div { class: "callout",
-            p {
-                "The site sent a {format} transaction"
-                if tables > 0 {
-                    " that loads {loaded} account(s) from {tables} lookup table(s)"
-                }
-                ". It was rewritten as v1, with every account listed, so the device that signs can read all of it. The blockhash and the price per compute unit are the site's. {limit}"
-                if voided > 0 {
-                    " {voided} signature(s) the site had added no longer apply."
-                }
-                " The site gets the v1 transaction back."
+            if !rebuilt {
+                p { "Rewritten from {format} to v1, so every device that signs can read it." }
+            }
+            if voided > 0 {
+                p { class: "warn", "{voided} signature(s) the site had added no longer apply." }
             }
             for (old, new) in converted.replaced.iter().copied() {
                 p {
-                    Address { pubkey: old }
-                    " was never used on chain, so it was a one-time key the site made, such as a new mint. "
                     Address { pubkey: new }
-                    ", made on this device, takes its place and signs with this device's keys, and the result simulated. The account is created at the new address, not the one the site shows."
+                    ", a key made here, takes the place of the site's one-time key "
+                    Address { pubkey: old }
+                    ": the account is created at the new address."
                 }
             }
         }
@@ -888,32 +862,28 @@ pub(in crate::ui) fn AdaptedNotice(adapted: Adapted) -> Element {
                 match step {
                     AdaptedStep::Squads { vault, member, index, voters, executor, held_back, .. } => {
                         let wait = held_back.as_ref().map(held_back_note);
+                        // One member votes: the one that creates it.
+                        let alone = voters.len() <= 1;
                         rsx! {
                             p { key: "{i}",
+                                "Rebuilt as proposal #{index} of "
                                 Address { pubkey: vault }
-                                " is the vault of a Squads multisig, so no key signs as it. The site's instructions are stored as its transaction {index}. "
+                                ", which "
                                 Address { pubkey: member }
-                                " creates the proposal"
-                                if voters.is_empty() {
-                                    "."
-                                } else if voters.len() == 1 && executor.is_some() {
-                                    ", approves it and executes it."
-                                } else if voters.len() == 1 {
-                                    " and approves it."
-                                } else {
-                                    " and these members approve it:"
+                                match (voters.len(), executor.is_some()) {
+                                    (0, _) => " creates.",
+                                    (1, true) => " creates, approves and executes.",
+                                    (1, false) => " creates and approves.",
+                                    (_, true) => " creates. Approved and executed by",
+                                    (_, false) => " creates. Approved by",
                                 }
-                            }
-                            if voters.len() > 1 {
-                                p { key: "{i}-voters",
-                                    for (v, voter) in voters.iter().cloned().enumerate() {
-                                        span { key: "{i}-v-{v}",
-                                            if v > 0 { " " }
+                                if !alone {
+                                    for voter in voters.iter().copied() {
+                                        span { key: "{i}-v-{voter}",
+                                            " "
                                             Address { pubkey: voter }
                                         }
                                     }
-                                    if executor.is_some() { " It is executed in the same transaction." }
-                                    else { " It is not executed in this transaction." }
                                 }
                             }
                             if let Some(executor) = executor {
@@ -931,13 +901,12 @@ pub(in crate::ui) fn AdaptedNotice(adapted: Adapted) -> Element {
                     },
                     AdaptedStep::SquadsSync { vault, signers, .. } => rsx! {
                         p { key: "{i}",
+                            "Rebuilt to run at once as "
                             Address { pubkey: vault }
-                            " is the vault of a Squads smart account, so no key signs as it. Enough of its members are on this device to approve and execute at once, so the site's instructions run in this transaction, with nothing stored and no proposal opened. These members sign in place of votes:"
-                        }
-                        p {
-                            for (s, signer) in signers.iter().cloned().enumerate() {
-                                span { key: "{i}-s-{s}",
-                                    if s > 0 { " " }
+                            ", approved by"
+                            for signer in signers.iter().copied() {
+                                span { key: "{i}-s-{signer}",
+                                    " "
                                     Address { pubkey: signer }
                                 }
                             }
@@ -945,27 +914,26 @@ pub(in crate::ui) fn AdaptedNotice(adapted: Adapted) -> Element {
                     },
                     AdaptedStep::Programmatic { authority, address, .. } => rsx! {
                         p { key: "{i}",
+                            "Rebuilt to run as "
                             Address { pubkey: address }
-                            " is a programmatic signer, so no key signs as it. Its authority "
+                            ", authorized by "
                             Address { pubkey: authority }
-                            " signs an authorization for these instructions instead."
+                            "."
                         }
                     },
                     AdaptedStep::Vector { scheme, address, .. } => rsx! {
                         p { key: "{i}",
+                            "Rebuilt to run as "
                             Address { pubkey: address }
-                            " is a Vector wallet, so no key signs as it. What it signs runs as that address, and its {scheme.label()} key signs the whole transaction instead."
+                            ", authorized by its {scheme.label()} key."
                         }
                     },
                 }
             }
-            p {
-                Address { pubkey: adapted.fee_payer }
-                " pays the fee and signs the transaction. The site gets this transaction back, not the one it sent."
-            }
+            // Who pays is the fee line's to say, under the summary.
             if adapted.voided > 0 {
                 p { class: "warn",
-                    "{adapted.voided} signature(s) the site had already added covered the old transaction and no longer apply."
+                    "{adapted.voided} signature(s) the site had added no longer apply."
                 }
             }
         }

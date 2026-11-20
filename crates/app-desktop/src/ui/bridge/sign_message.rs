@@ -75,12 +75,10 @@ pub(in crate::ui) fn MessageRequest(current: BridgePrompt, on_close: EventHandle
         div { class: "request-body",
             AddressRow { pubkey: account, no_copy: true }
             MessageBody { bytes: shown }
-            p { class: "hint",
-                "Signing costs nothing, but a site or a program can act on what you sign. Sign only what you understand."
-            }
+            p { class: "hint", "A site or a program can act on what you sign." }
             if let Some(vendor) = device {
                 p { class: "hint",
-                    "Your {vendor.label()} signs this text inside an offchain message that names this account, and the site gets that message back with the signature."
+                    "Your {vendor.label()} signs it inside an offchain message, which the site gets back."
                 }
             }
             if let Some(Err(why)) = wrapped.clone() {

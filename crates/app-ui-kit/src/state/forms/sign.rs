@@ -315,6 +315,9 @@ pub struct SignForm {
     /// The site and request id the screen last set aside, for the note that
     /// says so, until that request is on screen again.
     pub displaced: Signal<Option<(String, String)>>,
+    /// The Proposals modal the transaction on screen was made in, so the
+    /// screen can lead back to it once the transaction has landed.
+    pub proposals: Signal<Option<crate::state::ProposalsOpen>>,
 }
 
 /// A key made here, and the site's one-time key it takes the place of.
@@ -678,6 +681,13 @@ impl SignForm {
         self.clock.reset(height.map(BlockhashExpiry::exact));
     }
 
+    /// The transaction on screen acts on a proposal of the multisig whose
+    /// Proposals modal is `open`. Forgotten when another takes its place.
+    pub fn from_proposals(&self, open: crate::state::ProposalsOpen) {
+        let mut proposals = self.proposals;
+        proposals.set(Some(open));
+    }
+
     pub fn clear(&self) {
         self.reset();
         let mut this = *self;
@@ -709,6 +719,7 @@ impl SignForm {
         this.returned.set(false);
         this.batch.set(None);
         this.submission.set(None);
+        this.proposals.set(None);
     }
 }
 
