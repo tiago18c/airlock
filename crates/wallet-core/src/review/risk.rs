@@ -13,7 +13,7 @@
 
 use crate::idl::catalog::IdlOrigin;
 use crate::ids::{STAKE_PROGRAM_ID, SYSTEM_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID};
-use crate::review::blind::{blind_in, blind_in_carried, CHECKED_APPROVAL};
+use crate::review::blind::{blind_in, blind_in_carried, collapse_squads_notes, CHECKED_APPROVAL};
 use crate::review::checked::checked_in;
 use crate::review::explain::{ExplainedIx, ExplainedTx};
 use solana_pubkey::Pubkey;
@@ -85,7 +85,8 @@ fn risk_of(program: &Pubkey, data: &[u8]) -> Option<&'static str> {
 ///
 /// A vote the clear signing program checks is not blind, but it is still a
 /// vote: it is told as one, and what the proposal holds is told as for any
-/// other instruction.
+/// other instruction. An approval and an execution of a Squads proposal are
+/// one note when both are present.
 pub fn risks_in(explained: &ExplainedTx) -> Vec<&'static str> {
     let mut found = Vec::new();
     for instruction in &explained.instructions {
@@ -95,6 +96,7 @@ pub fn risks_in(explained: &ExplainedTx) -> Vec<&'static str> {
         found.push(CHECKED_APPROVAL);
     }
     told_once(&mut found, blind_in(explained).iter().map(|one| one.what));
+    collapse_squads_notes(&mut found);
     found
 }
 
@@ -110,6 +112,7 @@ pub fn risks_in_carried(instructions: &[ExplainedIx]) -> Vec<&'static str> {
         &mut found,
         blind_in_carried(instructions).iter().map(|one| one.what),
     );
+    collapse_squads_notes(&mut found);
     found
 }
 
