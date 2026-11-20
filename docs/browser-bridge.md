@@ -216,7 +216,7 @@ The node is whatever the user chose, and it may be run by anyone. It never decid
 | It can | So |
 | --- | --- |
 | Say a transaction would succeed, or how much would move | A simulation only ever holds Sign back, and never vouches for anything |
-| Say what a proposal holds | That is shown as what the node says. On an offline device it arrives as what the other device says, and has to be vouched for |
+| Say what a proposal holds | Review and Sign shows it under Proposal contents. On an offline device it arrives as what the other device says, and has to be vouched for |
 | Serve a program's IDL, written to say anything | An IDL read from the chain never makes Sign the primary button, and the modal says it was read from the chain. Words are only as good as the IDL, and IDLs that ship are pinned by checksum |
 | Say what a lookup table holds | A v0 transaction names a table and a place in it, and what is signed does not name the address there. The modal says how many accounts come from tables, and Inspect marks each one. Rebuilding as v1 removes the question |
 | Say what balances and token accounts are | They are shown as they are, and a read that fails says so |

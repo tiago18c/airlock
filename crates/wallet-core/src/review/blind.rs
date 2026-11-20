@@ -49,7 +49,32 @@ const SQUADS_APPROVAL: &str =
 pub(crate) const CHECKED_APPROVAL: &str =
     "Approves a Squads proposal, which can then run what it holds as its vault.";
 const SQUADS_RUN: &str =
-    "Runs a transaction a Squads multisig stored on chain. What it does is not in this transaction.";
+    "Executes a Squads proposal. What it would run is stored on chain, not in this transaction.";
+/// [`SQUADS_APPROVAL`] and [`SQUADS_RUN`] say the same thing about where the
+/// proposal's contents are, so a transaction that does both is told once.
+const SQUADS_BOTH: &str =
+    "Approves and executes a Squads proposal. What it would run is stored on chain, not in this transaction.";
+
+/// When both an approval and an execution are told, say them as one note, in
+/// the place of whichever came first.
+pub(crate) fn collapse_squads_notes(notes: &mut Vec<&'static str>) {
+    if !notes.contains(&SQUADS_APPROVAL) || !notes.contains(&SQUADS_RUN) {
+        return;
+    }
+    let mut kept = false;
+    notes.retain_mut(|note| {
+        if *note != SQUADS_APPROVAL && *note != SQUADS_RUN {
+            return true;
+        }
+        if kept {
+            return false;
+        }
+        kept = true;
+        *note = SQUADS_BOTH;
+        true
+    });
+}
+
 const REALMS_VOTE: &str =
     "Votes on a Realms proposal. What it would run is stored on chain, not in this transaction.";
 
@@ -511,7 +536,7 @@ mod tests {
                 squad.program
             );
             let run = squad.execute(3, 0, &[transfer(vault, pk(2), 5)], &pk(1));
-            let found = blind_in(&explained(vec![run]));
+            let found = blind_in(&explained(vec![run.clone()]));
             assert_eq!(
                 found,
                 [BlindApproval {
@@ -525,7 +550,32 @@ mod tests {
                 "{:?}",
                 squad.program
             );
+            let told = |instructions| crate::review::risk::risks_told(&explained(instructions));
+            assert_eq!(told(vec![squad.approve(3, &pk(1))]), [SQUADS_APPROVAL]);
+            assert_eq!(told(vec![run.clone()]), [SQUADS_RUN]);
+            let both = vec![squad.approve(3, &pk(1)), run];
+            assert_eq!(told(both.clone()), [SQUADS_BOTH]);
+            assert_eq!(
+                crate::review::risk::risks_told_carried(&explained(both).instructions),
+                [SQUADS_BOTH]
+            );
         }
+    }
+
+    #[test]
+    fn the_combined_note_takes_the_place_of_whichever_came_first() {
+        let mut execute_first = vec![
+            "earlier",
+            SQUADS_RUN,
+            "between",
+            SQUADS_APPROVAL,
+            SQUADS_RUN,
+        ];
+        collapse_squads_notes(&mut execute_first);
+        assert_eq!(execute_first, ["earlier", SQUADS_BOTH, "between"]);
+        let mut approve_only = vec![SQUADS_APPROVAL];
+        collapse_squads_notes(&mut approve_only);
+        assert_eq!(approve_only, [SQUADS_APPROVAL]);
     }
 
     #[test]

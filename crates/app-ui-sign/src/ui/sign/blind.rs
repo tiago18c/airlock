@@ -228,7 +228,7 @@ pub(super) fn BlindApprovals(
     let signers: Vec<Pubkey> = tx.signers.iter().map(|slot| slot.pubkey).collect();
     rsx! {
         div { class: "card",
-            h3 { "Stored on chain" }
+            h3 { "Proposal contents" }
             for target in targets {
                 StoredBehind {
                     key: "{target.proposal}",
@@ -261,8 +261,9 @@ pub(super) fn BlindApprovals(
     }
 }
 
-/// What is known of one proposal: what the node says, or else what the other
-/// device says, and the two are not worth the same.
+/// What is known of one proposal. What the node returned is shown as the
+/// proposal's contents. What the other device sent is shown as that, since
+/// this device cannot check it, and the two are not worth the same.
 #[component]
 fn StoredBehind(
     target: StoredTarget,
@@ -274,10 +275,10 @@ fn StoredBehind(
     signers: Vec<Pubkey>,
 ) -> Element {
     for (accounts, said) in [
-        (&from_node, "The node says it holds this."),
+        (&from_node, None),
         (
             &from_note,
-            "The other device says it holds this. This device cannot check that.",
+            Some("The other device says it holds this. This device cannot check that."),
         ),
     ] {
         match stored_content_in(&target, accounts) {
@@ -295,7 +296,9 @@ fn StoredBehind(
                         .find(|key| state.members.iter().any(|member| member.key == *key))
                 });
                 return rsx! {
-                    p { class: "hint", "{said}" }
+                    if let Some(said) = said {
+                        p { class: "hint", "{said}" }
+                    }
                     MultisigChange { change, state, acting, now: unix_now() }
                 };
             }
@@ -315,9 +318,15 @@ fn StoredBehind(
 }
 
 #[component]
-fn StoredInstructions(stored: VaultTransaction, said: &'static str, inspect: bool) -> Element {
+fn StoredInstructions(
+    stored: VaultTransaction,
+    said: Option<&'static str>,
+    inspect: bool,
+) -> Element {
     rsx! {
-        p { class: "hint", "{said}" }
+        if let Some(said) = said {
+            p { class: "hint", "{said}" }
+        }
         ReadInstructions { instructions: stored.instructions, inspect, risks: true }
     }
 }
@@ -340,7 +349,7 @@ pub(super) fn CheckedApprovals(checked: Vec<CheckedApproval>) -> Element {
 
 /// One proposal: who approves it, whether it is executed too, and where
 /// the instructions its checks carry are shown. A vote on it no check pins
-/// is not here: it is under "Stored on chain".
+/// is not here: it is under "Proposal contents".
 #[component]
 fn CheckedOne(approval: CheckedApproval) -> Element {
     let place = approval.check.label();
