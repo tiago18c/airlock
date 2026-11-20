@@ -301,9 +301,8 @@ pub(in crate::ui) fn ProposalRow(
                         ProposalVotes { standing, acting: member }
                     }
                     match (verdict, acting, combined) {
-                        (Some(_), Some((_, None)), Some(_)) => rsx! {
-                            p { class: "hint", "Pick a hot wallet to pay fees for this wallet first." }
-                        },
+                        // Nobody to pay the fee: the modal's head says so, once.
+                        (Some(_), Some((_, None)), Some(_)) => rsx! {},
                         (Some(verdict), Some((member, Some(payer))), Some(combined)) => {
                             let votes = combined.voters.len();
                             let together = ProposalRequest::Combined(combined);
@@ -365,9 +364,7 @@ pub(in crate::ui) fn ProposalRow(
                                 }
                             }
                         }
-                        (Some(Ok(_)), _, _) => rsx! {
-                            p { class: "hint", "Pick a hot wallet to pay fees for this wallet first." }
-                        },
+                        (Some(Ok(_)), _, _) => rsx! {},
                         // Nothing moves it forward, but it can be turned down:
                         // what could not be read, what the member approved, or
                         // what a time lock holds.

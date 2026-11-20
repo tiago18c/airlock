@@ -16,9 +16,6 @@ pub(in crate::ui) fn ConnectRequest(current: BridgePrompt, on_close: EventHandle
     let mut chosen = use_signal(|| start.choice.ticked.clone());
     let armed = use_armed(!chosen.read().is_empty());
     let mut remember = use_signal(|| start.remembered);
-    let shares_contract = accounts
-        .iter()
-        .any(|account| account.contract && chosen.read().contains(&account.pubkey));
     let approve_id = current.id.clone();
     let reject_id = current.id.clone();
     let block_id = current.id.clone();
@@ -52,11 +49,6 @@ pub(in crate::ui) fn ConnectRequest(current: BridgePrompt, on_close: EventHandle
             if current_is_new {
                 p { class: "hint",
                     "This site has not seen your current wallet. Tick it to show it."
-                }
-            }
-            if shares_contract {
-                p { class: "hint",
-                    "No key signs as a programmatic signer or a Squads vault. A transaction this site builds for one is rebuilt here before you read it: as an authorization, or as a proposal."
                 }
             }
             label { class: "check",
