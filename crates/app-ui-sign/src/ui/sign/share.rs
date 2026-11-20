@@ -44,6 +44,8 @@ pub(in crate::ui) fn Share(
     // key that made it.
     let mut here = session.local_signer_pubkeys();
     here.extend(session.local_vector_accounts());
+    // A hardware wallet of this vault signs on this side of the transfer.
+    here.extend(session.local_device_keys().into_iter().map(|(key, _)| key));
     let signatures: Vec<ShownSignature> = signatures
         .into_iter()
         .enumerate()
@@ -127,7 +129,8 @@ struct ShownSignature {
     pubkey: Pubkey,
     signed: Signed,
     authorization: bool,
-    /// Made by a key, or for a Vector account, this device holds.
+    /// Made by a key, or for a Vector account, this device holds, or by a
+    /// hardware wallet of this vault.
     local: bool,
     /// What to call its address in a sentence.
     name: String,
