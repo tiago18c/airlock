@@ -9,6 +9,10 @@ A release moves those lines under a version heading. See `docs/releasing.md`.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Signatures from a hardware wallet of this device now count as local when you share them.** On Share, the Signatures tab's Local list used to leave out what a Ledger or other hardware wallet of your vault had signed, so you had to send them from All or Individual.
+
 ## [0.4.0] - 2026-11-19
 
 ### Added
