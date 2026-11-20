@@ -284,6 +284,24 @@ const vectorPassthrough = () => {
   ]);
 };
 
+/** A Subscriptions `createRecurringDelegation` as devnet executed one: the
+ * payer lets an address pull up to 50,000,000 base units a week. */
+const recurringDelegation = () => {
+  const key = (s) => b58decode(s);
+  const data = Buffer.from(
+    "028ca99eb5a101000080f0fa0200000000803a0900000000000000000000000000c40fef6a0000000054fcf81e00000000",
+    "hex",
+  );
+  // payer | delegation | subscription authority, delegatee, System, Subscriptions
+  return legacy([
+    key("5DGdiL13ddp6kjuSxFTFADBkEUucgHPvYyA49rQz4FYR"),
+    key("54jTFFJa9f8HUYVopRq86ZTRTUnPgaBjKmk6JYERPgkR"),
+    key("EyY6ZbS6Xq5cckMf1mc71fXQATF1m9HwiYgWDLBBaYg1"),
+    systemProgram,
+    key("De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44"),
+  ], 4, [[5, [0, 2, 1, 3, 4], data]]);
+};
+
 // ---- scenarios: the transactions of one signTransaction request each ----
 
 const scenarios = {
@@ -299,6 +317,7 @@ const scenarios = {
   jupiter: () => [jupiterSwap()],
   vector: () => [vectorAdvance()],
   vectorPassthrough: () => [vectorPassthrough()],
+  subscriptions: () => [recurringDelegation()],
 };
 // Scenarios on mainnet. The app is switched to it before each, and stays
 // there for the rest of the run.

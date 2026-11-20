@@ -50,7 +50,7 @@
         ]
       ],
       "from": "3Kdh6QPjhHUEvQd4k4czYs11Z84ryNiDMUBzfw1WDXwYYHa2C1iMHTeRbsR1sgoiwf5QHn3HncsJj8VHPNVZiGyT#2.1",
-      "intent": "Pull under a recurring delegation",
+      "intent": "Transfer (recurring delegation)",
       "programId": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
       "sentence": "C24NG2VkS3nbS5qMQ226Cd4H4SQQ1DoGoynuXQVg97q1 pulls 0.01 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from the token account C1B7XJP2cgZg5BBhgWVSJKiNDYogrRQD3mGtJzUgRd7Q of 8h9bHH7F8JE9U5pMp4JViaAjxpGFe6PmkJTAL6CUeowE to C1B7XJP2cgZg5BBhgWVSJKiNDYogrRQD3mGtJzUgRd7Q, under the recurring delegation 7H5sATuD8v1sceYB1W6tBfCo9NTRZ86WwDxLzrMFQREp",
       "unnamedAccounts": 0
@@ -104,7 +104,7 @@
         ]
       ],
       "from": "59x2oUhGgR8Ag5H2rhgZrx5PcSCjz4cKtP1oodjWztjrvduWQKqqJCo65WH2fUsFK9PwawedwyM1VLGYexwnkLfs#3",
-      "intent": "Allow a recurring pull",
+      "intent": "Create recurring delegation",
       "programId": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
       "sentence": "82TFreLUgKPTo6FtiKsqtedgnueaiuM82GRoSm9qiJ5h lets 7kPVyebS3wueJpK7bhheo1s5rqoxC4X8D5nxdYyAFT8j pull up to 100,000,000 base units from them in each period of 24:00:00 (hours:minutes:seconds), in the token of their subscription authority HP4DG3UGiyVS8cAkdaHsh8X7yWzTgK3RtJPEZVgji6y1, from 2026-11-11T16:04:29.000Z (1970-01-01 means when this lands) until 1970-01-01T00:00:00.000Z (1970-01-01 means it never expires)",
       "unnamedAccounts": 0
@@ -153,7 +153,7 @@
         ]
       ],
       "from": "2Kmtsi4jwnfWW4mp9589PWkDZMzRBkJ6rj8u7LRhqZaykXuXZ7LmVmTvydoGYbcktYEdMTW1GzvFdXBdbqN61TDw#2",
-      "intent": "Allow a recurring pull",
+      "intent": "Create recurring delegation",
       "programId": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
       "sentence": "EJ6iSPX6MsNwoe8FCa2RsKEF5T6zD3BW71vZm22Fd6R1 lets 8Lh2ARBMHpdRUxan6uae9VomSWgH7JhBnoaFg9AjH8Kj pull up to 5,000,000 base units from them in each period of 24:00:00 (hours:minutes:seconds), in the token of their subscription authority 9em6JYJHAFqKXHzKUs3Qb6Gaf5JeFvqP6kdvJapPzb3x, from 2026-11-11T01:36:30.000Z (1970-01-01 means when this lands) until 1970-01-01T00:00:00.000Z (1970-01-01 means it never expires)",
       "unnamedAccounts": 0
@@ -192,7 +192,7 @@
         ]
       ],
       "from": "zZeMko3KaGcgtnxffYsVuxdP4zuMtAWoo1eBbeMFppRxioVZ5xkE6UN8AQcHFZGPd7xi6GWqqJoDCaj7x6JWUN4#2",
-      "intent": "Enable delegations for a token",
+      "intent": "Grant spending authority",
       "programId": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
       "sentence": "8rL6TSiXTm77LUQQJCUyG9G4gT5AoaMDS6zdvBVxDUaJ makes the program's subscription authority 4oDRCiosRhiyrKWWyaW9mvkfxezVBvxsTKh6Qmrn4p5e the delegate of their token account Fy4795mb4cNbMmdoMpkcWhESND5mMr3UbrAx4eqEi6CJ for an unlimited amount of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v: the delegations and subscriptions they sign pull their tokens through it",
       "unnamedAccounts": 0
@@ -226,7 +226,7 @@
         ]
       ],
       "from": "mpw1FM49r8nGJh95GJwqwG4fCj5s43UidH2A44ZiEfqYMcrjouJZDMSUXQ43Cmo3YeaowthiKoTaw9azoBc8UMm#3",
-      "intent": "Enable delegations for a token",
+      "intent": "Grant spending authority",
       "programId": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
       "sentence": "SUByzZja4BieLXK2mGG85GSRZ9DVZe9iWsv9k6zvSfZ makes the program's subscription authority J4xry977nSTv7ypvYjmX1PoYJuK4wLMEnKBhSYVtPXec the delegate of their token account 9rLLrof2G4ytrPnSw5rTQtTU833r35GEwrQ9sqmBoXu5 for an unlimited amount of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v: the delegations and subscriptions they sign pull their tokens through it",
       "unnamedAccounts": 0
@@ -287,7 +287,7 @@
         ]
       ],
       "from": "zZeMko3KaGcgtnxffYsVuxdP4zuMtAWoo1eBbeMFppRxioVZ5xkE6UN8AQcHFZGPd7xi6GWqqJoDCaj7x6JWUN4#3",
-      "intent": "Subscribe to a plan",
+      "intent": "Subscribe",
       "programId": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
       "sentence": "8rL6TSiXTm77LUQQJCUyG9G4gT5AoaMDS6zdvBVxDUaJ subscribes to the plan 5wSVuiZ1fCdbyqegv6GLetzfKruKiXyzuRohCtYqNHFS of GjHgEpmTBUWwqhooG3krbZW4rKoxj1xEoiftFMS7kMCq: the merchant and the plan's pullers can pull up to 1,000,000,000 base units of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from them every 720 hour(s), until the end of the period in which they cancel, or until the plan ends",
       "unnamedAccounts": 0
@@ -343,7 +343,7 @@
         ]
       ],
       "from": "mpw1FM49r8nGJh95GJwqwG4fCj5s43UidH2A44ZiEfqYMcrjouJZDMSUXQ43Cmo3YeaowthiKoTaw9azoBc8UMm#4",
-      "intent": "Subscribe to a plan",
+      "intent": "Subscribe",
       "programId": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
       "sentence": "SUByzZja4BieLXK2mGG85GSRZ9DVZe9iWsv9k6zvSfZ subscribes to the plan VZiJRgLJm5EaK2oJRHRN8qVyPqu19V5iRvg9MuRQbrm of 69TwH2GJiBSA8Eo3DunPGsXGWjNFY267zRrpHptYWCuC: the merchant and the plan's pullers can pull up to 5,000,000 base units of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from them every 1 hour(s), until the end of the period in which they cancel, or until the plan ends",
       "unnamedAccounts": 0
@@ -397,7 +397,7 @@
         ]
       ],
       "from": "mpw1FM49r8nGJh95GJwqwG4fCj5s43UidH2A44ZiEfqYMcrjouJZDMSUXQ43Cmo3YeaowthiKoTaw9azoBc8UMm#5",
-      "intent": "Charge a subscription",
+      "intent": "Collect subscription payment",
       "programId": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
       "sentence": "EAXeoDuopRKRcqt3LdY67rFSJ8MC6RRQtzxUFqZN2xEY pulls 5 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from the token account 9rLLrof2G4ytrPnSw5rTQtTU833r35GEwrQ9sqmBoXu5 of subscriber SUByzZja4BieLXK2mGG85GSRZ9DVZe9iWsv9k6zvSfZ to ouvutawZPFW4oLHmKZiqd5if7Be2u7a4b2A4m1nr7WP, under the subscription GTK9E9hUjXZZoSiffiLTtK6AX83tnJo7ZWtfdJn7e6Tj to the plan VZiJRgLJm5EaK2oJRHRN8qVyPqu19V5iRvg9MuRQbrm",
       "unnamedAccounts": 0
@@ -451,7 +451,7 @@
         ]
       ],
       "from": "3ygv2GLgYbgsK4jnWzotySB6Rz3TG85yaECV7kkjhHa7nMVFEYJBo2CpFp83JBHpZPqwXBVeFXgZEu7WuPn3jTmM#4",
-      "intent": "Charge a subscription",
+      "intent": "Collect subscription payment",
       "programId": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
       "sentence": "4Eq1rcUNVN5Xj6Lu3MpF2kQDaEcY8Y6jcmay4rvUyMLF pulls 49 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v from the token account GtMyJCUnwf6FLDTaV5AJdHXWoRKZgtKpmDuKP4kurjw3 of subscriber 7FjedLKfyMurCdYaiTbyn6nvLVmTLE8eEUbdiqiByysx to G2wv6MCDcaiqhbP4JqP6RB76utwAhhG4BoZ71r58zgk6, under the subscription GAVVW469sv59wZjLKD7kRiEoeR5D5mmF3o951AcZtMkj to the plan 5wSVuiZ1fCdbyqegv6GLetzfKruKiXyzuRohCtYqNHFS",
       "unnamedAccounts": 0
@@ -480,7 +480,7 @@
         ]
       ],
       "from": "45dajqaRocJZrNftDSoN7oWjV8jgERNoiL8MYh5paxnfzD271Dw3U7yv2dLBgpQappzp1rTwSn493SXfshi7vmVq#3",
-      "intent": "Cancel a subscription",
+      "intent": "Cancel subscription",
       "programId": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
       "sentence": "94bxKCYsNbTpDmvsLWsKUL8AekrGDD8hYiabnGL135qq cancels their subscription 7sD6ucVX7BmRq5FwhVeYBhTagdPBnF1k5qtzwdsxJqr9 to the plan VZiJRgLJm5EaK2oJRHRN8qVyPqu19V5iRvg9MuRQbrm; the plan can still pull until the end of the current period",
       "unnamedAccounts": 0
@@ -507,7 +507,7 @@
         ]
       ],
       "from": "zpmqU5d4RgjjsxUDVmyDTzeP57W4HWMJMDT7R7Y4gjSnqdBoQnK66nKxRtKaQDFgbjYmk1wXBsRyaFxPjmFywph#3",
-      "intent": "Revoke a delegation",
+      "intent": "Revoke delegation",
       "programId": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
       "sentence": "69TwH2GJiBSA8Eo3DunPGsXGWjNFY267zRrpHptYWCuC closes the delegation or subscription 2sjSdqn27oKWWC3d7g3WYcfxfN2gJDdCnTxXADM8wiV9, ending the permission to pull it gives; its rent goes back to the account that paid it",
       "unnamedAccounts": 0
@@ -539,7 +539,7 @@
         ]
       ],
       "from": "eYVq5NeRB3cM7f6DdGZTuEmi8yMGDyA37e3AYwifazVhqcGRrZ7dqsVwA1GYXRsckM3RMmg9b6r2yLWHGYazjzQ#2",
-      "intent": "Revoke a delegation",
+      "intent": "Revoke delegation",
       "programId": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
       "sentence": "6AdHRRqnodGws1FwHFDYvW85byMaujpxnNWzvGEywpev closes the delegation or subscription 7gAhgGFMe48uq7jS5H1EXY68jMGs6JSJumF9fHYqv65, ending the permission to pull it gives; its rent goes back to the account that paid it",
       "unnamedAccounts": 0
@@ -566,7 +566,7 @@
         ]
       ],
       "from": "h1acMmhUk5M1UNxxMSwZMosF7aNAtjdMdSbYfsNpnA7E7i5cLX7sWgkupotxrCUjBerMErSVKrac63jrwU7Zvi4#3",
-      "intent": "Revoke a delegation",
+      "intent": "Revoke delegation",
       "programId": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
       "sentence": "82TFreLUgKPTo6FtiKsqtedgnueaiuM82GRoSm9qiJ5h closes the delegation or subscription DMb1jiBEhrAE6P8Jczy8mNchM1UPnaDM7caZUHRKvkju, ending the permission to pull it gives; its rent goes back to the account that paid it",
       "unnamedAccounts": 0
@@ -623,7 +623,7 @@
         ]
       ],
       "from": "5jYvZmUVg8Kqjyr42CKgEcykm6vKfXcEh76nxPw22C7u2pZQafCxCKQ6UvFg6ThVmpWbZoC7x4x7S4k28SUtxdW2#4",
-      "intent": "Create a subscription plan",
+      "intent": "Create plan",
       "programId": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
       "sentence": "69TwH2GJiBSA8Eo3DunPGsXGWjNFY267zRrpHptYWCuC creates the plan VZiJRgLJm5EaK2oJRHRN8qVyPqu19V5iRvg9MuRQbrm: its subscribers can be charged up to 5 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v every 1 hour(s), until 2026-11-12T23:59:59.000Z (1970-01-01 means no end)",
       "unnamedAccounts": 0
@@ -680,7 +680,7 @@
         ]
       ],
       "from": "2vZSiDKcp2NrnmWkLZQKxEzD6BQnmsZpMZGXq4Way7jAkPQFKX5h1xvByTVMWaYEww4qzjeukozVU3Q7vX77RuSq#3",
-      "intent": "Create a subscription plan",
+      "intent": "Create plan",
       "programId": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
       "sentence": "GoanveHAPKdx7P5ZKrDeCxyScYo5nmP57DXUEte94jxj creates the plan HPiAhXDQzhwSjoGhXj98f6Sxfdw3AobkXuurBXDNoNVA: its subscribers can be charged up to 4,680 of EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v every 8760 hour(s), until 1970-01-01T00:00:00.000Z (1970-01-01 means no end)",
       "unnamedAccounts": 0
@@ -718,7 +718,7 @@
         ]
       ],
       "from": "eYVq5NeRB3cM7f6DdGZTuEmi8yMGDyA37e3AYwifazVhqcGRrZ7dqsVwA1GYXRsckM3RMmg9b6r2yLWHGYazjzQ#1",
-      "intent": "End a subscription now",
+      "intent": "Cancel subscription now",
       "programId": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
       "sentence": "6AdHRRqnodGws1FwHFDYvW85byMaujpxnNWzvGEywpev and the plan owner GoanveHAPKdx7P5ZKrDeCxyScYo5nmP57DXUEte94jxj end the subscription 7gAhgGFMe48uq7jS5H1EXY68jMGs6JSJumF9fHYqv65 to the plan 5oesGtaVFA6PVu1NxrZ9z3NXFRr1kyL7NYDn5wUxyLW3 now: no further pulls",
       "unnamedAccounts": 0
