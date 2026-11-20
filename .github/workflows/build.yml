@@ -42,7 +42,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: rustup show
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
-      - uses: cargo-bins/cargo-binstall@851112458b5f28a29e5bc14a690c3f283d9dcc6f # v1.26.2
+      - uses: cargo-bins/cargo-binstall@5885714d0a40a14b2535c6ffc051fd8e49aa9665 # v1.27.0
       - name: Install the Dioxus CLI
         run: cargo binstall -y dioxus-cli@${{ env.DX_VERSION }}
       # The full installer, the small one and the portable zip. It builds
@@ -67,7 +67,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: rustup show
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
-      - uses: cargo-bins/cargo-binstall@851112458b5f28a29e5bc14a690c3f283d9dcc6f # v1.26.2
+      - uses: cargo-bins/cargo-binstall@5885714d0a40a14b2535c6ffc051fd8e49aa9665 # v1.27.0
       - name: Install the Dioxus CLI
         run: cargo binstall -y dioxus-cli@${{ env.DX_VERSION }}
       # Its machine may never be online, so the small installer cannot fetch
@@ -89,7 +89,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: rustup show && rustup target add aarch64-linux-android
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
-      - uses: cargo-bins/cargo-binstall@851112458b5f28a29e5bc14a690c3f283d9dcc6f # v1.26.2
+      - uses: cargo-bins/cargo-binstall@5885714d0a40a14b2535c6ffc051fd8e49aa9665 # v1.27.0
       - name: Install the Dioxus CLI
         run: cargo binstall -y dioxus-cli@${{ env.DX_VERSION }}
       # dx builds a release APK with Gradle's assembleRelease, signed and
@@ -169,7 +169,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: rustup show
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
-      - uses: cargo-bins/cargo-binstall@851112458b5f28a29e5bc14a690c3f283d9dcc6f # v1.26.2
+      - uses: cargo-bins/cargo-binstall@5885714d0a40a14b2535c6ffc051fd8e49aa9665 # v1.27.0
       - name: Install the Dioxus CLI
         run: cargo binstall -y dioxus-cli@${{ env.DX_VERSION }}
       - name: Bundle the apps
